@@ -11,12 +11,12 @@
 ; mov ax, 2
 ; mov ds, ax
 
-add byte [0xFF], 0x2
-add ax, [0xFF]
+add byte [0x1], 0x2
+;add ax, [0xFF]
 
-add bx, ax
+;add bx, ax
 
-; add al, 0x2
+add al, 0x2
 xchg bx, bx
 
 times 510 - ($-$$) db 0

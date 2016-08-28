@@ -36,25 +36,16 @@ class CPU {
 
     this.registers = {
       /** Main registers */
-      ax: 0x0,
-      bx: 0x0,
-      cx: 0x0,
-      dx: 0x0,
+      ax: 0x0, bx: 0x0, cx: 0x0, dx: 0x0,
 
       /** Index registers */
-      si: 0x0,
-      di: 0x0,
-      bp: 0x0,
-      sp: 0x0,
+      si: 0x0, di: 0x0, bp: 0x0, sp: 0x0,
 
       /** Instruction counter */
       ip: 0x0,
 
       /** Segment registers */
-      cs: 0x0,
-      ds: 0x0,
-      es: 0x0,
-      ss: 0x0,
+      cs: 0x0, ds: 0x0, es: 0x0, ss: 0x0,
 
       /** Flags */
       status: 0x0
@@ -92,34 +83,24 @@ class CPU {
     this.regMap = {
       /** 8bit registers indexes */
       0x1: {
-        0x0: 'al',
-        0x1: 'cl',
-        0x2: 'dl',
-        0x3: 'bl',
-        0x4: 'ah',
-        0x5: 'ch',
-        0x6: 'dh',
-        0x7: 'bh'
+        0x0: 'al', 0x1: 'cl',
+        0x2: 'dl', 0x3: 'bl',
+        0x4: 'ah', 0x5: 'ch',
+        0x6: 'dh', 0x7: 'bh'
       },
 
       /** 16bit register indexes */
       0x2: {
-        0x0: 'ax',
-        0x1: 'cx',
-        0x2: 'dx',
-        0x3: 'bx',
-        0x4: 'sp',
-        0x5: 'bp',
-        0x6: 'si',
-        0x7: 'di'
+        0x0: 'ax', 0x1: 'cx',
+        0x2: 'dx', 0x3: 'bx',
+        0x4: 'sp', 0x5: 'bp',
+        0x6: 'si', 0x7: 'di'
       },
 
       /** Segment registers */
       sreg: {
-        0x0: 'es',
-        0x1: 'cs',
-        0x2: 'ss',
-        0x3: 'ds'
+        0x0: 'es', 0x1: 'cs',
+        0x2: 'ss', 0x3: 'ds'
       }
     };
 
@@ -141,37 +122,6 @@ class CPU {
    */
   initOpcodeSet() {
     this.opcodes = {
-      /** ADD r/m8, reg8 */   0x0: (bits = 0x1) => {
-        this.modeRegParse(
-          (l, r)        => this.registers[l] += this.registers[this.regMap[bits][r]],
-          (address, r)  => this.mem[address] += this.registers[this.regMap[bits][r]],
-          bits
-        );
-      },
-      /** ADD r/m16, reg16 */ 0x1: () => this.opcodes[0x0](0x2),
-
-      /** ADD r/m8, reg8 */ 0x2: (bits = 0x1) => {
-        this.modeRegParse(
-          /** todo: test, nasm is not compiling (l, r) */
-          (l, r)       => this.registers[r] += this.registers[this.regMap[bits][l]],
-          (address, r) => this.registers[r] += this.mem[address],
-          bits
-        );
-      },
-      /** ADD r/m16, reg16 */ 0x3: () => this.opcodes[0x2](0x2),
-
-      /** ADD AL, imm8  */    0x4: () => { this.registers.al += this.fetchOpcode(); },
-      /** ADD AX, imm16 */    0x5: () => { this.registers.ax += this.fetchOpcode(2); },
-      /** ADD r/m8, imm8 */  0x80: (bits = 0x1) => {
-        this.modeRegParse(
-          (register)  => { this.registers[register] += this.fetchOpcode(bits); },
-          (address)   => { this.mem[address] += this.fetchOpcode(bits); },
-          bits
-        );
-      },
-      /** ADD r/m16, imm16 */  0x81: () => this.opcodes[0x80](0x2),
-      /** ADD r/m16, imm8 */  0x83: () => this.opcodes[0x80](),
-
       /** MOV sreg, r/m16 */  0x8E: () => {
         this.modeRegParse(
           (r, sreg) => this.registers[this.regMap.sreg[sreg]] = this.registers[r],
@@ -189,7 +139,6 @@ class CPU {
 
       /** HLT */  0xF4: () => this.halt()
     };
-
     for(let opcode = 0; opcode < Object.keys(this.regMap[0x1]).length; ++opcode) {
       /** MOV register opcodes */
       ((_opcode) => {
@@ -205,6 +154,66 @@ class CPU {
           this.registers[_r16] = this.fetchOpcode(2);
         };
       })(opcode);
+    }
+
+    /**
+     * Generate algebra offset calls
+     * todo: implement FPU
+     */
+    this._initALU();
+  }
+
+  /**
+   * Slow as fuck ALU initializer
+   */
+  _initALU() {
+    const operators = {
+      '+': { offset: 0x00, _c: function(a, b) { return a + b } },
+      '-': { offset: 0x28, _c: function(a, b) { return a - b } },
+      '&': { offset: 0x20, _c: function(a, b) { return a & b } },
+      '|': { offset: 0x08, _c: function(a, b) { return a | b } },
+      '^': { offset: 0x30, _c: function(a, b) { return a ^ b } }
+    };
+    for(let key in operators) {
+      (({offset, _c}) => {
+        const codes = {
+          /** ADD r/m8, reg8 */ [0x0 + offset]: (bits = 0x1) => {
+            this.modeRegParse(
+              (l, r) => {
+                this.registers[l] = _c(this.registers[l], this.registers[this.regMap[bits][r]])
+              },
+              (address, r) => {
+                this.mem[address] = _c(this.mem[address], this.registers[r])
+              }, bits
+            );
+          },
+          /** ADD r/m16, reg16 */ [0x1 + offset]: () => this.opcodes[0x0 + offset](0x2),
+          /** ADD r/m8, reg8 */   [0x2 + offset]: (bits = 0x1) => {
+            this.modeRegParse(
+              /** todo: test, nasm is not compiling (l, r) */
+              (l, r)       => {
+                this.registers[r] = _c(this.registers[r], this.registers[this.regMap[bits][l]])
+              },
+              (address, r) => {
+                this.registers[r] = _c(this.registers[r], this.mem[address]);
+              }, bits
+            );
+          },
+          /** ADD r/m16, reg16 */ [0x3 + offset]: () => this.opcodes[0x2](0x2 + offset),
+          /** ADD AL, imm8  */    [0x4 + offset]: () => this.registers.al = _c(this.registers.al, this.fetchOpcode()),
+          /** ADD AX, imm16 */    [0x5 + offset]: () => this.registers.ax = _c(this.registers.ax, this.fetchOpcode(2)),
+          /** ADD r/m8, imm8 */   [0x80 + offset]: (bits = 0x1) => {
+            this.modeRegParse(
+              (register)  => this.registers[register] += this.fetchOpcode(bits),
+              (address)   => this.mem[address] += this.fetchOpcode(bits),
+              bits
+            );
+          },
+          /** ADD r/m16, imm16 */ [0x81 + offset]: () => this.opcodes[0x80 + offset](0x2),
+          /** ADD r/m16, imm8 */  [0x83 + offset]: () => this.opcodes[0x80 + offset](),
+        };
+        Object.assign(this.opcodes, codes);
+      })(operators[key]);
     }
   }
 
@@ -244,37 +253,15 @@ class CPU {
          * todo: Is it segment address? If yes (segment << 4) + address
          */
         switch(byte.rm) {
-          case 0x0:
-            address = this.registers.bx + this.registers.di + displacement;
-          break;
+          case 0x0: address = this.registers.bx + this.registers.di + displacement; break;
+          case 0x1: address = this.registers.bx + this.registers.di + displacement; break;
+          case 0x2: address = this.registers.bp + this.registers.si + displacement; break;
+          case 0x3: address = this.registers.bp + this.registers.di + displacement; break;
 
-          case 0x1:
-            address = this.registers.bx + this.registers.di + displacement;
-          break;
-
-          case 0x2:
-            address = this.registers.bp + this.registers.si + displacement;
-          break;
-
-          case 0x3:
-            address = this.registers.bp + this.registers.di + displacement;
-          break;
-
-          case 0x4:
-            address = this.registers.si + displacement;
-          break;
-
-          case 0x5:
-            address = this.registers.di + displacement;
-          break;
-
-          case 0x6:
-            address = this.registers.bp + displacement;
-          break;
-
-          case 0x7:
-            address = this.registers.bx + displacement;
-          break;
+          case 0x4: address = this.registers.si + displacement; break;
+          case 0x5: address = this.registers.di + displacement; break;
+          case 0x6: address = this.registers.bp + displacement; break;
+          case 0x7: address = this.registers.bx + displacement; break;
         }
       }
       memCallback(
