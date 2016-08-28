@@ -16,8 +16,20 @@ class CPU {
    */
   constructor(device) {
     this.device = device;
-    this.mem = Buffer.alloc(8388608); // real mode 1024KB
-    this.clockSpeed = 500; // debug only
+    this.clockSpeed = 10; // debug only
+
+    /**
+     * Alloc 1024 KB of RAM memory
+     * todo: Implement A20 line support
+     */
+    this.mem = Buffer.alloc(8388608);
+    this.memMapper = {
+      /** for 8bit registers */
+      0x1: this.mem.readUInt8.bind(this.mem),
+
+      /** for 16bit registers */
+      0x2: this.mem.readUInt16LE.bind(this.mem)
+    };
 
     this.registers = {
       /** Main registers */
@@ -73,13 +85,43 @@ class CPU {
       separateRegister.apply(this, args);
     });
 
-    // https://en.wikipedia.org/wiki/X86_instruction_listings#Original_8086.2F8088_instructions
-    this.opcodes = {
-      /** MOV reg8, imm8 */
-      0xB0: { len: 2, f: (args) => {
-        console.log(args);
-      } }
+    /** Map register codes */
+    this.regMapper = {
+      /** 8bit registers indexes */
+      0x1: {
+        0x0: 'al',
+        0x1: 'cl',
+        0x2: 'dl',
+        0x3: 'bl',
+        0x4: 'ah',
+        0x5: 'ch',
+        0x6: 'dh',
+        0x7: 'bh'
+      },
+
+      /** 16bit register indexes */
+      0x2: {
+        0x0: 'ax',
+        0x1: 'cx',
+        0x2: 'dx',
+        0x3: 'bx',
+        0x4: 'sp',
+        0x5: 'bp',
+        0x6: 'si',
+        0x7: 'di'
+      },
+
+      /** Segment registers */
+      sreg: {
+        0x0: 'es',
+        0x1: 'cs',
+        0x2: 'ss',
+        0x3: 'ds'
+      }
     };
+
+    /** Generate instructions */
+    this.initOpcodeSet();
 
     /** Boot sequence */
     Object.assign(this.registers, {
@@ -89,36 +131,110 @@ class CPU {
   }
 
   /**
+   * For faster exec generates  CPU specific opcodes list
+   * see:
+   * http://csiflabs.cs.ucdavis.edu/~ssdavis/50/8086%20Opcodes.pdf
+   * https://en.wikipedia.org/wiki/X86_instruction_listings#Original_8086.2F8088_instructions
+   */
+  initOpcodeSet() {
+    this.opcodes = {
+      /** ADD AL, imm8  */   0x4: () => {
+        this.registers.al += this.fetchOpcode();
+      },
+
+      /** ADD AX, imm16 */  0x5: () => {
+        this.registers.ax += this.fetchOpcode();
+      },
+
+      /** XCHG bx, bx   */  0x87: () => {
+        const l = this.fetchOpcode();
+        if(l == 0xDB)
+          this.halt('Debug dump!', true);
+      }
+    };
+
+    for(let opcode = 0; opcode < Object.keys(this.regMapper[0x1]).length; ++opcode) {
+      /** MOV register opcodes */
+      ((_opcode) => {
+        /** MOV reg8, imm8 $B0 + reg8 code */
+        const _r8 = this.regMapper[0x1][_opcode];
+        this.opcodes[0xB0 + _opcode] = () => {
+          this.registers[_r8] = this.fetchOpcode();
+        };
+
+        /** MOV reg16, imm16 $B8 + reg16 code */
+        const _r16 = this.regMapper[0x2][_opcode];
+        this.opcodes[0xB8 + _opcode] = () => {
+          this.registers[_r16] = this.fetchOpcode();
+        };
+      })(opcode);
+
+      /** ADD registers opcodes */
+    }
+  }
+
+  /**
+   * Decodes MOD RM bytes
+   *
+   * @static
+   * @param {Integer} byte  8bit mod rm byte
+   * @returns
+   */
+  static decodeModRmByte(byte) {
+
+  }
+
+  /**
+   * Get next opcode
+   *
+   * @param {Integer} size  Opcode size in bytes 8 / 16
+   * @returns
+   */
+  fetchOpcode(size = 1) {
+    const mapper = this.memMapper[size];
+    if(mapper) {
+      const opcode = mapper(this.getMemAddress('cs', 'ip'));
+      this.registers.ip += size;
+
+      return opcode;
+    } else
+      this.halt('Unknown opcode size!');
+  }
+
+  /**
    * Exec CPU
    */
   exec() {
     winston.log('info', `Jump to ${this.registers.ip.toString(16)}`)
     this.clock = setInterval(() => {
       /** Tick */
-      let opcode = this.mem.readUInt8(this.getMemAddress('cs', 'ip'))
+      let opcode = this.fetchOpcode()
         , operand = this.opcodes[opcode];
-      if(!operand) {
-        winston.log('error', `Unknown opcode 0x${opcode.toString(16).toUpperCase()}`);
-        return this.halt();
-      }
-
-      /** Move instruction pointer, it can change(jmp, call, ret etc.) */
-      this.registers.ip += operand.len;
+      if(!operand)
+        return this.halt(`Unknown opcode 0x${opcode.toString(16).toUpperCase()}`);
 
       /** Do something with operand */
-      operand.f();
+      operand();
 
     }, this.clockSpeed);
   }
 
   /**
-   * Power off CPU
+   * Force turn off CPU
+   *
+   * @param {String}  errorMsg Error message
+   * @param {Boolean} dump     Dump registers
    */
-  halt() {
+  halt(errorMsg, dump) {
     if(!this.clock)
       winston.log('info', 'CPU is not turned on');
-    else
+    else {
       this.clock = clearInterval(this.clock);
+
+      /** Optional args */
+      errorMsg && winston.log('error', errorMsg);
+      dump && this.dumpRegisters();
+    }
   }
 
   /**
