@@ -4,7 +4,14 @@
 [org 0x7c00]
 
 ; mov al, 0x3
-add bl, 0x2
+; mov bh, 2
+; add byte [0xFF], 2
+;mov bx, 3
+;mov ax, 4
+mov bx, 3
+mov ax, 4
+add word [0xFF], bx
+
 ; add al, 0x2
 xchg bx, bx
 

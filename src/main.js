@@ -18,6 +18,9 @@ class CPU {
     this.device = device;
     this.clockSpeed = 10; // debug only
 
+    /** Interrupts */
+    this.interrupt = 0x0;
+
     /**
      * Alloc 1024 KB of RAM memory
      * todo: Implement A20 line support
@@ -86,7 +89,7 @@ class CPU {
     });
 
     /** Map register codes */
-    this.regMapper = {
+    this.regMap = {
       /** 8bit registers indexes */
       0x1: {
         0x0: 'al',
@@ -138,34 +141,52 @@ class CPU {
    */
   initOpcodeSet() {
     this.opcodes = {
-      /** ADD AL, imm8  */   0x4: () => {
-        this.registers.al += this.fetchOpcode();
+      /** ADD AL, imm8  */  0x3: () => {
+        // this.registers.ax += this.fetchOpcode();
       },
 
-      /** ADD AX, imm16 */  0x5: () => {
-        this.registers.ax += this.fetchOpcode();
+      /** ADD AL, imm8  */    0x4: () => { this.registers.al += this.fetchOpcode(); },
+      /** ADD AX, imm16 */    0x5: () => { this.registers.ax += this.fetchOpcode(2); },
+
+      /** ADD r/m8, imm8 */  0x80: () => {
+        this.modeRegParse(
+          (register)  => { this.registers[register] += this.fetchOpcode(); },
+          (address)   => { this.mem[address] += this.fetchOpcode(); },
+          0x1
+        );
+      },
+      /** ADD r/m16, imm8 */  0x83: () => this.opcodes[0x80](),
+      /** ADD r/m8, reg8 */   0x0: () => this.opcodes[0x80](),
+      /** ADD r/m16, reg16 */ 0x1: () => {
+        this.modeRegParse(
+          (l, r)        => { this.registers[l] += this.registers[r]; },
+          (address, r)  => { this.mem[address] += this.registers[r]; },
+          0x2
+        );
       },
 
       /** XCHG bx, bx   */  0x87: () => {
         const l = this.fetchOpcode();
         if(l == 0xDB)
           this.halt('Debug dump!', true);
-      }
+      },
+
+      /** HLT */  0xF4: () => this.halt()
     };
 
-    for(let opcode = 0; opcode < Object.keys(this.regMapper[0x1]).length; ++opcode) {
+    for(let opcode = 0; opcode < Object.keys(this.regMap[0x1]).length; ++opcode) {
       /** MOV register opcodes */
       ((_opcode) => {
         /** MOV reg8, imm8 $B0 + reg8 code */
-        const _r8 = this.regMapper[0x1][_opcode];
+        const _r8 = this.regMap[0x1][_opcode];
         this.opcodes[0xB0 + _opcode] = () => {
           this.registers[_r8] = this.fetchOpcode();
         };
 
         /** MOV reg16, imm16 $B8 + reg16 code */
-        const _r16 = this.regMapper[0x2][_opcode];
+        const _r16 = this.regMap[0x2][_opcode];
         this.opcodes[0xB8 + _opcode] = () => {
-          this.registers[_r16] = this.fetchOpcode();
+          this.registers[_r16] = this.fetchOpcode(2);
         };
       })(opcode);
 
@@ -174,14 +195,86 @@ class CPU {
   }
 
   /**
+   * Parse RM mode byte
+   * see: http://www.c-jump.com/CIS77/CPU/x86/X77_0060_mod_reg_r_m_byte.htm
+   *
+   * @param {Function} regCallback  Callback if register mode opcode
+   * @param {Function} memCallback  Callback if memory mode opcode
+   * @param {Integer}  register     0x1 if 8bit register, 0x2 if 16bit register
+   */
+  modeRegParse(regCallback, memCallback, mode) {
+    const byte = CPU.decodeModRmByte(this.fetchOpcode());
+
+    /** Direct address */
+    if(byte.mod === 0x3)
+      regCallback(this.regMap[mode][byte.rm], this.regMap[mode][byte.reg]);
+    else {
+      let address = 0;
+      if(!byte.mod && byte.rm == 0x6)
+        address = this.fetchOpcode(2);
+      else {
+        let displacement = 0;
+
+        /** Eight-bit displacement, sign-extended to 16 bits */
+        if(byte.mod === 0x1 || byte.mod === 0x2)
+          displacement = this.fetchOpcode(byte.mod);
+
+        /**
+         * Calc address
+         * todo: Is it segment address? If yes (segment << 4) + address
+         */
+        switch(byte.rm) {
+          case 0x0:
+            address = this.registers.bx + this.registers.di + displacement;
+          break;
+
+          case 0x1:
+            address = this.registers.bx + this.registers.di + displacement;
+          break;
+
+          case 0x2:
+            address = this.registers.bp + this.registers.si + displacement;
+          break;
+
+          case 0x3:
+            address = this.registers.bp + this.registers.di + displacement;
+          break;
+
+          case 0x4:
+            address = this.registers.si + displacement;
+          break;
+
+          case 0x5:
+            address = this.registers.di + displacement;
+          break;
+
+          case 0x6:
+            address = this.registers.bp + displacement;
+          break;
+
+          case 0x7:
+            address = this.registers.bx + displacement;
+          break;
+        }
+      }
+      memCallback(address, this.regMap[mode][byte.reg]);
+    }
+  }
+
+  /**
    * Decodes MOD RM bytes
+   * see http://www.c-jump.com/CIS77/CPU/x86/X77_0060_mod_reg_r_m_byte.htm
    *
    * @static
    * @param {Integer} byte  8bit mod rm byte
-   * @returns
+   * @returns Extracted value
    */
   static decodeModRmByte(byte) {
-
+    return {
+      mod: byte >> 0x6,
+      reg: (byte >> 3) & 0x7,
+      rm: byte & 0x7
+    };
   }
 
   /**
