@@ -141,27 +141,43 @@ class CPU {
    */
   initOpcodeSet() {
     this.opcodes = {
-      /** ADD AL, imm8  */  0x3: () => {
-        // this.registers.ax += this.fetchOpcode();
+      /** ADD r/m8, reg8 */   0x0: (bits = 0x1) => {
+        this.modeRegParse(
+          (l, r)        => this.registers[l] += this.registers[this.regMap[bits][r]],
+          (address, r)  => this.mem[address] += this.registers[this.regMap[bits][r]],
+          bits
+        );
       },
+      /** ADD r/m16, reg16 */ 0x1: () => this.opcodes[0x0](0x2),
+
+      /** ADD r/m8, reg8 */ 0x2: (bits = 0x1) => {
+        this.modeRegParse(
+          /** todo: test, nasm is not compiling (l, r) */
+          (l, r)       => this.registers[r] += this.registers[this.regMap[bits][l]],
+          (address, r) => this.registers[r] += this.mem[address],
+          bits
+        );
+      },
+      /** ADD r/m16, reg16 */ 0x3: () => this.opcodes[0x2](0x2),
 
       /** ADD AL, imm8  */    0x4: () => { this.registers.al += this.fetchOpcode(); },
       /** ADD AX, imm16 */    0x5: () => { this.registers.ax += this.fetchOpcode(2); },
-
-      /** ADD r/m8, imm8 */  0x80: () => {
+      /** ADD r/m8, imm8 */  0x80: (bits = 0x1) => {
         this.modeRegParse(
-          (register)  => { this.registers[register] += this.fetchOpcode(); },
-          (address)   => { this.mem[address] += this.fetchOpcode(); },
-          0x1
+          (register)  => { this.registers[register] += this.fetchOpcode(bits); },
+          (address)   => { this.mem[address] += this.fetchOpcode(bits); },
+          bits
         );
       },
+      /** ADD r/m16, imm16 */  0x81: () => this.opcodes[0x80](0x2),
       /** ADD r/m16, imm8 */  0x83: () => this.opcodes[0x80](),
-      /** ADD r/m8, reg8 */   0x0: () => this.opcodes[0x80](),
-      /** ADD r/m16, reg16 */ 0x1: () => {
+
+      /** MOV sreg, r/m16 */  0x8E: () => {
         this.modeRegParse(
-          (l, r)        => { this.registers[l] += this.registers[r]; },
-          (address, r)  => { this.mem[address] += this.registers[r]; },
-          0x2
+          (r, sreg) => this.registers[this.regMap.sreg[sreg]] = this.registers[r],
+          (address, reg) => {
+            /** todo */
+          }, 0x2
         );
       },
 
@@ -189,8 +205,6 @@ class CPU {
           this.registers[_r16] = this.fetchOpcode(2);
         };
       })(opcode);
-
-      /** ADD registers opcodes */
     }
   }
 
@@ -198,17 +212,23 @@ class CPU {
    * Parse RM mode byte
    * see: http://www.c-jump.com/CIS77/CPU/x86/X77_0060_mod_reg_r_m_byte.htm
    *
-   * @param {Function} regCallback  Callback if register mode opcode
-   * @param {Function} memCallback  Callback if memory mode opcode
-   * @param {Integer}  register     0x1 if 8bit register, 0x2 if 16bit register
+   * @param {Function}  regCallback  Callback if register mode opcode
+   * @param {Function}  memCallback  Callback if memory mode opcode
+   * @param {Integer}   register     0x1 if 8bit register, 0x2 if 16bit register
+   * @param {Integer}   segRegister Segment register name
    */
-  modeRegParse(regCallback, memCallback, mode) {
+  modeRegParse(regCallback, memCallback, mode, segRegister = 'ds') {
     const byte = CPU.decodeModRmByte(this.fetchOpcode());
 
-    /** Direct address */
+    /** Register */
     if(byte.mod === 0x3)
-      regCallback(this.regMap[mode][byte.rm], this.regMap[mode][byte.reg]);
-    else {
+      regCallback(
+          this.regMap[mode][byte.rm]
+        , byte.reg
+      );
+
+    /** Adress */
+    else if(memCallback) {
       let address = 0;
       if(!byte.mod && byte.rm == 0x6)
         address = this.fetchOpcode(2);
@@ -257,7 +277,10 @@ class CPU {
           break;
         }
       }
-      memCallback(address, this.regMap[mode][byte.reg]);
+      memCallback(
+        this.registers[segRegister] + address,
+        this.regMap[mode][byte.reg]
+      );
     }
   }
 
@@ -326,7 +349,10 @@ class CPU {
 
       /** Optional args */
       errorMsg && winston.log('error', errorMsg);
-      dump && this.dumpRegisters();
+      if(dump) {
+        this.dumpRegisters();
+        winston.log('info', this.mem);
+      }
     }
   }
 

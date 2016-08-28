@@ -8,9 +8,13 @@
 ; add byte [0xFF], 2
 ;mov bx, 3
 ;mov ax, 4
-mov bx, 3
-mov ax, 4
-add word [0xFF], bx
+; mov ax, 2
+; mov ds, ax
+
+add byte [0xFF], 0x2
+add ax, [0xFF]
+
+add bx, ax
 
 ; add al, 0x2
 xchg bx, bx
