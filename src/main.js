@@ -165,6 +165,7 @@ class CPU {
 
   /**
    * Slow as fuck ALU initializer
+   * todo: Make it fast
    */
   _initALU() {
     const operators = {
@@ -172,7 +173,8 @@ class CPU {
       '-': { offset: 0x28, _c: function(a, b) { return a - b } },
       '&': { offset: 0x20, _c: function(a, b) { return a & b } },
       '|': { offset: 0x08, _c: function(a, b) { return a | b } },
-      '^': { offset: 0x30, _c: function(a, b) { return a ^ b } }
+      '^': { offset: 0x30, _c: function(a, b) { return a ^ b } },
+      '=': { offset: 0x38, _c: function(a, b) { return a === b; } }
     };
     for(let key in operators) {
       (({offset, _c}) => {
