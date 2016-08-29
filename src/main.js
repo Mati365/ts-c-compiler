@@ -168,28 +168,45 @@ class CPU {
    * todo: Make it fast
    */
   _initALU() {
+    /** Key is 0x80 - 0x83 RM Byte */
     const operators = {
-      '+': { offset: 0x00, _c: function(s, d, bits) {
-        const ret = s + d;
+      /** + */ 0x000: { offset: 0x00, _c: function(s, d, bits) {
+        let ret = s + d;
         if(ret > 0xFF * bits) {
           // todo: set CF, round
           ret = 0xFF * bits - ret - 0x1;
         }
         return ret;
       } },
-      '-': { offset: 0x28, _c: function(s, d, bits) {
-        const ret = s - d;
+      /** - */ 0x101: { offset: 0x28, _c: function(s, d, bits) {
+        let ret = s - d;
         if(d > s) {
           // todo: set CF, round
-          ret = 0xFF;
+          ret += 0xFF;
         }
         return ret;
       } },
-      '&': { offset: 0x20, _c: function(s, d) { return s & d } },
-      '|': { offset: 0x08, _c: function(s, d) { return s | d } },
-      '^': { offset: 0x30, _c: function(s, d) { return s ^ d } },
-      '=': { offset: 0x38, _c: function(s, d) { return s === d; } }
+      /** & */ 0x100: { offset: 0x20, _c: function(s, d) { return s & d } },
+      /** | */ 0x001: { offset: 0x08, _c: function(s, d) { return s | d } },
+      /** ^ */ 0x110: { offset: 0x30, _c: function(s, d) { return s ^ d } }
     };
+
+    /** $80, $81, $82 RM Byte specific */
+    Object.assign(this.opcodes, {
+      /** RM r/m8, imm8 */   [0x80]: (bits = 0x1) => {
+        this.modeRegParse(
+          (register, _o) => {
+            this.registers[register] = this.operators[_o](this.registers[register], this.fetchOpcode(bits));
+          },
+          (address, reg, _o) => {
+            this.mem[address] = this.operators[_o](this.mem[address], this.fetchOpcode(bits));
+          }, bits
+        );
+      },
+      /** RM r/m16, imm16 */ [0x81]: () => this.opcodes[0x80 + offset](0x2),
+      /** RM r/m16, imm8 */  [0x83]: () => this.opcodes[0x80 + offset](),
+    });
+
     for(let key in operators) {
       (({offset, _c}) => {
         const codes = {
@@ -217,16 +234,7 @@ class CPU {
           },
           /** ADD r/m16, reg16 */ [0x3 + offset]: () => this.opcodes[0x2](0x2 + offset),
           /** ADD AL, imm8  */    [0x4 + offset]: () => this.registers.al = _c(this.registers.al, this.fetchOpcode(), 0x1),
-          /** ADD AX, imm16 */    [0x5 + offset]: () => this.registers.ax = _c(this.registers.ax, this.fetchOpcode(2), 0x2),
-          /** ADD r/m8, imm8 */   [0x80 + offset]: (bits = 0x1) => {
-            this.modeRegParse(
-              (register)  => this.registers[register] += this.fetchOpcode(bits),
-              (address)   => this.mem[address] += this.fetchOpcode(bits),
-              bits
-            );
-          },
-          /** ADD r/m16, imm16 */ [0x81 + offset]: () => this.opcodes[0x80 + offset](0x2),
-          /** ADD r/m16, imm8 */  [0x83 + offset]: () => this.opcodes[0x80 + offset](),
+          /** ADD AX, imm16 */    [0x5 + offset]: () => this.registers.ax = _c(this.registers.ax, this.fetchOpcode(2), 0x2)
         };
         Object.assign(this.opcodes, codes);
       })(operators[key]);
@@ -282,7 +290,9 @@ class CPU {
       }
       memCallback(
         (this.registers[segRegister] << 4) + address,
-        this.regMap[mode][byte.reg]
+        /** fixme, its sloow */
+        this.regMap[mode][byte.reg],
+        byte.reg
       );
     }
   }
@@ -334,7 +344,6 @@ class CPU {
 
       /** Do something with operand */
       operand();
-
     }, this.clockSpeed);
   }
 
@@ -436,7 +445,6 @@ class CPU {
       );
 
       /** RUN */
-      this.dumpRegisters();
       this.exec();
     } else
       winston.log('error', 'Unable to boot device!');
