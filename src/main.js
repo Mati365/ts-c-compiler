@@ -169,12 +169,26 @@ class CPU {
    */
   _initALU() {
     const operators = {
-      '+': { offset: 0x00, _c: function(a, b) { return a + b } },
-      '-': { offset: 0x28, _c: function(a, b) { return a - b } },
-      '&': { offset: 0x20, _c: function(a, b) { return a & b } },
-      '|': { offset: 0x08, _c: function(a, b) { return a | b } },
-      '^': { offset: 0x30, _c: function(a, b) { return a ^ b } },
-      '=': { offset: 0x38, _c: function(a, b) { return a === b; } }
+      '+': { offset: 0x00, _c: function(s, d, bits) {
+        const ret = s + d;
+        if(ret > 0xFF * bits) {
+          // todo: set CF, round
+          ret = 0xFF * bits - ret - 0x1;
+        }
+        return ret;
+      } },
+      '-': { offset: 0x28, _c: function(s, d, bits) {
+        const ret = s - d;
+        if(d > s) {
+          // todo: set CF, round
+          ret = 0xFF;
+        }
+        return ret;
+      } },
+      '&': { offset: 0x20, _c: function(s, d) { return s & d } },
+      '|': { offset: 0x08, _c: function(s, d) { return s | d } },
+      '^': { offset: 0x30, _c: function(s, d) { return s ^ d } },
+      '=': { offset: 0x38, _c: function(s, d) { return s === d; } }
     };
     for(let key in operators) {
       (({offset, _c}) => {
@@ -182,10 +196,10 @@ class CPU {
           /** ADD r/m8, reg8 */ [0x0 + offset]: (bits = 0x1) => {
             this.modeRegParse(
               (l, r) => {
-                this.registers[l] = _c(this.registers[l], this.registers[this.regMap[bits][r]])
+                this.registers[l] = _c(this.registers[l], this.registers[this.regMap[bits][r]], bits)
               },
               (address, r) => {
-                this.mem[address] = _c(this.mem[address], this.registers[r])
+                this.mem[address] = _c(this.mem[address], this.registers[r], bits)
               }, bits
             );
           },
@@ -194,16 +208,16 @@ class CPU {
             this.modeRegParse(
               /** todo: test, nasm is not compiling (l, r) */
               (l, r)       => {
-                this.registers[r] = _c(this.registers[r], this.registers[this.regMap[bits][l]])
+                this.registers[r] = _c(this.registers[r], this.registers[this.regMap[bits][l]], bits)
               },
               (address, r) => {
-                this.registers[r] = _c(this.registers[r], this.mem[address]);
+                this.registers[r] = _c(this.registers[r], this.mem[address], bits);
               }, bits
             );
           },
           /** ADD r/m16, reg16 */ [0x3 + offset]: () => this.opcodes[0x2](0x2 + offset),
-          /** ADD AL, imm8  */    [0x4 + offset]: () => this.registers.al = _c(this.registers.al, this.fetchOpcode()),
-          /** ADD AX, imm16 */    [0x5 + offset]: () => this.registers.ax = _c(this.registers.ax, this.fetchOpcode(2)),
+          /** ADD AL, imm8  */    [0x4 + offset]: () => this.registers.al = _c(this.registers.al, this.fetchOpcode(), 0x1),
+          /** ADD AX, imm16 */    [0x5 + offset]: () => this.registers.ax = _c(this.registers.ax, this.fetchOpcode(2), 0x2),
           /** ADD r/m8, imm8 */   [0x80 + offset]: (bits = 0x1) => {
             this.modeRegParse(
               (register)  => this.registers[register] += this.fetchOpcode(bits),
@@ -267,7 +281,7 @@ class CPU {
         }
       }
       memCallback(
-        this.registers[segRegister] + address,
+        (this.registers[segRegister] << 4) + address,
         this.regMap[mode][byte.reg]
       );
     }

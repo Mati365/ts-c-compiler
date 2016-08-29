@@ -10,13 +10,7 @@
 ;mov ax, 4
 ; mov ax, 2
 ; mov ds, ax
-
-add byte [0x1], 0x2
-;add ax, [0xFF]
-
-;add bx, ax
-
-add al, 0x2
+add word al, 0x108
 xchg bx, bx
 
 times 510 - ($-$$) db 0
