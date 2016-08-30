@@ -10,11 +10,11 @@
 ; mov ax, 4
 ; mov ax, 2
 ; mov ds, ax
-xor ax, ax
-; mov al, 2
-add bx, 4
-add ax, 6
-sub bx, ax
+
+mov ax, 2
+mov bx, 2
+cmp ax, bx
+
 ; mov ax, bx
 xchg bx, bx
 

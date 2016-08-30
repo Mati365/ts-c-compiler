@@ -197,7 +197,11 @@ class CPU {
           return val + 0x100;
       },
       /** Parity flag */  [CPU.flags.pf]: function(val) {
-        return ((val & 0xFF) & 0x1) === 0x0;
+        const octet = val & 0xFF;
+        return (octet & (octet - 1)) === 0x0; /** optimize */
+      },
+      /** Zero flag */    [CPU.flags.zf]: function(val) {
+        return val === 0x0;
       }
     };
 
@@ -207,12 +211,17 @@ class CPU {
       /** - */ 0x101: { offset: 0x28, _c: function(s, d) { return s - d; } },
       /** & */ 0x100: { offset: 0x20, _c: function(s, d) { return s & d; } },
       /** | */ 0x001: { offset: 0x08, _c: function(s, d) { return s | d; } },
-      /** ^ */ 0x110: { offset: 0x30, _c: function(s, d) { return s ^ d; } }
+      /** ^ */ 0x110: { offset: 0x30, _c: function(s, d) { return s ^ d; } },
+      /** = */ 0x111: {
+        offset: 0x38,
+        _flagOnly: true,
+        _c: function(s, d) { return s - d; }
+      }
     };
 
     /** $80, $81, $82 RM Byte specific */
     Object.assign(this.opcodes, {
-      /** RM r/m8, imm8 */   [0x80]: (bits = 0x1) => {
+      /** OPERATOR r/m8, imm8 */   [0x80]: (bits = 0x1) => {
         this.modeRegParse(
           (register, _o) => {
             this.registers[register] = operators[_o]._c(this.registers[register], this.fetchOpcode(bits));
@@ -222,12 +231,12 @@ class CPU {
           }, bits
         );
       },
-      /** RM r/m16, imm16 */ [0x81]: () => this.opcodes[0x80](0x2),
-      /** RM r/m16, imm8 */  [0x83]: () => this.opcodes[0x80](),
+      /** OPERATOR r/m16, imm16 */ [0x81]: () => this.opcodes[0x80](0x2),
+      /** OPERATOR r/m16, imm8 */  [0x83]: () => this.opcodes[0x80](),
     });
 
     for(let key in operators) {
-      (({offset, _c, flags = 0xFF}) => {
+      (({offset, _c, _flagOnly, flags = 0xFF}) => {
         /** ALU operation checker */
         let alu = (l, r, bits) => {
           let ret = _c(l, r);
@@ -243,11 +252,13 @@ class CPU {
               this.registers.flags ^= (-(_val ? 1 : 0) ^ this.registers.flags) & (1 << key);
             }
           }
-          return ret;
+
+          /** flagOnly - for cmp and temporary operations */
+          return _flagOnly ? l : ret;
         };
 
         const codes = {
-          /** ADD r/m8, reg8 */ [0x0 + offset]: (bits = 0x1) => {
+          /** OPERATOR r/m8, reg8 */ [0x0 + offset]: (bits = 0x1) => {
             this.modeRegParse(
               (l, r) => {
                 this.registers[l] = alu(this.registers[l], this.registers[this.regMap[bits][r]], bits)
@@ -257,8 +268,8 @@ class CPU {
               }, bits
             );
           },
-          /** ADD r/m16, reg16 */ [0x1 + offset]: () => this.opcodes[0x0 + offset](0x2),
-          /** ADD r/m8, reg8 */   [0x2 + offset]: (bits = 0x1) => {
+          /** OPERATOR r/m16, reg16 */ [0x1 + offset]: () => this.opcodes[0x0 + offset](0x2),
+          /** OPERATOR r/m8, reg8 */   [0x2 + offset]: (bits = 0x1) => {
             this.modeRegParse(
               /** todo: test, nasm is not compiling (l, r) */
               (l, r)       => {
@@ -269,9 +280,9 @@ class CPU {
               }, bits
             );
           },
-          /** ADD r/m16, reg16 */ [0x3 + offset]: () => this.opcodes[0x2](0x2 + offset),
-          /** ADD AL, imm8  */    [0x4 + offset]: () => this.registers.al = alu(this.registers.al, this.fetchOpcode(), 0x1),
-          /** ADD AX, imm16 */    [0x5 + offset]: () => this.registers.ax = alu(this.registers.ax, this.fetchOpcode(2), 0x2)
+          /** OPERATOR r/m16, reg16 */ [0x3 + offset]: () => this.opcodes[0x2](0x2 + offset),
+          /** OPERATOR AL, imm8  */    [0x4 + offset]: () => this.registers.al = alu(this.registers.al, this.fetchOpcode(), 0x1),
+          /** OPERATOR AX, imm16 */    [0x5 + offset]: () => this.registers.ax = alu(this.registers.ax, this.fetchOpcode(2), 0x2)
         };
         Object.assign(this.opcodes, codes);
       })(operators[key]);
@@ -423,7 +434,7 @@ class CPU {
       if(isNaN(reg))
         continue;
 
-      let val = reg.toString(16).toUpperCase();
+      let val = reg.toString(2).toUpperCase();
       if(val.length < 16)
         val = new Array(16 - val.length + 1).join('0') + val;
 
