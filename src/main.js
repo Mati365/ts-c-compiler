@@ -48,8 +48,29 @@ class CPU {
       cs: 0x0, ds: 0x0, es: 0x0, ss: 0x0,
 
       /** Flags */
-      status: 0x0
+      flags: 0x0, status: {}
     };
+
+    /** Define flags register helpers */
+    CPU.flags = {
+      'cf': 0x0,  /** Carry flag */
+      'pf': 0x2,  /** Parity flag */
+      'af': 0x4,  /** Auxiliary - Carry Flags */
+      'zf': 0x6,  /** Zero flag */
+      'sf': 0x7,  /** Signum flag */
+      'tf': 0x8,  /** Trap flag */
+      'if': 0x9,  /** Interrupt flag */
+      'df': 0x10, /** Direction flag */
+      'of': 0x11  /** Overflow flag */
+    }
+    for(let k in CPU.flags) {
+      ((name, bit) => {
+        Object.defineProperty(this.registers.status, name, {
+          get: ()     => this.registers.flags & bit,
+          set: (val)  => this.registers.flags ^= (-val ^ this.registers.flags) & (1 << bit)
+        });
+      })(k, CPU.flags[k]);
+    }
 
     /**
      * Separate registers, emulate C++ unions
@@ -168,27 +189,25 @@ class CPU {
    * todo: Make it fast
    */
   _initALU() {
+    const flagCheckers = {
+      /** Carry flag */   [CPU.flags.cf]: function(val, bits) {
+        if(val > 0xFF * bits)
+          return 0xFF * bits - val - 0x1;
+        else if(val < 0)
+          return val + 0x100;
+      },
+      /** Parity flag */  [CPU.flags.pf]: function(val) {
+        return ((val & 0xFF) & 0x1) === 0x0;
+      }
+    };
+
     /** Key is 0x80 - 0x83 RM Byte */
     const operators = {
-      /** + */ 0x000: { offset: 0x00, _c: function(s, d, bits) {
-        let ret = s + d;
-        if(ret > 0xFF * bits) {
-          // todo: set CF, round
-          ret = 0xFF * bits - ret - 0x1;
-        }
-        return ret;
-      } },
-      /** - */ 0x101: { offset: 0x28, _c: function(s, d, bits) {
-        let ret = s - d;
-        if(d > s) {
-          // todo: set CF, round
-          ret += 0xFF;
-        }
-        return ret;
-      } },
-      /** & */ 0x100: { offset: 0x20, _c: function(s, d) { return s & d } },
-      /** | */ 0x001: { offset: 0x08, _c: function(s, d) { return s | d } },
-      /** ^ */ 0x110: { offset: 0x30, _c: function(s, d) { return s ^ d } }
+      /** + */ 0x000: { offset: 0x00, _c: function(s, d) { return s + d; } },
+      /** - */ 0x101: { offset: 0x28, _c: function(s, d) { return s - d; } },
+      /** & */ 0x100: { offset: 0x20, _c: function(s, d) { return s & d; } },
+      /** | */ 0x001: { offset: 0x08, _c: function(s, d) { return s | d; } },
+      /** ^ */ 0x110: { offset: 0x30, _c: function(s, d) { return s ^ d; } }
     };
 
     /** $80, $81, $82 RM Byte specific */
@@ -196,27 +215,45 @@ class CPU {
       /** RM r/m8, imm8 */   [0x80]: (bits = 0x1) => {
         this.modeRegParse(
           (register, _o) => {
-            this.registers[register] = this.operators[_o](this.registers[register], this.fetchOpcode(bits));
+            this.registers[register] = operators[_o]._c(this.registers[register], this.fetchOpcode(bits));
           },
           (address, reg, _o) => {
-            this.mem[address] = this.operators[_o](this.mem[address], this.fetchOpcode(bits));
+            this.mem[address] = operators[_o]._c(this.mem[address], this.fetchOpcode(bits));
           }, bits
         );
       },
-      /** RM r/m16, imm16 */ [0x81]: () => this.opcodes[0x80 + offset](0x2),
-      /** RM r/m16, imm8 */  [0x83]: () => this.opcodes[0x80 + offset](),
+      /** RM r/m16, imm16 */ [0x81]: () => this.opcodes[0x80](0x2),
+      /** RM r/m16, imm8 */  [0x83]: () => this.opcodes[0x80](),
     });
 
     for(let key in operators) {
-      (({offset, _c}) => {
+      (({offset, _c, flags = 0xFF}) => {
+        /** ALU operation checker */
+        let alu = (l, r, bits) => {
+          let ret = _c(l, r);
+
+          /** Value returned after flags */
+          let _val = 0;
+          for(let key in flagCheckers) {
+            if(flags & key === key) {
+              _val = flagCheckers[key](ret, bits);
+              if(_val && _val !== true)
+                ret = _val;
+
+              this.registers.flags ^= (-(_val ? 1 : 0) ^ this.registers.flags) & (1 << key);
+            }
+          }
+          return ret;
+        };
+
         const codes = {
           /** ADD r/m8, reg8 */ [0x0 + offset]: (bits = 0x1) => {
             this.modeRegParse(
               (l, r) => {
-                this.registers[l] = _c(this.registers[l], this.registers[this.regMap[bits][r]], bits)
+                this.registers[l] = alu(this.registers[l], this.registers[this.regMap[bits][r]], bits)
               },
               (address, r) => {
-                this.mem[address] = _c(this.mem[address], this.registers[r], bits)
+                this.mem[address] = alu(this.mem[address], this.registers[r], bits)
               }, bits
             );
           },
@@ -225,16 +262,16 @@ class CPU {
             this.modeRegParse(
               /** todo: test, nasm is not compiling (l, r) */
               (l, r)       => {
-                this.registers[r] = _c(this.registers[r], this.registers[this.regMap[bits][l]], bits)
+                this.registers[r] = alu(this.registers[r], this.registers[this.regMap[bits][l]], bits)
               },
               (address, r) => {
-                this.registers[r] = _c(this.registers[r], this.mem[address], bits);
+                this.registers[r] = alu(this.registers[r], this.mem[address], bits);
               }, bits
             );
           },
           /** ADD r/m16, reg16 */ [0x3 + offset]: () => this.opcodes[0x2](0x2 + offset),
-          /** ADD AL, imm8  */    [0x4 + offset]: () => this.registers.al = _c(this.registers.al, this.fetchOpcode(), 0x1),
-          /** ADD AX, imm16 */    [0x5 + offset]: () => this.registers.ax = _c(this.registers.ax, this.fetchOpcode(2), 0x2)
+          /** ADD AL, imm8  */    [0x4 + offset]: () => this.registers.al = alu(this.registers.al, this.fetchOpcode(), 0x1),
+          /** ADD AX, imm16 */    [0x5 + offset]: () => this.registers.ax = alu(this.registers.ax, this.fetchOpcode(2), 0x2)
         };
         Object.assign(this.opcodes, codes);
       })(operators[key]);
@@ -382,7 +419,11 @@ class CPU {
       head: ['Register', 'Value']
     });
     for(let key of Object.keys(this.registers)) {
-      let val = this.registers[key].toString(2);
+      let reg = this.registers[key];
+      if(isNaN(reg))
+        continue;
+
+      let val = reg.toString(16).toUpperCase();
       if(val.length < 16)
         val = new Array(16 - val.length + 1).join('0') + val;
 
@@ -468,5 +509,8 @@ fs.open('test/build/bootsec.bin', 'r', (status, fd) => {
     winston.log('error', status.message);
     return;
   }
+
+  let time = Date.now();
   new CPU(fd);
+  console.log((Date.now() - time) + 'ms');
 });
