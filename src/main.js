@@ -152,6 +152,10 @@ class CPU {
         );
       },
 
+      /** JZ 8bit rel   */  0x74: () => {
+        winston.log('info', this.fetchOpcode(1))
+      },
+
       /** XCHG bx, bx   */  0x87: () => {
         const l = this.fetchOpcode();
         if(l == 0xDB)
@@ -197,11 +201,13 @@ class CPU {
           return val + 0x100;
       },
       /** Parity flag */  [CPU.flags.pf]: function(val) {
-        const octet = val & 0xFF;
-        return (octet & (octet - 1)) === 0x0; /** optimize */
+        return !((val & 0xFF) % 0x2); /** optimize */
       },
       /** Zero flag */    [CPU.flags.zf]: function(val) {
         return val === 0x0;
+      },
+      /** Sign flag */    [CPU.flags.sf]: function(val, bits) {
+        return ((val >> (0x8 * bits - 0x1)) & 0x1) == 0x1;
       }
     };
 
@@ -219,15 +225,39 @@ class CPU {
       }
     };
 
+    /** ALU operation checker */
+    let alu = (operator, l, r, bits) => {
+      let ret = operator._c(l, r);
+
+      /** Set default flags value for operator */
+      if(!operator.flags)
+        operator.flags = 0xFF;
+
+      /** Value returned after flags */
+      let _val = 0;
+      for(let key in flagCheckers) {
+        if((operator.flags & key) == key) {
+          _val = flagCheckers[key](ret, bits);
+          if(_val && _val !== true)
+            ret = _val;
+
+          this.registers.flags ^= (-(_val ? 1 : 0) ^ this.registers.flags) & (1 << key);
+        }
+      }
+
+      /** flagOnly - for cmp and temporary operations */
+      return operator._flagOnly ? l : ret;
+    };
+
     /** $80, $81, $82 RM Byte specific */
     Object.assign(this.opcodes, {
       /** OPERATOR r/m8, imm8 */   [0x80]: (bits = 0x1) => {
         this.modeRegParse(
           (register, _o) => {
-            this.registers[register] = operators[_o]._c(this.registers[register], this.fetchOpcode(bits));
+            this.registers[register] = alu(operators[_o], this.registers[register], this.fetchOpcode(bits), bits);
           },
           (address, reg, _o) => {
-            this.mem[address] = operators[_o]._c(this.mem[address], this.fetchOpcode(bits));
+            this.mem[address] = alu(operators[_o], this.mem[address], this.fetchOpcode(bits), bits);
           }, bits
         );
       },
@@ -236,35 +266,16 @@ class CPU {
     });
 
     for(let key in operators) {
-      (({offset, _c, _flagOnly, flags = 0xFF}) => {
-        /** ALU operation checker */
-        let alu = (l, r, bits) => {
-          let ret = _c(l, r);
-
-          /** Value returned after flags */
-          let _val = 0;
-          for(let key in flagCheckers) {
-            if(flags & key === key) {
-              _val = flagCheckers[key](ret, bits);
-              if(_val && _val !== true)
-                ret = _val;
-
-              this.registers.flags ^= (-(_val ? 1 : 0) ^ this.registers.flags) & (1 << key);
-            }
-          }
-
-          /** flagOnly - for cmp and temporary operations */
-          return _flagOnly ? l : ret;
-        };
-
+      ((op) => {
+        const offset = op.offset;
         const codes = {
           /** OPERATOR r/m8, reg8 */ [0x0 + offset]: (bits = 0x1) => {
             this.modeRegParse(
               (l, r) => {
-                this.registers[l] = alu(this.registers[l], this.registers[this.regMap[bits][r]], bits)
+                this.registers[l] = alu(op, this.registers[l], this.registers[this.regMap[bits][r]], bits)
               },
               (address, r) => {
-                this.mem[address] = alu(this.mem[address], this.registers[r], bits)
+                this.mem[address] = alu(op, this.mem[address], this.registers[r], bits)
               }, bits
             );
           },
@@ -273,16 +284,18 @@ class CPU {
             this.modeRegParse(
               /** todo: test, nasm is not compiling (l, r) */
               (l, r)       => {
-                this.registers[r] = alu(this.registers[r], this.registers[this.regMap[bits][l]], bits)
+                this.registers[r] = alu(op, this.registers[r], this.registers[this.regMap[bits][l]], bits)
               },
               (address, r) => {
-                this.registers[r] = alu(this.registers[r], this.mem[address], bits);
+                this.registers[r] = alu(op, this.registers[r], this.mem[address], bits);
               }, bits
             );
           },
-          /** OPERATOR r/m16, reg16 */ [0x3 + offset]: () => this.opcodes[0x2](0x2 + offset),
-          /** OPERATOR AL, imm8  */    [0x4 + offset]: () => this.registers.al = alu(this.registers.al, this.fetchOpcode(), 0x1),
-          /** OPERATOR AX, imm16 */    [0x5 + offset]: () => this.registers.ax = alu(this.registers.ax, this.fetchOpcode(2), 0x2)
+          /** OPERATOR AL, imm8  */    [0x4 + offset]: (bits = 0x1) => {
+            this.registers[this.regMap[bits][0]] = alu(this.registers.al, this.fetchOpcode(), bits);
+          },
+          /** OPERATOR r/m16, reg16 */ [0x3 + offset]: () => this.opcodes[0x2 + offset](0x2),
+          /** OPERATOR AX, imm16 */    [0x5 + offset]: () => this.opcodes[0x4 + offset](0x2)
         };
         Object.assign(this.opcodes, codes);
       })(operators[key]);
@@ -511,6 +524,18 @@ class CPU {
    */
   getMemAddress(sreg, reg) {
     return (this.registers[sreg] << 4) + this.registers[reg];
+  }
+
+  /**
+   * Decode number
+   * see: http://stackoverflow.com/questions/11433789/why-is-the-range-of-signed-byte-is-from-128-to-127-2s-complement-and-not-fro
+   *
+   * @static
+   * @param {Number}  num   Number
+   * @param {Number}  bits  0x1 if 8bits, 0x2 if 16 bits
+   */
+  static decodeNumber(num, bits = 0x1) {
+    const sign = (val >> (0x8 * bits - 0x1)) & 0x1;
   }
 }
 
