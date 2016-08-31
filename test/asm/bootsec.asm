@@ -10,7 +10,12 @@
 ; mov ax, 4
 ; mov ax, 2
 ; mov ds, ax
-add ax, 2
-xchg bx, bx
+mov bx, 2
+cmp bx, 0x2
+je lel
+xor bx, bx
+lel:
+  mov ax, 4
+  xchg bx, bx
 times 510 - ($-$$) db 0
 dw 0xAA55

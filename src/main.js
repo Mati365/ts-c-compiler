@@ -148,12 +148,9 @@ class CPU {
           (r, sreg) => this.registers[this.regMap.sreg[sreg]] = this.registers[r],
           (address, reg) => {
             /** todo */
+            winston.log('info', address, reg);
           }, 0x2
         );
-      },
-
-      /** JZ 8bit rel   */  0x74: () => {
-        winston.log('info', this.fetchOpcode(1))
       },
 
       /** XCHG bx, bx   */  0x87: () => {
@@ -181,6 +178,29 @@ class CPU {
       })(opcode);
     }
 
+    /** 8 bit jump instructions set */
+    const jmpOpcodes = {
+      /** JA  */  0x77: (f) => {},
+      /** JAE */  0x73: (f) => {},
+      /** JB  */  0x72: (f) => {},
+      /** JBE */  0x76: (f) => {},
+      /** JG  */  0x7F: (f) => {},
+      /** JGE */  0x7D: (f) => {},
+      /** JL  */  0x7C: (f) => {},
+      /** JLE */  0x7E: (f) => {},
+
+      /** JNE */  0x75: (f) => !f.zf,
+      /** JZ  */  0x74: (f) => f.zf
+    };
+    const jumpIf = (flagCondition, byte) => {
+      flagCondition(this.registers.status) && this.relativeJump(byte);
+    }
+    for(let opcode in jmpOpcodes) {
+      ((_opcode) => {
+        this.opcodes[_opcode] = () => jumpIf(jmpOpcodes[_opcode], this.fetchOpcode())
+      })(opcode);
+    }
+
     /**
      * Generate algebra offset calls
      * todo: implement FPU
@@ -197,7 +217,7 @@ class CPU {
       /** Carry flag */   [CPU.flags.cf]: function(val, bits) {
         if(val > 0xFF * bits)
           return 0xFF * bits - val - 0x1;
-        else if(val < 0)
+        else if(val < 0x0)
           return val + 0x100;
       },
       /** Parity flag */  [CPU.flags.pf]: function(val) {
@@ -213,12 +233,12 @@ class CPU {
 
     /** Key is 0x80 - 0x83 RM Byte */
     const operators = {
-      /** + */ 0x000: { offset: 0x00, _c: function(s, d) { return s + d; } },
-      /** - */ 0x101: { offset: 0x28, _c: function(s, d) { return s - d; } },
-      /** & */ 0x100: { offset: 0x20, _c: function(s, d) { return s & d; } },
-      /** | */ 0x001: { offset: 0x08, _c: function(s, d) { return s | d; } },
-      /** ^ */ 0x110: { offset: 0x30, _c: function(s, d) { return s ^ d; } },
-      /** = */ 0x111: {
+      /** + */ 0b000: { offset: 0x00, _c: function(s, d) { return s + d; } },
+      /** - */ 0b101: { offset: 0x28, _c: function(s, d) { return s - d; } },
+      /** & */ 0b100: { offset: 0x20, _c: function(s, d) { return s & d; } },
+      /** | */ 0b001: { offset: 0x08, _c: function(s, d) { return s | d; } },
+      /** ^ */ 0b110: { offset: 0x30, _c: function(s, d) { return s ^ d; } },
+      /** = */ 0b111: {
         offset: 0x38,
         _flagOnly: true,
         _c: function(s, d) { return s - d; }
@@ -300,6 +320,15 @@ class CPU {
         Object.assign(this.opcodes, codes);
       })(operators[key]);
     }
+  }
+
+  /**
+   * Jump to address relative to ip register
+   *
+   * @param {Integer} byte  Signed byte
+   */
+  relativeJump(byte) {
+    this.registers.ip += CPU.getSignedNumber(byte);
   }
 
   /**
@@ -527,15 +556,18 @@ class CPU {
   }
 
   /**
-   * Decode number
+   * Convert signed byte number to normal
    * see: http://stackoverflow.com/questions/11433789/why-is-the-range-of-signed-byte-is-from-128-to-127-2s-complement-and-not-fro
    *
    * @static
    * @param {Number}  num   Number
    * @param {Number}  bits  0x1 if 8bits, 0x2 if 16 bits
    */
-  static decodeNumber(num, bits = 0x1) {
-    const sign = (val >> (0x8 * bits - 0x1)) & 0x1;
+  static getSignedNumber(num, bits = 0x1) {
+    const sign = (num >> (0x8 * bits - 0x1)) & 0x1;
+    if(sign)
+      num += -0xFF;
+    return num;
   }
 }
 

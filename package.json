@@ -1,0 +1,29 @@
+{
+  "name": "i8086.js",
+  "version": "1.0.0",
+  "description": "",
+  "main": "src/main.s",
+  "directories": {
+    "test": "test"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Mati365/i8086.js.git"
+  },
+  "keywords": [
+    "emulator"
+  ],
+  "author": "Mateusz Bagiński",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/Mati365/i8086.js/issues"
+  },
+  "homepage": "https://github.com/Mati365/i8086.js#readme",
+  "dependencies": {
+    "cli-table": "^0.3.1",
+    "winston": "^2.2.0"
+  }
+}
