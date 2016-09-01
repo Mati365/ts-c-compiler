@@ -10,17 +10,13 @@
 ; mov ax, 4
 ; mov ax, 2
 ; mov ds, ax
-xor ax, ax
-xor cx, cx
-mov cx, 2
-add:
-  add ax, 0x1
-loop add
-
-cmp ax, 0x3
-je killme
+mov ax, 2
+mov bx, 1
+cmp ax, bx
+jne dupa
 hlt
-killme:
+dupa:
+  mov cx, 0xFF
   xchg bx, bx
 
 times 510 - ($-$$) db 0

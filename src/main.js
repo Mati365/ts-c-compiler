@@ -45,10 +45,31 @@ class CPU {
       ip: 0x0,
 
       /** Segment registers */
-      cs: 0x0, ds: 0x0, es: 0x0, ss: 0x0,
+      cs: 0x0, ds: 0x0, es: 0x0, ss: 0x0, fs: 0x0,
 
       /** Flags */
       flags: 0x0, status: {}
+    };
+
+    /**
+     * Define opcodes prefixes
+     * see: http://www.c-jump.com/CIS77/CPU/x86/X77_0240_prefix.htm
+     */
+    CPU.prefixes = {
+      0xF0: '', /** LOCK */
+      0xF3: '', /** REP  */
+      0xF2: '', /** REPNE */
+
+      /** Segment override */
+      0x2E: { _sr: 'cs' },
+      0x36: { _sr: 'ss' },
+      0x3E: { _sr: 'ds' },
+      0x26: { _sr: 'es' },
+      0x64: { _sr: 'fs' },
+      0x65: { _sr: 'gs' },
+
+      0x66: '', /** Operrand override */
+      0x67: ''  /** Adress override  */
     };
 
     /** Define flags register helpers */
@@ -147,8 +168,7 @@ class CPU {
         this.parseRmByte(
           (r, sreg) => this.registers[this.regMap.sreg[sreg]] = this.registers[r],
           (address, reg) => {
-            /** todo */
-            winston.log('info', address, reg);
+            /** todo */ winston.log('error', 'Fix me!');
           }, 0x2
         );
       },
@@ -159,7 +179,16 @@ class CPU {
           this.relativeJump(relativeAddress);
       },
 
-      /** XCHG bx, bx   */  0x87: () => {
+      /** MOV r/m8, imm8  */ 0xC6: (bits = 0x1) => {
+        this.parseRmByte(
+          (l, r) => { /** todo */ winston.log('error', 'Fix me!'); },
+          (address) => {
+            this.mem[address] = this.fetchOpcode(bits);
+          }, bits
+        );
+      },
+
+      /** XCHG bx, bx */  0x87: () => {
         const l = this.fetchOpcode();
         if(l == 0xDB)
           this.halt('Debug dump!', true);
@@ -186,14 +215,14 @@ class CPU {
 
     /** 8 bit jump instructions set */
     const jmpOpcodes = {
-      /** JA  */  0x77: (f) => {},
-      /** JAE */  0x73: (f) => {},
-      /** JB  */  0x72: (f) => {},
-      /** JBE */  0x76: (f) => {},
-      /** JG  */  0x7F: (f) => {},
-      /** JGE */  0x7D: (f) => {},
-      /** JL  */  0x7C: (f) => {},
-      /** JLE */  0x7E: (f) => {},
+      /** JA  */  0x77: (f) => !f.cf && !f.zf,
+      /** JAE */  0x73: (f) => !f.cf,
+      /** JB  */  0x72: (f) => f.cf,
+      /** JBE */  0x76: (f) => f.cf || f.zf,
+      /** JG  */  0x7F: (f) => f.zf && f.sg === f.of,
+      /** JGE */  0x7D: (f) => f.sf === f.of,
+      /** JL  */  0x7C: (f) => f.sf !== f.of,
+      /** JLE */  0x7E: (f) => f.zg || f.sg !== f.of,
 
       /** JNE */  0x75: (f) => !f.zf,
       /** JZ  */  0x74: (f) => f.zf
@@ -341,10 +370,10 @@ class CPU {
    * Parse RM mode byte
    * see: http://www.c-jump.com/CIS77/CPU/x86/X77_0060_mod_reg_r_m_byte.htm
    *
-   * @param {Function}  regCallback  Callback if register mode opcode
-   * @param {Function}  memCallback  Callback if memory mode opcode
-   * @param {Integer}   register     0x1 if 8bit register, 0x2 if 16bit register
-   * @param {Integer}   segRegister Segment register name
+   * @param {Function}  regCallback   Callback if register mode opcode
+   * @param {Function}  memCallback   Callback if memory mode opcode
+   * @param {Integer}   register      0x1 if 8bit register, 0x2 if 16bit register
+   * @param {Integer}   segRegister   Segment register name, overriden if prefix is given
    */
   parseRmByte(regCallback, memCallback, mode, segRegister = 'ds') {
     const byte = CPU.decodeRmByte(this.fetchOpcode());
@@ -384,6 +413,12 @@ class CPU {
           case 0x7: address = this.registers.bx + displacement; break;
         }
       }
+
+      /** If cpu segment register is present, override default */
+      if(this.opcodePrefix)
+        segRegister = CPU.prefixes[this.opcodePrefix]._sr || segRegister;
+
+      /** Callback and address calc */
       memCallback(
         (this.registers[segRegister] << 4) + address,
         /** fixme, its sloow */
@@ -433,13 +468,22 @@ class CPU {
     winston.log('info', `Jump to ${this.registers.ip.toString(16)}`)
     this.clock = setInterval(() => {
       /** Tick */
-      let opcode = this.fetchOpcode()
-        , operand = this.opcodes[opcode];
-      if(!operand)
-        return this.halt(`Unknown opcode 0x${opcode.toString(16).toUpperCase()}`);
+      let opcode = this.fetchOpcode();
+      if(CPU.prefixes[opcode]) {
+        /**
+         * Its prefix, ignore Tick
+         * todo: Do not ignore tick
+         */
+        this.opcodePrefix = opcode;
+      } else {
+        let operand = this.opcodes[opcode];
+        if(!operand)
+          return this.halt(`Unknown opcode 0x${opcode.toString(16).toUpperCase()}`);
 
-      /** Do something with operand */
-      operand();
+        /** Do something with operand, reset opcode prefix */
+        operand();
+        this.opcodePrefix = 0x0;
+      }
     }, this.clockSpeed);
   }
 
