@@ -10,7 +10,6 @@
 ; mov ax, 4
 ; mov ax, 2
 ; mov ds, ax
-mov ax, [bp + 542]
-
+xchg bx, bx
 times 510 - ($-$$) db 0
 dw 0xAA55
