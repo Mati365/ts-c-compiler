@@ -164,32 +164,50 @@ class CPU {
    */
   initOpcodeSet() {
     this.opcodes = {
-      /** MOV sreg, r/m16 */  0x8E: () => {
+      /** MOV r/m8, reg8 */  0x88: (bits = 0x1) => {
         this.parseRmByte(
-          (r, sreg) => this.registers[this.regMap.sreg[sreg]] = this.registers[r],
-          (address, reg) => {
-            /** todo */ winston.log('error', 'Fix me!');
-          }, 0x2
+          (src, dest)     => this.registers[src] = this.registers[this.regMap[bits][dest]],
+          (address, src)  => this.mem[address] = this.registers[src],
+          bits
         );
       },
+      /** MOV r/m16, sreg */  0x8C: () => {
+        this.parseRmByte(
+          (reg, sreg)         => this.registers[reg] = this.registers[this.regMap.sreg[sreg]],
+          (address, _, sreg)  => this.mem[address] = this.registers[this.regMap.sreg[sreg]],
+          0x2
+        );
+      },
+      /** MOV sreg, r/m16 */  0x8E: () => {
+        this.parseRmByte(
+          (reg, sreg)     => this.registers[this.regMap.sreg[sreg]] = this.registers[reg],
+          (address, reg)  => { /** todo */ winston.log('error', 'Fix me!'); },
+          0x2
+        );
+      },
+      /** MOV r8, r/m8    */ 0x8A: (bits = 0x1) => {
+        console.log('sss');
+      },
+      /**
+       * todo: A0, A1, A2, A3
+       * see: http://x86.renejeschke.de/html/file_module_x86_id_176.html
+       */
+      /** MOV r/m8, imm8  */ 0xC6: (bits = 0x1) => {
+        this.parseRmByte(
+          (l, r) => { /** todo */ winston.log('error', 'Fix me!'); },
+          (address) => this.mem[address] = this.fetchOpcode(bits)
+          , bits
+        );
+      },
+      /** MOV r/m16, reg16  */ 0x89:  () => this.opcodes[0x88](0x2),
+      /** MOV r16, r/m16    */ 0x8B:  () => this.opcodes[0x8A](0x2),
+      /** MOV r/m16, imm16  */ 0xC7:  () => this.opcodes[0xC6](0x2),
 
       /** LOOP 8bit rel */  0xE2: () => {
         const relativeAddress = this.fetchOpcode();
         if(--this.registers.cx)
           this.relativeJump(relativeAddress);
       },
-
-      /** MOV r/m8, imm8  */ 0xC6: (bits = 0x1) => {
-        this.parseRmByte(
-          (l, r) => { /** todo */ winston.log('error', 'Fix me!'); },
-          (address) => {
-            this.mem[address] = this.fetchOpcode(bits);
-          }, bits
-        );
-      },
-      /** MOV r/m16, imm16  */ 0xC7: () => this.opcodes[0xC6](0x2),
-
-      /** MOV r16 r/m16 */
 
       /** XCHG bx, bx */  0x87: () => {
         const l = this.fetchOpcode();
@@ -259,7 +277,7 @@ class CPU {
           return val + 0x100;
       },
       /** Parity flag */  [CPU.flags.pf]: function(val) {
-        return !((val & 0xFF) % 0x2); /** optimize */
+        return !((val & 0xFF) % 0x2); /** todo: optimize */
       },
       /** Zero flag */    [CPU.flags.zf]: function(val) {
         return val === 0x0;
@@ -327,33 +345,34 @@ class CPU {
       ((op) => {
         const offset = op.offset;
         const codes = {
-          /** OPERATOR r/m8, reg8 */ [0x0 + offset]: (bits = 0x1) => {
+          /** OPERATOR r/m8, r8 */ [0x0 + offset]: (bits = 0x1) => {
             this.parseRmByte(
               (l, r) => {
-                this.registers[l] = alu(op, this.registers[l], this.registers[this.regMap[bits][r]], bits)
+                this.registers[l] = alu(op, this.registers[l], this.registers[this.regMap[bits][r]], bits);
               },
               (address, r) => {
-                this.mem[address] = alu(op, this.mem[address], this.registers[r], bits)
+                this.mem[address] = alu(op, this.mem[address], this.registers[r], bits);
               }, bits
             );
           },
-          /** OPERATOR r/m16, reg16 */ [0x1 + offset]: () => this.opcodes[0x0 + offset](0x2),
-          /** OPERATOR r/m8, reg8 */   [0x2 + offset]: (bits = 0x1) => {
+          /** OPERATOR m8, r/m8 */ [0x2 + offset]: (bits = 0x1) => {
             this.parseRmByte(
               /** todo: test, nasm is not compiling (l, r) */
               (l, r) => {
-                this.registers[r] = alu(op, this.registers[r], this.registers[this.regMap[bits][l]], bits)
+                this.registers[l] = alu(op, this.registers[l], this.registers[this.regMap[bits][r]], bits);
               },
               (address, r) => {
                 this.registers[r] = alu(op, this.registers[r], this.mem[address], bits);
               }, bits
             );
           },
-          /** OPERATOR AL, imm8  */    [0x4 + offset]: (bits = 0x1) => {
+          /** OPERATOR AL, imm8 */ [0x4 + offset]: (bits = 0x1) => {
             this.registers[this.regMap[bits][0]] = alu(this.registers.al, this.fetchOpcode(), bits);
           },
-          /** OPERATOR r/m16, reg16 */ [0x3 + offset]: () => this.opcodes[0x2 + offset](0x2),
-          /** OPERATOR AX, imm16 */    [0x5 + offset]: () => this.opcodes[0x4 + offset](0x2)
+
+          /** OPERATOR r/m16, r16 */ [0x1 + offset]: () => this.opcodes[0x0 + offset](0x2),
+          /** OPERATOR r/m16, r16 */ [0x3 + offset]: () => this.opcodes[0x2 + offset](0x2),
+          /** OPERATOR AX, imm16  */ [0x5 + offset]: () => this.opcodes[0x4 + offset](0x2)
         };
         Object.assign(this.opcodes, codes);
       })(operators[key]);
@@ -375,7 +394,7 @@ class CPU {
    *
    * @param {Function}  regCallback   Callback if register mode opcode
    * @param {Function}  memCallback   Callback if memory mode opcode
-   * @param {Integer}   register      0x1 if 8bit register, 0x2 if 16bit register
+   * @param {Integer}   mode          0x1 if 8bit register, 0x2 if 16bit register
    * @param {Integer}   segRegister   Segment register name, overriden if prefix is given
    */
   parseRmByte(regCallback, memCallback, mode, segRegister = 'ds') {
@@ -468,7 +487,7 @@ class CPU {
    * Exec CPU
    */
   exec() {
-    winston.log('info', `Jump to ${this.registers.ip.toString(16)}`)
+    winston.log('info', `Jump to ${this.registers.ip.toString(16)}`);
     this.clock = setInterval(() => {
       /** Tick */
       let opcode = this.fetchOpcode();
