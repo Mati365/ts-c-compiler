@@ -56,9 +56,9 @@ class CPU {
      * see: http://www.c-jump.com/CIS77/CPU/x86/X77_0240_prefix.htm
      */
     CPU.prefixes = {
-      0xF0: '', /** LOCK */
-      0xF3: '', /** REP  */
-      0xF2: '', /** REPNE */
+      0xF0: true, /** LOCK */
+      0xF3: true, /** REP  */
+      0xF2: true, /** REPNE */
 
       /** Segment override */
       0x2E: { _sr: 'cs' },
@@ -68,8 +68,8 @@ class CPU {
       0x64: { _sr: 'fs' },
       0x65: { _sr: 'gs' },
 
-      0x66: '', /** Operrand override */
-      0x67: ''  /** Adress override  */
+      0x66: true, /** Operrand override */
+      0x67: true  /** Adress override  */
     };
 
     /** Define flags register helpers */
@@ -187,6 +187,9 @@ class CPU {
           }, bits
         );
       },
+      /** MOV r/m16, imm16  */ 0xC7: () => this.opcodes[0xC6](0x2),
+
+      /** MOV r16 r/m16 */
 
       /** XCHG bx, bx */  0x87: () => {
         const l = this.fetchOpcode();

@@ -10,14 +10,7 @@
 ; mov ax, 4
 ; mov ax, 2
 ; mov ds, ax
-mov ax, 2
-mov bx, 1
-cmp ax, bx
-jne dupa
-hlt
-dupa:
-  mov cx, 0xFF
-  xchg bx, bx
+mov ax, [bp + 542]
 
 times 510 - ($-$$) db 0
 dw 0xAA55
