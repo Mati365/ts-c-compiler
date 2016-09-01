@@ -10,12 +10,18 @@
 ; mov ax, 4
 ; mov ax, 2
 ; mov ds, ax
-mov bx, 2
-cmp bx, 0x2
-je lel
-xor bx, bx
-lel:
-  mov ax, 4
+xor ax, ax
+xor cx, cx
+mov cx, 2
+add:
+  add ax, 0x1
+loop add
+
+cmp ax, 0x3
+je killme
+hlt
+killme:
   xchg bx, bx
+
 times 510 - ($-$$) db 0
 dw 0xAA55

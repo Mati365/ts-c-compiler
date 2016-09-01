@@ -144,7 +144,7 @@ class CPU {
   initOpcodeSet() {
     this.opcodes = {
       /** MOV sreg, r/m16 */  0x8E: () => {
-        this.modeRegParse(
+        this.parseRmByte(
           (r, sreg) => this.registers[this.regMap.sreg[sreg]] = this.registers[r],
           (address, reg) => {
             /** todo */
@@ -153,13 +153,19 @@ class CPU {
         );
       },
 
+      /** LOOP 8bit rel */  0xE2: () => {
+        const relativeAddress = this.fetchOpcode();
+        if(--this.registers.cx)
+          this.relativeJump(relativeAddress);
+      },
+
       /** XCHG bx, bx   */  0x87: () => {
         const l = this.fetchOpcode();
         if(l == 0xDB)
           this.halt('Debug dump!', true);
       },
 
-      /** HLT */  0xF4: () => this.halt()
+      /** HLT */  0xF4: this.halt.bind(this)
     };
     for(let opcode = 0; opcode < Object.keys(this.regMap[0x1]).length; ++opcode) {
       /** MOV register opcodes */
@@ -272,7 +278,7 @@ class CPU {
     /** $80, $81, $82 RM Byte specific */
     Object.assign(this.opcodes, {
       /** OPERATOR r/m8, imm8 */   [0x80]: (bits = 0x1) => {
-        this.modeRegParse(
+        this.parseRmByte(
           (register, _o) => {
             this.registers[register] = alu(operators[_o], this.registers[register], this.fetchOpcode(bits), bits);
           },
@@ -290,7 +296,7 @@ class CPU {
         const offset = op.offset;
         const codes = {
           /** OPERATOR r/m8, reg8 */ [0x0 + offset]: (bits = 0x1) => {
-            this.modeRegParse(
+            this.parseRmByte(
               (l, r) => {
                 this.registers[l] = alu(op, this.registers[l], this.registers[this.regMap[bits][r]], bits)
               },
@@ -301,9 +307,9 @@ class CPU {
           },
           /** OPERATOR r/m16, reg16 */ [0x1 + offset]: () => this.opcodes[0x0 + offset](0x2),
           /** OPERATOR r/m8, reg8 */   [0x2 + offset]: (bits = 0x1) => {
-            this.modeRegParse(
+            this.parseRmByte(
               /** todo: test, nasm is not compiling (l, r) */
-              (l, r)       => {
+              (l, r) => {
                 this.registers[r] = alu(op, this.registers[r], this.registers[this.regMap[bits][l]], bits)
               },
               (address, r) => {
@@ -340,8 +346,8 @@ class CPU {
    * @param {Integer}   register     0x1 if 8bit register, 0x2 if 16bit register
    * @param {Integer}   segRegister Segment register name
    */
-  modeRegParse(regCallback, memCallback, mode, segRegister = 'ds') {
-    const byte = CPU.decodeModRmByte(this.fetchOpcode());
+  parseRmByte(regCallback, memCallback, mode, segRegister = 'ds') {
+    const byte = CPU.decodeRmByte(this.fetchOpcode());
 
     /** Register */
     if(byte.mod === 0x3)
@@ -395,7 +401,7 @@ class CPU {
    * @param {Integer} byte  8bit mod rm byte
    * @returns Extracted value
    */
-  static decodeModRmByte(byte) {
+  static decodeRmByte(byte) {
     return {
       mod: byte >> 0x6,
       reg: (byte >> 3) & 0x7,
@@ -566,7 +572,7 @@ class CPU {
   static getSignedNumber(num, bits = 0x1) {
     const sign = (num >> (0x8 * bits - 0x1)) & 0x1;
     if(sign)
-      num += -0xFF;
+      num += -0xFF - 0x1;
     return num;
   }
 }
