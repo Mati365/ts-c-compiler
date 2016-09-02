@@ -208,7 +208,7 @@ class CPU {
       /** MOV r/m16, sreg */  0x8C: () => {
         this.parseRmByte(
           (reg, sreg)         => this.registers[reg] = this.registers[this.regMap.sreg[sreg]],
-          (address, _, sreg)  => this.mem[address] = this.registers[this.regMap.sreg[sreg]],
+          (address, _, byte)  => this.mem[address] = this.registers[this.regMap.sreg[byte.reg]],
           0x2
         );
       },
@@ -222,10 +222,13 @@ class CPU {
       /** MOV r8, r/m8    */ 0x8A: (bits = 0x1) => {
         console.log('sss');
       },
-      /**
-       * todo: A0, A1, A2, A3
-       * see: http://x86.renejeschke.de/html/file_module_x86_id_176.html
-       */
+
+      /** MOV al, m8  */ 0xA0: (bits = 0x1) => this.registers[this.regMap[bits][0]] = this.fetchOpcode(bits),
+      /** MOV m8, al  */ 0xA2: (bits = 0x1) => this.mem[this.fetchOpcode(bits)] = this.registers.al,
+
+      /** MOV al, m8  */ 0xA1: () => this.opcodes[0xA0](0x2),
+      /** MOV m16, al */ 0xA3: () => this.opcodes[0xA2](0x2),
+
       /** MOV r/m8, imm8  */ 0xC6: (bits = 0x1) => {
         this.parseRmByte(
           (l, r) => { /** todo */ throw new Error('0xC6: Fix me!') },
@@ -236,6 +239,23 @@ class CPU {
       /** MOV r/m16, reg16  */ 0x89:  () => this.opcodes[0x88](0x2),
       /** MOV r16, r/m16    */ 0x8B:  () => this.opcodes[0x8A](0x2),
       /** MOV r/m16, imm16  */ 0xC7:  () => this.opcodes[0xC6](0x2),
+
+      /** INC/DEC reg8 */  0xFE: (bits = 0x1) => {
+        this.parseRmByte(
+          (register, mode) => {
+            const reg = this.regMap[bits][mode.rm];
+            this.registers[reg] = this.alu({
+              _c: () => this.registers[reg] + (mode.reg === 0x1 ? -1 : 1)
+            });
+          },
+          (address, reg, mode) => {
+            this.mem[address] = this.alu({
+              _c: () => this.mem[address] + (mode.reg === 0x1 ? -1 : 1)
+            });
+          }, bits
+        );
+      },
+      /** INC/DEC reg16 */ 0xFF: () => this.opcodes[0xFE](0x2),
 
       /** LOOP 8bit rel */  0xE2: () => {
         const relativeAddress = this.fetchOpcode();
@@ -251,19 +271,28 @@ class CPU {
 
       /** HLT */  0xF4: this.halt.bind(this)
     };
+
+    /** General usage registers opcodes */
     for(let opcode = 0; opcode < Object.keys(this.regMap[0x1]).length; ++opcode) {
       /** MOV register opcodes */
       ((_opcode) => {
+        const _r8 = this.regMap[0x1][_opcode]
+            , _r16 = this.regMap[0x2][_opcode];
+
         /** MOV reg8, imm8 $B0 + reg8 code */
-        const _r8 = this.regMap[0x1][_opcode];
-        this.opcodes[0xB0 + _opcode] = () => {
-          this.registers[_r8] = this.fetchOpcode();
-        };
+        this.opcodes[0xB0 + _opcode] = () => this.registers[_r8] = this.fetchOpcode();
 
         /** MOV reg16, imm16 $B8 + reg16 code */
-        const _r16 = this.regMap[0x2][_opcode];
-        this.opcodes[0xB8 + _opcode] = () => {
-          this.registers[_r16] = this.fetchOpcode(2);
+        this.opcodes[0xB8 + _opcode] = () => this.registers[_r16] = this.fetchOpcode(2);
+
+        /** INC reg16 */
+        this.opcodes[0x40 + _opcode] = () => {
+          this.registers[_r16] = this.alu({_c: () => this.registers[_r16] + 1});
+        };
+
+        /** DEC reg16 */
+        this.opcodes[0x48 + _opcode] = () => {
+          this.registers[_r16] = this.alu({_c: () => this.registers[_r16] - 1});
         };
       })(opcode);
     }
@@ -336,7 +365,7 @@ class CPU {
     };
 
     /** ALU operation checker */
-    let alu = (operator, l, r, bits) => {
+    this.alu = (operator, l, r, bits) => {
       let ret = operator._c(l, r);
 
       /** Set default flags value for operator */
@@ -364,10 +393,10 @@ class CPU {
       /** OPERATOR r/m8, imm8 */   [0x80]: (bits = 0x1) => {
         this.parseRmByte(
           (register, _o) => {
-            this.registers[register] = alu(operators[_o], this.registers[register], this.fetchOpcode(bits), bits);
+            this.registers[register] = this.alu(operators[_o], this.registers[register], this.fetchOpcode(bits), bits);
           },
-          (address, reg, _o) => {
-            this.mem[address] = alu(operators[_o], this.mem[address], this.fetchOpcode(bits), bits);
+          (address, reg, mode) => {
+            this.mem[address] = this.alu(operators[mode.reg], this.mem[address], this.fetchOpcode(bits), bits);
           }, bits
         );
       },
@@ -382,10 +411,10 @@ class CPU {
           /** OPERATOR r/m8, r8 */ [0x0 + offset]: (bits = 0x1) => {
             this.parseRmByte(
               (l, r) => {
-                this.registers[l] = alu(op, this.registers[l], this.registers[this.regMap[bits][r]], bits);
+                this.registers[l] = this.alu(op, this.registers[l], this.registers[this.regMap[bits][r]], bits);
               },
               (address, r) => {
-                this.mem[address] = alu(op, this.mem[address], this.registers[r], bits);
+                this.mem[address] = this.alu(op, this.mem[address], this.registers[r], bits);
               }, bits
             );
           },
@@ -393,15 +422,15 @@ class CPU {
             this.parseRmByte(
               /** todo: test, nasm is not compiling (l, r) */
               (l, r) => {
-                this.registers[l] = alu(op, this.registers[l], this.registers[this.regMap[bits][r]], bits);
+                this.registers[l] = this.alu(op, this.registers[l], this.registers[this.regMap[bits][r]], bits);
               },
               (address, r) => {
-                this.registers[r] = alu(op, this.registers[r], this.mem[address], bits);
+                this.registers[r] = this.alu(op, this.registers[r], this.mem[address], bits);
               }, bits
             );
           },
           /** OPERATOR AL, imm8 */ [0x4 + offset]: (bits = 0x1) => {
-            this.registers[this.regMap[bits][0]] = alu(op, this.registers[this.regMap[bits][0]], this.fetchOpcode(bits), bits);
+            this.registers[this.regMap[bits][0]] = this.alu(op, this.registers[this.regMap[bits][0]], this.fetchOpcode(bits), bits);
           },
 
           /** OPERATOR AX, imm16  */ [0x5 + offset]: () => this.opcodes[0x4 + offset](0x2),
@@ -479,7 +508,7 @@ class CPU {
         (this.registers[segRegister] << 4) + address,
         /** fixme, its sloow */
         this.regMap[mode][byte.reg],
-        byte.reg
+        byte
       );
     }
   }

@@ -10,6 +10,10 @@
 ; mov ax, 4
 ; mov ax, 2
 ; mov ds, ax
+mov ax, 1
+mov ds, ax
+inc word [0x1]
+dec ax
 xchg bx, bx
 times 510 - ($-$$) db 0
 dw 0xAA55
