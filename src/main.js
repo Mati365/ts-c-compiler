@@ -10,13 +10,28 @@ const fs = require('fs')
  */
 class CPU {
   /**
-   * Creates an instance of CPU.
+   * Creates an instance of CPU
    *
-   * @param {any} device  Node file pointer
+   * @param {Config}  CPU config
    */
-  constructor(device) {
-    this.device = device;
-    this.clockSpeed = 10; // debug only
+  constructor(config) {
+    /** Debug logger */
+    this.logger = new winston.Logger({
+      transports: [
+        new (winston.transports.Console)({
+          level : 'info',
+          colorize: true,
+          timestamp: true
+        })
+      ]
+    });
+
+    /** Default CPU config */
+    this.config = {
+      clockSpeed: 5,
+      ignoreMagic: false
+    }
+    config && Object.assign(this.config, config);
 
     /** Interrupts */
     this.interrupt = 0x0;
@@ -148,11 +163,30 @@ class CPU {
 
     /** Generate instructions */
     this.initOpcodeSet();
+  }
 
-    /** Boot sequence */
+  /**
+   * Boot device
+   *
+   * @param {File|string} device  Node file pointer
+   * @param {Number}      id      Device ID loaded into DL register
+   */
+  boot(device, id = 0x1) {
+    /** Convert HEX string to Node buffer */
+    if(typeof device === 'string')
+      device = new Buffer(device, 'hex');
+
+    /** Remove logging if silent */
+    if(this.config.silent)
+      this.logger.remove(winston.transports.Console);
+
+    /** Booting procedure */
+    this.device = device;
     Object.assign(this.registers, {
-      dl: 0x1
+      dl: id
     });
+
+    this.logger.info('CPU: Intel 8086 compatible processor');
     this.loadMBR(this.readChunk(0, 512));
   }
 
@@ -181,7 +215,7 @@ class CPU {
       /** MOV sreg, r/m16 */  0x8E: () => {
         this.parseRmByte(
           (reg, sreg)     => this.registers[this.regMap.sreg[sreg]] = this.registers[reg],
-          (address, reg)  => { /** todo */ winston.log('error', 'Fix me!'); },
+          (address, reg)  => { /** todo */ throw new Error('0x8E: Fix me!') },
           0x2
         );
       },
@@ -194,7 +228,7 @@ class CPU {
        */
       /** MOV r/m8, imm8  */ 0xC6: (bits = 0x1) => {
         this.parseRmByte(
-          (l, r) => { /** todo */ winston.log('error', 'Fix me!'); },
+          (l, r) => { /** todo */ throw new Error('0xC6: Fix me!') },
           (address) => this.mem[address] = this.fetchOpcode(bits)
           , bits
         );
@@ -487,8 +521,9 @@ class CPU {
    * Exec CPU
    */
   exec() {
-    winston.log('info', `Jump to ${this.registers.ip.toString(16)}`);
-    this.clock = setInterval(() => {
+    this.logger.info(`Jump to ${this.registers.ip.toString(16)}`);
+
+    const tick = () => {
       /** Tick */
       let opcode = this.fetchOpcode();
       if(CPU.prefixes[opcode]) {
@@ -506,26 +541,38 @@ class CPU {
         operand();
         this.opcodePrefix = 0x0;
       }
-    }, this.clockSpeed);
+    };
+
+    /** Check processor mode */
+    if(this.config.clockSpeed)
+      this.clock = setInterval(tick, 1000 / this.config.clockSpeed);
+    else {
+      this.clock = true;
+      while(true) {
+        tick();
+        if(!this.clock)
+          break;
+      }
+    }
   }
 
   /**
    * Force turn off CPU
    *
-   * @param {String}  errorMsg Error message
-   * @param {Boolean} dump     Dump registers
+   * @param {String}  msg   Error message
+   * @param {Boolean} dump  Dump registers
    */
-  halt(errorMsg, dump) {
+  halt(msg, dump) {
     if(!this.clock)
-      winston.log('info', 'CPU is not turned on');
+      this.logger.warn('CPU is already turned off');
     else {
       this.clock = clearInterval(this.clock);
 
       /** Optional args */
-      errorMsg && winston.log('error', errorMsg);
+      msg && this.logger.warn(msg);
       if(dump) {
         this.dumpRegisters();
-        winston.log('info', this.mem);
+        this.logger.warn(this.mem);
       }
     }
   }
@@ -557,7 +604,7 @@ class CPU {
         [key]: [insertDot(val, 8)]
       });
     }
-    winston.log('info', loggerInfo + '\n' + table.toString());
+    this.logger.warn(loggerInfo + '\n' + table.toString());
   }
 
   /**
@@ -572,7 +619,11 @@ class CPU {
       throw new Error('Cannot read from empty device');
 
     const buffer = new Buffer(size);
-    fs.readSync(this.device, buffer, 0, size, offset);
+    if(this.device instanceof Buffer) {
+      buffer.fill(0);
+      this.device.copy(buffer, 0, offset, Math.min(this.device.length, size));
+    } else
+      fs.readSync(this.device, buffer, 0, size, offset);
     return buffer;
   }
 
@@ -596,8 +647,8 @@ class CPU {
    * @param {Buffer} code First 512B of machine code
    */
   loadMBR(code) {
-    if(code.readUInt16LE(510) == 0xAA55) {
-      winston.log('info', 'Booting device!');
+    if(this.config.ignoreMagic || code.readUInt16LE(510) == 0xAA55) {
+      this.logger.info('Booting from MBR');
 
       /** CS:IP */
       Object.assign(this.registers, {
@@ -613,7 +664,7 @@ class CPU {
       /** RUN */
       this.exec();
     } else
-      winston.log('error', 'Unable to boot device!');
+      this.logger.error('Unable to boot device!');
   }
 
   /**
@@ -643,14 +694,4 @@ class CPU {
   }
 }
 
-/** Read boot device */
-fs.open('test/build/bootsec.bin', 'r', (status, fd) => {
-  if (status) {
-    winston.log('error', status.message);
-    return;
-  }
-
-  let time = Date.now();
-  new CPU(fd);
-  console.log((Date.now() - time) + 'ms');
-});
+module.exports = CPU;
