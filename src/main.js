@@ -163,6 +163,7 @@ class CPU {
 
     /** Generate instructions */
     this.initOpcodeSet();
+    this.initInterrupts();
   }
 
   /**
@@ -188,6 +189,12 @@ class CPU {
 
     this.logger.info('CPU: Intel 8086 compatible processor');
     this.loadMBR(this.readChunk(0, 512));
+  }
+
+  /**
+   * Load interrupts list into IVT
+   */
+  initInterrupts() {
   }
 
   /**
@@ -220,7 +227,7 @@ class CPU {
         );
       },
       /** MOV r8, r/m8    */ 0x8A: (bits = 0x1) => {
-        console.log('sss');
+        throw Error('0x8A: Fix me!');
       },
 
       /** MOV al, m8  */ 0xA0: (bits = 0x1) => this.registers[this.regMap[bits][0]] = this.fetchOpcode(bits),
@@ -324,14 +331,14 @@ class CPU {
      * Generate algebra offset calls
      * todo: implement FPU
      */
-    this._initALU();
+    this.initALU();
   }
 
   /**
    * Slow as fuck ALU initializer
    * todo: Make it fast
    */
-  _initALU() {
+  initALU() {
     const flagCheckers = {
       /** Carry flag */   [CPU.flags.cf]: function(val, bits) {
         if(val > 0xFF * bits)
@@ -466,8 +473,8 @@ class CPU {
     /** Register */
     if(byte.mod === 0x3)
       regCallback(
-          this.regMap[mode][byte.rm]
-        , byte.reg
+        this.regMap[mode][byte.rm],
+        byte.reg
       );
 
     /** Adress */
@@ -482,10 +489,7 @@ class CPU {
         if(byte.mod === 0x1 || byte.mod === 0x2)
           displacement = this.fetchOpcode(byte.mod);
 
-        /**
-         * Calc address
-         * todo: Is it segment address? If yes (segment << 4) + address
-         */
+        /** Calc address */
         switch(byte.rm) {
           case 0x0: address = this.registers.bx + this.registers.di + displacement; break;
           case 0x1: address = this.registers.bx + this.registers.di + displacement; break;
@@ -505,8 +509,7 @@ class CPU {
 
       /** Callback and address calc */
       memCallback(
-        (this.registers[segRegister] << 4) + address,
-        /** fixme, its sloow */
+        CPU.getMemAddress(this.registers[segRegister], address),
         this.regMap[mode][byte.reg],
         byte
       );
@@ -705,6 +708,18 @@ class CPU {
    */
   getMemAddress(sreg, reg) {
     return (this.registers[sreg] << 4) + this.registers[reg];
+  }
+
+  /**
+   * Convert segment based address to flat
+   *
+   * @static
+   * @param {Number}  seg     Segment index
+   * @param {Number}  offset  Memory offset
+   * @returns
+   */
+  static getMemAddress(seg, offset) {
+    return (seg << 4) + offset;
   }
 
   /**
