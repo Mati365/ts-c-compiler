@@ -32,6 +32,24 @@ describe('Intel 8086 emulator', () => {
         expect(cpu.registers.es).to.equal(cpu.registers.ds);
       });
     });
+
+    describe('mov', () => {
+      it('imm and registers', () => {
+        cpu.boot(compile(`
+          mov al, 0x0
+          add al, 0x3
+          sub al, 0x1
+          xor bx, bx
+          mov byte bx, al
+          add bx, 0x3
+          mov dx, bx
+          add dl, 0x1FF
+        `));
+        expect(cpu.registers.al).to.equal(0x2);
+        expect(cpu.registers.bx).to.equal(0x5);
+        expect(cpu.registers.status.cf).to.equal(0x0);
+      });
+    });
   });
 
   describe('Binary execution', () => {

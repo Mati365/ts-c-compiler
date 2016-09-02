@@ -401,12 +401,12 @@ class CPU {
             );
           },
           /** OPERATOR AL, imm8 */ [0x4 + offset]: (bits = 0x1) => {
-            this.registers[this.regMap[bits][0]] = alu(this.registers.al, this.fetchOpcode(), bits);
+            this.registers[this.regMap[bits][0]] = alu(op, this.registers[this.regMap[bits][0]], this.fetchOpcode(bits), bits);
           },
 
+          /** OPERATOR AX, imm16  */ [0x5 + offset]: () => this.opcodes[0x4 + offset](0x2),
           /** OPERATOR r/m16, r16 */ [0x1 + offset]: () => this.opcodes[0x0 + offset](0x2),
-          /** OPERATOR r/m16, r16 */ [0x3 + offset]: () => this.opcodes[0x2 + offset](0x2),
-          /** OPERATOR AX, imm16  */ [0x5 + offset]: () => this.opcodes[0x4 + offset](0x2)
+          /** OPERATOR r/m16, r16 */ [0x3 + offset]: () => this.opcodes[0x2 + offset](0x2)
         };
         Object.assign(this.opcodes, codes);
       })(operators[key]);
