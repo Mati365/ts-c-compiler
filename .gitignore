@@ -1,0 +1,8 @@
+node_modules/*
+.*
+!.bochsrc
+!.gitignore
+*~
+test/bochs/build/
+bochsout.txt
+parport.out
