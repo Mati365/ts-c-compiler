@@ -10,8 +10,12 @@
 ; mov ax, 4
 ; mov ax, 2
 ; mov ds, ax
-mov bp, 1
-mov si, [bp + 542] ; // uses ss:
+push ax
+pop ax
+push bp
+
+mov byte [bp - 2], 0x2
+mov ax, [bp - 2]
 xchg bx, bx
 hlt
 times 510 - ($-$$) db 0

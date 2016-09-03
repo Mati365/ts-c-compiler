@@ -41,12 +41,15 @@ class CPU {
      * todo: Implement A20 line support
      */
     this.mem = Buffer.alloc(8388608);
-    this.memMapper = {
-      /** for 8bit registers */
-      0x1: this.mem.readUInt8.bind(this.mem),
-
-      /** for 16bit registers */
-      0x2: this.mem.readUInt16LE.bind(this.mem)
+    this.memIO = {
+      read: {
+        /** 8bit  */  0x1: this.mem.readUInt8.bind(this.mem),
+        /** 16bit */  0x2: this.mem.readUInt16LE.bind(this.mem)
+      },
+      write: {
+        /** 8bit  */  0x1: this.mem.writeUInt8.bind(this.mem),
+        /** 16bit */  0x2: this.mem.writeUInt16LE.bind(this.mem)
+      }
     };
 
     this.registers = {
@@ -166,6 +169,58 @@ class CPU {
     this.initInterrupts();
   }
 
+  /** Last stack item address */
+  get lastStackAddr() {
+    return CPU.getMemAddress(this.registers.ss, this.registers.sp);
+  }
+
+  /**
+   * Decrement stack pointer and push value to stack
+   *
+   * @param {Number}  val   Value to be stored on stack
+   * @param {Number}  bits  Intel 8086 supports only 16bit stack
+   */
+  push(val, bits = 0x2) {
+    this.registers.sp = this.aluProcess(this.registers.sp - bits, 0x2);
+    this.memIO.write[bits](val, this.lastStackAddr);
+  }
+  pop(bits = 0x2) {
+    const val = this.memIO.read[bits](this.lastStackAddr);
+    this.registers.sp = this.aluProcess(this.registers.sp + bits, 0x2);
+    return val;
+  }
+
+  /**
+   * Default stack segment address, after push()
+   * values will be added at the end of mem
+   *
+   * @param {Number}  segment Stack segment index
+   */
+  initStack(segment = 0x0) {
+    /** Set default stack environment */
+    Object.assign(this.registers, {
+      ss: segment,
+      sp: 0x0
+    });
+
+    /**
+     * Segment register push mapper
+     * see: http://csiflabs.cs.ucdavis.edu/~ssdavis/50/8086%20Opcodes.pdf
+     */
+    const stackSregMap = {
+      0x0:  'es',
+      0x8:  'cs',
+      0x10: 'ss',
+      0x18: 'ds'
+    };
+    for (let sregIndex in stackSregMap) {
+      ((index) => {
+        /** PUSH sr16 */ this.opcodes[0x6 + index] = () => this.push(this.registers[stackSregMap[index]]);
+        /** POP sr16  */ this.opcodes[0x7 + index] = () => this.registers[stackSregMap[index]] = this.pop();
+      })(parseInt(sregIndex));
+    }
+  }
+
   /**
    * Boot device
    *
@@ -208,14 +263,14 @@ class CPU {
       /** MOV r/m8, reg8 */  0x88: (bits = 0x1) => {
         this.parseRmByte(
           (src, dest)     => this.registers[src] = this.registers[this.regMap[bits][dest]],
-          (address, src)  => this.mem[address] = this.registers[src],
+          (address, src)  => this.memIO.write[bits](this.registers[src], address),
           bits
         );
       },
       /** MOV r/m16, sreg */  0x8C: () => {
         this.parseRmByte(
           (reg, sreg)         => this.registers[reg] = this.registers[this.regMap.sreg[sreg]],
-          (address, _, byte)  => this.mem[address] = this.registers[this.regMap.sreg[byte.reg]],
+          (address, _, byte)  => this.memIO.write[bits](this.registers[this.regMap.sreg[byte.reg]], address),
           0x2
         );
       },
@@ -229,21 +284,21 @@ class CPU {
       /** MOV r8, r/m8    */ 0x8A: (bits = 0x1) => {
         this.parseRmByte(
           (l, r) => { /** todo */ throw new Error('0x8A: Fix me!') },
-          (address, reg) => this.registers[reg] = this.mem[address],
+          (address, reg) => this.registers[reg] = this.memIO.read[bits](address),
           bits
         );
       },
 
       /** MOV al, m8  */ 0xA0: (bits = 0x1) => this.registers[this.regMap[bits][0]] = this.fetchOpcode(bits),
-      /** MOV m8, al  */ 0xA2: (bits = 0x1) => this.mem[this.fetchOpcode(bits)] = this.registers.al,
+      /** MOV al, m16 */ 0xA1: () => this.opcodes[0xA0](0x2),
 
-      /** MOV al, m8  */ 0xA1: () => this.opcodes[0xA0](0x2),
+      /** MOV m8, al  */ 0xA2: (bits = 0x1) => this.memIO.write[bits](this.registers.al, this.fetchOpcode(bits)),
       /** MOV m16, al */ 0xA3: () => this.opcodes[0xA2](0x2),
 
       /** MOV r/m8, imm8  */ 0xC6: (bits = 0x1) => {
         this.parseRmByte(
-          (l, r) => { /** todo */ throw new Error('0xC6: Fix me!') },
-          (address) => this.mem[address] = this.fetchOpcode(bits)
+          (l, r)    => { /** todo */ throw new Error('0xC6: Fix me!') },
+          (address) => this.memIO.write[bits](this.fetchOpcode(bits), address)
           , bits
         );
       },
@@ -251,22 +306,30 @@ class CPU {
       /** MOV r16, r/m16    */ 0x8B:  () => this.opcodes[0x8A](0x2),
       /** MOV r/m16, imm16  */ 0xC7:  () => this.opcodes[0xC6](0x2),
 
-      /** INC/DEC reg8 */  0xFE: (bits = 0x1) => {
+      /** PUSH/INC/DEC reg8 */ 0xFE: (bits = 0x1) => {
         this.parseRmByte(
           (register, mode) => {
             const reg = this.regMap[bits][mode.rm];
-            this.registers[reg] = this.alu({
-              _c: () => this.registers[reg] + (mode.reg === 0x1 ? -1 : 1)
-            });
+            if(mode.reg === 0x6)
+              this.push(this.registers[reg]);
+            else {
+              this.registers[reg] = this.aluProcess(this.registers[reg] + (mode.reg === 0x1 ? -1 : 1), 0x1);
+            }
           },
           (address, reg, mode) => {
-            this.mem[address] = this.alu({
-              _c: () => this.mem[address] + (mode.reg === 0x1 ? -1 : 1)
-            });
+            const memVal = this.memIO.read[bits](address);
+            if(mode.reg === 0x6)
+              this.push(memVal);
+            else {
+              this.memIO.write[bits](this.aluProcess(memVal + (mode.reg === 0x1 ? -1 : 1), 0x1), address);
+            }
           }, bits
         );
       },
       /** INC/DEC reg16 */  0xFF: () => this.opcodes[0xFE](0x2),
+
+      /** PUSHF         */  0x9C: () => this.push(this.registers.flags),
+      /** POPF          */  0x9D: () => this.registers.flags = this.pop(),
 
       /** LOOP 8bit rel */  0xE2: () => {
         const relativeAddress = this.fetchOpcode();
@@ -298,13 +361,19 @@ class CPU {
 
         /** INC reg16 */
         this.opcodes[0x40 + _opcode] = () => {
-          this.registers[_r16] = this.alu({_c: () => this.registers[_r16] + 1});
+          this.registers[_r16] = this.aluProcess(this.registers[_r16] + 0x1, 0x2);
         };
 
         /** DEC reg16 */
         this.opcodes[0x48 + _opcode] = () => {
-          this.registers[_r16] = this.alu({_c: () => this.registers[_r16] - 1});
+          this.registers[_r16] = this.aluProcess(this.registers[_r16] - 0x1, 0x2);
         };
+
+        /** PUSH reg16 */
+        this.opcodes[0x50 + _opcode] = () => this.push(this.registers[_r16]);
+
+        /** POP reg16 */
+        this.opcodes[0x58 + _opcode] = () => this.registers[_r16] = this.pop();
       })(opcode);
     }
 
@@ -331,6 +400,9 @@ class CPU {
       })(opcode);
     }
 
+    /** Create stack */
+    this.initStack();
+
     /**
      * Generate algebra offset calls
      * todo: implement FPU
@@ -345,10 +417,11 @@ class CPU {
   initALU() {
     const flagCheckers = {
       /** Carry flag */   [CPU.flags.cf]: function(val, bits) {
-        if(val > 0xFF * bits)
-          return 0xFF * bits - val - 0x1;
+        const up = Math.pow(0x100, bits);
+        if(val >= up)
+          return val - up;
         else if(val < 0x0)
-          return val + 0x100;
+          return up + val;
       },
       /** Parity flag */  [CPU.flags.pf]: function(val) {
         return !((val & 0xFF) % 0x2); /** todo: optimize */
@@ -362,7 +435,13 @@ class CPU {
     };
 
     /** Key is 0x80 - 0x83 RM Byte */
-    const operators = {
+    this.operators = {
+      /** Extra operators used in other opcodes */
+      extra: {
+        increment: { _c: function(s) { return s + 1; } },
+        decrement: { _c: function(s) { return s - 1; } }
+      },
+
       /** + */ 0b000: { offset: 0x00, _c: function(s, d) { return s + d; } },
       /** - */ 0b101: { offset: 0x28, _c: function(s, d) { return s - d; } },
       /** & */ 0b100: { offset: 0x20, _c: function(s, d) { return s & d; } },
@@ -377,45 +456,60 @@ class CPU {
 
     /** ALU operation checker */
     this.alu = (operator, l, r, bits) => {
-      let ret = operator._c(l, r);
-
       /** Set default flags value for operator */
       if(!operator.flags)
         operator.flags = 0xFF;
 
+      /** flagOnly - for cmp and temporary operations */
+      return this.aluProcess(
+        operator._c(l, r),
+        bits,
+        operator.flags,
+        operator._flagOnly
+      );
+    };
+
+    /** ALU process value */
+    this.aluProcess = (val, bits, flags = 0xFF, temp = false) => {
       /** Value returned after flags */
       let _val = 0;
       for(let key in flagCheckers) {
-        if((operator.flags & key) == key) {
-          _val = flagCheckers[key](ret, bits);
-          if(_val && _val !== true)
-            ret = _val;
+        if((flags & key) == key) {
+          _val = flagCheckers[key](val, bits);
+          if(!temp && (_val || _val === 0) && _val !== true)
+            val = _val;
 
           this.registers.flags ^= (-(_val ? 1 : 0) ^ this.registers.flags) & (1 << key);
         }
       }
 
-      /** flagOnly - for cmp and temporary operations */
-      return operator._flagOnly ? l : ret;
+      /** temp - for cmp and temporary operations */
+      return val;
     };
 
     /** $80, $81, $82 RM Byte specific */
     Object.assign(this.opcodes, {
-      /** OPERATOR r/m8, imm8 */   [0x80]: (bits = 0x1) => {
+      /** OPERATOR r/m8, imm8 */   [0x80]: (bits = 0x1, src = bits) => {
         this.parseRmByte(
           (register, _o) => {
-            this.registers[register] = this.alu(operators[_o], this.registers[register], this.fetchOpcode(bits), bits);
+            this.registers[register] = this.alu(this.operators[_o], this.registers[register], this.fetchOpcode(src), bits);
           },
           (address, reg, mode) => {
-            this.mem[address] = this.alu(operators[mode.reg], this.mem[address], this.fetchOpcode(bits), bits);
+            this.memIO.write[bits](
+              this.alu(this.operators[mode.reg], this.memIO.read[bits](address), this.fetchOpcode(src), bits),
+              address
+            );
           }, bits
         );
       },
+      /** OPERATOR r/m16, imm8 */  [0x83]: () => this.opcodes[0x80](0x2, 0x1),
       /** OPERATOR r/m16, imm16 */ [0x81]: () => this.opcodes[0x80](0x2),
-      /** OPERATOR r/m16, imm8 */  [0x83]: () => this.opcodes[0x80](),
     });
 
-    for(let key in operators) {
+    for(let key in this.operators) {
+      if(key === 'extra')
+        continue;
+
       ((op) => {
         const offset = op.offset;
         const codes = {
@@ -425,7 +519,10 @@ class CPU {
                 this.registers[l] = this.alu(op, this.registers[l], this.registers[this.regMap[bits][r]], bits);
               },
               (address, r) => {
-                this.mem[address] = this.alu(op, this.mem[address], this.registers[r], bits);
+                this.memIO.write[bits](
+                  this.alu(op, this.memIO.read[bits](address), this.registers[r], bits),
+                  address
+                );
               }, bits
             );
           },
@@ -433,10 +530,10 @@ class CPU {
             this.parseRmByte(
               /** todo: test, nasm is not compiling (l, r) */
               (l, r) => {
-                this.registers[l] = this.alu(op, this.registers[l], this.registers[this.regMap[bits][r]], bits);
+                this.registers[r] = this.alu(op, this.registers[r], this.registers[this.regMap[bits][l]], bits);
               },
               (address, r) => {
-                this.registers[r] = this.alu(op, this.registers[r], this.mem[address], bits);
+                this.registers[r] = this.alu(op, this.registers[r], this.memIO.read[bits](address), bits);
               }, bits
             );
           },
@@ -449,7 +546,7 @@ class CPU {
           /** OPERATOR r/m16, r16 */ [0x3 + offset]: () => this.opcodes[0x2 + offset](0x2)
         };
         Object.assign(this.opcodes, codes);
-      })(operators[key]);
+      })(this.operators[key]);
     }
   }
 
@@ -543,7 +640,7 @@ class CPU {
    * @returns
    */
   fetchOpcode(size = 1) {
-    const mapper = this.memMapper[size];
+    const mapper = this.memIO.read[size];
     if(mapper) {
       const opcode = mapper(this.getMemAddress('cs', 'ip'));
       this.registers.ip += size;
