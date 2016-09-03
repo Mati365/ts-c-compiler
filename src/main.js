@@ -44,11 +44,13 @@ class CPU {
     this.memIO = {
       read: {
         /** 8bit  */  0x1: this.mem.readUInt8.bind(this.mem),
-        /** 16bit */  0x2: this.mem.readUInt16LE.bind(this.mem)
+        /** 16bit */  0x2: this.mem.readUInt16LE.bind(this.mem),
+        /** 32bit */  0x4: this.mem.readUInt32LE.bind(this.mem)
       },
       write: {
         /** 8bit  */  0x1: this.mem.writeUInt8.bind(this.mem),
-        /** 16bit */  0x2: this.mem.writeUInt16LE.bind(this.mem)
+        /** 16bit */  0x2: this.mem.writeUInt16LE.bind(this.mem),
+        /** 32bit */  0x4: this.mem.writeUInt16LE.bind(this.mem)
       }
     };
 
