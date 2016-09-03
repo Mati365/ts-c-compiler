@@ -10,7 +10,9 @@
 ; mov ax, 4
 ; mov ax, 2
 ; mov ds, ax
+mov bp, 1
+mov si, [bp + 542] ; // uses ss:
+xchg bx, bx
 hlt
-
 times 510 - ($-$$) db 0
 dw 0xAA55

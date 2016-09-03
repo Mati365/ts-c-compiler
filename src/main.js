@@ -172,7 +172,7 @@ class CPU {
    * @param {File|string} device  Node file pointer
    * @param {Number}      id      Device ID loaded into DL register
    */
-  boot(device, id = 0x1) {
+  boot(device, id = 0x0) {
     /** Convert HEX string to Node buffer */
     if(typeof device === 'string')
       device = new Buffer(device, 'hex');
@@ -227,7 +227,11 @@ class CPU {
         );
       },
       /** MOV r8, r/m8    */ 0x8A: (bits = 0x1) => {
-        throw Error('0x8A: Fix me!');
+        this.parseRmByte(
+          (l, r) => { /** todo */ throw new Error('0x8A: Fix me!') },
+          (address, reg) => this.registers[reg] = this.mem[address],
+          bits
+        );
       },
 
       /** MOV al, m8  */ 0xA0: (bits = 0x1) => this.registers[this.regMap[bits][0]] = this.fetchOpcode(bits),
@@ -262,7 +266,7 @@ class CPU {
           }, bits
         );
       },
-      /** INC/DEC reg16 */ 0xFF: () => this.opcodes[0xFE](0x2),
+      /** INC/DEC reg16 */  0xFF: () => this.opcodes[0xFE](0x2),
 
       /** LOOP 8bit rel */  0xE2: () => {
         const relativeAddress = this.fetchOpcode();

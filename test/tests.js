@@ -5,7 +5,13 @@ const fs = require('fs')
     , winston = require('winston')
     , CPU = require('../src/main');
 
-const compile = (code) => pasm.parse('[bits 16]\n' + code + '\nhlt').data
+const compile = (code) => {
+  return pasm.parse(`
+    [bits 16]
+    ${code}
+    hlt
+  `).data
+}
 
 describe('Intel 8086 emulator', () => {
   let cpu = null;
@@ -17,37 +23,47 @@ describe('Intel 8086 emulator', () => {
     });
   });
 
-  describe('Opcode interpreter', () => {
-    describe('mov', () => {
-      it('imm and registers', () => {
+  describe('Interpreter', () => {
+    describe('opcodes', () => {
+      it('mov imm and registers', () => {
         cpu.boot(compile(`
-          mov al, 0x2
-          mov ah, 0x1
-          mov ds, ax
-          mov cx, ds
-          mov es, cx
-          mov [0x1], 0x12
-        `));
-        expect(cpu.registers.ds).to.equal(0x102);
-        expect(cpu.registers.es).to.equal(cpu.registers.ds);
-      });
-    });
-
-    describe('mov', () => {
-      it('imm and registers', () => {
-        cpu.boot(compile(`
+          xor ax, ax
           mov al, 0x0
           add al, 0x3
           sub al, 0x1
           xor bx, bx
-          mov byte bx, al
+          mov bl, al
           add bx, 0x3
           mov dx, bx
-          add dl, 0x1FF
+          add dl, 0xFF
+          add dl, 1
         `));
         expect(cpu.registers.al).to.equal(0x2);
         expect(cpu.registers.bx).to.equal(0x5);
         expect(cpu.registers.status.cf).to.equal(0x0);
+      });
+
+
+      it('alu opcodes', () => {
+        cpu.boot(compile(`
+          xor al,cl
+          and al,al
+          or  al,cl
+          xor ax,cx
+          and cx,dx
+          or  cx,dx
+          xor eax,ecx
+          and ecx,edx
+          or  ecx,edx
+          xor ax,0x1
+          and ax,0x1
+          or  ax,0x1
+          xor cx,0x1
+          and cx,0x1
+          or  cx,0x1
+        `));
+        expect(cpu.registers.ax).to.equal(0x1);
+        expect(cpu.registers.cx).to.equal(0x1);
       });
     });
   });
