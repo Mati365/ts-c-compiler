@@ -360,6 +360,13 @@ class CPU {
         this.registers.ip += relative;
       },
 
+      /** FAR JMP 32bit   */  0xEA: () => {
+        Object.assign(this.registers, {
+          ip: this.fetchOpcode(0x2),
+          cs: this.fetchOpcode(0x2)
+        });
+      },
+
       /** XCHG bx, bx */  0x87: () => {
         const l = this.fetchOpcode();
         if(l == 0xDB)

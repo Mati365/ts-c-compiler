@@ -3,23 +3,10 @@
 [bits 16]
 [org 0x7c00]
 
-; mov al, 0x3
-; mov bh, 2
-; add byte [0xFF], 2
-; mov bx, 3
-; mov ax, 4
-; mov ax, 2
-; mov ds, ax
-mov ax, 2
-call shit
-xchg bx, bx
-hlt
+jmp word 0x0000:boot
 
-shit:
-  mov dx, 0xFF
-  mov cx, ax
-  inc cx
-  ret
+boot:
+  xchg bx, bx
 
 times 510 - ($-$$) db 0
 dw 0xAA55
