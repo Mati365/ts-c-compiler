@@ -339,6 +339,8 @@ class CPU {
       /** INC/DEC reg16 */  0xFF: () => this.opcodes[0xFE](0x2),
 
       /** PUSH imm8     */  0x6A: () => this.push(this.fetchOpcode(), 0x2),
+      /** PUSH imm16    */  0x68: () => this.push(this.fetchOpcode(0x2), 0x2),
+
       /** PUSHF         */  0x9C: () => this.push(this.registers.flags),
       /** POPF          */  0x9D: () => this.registers.flags = this.pop(),
 
@@ -368,6 +370,16 @@ class CPU {
         });
       },
 
+      /** STOSB */  0xAA: (bits = 0x1) => {
+        this.registers.di += this.registers.status.df ? -bits : bits;
+        this.memIO.write[bits](this.registers[this.regMap[bits][0]], this.getMemAddress('es', 'di'));
+      },
+      /** STOSW */  0xAB: () => this.opcodes[0xAA](0x2),
+
+      /** INT imm8    */  0xCD: () => {
+        const interrupt = this.fetchOpcode();
+        this.logger.error(`unknown interrupt ${interrupt}`);
+      },
       /** XCHG bx, bx */  0x87: () => {
         const l = this.fetchOpcode();
         if(l == 0xDB)
