@@ -338,6 +338,7 @@ class CPU {
       },
       /** INC/DEC reg16 */  0xFF: () => this.opcodes[0xFE](0x2),
 
+      /** PUSH imm8     */  0x6A: () => this.push(this.fetchOpcode(), 0x2),
       /** PUSHF         */  0x9C: () => this.push(this.registers.flags),
       /** POPF          */  0x9D: () => this.registers.flags = this.pop(),
 
@@ -349,8 +350,8 @@ class CPU {
 
       /** RET near  */  0xC3: (bits = 0x2) => this.registers.ip = this.pop(),
       /** RET 16bit */  0xC2: (bits = 0x2) => {
-        this.pop(this.fetchOpcode(bits), false);
         this.registers.ip = this.pop();
+        this.pop(this.fetchOpcode(bits, false), false);
       },
 
       /** CALL 16bit dis  */  0xE8: () => {
@@ -624,13 +625,22 @@ class CPU {
         switch(byte.rm) {
           case 0x0: address = this.registers.bx + this.registers.di + displacement; break;
           case 0x1: address = this.registers.bx + this.registers.di + displacement; break;
-          case 0x2: address = this.registers.bp + this.registers.si + displacement; break;
-          case 0x3: address = this.registers.bp + this.registers.di + displacement; break;
-
           case 0x4: address = this.registers.si + displacement; break;
           case 0x5: address = this.registers.di + displacement; break;
-          case 0x6: address = this.registers.bp + displacement; break;
           case 0x7: address = this.registers.bx + displacement; break;
+
+          case 0x2:
+            segRegister = 'ss';
+            address = this.registers.bp + this.registers.si + displacement;
+          break;
+          case 0x3:
+            segRegister = 'ss';
+            address = this.registers.bp + this.registers.di + displacement;
+          break;
+          case 0x6:
+            segRegister = 'ss';
+            address = this.registers.bp + displacement;
+          break;
         }
       }
 
