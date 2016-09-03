@@ -10,13 +10,16 @@
 ; mov ax, 4
 ; mov ax, 2
 ; mov ds, ax
-push ax
-pop ax
-push bp
-
-mov byte [bp - 2], 0x2
-mov ax, [bp - 2]
+mov ax, 2
+call shit
 xchg bx, bx
 hlt
+
+shit:
+  mov dx, 0xFF
+  mov cx, ax
+  inc cx
+  ret
+
 times 510 - ($-$$) db 0
 dw 0xAA55

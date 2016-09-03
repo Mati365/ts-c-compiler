@@ -186,8 +186,16 @@ class CPU {
     this.registers.sp = this.aluProcess(this.registers.sp - bits, 0x2);
     this.memIO.write[bits](val, this.lastStackAddr);
   }
-  pop(bits = 0x2) {
-    const val = this.memIO.read[bits](this.lastStackAddr);
+
+  /**
+   * POP n-bytes from stack
+   *
+   * @param {Number}  bits  Bytes number
+   * @param {Boolean} read  Read bytes or only pop
+   * @returns
+   */
+  pop(bits = 0x2, read = true) {
+    const val = read && this.memIO.read[bits](this.lastStackAddr);
     this.registers.sp = this.aluProcess(this.registers.sp + bits, 0x2);
     return val;
   }
@@ -337,6 +345,19 @@ class CPU {
         const relativeAddress = this.fetchOpcode();
         if(--this.registers.cx)
           this.relativeJump(relativeAddress);
+      },
+
+      /** RET near  */  0xC3: (bits = 0x2) => this.registers.ip = this.pop(),
+      /** RET 16bit */  0xC2: (bits = 0x2) => {
+        this.pop(this.fetchOpcode(bits), false);
+        this.registers.ip = this.pop();
+      },
+
+      /** CALL 16bit dis  */  0xE8: () => {
+        const relative = CPU.getSignedNumber(this.fetchOpcode(0x2), 0x2);
+
+        this.push(this.registers.ip);
+        this.registers.ip += relative;
       },
 
       /** XCHG bx, bx */  0x87: () => {
@@ -638,14 +659,16 @@ class CPU {
   /**
    * Get next opcode
    *
-   * @param {Integer} size  Opcode size in bytes 8 / 16
+   * @param {Integer} size        Opcode size in bytes 8 / 16
+   * @param {Boolean} incrementIP Ignore counter if false
    * @returns
    */
-  fetchOpcode(size = 1) {
+  fetchOpcode(size = 1, incrementIP = true) {
     const mapper = this.memIO.read[size];
     if(mapper) {
       const opcode = mapper(this.getMemAddress('cs', 'ip'));
-      this.registers.ip += size;
+      if(incrementIP)
+        this.registers.ip += size;
 
       return opcode;
     } else
@@ -836,7 +859,7 @@ class CPU {
   static getSignedNumber(num, bits = 0x1) {
     const sign = (num >> (0x8 * bits - 0x1)) & 0x1;
     if(sign)
-      num += -0xFF - 0x1;
+      num -= Math.pow(0x100, bits);
     return num;
   }
 }
