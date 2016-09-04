@@ -488,7 +488,7 @@ class CPU {
   initALU() {
     const flagCheckers = {
       /** Carry flag */   [CPU.flags.cf]: function(val, bits) {
-        const up = Math.pow(0x100, bits);
+        const up = CPU.bitMask[bits];
         if(val >= up)
           return val - up;
         else if(val < 0x0)
@@ -566,23 +566,31 @@ class CPU {
     const multiplier = (bits = 0x1, mul) => {
       this.parseRmByte(
         (l, _, byte) => {
-          if(byte.reg === 0x3) {
+          if(byte.reg === 0x2) {
+            /** NOT */
+            this.registers[l] = ~this.registers[l] & CPU.bitMask[bits];
+          } else if(byte.reg === 0x3) {
             /** NEG */
             this.registers[l] = CPU.toUnsignedNumber(-this.registers[l], bits);
             this.registers.status.cf = byte.rm === 0x0 ? 0x0 : 0x1;
+
           } else
             mul(this.registers[l], byte);
         },
         (address, _, byte) => {
-          if(byte.reg === 0x3) {
+          const val = this.memIO.read[bits](address);
+
+          if(byte.reg === 0x2) {
+            /** NOT */
+            this.memIO.write[bits](~val & CPU.bitMask[bits], address);
+
+          }  else if(byte.reg === 0x3) {
             /** NEG */
-            this.memIO.write[bits](
-              CPU.toUnsignedNumber(-this.memIO.read[bits](address), bits),
-              address
-            );
+            this.memIO.write[bits](CPU.toUnsignedNumber(-val, bits), address);
             this.registers.status.cf = byte.rm === 0x0 ? 0x0 : 0x1;
+
           } else
-            mul(this.memIO.read[bits](address), byte)
+            mul(val, byte)
         }, bits
       );
     }
@@ -1024,7 +1032,7 @@ class CPU {
   static getSignedNumber(num, bits = 0x1) {
     const sign = (num >> (0x8 * bits - 0x1)) & 0x1;
     if(sign)
-      num -= Math.pow(0x100, bits);
+      num -= CPU.bitMask[bits];
     return num;
   }
 
@@ -1037,7 +1045,7 @@ class CPU {
    * @returns Unsigned number
    */
   static toUnsignedNumber(num, bits = 0x1) {
-    const up = Math.pow(0x100, bits);
+    const up = CPU.bitMask[bits];
     if(num >= up)
       return num - up;
     else if(num < 0x0)
@@ -1046,5 +1054,12 @@ class CPU {
       return num;
   }
 }
+
+/** Only for speedup calc */
+CPU.bitMask = {
+  0x1: (0x2 << 0x7) - 0x1,
+  0x2: (0x2 << 0xF) - 0x1,
+  0x4: (0x2 << 0x1F) - 0x1
+};
 
 module.exports = CPU;
