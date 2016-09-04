@@ -394,6 +394,12 @@ class CPU {
       },
       /** MOVSW */  0xA5: () => this.opcodes[0xA4](0x2),
 
+      /** LODSB */  0xAC: (bits = 0x1) => {
+        this.registers[this.regMap[bits][0x0]] = this.memIO.read[bits](this.getMemAddress('ds', 'si'));
+        this.dfIncrement(bits, 'si');
+      },
+      /** LODSW */  0xAD: () => this.opcodes[0xAC](0x2),
+
       /** INT imm8    */  0xCD: () => {
         const interrupt = this.fetchOpcode();
         this.logger.error(`unknown interrupt ${interrupt}`);
