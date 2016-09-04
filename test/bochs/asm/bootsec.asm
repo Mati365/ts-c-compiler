@@ -7,9 +7,13 @@ jmp word 0x0000:boot
 
 boot:
   ; should be 8
-  mov  al, -4
-  mov  bl, 4
-  imul bl
+  xor ax, ax
+  xor bx, bx
+  xor dx, dx
+  mov dx, 0x1
+  mov ax, 0x31
+  mov cx, 3
+  idiv cx
   xchg bx, bx
 times 510 - ($-$$) db 0
 dw 0xAA55

@@ -473,6 +473,15 @@ class CPU {
   }
 
   /**
+   * Generate exception
+   */
+  raiseException() {
+    /** todo: Handle it */
+    this.halt('Exception occurred!');
+    throw Error();
+  }
+
+  /**
    * Slow as fuck ALU initializer
    * todo: Make it fast
    */
@@ -500,8 +509,10 @@ class CPU {
     this.operators = {
       /** Extra operators used in other opcodes */
       extra: {
-        increment: { _c: function(s) { return s + 1; } },
-        decrement: { _c: function(s) { return s - 1; } }
+        increment: { _c: function(s)    { return s + 1; } },
+        decrement: { _c: function(s)    { return s - 1; } },
+        mul:       { _c: function(s, d) { return s * d; } },
+        div:       { _c: function(s, d) { return s / d; } }
       },
 
       /** + */ 0b000: { offset: 0x00, _c: function(s, d) { return s + d; } },
@@ -576,26 +587,61 @@ class CPU {
       /** OPERATOR r/m16, imm8 */  0x83: () => this.opcodes[0x80](0x2, 0x1),
       /** OPERATOR r/m16, imm16 */ 0x81: () => this.opcodes[0x80](0x2),
 
-      /** MUL/IMUL al, r/m8  */  0xF6: () => multiplier(0x1, (val, byte) => {
-        this.registers.ax = this.aluProcess(
-          byte.reg === 0x5 ? CPU.getSignedNumber(this.registers.al) * CPU.getSignedNumber(val) : (this.registers.al * val),
-          0x2
-        );
+      /** MULTIPLIER al, r/m8  */  0xF6: () => multiplier(0x1, (val, byte) => {
+        if((byte.reg & 0x6) === 0x6) {
+          !val && this.raiseException();
 
-        if(byte.reg === 0x5)
-          this.registers.status.cf = this.registers.status.of = (this.registers.al === this.registers.al);
+          if(byte.reg === 0x7) {
+            /** IDIV */
+            const _ax = CPU.getSignedNumber(this.registers.ax, 0x2),
+                  _val = CPU.getSignedNumber(val);
+            this.registers.ax = CPU.toUnsignedNumber(parseInt(_ax / _val)) | CPU.toUnsignedNumber((_ax % _val)) << 8;
+          } else {
+            /** DIV */
+            this.registers.ax = parseInt(this.registers.ax / val) | (this.registers.ax % val) << 8;
+          }
+        } else {
+          /** MUL / IMUL */
+          this.registers.ax = CPU.toUnsignedNumber(
+            byte.reg === 0x5 ? CPU.getSignedNumber(this.registers.al) * CPU.getSignedNumber(val) : (this.registers.al * val),
+            0x2
+          );
+
+          if(byte.reg === 0x5)
+            this.registers.status.cf = this.registers.status.of = (this.registers.al === this.registers.al);
+        }
       }),
-      /** MUL/IMUL ax, r/m16 */  0xF7: () => multiplier(0x1, (val) => {
-        const output = this.aluProcess(
-          byte.reg === 0x5 ? CPU.getSignedNumber(this.registers.ax) * CPU.getSignedNumber(val) : (this.registers.ax * val),
-          0x4
-        );
+      /** MULTIPLIER ax, r/m16 */  0xF7: () => multiplier(0x1, (val, byte) => {
+        if((byte.reg & 0x6) === 0x6) {
+          !val && this.raiseException();
 
-        this.registers.ax = output & 0xFF;
-        this.registers.dx = (output >> 8) & 0xFF;
+          /** DIV / IDIV */
+          if(byte.reg === 0x7) {
+            /** IDIV */
+            const num = CPU.getSignedNumber((this.registers.dx << 16) | this.registers.ax, 0x4);
 
-        if(byte.reg === 0x5)
-          this.registers.status.cf = this.registers.status.of = (output === this.registers.ax);
+            this.registers.ax = CPU.toUnsignedNumber(parseInt(num / val), 0x2);
+            this.registers.dx = CPU.toUnsignedNumber(num % val, 0x2);
+          } else {
+            /** DIV */
+            const num = (this.registers.dx << 16) | this.registers.ax;
+
+            this.registers.ax = parseInt(num / val);
+            this.registers.dx = num % val;
+          }
+        } else {
+          /** MUL / IMUL */
+          const output = CPU.toUnsignedNumber(
+            byte.reg === 0x5 ? CPU.getSignedNumber(this.registers.ax) * CPU.getSignedNumber(val) : (this.registers.ax * val),
+            0x4
+          );
+
+          this.registers.ax = output & 0xFF;
+          this.registers.dx = (output >> 8) & 0xFF;
+
+          if(byte.reg === 0x5)
+            this.registers.status.cf = this.registers.status.of = (output === this.registers.ax);
+        }
       }),
     });
 
@@ -942,7 +988,7 @@ class CPU {
    * @static
    * @param {Number}  seg     Segment index
    * @param {Number}  offset  Memory offset
-   * @returns
+   * @returns Physical mem address
    */
   static getMemAddress(seg, offset) {
     return (seg << 4) + offset;
@@ -955,12 +1001,31 @@ class CPU {
    * @static
    * @param {Number}  num   Number
    * @param {Number}  bits  0x1 if 8bits, 0x2 if 16 bits
+   * @returns Signed number
    */
   static getSignedNumber(num, bits = 0x1) {
     const sign = (num >> (0x8 * bits - 0x1)) & 0x1;
     if(sign)
       num -= Math.pow(0x100, bits);
     return num;
+  }
+
+  /**
+   * Convert signed byte number to unsigned
+   *
+   * @static
+   * @param {Number}  num   Number
+   * @param {Number}  bits  0x1 if 8bits, 0x2 if 16 bits
+   * @returns Unsigned number
+   */
+  static toUnsignedNumber(num, bits = 0x1) {
+    const up = Math.pow(0x100, bits);
+    if(num >= up)
+      return num - up;
+    else if(num < 0x0)
+      return up + num;
+    else
+      return num;
   }
 }
 
