@@ -371,13 +371,28 @@ class CPU {
       },
 
       /** STOSB */  0xAA: (bits = 0x1) => {
-        this.registers.di += this.registers.status.df ? -bits : bits;
-        this.memIO.write[bits](this.registers[this.regMap[bits][0]], this.getMemAddress('es', 'di'));
+        this.memIO.write[bits](
+          this.registers[this.regMap[bits][0]],
+          this.getMemAddress('es', 'di')
+        );
+        this.dfIncrement(bits);
       },
       /** STOSW */  0xAB: () => this.opcodes[0xAA](0x2),
 
-      /** CLD */  0xFC: () => this.registers.status.df = 0x0,
-      /** STD */  0xFD: () => this.registers.status.df = 0x1,
+      /** CLD   */  0xFC: () => this.registers.status.df = 0x0,
+      /** STD   */  0xFD: () => this.registers.status.df = 0x1,
+
+      /** MOVSB */  0xA4: (bits = 0x1) => {
+        this.memIO.write[bits](
+          this.memIO.read[bits](this.getMemAddress('ds', 'si')),
+          this.getMemAddress('es', 'di')
+        );
+
+        /** Increment indexes */
+        this.dfIncrement(bits, 'si');
+        this.dfIncrement(bits, 'di');
+      },
+      /** MOVSW */  0xA5: () => this.opcodes[0xA4](0x2),
 
       /** INT imm8    */  0xCD: () => {
         const interrupt = this.fetchOpcode();
@@ -607,6 +622,16 @@ class CPU {
   }
 
   /**
+   * Increment relative to DF register flag
+   *
+   * @param {Number} bits Bytes to increment
+   * @param {String} reg  Register to increment
+   */
+  dfIncrement(bits = 0x1, reg = 'di') {
+    this.registers[reg] += this.registers.status.df ? -bits : bits;
+  }
+
+  /**
    * Parse RM mode byte
    * see: http://www.c-jump.com/CIS77/CPU/x86/X77_0060_mod_reg_r_m_byte.htm
    *
@@ -735,7 +760,7 @@ class CPU {
           do {
             operand();
             this.registers.ip = ip;
-          } while(this.registers.cx = this.aluProcess(this.registers.cx - 1, 0x2));
+          } while(this.registers.cx = this.aluProcess(this.registers.cx - 0x1, 0x2));
         } else
           operand();
 

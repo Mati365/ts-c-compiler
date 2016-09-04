@@ -6,10 +6,15 @@
 jmp word 0x0000:boot
 
 boot:
-  mov cx, 3
-  rep inc ax
+  mov byte [0x0], 0x1
+  mov byte [0x1], 0x2
+  mov byte [0x2], 0x3
+
+  mov cx, 0x3
+  mov si, 0x0
+  mov di, 0x3
+  rep movsb
   xchg bx, bx
-  hlt
 
 times 510 - ($-$$) db 0
 dw 0xAA55
