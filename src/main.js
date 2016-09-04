@@ -108,7 +108,7 @@ class CPU {
       ((name, bit) => {
         Object.defineProperty(this.registers.status, name, {
           get: ()     => this.registers.flags & bit,
-          set: (val)  => this.registers.flags ^= (-val ^ this.registers.flags) & (1 << bit)
+          set: (val)  => this.registers.flags ^= (-(val ? 1 : 0) ^ this.registers.flags) & (1 << bit)
         });
       })(k, CPU.flags[k]);
     }
@@ -183,7 +183,7 @@ class CPU {
    * @param {Number}  bits  Intel 8086 supports only 16bit stack
    */
   push(val, bits = 0x2) {
-    this.registers.sp = this.aluProcess(this.registers.sp - bits, 0x2);
+    this.registers.sp = CPU.toUnsignedNumber(this.registers.sp - bits, 0x2);
     this.memIO.write[bits](val, this.lastStackAddr);
   }
 
@@ -196,7 +196,7 @@ class CPU {
    */
   pop(bits = 0x2, read = true) {
     const val = read && this.memIO.read[bits](this.lastStackAddr);
-    this.registers.sp = this.aluProcess(this.registers.sp + bits, 0x2);
+    this.registers.sp = CPU.toUnsignedNumber(this.registers.sp + bits, 0x2);
     return val;
   }
 
@@ -538,12 +538,13 @@ class CPU {
         operator._c(l, r),
         bits,
         operator.flags,
-        operator._flagOnly
+        operator._flagOnly,
+        true
       );
     };
 
     /** ALU process value */
-    this.aluProcess = (val, bits, flags = 0xFF, temp = false) => {
+    this.aluProcess = (val, bits, flags = 0xFF, temp = false, writeFlags = false) => {
       /** Value returned after flags */
       let _val = 0;
       for(let key in flagCheckers) {
@@ -552,7 +553,8 @@ class CPU {
           if(!temp && (_val || _val === 0) && _val !== true)
             val = _val;
 
-          this.registers.flags ^= (-(_val ? 1 : 0) ^ this.registers.flags) & (1 << key);
+          if(writeFlags)
+            this.registers.flags ^= (-(_val ? 1 : 0) ^ this.registers.flags) & (1 << key);
         }
       }
 
@@ -560,12 +562,28 @@ class CPU {
       return val;
     };
 
-    /** Multiplier opcode */
+    /** Multiplier opcode is shared with NEG opcode */
     const multiplier = (bits = 0x1, mul) => {
       this.parseRmByte(
-        (l, _, byte) => mul(this.registers[l], byte),
-        (address, _, byte) => mul(this.memIO.read[bits](address), byte),
-        bits
+        (l, _, byte) => {
+          if(byte.reg === 0x3) {
+            /** NEG */
+            this.registers[l] = CPU.toUnsignedNumber(-this.registers[l], bits);
+            this.registers.status.cf = byte.rm === 0x0 ? 0x0 : 0x1;
+          } else
+            mul(this.registers[l], byte);
+        },
+        (address, _, byte) => {
+          if(byte.reg === 0x3) {
+            /** NEG */
+            this.memIO.write[bits](
+              CPU.toUnsignedNumber(-this.memIO.read[bits](address), bits),
+              address
+            );
+            this.registers.status.cf = byte.rm === 0x0 ? 0x0 : 0x1;
+          } else
+            mul(this.memIO.read[bits](address), byte)
+        }, bits
       );
     }
 
@@ -611,7 +629,7 @@ class CPU {
             this.registers.status.cf = this.registers.status.of = (this.registers.al === this.registers.al);
         }
       }),
-      /** MULTIPLIER ax, r/m16 */  0xF7: () => multiplier(0x1, (val, byte) => {
+      /** MULTIPLIER ax, r/m16 */  0xF7: () => multiplier(0x2, (val, byte) => {
         if((byte.reg & 0x6) === 0x6) {
           !val && this.raiseException();
 
