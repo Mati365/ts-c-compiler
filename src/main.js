@@ -376,6 +376,9 @@ class CPU {
       },
       /** STOSW */  0xAB: () => this.opcodes[0xAA](0x2),
 
+      /** CLD */  0xFC: () => this.registers.status.df = 0x0,
+      /** STD */  0xFD: () => this.registers.status.df = 0x1,
+
       /** INT imm8    */  0xCD: () => {
         const interrupt = this.fetchOpcode();
         this.logger.error(`unknown interrupt ${interrupt}`);
@@ -386,7 +389,8 @@ class CPU {
           this.halt('Debug dump!', true);
       },
 
-      /** HLT */  0xF4: this.halt.bind(this)
+      /** HLT */  0xF4: this.halt.bind(this),
+      /** NOP */  0x90: () => {}
     };
 
     /** General usage registers opcodes */
@@ -725,7 +729,17 @@ class CPU {
           return this.halt(`Unknown opcode 0x${opcode.toString(16).toUpperCase()}`);
 
         /** Do something with operand, reset opcode prefix */
-        operand();
+        if(this.opcodePrefix === 0xF3) {
+          /** Save IP register for multiple argument opcode */
+          const ip = this.registers.ip;
+          do {
+            operand();
+            this.registers.ip = ip;
+          } while(this.registers.cx = this.aluProcess(this.registers.cx - 1, 0x2));
+        } else
+          operand();
+
+        /** Reset opcode */
         this.opcodePrefix = 0x0;
       }
     };
