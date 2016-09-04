@@ -101,8 +101,8 @@ class CPU {
       'sf': 0x7,  /** Signum flag */
       'tf': 0x8,  /** Trap flag */
       'if': 0x9,  /** Interrupt flag */
-      'df': 0x10, /** Direction flag */
-      'of': 0x11  /** Overflow flag */
+      'df': 0xA, /** Direction flag */
+      'of': 0xB  /** Overflow flag */
     }
     for(let k in CPU.flags) {
       ((name, bit) => {
@@ -549,9 +549,18 @@ class CPU {
       return val;
     };
 
+    /** Multiplier opcode */
+    const multiplier = (bits = 0x1, mul) => {
+      this.parseRmByte(
+        (l, _, byte) => mul(this.registers[l], byte),
+        (address, _, byte) => mul(this.memIO.read[bits](address), byte),
+        bits
+      );
+    }
+
     /** $80, $81, $82 RM Byte specific */
     Object.assign(this.opcodes, {
-      /** OPERATOR r/m8, imm8 */   [0x80]: (bits = 0x1, src = bits) => {
+      /** OPERATOR r/m8, imm8 */   0x80: (bits = 0x1, src = bits) => {
         this.parseRmByte(
           (register, _o) => {
             this.registers[register] = this.alu(this.operators[_o], this.registers[register], this.fetchOpcode(src), bits);
@@ -564,8 +573,30 @@ class CPU {
           }, bits
         );
       },
-      /** OPERATOR r/m16, imm8 */  [0x83]: () => this.opcodes[0x80](0x2, 0x1),
-      /** OPERATOR r/m16, imm16 */ [0x81]: () => this.opcodes[0x80](0x2),
+      /** OPERATOR r/m16, imm8 */  0x83: () => this.opcodes[0x80](0x2, 0x1),
+      /** OPERATOR r/m16, imm16 */ 0x81: () => this.opcodes[0x80](0x2),
+
+      /** MUL/IMUL al, r/m8  */  0xF6: () => multiplier(0x1, (val, byte) => {
+        this.registers.ax = this.aluProcess(
+          byte.reg === 0x5 ? CPU.getSignedNumber(this.registers.al) * CPU.getSignedNumber(val) : (this.registers.al * val),
+          0x2
+        );
+
+        if(byte.reg === 0x5)
+          this.registers.status.cf = this.registers.status.of = (this.registers.al === this.registers.al);
+      }),
+      /** MUL/IMUL ax, r/m16 */  0xF7: () => multiplier(0x1, (val) => {
+        const output = this.aluProcess(
+          byte.reg === 0x5 ? CPU.getSignedNumber(this.registers.ax) * CPU.getSignedNumber(val) : (this.registers.ax * val),
+          0x4
+        );
+
+        this.registers.ax = output & 0xFF;
+        this.registers.dx = (output >> 8) & 0xFF;
+
+        if(byte.reg === 0x5)
+          this.registers.status.cf = this.registers.status.of = (output === this.registers.ax);
+      }),
     });
 
     for(let key in this.operators) {
@@ -647,7 +678,8 @@ class CPU {
     if(byte.mod === 0x3)
       regCallback(
         this.regMap[mode][byte.rm],
-        byte.reg
+        byte.reg,
+        byte
       );
 
     /** Adress */
