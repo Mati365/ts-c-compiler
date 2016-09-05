@@ -3,7 +3,10 @@ const fs = require('fs')
     , expect = require('chai').expect
     , pasm = require('pasm')
     , winston = require('winston')
-    , CPU = require('../src/main');
+
+    /** Project classes */
+    , CPU = require('../src/x86')
+    , IO = require('../src/io');
 
 const compile = (code) => {
   return pasm.parse(`
@@ -83,7 +86,9 @@ describe('Intel 8086 emulator', () => {
             clockSpeed: 0,
             silent: false
           };
-          cpu.boot(fd);
+          cpu
+            .attach(IO.BIOS)
+            .boot(fd);
 
           /** TODO: registers check */
           winston.warn('Total exec time: ' + (Date.now() - time) + 'ms\n\n');

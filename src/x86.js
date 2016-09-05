@@ -33,8 +33,9 @@ class CPU {
     }
     config && Object.assign(this.config, config);
 
-    /** Interrupts */
-    this.interrupt = 0x0;
+    /** Devices list */
+    this.interrupts = {};
+    this.ports = {};
 
     /**
      * Alloc 1024 KB of RAM memory
@@ -168,7 +169,17 @@ class CPU {
 
     /** Generate instructions */
     this.initOpcodeSet();
-    this.initInterrupts();
+  }
+
+  /**
+   * Attach device to CPU
+   *
+   * @param {Device} device Device class
+   * @returns CPU
+   */
+  attach(device) {
+    (new device).attach(this);
+    return this;
   }
 
   /** Last stack item address */
@@ -254,12 +265,6 @@ class CPU {
 
     this.logger.info('CPU: Intel 8086 compatible processor');
     this.loadMBR(this.readChunk(0, 512));
-  }
-
-  /**
-   * Load interrupts list into IVT
-   */
-  initInterrupts() {
   }
 
   /**
@@ -401,8 +406,11 @@ class CPU {
       /** LODSW */  0xAD: () => this.opcodes[0xAC](0x2),
 
       /** INT imm8    */  0xCD: () => {
-        const interrupt = this.fetchOpcode();
-        this.logger.error(`unknown interrupt ${interrupt}`);
+        const interrupt = this.interrupts[this.fetchOpcode()];
+        if(!interrupt)
+          this.logger.error(`unknown interrupt ${interrupt}`);
+        else
+          interrupt();
       },
       /** XCHG bx, bx */  0x87: () => {
         const l = this.fetchOpcode();

@@ -2,7 +2,7 @@
   "name": "i8086.js",
   "version": "1.0.0",
   "description": "",
-  "main": "src/main.s",
+  "main": "src/x86.js",
   "directories": {
     "test": "test"
   },
