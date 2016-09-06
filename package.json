@@ -2,7 +2,11 @@
   "name": "i8086.js",
   "version": "1.0.0",
   "description": "",
-  "main": "src/x86.js",
+  "main": "dist/window.html",
+  "window": {
+    "frame": false,
+    "toolbar": false
+  },
   "directories": {
     "test": "test"
   },
@@ -24,11 +28,18 @@
   "homepage": "https://github.com/Mati365/i8086.js#readme",
   "dependencies": {
     "cli-table": "^0.3.1",
+    "nw": "^0.17.0",
     "winston": "^2.2.0"
   },
   "devDependencies": {
+    "babel": "^6.5.2",
+    "babel-core": "^6.14.0",
+    "babel-loader": "^6.2.5",
+    "babel-preset-react": "^6.11.1",
     "chai": "^3.5.0",
+    "html-webpack-plugin": "^2.22.0",
     "mocha": "^3.0.2",
-    "pasm": "0.0.1"
+    "pasm": "0.0.1",
+    "webpack": "^1.13.2"
   }
 }

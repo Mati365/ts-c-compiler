@@ -70,32 +70,4 @@ describe('Intel 8086 emulator', () => {
       });
     });
   });
-
-  describe('Binary execution', () => {
-    it('exec test bootsec.bin', (done) => {
-      const runBootsector = () => {
-        /** Read boot device */
-        fs.open('test/bochs/build/bootsec.bin', 'r', (status, fd) => {
-          if (status)
-            done(status.message);
-
-          /** Exec */
-          let time = Date.now();
-          cpu.config = {
-            ignoreMagic: true,
-            clockSpeed: 0,
-            silent: false
-          };
-          cpu
-            .attach(IO.BIOS)
-            .boot(fd);
-
-          /** TODO: registers check */
-          winston.warn('Total exec time: ' + (Date.now() - time) + 'ms\n\n');
-          done();
-        });
-      }
-      childProcess.exec('test/bochs/build.sh', runBootsector);
-    });
-  });
 });
