@@ -2,6 +2,7 @@ node_modules/*
 .*
 !.bochsrc
 !.gitignore
+!.eslintrc
 *~
 test/bochs/build/
 bochsout.txt
