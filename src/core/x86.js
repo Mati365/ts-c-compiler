@@ -177,8 +177,8 @@ class CPU {
    * @param {Device} device Device class
    * @returns CPU
    */
-  attach(device) {
-    (new device).attach(this);
+  attach(Device) {
+    new Device().attach(this);
     return this;
   }
 
@@ -800,6 +800,9 @@ class CPU {
             segRegister = 'ss';
             address = this.registers.bp + displacement;
           break;
+
+          default:
+            this.logger.error('Unknown RM byte address!');
         }
       }
 
