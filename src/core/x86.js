@@ -1,8 +1,28 @@
 'use strict';
 
-const fs = require('fs')
-    , winston = require('winston')
-    , Table = require('cli-table');
+const Table = require('cli-table');
+
+/**
+ * Simple logger
+ * @class Logger
+ */
+class Logger {
+  constructor() {
+    (['error', 'info', 'warn']).forEach((scope) => {
+      this[scope] = this.log.bind(this, scope);
+    });
+  }
+
+  /**
+   * Log message
+   *
+   * @param {String}  type  Message type
+   * @param {String}  msg   Message content
+   */
+  log(type, msg) {
+    console.log(`${type}: ${msg}`);
+  }
+}
 
 /**
  * Main code exec
@@ -16,15 +36,7 @@ class CPU {
    */
   constructor(config) {
     /** Debug logger */
-    this.logger = new winston.Logger({
-      transports: [
-        new (winston.transports.Console)({
-          level : 'info',
-          colorize: true,
-          timestamp: true
-        })
-      ]
-    });
+    this.logger = new Logger;
 
     /** Default CPU config */
     this.config = {
@@ -967,7 +979,7 @@ class CPU {
       buffer.fill(0);
       this.device.copy(buffer, 0, offset, Math.min(this.device.length, size));
     } else
-      fs.readSync(this.device, buffer, 0, size, offset);
+      this.halt('Unknown storage memory driver!');
     return buffer;
   }
 

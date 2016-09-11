@@ -39,8 +39,5 @@ module.exports = {
       template: 'src/terminal/template/window.ejs',
       filename: 'window.html'
     })
-  ],
-  node: {
-    fs: 'empty'
-  }
+  ]
 };
