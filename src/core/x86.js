@@ -328,7 +328,10 @@ class CPU {
             if(mode.reg === 0x6)
               this.push(this.registers[reg]);
             else {
-              this.registers[reg] = this.aluProcess(this.registers[reg] + (mode.reg === 0x1 ? -1 : 1), 0x1);
+              this.registers[reg] = this.alu(
+                this.operators.extra[mode.reg === 0x1 ? 'decrement' : 'increment'],
+                this.registers[reg], null, bits
+              );
             }
           },
           (address, reg, mode) => {
@@ -336,7 +339,13 @@ class CPU {
             if(mode.reg === 0x6)
               this.push(memVal);
             else {
-              this.memIO.write[bits](this.aluProcess(memVal + (mode.reg === 0x1 ? -1 : 1), 0x1), address);
+              this.memIO.write[bits](
+                this.alu(
+                  this.operators.extra[mode.reg === 0x1 ? 'decrement' : 'increment'],
+                  memVal, null, bits
+                ),
+                address
+              );
             }
           }, bits
         );
@@ -437,12 +446,12 @@ class CPU {
 
         /** INC reg16 */
         this.opcodes[0x40 + _opcode] = () => {
-          this.registers[_r16] = this.aluProcess(this.registers[_r16] + 0x1, 0x2);
+          this.registers[_r16] = this.alu(this.operators.extra.increment, this.registers[_r16], null, 0x2);
         };
 
         /** DEC reg16 */
         this.opcodes[0x48 + _opcode] = () => {
-          this.registers[_r16] = this.aluProcess(this.registers[_r16] - 0x1, 0x2);
+          this.registers[_r16] = this.alu(this.operators.extra.decrement, this.registers[_r16], null, 0x2);
         };
 
         /** PUSH reg16 */
@@ -459,7 +468,7 @@ class CPU {
       /** JAE */  0x73: (f) => !f.cf,
       /** JB  */  0x72: (f) => f.cf,
       /** JBE */  0x76: (f) => f.cf || f.zf,
-      /** JG  */  0x7F: (f) => f.zf && f.sg === f.of,
+      /** JG  */  0x7F: (f) => !f.zf || f.sg === f.of,
       /** JGE */  0x7D: (f) => f.sf === f.of,
       /** JL  */  0x7C: (f) => f.sf !== f.of,
       /** JLE */  0x7E: (f) => f.zg || f.sg !== f.of,
@@ -502,14 +511,15 @@ class CPU {
   initALU() {
     const flagCheckers = {
       /** Carry flag */   [CPU.flags.cf]: function(val, bits) {
-        const up = CPU.bitMask[bits];
-        if(val >= up)
-          return val - up;
-        else if(val < 0x0)
-          return up + val;
+        const unsigned = CPU.toUnsignedNumber(val, bits);
+        if(val != unsigned)
+          return unsigned;
+      },
+      /** Overflow flag */   [CPU.flags.of]: function(val, bits, l, r) {
+        return (l * r >= 0 && l + r < 0) || (l < 0 && l * r > 0 && l + r > 0);
       },
       /** Parity flag */  [CPU.flags.pf]: function(val) {
-        return !((val & 0xFF) % 0x2); /** todo: optimize */
+        return !((val & 0xFF) % 0x2);
       },
       /** Zero flag */    [CPU.flags.zf]: function(val) {
         return val === 0x0;
@@ -544,36 +554,23 @@ class CPU {
     /** ALU operation checker */
     this.alu = (operator, l, r, bits) => {
       /** Set default flags value for operator */
+      let val = operator._c(l, r);
       if(!operator.flags)
         operator.flags = 0xFF;
 
-      /** flagOnly - for cmp and temporary operations */
-      return this.aluProcess(
-        operator._c(l, r),
-        bits,
-        operator.flags,
-        operator._flagOnly,
-        true
-      );
-    };
-
-    /** ALU process value */
-    this.aluProcess = (val, bits, flags = 0xFF, temp = false, writeFlags = false) => {
       /** Value returned after flags */
-      let _val = 0;
       for(let key in flagCheckers) {
-        if((flags & key) == key) {
-          _val = flagCheckers[key](val, bits);
-          if(!temp && (_val || _val === 0) && _val !== true)
+        if((operator.flags & key) == key) {
+          let _val = flagCheckers[key](val, bits, l, r);
+          if((_val || _val === 0) && _val !== true)
             val = _val;
 
-          if(writeFlags)
-            this.registers.flags ^= (-(_val ? 1 : 0) ^ this.registers.flags) & (1 << key);
+          this.registers.flags ^= (-(_val ? 1 : 0) ^ this.registers.flags) & (1 << key);
         }
       }
 
       /** temp - for cmp and temporary operations */
-      return val;
+      return operator._flagOnly ? l : val;
     };
 
     /** Multiplier opcode is shared with NEG opcode */
@@ -881,7 +878,7 @@ class CPU {
           do {
             operand();
             this.registers.ip = ip;
-          } while(this.registers.cx = this.aluProcess(this.registers.cx - 0x1, 0x2));
+          } while(this.registers.cx = CPU.toUnsignedNumber(this.registers.cx - 0x1, 0x2));
         } else
           operand();
 
@@ -1064,9 +1061,9 @@ class CPU {
   static toUnsignedNumber(num, bits = 0x1) {
     const up = CPU.bitMask[bits];
     if(num >= up)
-      return num - up;
+      return num - up - 0x1;
     else if(num < 0x0)
-      return up + num;
+      return up + num + 0x1;
     else
       return num;
   }

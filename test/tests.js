@@ -5,8 +5,8 @@ const fs = require('fs')
     , winston = require('winston')
 
     /** Project classes */
-    , CPU = require('../src/x86')
-    , IO = require('../src/io');
+    , CPU = require('../src/core/x86')
+    , IO = require('../src/core/io');
 
 const compile = (code) => {
   return pasm.parse(`
@@ -68,6 +68,34 @@ describe('Intel 8086 emulator', () => {
         expect(cpu.registers.ax).to.equal(0x1);
         expect(cpu.registers.cx).to.equal(0x1);
       });
+    });
+  });
+
+  describe('Binary execution', () => {
+    it('exec test bootsec.bin', (done) => {
+      const runBootsector = () => {
+        /** Read boot device */
+        fs.open('test/bochs/build/bootsec.bin', 'r', (status, fd) => {
+          if (status)
+            done(status.message);
+
+          /** Exec */
+          let time = Date.now();
+          cpu.config = {
+            ignoreMagic: true,
+            clockSpeed: 0,
+            silent: false
+          };
+          cpu
+            .attach(IO.BIOS)
+            .boot(fd);
+
+          /** TODO: registers check */
+          winston.warn('Total exec time: ' + (Date.now() - time) + 'ms\n\n');
+          done();
+        });
+      }
+      childProcess.exec('test/bochs/build.sh', runBootsector);
     });
   });
 });
