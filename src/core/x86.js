@@ -187,10 +187,11 @@ class CPU {
    * Attach device to CPU
    *
    * @param {Device} device Device class
+   * @param {Array}  args   Array of params
    * @returns CPU
    */
-  attach(Device) {
-    new Device().attach(this);
+  attach(Device, ...args) {
+    new Device().attach(this, args);
     return this;
   }
 
@@ -267,7 +268,7 @@ class CPU {
 
     /** Remove logging if silent */
     if(this.config.silent)
-      this.logger.remove(winston.transports.Console);
+      this.logger.log = function() {}
 
     /** Booting procedure */
     this.device = device;
@@ -901,7 +902,7 @@ class CPU {
 
     /** Check processor mode */
     if(this.config.clockSpeed)
-      this.clock = setInterval(tick, 1000 / this.config.clockSpeed);
+      this.clock = setInterval(tick, this.config.clockSpeed);
     else {
       this.clock = true;
       while(true) {

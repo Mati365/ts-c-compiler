@@ -8,9 +8,12 @@ class Output extends React.Component {
   };
 
   componentDidMount() {
-    this.props.onContextInit(
-      this.refs.canvas.getContext('2d')
-    );
+    /** Fix resolution */
+    this.refs.canvas.setAttribute('width', this.refs.canvas.clientWidth);
+    this.refs.canvas.setAttribute('height', this.refs.canvas.clientHeight);
+
+    /** Load terminal */
+    this.props.onContextInit(this.refs.canvas);
   }
   render() {
     return (
@@ -21,8 +24,9 @@ class Output extends React.Component {
 
 const styles = {
   width: '100%',
-  height: '400px',
-  background: 'FFF'
+  height: '440px',
+  paddingTop: '40px',
+  imageRendering: 'pixelated'
 };
 
 module.exports = Output;

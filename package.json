@@ -31,16 +31,13 @@
   },
   "homepage": "https://github.com/Mati365/i8086.js#readme",
   "dependencies": {
-    "classnames": "^2.2.5",
     "cli-table": "^0.3.1",
     "color": "^0.11.3",
-    "flexboxgrid": "^6.3.1",
     "nw": "^0.17.0",
     "radium": "^0.18.1",
     "react": "^15.3.1",
     "react-dom": "^15.3.1",
-    "react-fa": "^4.1.2",
-    "react-flexbox-grid": "^0.10.2"
+    "react-fa": "^4.1.2"
   },
   "devDependencies": {
     "babel": "^6.5.2",

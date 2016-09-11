@@ -2,7 +2,6 @@ const fs = require('fs')
     , childProcess = require('child_process')
     , expect = require('chai').expect
     , pasm = require('pasm')
-    , winston = require('winston')
 
     /** Project classes */
     , CPU = require('../src/core/x86')
@@ -91,7 +90,7 @@ describe('Intel 8086 emulator', () => {
             .boot(fd);
 
           /** TODO: registers check */
-          winston.warn('Total exec time: ' + (Date.now() - time) + 'ms\n\n');
+          console.log('Total exec time: ' + (Date.now() - time) + 'ms\n\n');
           done();
         });
       }

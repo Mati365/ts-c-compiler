@@ -17,7 +17,6 @@ class Device {
     /** That maps must be initialised in attach method */
     this.interrupts = {};
     this.ports = {};
-    this.init();
   }
 
   /**
@@ -28,10 +27,12 @@ class Device {
   /**
    * Attach device to CPU
    *
-   * @param {CPU} cpu
+   * @param {CPU}   cpu   CPU object
+   * @param {Array} args  Initializer arguments
    */
-  attach(cpu) {
+  attach(cpu, ...args) {
     this.cpu = cpu;
+    this.init.apply(this, ...args);
 
     Object.assign(this.cpu.interrupts, this.interrupts);
     Object.assign(this.cpu.ports, this.ports);
@@ -51,7 +52,7 @@ class Device {
       if(callback)
         callback()
       else
-        this.cpu.logger.error(`Unknown interrupt 0x${func.toString(16)} function!`);
+        this.cpu.logger.error(`Unknown interrupt 0x${reg} function!`);
     };
   }
 }
@@ -63,8 +64,19 @@ class Device {
  * @extends {Device}
  */
 class BIOS extends Device {
-  init() {
-    this.videoMode = 0x1;
+  /**
+   * Initialize BIOS
+   *
+   * @param {Canvas} canvas Canvas context
+   */
+  init(canvas) {
+    this.mode = BIOS.VideoMode[0x0];
+    this.canvas = {
+      w: canvas.clientWidth,
+      h: canvas.clientHeight,
+      ctx: canvas.getContext('2d')
+    }
+
     this.cursor = {
       x: 0, y: 0, info: {
         character: '█',
@@ -75,45 +87,120 @@ class BIOS extends Device {
 
     this.interrupts = {
       /** Graphics interrupts */
-      0x10: this.intFunc('ah', {
-        0x0: () => this.cpu.logger.warn('set video mode'),
+      10: this.intFunc('ah', {
+        /** Set video mode */
+        0x0: () => this.mode = BIOS.VideoMode[this.cpu.registers.al],
 
         /** Write character at address */
-        0xA: () => {
+        0x9: () => {
+          this.mode.write(
+            this.cpu.memIO,
+            this.cpu.registers.al,
+            this.cpu.registers.bl,
+            this.cursor.x,
+            this.cursor.y
+          );
         }
       })
     };
+
+    /** Monitor render loop */
+    this.canvas.ctx.imageSmoothingEnabled = false;
+    setInterval(
+      this.redraw.bind(this, this.canvas.ctx),
+      1000 / 10
+    );
   }
 
   /**
-   * Writes character to VRAM
+   * Redraw whole screen
    *
-   * @param {Number}  char  Character
-   * @param {Number}  attr  Attribute
+   * @param {Context} ctx Screen context
    */
-  writeCharacter(char, attr) {
-    this.cpu.memIO.write[0x2](
-      (char & 0xFF) | (attr & 0xFF) << 8
+  redraw(ctx) {
+    const cell = {
+      w: this.canvas.w / this.mode.w,
+      h: this.canvas.h / this.mode.h
+    };
+
+    ctx.clearRect(0, 0, this.canvas.w, this.canvas.h);
+    ctx.font = `${cell.h}px Terminal`;
+
+    let offset = 0;
+    for(var y = 0;y < this.mode.h;++y) {
+      for(var x = 0;x < this.mode.w;++x) {
+        let [char, color] = [
+          this.cpu.mem[this.mode.offset + (offset++)],
+          this.cpu.mem[this.mode.offset + (offset++)]
+        ]
+        ctx.fillStyle = BIOS.colorTable[color];
+        ctx.fillText(String.fromCharCode(char), (x + 1) * cell.w, (y + 1) * cell.h);
+      }
+    }
+  }
+}
+
+/** Mapped memory */
+BIOS.mapped = {
+  text:   0xB8000,
+  color:  0xA0000
+};
+
+/** All colors supported by BIOS */
+BIOS.colorTable = {
+  0x0: '#000000',
+  0x1: '#0000AA',
+  0x2: '#00AA00',
+  0x3: '#00AAAA',
+  0x4: '#AA0000',
+  0x5: '#AA00AA',
+  0x6: '#AA5500',
+  0x7: '#AAAAAA',
+  0x8: '#555555',
+  0x9: '#5555FF',
+  0xA: '#55FF55',
+  0xB: '#55FFFF',
+  0xC: '#FF5555',
+  0xD: '#FF55FF',
+  0xE: '#FFFF55',
+  0xF: '#FFFFFF'
+};
+
+/** All video modes supported by BIOS */
+class VideoMode {
+  constructor(w, h, pages = 0x1, offset = BIOS.mapped.text) {
+    this.w = w;
+    this.h = h;
+    this.offset = offset;
+    this.pages = pages;
+  }
+
+  /**
+   * Write to VRAM
+   *
+   * @param {Memory} mem    Memory driver
+   * @param {Number} char   Character code
+   * @param {Number} color  Color BIOS number
+   * @param {Number} x      X screen coordinate
+   * @param {Number} y      Y screen coordinate
+   * @param {Number} page   Page index
+   */
+  write(mem, char, color, x, y, page = 0x0) {
+    /** Multiply by each character byte size */
+    x *= 0x2;
+    y *= 0x2;
+
+    /** Write direct to memory */
+    mem.write[0x2](
+      (char & 0xFF) | ((color & 0xFF) << 8),
+      this.offset + (this.w * this.h) * page + y * this.w + x
     );
   }
 }
-BIOS.colorTable = {
-  // 0 0000 black
-  // 1 0001 blue
-  // 2 0010 green
-  // 3 0011 cyan
-  // 4 0100 red
-  // 5 0101 magenta
-  // 6 0110 brown
-  // 7 0111 light gray
-  // 8 1000 dark gray
-  // 9 1001 light blue
-  // A 1010 light green
-  // B 1011 light cyan
-  // C 1100 light red
-  // D 1101 light magenta
-  // E 1110 yellow
-  // F 1111 white
+
+BIOS.VideoMode = {
+  0x0: new VideoMode(40, 25, 0x8),
+  0x3: new VideoMode(80, 25, 0x8)
 };
 
 /** Exports */
