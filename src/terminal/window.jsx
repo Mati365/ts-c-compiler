@@ -13,29 +13,7 @@ const React = require('react')
     , CPU = require('../core/x86')
     , IO = require('../core/io');
 
-const compiled = pasm.parse(`
-  ; NASM breakpoint
-  ; xchg bx, bx
-  [bits 16]
-  [org 0x7c00]
-
-  jmp 0x0000:boot
-
-  boot:
-    mov ax, 0x0
-    int 10
-
-    mov ah, 0x9
-    mov al, 65
-    mov bh, 0
-    mov bl, 0xF
-    mov cx, 2
-    int 10
-    hlt
-
-  times 510 - ($-$$) db 0
-  dw 0xAA55
-`).data;
+const compiled = pasm.parse(require('raw!../../test/bochs/asm/bootsec.asm')).data;
 
 @Radium
 class Terminal extends React.Component {

@@ -25,6 +25,13 @@ class Device {
   init() {}
 
   /**
+   * Handle CPU exception
+   *
+   * @param {Number} code Exception code
+   */
+  exception(code) {}
+
+  /**
    * Attach device to CPU
    *
    * @param {CPU}   cpu   CPU object
@@ -36,6 +43,8 @@ class Device {
 
     Object.assign(this.cpu.interrupts, this.interrupts);
     Object.assign(this.cpu.ports, this.ports);
+
+    return this;
   }
 
   /**
@@ -71,10 +80,12 @@ class BIOS extends Device {
    */
   init(canvas) {
     this.mode = BIOS.VideoMode[0x0];
-    this.canvas = {
-      w: canvas.clientWidth,
-      h: canvas.clientHeight,
-      ctx: canvas.getContext('2d')
+    if(canvas) {
+      this.canvas = {
+        w: canvas.clientWidth,
+        h: canvas.clientHeight,
+        ctx: canvas.getContext('2d')
+      }
     }
 
     this.cursor = {
@@ -87,17 +98,28 @@ class BIOS extends Device {
 
     this.interrupts = {
       /** Graphics interrupts */
-      10: this.intFunc('ah', {
+      0x10: this.intFunc('ah', {
         /** Set video mode */
         0x0: () => this.mode = BIOS.VideoMode[this.cpu.registers.al],
 
         /** Write character at address */
         0x9: () => {
+          for(let i = 0;i < this.cpu.registers.cx;++i) {
+            this.mode.write(
+              this.cpu.memIO,
+              this.cpu.registers.al,
+              this.cpu.registers.bl,
+              this.cursor.x++,
+              this.cursor.y
+            );
+          }
+        },
+        0xE: () => {
           this.mode.write(
             this.cpu.memIO,
             this.cpu.registers.al,
-            this.cpu.registers.bl,
-            this.cursor.x,
+            0xF,
+            this.cursor.x++,
             this.cursor.y
           );
         }
@@ -105,11 +127,13 @@ class BIOS extends Device {
     };
 
     /** Monitor render loop */
-    this.canvas.ctx.imageSmoothingEnabled = false;
-    setInterval(
-      this.redraw.bind(this, this.canvas.ctx),
-      1000 / 10
-    );
+    if(this.canvas) {
+      this.canvas.ctx.imageSmoothingEnabled = false;
+      setInterval(
+        this.redraw.bind(this, this.canvas.ctx),
+        1000 / 10
+      );
+    }
   }
 
   /**

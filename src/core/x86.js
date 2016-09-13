@@ -20,7 +20,7 @@ class Logger {
    * @param {String}  msg   Message content
    */
   log(type, msg) {
-    console.log(`${type}: ${msg}`);
+    console.log(`${type}:`, msg);
   }
 }
 
@@ -46,6 +46,7 @@ class CPU {
     config && Object.assign(this.config, config);
 
     /** Devices list */
+    this.devices = [];
     this.interrupts = {};
     this.ports = {};
 
@@ -191,7 +192,9 @@ class CPU {
    * @returns CPU
    */
   attach(Device, ...args) {
-    new Device().attach(this, args);
+    this.devices.push(
+      new Device().attach(this, args)
+    );
     return this;
   }
 
@@ -374,22 +377,23 @@ class CPU {
       /** LOOP 8bit rel */  0xE2: () => {
         const relativeAddress = this.fetchOpcode();
         if(--this.registers.cx)
-          this.relativeJump(relativeAddress);
+          this.relativeJump(0x1, relativeAddress);
       },
 
       /** RET near  */  0xC3: (bits = 0x2) => this.registers.ip = this.pop(),
       /** RET 16bit */  0xC2: (bits = 0x2) => {
         this.registers.ip = this.pop();
+        console.log('beniz');
         this.pop(this.fetchOpcode(bits, false), false);
       },
 
       /** CALL 16bit dis  */  0xE8: () => {
-        const relative = CPU.getSignedNumber(this.fetchOpcode(0x2), 0x2);
-
         this.push(this.registers.ip);
-        this.registers.ip += relative;
+        console.log(this.registers.ip, this.fetchOpcode(0x2));
+        this.registers.ip += 12;
       },
 
+      /** JMP 8bit        */  0xEB: () => this.relativeJump(0x1),
       /** FAR JMP 32bit   */  0xEA: () => {
         Object.assign(this.registers, {
           ip: this.fetchOpcode(0x2),
@@ -436,8 +440,10 @@ class CPU {
       },
       /** XCHG bx, bx */  0x87: () => {
         const l = this.fetchOpcode();
-        if(l == 0xDB)
+        if(l == 0xDB) {
+          this.raiseException(CPU.Exception.MEM_DUMP);
           this.halt('Debug dump!', true);
+        }
       },
 
       /** HLT */  0xF4: this.halt.bind(this),
@@ -490,11 +496,11 @@ class CPU {
       /** JZ  */  0x74: (f) => f.zf
     };
     const jumpIf = (flagCondition, byte) => {
-      flagCondition(this.registers.status) && this.relativeJump(byte);
+      flagCondition(this.registers.status) && this.relativeJump(0x1);
     }
     for(let opcode in jmpOpcodes) {
       ((_opcode) => {
-        this.opcodes[_opcode] = () => jumpIf(jmpOpcodes[_opcode], this.fetchOpcode())
+        this.opcodes[_opcode] = () => jumpIf(jmpOpcodes[_opcode])
       })(opcode);
     }
 
@@ -509,12 +515,14 @@ class CPU {
   }
 
   /**
-   * Generate exception
+   * Raise exception to all devices
+   *
+   * @param {Number} code Raise exception
    */
-  raiseException() {
-    /** todo: Handle it */
-    this.halt('Exception occurred!');
-    throw Error();
+  raiseException(code) {
+    this.devices.forEach(
+      (device) => device.exception(code)
+    );
   }
 
   /**
@@ -578,7 +586,7 @@ class CPU {
           if((_val || _val === 0) && _val !== true)
             val = _val;
 
-          this.registers.flags ^= (-(_val ? 1 : 0) ^ this.registers.flags) & (1 << key);
+          this.registers.flags ^= ((-this.registers.flags ^ (_val ? 1 : 0))) & (1 << key);
         }
       }
 
@@ -639,7 +647,7 @@ class CPU {
 
       /** MULTIPLIER al, r/m8  */  0xF6: () => multiplier(0x1, (val, byte) => {
         if((byte.reg & 0x6) === 0x6) {
-          !val && this.raiseException();
+          !val && this.raiseException(CPU.Exception.DIV_BY_ZERO);
 
           if(byte.reg === 0x7) {
             /** IDIV */
@@ -663,7 +671,7 @@ class CPU {
       }),
       /** MULTIPLIER ax, r/m16 */  0xF7: () => multiplier(0x2, (val, byte) => {
         if((byte.reg & 0x6) === 0x6) {
-          !val && this.raiseException();
+          !val && this.raiseException(CPU.Exception.DIV_BY_ZERO);
 
           /** DIV / IDIV */
           if(byte.reg === 0x7) {
@@ -742,10 +750,14 @@ class CPU {
   /**
    * Jump to address relative to ip register
    *
-   * @param {Integer} byte  Signed byte
+   * @param {Integer} bits      Mode
+   * @param {Integer} relative  Relative address
    */
-  relativeJump(byte) {
-    this.registers.ip += CPU.getSignedNumber(byte);
+  relativeJump(bits, relative) {
+    if(!relative)
+      relative = this.fetchOpcode(bits);
+
+    this.registers.ip += CPU.getSignedNumber(relative);
   }
 
   /**
@@ -905,10 +917,8 @@ class CPU {
       this.clock = setInterval(tick, this.config.clockSpeed);
     else {
       this.clock = true;
-      while(true) {
+      while(this.clock) {
         tick();
-        if(!this.clock)
-          break;
       }
     }
   }
@@ -1087,6 +1097,12 @@ CPU.bitMask = {
   0x1: (0x2 << 0x7) - 0x1,
   0x2: (0x2 << 0xF) - 0x1,
   0x4: (0x2 << 0x1F) - 0x1
+};
+
+/** CPU exceptions */
+CPU.Exception = {
+  MEM_DUMP: 0x0,
+  DIV_BY_ZERO: 0x1
 };
 
 module.exports = CPU;

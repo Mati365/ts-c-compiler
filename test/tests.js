@@ -85,9 +85,12 @@ describe('Intel 8086 emulator', () => {
             clockSpeed: 0,
             silent: false
           };
+
+          let bootsec = Buffer.alloc(512);
+          fs.readSync(fd, bootsec, 0, 512);
           cpu
             .attach(IO.BIOS)
-            .boot(fd);
+            .boot(bootsec);
 
           /** TODO: registers check */
           console.log('Total exec time: ' + (Date.now() - time) + 'ms\n\n');
