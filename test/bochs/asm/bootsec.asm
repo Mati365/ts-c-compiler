@@ -6,7 +6,6 @@ call printstring	;call print string procedure
 hlt
 
 printcharacter:	;procedure to print character on screen
-xchg bx, bx
 mov ah, 0x0e	;tell bios that we need to print one charater on screen.
 
 mov bh, 0x00	;page no.

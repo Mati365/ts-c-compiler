@@ -121,7 +121,7 @@ class CPU {
     for(let k in CPU.flags) {
       ((name, bit) => {
         Object.defineProperty(this.registers.status, name, {
-          get: ()     => this.registers.flags & bit,
+          get: ()     => (this.registers.flags >> bit) & 0x1,
           set: (val)  => this.registers.flags ^= (-(val ? 1 : 0) ^ this.registers.flags) & (1 << bit)
         });
       })(k, CPU.flags[k]);
@@ -284,7 +284,7 @@ class CPU {
   }
 
   /**
-   * For faster exec generates  CPU specific opcodes list
+   * For faster exec generates CPU specific opcodes list
    * see:
    * http://csiflabs.cs.ucdavis.edu/~ssdavis/50/8086%20Opcodes.pdf
    * https://en.wikipedia.org/wiki/X86_instruction_listings#Original_8086.2F8088_instructions
@@ -383,14 +383,12 @@ class CPU {
       /** RET near  */  0xC3: (bits = 0x2) => this.registers.ip = this.pop(),
       /** RET 16bit */  0xC2: (bits = 0x2) => {
         this.registers.ip = this.pop();
-        console.log('beniz');
         this.pop(this.fetchOpcode(bits, false), false);
       },
 
       /** CALL 16bit dis  */  0xE8: () => {
-        this.push(this.registers.ip);
-        console.log(this.registers.ip, this.fetchOpcode(0x2));
-        this.registers.ip += 12;
+        this.push(this.registers.ip + 0x2);
+        this.relativeJump(0x2);
       },
 
       /** JMP 8bit        */  0xEB: () => this.relativeJump(0x1),
@@ -496,7 +494,10 @@ class CPU {
       /** JZ  */  0x74: (f) => f.zf
     };
     const jumpIf = (flagCondition, byte) => {
-      flagCondition(this.registers.status) && this.relativeJump(0x1);
+      const relative = this.fetchOpcode(0x1);
+      if(flagCondition(this.registers.status)) {
+        this.relativeJump(0x1, relative);
+      }
     }
     for(let opcode in jmpOpcodes) {
       ((_opcode) => {
@@ -586,7 +587,7 @@ class CPU {
           if((_val || _val === 0) && _val !== true)
             val = _val;
 
-          this.registers.flags ^= ((-this.registers.flags ^ (_val ? 1 : 0))) & (1 << key);
+          this.registers.flags ^= (-(_val ? 1 : 0) ^ this.registers.flags) & (1 << key);
         }
       }
 
@@ -748,7 +749,9 @@ class CPU {
   }
 
   /**
-   * Jump to address relative to ip register
+   * Fetch opcodes and jump to address
+   * relative to ip register. If rel < 0
+   * sub 1B instruction size
    *
    * @param {Integer} bits      Mode
    * @param {Integer} relative  Relative address
@@ -757,7 +760,9 @@ class CPU {
     if(!relative)
       relative = this.fetchOpcode(bits);
 
-    this.registers.ip += CPU.getSignedNumber(relative);
+    /** 1B call instruction size */
+    relative = CPU.getSignedNumber(relative, bits);
+    this.registers.ip += relative - (relative < 0 ? 1 : 0);
   }
 
   /**
@@ -810,22 +815,16 @@ class CPU {
           case 0x5: address = this.registers.di + displacement; break;
           case 0x7: address = this.registers.bx + displacement; break;
 
-          case 0x2:
-            segRegister = 'ss';
-            address = this.registers.bp + this.registers.si + displacement;
-          break;
-          case 0x3:
-            segRegister = 'ss';
-            address = this.registers.bp + this.registers.di + displacement;
-          break;
-          case 0x6:
-            segRegister = 'ss';
-            address = this.registers.bp + displacement;
-          break;
+          case 0x2: address = this.registers.bp + this.registers.si + displacement; break;
+          case 0x3: address = this.registers.bp + this.registers.di + displacement; break;
+          case 0x6: address = this.registers.bp + displacement; break;
 
           default:
             this.logger.error('Unknown RM byte address!');
         }
+        /** Seg register ss is set with 0x2, 0x3, 0x6 opcodes */
+        if(byte.rm >= 0x2 && !(0x6 % byte.rm))
+          segRegister = 'ss';
       }
 
       /** If cpu segment register is present, override default */
@@ -864,7 +863,7 @@ class CPU {
    * @param {Boolean} incrementIP Ignore counter if false
    * @returns
    */
-  fetchOpcode(size = 1, incrementIP = true) {
+  fetchOpcode(size = 0x1, incrementIP = true) {
     const mapper = this.memIO.read[size];
     if(mapper) {
       const opcode = mapper(this.getMemAddress('cs', 'ip'));
@@ -912,14 +911,21 @@ class CPU {
       }
     };
 
-    /** Check processor mode */
-    if(this.config.clockSpeed)
-      this.clock = setInterval(tick, this.config.clockSpeed);
-    else {
-      this.clock = true;
-      while(this.clock) {
-        tick();
+    /**
+     * Check processor mode handle exceptions
+     */
+    try {
+      if(this.config.clockSpeed)
+        this.clock = setInterval(tick, this.config.clockSpeed);
+      else {
+        this.clock = true;
+        while(this.clock) {
+          tick();
+        }
       }
+    } catch(e) {
+      this.dumpRegisters();
+      this.logger.error(e);
     }
   }
 
