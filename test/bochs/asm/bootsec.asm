@@ -28,7 +28,7 @@ ret
 
 
 ;data
-hellostring db 'hello world', 0	;helloworld string ending with 0
+hellostring db 'Hello world', 0	;helloworld string ending with 0
 
 times 510 - ($ - $$) db 0	;fill the rest of sector with 0
 dw 0xaa55			;add boot signature at the end of bootloader

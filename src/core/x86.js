@@ -391,8 +391,9 @@ class CPU {
         this.relativeJump(0x2);
       },
 
-      /** JMP 8bit        */  0xEB: () => this.relativeJump(0x1),
-      /** FAR JMP 32bit   */  0xEA: () => {
+      /** JMP rel 8bit  */  0xEB: () => this.relativeJump(0x1),
+      /** JMP rel 16bit */  0xE9: () => this.relativeJump(0x2),
+      /** FAR JMP 32bit */  0xEA: () => {
         Object.assign(this.registers, {
           ip: this.fetchOpcode(0x2),
           cs: this.fetchOpcode(0x2)
@@ -495,9 +496,7 @@ class CPU {
     };
     const jumpIf = (flagCondition, byte) => {
       const relative = this.fetchOpcode(0x1);
-      if(flagCondition(this.registers.status)) {
-        this.relativeJump(0x1, relative);
-      }
+      flagCondition(this.registers.status) && this.relativeJump(0x1, relative);
     }
     for(let opcode in jmpOpcodes) {
       ((_opcode) => {
