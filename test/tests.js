@@ -20,8 +20,8 @@ describe('Intel 8086 emulator', () => {
   beforeEach(() => {
     cpu = new CPU({
       ignoreMagic: true,
-      clockSpeed: 0,
-      silent: true
+      silent: true,
+      sync: true
     });
   });
 
@@ -82,8 +82,8 @@ describe('Intel 8086 emulator', () => {
           let time = Date.now();
           cpu.config = {
             ignoreMagic: true,
-            clockSpeed: 0,
-            silent: false
+            silent: false,
+            sync: true
           };
 
           let bootsec = Buffer.alloc(512);

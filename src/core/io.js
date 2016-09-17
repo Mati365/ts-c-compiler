@@ -79,7 +79,7 @@ class BIOS extends Device {
    * @param {Canvas} canvas Canvas context
    */
   init(canvas) {
-    this.mode = BIOS.VideoMode[0x0];
+    this.mode = BIOS.VideoMode[0x3];
     if(canvas) {
       this.canvas = {
         w: canvas.clientWidth,
@@ -118,7 +118,7 @@ class BIOS extends Device {
           this.mode.write(
             this.cpu.memIO,
             this.cpu.registers.al,
-            0xF,
+            this.cpu.registers.bl,
             this.cursor.x++,
             this.cursor.y
           );
@@ -128,12 +128,51 @@ class BIOS extends Device {
 
     /** Monitor render loop */
     if(this.canvas) {
+      /** Font config */
       this.canvas.ctx.imageSmoothingEnabled = false;
-      setInterval(
-        this.redraw.bind(this, this.canvas.ctx),
-        1000 / 10
-      );
+      this.font = {
+        buffer: document.createElement('canvas'),
+        ctx: null,
+        img: new Image,
+        w: 8,
+        h: 16
+      };
+
+      /** Init offscreen character buffer */
+      let buffer = this.font.buffer;
+      buffer.width = this.font.w;
+      buffer.height = this.font.h;
+      this.font.ctx = buffer.getContext('2d');
+
+      this.font.img.src = '../src/terminal/template/font.png';
+      this.font.img.onload = () => {
+        setInterval(() => {
+          this.cpu.exec(1450000 / 60);
+          this.redraw(this.canvas.ctx);
+        }, 0);
+      }
     }
+  }
+
+  drawChar(ctx, char, x, y, w, h, hex) {
+    let _ctx = this.font.ctx;
+
+    _ctx.save();
+    _ctx.clearRect(0, 0, this.font.w, this.font.h);
+    _ctx.drawImage(
+      this.font.img,
+      (char % 32) * this.font.w,
+      Math.floor(char / 32) * this.font.h,
+      this.font.w, this.font.h,
+      0, 0,
+      this.font.w, this.font.h
+    );
+    _ctx.fillStyle = hex;
+    _ctx.globalCompositeOperation = 'source-in';
+    _ctx.fillRect(0, 0, this.font.w, this.font.h);
+    _ctx.restore();
+
+    ctx.drawImage(this.font.buffer, 0, 0, this.font.w, this.font.h, x, y, w, h);
   }
 
   /**
@@ -143,22 +182,32 @@ class BIOS extends Device {
    */
   redraw(ctx) {
     const cell = {
-      w: this.canvas.w / this.mode.w,
-      h: this.canvas.h / this.mode.h
+      w: 8,
+      h: 16
     };
 
-    ctx.clearRect(0, 0, this.canvas.w, this.canvas.h);
+    /** todo: Change font */
     ctx.font = `${cell.h}px Terminal`;
 
     let offset = 0;
-    for(var y = 0;y < this.mode.h;++y) {
-      for(var x = 0;x < this.mode.w;++x) {
-        let [char, color] = [
-          this.cpu.mem[this.mode.offset + (offset++)],
-          this.cpu.mem[this.mode.offset + (offset++)]
-        ]
-        ctx.fillStyle = BIOS.colorTable[color];
-        ctx.fillText(String.fromCharCode(char), (x + 1) * cell.w, (y + 1) * cell.h);
+    for(var y = 0; y < this.mode.h; ++y) {
+      for(var x = 0; x < this.mode.w; ++x) {
+        /** Read from memory */
+        let num = this.cpu.memIO.read[0x2](this.mode.offset + offset);
+        offset += 0x2;
+
+        /** Background and text */
+        ctx.fillStyle = BIOS.colorTable[(num >> 11) & 0x7];
+        ctx.fillRect(x * cell.w, y * cell.h, cell.w, cell.h);
+
+        /** Foreground and text */
+        this.drawChar(
+          ctx,
+          num & 0xFF,
+          x * cell.w, y * cell.h,
+          cell.w, cell.h,
+          BIOS.colorTable[(num >> 8) & 0xF]
+        );
       }
     }
   }

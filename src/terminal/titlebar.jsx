@@ -18,6 +18,7 @@ class TitleBar extends React.Component {
 
 const styles = {
   bar: {
+    position: 'relative',
     fontSize: '20px',
     color: '#FFF',
     textAlign: 'center'

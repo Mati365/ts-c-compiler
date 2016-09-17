@@ -40,7 +40,6 @@ class CPU {
 
     /** Default CPU config */
     this.config = {
-      clockSpeed: 5,
       ignoreMagic: false
     }
     config && Object.assign(this.config, config);
@@ -274,6 +273,7 @@ class CPU {
       this.logger.log = function() {}
 
     /** Booting procedure */
+    this.clock = true;
     this.device = device;
     Object.assign(this.registers, {
       dl: id
@@ -876,9 +876,13 @@ class CPU {
 
   /**
    * Exec CPU
+   *
+   * @param {Number}  cycles  Instructions counter
+   * @returns Cycles count
    */
-  exec() {
-    this.logger.info(`Jump to ${this.registers.ip.toString(16)}`);
+  exec(cycles = 1) {
+    if(!this.clock)
+      return;
 
     const tick = () => {
       /** Tick */
@@ -910,22 +914,17 @@ class CPU {
       }
     };
 
-    /**
-     * Check processor mode handle exceptions
-     */
-    try {
-      if(this.config.clockSpeed)
-        this.clock = setInterval(tick, this.config.clockSpeed);
-      else {
-        this.clock = true;
-        while(this.clock) {
-          tick();
-        }
-      }
-    } catch(e) {
-      this.dumpRegisters();
-      this.logger.error(e);
+    /** Exec CPU */
+    if(this.config.sync) {
+      while(this.clock)
+        tick();
+    } else {
+      for(var i = 0;i < cycles;++i)
+        tick();
     }
+
+    /** Return increment cycles */
+    return cycles + 0x1;
   }
 
   /**
@@ -938,7 +937,7 @@ class CPU {
     if(!this.clock)
       this.logger.warn('CPU is already turned off');
     else {
-      this.clock = clearInterval(this.clock);
+      this.clock = false;
 
       /** Optional args */
       msg && this.logger.warn(msg);

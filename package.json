@@ -8,7 +8,7 @@
     "toolbar": false,
     "transparent": true,
     "resizable": false,
-    "width": 512,
+    "width": 640,
     "height": 512
   },
   "directories": {
@@ -31,6 +31,7 @@
   },
   "homepage": "https://github.com/Mati365/i8086.js#readme",
   "dependencies": {
+    "buffer-loader": "0.0.1",
     "cli-table": "^0.3.1",
     "color": "^0.11.3",
     "nw": "^0.17.0",

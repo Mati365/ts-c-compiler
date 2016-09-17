@@ -13,7 +13,7 @@ const React = require('react')
     , CPU = require('../core/x86')
     , IO = require('../core/io');
 
-const compiled = pasm.parse(require('raw!../../test/bochs/asm/bootsec.asm')).data;
+const compiled = require('buffer!../../test/bochs/build/bootsec.bin');
 
 @Radium
 class Terminal extends React.Component {
