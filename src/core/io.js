@@ -42,7 +42,12 @@ class Device {
     this.init.apply(this, ...args);
 
     Object.assign(this.cpu.interrupts, this.interrupts);
-    Object.assign(this.cpu.ports, this.ports);
+    for(let port in this.ports) {
+      Object.defineProperty(this.cpu.ports, port, {
+        get: this.ports[port]._get,
+        set: this.ports[port]._set
+      });
+    }
 
     return this;
   }
@@ -80,6 +85,12 @@ class BIOS extends Device {
    */
   init(canvas) {
     this.mode = BIOS.VideoMode[0x3];
+    this.blink = {
+      last: Date.now(),
+      visible: false
+    };
+
+    /** Canvas config */
     if(canvas) {
       this.canvas = {
         w: canvas.clientWidth,
@@ -88,14 +99,27 @@ class BIOS extends Device {
       }
     }
 
+    /** Blinking cursor */
     this.cursor = {
-      x: 0, y: 0, info: {
-        character: '█',
+      x: 0, y: 0,
+      info: {
+        character: 219,
+        attribute: (1 << 0x7) | 0x7, // enable blinking
         show: true,
         blink: false
       }
     };
 
+    const writeCharacter = () => {
+      this.mode.write(
+        this.cpu.memIO,
+        this.cpu.registers.al,
+        this.cpu.registers.bl,
+        this.cursor.x++,
+        this.cursor.y
+      );
+      this.updateCursor();
+    };
     this.interrupts = {
       /** Graphics interrupts */
       0x10: this.intFunc('ah', {
@@ -103,25 +127,10 @@ class BIOS extends Device {
         0x0: () => this.mode = BIOS.VideoMode[this.cpu.registers.al],
 
         /** Write character at address */
+        0xE: writeCharacter,
         0x9: () => {
-          for(let i = 0;i < this.cpu.registers.cx;++i) {
-            this.mode.write(
-              this.cpu.memIO,
-              this.cpu.registers.al,
-              this.cpu.registers.bl,
-              this.cursor.x++,
-              this.cursor.y
-            );
-          }
-        },
-        0xE: () => {
-          this.mode.write(
-            this.cpu.memIO,
-            this.cpu.registers.al,
-            this.cpu.registers.bl,
-            this.cursor.x++,
-            this.cursor.y
-          );
+          for(let i = 0;i < this.cpu.registers.cx;++i)
+            writeCharacter();
         }
       })
     };
@@ -154,6 +163,28 @@ class BIOS extends Device {
     }
   }
 
+  /** Update cursor position */
+  updateCursor() {
+    this.mode.write(
+      this.cpu.memIO,
+      this.cursor.info.character,
+      this.cursor.info.attribute,
+      this.cursor.x,
+      this.cursor.y
+    );
+  }
+
+  /**
+   * Draw character on screen
+   *
+   * @param {Context} ctx   Terminal canvas context
+   * @param {Number}  char  Character code
+   * @param {Number}  x     Column
+   * @param {Number}  y     Row
+   * @param {Number}  w     Character width
+   * @param {Number}  h     Character height
+   * @param {String}  hex   Character foreground
+   */
   drawChar(ctx, char, x, y, w, h, hex) {
     let _ctx = this.font.ctx;
 
@@ -181,14 +212,17 @@ class BIOS extends Device {
    * @param {Context} ctx Screen context
    */
   redraw(ctx) {
-    const cell = {
-      w: 8,
-      h: 16
-    };
+    const cell = { w: 8, h: 16 };
 
-    /** todo: Change font */
-    ctx.font = `${cell.h}px Terminal`;
+    /** Update blinking */
+    if(Date.now() - this.blink.last >= 530) {
+      Object.assign(this.blink, {
+        visible: !this.blink.visible,
+        last: Date.now()
+      });
+    }
 
+    /** Rendering from offset */
     let offset = 0;
     for(var y = 0; y < this.mode.h; ++y) {
       for(var x = 0; x < this.mode.w; ++x) {
@@ -201,13 +235,15 @@ class BIOS extends Device {
         ctx.fillRect(x * cell.w, y * cell.h, cell.w, cell.h);
 
         /** Foreground and text */
-        this.drawChar(
-          ctx,
-          num & 0xFF,
-          x * cell.w, y * cell.h,
-          cell.w, cell.h,
-          BIOS.colorTable[(num >> 8) & 0xF]
-        );
+        if(num && (!((num >> 7) & 1) || this.blink.visible)) {
+          this.drawChar(
+            ctx,
+            num & 0xFF,
+            x * cell.w, y * cell.h,
+            cell.w, cell.h,
+            BIOS.colorTable[(num >> 8) & 0xF]
+          );
+        }
       }
     }
   }

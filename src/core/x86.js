@@ -380,8 +380,16 @@ class CPU {
           this.relativeJump(0x1, relativeAddress);
       },
 
+      /** IRET 48b  */  0xCF: () => {
+        Object.assign(this.registers, {
+          ip: this.pop(),
+          cs: this.pop(),
+          flags: this.pop()
+        });
+      },
+
       /** RET near  */  0xC3: (bits = 0x2) => this.registers.ip = this.pop(),
-      /** RET 16bit */  0xC2: (bits = 0x2) => {
+      /** RET 16b   */  0xC2: (bits = 0x2) => {
         this.registers.ip = this.pop();
         this.pop(this.fetchOpcode(bits, false), false);
       },
@@ -512,6 +520,7 @@ class CPU {
      * todo: implement FPU
      */
     this.initALU();
+    this.initIO();
   }
 
   /**
@@ -523,6 +532,31 @@ class CPU {
     this.devices.forEach(
       (device) => device.exception(code)
     );
+  }
+
+  /** Initialize IN/OUT opcodes set */
+  initIO() {
+    Object.assign(this.opcodes, {
+      /** IN AL, 8bits  */ 0xE4: (bits = 0x1, port) => {
+        if(!port)
+          port = this.fetchOpcode(0x1);
+        this.registers[this.regMap[bits][0x0]] = this.ports[port] || 0;
+      },
+      /** IN AX, 16bits */ 0xE5: () => this.opcodes[0xE4](0x2),
+
+      /** IN AL, port[DX] */  0xEC: () => this.opcodes[0xE4](0x1, this.registers.dx),
+      /** IN AL, port[DX] */  0xED: () => this.opcodes[0xE4](0x2, this.registers.dx),
+
+      /** OUT 8bits, al  */ 0xE6: (bits = 0x1, port) => {
+        if(!port)
+          port = this.fetchOpcode(0x1);
+        if(this.ports[port])
+          this.ports[port] = this.registers[this.regMap[bits][0x0]];
+      },
+      /** OUT 8bits, al     */ 0xE7: () => this.opcodes[0xE6](0x2),
+      /** OUT port[DX], al  */ 0xEE: () => this.opcodes[0xE6](0x1, this.registers.dx),
+      /** OUT port[DX], ah  */ 0xEF: () => this.opcodes[0xE6](0x2, this.registers.dx),
+    });
   }
 
   /**
@@ -554,21 +588,25 @@ class CPU {
     this.operators = {
       /** Extra operators used in other opcodes */
       extra: {
-        increment: { _c: function(s)    { return s + 1; } },
-        decrement: { _c: function(s)    { return s - 1; } },
-        mul:       { _c: function(s, d) { return s * d; } },
-        div:       { _c: function(s, d) { return s / d; } }
+        increment: { _c: (s) => s + 1 },
+        decrement: { _c: (s) => s - 1 },
+        mul:       { _c: (s, d) => s * d },
+        div:       { _c: (s, d) => s / d }
+      },
+      /** SBB */  0b011: {
+        offset: 0x18,
+        _c: (s, d) => s - d + this.registers.status.cf
       },
 
-      /** + */ 0b000: { offset: 0x00, _c: function(s, d) { return s + d; } },
-      /** - */ 0b101: { offset: 0x28, _c: function(s, d) { return s - d; } },
-      /** & */ 0b100: { offset: 0x20, _c: function(s, d) { return s & d; } },
-      /** | */ 0b001: { offset: 0x08, _c: function(s, d) { return s | d; } },
-      /** ^ */ 0b110: { offset: 0x30, _c: function(s, d) { return s ^ d; } },
+      /** + */ 0b000: { offset: 0x00, _c: (s, d) => s + d },
+      /** - */ 0b101: { offset: 0x28, _c: (s, d) => s - d },
+      /** & */ 0b100: { offset: 0x20, _c: (s, d) => s & d },
+      /** | */ 0b001: { offset: 0x08, _c: (s, d) => s | d },
+      /** ^ */ 0b110: { offset: 0x30, _c: (s, d) => s ^ d },
       /** = */ 0b111: {
         offset: 0x38,
         _flagOnly: true,
-        _c: function(s, d) { return s - d; }
+        _c: (s, d) => s - d
       }
     };
 
@@ -629,6 +667,16 @@ class CPU {
 
     /** $80, $81, $82 RM Byte specific */
     Object.assign(this.opcodes, {
+      /** CMPSB */ 0xA6: (bits = 0x1) => {
+        this.alu(
+          this.operators[0b111],
+          this.memIO.read[bits](this.getMemAddress('es', 'di')),
+          this.memIO.read[bits](this.getMemAddress('ds', 'si')),
+          bits
+        );
+      },
+      /** CMPSW */ 0xA7: () => this.opcodes[0xA6](0x2),
+
       /** OPERATOR r/m8, imm8 */   0x80: (bits = 0x1, src = bits) => {
         this.parseRmByte(
           (register, _o) => {
@@ -919,7 +967,7 @@ class CPU {
       while(this.clock)
         tick();
     } else {
-      for(var i = 0;i < cycles;++i)
+      for(let i = 0;i < cycles && this.clock;++i)
         tick();
     }
 
@@ -961,7 +1009,7 @@ class CPU {
     const table = new Table({
       head: ['Register', 'Value']
     });
-    for(let key of Object.keys(this.registers)) {
+    for(let key in this.registers) {
       let reg = this.registers[key];
       if(isNaN(reg))
         continue;
