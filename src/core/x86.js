@@ -301,7 +301,7 @@ class CPU {
       /** MOV r/m16, sreg */  0x8C: () => {
         this.parseRmByte(
           (reg, sreg)         => this.registers[reg] = this.registers[this.regMap.sreg[sreg]],
-          (address, _, byte)  => this.memIO.write[bits](this.registers[this.regMap.sreg[byte.reg]], address),
+          (address, _, byte)  => this.memIO.write[0x2](this.registers[this.regMap.sreg[byte.reg]], address),
           0x2
         );
       },
@@ -417,6 +417,9 @@ class CPU {
       },
       /** STOSW */  0xAB: () => this.opcodes[0xAA](0x2),
 
+      /** CLI   */  0xFA: () => this.registers.status.if = 0x0,
+      /** STI   */  0xFB: () => this.registers.status.if = 0x1,
+
       /** CLD   */  0xFC: () => this.registers.status.df = 0x0,
       /** STD   */  0xFD: () => this.registers.status.df = 0x1,
 
@@ -438,10 +441,19 @@ class CPU {
       },
       /** LODSW */  0xAD: () => this.opcodes[0xAC](0x2),
 
+      /** LDS r16, m16:16 */  0xC5: () => {
+        const reg = CPU.decodeRmByte(this.fetchOpcode()).reg,
+              addr = CPU.getSegmentedAddress(this.fetchOpcode(0x2, false));
+
+        this.regMap[0x2][reg] = addr.offset;
+        this.registers.ds = addr.segment;
+      },
+
       /** INT imm8    */  0xCD: () => {
-        const interrupt = this.interrupts[this.fetchOpcode()];
+        const code = this.fetchOpcode(),
+              interrupt = this.interrupts[code];
         if(!interrupt)
-          this.logger.error(`unknown interrupt ${interrupt}`);
+          this.halt(`unknown interrupt ${code.toString(16)}`);
         else
           interrupt();
       },
@@ -464,11 +476,19 @@ class CPU {
         const _r8 = this.regMap[0x1][_opcode]
             , _r16 = this.regMap[0x2][_opcode];
 
+        /** XCHG AX, r16 */ this.opcodes[0x90 + _opcode] = () => {
+          const dest = this.regMap[0x2][this.fetchOpcode(0x1)],
+                temp = this.registers[dest];
+
+          this.registers[dest] = this.registers.ax;
+          this.registers.ax = temp;
+        };
+
         /** MOV reg8, imm8 $B0 + reg8 code */
         this.opcodes[0xB0 + _opcode] = () => this.registers[_r8] = this.fetchOpcode();
 
         /** MOV reg16, imm16 $B8 + reg16 code */
-        this.opcodes[0xB8 + _opcode] = () => this.registers[_r16] = this.fetchOpcode(2);
+        this.opcodes[0xB8 + _opcode] = () => this.registers[_r16] = this.fetchOpcode(0x2);
 
         /** INC reg16 */
         this.opcodes[0x40 + _opcode] = () => {
@@ -595,7 +615,11 @@ class CPU {
       },
       /** SBB */  0b011: {
         offset: 0x18,
-        _c: (s, d) => s - d + this.registers.status.cf
+        _c: (s, d) => s - d - this.registers.status.cf
+      },
+      /** ADC */  0b010: {
+        offset: 0x10,
+        _c: (s, d) => s + d + this.registers.status.cf
       },
 
       /** + */ 0b000: { offset: 0x00, _c: (s, d) => s + d },
@@ -935,6 +959,7 @@ class CPU {
     const tick = () => {
       /** Tick */
       let opcode = this.fetchOpcode();
+      console.log(opcode.toString(16));
       if(CPU.prefixes[opcode]) {
         /**
          * Its prefix, ignore Tick
@@ -1083,7 +1108,21 @@ class CPU {
       /** RUN */
       this.exec();
     } else
-      this.logger.error('Unable to boot device!');
+      this.halt('Unable to boot device!');
+  }
+
+  /**
+   * Return segmentated address
+   *
+   * @static
+   * @param {Number} num  32bit address
+   * @returns Segmented address
+   */
+  static getSegmentedAddress(num) {
+    return {
+      offset: num & 0xFFFF,
+      segment: (num >> 0x10) & 0xFFFF
+    }
   }
 
   /**
