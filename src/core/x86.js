@@ -293,28 +293,31 @@ class CPU {
     this.opcodes = {
       /** MOV r/m8, reg8 */  0x88: (bits = 0x1) => {
         this.parseRmByte(
-          (src, dest)     => this.registers[src] = this.registers[this.regMap[bits][dest]],
+          (reg, modeReg)  => this.registers[reg] = this.registers[this.regMap[bits][modeReg]],
           (address, src)  => this.memIO.write[bits](this.registers[src], address),
           bits
         );
       },
       /** MOV r/m16, sreg */  0x8C: () => {
         this.parseRmByte(
-          (reg, sreg)         => this.registers[reg] = this.registers[this.regMap.sreg[sreg]],
+          (reg, modeReg)      => this.registers[reg] = this.registers[this.regMap.sreg[modeReg]],
           (address, _, byte)  => this.memIO.write[0x2](this.registers[this.regMap.sreg[byte.reg]], address),
           0x2
         );
       },
       /** MOV sreg, r/m16 */  0x8E: () => {
         this.parseRmByte(
-          (reg, sreg)     => this.registers[this.regMap.sreg[sreg]] = this.registers[reg],
+          (reg, modeReg)     => this.registers[this.regMap.sreg[modeReg]] = this.registers[reg],
           (address, reg)  => { /** todo */ throw new Error('0x8E: Fix me!') },
           0x2
         );
       },
       /** MOV r8, r/m8    */ 0x8A: (bits = 0x1) => {
         this.parseRmByte(
-          (l, r) => { /** todo */ throw new Error('0x8A: Fix me!') },
+          (reg) => {
+            console.log(reg);
+            /** todo */ throw new Error('0x8A: Fix me!')
+          },
           (address, reg) => this.registers[reg] = this.memIO.read[bits](address),
           bits
         );
@@ -328,9 +331,9 @@ class CPU {
 
       /** MOV r/m8, imm8  */ 0xC6: (bits = 0x1) => {
         this.parseRmByte(
-          (l, r)    => { /** todo */ throw new Error('0xC6: Fix me!') },
-          (address) => this.memIO.write[bits](this.fetchOpcode(bits), address)
-          , bits
+          (reg, modeReg)    => { /** todo */ throw new Error('0xC6: Fix me!') },
+          (address) => this.memIO.write[bits](this.fetchOpcode(bits), address),
+          bits
         );
       },
       /** MOV r/m16, reg16  */ 0x89:  () => this.opcodes[0x88](0x2),
@@ -339,7 +342,7 @@ class CPU {
 
       /** PUSH/INC/DEC reg8 */ 0xFE: (bits = 0x1) => {
         this.parseRmByte(
-          (register, mode) => {
+          (_, modeReg, mode) => {
             const reg = this.regMap[bits][mode.rm];
             if(mode.reg === 0x6)
               this.push(this.registers[reg]);
@@ -659,17 +662,17 @@ class CPU {
     /** Multiplier opcode is shared with NEG opcode */
     const multiplier = (bits = 0x1, mul) => {
       this.parseRmByte(
-        (l, _, byte) => {
+        (reg, _, byte) => {
           if(byte.reg === 0x2) {
             /** NOT */
-            this.registers[l] = ~this.registers[l] & CPU.bitMask[bits];
+            this.registers[reg] = ~this.registers[reg] & CPU.bitMask[bits];
           } else if(byte.reg === 0x3) {
             /** NEG */
-            this.registers[l] = CPU.toUnsignedNumber(-this.registers[l], bits);
+            this.registers[reg] = CPU.toUnsignedNumber(-this.registers[reg], bits);
             this.registers.status.cf = byte.rm === 0x0 ? 0x0 : 0x1;
 
           } else
-            mul(this.registers[l], byte);
+            mul(this.registers[reg], byte);
         },
         (address, _, byte) => {
           const val = this.memIO.read[bits](address);
@@ -703,8 +706,8 @@ class CPU {
 
       /** OPERATOR r/m8, imm8 */   0x80: (bits = 0x1, src = bits) => {
         this.parseRmByte(
-          (register, _o) => {
-            this.registers[register] = this.alu(this.operators[_o], this.registers[register], this.fetchOpcode(src), bits);
+          (reg, modeReg) => {
+            this.registers[reg] = this.alu(this.operators[modeReg], this.registers[reg], this.fetchOpcode(src), bits);
           },
           (address, reg, mode) => {
             this.memIO.write[bits](
@@ -784,12 +787,12 @@ class CPU {
         const codes = {
           /** OPERATOR r/m8, r8 */ [0x0 + offset]: (bits = 0x1) => {
             this.parseRmByte(
-              (l, r) => {
-                this.registers[l] = this.alu(op, this.registers[l], this.registers[this.regMap[bits][r]], bits);
+              (reg, modeReg) => {
+                this.registers[reg] = this.alu(op, this.registers[reg], this.registers[this.regMap[bits][modeReg]], bits);
               },
-              (address, r) => {
+              (address, reg) => {
                 this.memIO.write[bits](
-                  this.alu(op, this.memIO.read[bits](address), this.registers[r], bits),
+                  this.alu(op, this.memIO.read[bits](address), this.registers[reg], bits),
                   address
                 );
               }, bits
@@ -797,12 +800,12 @@ class CPU {
           },
           /** OPERATOR m8, r/m8 */ [0x2 + offset]: (bits = 0x1) => {
             this.parseRmByte(
-              /** todo: test, nasm is not compiling (l, r) */
-              (l, r) => {
-                this.registers[r] = this.alu(op, this.registers[r], this.registers[this.regMap[bits][l]], bits);
+              (reg, modeReg) => {
+                const dest = this.regMap[bits][modeReg];
+                this.registers[dest] = this.alu(op, this.registers[reg], this.registers[dest], bits);
               },
-              (address, r) => {
-                this.registers[r] = this.alu(op, this.registers[r], this.memIO.read[bits](address), bits);
+              (address, reg) => {
+                this.registers[reg] = this.alu(op, this.registers[reg], this.memIO.read[bits](address), bits);
               }, bits
             );
           },

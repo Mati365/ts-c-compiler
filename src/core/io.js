@@ -192,7 +192,7 @@ class BIOS extends Device {
                 sector = this.regs.cl & 0x3F,
                 drive = this.drives[this.regs.dl],
                 /** Mem adresses */
-                src = (this.regs.dh * drive.info.cylinders + cylinder) * drive.info.sectors * drive.info.sector + sector * drive.info.sector,
+                src = (this.regs.dh * drive.info.cylinders + cylinder) * drive.info.sectors * drive.info.sector + (sector - 0x1) * drive.info.sector,
                 dest = this.cpu.getMemAddress('es', 'bx');
 
           /** Device is init before boot, if device is null, assign boot medium */
