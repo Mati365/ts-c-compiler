@@ -597,7 +597,14 @@ class CPU {
         return (l * r >= 0 && l + r < 0) || (l < 0 && l * r > 0 && l + r > 0);
       },
       /** Parity flag */  [CPU.flags.pf]: function(val) {
-        return !((val & 0xFF) % 0x2);
+        /**
+         * Use SWAR algorithm
+         * see: http://stackoverflow.com/a/109025/6635215
+         */
+        val = val - ((val >> 1) & 0x55555555);
+        val = (val & 0x33333333) + ((val >> 2) & 0x33333333);
+        val = (((val + (val >> 4)) & 0x0F0F0F0F) * 0x01010101) >> 24;
+        return !(val % 2);
       },
       /** Zero flag */    [CPU.flags.zf]: function(val) {
         return val === 0x0;
@@ -703,6 +710,22 @@ class CPU {
         );
       },
       /** CMPSW */ 0xA7: () => this.opcodes[0xA6](0x2),
+
+      /** TEST al,	imm8 */ 0xA8: (bits = 0x1) => {
+        this.alu(this.operators[0b100], this.registers[this.regMap[bits][0x0]], this.fetchOpcode(bits));
+      },
+      /** TEST ax, imm16  */  0xA9: () => this.opcodes[0xA8](0x2),
+      /** TEST r/m8, r8   */  0x84: (bits = 0x1) => {
+        this.parseRmByte(
+          (reg, modeReg) => {
+            this.alu(this.operators[0b100], this.registers[reg], this.registers[this.regMap[bits][modeReg]]);
+          },
+          (address, reg, mode) => {
+            this.alu(this.operators[0b100], this.registers[reg], this.memIO.read[bits](address));
+          }, bits
+        );
+      },
+      /** TEST r/m16, r16 */  0x85: () => this.opcodes[0x84](0x2),
 
       /** OPERATOR r/m8, imm8 */   0x80: (bits = 0x1, src = bits) => {
         this.parseRmByte(
@@ -1034,6 +1057,7 @@ class CPU {
         return str.slice(0, pos) + '.' + str.slice(pos);
     };
 
+    /** Registers */
     const table = new Table({
       head: ['Register', 'Value']
     });
@@ -1052,6 +1076,13 @@ class CPU {
       });
     }
     this.logger.warn(loggerInfo + '\n' + table.toString());
+
+    /** Flags */
+    let flags = '';
+    for(let flag in CPU.flags)
+      flags += `${flag}: ${this.registers.status[flag]} `;
+
+    this.logger.warn(flags);
   }
 
   /**

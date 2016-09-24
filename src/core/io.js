@@ -205,10 +205,9 @@ class BIOS extends Device {
             drive.buffer.copy(
               this.cpu.mem,
               dest + offset,  /** Dest address */
-              src + offset,   /** Source address */
-              src + offset + drive.info.sector
+              src + offset,                     /** Source address start */
+              src + offset + drive.info.sector  /** Source address end */
             );
-            console.log('LADUJE', 'src ' + (src + offset), 'dest ' + (this.cpu.getMemAddress('es', 'bx') + offset), drive.buffer[src + offset].toString(16));
           }
         }
       })
@@ -330,7 +329,7 @@ class BIOS extends Device {
    * @param {Context} ctx Screen context
    */
   redraw(ctx) {
-    const cell = { w: 8, h: 16 };
+    const cell = { w: 9, h: 18 };
 
     /** Update blinking */
     if(Date.now() - this.blink.last >= 530) {
