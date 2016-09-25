@@ -314,10 +314,7 @@ class CPU {
       },
       /** MOV r8, r/m8    */ 0x8A: (bits = 0x1) => {
         this.parseRmByte(
-          (reg) => {
-            console.log(reg);
-            /** todo */ throw new Error('0x8A: Fix me!')
-          },
+          (reg, modeReg) => this.registers[this.regMap[bits][modeReg]] = this.registers[reg],
           (address, reg) => this.registers[reg] = this.memIO.read[bits](address),
           bits
         );
@@ -460,6 +457,24 @@ class CPU {
         else
           interrupt();
       },
+
+      /** RCL r/m8,  cl */  0xD2: (bits = 0x1, dir = 0x1) => {
+        /** todo: Use CF flag */
+        this.parseRmByte(
+          (reg) => {
+            this.registers[reg] = CPU.rotate(this.registers[reg], this.registers.cl * dir, bits);
+            this.registers.status.cf = this.registers[reg] & 0x1;
+          },
+          (address) => {
+            this.memIO.write[bits](
+              CPU.rotate(this.memIO.read[bits](address), this.registers.cl * dir, bits),
+              address
+            );
+          }, bits
+        );
+      },
+      /** RCL	r/m16, cl */  0xD3: () => this.opcodes[0xD2](0x2),
+
       /** XCHG bx, bx */  0x87: () => {
         const l = this.fetchOpcode();
         if(l == 0xDB) {
@@ -544,6 +559,27 @@ class CPU {
      */
     this.initALU();
     this.initIO();
+  }
+
+  /**
+   * Rotate bits with carry flag
+   * see: https://github.com/NeatMonster/Intel8086/blob/master/src/fr/neatmonster/ibmpc/Intel8086.java#L4200
+   *
+   * @param {Number}  num   Number
+   * @param {Number}  times Bits to shift
+   * @param {Number}  bits  Mode
+   *
+   * @memberOf CPU
+   */
+  rotate(num, times, bits = 0x1) {
+    /** todo: times can be negative */
+    const mask = CPU.bitMask[bits];
+    for(let i = times; i >= 0; --i) {
+      this.registers.status.cf = CPU.msbit(num);
+      num <<= 0x1;
+      num |= this.registers.status.cf;
+      num &= mask;
+    }
   }
 
   /**
@@ -1214,6 +1250,19 @@ class CPU {
       return up + num + 0x1;
     else
       return num;
+  }
+
+  /**
+   * Get most significant bit
+   *
+   * @static
+   * @param {any} num
+   * @param {number} [bits=0x1]
+   *
+   * @memberOf CPU
+   */
+  static msbit(num, bits = 0x1) {
+    return (num >> (bits * 0x8 - 0x1)) & 0x1;
   }
 }
 
