@@ -37,6 +37,7 @@ class CPU {
   constructor(config) {
     /** Debug logger */
     this.logger = new Logger;
+    this.pause = false;
 
     /** Default CPU config */
     this.config = {
@@ -441,12 +442,19 @@ class CPU {
       },
       /** LODSW */  0xAD: () => this.opcodes[0xAC](0x2),
 
-      /** LDS r16, m16:16 */  0xC5: () => {
+      /** LDS r16, m16:16 */  0xC5: (segment = 'ds') => {
         const reg = CPU.decodeRmByte(this.fetchOpcode()).reg,
               addr = CPU.getSegmentedAddress(this.fetchOpcode(0x2, false));
 
         this.regMap[0x2][reg] = addr.offset;
-        this.registers.ds = addr.segment;
+        this.registers[segment] = addr.segment;
+      },
+      /** LES r16, m16:16 */  0xC4: () => this.opcodes[0xC5]('es'),
+
+      /** LEA r16, mem    */  0x8D: () => {
+        this.parseRmByte(null, (address, reg) => {
+          this.registers[reg] = address;
+        }, 0x2);
       },
 
       /** INT imm8    */  0xCD: () => {
@@ -459,21 +467,39 @@ class CPU {
       },
 
       /** RCL r/m8,  cl */  0xD2: (bits = 0x1, dir = 0x1) => {
-        /** todo: Use CF flag */
         this.parseRmByte(
           (reg) => {
-            this.registers[reg] = CPU.rotate(this.registers[reg], this.registers.cl * dir, bits);
-            this.registers.status.cf = this.registers[reg] & 0x1;
+            this.registers[reg] = this.rotl(this.registers[reg], this.registers.cl * dir, bits);
           },
           (address) => {
             this.memIO.write[bits](
-              CPU.rotate(this.memIO.read[bits](address), this.registers.cl * dir, bits),
+              this.rotl(this.memIO.read[bits](address), this.registers.cl * dir, bits),
               address
             );
           }, bits
         );
       },
       /** RCL	r/m16, cl */  0xD3: () => this.opcodes[0xD2](0x2),
+      /** ROL r/m8, 1   */  0xD0: (bits = 0x1) => {
+        this.parseRmByte(
+          (reg) => {
+            this.registers[reg] = CPU.rotate(this.registers[reg], 0x1, bits);
+            this.registers.status.cf = (this.registers[reg] >> 0x7) & 0x1;
+          },
+          (address) => {
+            const val = CPU.rotate(this.memIO.read[bits](address), 0x1, bits);
+            this.memIO.write[bits](val, address);
+            this.registers.status.cf = (val >> 0x7) & 0x1;
+          }, bits
+        );
+      },
+
+      /** CBW */  0x98: () => {
+        this.registers.ah = (this.registers.al & 0x80) == 0x80 ? 0xFF : 0x0;
+      },
+      /** SALC */ 0xD6: () => {
+        this.registers.al = this.registers.status.cf ? 0xFF : 0x0;
+      },
 
       /** XCHG bx, bx */  0x87: () => {
         const l = this.fetchOpcode();
@@ -484,7 +510,9 @@ class CPU {
       },
 
       /** HLT */  0xF4: this.halt.bind(this),
-      /** NOP */  0x90: () => {}
+
+      /** ICE BreakPoint */ 0xF1: () => {},
+      /** NOP */            0x90: () => {}
     };
 
     /** General usage registers opcodes */
@@ -562,24 +590,25 @@ class CPU {
   }
 
   /**
-   * Rotate bits with carry flag
+   * Rotate bits to left with carry flag
    * see: https://github.com/NeatMonster/Intel8086/blob/master/src/fr/neatmonster/ibmpc/Intel8086.java#L4200
    *
    * @param {Number}  num   Number
    * @param {Number}  times Bits to shift
    * @param {Number}  bits  Mode
-   *
+   * @returns Number
    * @memberOf CPU
    */
-  rotate(num, times, bits = 0x1) {
-    /** todo: times can be negative */
+  rotl(num, times, bits = 0x1) {
     const mask = CPU.bitMask[bits];
     for(let i = times; i >= 0; --i) {
-      this.registers.status.cf = CPU.msbit(num);
+      let cf = 0;
       num <<= 0x1;
-      num |= this.registers.status.cf;
+      num |= cf;
       num &= mask;
+      this.registers.status.cf = cf;
     }
+    return num;
   }
 
   /**
@@ -932,7 +961,7 @@ class CPU {
     else if(memCallback) {
       let address = 0;
       if(!byte.mod && byte.rm == 0x6)
-        address = this.fetchOpcode(2);
+        address = this.fetchOpcode(0x2);
       else {
         let displacement = 0;
 
@@ -1020,8 +1049,12 @@ class CPU {
 
     const tick = () => {
       /** Tick */
+      if(this.pause)
+        return;
+
+      /** Decode opcode */
       let opcode = this.fetchOpcode();
-      console.log(opcode.toString(16));
+      // console.log(opcode.toString(16));
       if(CPU.prefixes[opcode]) {
         /**
          * Its prefix, ignore Tick
@@ -1263,6 +1296,22 @@ class CPU {
    */
   static msbit(num, bits = 0x1) {
     return (num >> (bits * 0x8 - 0x1)) & 0x1;
+  }
+
+  /**
+   * Fast bit rotate
+   *
+   * @param {Number}  num   Number
+   * @param {Number}  times Bits to shift
+   * @param {Number}  bits  Mode
+   * @returns Number
+   */
+  static rotate(num, times, bits = 0x1) {
+    const mask = CPU.bitMask[bits]
+    if(times > 0)
+      return (num >> (mask - times)) | (num << times);
+    else
+      return (num << (mask + times)) | (num >> -times);
   }
 }
 

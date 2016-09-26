@@ -159,6 +159,27 @@ class BIOS extends Device {
     /** Initialize */
     this.initScreen();
     this.initDrive();
+    this.initKeyboard();
+  }
+
+  /**
+   * Init keyboard interrupts
+   */
+  initKeyboard() {
+    Object.assign(this.interrupts, {
+      /** Read (Wait for) Next Keystroke */
+      0x16: this.intFunc('ah', {
+        0x0: () => {
+          this.cpu.pause = true;
+          document.onkeypress = (e) => {
+            this.cpu.pause = false;
+            this.regs.al = e.keyCode;
+
+            document.onkeypress = null;
+          };
+        }
+      })
+    });
   }
 
   /**
@@ -170,7 +191,7 @@ class BIOS extends Device {
         /** Reset floppy drive */
         0x0: () => {
           if(this.drives[this.regs.dl]) {
-            this.drives[this.regs.dl] = 0x0;
+            // this.drives[this.regs.dl] = 0x0;
             this.regs.ah = this.regs.status.cf = 0x0;
           } else {
             this.regs.ah = 0x6;
@@ -204,7 +225,7 @@ class BIOS extends Device {
             const offset =  i * drive.info.sector;
             drive.buffer.copy(
               this.cpu.mem,
-              dest + offset,  /** Dest address */
+              dest + offset,                    /** Dest address */
               src + offset,                     /** Source address start */
               src + offset + drive.info.sector  /** Source address end */
             );
@@ -218,15 +239,22 @@ class BIOS extends Device {
    * Load screen interrupts, buffers
    */
   initScreen() {
-    const writeCharacter = () => {
-      this.mode.write(
-        this.cpu.memIO,
-        this.regs.al,
-        this.regs.bl,
-        this.cursor.x++,
-        this.cursor.y
-      );
-      this.updateCursor();
+    const writeCharacter = (attribute) => {
+      /** Check special character */
+      switch(this.regs.al) {
+        case 0xA: this.cursor.y++;    break;
+        case 0xD: this.cursor.x = 0;  break;
+
+        default:
+          this.mode.write(
+            this.cpu.memIO,
+            this.regs.al,
+            attribute || this.regs.bl,
+            this.cursor.x++,
+            this.cursor.y
+          );
+          this.updateCursor();
+      }
     };
 
     Object.assign(this.interrupts, {
@@ -236,7 +264,7 @@ class BIOS extends Device {
         0x0: () => this.mode = BIOS.VideoMode[this.regs.al],
 
         /** Write character at address */
-        0xE: writeCharacter,
+        0xE: writeCharacter.bind(this, 0x7),
         0x9: () => {
           for(let i = 0;i < this.regs.cx;++i)
             writeCharacter();
