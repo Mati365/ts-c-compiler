@@ -179,6 +179,7 @@ class BIOS extends Device {
             this.regs.al = e.keyCode;
 
             document.onkeypress = null;
+            e.preventDefault();
           };
         }
       })

@@ -369,6 +369,23 @@ class CPU {
       },
       /** INC/DEC reg16 */  0xFF: () => this.opcodes[0xFE](0x2),
 
+      /** PUSHA */  0x60: () => {
+        const temp = this.registers.sp;
+        for(let i = 0;i < 0x7;++i) {
+          this.push(
+            i == 0x4 ? temp: this.registers[this.regMap[0x2][i]]
+          );
+        }
+      },
+      /** POPA  */  0x61: () => {
+        /** Skip SP */
+        for(let i = 0x7;i >= 0;--i) {
+          const val = this.pop();
+          if(i != 0x4)
+            this.registers[this.regMap[0x2][i]] = val;
+        }
+      },
+
       /** PUSH imm8     */  0x6A: () => this.push(this.fetchOpcode(), 0x2),
       /** PUSH imm16    */  0x68: () => this.push(this.fetchOpcode(0x2), 0x2),
 
@@ -420,6 +437,9 @@ class CPU {
 
       /** CLI   */  0xFA: () => this.registers.status.if = 0x0,
       /** STI   */  0xFB: () => this.registers.status.if = 0x1,
+
+      /** CLC   */  0xF8: () => this.registers.cf = 0x0,
+      /** STC   */  0xF9: () => this.registers.cf = 0x1,
 
       /** CLD   */  0xFC: () => this.registers.status.df = 0x0,
       /** STD   */  0xFD: () => this.registers.status.df = 0x1,
@@ -1026,6 +1046,9 @@ class CPU {
    * @returns
    */
   fetchOpcode(size = 0x1, incrementIP = true) {
+    if(this.opcodePrefix === 0x66)
+      size = 0x4;
+
     const mapper = this.memIO.read[size];
     if(mapper) {
       const opcode = mapper(this.getMemAddress('cs', 'ip'));
@@ -1054,32 +1077,37 @@ class CPU {
 
       /** Decode opcode */
       let opcode = this.fetchOpcode();
-      // console.log(opcode.toString(16));
+      this.counter = (this.counter || 0) + 1;
+      if(this.counter > 25)
+        this.pause = true;
+
+      /** Check prefixes */
       if(CPU.prefixes[opcode]) {
-        /**
-         * Its prefix, ignore Tick
-         * todo: Do not ignore tick
-         */
-        this.opcodePrefix = opcode;
-      } else {
-        let operand = this.opcodes[opcode];
-        if(!operand)
-          return this.halt(`Unknown opcode 0x${opcode.toString(16).toUpperCase()}`);
-
-        /** Do something with operand, reset opcode prefix */
-        if(this.opcodePrefix === 0xF3) {
-          /** Save IP register for multiple argument opcode */
-          const ip = this.registers.ip;
-          do {
-            operand();
-            this.registers.ip = ip;
-          } while(this.registers.cx = CPU.toUnsignedNumber(this.registers.cx - 0x1, 0x2));
-        } else
-          operand();
-
-        /** Reset opcode */
-        this.opcodePrefix = 0x0;
+        /** Some prefixes modifies fetchOpcode size */
+        const prefix = opcode;
+        opcode = this.fetchOpcode();
+        this.opcodePrefix = prefix;
       }
+
+      console.log(opcode.toString(16));
+
+      let operand = this.opcodes[opcode];
+      if(!operand)
+        return this.halt(`Unknown opcode 0x${opcode.toString(16).toUpperCase()}`);
+
+      /** Do something with operand, reset opcode prefix */
+      if(this.opcodePrefix === 0xF3) {
+        /** Save IP register for multiple argument opcode */
+        const ip = this.registers.ip;
+        do {
+          operand();
+          this.registers.ip = ip;
+        } while(this.registers.cx = CPU.toUnsignedNumber(this.registers.cx - 0x1, 0x2));
+      } else
+        operand();
+
+      /** Reset opcode */
+      this.opcodePrefix = 0x0;
     };
 
     /** Exec CPU */

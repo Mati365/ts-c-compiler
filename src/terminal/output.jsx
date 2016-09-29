@@ -8,10 +8,6 @@ class Output extends React.Component {
   };
 
   componentDidMount() {
-    /** Fix resolution */
-    this.refs.canvas.setAttribute('width', this.refs.canvas.clientWidth);
-    this.refs.canvas.setAttribute('height', this.refs.canvas.clientHeight);
-
     /** Load terminal */
     this.props.onContextInit(this.refs.canvas);
   }
