@@ -93,18 +93,10 @@ class BIOS extends Device {
       visible: false
     };
 
-    /** Canvas config */
-    if(canvas) {
-      this.canvas = {
-        w: canvas.clientWidth,
-        h: canvas.clientHeight,
-        ctx: canvas.getContext('2d')
-      }
-    }
-
     /** Blinking cursor */
     this.cursor = {
       x: 0, y: 0,
+      w: 8, h: 16,
       info: {
         character: 219,
         attribute: (1 << 0x7) | 0x7, // enable blinking
@@ -112,6 +104,17 @@ class BIOS extends Device {
         blink: false
       }
     };
+
+    /** Canvas config */
+    if(canvas) {
+      this.canvas = {
+        ctx: canvas.getContext('2d'),
+        handle: canvas
+      };
+
+      /** 0x3 text mode is used in the most BIOS implementations */
+      this.setVideoMode(0x3);
+    }
 
     /** Drives */
     this.drives = {
@@ -240,20 +243,33 @@ class BIOS extends Device {
    */
   initScreen() {
     const writeCharacter = (attribute) => {
-      /** Check special character */
       switch(this.regs.al) {
-        case 0xA: this.cursor.y++;    break;
-        case 0xD: this.cursor.x = 0;  break;
+        /** White characters */
+        case 0xA:
+        case 0xD:
+          this.mode.write(this.cpu.memIO, 0x0, 0x0, this.cursor.x, this.cursor.y);
+          if(this.regs.al == 0xD)
+            this.cursor.y++;
+          else
+            this.cursor.x = 0;
+        break;
 
+        /** Normal characters */
         default:
           this.mode.write(
             this.cpu.memIO,
             this.regs.al,
             attribute || this.regs.bl,
-            this.cursor.x++,
+            this.cursor.x,
             this.cursor.y
           );
-          this.updateCursor();
+          this.mode.write(
+            this.cpu.memIO,
+            this.cursor.info.character,
+            this.cursor.info.attribute,
+            ++this.cursor.x,
+            this.cursor.y
+          );
       }
     };
 
@@ -261,7 +277,7 @@ class BIOS extends Device {
       /** Graphics interrupts */
       0x10: this.intFunc('ah', {
         /** Set video mode */
-        0x0: () => this.mode = BIOS.VideoMode[this.regs.al],
+        0x0: () => this.setVideoMode(this.regs.al),
 
         /** Write character at address */
         0xE: writeCharacter.bind(this, 0x7),
@@ -276,79 +292,37 @@ class BIOS extends Device {
     if(this.canvas) {
       /** Font config */
       this.canvas.ctx.imageSmoothingEnabled = false;
-      this.font = {
-        buffer: document.createElement('canvas'),
-        ctx: null,
-        img: new Image,
-        w: 8,
-        h: 16
-      };
-
-      /** Init offscreen character buffer */
-      let buffer = this.font.buffer;
-      buffer.width = this.font.w;
-      buffer.height = this.font.h;
-      this.font.ctx = buffer.getContext('2d');
 
       /** Render loop */
-      this.font.img.src = '../src/terminal/template/font.png';
-      this.font.img.onload = () => {
-        let vblank = setInterval(() => {
-          try {
-            this.cpu.exec(1450000 / 60);
-            this.redraw(this.canvas.ctx);
-          } catch(e) {
-            this.cpu.logger.error(e);
-            clearInterval(vblank);
-          }
-        }, 0);
-      }
+      let vblank = setInterval(() => {
+        try {
+          this.cpu.exec(1450000 / 60);
+          this.redraw(this.canvas.ctx);
+        } catch(e) {
+          this.cpu.logger.error(e);
+          clearInterval(vblank);
+        }
+      }, 0);
     }
   }
 
   /**
-   * Update cursor position
-   */
-  updateCursor() {
-    this.mode.write(
-      this.cpu.memIO,
-      this.cursor.info.character,
-      this.cursor.info.attribute,
-      this.cursor.x,
-      this.cursor.y
-    );
-  }
-
-  /**
-   * Draw character on screen
+   * Set video mode and resize canvas
    *
-   * @param {Context} ctx   Terminal canvas context
-   * @param {Number}  char  Character code
-   * @param {Number}  x     Column
-   * @param {Number}  y     Row
-   * @param {Number}  w     Character width
-   * @param {Number}  h     Character height
-   * @param {String}  hex   Character foreground
+   * @param {Number} code  Mode code
    */
-  drawChar(ctx, char, x, y, w, h, hex) {
-    let _ctx = this.font.ctx;
+  setVideoMode(code) {
+    this.mode = BIOS.VideoMode[code];
 
-    _ctx.save();
-    _ctx.clearRect(0, 0, this.font.w, this.font.h);
-    _ctx.drawImage(
-      this.font.img,
-      (char % 32) * this.font.w,
-      Math.floor(char / 32) * this.font.h,
-      this.font.w, this.font.h,
-      0, 0,
-      this.font.w, this.font.h
-    );
-    _ctx.fillStyle = hex;
-    _ctx.globalCompositeOperation = 'source-in';
-    _ctx.fillRect(0, 0, this.font.w, this.font.h);
-    _ctx.restore();
-
-    ctx.drawImage(this.font.buffer, 0, 0, this.font.w, this.font.h, x, y, w, h);
+    const size = {
+      width: this.mode.w * this.cursor.w,
+      height: this.mode.h * this.cursor.h
+    };
+    Object.assign(this.canvas.handle, size);
+    Object.assign(this.canvas, {
+      w: size.width,
+      h: size.height
+    });
   }
 
   /**
@@ -357,8 +331,6 @@ class BIOS extends Device {
    * @param {Context} ctx Screen context
    */
   redraw(ctx) {
-    const cell = { w: 9, h: 18 };
-
     /** Update blinking */
     if(Date.now() - this.blink.last >= 530) {
       Object.assign(this.blink, {
@@ -369,6 +341,8 @@ class BIOS extends Device {
 
     /** Rendering from offset */
     let offset = 0;
+
+    ctx.font = '16px Terminal';
     for(var y = 0; y < this.mode.h; ++y) {
       for(var x = 0; x < this.mode.w; ++x) {
         /** Read from memory */
@@ -377,16 +351,15 @@ class BIOS extends Device {
 
         /** Background and text */
         ctx.fillStyle = BIOS.colorTable[(num >> 11) & 0x7];
-        ctx.fillRect(x * cell.w, y * cell.h, cell.w, cell.h);
+        ctx.fillRect(x * this.cursor.w, y * this.cursor.h, this.cursor.w, this.cursor.h);
 
         /** Foreground and text */
         if(num && (!((num >> 7) & 1) || this.blink.visible)) {
-          this.drawChar(
-            ctx,
-            num & 0xFF,
-            x * cell.w, y * cell.h,
-            cell.w, cell.h,
-            BIOS.colorTable[(num >> 8) & 0xF]
+          ctx.fillStyle = BIOS.colorTable[(num >> 8) & 0xF];
+          ctx.fillText(
+            String.fromCharCode(BIOS.fontMapping[num & 0xFF]),
+            x * this.cursor.w,
+            (y + 0x1) * this.cursor.h
           );
         }
       }
@@ -419,6 +392,42 @@ BIOS.colorTable = {
   0xE: '#FFFF55',
   0xF: '#FFFFFF'
 };
+
+/** CP437 to Unicode conversion table */
+BIOS.fontMapping = [
+  0x0000, 0x0001, 0x0002, 0x0003, 0x0004, 0x0005, 0x0006, 0x0007,
+  0x0008, 0x0009, 0x000a, 0x000b, 0x000c, 0x000d, 0x000e, 0x000f,
+  0x0010, 0x0011, 0x0012, 0x0013, 0x0014, 0x0015, 0x0016, 0x0017,
+  0x0018, 0x0019, 0x001a, 0x001b, 0x001c, 0x001d, 0x001e, 0x001f,
+  0x0020, 0x0021, 0x0022, 0x0023, 0x0024, 0x0025, 0x0026, 0x0027,
+  0x0028, 0x0029, 0x002a, 0x002b, 0x002c, 0x002d, 0x002e, 0x002f,
+  0x0030, 0x0031, 0x0032, 0x0033, 0x0034, 0x0035, 0x0036, 0x0037,
+  0x0038, 0x0039, 0x003a, 0x003b, 0x003c, 0x003d, 0x003e, 0x003f,
+  0x0040, 0x0041, 0x0042, 0x0043, 0x0044, 0x0045, 0x0046, 0x0047,
+  0x0048, 0x0049, 0x004a, 0x004b, 0x004c, 0x004d, 0x004e, 0x004f,
+  0x0050, 0x0051, 0x0052, 0x0053, 0x0054, 0x0055, 0x0056, 0x0057,
+  0x0058, 0x0059, 0x005a, 0x005b, 0x005c, 0x005d, 0x005e, 0x005f,
+  0x0060, 0x0061, 0x0062, 0x0063, 0x0064, 0x0065, 0x0066, 0x0067,
+  0x0068, 0x0069, 0x006a, 0x006b, 0x006c, 0x006d, 0x006e, 0x006f,
+  0x0070, 0x0071, 0x0072, 0x0073, 0x0074, 0x0075, 0x0076, 0x0077,
+  0x0078, 0x0079, 0x007a, 0x007b, 0x007c, 0x007d, 0x007e, 0x007f,
+  0x00c7, 0x00fc, 0x00e9, 0x00e2, 0x00e4, 0x00e0, 0x00e5, 0x00e7,
+  0x00ea, 0x00eb, 0x00e8, 0x00ef, 0x00ee, 0x00ec, 0x00c4, 0x00c5,
+  0x00c9, 0x00e6, 0x00c6, 0x00f4, 0x00f6, 0x00f2, 0x00fb, 0x00f9,
+  0x00ff, 0x00d6, 0x00dc, 0x00a2, 0x00a3, 0x00a5, 0x20a7, 0x0192,
+  0x00e1, 0x00ed, 0x00f3, 0x00fa, 0x00f1, 0x00d1, 0x00aa, 0x00ba,
+  0x00bf, 0x2310, 0x00ac, 0x00bd, 0x00bc, 0x00a1, 0x00ab, 0x00bb,
+  0x2591, 0x2592, 0x2593, 0x2502, 0x2524, 0x2561, 0x2562, 0x2556,
+  0x2555, 0x2563, 0x2551, 0x2557, 0x255d, 0x255c, 0x255b, 0x2510,
+  0x2514, 0x2534, 0x252c, 0x251c, 0x2500, 0x253c, 0x255e, 0x255f,
+  0x255a, 0x2554, 0x2569, 0x2566, 0x2560, 0x2550, 0x256c, 0x2567,
+  0x2568, 0x2564, 0x2565, 0x2559, 0x2558, 0x2552, 0x2553, 0x256b,
+  0x256a, 0x2518, 0x250c, 0x2588, 0x2584, 0x258c, 0x2590, 0x2580,
+  0x03b1, 0x00df, 0x0393, 0x03c0, 0x03a3, 0x03c3, 0x00b5, 0x03c4,
+  0x03a6, 0x0398, 0x03a9, 0x03b4, 0x221e, 0x03c6, 0x03b5, 0x2229,
+  0x2261, 0x00b1, 0x2265, 0x2264, 0x2320, 0x2321, 0x00f7, 0x2248,
+  0x00b0, 0x2219, 0x00b7, 0x221a, 0x207f, 0x00b2, 0x25a0, 0x0020
+];
 
 /** All video modes supported by BIOS */
 class VideoMode {

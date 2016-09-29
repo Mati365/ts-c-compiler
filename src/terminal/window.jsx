@@ -13,7 +13,7 @@ const React = require('react')
     , CPU = require('../core/x86')
     , IO = require('../core/io');
 
-const compiled = require('buffer!../../test/bochs/build/freedos.img');
+const compiled = require('buffer!../../test/bochs/build/linux.bin');
 
 @Radium
 class Terminal extends React.Component {

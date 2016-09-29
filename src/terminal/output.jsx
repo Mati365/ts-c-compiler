@@ -23,8 +23,8 @@ class Output extends React.Component {
 }
 
 const styles = {
-  width: '100%',
-  height: '440px',
+  display: 'block',
+  margin: '0 auto',
   paddingTop: '40px',
   imageRendering: 'pixelated'
 };
