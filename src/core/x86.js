@@ -20,7 +20,7 @@ class Logger {
    * @param {String}  msg   Message content
    */
   log(type, msg) {
-    console.log(`${type}:`, msg);
+    console[type](`${type}:`, msg);
   }
 }
 
@@ -90,9 +90,9 @@ class CPU {
      * see: http://www.c-jump.com/CIS77/CPU/x86/X77_0240_prefix.htm
      */
     CPU.prefixes = {
-      0xF0: true, /** LOCK */
-      0xF3: true, /** REP  */
-      0xF2: true, /** REPNE */
+      0xF0: 0x0, /** LOCK */
+      0xF3: 0x0, /** REP  */
+      0xF2: 0x1, /** REPNE */
 
       /** Segment override */
       0x2E: { _sr: 'cs' },
@@ -102,8 +102,20 @@ class CPU {
       0x64: { _sr: 'fs' },
       0x65: { _sr: 'gs' },
 
-      0x66: true, /** Operrand override */
-      0x67: true  /** Adress override  */
+      0x66: 0x2, /** Operrand override */
+      0x67: 0x3  /** Adress override  */
+    };
+    CPU.prefixMap = {
+      0x0: 'instruction',
+      0x1: 'segment',
+      0x2: 'operandSize',
+      0x3: 'addressSize'
+    };
+    this.prefixes = {
+      [CPU.prefixMap[0x0]]: null,  /** Group 1: LOCK, REPE/REPZ, REP, REPNE/REPNZ         */
+      [CPU.prefixMap[0x1]]: null,  /** Group 2: CS, DS, ES, FS, GS, SS, Branch hints      */
+      [CPU.prefixMap[0x2]]: null,  /** Group 3: Operand-size override (16 bit vs. 32 bit) */
+      [CPU.prefixMap[0x3]]: null   /** Group 4: Address-size override (16 bit vs. 32 bit) */
     };
 
     /** Define flags register helpers */
@@ -371,9 +383,9 @@ class CPU {
 
       /** PUSHA */  0x60: () => {
         const temp = this.registers.sp;
-        for(let i = 0;i < 0x7;++i) {
+        for(let i = 0;i <= 0x7;++i) {
           this.push(
-            i == 0x4 ? temp: this.registers[this.regMap[0x2][i]]
+            i == 0x4 ? temp : this.registers[this.regMap[0x2][i]]
           );
         }
       },
@@ -470,11 +482,8 @@ class CPU {
         this.registers[segment] = addr.segment;
       },
       /** LES r16, m16:16 */  0xC4: () => this.opcodes[0xC5]('es'),
-
       /** LEA r16, mem    */  0x8D: () => {
-        this.parseRmByte(null, (address, reg) => {
-          this.registers[reg] = address;
-        }, 0x2);
+        this.parseRmByte(null, (address, reg) => this.registers[reg] = address, 0x2);
       },
 
       /** INT imm8    */  0xCD: () => {
@@ -576,17 +585,18 @@ class CPU {
 
     /** 8 bit jump instructions set */
     const jmpOpcodes = {
+      /** JNS */  0x79: (f) => !f.sf,
+      /** JS  */  0x78: (f) => f.sf,
       /** JA  */  0x77: (f) => !f.cf && !f.zf,
+      /** JBE */  0x76: (f) => f.cf || f.zf,
+      /** JNE */  0x75: (f) => !f.zf,
+      /** JZ  */  0x74: (f) => f.zf,
       /** JAE */  0x73: (f) => !f.cf,
       /** JB  */  0x72: (f) => f.cf,
-      /** JBE */  0x76: (f) => f.cf || f.zf,
       /** JG  */  0x7F: (f) => !f.zf || f.sg === f.of,
       /** JGE */  0x7D: (f) => f.sf === f.of,
       /** JL  */  0x7C: (f) => f.sf !== f.of,
-      /** JLE */  0x7E: (f) => f.zg || f.sg !== f.of,
-
-      /** JNE */  0x75: (f) => !f.zf,
-      /** JZ  */  0x74: (f) => f.zf
+      /** JLE */  0x7E: (f) => f.zg || f.sg !== f.of
     };
     const jumpIf = (flagCondition, byte) => {
       const relative = this.fetchOpcode(0x1);
@@ -967,7 +977,7 @@ class CPU {
    * @param {Integer}   segRegister   Segment register name, overriden if prefix is given
    */
   parseRmByte(regCallback, memCallback, mode, segRegister = 'ds') {
-    const byte = CPU.decodeRmByte(this.fetchOpcode());
+    const byte = CPU.decodeRmByte(this.fetchOpcode(0x1, true, true));
 
     /** Register */
     if(byte.mod === 0x3)
@@ -979,27 +989,43 @@ class CPU {
 
     /** Adress */
     else if(memCallback) {
-      let address = 0;
-      if(!byte.mod && byte.rm == 0x6)
-        address = this.fetchOpcode(0x2);
-      else {
-        let displacement = 0;
+      let address = 0,
+          displacement = 0;
 
+      if(!byte.mod && byte.rm === 0x6) {
+        /** SIB mode - ONLY 32 BIT MODE */
+        const sib = CPU.decodeSibByte(this.fetchOpcode(0x1, true, true)),
+              index = this.registers[this.regMap[bits][sib.index]];
+
+        if(sib.byte === 0x5) {
+          address = index * sib.scale + this.registers[this.regMap[bits][sib.base]];
+        } else {
+          /** http://nicolascormier.com/documentation/sys-programming/binary_formats/elf/extending_sim286_to_the_intel386_architecture_with_32-bit_processing_and_elf_binary_input/node21.html */
+          switch(byte.mod) {
+            case 0x0: address = index * sib.scale + this.fetchOpcode(0x4, true, true) + this.registers.ebp;  break;
+            case 0x1: address = index * sib.scale + this.fetchOpcode(0x1, true, true) + this.registers.ebp;  break;
+            case 0x2: address = index * sib.scale + this.fetchOpcode(0x4, true, true) + this.registers.ebp;  break;
+
+            default:
+              this.halt('Incorrect SIB addressing mode!');
+          }
+        }
+      } else {
         /** Eight-bit displacement, sign-extended to 16 bits */
         if(byte.mod === 0x1 || byte.mod === 0x2)
           displacement = this.fetchOpcode(byte.mod);
 
         /** Calc address */
         switch(byte.rm) {
-          case 0x0: address = this.registers.bx + this.registers.di + displacement; break;
+          case 0x0: address = this.registers.bx + this.registers.si + displacement; break;
           case 0x1: address = this.registers.bx + this.registers.di + displacement; break;
-          case 0x4: address = this.registers.si + displacement; break;
-          case 0x5: address = this.registers.di + displacement; break;
-          case 0x7: address = this.registers.bx + displacement; break;
-
           case 0x2: address = this.registers.bp + this.registers.si + displacement; break;
           case 0x3: address = this.registers.bp + this.registers.di + displacement; break;
+
+          case 0x4: address = this.registers.si + displacement; break;
+          case 0x5: address = this.registers.di + displacement; break;
           case 0x6: address = this.registers.bp + displacement; break;
+          case 0x7: address = this.registers.bx + displacement; break;
 
           default:
             this.logger.error('Unknown RM byte address!');
@@ -1010,8 +1036,8 @@ class CPU {
       }
 
       /** If cpu segment register is present, override default */
-      if(this.opcodePrefix)
-        segRegister = CPU.prefixes[this.opcodePrefix]._sr || segRegister;
+      if(this.prefixes.segment)
+        segRegister = this.prefixes.segment._sr || segRegister;
 
       /** Callback and address calc */
       memCallback(
@@ -1023,8 +1049,8 @@ class CPU {
   }
 
   /**
-   * Decodes MOD RM bytes
-   * see http://www.c-jump.com/CIS77/CPU/x86/X77_0060_mod_reg_r_m_byte.htm
+   * Decodes MOD RM byte
+   * see: http://www.c-jump.com/CIS77/CPU/x86/X77_0060_mod_reg_r_m_byte.htm
    *
    * @static
    * @param {Integer} byte  8bit mod rm byte
@@ -1033,20 +1059,37 @@ class CPU {
   static decodeRmByte(byte) {
     return {
       mod: byte >> 0x6,
-      reg: (byte >> 3) & 0x7,
+      reg: (byte >> 0x3) & 0x7,
       rm: byte & 0x7
+    };
+  }
+
+  /**
+   * Decodes SIB byte
+   * see: http://www.swansontec.com/sintel.html
+   *
+   * @static
+   * @param {Integer} byte  8bit SIB byte
+   * @returns Extracted value
+   */
+  static decodeSibByte(byte) {
+    return {
+      scale: (byte & 0xC0) >> 0x6,
+      index: (byte & 0x38) >> 0x3,
+      base: byte & 0x7
     };
   }
 
   /**
    * Get next opcode
    *
-   * @param {Integer} size        Opcode size in bytes 8 / 16
-   * @param {Boolean} incrementIP Ignore counter if false
+   * @param {Integer} size          Opcode size in bytes 8 / 16
+   * @param {Boolean} incrementIP   Ignore counter if false
+   * @param {Boolean} ignorePrefix  True to ignore override
    * @returns
    */
-  fetchOpcode(size = 0x1, incrementIP = true) {
-    if(this.opcodePrefix === 0x66)
+  fetchOpcode(size = 0x1, incrementIP = true, ignorePrefix = false) {
+    if(!ignorePrefix && this.prefixes.operandSize === 0x66)
       size = 0x4;
 
     const mapper = this.memIO.read[size];
@@ -1070,33 +1113,36 @@ class CPU {
     if(!this.clock)
       return;
 
+    if(this.limit > 4)
+      return;
+    this.limit = this.limit || 0;
     const tick = () => {
       /** Tick */
       if(this.pause)
         return;
 
-      /** Decode opcode */
-      let opcode = this.fetchOpcode();
-      this.counter = (this.counter || 0) + 1;
-      if(this.counter > 25)
-        this.pause = true;
+      /** Decode prefix */
+      let opcode = null;
+      for(let i = 0x0;i < 0x4, opcode = this.fetchOpcode(0x1, true, true); ++i) {
+        let prefix = CPU.prefixes[opcode];
+        if(!prefix)
+          break;
 
-      /** Check prefixes */
-      if(CPU.prefixes[opcode]) {
-        /** Some prefixes modifies fetchOpcode size */
-        const prefix = opcode;
-        opcode = this.fetchOpcode();
-        this.opcodePrefix = prefix;
+        this.prefixes[
+          CPU.prefixMap[isNaN(prefix) ? 0x1 : prefix]
+        ] = prefix;
       }
 
-      console.log(opcode.toString(16));
+      if(this.limit++ >= 4)
+        this.halt();
 
+      /** Decode opcode */
       let operand = this.opcodes[opcode];
       if(!operand)
         return this.halt(`Unknown opcode 0x${opcode.toString(16).toUpperCase()}`);
 
       /** Do something with operand, reset opcode prefix */
-      if(this.opcodePrefix === 0xF3) {
+      if(this.prefixes.instruction === 0xF3) {
         /** Save IP register for multiple argument opcode */
         const ip = this.registers.ip;
         do {
@@ -1107,7 +1153,8 @@ class CPU {
         operand();
 
       /** Reset opcode */
-      this.opcodePrefix = 0x0;
+      for(let key in this.prefixes)
+        this.prefixes[key] = null;
     };
 
     /** Exec CPU */

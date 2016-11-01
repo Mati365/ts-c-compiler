@@ -131,9 +131,8 @@ class BIOS extends Device {
         info: {
           /** see: https://pl.wikipedia.org/wiki/CHS */
           sector: 512,
-          sectors: 64,
-          heads: 16,
-          cylinders: 1024
+          sectors: 18,
+          heads: 2
         }
       }
     };
@@ -217,22 +216,30 @@ class BIOS extends Device {
                 sector = this.regs.cl & 0x3F,
                 drive = this.drives[this.regs.dl],
                 /** Mem adresses */
-                src = (this.regs.dh * drive.info.cylinders + cylinder) * drive.info.sectors * drive.info.sector + (sector - 0x1) * drive.info.sector,
+                src = ((cylinder * drive.info.heads + this.regs.dh) * drive.info.sectors + sector - 0x1) * drive.info.sector,
                 dest = this.cpu.getMemAddress('es', 'bx');
 
           /** Device is init before boot, if device is null, assign boot medium */
           if(!drive.buffer)
             drive.buffer = this.cpu.device;
 
-          /** Copy sectors */
-          for(let i = 0;i < this.regs.al;++i) {
-            const offset =  i * drive.info.sector;
-            drive.buffer.copy(
-              this.cpu.mem,
-              dest + offset,                    /** Dest address */
-              src + offset,                     /** Source address start */
-              src + offset + drive.info.sector  /** Source address end */
-            );
+          if(drive.buffer) {
+            /** Copy sectors */
+            for(let i = 0;i < this.regs.al;++i) {
+              const offset =  i * drive.info.sector;
+              drive.buffer.copy(
+                this.cpu.mem,
+                dest + offset,                    /** Dest address */
+                src + offset,                     /** Source address start */
+                src + offset + drive.info.sector  /** Source address end */
+              );
+            }
+
+            /** Always success, buffer is provided */
+            this.regs.status.cf = 0x0;
+          } else {
+            /** Error */
+            this.regs.status.cf = 0x1;
           }
         }
       })
@@ -264,13 +271,17 @@ class BIOS extends Device {
             this.cursor.x,
             this.cursor.y
           );
-          this.mode.write(
-            this.cpu.memIO,
-            this.cursor.info.character,
-            this.cursor.info.attribute,
-            ++this.cursor.x,
-            this.cursor.y
-          );
+
+          /** Render cursor */
+          if(this.cursor.info.show) {
+            this.mode.write(
+              this.cpu.memIO,
+              this.cursor.info.character,
+              this.cursor.info.attribute,
+              ++this.cursor.x,
+              this.cursor.y
+            );
+          }
       }
     };
 
@@ -279,6 +290,9 @@ class BIOS extends Device {
       0x10: this.intFunc('ah', {
         /** Set video mode */
         0x0: () => this.setVideoMode(this.regs.al),
+
+        /** Hide cursor */
+        0x1: () => this.cursor.info.show = false,
 
         /** Write character at address */
         0xE: writeCharacter.bind(this, 0x7),
@@ -300,7 +314,7 @@ class BIOS extends Device {
           this.cpu.exec(1450000 / 60);
           this.redraw(this.canvas.ctx);
         } catch(e) {
-          this.cpu.logger.error(e);
+          this.cpu.logger.error(e.stack);
           clearInterval(vblank);
         }
       }, 0);
@@ -352,7 +366,7 @@ class BIOS extends Device {
 
         /** Background and text */
         ctx.fillStyle = BIOS.colorTable[(num >> 11) & 0x7];
-        ctx.fillRect(x * this.cursor.w, y * this.cursor.h, this.cursor.w, this.cursor.h);
+        ctx.fillRect(x * this.cursor.w, y * (this.cursor.h + 10), this.cursor.w, this.cursor.h + 10);
 
         /** Foreground and text */
         if(num && (!((num >> 7) & 1) || this.blink.visible)) {
