@@ -357,7 +357,7 @@ class BIOS extends Device {
     /** Rendering from offset */
     let offset = 0;
 
-    ctx.font = '16px Terminal';
+    ctx.font = `${this.cursor.h}px Terminal`;
     for(var y = 0; y < this.mode.h; ++y) {
       for(var x = 0; x < this.mode.w; ++x) {
         /** Read from memory */
@@ -366,7 +366,7 @@ class BIOS extends Device {
 
         /** Background and text */
         ctx.fillStyle = BIOS.colorTable[(num >> 11) & 0x7];
-        ctx.fillRect(x * this.cursor.w, y * (this.cursor.h + 10), this.cursor.w, this.cursor.h + 10);
+        ctx.fillRect(x * this.cursor.w, (y + 0x1) * this.cursor.h, this.cursor.w, this.cursor.h);
 
         /** Foreground and text */
         if(num && (!((num >> 7) & 1) || this.blink.visible)) {
@@ -374,7 +374,7 @@ class BIOS extends Device {
           ctx.fillText(
             String.fromCharCode(BIOS.fontMapping[num & 0xFF]),
             x * this.cursor.w,
-            (y + 0x1) * this.cursor.h
+            (y + 0x1) * this.cursor.h - 0x4
           );
         }
       }

@@ -1,14 +1,12 @@
 'use strict';
 
-const Table = require('cli-table');
-
 /**
  * Simple logger
  * @class Logger
  */
 class Logger {
   constructor() {
-    (['error', 'info', 'warn']).forEach((scope) => {
+    (['error', 'info', 'warn', 'table']).forEach((scope) => {
       this[scope] = this.log.bind(this, scope);
     });
   }
@@ -20,7 +18,7 @@ class Logger {
    * @param {String}  msg   Message content
    */
   log(type, msg) {
-    console[type](`${type}:`, msg);
+    console[type](msg);
   }
 }
 
@@ -127,8 +125,8 @@ class CPU {
       'sf': 0x7,  /** Signum flag */
       'tf': 0x8,  /** Trap flag */
       'if': 0x9,  /** Interrupt flag */
-      'df': 0xA, /** Direction flag */
-      'of': 0xB  /** Overflow flag */
+      'df': 0xA,  /** Direction flag */
+      'of': 0xB   /** Overflow flag */
     }
     for(let k in CPU.flags) {
       ((name, bit) => {
@@ -188,7 +186,8 @@ class CPU {
       /** Segment registers */
       sreg: {
         0x0: 'es', 0x1: 'cs',
-        0x2: 'ss', 0x3: 'ds'
+        0x2: 'ss', 0x3: 'ds',
+        0x4: 'fs'
       }
     };
 
@@ -320,7 +319,7 @@ class CPU {
       },
       /** MOV sreg, r/m16 */  0x8E: () => {
         this.parseRmByte(
-          (reg, modeReg)     => this.registers[this.regMap.sreg[modeReg]] = this.registers[reg],
+          (reg, modeReg)  => this.registers[this.regMap.sreg[modeReg]] = this.registers[reg],
           (address, reg)  => { /** todo */ throw new Error('0x8E: Fix me!') },
           0x2
         );
@@ -341,8 +340,8 @@ class CPU {
 
       /** MOV r/m8, imm8  */ 0xC6: (bits = 0x1) => {
         this.parseRmByte(
-          (reg, modeReg)    => { /** todo */ throw new Error('0xC6: Fix me!') },
-          (address) => this.memIO.write[bits](this.fetchOpcode(bits), address),
+          (reg, modeReg)  => { /** todo */ throw new Error('0xC6: Fix me!') },
+          (address)       => this.memIO.write[bits](this.fetchOpcode(bits), address),
           bits
         );
       },
@@ -418,7 +417,12 @@ class CPU {
         });
       },
 
-      /** RET near  */  0xC3: (bits = 0x2) => this.registers.ip = this.pop(),
+      /** RET far   */  0xCB: () => {
+        this.registers.ip = this.pop();
+        this.registers.cs = this.pop();
+      },
+      /** RET near  */  0xC3: (bits = 0x2) => this.registers.ip = this.pop(bits),
+                        0xC1: () => this.opcodes[0xC3](),
       /** RET 16b   */  0xC2: (bits = 0x2) => {
         this.registers.ip = this.pop();
         this.pop(this.fetchOpcode(bits, false), false);
@@ -450,8 +454,8 @@ class CPU {
       /** CLI   */  0xFA: () => this.registers.status.if = 0x0,
       /** STI   */  0xFB: () => this.registers.status.if = 0x1,
 
-      /** CLC   */  0xF8: () => this.registers.cf = 0x0,
-      /** STC   */  0xF9: () => this.registers.cf = 0x1,
+      /** CLC   */  0xF8: () => this.registers.status.cf = 0x0,
+      /** STC   */  0xF9: () => this.registers.status.cf = 0x1,
 
       /** CLD   */  0xFC: () => this.registers.status.df = 0x0,
       /** STD   */  0xFD: () => this.registers.status.df = 0x1,
@@ -523,9 +527,9 @@ class CPU {
         );
       },
 
-      /** CBW */  0x98: () => {
-        this.registers.ah = (this.registers.al & 0x80) == 0x80 ? 0xFF : 0x0;
-      },
+      /** CBW */  0x98: () => this.registers.ah = (this.registers.al & 0x80) == 0x80 ? 0xFF : 0x0,
+      /** CWD */  0x99: () => this.registers.ax = (this.registers.ax & 0x8000) == 0x8000 ? 0xFFFF : 0x0,
+
       /** SALC */ 0xD6: () => {
         this.registers.al = this.registers.status.cf ? 0xFF : 0x0;
       },
@@ -593,6 +597,8 @@ class CPU {
       /** JZ  */  0x74: (f) => f.zf,
       /** JAE */  0x73: (f) => !f.cf,
       /** JB  */  0x72: (f) => f.cf,
+      /** JP  */  0x7A: (f) => f.pf,
+      /** JNP */  0x7B: (f) => !f.pf,
       /** JG  */  0x7F: (f) => !f.zf || f.sg === f.of,
       /** JGE */  0x7D: (f) => f.sf === f.of,
       /** JL  */  0x7C: (f) => f.sf !== f.of,
@@ -995,10 +1001,10 @@ class CPU {
       if(!byte.mod && byte.rm === 0x6) {
         /** SIB mode - ONLY 32 BIT MODE */
         const sib = CPU.decodeSibByte(this.fetchOpcode(0x1, true, true)),
-              index = this.registers[this.regMap[bits][sib.index]];
+              index = this.registers[this.regMap[mode][sib.index]];
 
-        if(sib.byte === 0x5) {
-          address = index * sib.scale + this.registers[this.regMap[bits][sib.base]];
+        if(sib.byte !== 0x5) {
+          address = index * sib.scale + this.registers[this.regMap[mode][sib.base]];
         } else {
           /** http://nicolascormier.com/documentation/sys-programming/binary_formats/elf/extending_sim286_to_the_intel386_architecture_with_32-bit_processing_and_elf_binary_input/node21.html */
           switch(byte.mod) {
@@ -1113,9 +1119,6 @@ class CPU {
     if(!this.clock)
       return;
 
-    if(this.limit > 4)
-      return;
-    this.limit = this.limit || 0;
     const tick = () => {
       /** Tick */
       if(this.pause)
@@ -1125,16 +1128,13 @@ class CPU {
       let opcode = null;
       for(let i = 0x0;i < 0x4, opcode = this.fetchOpcode(0x1, true, true); ++i) {
         let prefix = CPU.prefixes[opcode];
-        if(!prefix)
+        if(typeof prefix === 'undefined')
           break;
 
         this.prefixes[
           CPU.prefixMap[isNaN(prefix) ? 0x1 : prefix]
-        ] = prefix;
+        ] = opcode;
       }
-
-      if(this.limit++ >= 4)
-        this.halt();
 
       /** Decode opcode */
       let operand = this.opcodes[opcode];
@@ -1202,24 +1202,23 @@ class CPU {
     };
 
     /** Registers */
-    const table = new Table({
-      head: ['Register', 'Value']
-    });
+    const table = [];
     for(let key in this.registers) {
       let reg = this.registers[key];
       if(isNaN(reg))
         continue;
 
-      let val = reg.toString(2).toUpperCase();
-      if(val.length < 16)
-        val = new Array(16 - val.length + 1).join('0') + val;
+      let val = reg.toString(16).toUpperCase();
+      if(val.length < 8)
+        val = new Array(8 - val.length + 1).join('0') + val;
 
       /** add dots to easier reading value */
       table.push({
-        [key]: [insertDot(val, 8)]
+        register: key,
+        value: insertDot(val, 4) + ` (${reg} ${String.fromCharCode(reg & 0xFF)})`
       });
     }
-    this.logger.warn(loggerInfo + '\n' + table.toString());
+    this.logger.table(table);
 
     /** Flags */
     let flags = '';
@@ -1352,7 +1351,7 @@ class CPU {
    */
   static toUnsignedNumber(num, bits = 0x1) {
     const up = CPU.bitMask[bits];
-    if(num >= up)
+    if(num > up)
       return num - up - 0x1;
     else if(num < 0x0)
       return up + num + 0x1;
