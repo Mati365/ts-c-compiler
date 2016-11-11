@@ -54,6 +54,7 @@ class CPU {
      */
     this.mem = Buffer.alloc(8388608);
     this.memIO = {
+      device: this.mem,
       read: {
         /** 8bit  */  0x1: this.mem.readUInt8.bind(this.mem),
         /** 16bit */  0x2: this.mem.readUInt16LE.bind(this.mem),

@@ -260,10 +260,17 @@ class BIOS extends Device {
             this.cursor.y++;
           else
             this.cursor.x = 0;
+
+          /** Scroll up page, simply copy memory */
+          if(this.cursor.y >= this.mode.h) {
+            this.mode.scrollUp(this.cpu.memIO);
+            this.cursor.y = this.mode.h - 1;
+          }
         break;
 
         /** Normal characters */
         default:
+          /** Direct write to memory */
           this.mode.write(
             this.cpu.memIO,
             this.regs.al,
@@ -366,7 +373,7 @@ class BIOS extends Device {
 
         /** Background and text */
         ctx.fillStyle = BIOS.colorTable[(num >> 11) & 0x7];
-        ctx.fillRect(x * this.cursor.w, (y + 0x1) * this.cursor.h, this.cursor.w, this.cursor.h);
+        ctx.fillRect(x * this.cursor.w, y * this.cursor.h, this.cursor.w, this.cursor.h);
 
         /** Foreground and text */
         if(num && (!((num >> 7) & 1) || this.blink.visible)) {
@@ -471,7 +478,36 @@ class VideoMode {
     /** Write direct to memory */
     mem.write[0x2](
       (char & 0xFF) | ((color & 0xFF) << 8),
-      this.offset + (this.w * this.h) * page + y * this.w + x
+      this.offset + (this.w * this.h * 0x4) * page + y * this.w + x
+    );
+  }
+
+  /**
+   * Scrolls screen up
+   *
+   * @param {Memory}  mem   Memory driver
+   * @param {Number}  lines Lines amount
+   * @param {Number}  page  Page index
+   */
+  scrollUp(mem, lines = 0x1, page = 0x0) {
+    /** Line size in bytes */
+    const lineSize = this.w * 0x2,
+          pageSize = this.w * this.h * 0x4,
+          startOffset = this.offset + pageSize * page;
+
+    /** Copy previous lines memory */
+    mem.device.copy(
+      mem.device,
+      startOffset,
+      startOffset + lineSize,
+      startOffset + pageSize - lineSize
+    );
+
+    /** Fill with zeros new line */
+    mem.device.fill(
+      mem.device,
+      startOffset + pageSize - lineSize,
+      startOffset + lineSize
     );
   }
 }
