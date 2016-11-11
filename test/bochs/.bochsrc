@@ -592,7 +592,7 @@ boot: floppy
 #   floppy_bootsig_check: disabled=0
 #   floppy_bootsig_check: disabled=1
 #=======================================================================
-floppy_bootsig_check: disabled=0
+floppy_bootsig_check: disabled=1
 
 #=======================================================================
 # LOG:
