@@ -58,18 +58,19 @@ class Device {
   /**
    * Init interrupt function
    *
-   * @param {String}  reg   Register name
-   * @param {Assoc}   list  Functions callbacks
+   * @param {Number}  interrupt Interrupt number
+   * @param {String}  reg       Register name
+   * @param {Assoc}   list      Functions callbacks
    * @returns
    */
-  intFunc(reg, list) {
-    return () => {
+  intFunc(interrupt, reg, list) {
+    this.interrupts[interrupt] = () => {
       const func = this.regs[reg],
             callback = list[func];
       if(callback)
         callback()
       else
-        this.cpu.halt(`Unknown interrupt 0x${func.toString(16)} function!`);
+        this.cpu.halt(`Unknown interrupt 0x${interrupt.toString(16)} function 0x${func.toString(16)}!`);
     };
   }
 }
@@ -142,21 +143,20 @@ class BIOS extends Device {
       lastReset: Date.now(),
       speed: 55 /** 55MS tick */
     };
-    this.interrupts = {
-      /** Read System Clock (Ticks) */
-      0x1A: this.intFunc('ah', {
-        0x0: () => {
-          const now = Date.now()
-              , ticks = (this.timer.lastReset - now) / this.timer.speed;
 
-          Object.assign(this.regs, {
-            al: this.timer.lastReset - now >= 86400000 ? 0x1 : 0x0,
-            dx: ticks & 0xFFFF,
-            cx: (ticks >> 0x10) & 0xFFFF
-          });
-        }
-      })
-    };
+    /** Read System Clock (Ticks) */
+    this.intFunc(0x1A, 'ah', {
+      0x0: () => {
+        const now = Date.now()
+            , ticks = (this.timer.lastReset - now) / this.timer.speed;
+
+        Object.assign(this.regs, {
+          al: this.timer.lastReset - now >= 86400000 ? 0x1 : 0x0,
+          dx: ticks & 0xFFFF,
+          cx: (ticks >> 0x10) & 0xFFFF
+        });
+      }
+    });
 
     /** Initialize */
     this.initScreen();
@@ -168,20 +168,17 @@ class BIOS extends Device {
    * Init keyboard interrupts
    */
   initKeyboard() {
-    Object.assign(this.interrupts, {
-      /** Read (Wait for) Next Keystroke */
-      0x16: this.intFunc('ah', {
-        0x0: () => {
-          this.cpu.pause = true;
-          document.onkeypress = (e) => {
-            this.cpu.pause = false;
-            this.regs.al = e.keyCode;
+    this.intFunc(0x16, 'ah', {
+      0x0: () => {
+        this.cpu.pause = true;
+        document.onkeypress = (e) => {
+          this.cpu.pause = false;
+          this.regs.al = e.keyCode;
 
-            document.onkeypress = null;
-            e.preventDefault();
-          };
-        }
-      })
+          document.onkeypress = null;
+          e.preventDefault();
+        };
+      }
     });
   }
 
@@ -189,60 +186,58 @@ class BIOS extends Device {
    * Init hard drive interrupts, buffers
    */
   initDrive() {
-    Object.assign(this.interrupts, {
-      0x13: this.intFunc('ah', {
-        /** Reset floppy drive */
-        0x0: () => {
-          if(this.drives[this.regs.dl]) {
-            // this.drives[this.regs.dl] = 0x0;
-            this.regs.ah = this.regs.status.cf = 0x0;
-          } else {
-            this.regs.ah = 0x6;
-            this.regs.status.cf = 0x1;
-          }
-        },
-
-        /** Read from floppy drive */
-        0x2: () => {
-          /**
-           * see: https://en.wikipedia.org/wiki/INT_13H#INT_13h_AH.3D02h:_Read_Sectors_From_Drive
-           * todo: Fixme
-           *
-           * CX =       ---CH--- ---CL---
-           * cylinder : 76543210 98
-           * sector   :            543210
-           */
-          const cylinder = (this.regs.cx >> 6) & 0x3FF,
-                sector = this.regs.cl & 0x3F,
-                drive = this.drives[this.regs.dl],
-                /** Mem adresses */
-                src = ((cylinder * drive.info.heads + this.regs.dh) * drive.info.sectors + sector - 0x1) * drive.info.sector,
-                dest = this.cpu.getMemAddress('es', 'bx');
-
-          /** Device is init before boot, if device is null, assign boot medium */
-          if(!drive.buffer)
-            drive.buffer = this.cpu.device;
-
-          if(drive.buffer) {
-            /** Copy sectors */
-            for(let i = 0;i < this.regs.al;++i) {
-              const offset =  i * drive.info.sector;
-              drive.buffer.copy(
-                this.cpu.mem,
-                dest + offset,                    /** Dest address */
-                src + offset,                     /** Source address start */
-                src + offset + drive.info.sector  /** Source address end */
-              );
-            }
-
-            /** Always success, buffer is provided */
-            this.regs.status.cf = 0x0;
-          } else {
-            /** Error */
-            this.regs.status.cf = 0x1;
-          }
+    this.intFunc(0x13, 'ah', {
+      /** Reset floppy drive */
+      0x0: () => {
+        if(this.drives[this.regs.dl]) {
+          // this.drives[this.regs.dl] = 0x0;
+          this.regs.ah = this.regs.status.cf = 0x0;
+        } else {
+          this.regs.ah = 0x6;
+          this.regs.status.cf = 0x1;
         }
-      })
+      },
+
+      /** Read from floppy drive */
+      0x2: () => {
+        /**
+         * see: https://en.wikipedia.org/wiki/INT_13H#INT_13h_AH.3D02h:_Read_Sectors_From_Drive
+         * todo: Fixme
+         *
+         * CX =       ---CH--- ---CL---
+         * cylinder : 76543210 98
+         * sector   :            543210
+         */
+        const cylinder = (this.regs.cx >> 6) & 0x3FF,
+              sector = this.regs.cl & 0x3F,
+              drive = this.drives[this.regs.dl],
+              /** Mem adresses */
+              src = ((cylinder * drive.info.heads + this.regs.dh) * drive.info.sectors + sector - 0x1) * drive.info.sector,
+              dest = this.cpu.getMemAddress('es', 'bx');
+
+        /** Device is init before boot, if device is null, assign boot medium */
+        if(!drive.buffer)
+          drive.buffer = this.cpu.device;
+
+        if(drive.buffer) {
+          /** Copy sectors */
+          for(let i = 0;i < this.regs.al;++i) {
+            const offset =  i * drive.info.sector;
+            drive.buffer.copy(
+              this.cpu.mem,
+              dest + offset,                    /** Dest address */
+              src + offset,                     /** Source address start */
+              src + offset + drive.info.sector  /** Source address end */
+            );
+          }
+
+          /** Always success, buffer is provided */
+          this.regs.status.cf = 0x0;
+        } else {
+          /** Error */
+          this.regs.status.cf = 0x1;
+        }
+      }
     });
   }
 
@@ -292,22 +287,20 @@ class BIOS extends Device {
       }
     };
 
-    Object.assign(this.interrupts, {
-      /** Graphics interrupts */
-      0x10: this.intFunc('ah', {
-        /** Set video mode */
-        0x0: () => this.setVideoMode(this.regs.al),
+    /** Graphics interrupts */
+    this.intFunc(0x10, 'ah', {
+      /** Set video mode */
+      0x0: () => this.setVideoMode(this.regs.al),
 
-        /** Hide cursor */
-        0x1: () => this.cursor.info.show = false,
+      /** Hide cursor */
+      0x1: () => this.cursor.info.show = false,
 
-        /** Write character at address */
-        0xE: writeCharacter.bind(this, 0x7),
-        0x9: () => {
-          for(let i = 0;i < this.regs.cx;++i)
-            writeCharacter();
-        }
-      })
+      /** Write character at address */
+      0xE: writeCharacter.bind(this, 0x7),
+      0x9: () => {
+        for(let i = 0;i < this.regs.cx;++i)
+          writeCharacter();
+      }
     });
 
     /** Monitor render loop */

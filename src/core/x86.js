@@ -1,12 +1,14 @@
 'use strict';
 
+const opcodesTable = {};
+
 /**
  * Simple logger
  * @class Logger
  */
 class Logger {
   constructor() {
-    (['error', 'info', 'warn', 'table']).forEach((scope) => {
+    (['error', 'info', 'warn', 'table', 'log']).forEach((scope) => {
       this[scope] = this.log.bind(this, scope);
     });
   }
@@ -39,7 +41,8 @@ class CPU {
 
     /** Default CPU config */
     this.config = {
-      ignoreMagic: false
+      ignoreMagic: true,
+      debugger: true
     }
     config && Object.assign(this.config, config);
 
@@ -961,7 +964,7 @@ class CPU {
 
     /** 1B call instruction size */
     relative = CPU.getSignedNumber(relative, bits);
-    this.registers.ip += relative - (relative < 0 ? 1 : 0);
+    this.registers.ip += relative - (relative < 0 ? 0x1 : 0);
   }
 
   /**
@@ -1141,6 +1144,12 @@ class CPU {
       let operand = this.opcodes[opcode];
       if(!operand)
         return this.halt(`Unknown opcode 0x${opcode.toString(16).toUpperCase()}`);
+
+      /** Log all opcodes when debugger is enabled */
+      if(this.config.debugger) {
+        const info = opcodesTable[opcode] || {};
+        this.logger.log(`0x${opcode.toString(16)} ${info.mnemonic} ${info.op1} ${info.op2}`);
+      }
 
       /** Do something with operand, reset opcode prefix */
       if(this.prefixes.instruction === 0xF3) {
