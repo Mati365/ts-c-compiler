@@ -42,7 +42,7 @@ class CPU {
     /** Default CPU config */
     this.config = {
       ignoreMagic: true,
-      debugger: true
+      debugger: false
     }
     config && Object.assign(this.config, config);
 
@@ -191,7 +191,7 @@ class CPU {
       sreg: {
         0x0: 'es', 0x1: 'cs',
         0x2: 'ss', 0x3: 'ds',
-        0x4: 'fs'
+        0x4: 'fs', 0x5: 'gs'
       }
     };
 
@@ -260,10 +260,8 @@ class CPU {
      * see: http://csiflabs.cs.ucdavis.edu/~ssdavis/50/8086%20Opcodes.pdf
      */
     const stackSregMap = {
-      0x0:  'es',
-      0x8:  'cs',
-      0x10: 'ss',
-      0x18: 'ds'
+      0x0:  'es', 0x8:  'cs',
+      0x10: 'ss', 0x18: 'ds'
     };
     for (let sregIndex in stackSregMap) {
       ((index) => {
@@ -323,8 +321,12 @@ class CPU {
       },
       /** MOV sreg, r/m16 */  0x8E: () => {
         this.parseRmByte(
-          (reg, modeReg)  => this.registers[this.regMap.sreg[modeReg]] = this.registers[reg],
-          (address, reg)  => { /** todo */ throw new Error('0x8E: Fix me!') },
+          (reg, modeReg)  => {
+            this.registers[this.regMap.sreg[modeReg]] = this.registers[reg]
+          },
+          (address, _, byte)  => {
+            this.registers[this.regMap.sreg[byte.reg]] = this.memIO.read[0x2](address);
+          },
           0x2
         );
       },
@@ -336,8 +338,12 @@ class CPU {
         );
       },
 
-      /** MOV al, m8  */ 0xA0: (bits = 0x1) => this.registers[this.regMap[bits][0]] = this.fetchOpcode(bits),
-      /** MOV al, m16 */ 0xA1: () => this.opcodes[0xA0](0x2),
+      /** MOV al, m16  */ 0xA0: (bits = 0x1) => {
+        this.registers[this.regMap[bits][0]] = this.memIO.read[bits](
+          this.getMemAddress(this.segmentReg, this.fetchOpcode(0x2))
+        );
+      },
+      /** MOV ax, m16 */ 0xA1: () => this.opcodes[0xA0](0x2),
 
       /** MOV m8, al  */ 0xA2: (bits = 0x1) => this.memIO.write[bits](this.registers.al, this.fetchOpcode(bits)),
       /** MOV m16, al */ 0xA3: () => this.opcodes[0xA2](0x2),
@@ -498,14 +504,14 @@ class CPU {
         const code = this.fetchOpcode(),
               interrupt = this.interrupts[code];
         if(!interrupt)
-          this.halt(`unknown interrupt ${code.toString(16)}`);
+          this.halt(`unknown interrupt 0x${code.toString(16)}`);
         else
           interrupt();
       },
 
       /** RCL r/m8,  cl */  0xD2: (bits = 0x1, dir = 0x1) => {
         this.parseRmByte(
-          (reg) => {
+          (reg, _, byte) => {
             this.registers[reg] = this.rotl(this.registers[reg], this.registers.cl * dir, bits);
           },
           (address) => {
@@ -516,20 +522,31 @@ class CPU {
           }, bits
         );
       },
-      /** RCL	r/m16, cl */  0xD3: () => this.opcodes[0xD2](0x2),
+      /** RCL	r/m16, cl     */  0xD3: () => this.opcodes[0xD2](0x2),
       /** ROL r/m8, 1   */  0xD0: (bits = 0x1) => {
+        const operator = (val, byte) => {
+          switch(byte.rm) {
+            /** SHL */ case 0x4: throw new Error('Implement SHL!'); break;
+            /** SHR */ case 0x5: val = this.shr(val, 0x1, bits); break;
+            /** ROL */ default:
+              val = CPU.rotate(val, 0x1, bits);
+              this.registers.status.cf = (val >> 0x7) & 0x1;
+          }
+          return val;
+        };
         this.parseRmByte(
-          (reg) => {
-            this.registers[reg] = CPU.rotate(this.registers[reg], 0x1, bits);
-            this.registers.status.cf = (this.registers[reg] >> 0x7) & 0x1;
+          (reg, _, byte) => {
+            this.registers[reg] = operator(this.registers[reg], byte);
           },
-          (address) => {
-            const val = CPU.rotate(this.memIO.read[bits](address), 0x1, bits);
-            this.memIO.write[bits](val, address);
-            this.registers.status.cf = (val >> 0x7) & 0x1;
+          (address, _, byte) => {
+            this.memIO.write[bits](
+              operator(this.memIO.read[bits](address), byte),
+              address
+            );
           }, bits
         );
       },
+      /** ROR r/m8, 1   */  0xD1: () => this.opcodes[0xD0](0x2),
 
       /** CBW */  0x98: () => this.registers.ah = (this.registers.al & 0x80) == 0x80 ? 0xFF : 0x0,
       /** CWD */  0x99: () => this.registers.ax = (this.registers.ax & 0x8000) == 0x8000 ? 0xFFFF : 0x0,
@@ -641,12 +658,32 @@ class CPU {
    */
   rotl(num, times, bits = 0x1) {
     const mask = CPU.bitMask[bits];
-    for(let i = times; i >= 0; --i) {
+    for(; times >= 0; --times) {
       let cf = 0;
       num <<= 0x1;
       num |= cf;
       num &= mask;
       this.registers.status.cf = cf;
+    }
+    return num;
+  }
+
+  /**
+   * Shift bits to right with carry flag
+   * see: https://github.com/NeatMonster/Intel8086/blob/master/src/fr/neatmonster/ibmpc/Intel8086.java#L4200
+   *
+   * @param {Number}  num   Number
+   * @param {Number}  times Bits to shift
+   * @param {Number}  bits  Mode
+   * @returns Number
+   * @memberOf CPU
+   */
+  shr(num, times, bits = 0x1) {
+    const mask = CPU.bitMask[bits];
+    for(; times >= 0; --times) {
+      this.registers.status.cf = num & 0x1;
+      num >>= 0x1;
+      num &= mask;
     }
     return num;
   }
@@ -725,8 +762,8 @@ class CPU {
       extra: {
         increment: { _c: (s) => s + 1 },
         decrement: { _c: (s) => s - 1 },
-        mul:       { _c: (s, d) => s * d },
-        div:       { _c: (s, d) => s / d }
+        mul:       { set: 0x0, _c: (s, d) => s * d },
+        div:       { set: 0x0, _c: (s, d) => s / d }
       },
       /** SBB */  0b011: {
         offset: 0x18,
@@ -739,9 +776,24 @@ class CPU {
 
       /** + */ 0b000: { offset: 0x00, _c: (s, d) => s + d },
       /** - */ 0b101: { offset: 0x28, _c: (s, d) => s - d },
-      /** & */ 0b100: { offset: 0x20, _c: (s, d) => s & d },
-      /** | */ 0b001: { offset: 0x08, _c: (s, d) => s | d },
-      /** ^ */ 0b110: { offset: 0x30, _c: (s, d) => s ^ d },
+      /** & */ 0b100: {
+        offset: 0x20,
+        clear: CPU.flags.cf | CPU.flags.of,
+        set: CPU.flags.sf | CPU.flags.pf | CPU.flags.zf,
+        _c: (s, d) => s & d
+      },
+      /** | */ 0b001: {
+        offset: 0x08,
+        clear: CPU.flags.cf | CPU.flags.of,
+        set: CPU.flags.sf | CPU.flags.pf | CPU.flags.zf,
+        _c: (s, d) => s | d
+      },
+      /** ^ */ 0b110: {
+        offset: 0x30,
+        clear: CPU.flags.cf | CPU.flags.of,
+        set: CPU.flags.sf | CPU.flags.pf | CPU.flags.zf,
+        _c: (s, d) => s ^ d
+      },
       /** = */ 0b111: {
         offset: 0x38,
         _flagOnly: true,
@@ -751,14 +803,18 @@ class CPU {
 
     /** ALU operation checker */
     this.alu = (operator, l, r, bits) => {
+      /** Clear flags */
+      if(operator.clear)
+        this.registers.flags &= !operator.clear;
+
       /** Set default flags value for operator */
       let val = operator._c(l, r);
-      if(!operator.flags)
-        operator.flags = 0xFF;
+      if(typeof operator.set === 'undefined')
+        operator.set = 0xFF;
 
       /** Value returned after flags */
       for(let key in flagCheckers) {
-        if((operator.flags & key) == key) {
+        if((operator.set & key) == key) {
           let _val = flagCheckers[key](val, bits, l, r);
           if((_val || _val === 0) && _val !== true)
             val = _val;
@@ -780,25 +836,25 @@ class CPU {
             this.registers[reg] = ~this.registers[reg] & CPU.bitMask[bits];
           } else if(byte.reg === 0x3) {
             /** NEG */
-            this.registers[reg] = CPU.toUnsignedNumber(-this.registers[reg], bits);
-            this.registers.status.cf = byte.rm === 0x0 ? 0x0 : 0x1;
-
+            this.registers[reg] = this.alu(this.operators[0b101], 0, this.registers[reg], bits);
           } else
+            /** MUL */
             mul(this.registers[reg], byte);
         },
         (address, _, byte) => {
           const val = this.memIO.read[bits](address);
-
           if(byte.reg === 0x2) {
             /** NOT */
             this.memIO.write[bits](~val & CPU.bitMask[bits], address);
 
           }  else if(byte.reg === 0x3) {
             /** NEG */
-            this.memIO.write[bits](CPU.toUnsignedNumber(-val, bits), address);
-            this.registers.status.cf = byte.rm === 0x0 ? 0x0 : 0x1;
-
+            this.memIO.write[bits](
+              this.alu(this.operators[0b101], 0, val, bits),
+              address
+            );
           } else
+            /** MUL */
             mul(val, byte)
         }, bits
       );
@@ -868,8 +924,11 @@ class CPU {
             0x2
           );
 
-          if(byte.reg === 0x5)
-            this.registers.status.cf = this.registers.status.of = (this.registers.al === this.registers.al);
+          this.registers.status.cf = this.registers.status.of = (
+            byte.reg === 0x5
+              ? this.registers.al == this.registers.ax
+              : this.registers.al
+          );
         }
       }),
       /** MULTIPLIER ax, r/m16 */  0xF7: () => multiplier(0x2, (val, byte) => {
@@ -900,8 +959,11 @@ class CPU {
           this.registers.ax = output & 0xFF;
           this.registers.dx = (output >> 8) & 0xFF;
 
-          if(byte.reg === 0x5)
-            this.registers.status.cf = this.registers.status.of = (output === this.registers.ax);
+          this.registers.status.cf = this.registers.status.of = (
+            byte.reg === 0x5
+              ? output == this.registers.ax
+              : this.registers.dx
+          );
         }
       }),
     });
@@ -978,6 +1040,16 @@ class CPU {
   }
 
   /**
+   * Get active segment register
+   */
+  get segmentReg() {
+    if(this.prefixes.segment)
+      return this.prefixes.segment._sr;
+    else
+      return 'ds';
+  }
+
+  /**
    * Parse RM mode byte
    * see: http://www.c-jump.com/CIS77/CPU/x86/X77_0060_mod_reg_r_m_byte.htm
    *
@@ -986,7 +1058,7 @@ class CPU {
    * @param {Integer}   mode          0x1 if 8bit register, 0x2 if 16bit register
    * @param {Integer}   segRegister   Segment register name, overriden if prefix is given
    */
-  parseRmByte(regCallback, memCallback, mode, segRegister = 'ds') {
+  parseRmByte(regCallback, memCallback, mode, segRegister = this.segmentReg) {
     const byte = CPU.decodeRmByte(this.fetchOpcode(0x1, true, true));
 
     /** Register */
@@ -1003,23 +1075,8 @@ class CPU {
           displacement = 0;
 
       if(!byte.mod && byte.rm === 0x6) {
-        /** SIB mode - ONLY 32 BIT MODE */
-        const sib = CPU.decodeSibByte(this.fetchOpcode(0x1, true, true)),
-              index = this.registers[this.regMap[mode][sib.index]];
-
-        if(sib.byte !== 0x5) {
-          address = index * sib.scale + this.registers[this.regMap[mode][sib.base]];
-        } else {
-          /** http://nicolascormier.com/documentation/sys-programming/binary_formats/elf/extending_sim286_to_the_intel386_architecture_with_32-bit_processing_and_elf_binary_input/node21.html */
-          switch(byte.mod) {
-            case 0x0: address = index * sib.scale + this.fetchOpcode(0x4, true, true) + this.registers.ebp;  break;
-            case 0x1: address = index * sib.scale + this.fetchOpcode(0x1, true, true) + this.registers.ebp;  break;
-            case 0x2: address = index * sib.scale + this.fetchOpcode(0x4, true, true) + this.registers.ebp;  break;
-
-            default:
-              this.halt('Incorrect SIB addressing mode!');
-          }
-        }
+        /** SIB Byte? */
+        address = this.getMemAddress(this.segmentReg, this.fetchOpcode(0x2));
       } else {
         /** Eight-bit displacement, sign-extended to 16 bits */
         if(byte.mod === 0x1 || byte.mod === 0x2)
@@ -1040,14 +1097,11 @@ class CPU {
           default:
             this.logger.error('Unknown RM byte address!');
         }
+
         /** Seg register ss is set with 0x2, 0x3, 0x6 opcodes */
-        if(byte.rm >= 0x2 && !(0x6 % byte.rm))
+        if(byte.rm >= 0x2 && !(0x6 % byte.rm) && segRegister === 'ds')
           segRegister = 'ss';
       }
-
-      /** If cpu segment register is present, override default */
-      if(this.prefixes.segment)
-        segRegister = this.prefixes.segment._sr || segRegister;
 
       /** Callback and address calc */
       memCallback(
@@ -1119,7 +1173,7 @@ class CPU {
    * @param {Number}  cycles  Instructions counter
    * @returns Cycles count
    */
-  exec(cycles = 1) {
+  exec(cycles) {
     if(!this.clock)
       return;
 
@@ -1168,11 +1222,11 @@ class CPU {
     };
 
     /** Exec CPU */
-    if(this.config.sync) {
-      while(this.clock)
+    if(cycles) {
+      for(let i = 0;i < cycles && this.clock;++i)
         tick();
     } else {
-      for(let i = 0;i < cycles && this.clock;++i)
+      while(this.clock)
         tick();
     }
 
@@ -1293,7 +1347,7 @@ class CPU {
       );
 
       /** RUN */
-      this.exec();
+      this.exec(100);
     } else
       this.halt('Unable to boot device!');
   }
@@ -1315,12 +1369,12 @@ class CPU {
   /**
    * Convert segment based address to flat
    *
-   * @param {Integer} sreg  Segment register
-   * @param {Integer} reg   Normal register
+   * @param {Integer}         sreg  Segment register
+   * @param {Integer|String}  reg   Normal register or offset
    * @returns
    */
   getMemAddress(sreg, reg) {
-    return (this.registers[sreg] << 4) + this.registers[reg];
+    return (this.registers[sreg] << 4) + (isNaN(reg) ? this.registers[reg] : reg);
   }
 
   /**

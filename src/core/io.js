@@ -245,13 +245,13 @@ class BIOS extends Device {
    * Load screen interrupts, buffers
    */
   initScreen() {
-    const writeCharacter = (attribute) => {
-      switch(this.regs.al) {
+    const writeCharacter = (character, attribute) => {
+      switch(character) {
         /** White characters */
         case 0xA:
         case 0xD:
           this.mode.write(this.cpu.memIO, 0x0, 0x0, this.cursor.x, this.cursor.y);
-          if(this.regs.al == 0xD)
+          if(character == 0xD)
             this.cursor.y++;
           else
             this.cursor.x = 0;
@@ -268,7 +268,7 @@ class BIOS extends Device {
           /** Direct write to memory */
           this.mode.write(
             this.cpu.memIO,
-            this.regs.al,
+            character,
             attribute || this.regs.bl,
             this.cursor.x,
             this.cursor.y
@@ -295,11 +295,38 @@ class BIOS extends Device {
       /** Hide cursor */
       0x1: () => this.cursor.info.show = false,
 
+      /** Cursor pos */
+      0x2: () => {
+        Object.assign(this.cursor, {
+          x: this.regs.dl,
+          y: this.regs.dh
+        });
+      },
+
+      /** Scroll screen up */
+      0x6: () => {
+        this.mode.scrollUp(
+          this.cpu.memIO,
+          this.regs.al || this.mode.h
+        )
+      },
+
       /** Write character at address */
-      0xE: writeCharacter.bind(this, 0x7),
+      0xE: () => writeCharacter(this.regs.al, 0x7),
       0x9: () => {
         for(let i = 0;i < this.regs.cx;++i)
-          writeCharacter();
+          writeCharacter(this.regs.al);
+      },
+
+      /** Write string */
+      0x13: () => {
+        for(let i = 0;i < this.regs.cx;++i) {
+          writeCharacter(
+            this.cpu.memIO.read[0x1](this.cpu.getMemAddress('es', 'bp')),
+            this.regs.al <= 0x1 && this.regs.bl
+          );
+          this.regs.bp++;
+        }
       }
     });
 

@@ -1,16 +1,7 @@
 extern void put_c(char);
 
 void main() {
-  int i = 0;
-  {
-    int b = 2;
-    while(b < 4) {
-      b++;
-    }
-    if(b == 4) {
-      asm "xchg bx, bx";
-    }
-  }
+  put_c('D'); put_c('U'); put_c('P'); put_c('A');
   asm "hlt";
 }
 
