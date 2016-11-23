@@ -6,14 +6,13 @@ const React = require('react')
     , Radium = require('radium')
 
     /** Custom components */
-    , Titlebar = require('./titlebar.jsx')
     , Output = require('./output.jsx')
 
     /** CPU */
     , CPU = require('../core/x86')
     , IO = require('../core/io');
 
-const compiled = require('buffer!../../test/bochs/build/bootsec.bin');
+const compiled = require('buffer!../../test/bochs/build/mikeOS-master/disk_images/mikeos.flp');
 
 @Radium
 class Terminal extends React.Component {
@@ -35,7 +34,6 @@ class Terminal extends React.Component {
   render() {
     return (
       <div style={styles}>
-        <Titlebar />
         <Output onContextInit={this.initializeCPU.bind(this)} />
       </div>
     );

@@ -147,8 +147,8 @@ class BIOS extends Device {
     /** Read System Clock (Ticks) */
     this.intFunc(0x1A, 'ah', {
       0x0: () => {
-        const now = Date.now()
-            , ticks = (this.timer.lastReset - now) / this.timer.speed;
+        const now = Date.now(),
+              ticks = (this.timer.lastReset - now) / this.timer.speed;
 
         Object.assign(this.regs, {
           al: this.timer.lastReset - now >= 86400000 ? 0x1 : 0x0,

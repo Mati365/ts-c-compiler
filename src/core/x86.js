@@ -477,8 +477,7 @@ class CPU {
         );
 
         /** Increment indexes */
-        this.dfIncrement(bits, 'si');
-        this.dfIncrement(bits, 'di');
+        this.dfIncrement(bits, 'si', 'di');
       },
       /** MOVSW */  0xA5: () => this.opcodes[0xA4](0x2),
 
@@ -497,7 +496,7 @@ class CPU {
       },
       /** LES r16, m16:16 */  0xC4: () => this.opcodes[0xC5]('es'),
       /** LEA r16, mem    */  0x8D: () => {
-        this.parseRmByte(null, (address, reg) => this.registers[reg] = address, 0x2);
+        this.parseRmByte(null, (address, reg) => this.registers[reg] = address & 0xFF, 0x2);
       },
 
       /** INT imm8    */  0xCD: () => {
@@ -556,10 +555,25 @@ class CPU {
       },
 
       /** XCHG bx, bx */  0x87: () => {
-        const l = this.fetchOpcode();
-        if(l == 0xDB) {
+        if(this.fetchOpcode(0x1, false, true) == 0xDB) {
+          this.registers.ip++;
+
           this.raiseException(CPU.Exception.MEM_DUMP);
           this.halt('Debug dump!', true);
+        } else {
+          this.parseRmByte(
+            (reg, reg2) => {
+              [
+                this.registers[this.regMap[0x2][reg2]],
+                this.registers[reg]
+              ] = [
+                this.registers[reg],
+                this.registers[this.regMap[0x2][reg2]]
+              ];
+            },
+            (address, _, byte) => { throw new Error('todo: xchg in mem address') },
+            0x2
+          )
         }
       },
 
@@ -869,6 +883,9 @@ class CPU {
           this.memIO.read[bits](this.getMemAddress('ds', 'si')),
           bits
         );
+
+        /** Increment indexes */
+        this.dfIncrement(bits, 'di', 'si');
       },
       /** CMPSW */ 0xA7: () => this.opcodes[0xA6](0x2),
 
@@ -1032,11 +1049,13 @@ class CPU {
   /**
    * Increment relative to DF register flag
    *
-   * @param {Number} bits Bytes to increment
-   * @param {String} reg  Register to increment
+   * @param {Number}  bits      Bytes to increment
+   * @param {Array}   regs...   Registers to increment
    */
-  dfIncrement(bits = 0x1, reg = 'di') {
-    this.registers[reg] += this.registers.status.df ? -bits : bits;
+  dfIncrement(bits = 0x1) {
+    const dir = this.registers.status.df ? -bits : bits;
+    for(let i = 1;i < arguments.length;++i)
+      this.registers[arguments[i]] += dir;
   }
 
   /**
@@ -1076,7 +1095,7 @@ class CPU {
 
       if(!byte.mod && byte.rm === 0x6) {
         /** SIB Byte? */
-        address = this.getMemAddress(this.segmentReg, this.fetchOpcode(0x2));
+        address = this.fetchOpcode(0x2);
       } else {
         /** Eight-bit displacement, sign-extended to 16 bits */
         if(byte.mod === 0x1 || byte.mod === 0x2)
@@ -1207,12 +1226,19 @@ class CPU {
 
       /** Do something with operand, reset opcode prefix */
       if(this.prefixes.instruction === 0xF3) {
-        /** Save IP register for multiple argument opcode */
         const ip = this.registers.ip;
         do {
-          operand();
+          /** Revert IP,*/
           this.registers.ip = ip;
-        } while(this.registers.cx = CPU.toUnsignedNumber(this.registers.cx - 0x1, 0x2));
+
+          /** Decrement CX */
+          operand();
+          this.registers.cx = CPU.toUnsignedNumber(this.registers.cx - 0x1, 0x2)
+
+          /** Stop loop if zf, check compare flags for SCAS, CMPS  */
+          if(!!~[0xAF, 0xAE, 0xA6, 0xA7].indexOf(opcode) && !this.registers.status.zf)
+            break;
+        } while(this.registers.cx);
       } else
         operand();
 
@@ -1345,9 +1371,6 @@ class CPU {
         this.getMemAddress('cs', 'ip'),
         510
       );
-
-      /** RUN */
-      this.exec(100);
     } else
       this.halt('Unable to boot device!');
   }

@@ -1,14 +1,12 @@
+#define bool char
+#define true 1
+#define false 0
+
 extern void put_c(char);
 
-void main() {
-  put_c('D'); put_c('U'); put_c('P'); put_c('A');
-  asm "hlt";
-}
+static int a[] = { 1, 2, 3, 4 };
 
-void put_c(char c) {
-  asm "mov ah, #0x0e";
-  asm "mov bx, sp";
-  asm "mov al, [bx + 2]";
-  asm "mov bl, #0x0c";
-  asm "int 0x10";
+void main() {
+  a[0] = 2;
+  asm "hlt";
 }

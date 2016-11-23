@@ -115,7 +115,6 @@ read:
 
     ; shr błąd
     shr ch, 1
-
     ; header number
     mov dh, al
     and dh, 1
@@ -129,6 +128,7 @@ read:
     mov al, byte [.count]
 
     int 13h
+
     jc .redo
     ret
 .count db 0
