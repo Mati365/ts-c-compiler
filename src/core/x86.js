@@ -42,7 +42,7 @@ class CPU {
     /** Default CPU config */
     this.config = {
       ignoreMagic: true,
-      debugger: false
+      debugger: true
     }
     config && Object.assign(this.config, config);
 
@@ -304,6 +304,28 @@ class CPU {
    * https://en.wikipedia.org/wiki/X86_instruction_listings#Original_8086.2F8088_instructions
    */
   initOpcodeSet() {
+    /** Operators binded to the same opcode, its changed using byte.rm */
+    const switchOpcode = (bits, operators) => {
+      const operator = (val, byte) => {
+        let operator = (operators[byte.reg] || operators.default)
+        if(operator)
+          return operator(val, byte);
+        else
+          throw new Error(`Unsupported operator! ${byte.reg}`);
+      };
+      this.parseRmByte(
+        (reg, _, byte) => {
+          this.registers[reg] = operator(this.registers[reg], byte);
+        },
+        (address, _, byte) => {
+          this.memIO.write[bits](
+            operator(this.memIO.read[bits](address), byte),
+            address
+          );
+        }, bits
+      );
+    };
+
     this.opcodes = {
       /** MOV r/m8, reg8 */  0x88: (bits = 0x1) => {
         this.parseRmByte(
@@ -345,8 +367,13 @@ class CPU {
       },
       /** MOV ax, m16 */ 0xA1: () => this.opcodes[0xA0](0x2),
 
-      /** MOV m8, al  */ 0xA2: (bits = 0x1) => this.memIO.write[bits](this.registers.al, this.fetchOpcode(bits)),
-      /** MOV m16, al */ 0xA3: () => this.opcodes[0xA2](0x2),
+      /** MOV m8, al  */ 0xA2: (bits = 0x1) => {
+        this.memIO.write[bits](
+          this.registers[this.regMap[bits][0x0]],
+          this.getMemAddress(this.segmentReg, this.fetchOpcode(bits))
+        );
+      },
+      /** MOV m16, ax */ 0xA3: () => this.opcodes[0xA2](0x2),
 
       /** MOV r/m8, imm8  */ 0xC6: (bits = 0x1) => {
         this.parseRmByte(
@@ -432,7 +459,6 @@ class CPU {
         this.registers.cs = this.pop();
       },
       /** RET near  */  0xC3: (bits = 0x2) => this.registers.ip = this.pop(bits),
-                        0xC1: () => this.opcodes[0xC3](),
       /** RET 16b   */  0xC2: (bits = 0x2) => {
         this.registers.ip = this.pop();
         this.pop(this.fetchOpcode(bits, false), false);
@@ -496,7 +522,7 @@ class CPU {
       },
       /** LES r16, m16:16 */  0xC4: () => this.opcodes[0xC5]('es'),
       /** LEA r16, mem    */  0x8D: () => {
-        this.parseRmByte(null, (address, reg) => this.registers[reg] = address & 0xFF, 0x2);
+        this.parseRmByte(null, (address, reg) => this.registers[reg] = address, 0x2, null);
       },
 
       /** INT imm8    */  0xCD: () => {
@@ -521,8 +547,8 @@ class CPU {
           }, bits
         );
       },
-      /** RCL	r/m16, cl     */  0xD3: () => this.opcodes[0xD2](0x2),
-      /** ROL r/m8, 1   */  0xD0: (bits = 0x1) => {
+      /** RCL	r/m16, cl */  0xD3: () => this.opcodes[0xD2](0x2),
+      /** ROL/SHR/SHL   */  0xD0: (bits = 0x1) => {
         const operator = (val, byte) => {
           switch(byte.rm) {
             /** SHL */ case 0x4: throw new Error('Implement SHL!'); break;
@@ -545,6 +571,12 @@ class CPU {
           }, bits
         );
       },
+      /** ROL/SHR/SHL   */  0xC1: () => {
+        switchOpcode(0x2, {
+          /** SHR IMM8 */ 0x5: (val, byte) => this.shr(val, this.fetchOpcode(), 0x2)
+        });
+      },
+
       /** ROR r/m8, 1   */  0xD1: () => this.opcodes[0xD0](0x2),
 
       /** CBW */  0x98: () => this.registers.ah = (this.registers.al & 0x80) == 0x80 ? 0xFF : 0x0,
@@ -694,7 +726,7 @@ class CPU {
    */
   shr(num, times, bits = 0x1) {
     const mask = CPU.bitMask[bits];
-    for(; times >= 0; --times) {
+    for(; times > 0; --times) {
       this.registers.status.cf = num & 0x1;
       num >>= 0x1;
       num &= mask;
@@ -1124,7 +1156,10 @@ class CPU {
 
       /** Callback and address calc */
       memCallback(
-        CPU.getMemAddress(this.registers[segRegister], address),
+        /** Only effective address */
+        segRegister === null
+          ?  address
+          : CPU.getMemAddress(this.registers[segRegister], address),
         this.regMap[mode][byte.reg],
         byte
       );
@@ -1208,9 +1243,11 @@ class CPU {
         if(typeof prefix === 'undefined')
           break;
 
+        /** Segment registers have object instead of opcode */
+        let segmentOverride = isNaN(prefix);
         this.prefixes[
-          CPU.prefixMap[isNaN(prefix) ? 0x1 : prefix]
-        ] = opcode;
+          CPU.prefixMap[segmentOverride ? 0x1 : prefix]
+        ] = segmentOverride ? prefix : opcode;
       }
 
       /** Decode opcode */
