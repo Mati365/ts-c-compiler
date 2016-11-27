@@ -42,7 +42,7 @@ class CPU {
     /** Default CPU config */
     this.config = {
       ignoreMagic: true,
-      debugger: true
+      debugger: false
     }
     config && Object.assign(this.config, config);
 
@@ -464,7 +464,7 @@ class CPU {
         this.pop(this.fetchOpcode(bits, false), false);
       },
 
-      /** CALL 16bit dis  */  0xE8: () => {
+      /** CALL 16bit/32bit dis  */  0xE8: () => {
         this.push(this.registers.ip + 0x2);
         this.relativeJump(0x2);
       },
@@ -587,25 +587,33 @@ class CPU {
       },
 
       /** XCHG bx, bx */  0x87: () => {
-        if(this.fetchOpcode(0x1, false, true) == 0xDB) {
-          this.registers.ip++;
+        let arg = this.fetchOpcode(0x1, false, true);
+        switch(arg) {
+          case 0xDB:
+          case 0xD2:
+            this.registers.ip++;
+            this.raiseException(CPU.Exception.MEM_DUMP);
 
-          this.raiseException(CPU.Exception.MEM_DUMP);
-          this.halt('Debug dump!', true);
-        } else {
-          this.parseRmByte(
-            (reg, reg2) => {
-              [
-                this.registers[this.regMap[0x2][reg2]],
-                this.registers[reg]
-              ] = [
-                this.registers[reg],
-                this.registers[this.regMap[0x2][reg2]]
-              ];
-            },
-            (address, _, byte) => { throw new Error('todo: xchg in mem address') },
-            0x2
-          )
+            if(arg != 0xDB)
+              this.halt('Debug dump!', true);
+            else
+              this.dumpRegisters();
+          break;
+
+          default:
+            this.parseRmByte(
+              (reg, reg2) => {
+                [
+                  this.registers[this.regMap[0x2][reg2]],
+                  this.registers[reg]
+                ] = [
+                  this.registers[reg],
+                  this.registers[this.regMap[0x2][reg2]]
+                ];
+              },
+              (address, _, byte) => { throw new Error('todo: xchg in mem address') },
+              0x2
+            );
         }
       },
 
@@ -766,7 +774,7 @@ class CPU {
       },
       /** OUT 8bits, al     */ 0xE7: () => this.opcodes[0xE6](0x2),
       /** OUT port[DX], al  */ 0xEE: () => this.opcodes[0xE6](0x1, this.registers.dx),
-      /** OUT port[DX], ah  */ 0xEF: () => this.opcodes[0xE6](0x2, this.registers.dx),
+      /** OUT port[DX], ah  */ 0xEF: () => this.opcodes[0xE6](0x2, this.registers.dx)
     });
   }
 

@@ -91,7 +91,8 @@ class BIOS extends Device {
     this.mode = BIOS.VideoMode[0x3];
     this.blink = {
       last: Date.now(),
-      visible: false
+      visible: false,
+      enabled: true
     };
 
     /** Blinking cursor */
@@ -233,9 +234,11 @@ class BIOS extends Device {
 
           /** Always success, buffer is provided */
           this.regs.status.cf = 0x0;
+          this.regs.ah = 0x0;
         } else {
           /** Error */
           this.regs.status.cf = 0x1;
+          this.regs.ah = 0xBB;
         }
       }
     });
@@ -318,6 +321,15 @@ class BIOS extends Device {
           writeCharacter(this.regs.al);
       },
 
+      /** Blinking */
+      0x10: () => {
+        if(this.regs.al !== 0x03)
+          throw new Error('Unsupported 10h function!');
+
+        if(!this.regs.bx)
+          this.blink.enabled = false;
+      },
+
       /** Write string */
       0x13: () => {
         for(let i = 0;i < this.regs.cx;++i) {
@@ -396,7 +408,7 @@ class BIOS extends Device {
         ctx.fillRect(x * this.cursor.w, y * this.cursor.h, this.cursor.w, this.cursor.h);
 
         /** Foreground and text */
-        if(num && (!((num >> 7) & 1) || this.blink.visible)) {
+        if(num && (!((num >> 7) & 1) || (this.blink.enabled && this.blink.visible))) {
           ctx.fillStyle = BIOS.colorTable[(num >> 8) & 0xF];
           ctx.fillText(
             String.fromCharCode(BIOS.fontMapping[num & 0xFF]),
