@@ -45,12 +45,7 @@ class Device {
     this.init.apply(this, ...args);
 
     Object.assign(this.cpu.interrupts, this.interrupts);
-    for(let port in this.ports) {
-      Object.defineProperty(this.cpu.ports, port, {
-        get: this.ports[port]._get,
-        set: this.ports[port]._set
-      });
-    }
+    Object.assign(this.cpu.ports, this.ports);
 
     return this;
   }
@@ -72,6 +67,54 @@ class Device {
       else
         this.cpu.halt(`Unknown interrupt 0x${interrupt.toString(16)} function 0x${func.toString(16)}!`);
     };
+  }
+}
+
+/**
+ * Real-Time Clock
+ * ref: http://students.mimuw.edu.pl/SO/Projekt03-04/temat3-g4/cmos.html
+ *
+ * @class RTC
+ * @extends {Device}
+ */
+class RTC extends Device {
+  init() {
+    let date = new Date;
+
+    this.index = 0;
+    this.offsets = {
+      0x0: date.getSeconds,
+      0x2: date.getMinutes,
+      0x4: date.getHours,
+      0x6: date.getDay,
+      0x7: date.getDate,
+      0x8: date.getMonth,
+      0x9: date.getFullYear
+    };
+
+    this.ports = {
+      0x70: { set: (index) => {
+        this.index = index;
+      } },
+      0x71: { get: () => {
+        return RTC.toBCD(this.offsets[this.index].call(date));
+      }}
+    };
+  }
+
+  /**
+   * Slow method to convert each digit to binary
+   *
+   * @static
+   * @param {Number}  num Number
+   * @returns BCD encoded number
+   */
+  static toBCD(num) {
+    let str = num.toString(),
+        out = 0;
+    for(let i = 0;i < str.length;++i)
+      out = (out << 4) | parseInt(str[i]);
+    return out;
   }
 }
 
@@ -209,7 +252,7 @@ class BIOS extends Device {
          * cylinder : 76543210 98
          * sector   :            543210
          */
-        const cylinder = (this.regs.cx >> 6) & 0x3FF,
+        const cylinder = ((this.regs.cx & 0xFF00) >> 8) | (( (this.regs.cx & 0xC0) << 2)),
               sector = this.regs.cl & 0x3F,
               drive = this.drives[this.regs.dl],
               /** Mem adresses */
@@ -551,5 +594,5 @@ BIOS.VideoMode = {
 
 /** Exports */
 module.exports = {
-  BIOS
+  BIOS, RTC
 };

@@ -29,6 +29,7 @@ class Terminal extends React.Component {
   initializeCPU(canvas) {
     this.cpu
       .attach(IO.BIOS, canvas)
+      .attach(IO.RTC)
       .boot(compiled);
   }
   render() {

@@ -549,30 +549,15 @@ class CPU {
       },
       /** RCL	r/m16, cl */  0xD3: () => this.opcodes[0xD2](0x2),
       /** ROL/SHR/SHL   */  0xD0: (bits = 0x1) => {
-        const operator = (val, byte) => {
-          switch(byte.rm) {
-            /** SHL */ case 0x4: throw new Error('Implement SHL!'); break;
-            /** SHR */ case 0x5: val = this.shr(val, 0x1, bits); break;
-            /** ROL */ default:
-              val = CPU.rotate(val, 0x1, bits);
-              this.registers.status.cf = (val >> 0x7) & 0x1;
-          }
-          return val;
-        };
-        this.parseRmByte(
-          (reg, _, byte) => {
-            this.registers[reg] = operator(this.registers[reg], byte);
-          },
-          (address, _, byte) => {
-            this.memIO.write[bits](
-              operator(this.memIO.read[bits](address), byte),
-              address
-            );
-          }, bits
-        );
+        switchOpcode(bits, {
+          /** ROL */ 0x0: (val) => this.rotate(val, -0x1, bits),
+          /** SHL */ 0x4: (val) => this.shl(val, 0x1, bits),
+          /** SHR */ 0x5: (val) => this.shr(val, 0x1, bits)
+        });
       },
       /** ROL/SHR/SHL   */  0xC1: () => {
         switchOpcode(0x2, {
+          /** SHL IMM8 */ 0x4: (val, byte) => this.shl(val, this.fetchOpcode(), 0x2),
           /** SHR IMM8 */ 0x5: (val, byte) => this.shr(val, this.fetchOpcode(), 0x2)
         });
       },
@@ -741,6 +726,35 @@ class CPU {
     }
     return num;
   }
+  shl(num, times, bits = 0x1) {
+    const mask = CPU.bitMask[bits];
+    for(; times > 0; --times) {
+      this.registers.status.cf = CPU.msbit(num, bits);
+      num <<= 0x1;
+      num &= mask;
+    }
+    return num;
+  }
+
+  /**
+   * Fast bit rotate
+   *
+   * @param {Number}  num   Number
+   * @param {Number}  times Bits to shift
+   * @param {Number}  bits  Mode
+   * @returns Number
+   */
+  rotate(num, times, bits = 0x1) {
+    const mask = CPU.bitMask[bits]
+    if(times > 0) {
+      num = (num >> (mask - times)) | (num << times);
+      this.registers.status.cf = num & 0x1;
+    } else {
+      num = (num << (mask + times)) | (num >> -times);
+      this.registers.status.cf = CPU.msbit(num, bits);
+    }
+    return num;
+  }
 
   /**
    * Raise exception to all devices
@@ -759,7 +773,7 @@ class CPU {
       /** IN AL, 8bits  */ 0xE4: (bits = 0x1, port) => {
         if(!port)
           port = this.fetchOpcode(0x1);
-        this.registers[this.regMap[bits][0x0]] = this.ports[port] || 0;
+        this.registers[this.regMap[bits][0x0]] = this.ports[port].get(bits);
       },
       /** IN AX, 16bits */ 0xE5: () => this.opcodes[0xE4](0x2),
 
@@ -767,10 +781,9 @@ class CPU {
       /** IN AL, port[DX] */  0xED: () => this.opcodes[0xE4](0x2, this.registers.dx),
 
       /** OUT 8bits, al  */ 0xE6: (bits = 0x1, port) => {
-        if(!port)
-          port = this.fetchOpcode(0x1);
-        if(this.ports[port])
-          this.ports[port] = this.registers[this.regMap[bits][0x0]];
+        port = port || this.fetchOpcode(0x1);
+        if(port in this.ports)
+          this.ports[port].set(this.registers[this.regMap[bits][0x0]], bits);
       },
       /** OUT 8bits, al     */ 0xE7: () => this.opcodes[0xE6](0x2),
       /** OUT port[DX], al  */ 0xEE: () => this.opcodes[0xE6](0x1, this.registers.dx),
@@ -1502,22 +1515,6 @@ class CPU {
    */
   static msbit(num, bits = 0x1) {
     return (num >> (bits * 0x8 - 0x1)) & 0x1;
-  }
-
-  /**
-   * Fast bit rotate
-   *
-   * @param {Number}  num   Number
-   * @param {Number}  times Bits to shift
-   * @param {Number}  bits  Mode
-   * @returns Number
-   */
-  static rotate(num, times, bits = 0x1) {
-    const mask = CPU.bitMask[bits]
-    if(times > 0)
-      return (num >> (mask - times)) | (num << times);
-    else
-      return (num << (mask + times)) | (num >> -times);
   }
 }
 
