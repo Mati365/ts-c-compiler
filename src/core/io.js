@@ -212,6 +212,23 @@ class BIOS extends Device {
    * Init keyboard interrupts
    */
   initKeyboard() {
+    let keymap = {
+      shift: false,
+      key: null
+    };
+    document.addEventListener('keydown', (e) => {
+      Object.assign(keymap, {
+        shift: e.shiftKey,
+        key: e.keyCode
+      });
+    });
+    document.addEventListener('keyup', (e) => {
+      Object.assign(keymap, {
+        shift: false,
+        key: null
+      });
+    });
+
     this.intFunc(0x16, 'ah', {
       0x0: () => {
         this.cpu.pause = true;
@@ -222,6 +239,14 @@ class BIOS extends Device {
           document.onkeypress = null;
           e.preventDefault();
         };
+      },
+
+      0x10: () => {
+        let code = keymap.key;
+        if(!code)
+          return;
+
+        this.regs.ax = BIOS.keycodes[code][keymap.shift ? 1 : 0];
       }
     });
   }
@@ -321,12 +346,17 @@ class BIOS extends Device {
           );
 
           /** Render cursor */
+          this.cursor.x++;
+          if(this.cursor.x >= this.mode.w) {
+            this.cursor.x = 0;
+            this.cursor.y++;
+          }
           if(this.cursor.info.show) {
             this.mode.write(
               this.cpu.memIO,
               this.cursor.info.character,
               this.cursor.info.attribute,
-              ++this.cursor.x,
+              this.cursor.x,
               this.cursor.y
             );
           }
@@ -443,16 +473,17 @@ class BIOS extends Device {
     for(var y = 0; y < this.mode.h; ++y) {
       for(var x = 0; x < this.mode.w; ++x) {
         /** Read from memory */
-        let num = this.cpu.memIO.read[0x2](this.mode.offset + offset);
+        let num = this.cpu.memIO.read[0x2](this.mode.offset + offset),
+            attribute = (num >> 0x8) & 0xFF;
         offset += 0x2;
 
-        /** Background and text */
-        ctx.fillStyle = BIOS.colorTable[(num >> 11) & 0x7];
+        /** Foreground */
+        ctx.fillStyle = BIOS.colorTable[(attribute >> 4) & 0xF];
         ctx.fillRect(x * this.cursor.w, y * this.cursor.h, this.cursor.w, this.cursor.h);
 
-        /** Foreground and text */
-        if(num && (!((num >> 7) & 1) || (this.blink.enabled && this.blink.visible))) {
-          ctx.fillStyle = BIOS.colorTable[(num >> 8) & 0xF];
+        /** Text */
+        if(num && (!this.blink.enabled || this.blink.visible)) {
+          ctx.fillStyle = BIOS.colorTable[attribute & 0xF];
           ctx.fillText(
             String.fromCharCode(BIOS.fontMapping[num & 0xFF]),
             x * this.cursor.w,
@@ -525,6 +556,53 @@ BIOS.fontMapping = [
   0x2261, 0x00b1, 0x2265, 0x2264, 0x2320, 0x2321, 0x00f7, 0x2248,
   0x00b0, 0x2219, 0x00b7, 0x221a, 0x207f, 0x00b2, 0x25a0, 0x0020
 ];
+
+/** ref: http://stanislavs.org/helppc/scan_codes.html */
+BIOS.keycodes = {
+  /** A */ 65:  [0x1E61, 0x1E41, 0x1E01, 0x1E00],
+  /** B */ 66:	[0x3062, 0x3042, 0x3002, 0x3000],
+  /** C */ 67:  [0x2E63, 0x2E42, 0x2E03, 0x2E00],
+  /** D */ 68:  [0x2064, 0x2044, 0x2004, 0x2000],
+  /** E */ 69:  [0x1265, 0x1245, 0x1205, 0x1200],
+  /** F */ 70:  [0x2166, 0x2146, 0x2106, 0x2100],
+  /** G */ 71:  [0x2267, 0x2247, 0x2207, 0x2200],
+  /** H */ 72:  [0x2368, 0x2348, 0x2308, 0x2300],
+  /** I */ 73:  [0x1769, 0x1749, 0x1709, 0x1700],
+  /** J */ 74:  [0x246A, 0x244A, 0x240A, 0x2400],
+  /** K */ 75:  [0x256B, 0x254B, 0x250B, 0x2500],
+  /** L */ 76:  [0x266C, 0x264C, 0x260C, 0x2600],
+  /** M */ 77:  [0x326D, 0x324D, 0x320D, 0x3200],
+  /** N */ 78:  [0x316E, 0x314E, 0x310E, 0x3100],
+  /** O */ 79:  [0x186F, 0x184F, 0x180F, 0x1800],
+  /** P */ 80:  [0x1970, 0x1950, 0x1910, 0x1900],
+  /** Q */ 81:  [0x1071, 0x1051, 0x1011, 0x1000],
+  /** R */ 82:  [0x1372, 0x1352, 0x1312, 0x1300],
+  /** S */ 83:  [0x1F73, 0x1F53, 0x1F13, 0x1F00],
+  /** T */ 84:  [0x1474, 0x1454, 0x1414, 0x1400],
+  /** U */ 85:  [0x1675, 0x1655, 0x1615, 0x1600],
+  /** V */ 86:  [0x2F76, 0x2F56, 0x2F16, 0x2F00],
+  /** W */ 87:  [0x1177, 0x1157, 0x1117, 0x1100],
+  /** X */ 88:  [0x2D78, 0x2D58, 0x2D18, 0x2D00],
+  /** Y */ 89:  [0x1579, 0x1559, 0x1519, 0x1500],
+  /** Z */ 90:  [0x2C7A, 0x2C5A, 0x2C1A, 0x2C00],
+
+  /** 0 */ 48:  [0x0B30, 0x0B29, null, 0x8100],
+  /** 1 */ 49:	[0x0231, 0x0221, null, 0x7800],
+  /** 2 */ 50:  [0x0332, 0x0340, 0x0300, 0x7900],
+  /** 3 */ 51:  [0x0433, 0x0423, null, 0x7A00],
+  /** 4 */ 52:  [0x0534, 0x0524, null, 0x7B00],
+  /** 5 */ 53:  [0x0635, 0x0625, null, 0x7C00],
+  /** 6 */ 54:  [0x0736, 0x075E, 0x071E, 0x7D00],
+  /** 7 */ 55:  [0x0837, 0x0826, null, 0x7E00],
+  /** 8 */ 56:  [0x0938, 0x092A, null, 0x7F00],
+  /** 9 */ 57:  [0x0A39, 0x0A28, null, 0x8000],
+
+  /** LEFT ARROW  */ 37:  [0x4B00, 0x4B34, 0x7300, 0x9B00],
+  /** RIGHT ARROW */ 39:  [0x4D00, 0x4D36, 0x7400, 0x9D00],
+
+  /** UP ARROW    */ 38:  [0x4800, 0x4838, 0x8D00, 0x9800],
+  /** DOWN ARROW  */ 40:  [0x5000, 0x5032, 0x9100, 0xA000]
+};
 
 /** All video modes supported by BIOS */
 class VideoMode {
