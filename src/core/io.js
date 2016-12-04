@@ -214,13 +214,15 @@ class BIOS extends Device {
   initKeyboard() {
     let keymap = {
       shift: false,
-      key: null
+      key: null,
+      callback: null
     };
     document.addEventListener('keydown', (e) => {
       Object.assign(keymap, {
         shift: e.shiftKey,
         key: e.keyCode
       });
+      keymap.callback && keymap.callback(e);
     });
     document.addEventListener('keyup', (e) => {
       Object.assign(keymap, {
@@ -229,24 +231,30 @@ class BIOS extends Device {
       });
     });
 
+    /** Pause execution until press a button */
+    const keyListener = (callback) => {
+        this.cpu.pause = true;
+        keymap.callback = (e) => {
+          this.cpu.pause = false;
+          e.preventDefault();
+          callback(e);
+        };
+    };
     this.intFunc(0x16, 'ah', {
       0x0: () => {
-        this.cpu.pause = true;
-        document.onkeypress = (e) => {
-          this.cpu.pause = false;
+        keyListener((e) => {
           this.regs.al = e.keyCode;
-
-          document.onkeypress = null;
-          e.preventDefault();
-        };
+        });
       },
 
       0x10: () => {
-        let code = keymap.key;
-        if(!code)
-          return;
+        keyListener((e) => {
+          let code = keymap.key;
+          if(!code)
+            return;
 
-        this.regs.ax = BIOS.keycodes[code][keymap.shift ? 1 : 0];
+          this.regs.ax = BIOS.keycodes[code][keymap.shift ? 1 : 0];
+        });
       }
     });
   }
@@ -340,7 +348,7 @@ class BIOS extends Device {
           this.mode.write(
             this.cpu.memIO,
             character,
-            attribute || this.regs.bl,
+            typeof attribute === 'undefined' ? this.regs.bl : attribute,
             this.cursor.x,
             this.cursor.y
           );
@@ -388,7 +396,7 @@ class BIOS extends Device {
       },
 
       /** Write character at address */
-      0xE: () => writeCharacter(this.regs.al, 0x7),
+      0xE: () => writeCharacter(this.regs.al, false),
       0x9: () => {
         for(let i = 0;i < this.regs.cx;++i)
           writeCharacter(this.regs.al);
@@ -601,7 +609,10 @@ BIOS.keycodes = {
   /** RIGHT ARROW */ 39:  [0x4D00, 0x4D36, 0x7400, 0x9D00],
 
   /** UP ARROW    */ 38:  [0x4800, 0x4838, 0x8D00, 0x9800],
-  /** DOWN ARROW  */ 40:  [0x5000, 0x5032, 0x9100, 0xA000]
+  /** DOWN ARROW  */ 40:  [0x5000, 0x5032, 0x9100, 0xA000],
+
+  /** ENTER */  13: [0x1C0D, 0x01C0, 0x1C0A, 0xA600],
+  /** ESC   */  27: [0x011B, 0x011B, 0x011B, 0x0100]
 };
 
 /** All video modes supported by BIOS */
@@ -629,10 +640,11 @@ class VideoMode {
     y *= 0x2;
 
     /** Write direct to memory */
-    mem.write[0x2](
-      (char & 0xFF) | ((color & 0xFF) << 8),
-      this.offset + (this.w * this.h * 0x4) * page + y * this.w + x
-    );
+    let address = this.offset + (this.w * this.h * 0x4) * page + y * this.w + x;
+    if(color === false)
+      mem.write[0x1](char & 0xFF, address);
+    else
+      mem.write[0x2]((char & 0xFF) | ((color & 0xFF) << 8), address);
   }
 
   /**

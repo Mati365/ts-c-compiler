@@ -579,7 +579,7 @@ class CPU {
             this.registers.ip++;
             this.raiseException(CPU.Exception.MEM_DUMP);
 
-            if(arg != 0xDB)
+            if(arg == 0xDB)
               this.halt('Debug dump!', true);
             else
               this.dumpRegisters();
@@ -649,14 +649,16 @@ class CPU {
 
     /** 8 bit jump instructions set */
     const jmpOpcodes = {
-      /** JNS */  0x79: (f) => !f.sf,
-      /** JS  */  0x78: (f) => f.sf,
-      /** JA  */  0x77: (f) => !f.cf && !f.zf,
-      /** JBE */  0x76: (f) => f.cf || f.zf,
-      /** JNE */  0x75: (f) => !f.zf,
-      /** JZ  */  0x74: (f) => f.zf,
-      /** JAE */  0x73: (f) => !f.cf,
+      /** JO  */  0x70: (f) => f.of,
+      /** JNO */  0x71: (f) => !f.of,
       /** JB  */  0x72: (f) => f.cf,
+      /** JAE */  0x73: (f) => !f.cf,
+      /** JZ  */  0x74: (f) => f.zf,
+      /** JNE */  0x75: (f) => !f.zf,
+      /** JBE */  0x76: (f) => f.cf || f.zf,
+      /** JA  */  0x77: (f) => !f.cf && !f.zf,
+      /** JS  */  0x78: (f) => f.sf,
+      /** JNS */  0x79: (f) => !f.sf,
       /** JP  */  0x7A: (f) => f.pf,
       /** JNP */  0x7B: (f) => !f.pf,
       /** JG  */  0x7F: (f) => !f.zf || f.sg === f.of,
@@ -664,13 +666,14 @@ class CPU {
       /** JL  */  0x7C: (f) => f.sf !== f.of,
       /** JLE */  0x7E: (f) => f.zg || f.sg !== f.of
     };
-    const jumpIf = (flagCondition, byte) => {
-      const relative = this.fetchOpcode(0x1);
-      flagCondition(this.registers.status) && this.relativeJump(0x1, relative);
+    const jumpIf = (flagCondition, bits = 0x1) => {
+      let relative = this.fetchOpcode(bits);
+      flagCondition(this.registers.status) && this.relativeJump(bits, relative);
     }
     for(let opcode in jmpOpcodes) {
       ((_opcode) => {
-        this.opcodes[_opcode] = () => jumpIf(jmpOpcodes[_opcode])
+        this.opcodes[_opcode] = () => jumpIf(jmpOpcodes[_opcode]);
+        this.opcodes[(0x0F << 0x8) | (parseInt(_opcode) + 0x10)]  = () => jumpIf(jmpOpcodes[_opcode], 0x2);
       })(opcode);
     }
 
@@ -1271,6 +1274,10 @@ class CPU {
         ] = segmentOverride ? prefix : opcode;
       }
 
+      /** 0F prefix opcodes to 2-byte opcodes */
+      if(opcode === 0x0F)
+        opcode = (opcode << 0x8) | this.fetchOpcode(0x1, true, true);
+
       /** Decode opcode */
       let operand = this.opcodes[opcode];
       if(!operand)
@@ -1336,6 +1343,9 @@ class CPU {
         this.dumpRegisters();
         this.logger.warn(this.mem);
       }
+
+      /** Next instruction */
+      this.logger.info('Next instruction ' + this.fetchOpcode(0x2).toString(16));
     }
   }
 
