@@ -661,10 +661,10 @@ class CPU {
       /** JNS */  0x79: (f) => !f.sf,
       /** JP  */  0x7A: (f) => f.pf,
       /** JNP */  0x7B: (f) => !f.pf,
-      /** JG  */  0x7F: (f) => !f.zf || f.sg === f.of,
+      /** JG  */  0x7F: (f) => !f.zf || f.sf === f.of,
       /** JGE */  0x7D: (f) => f.sf === f.of,
       /** JL  */  0x7C: (f) => f.sf !== f.of,
-      /** JLE */  0x7E: (f) => f.zg || f.sg !== f.of
+      /** JLE */  0x7E: (f) => f.zf || f.sf !== f.of
     };
     const jumpIf = (flagCondition, bits = 0x1) => {
       let relative = this.fetchOpcode(bits);
