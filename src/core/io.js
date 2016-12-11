@@ -387,12 +387,26 @@ class BIOS extends Device {
         });
       },
 
-      /** Scroll screen up */
+      /**
+       * Scroll screen up
+       * todo: Handle cx, dx registers params
+       */
       0x6: () => {
-        this.mode.scrollUp(
-          this.cpu.memIO,
-          this.regs.al || this.mode.h
-        )
+        if(!this.regs.al) {
+          /** Clear screen */
+          this.cpu.memIO.device.fill(
+            this.regs.bh,
+            this.mode.offset,
+            this.mode.offset + this.mode.w * this.mode.h * 0x4,
+            'utf16'
+          );
+        } else {
+          /** Just scroll window */
+          this.mode.scrollUp(
+            this.cpu.memIO,
+            this.regs.al
+          );
+        }
       },
 
       /** Write character at address */
@@ -449,9 +463,10 @@ class BIOS extends Device {
   setVideoMode(code) {
     this.mode = BIOS.VideoMode[code];
 
+    /** Add toolbar 20px space */
     const size = {
       width: this.mode.w * this.cursor.w,
-      height: this.mode.h * this.cursor.h
+      height: this.mode.h * this.cursor.h + 20
     };
     Object.assign(this.canvas.handle, size);
     Object.assign(this.canvas, {
@@ -500,6 +515,16 @@ class BIOS extends Device {
         }
       }
     }
+
+    /** Draw debugger toolkit */
+    ctx.clearRect(0, this.canvas.h - 20, this.canvas.w, 20);
+
+    ctx.fillStyle = BIOS.colorTable[0xF];
+    ctx.fillText(
+      `Memory usage: ${this.cpu.memIO.device.length / 1024} KB`,
+      0,
+      this.canvas.h - 6
+    );
   }
 }
 

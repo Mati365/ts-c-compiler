@@ -55,7 +55,7 @@ class CPU {
      * Alloc 1024 KB of RAM memory
      * todo: Implement A20 line support
      */
-    this.mem = Buffer.alloc(8388608);
+    this.mem = Buffer.alloc(8 * 1048576);
     this.memIO = {
       device: this.mem,
       read: {
@@ -483,7 +483,7 @@ class CPU {
           this.registers[this.regMap[bits][0]],
           this.getMemAddress('es', 'di')
         );
-        this.dfIncrement(bits);
+        this.dfIncrement(bits, 'di');
       },
       /** STOSW */  0xAB: () => this.opcodes[0xAA](0x2),
 
@@ -1289,7 +1289,7 @@ class CPU {
         this.logger.log(`0x${opcode.toString(16)} ${info.mnemonic} ${info.op1} ${info.op2}`);
       }
 
-      /** Do something with operand, reset opcode prefix */
+      /** REP - Do something with operand, reset opcode prefix */
       if(this.prefixes.instruction === 0xF3) {
         const ip = this.registers.ip;
         do {
