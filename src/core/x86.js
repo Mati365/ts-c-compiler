@@ -440,6 +440,11 @@ class CPU {
       /** PUSHF         */  0x9C: () => this.push(this.registers.flags),
       /** POPF          */  0x9D: () => this.registers.flags = this.pop(),
 
+      /** LOOPNE        */  0xE0: () => {
+        const relativeAddress = this.fetchOpcode();
+        if(--this.registers.cx && !this.registers.status.zf)
+          this.relativeJump(0x1, relativeAddress);
+      },
       /** LOOP 8bit rel */  0xE2: () => {
         const relativeAddress = this.fetchOpcode();
         if(--this.registers.cx)
@@ -551,6 +556,7 @@ class CPU {
       /** ROL/SHR/SHL   */  0xD0: (bits = 0x1) => {
         switchOpcode(bits, {
           /** ROL */ 0x0: (val) => this.rotate(val, -0x1, bits),
+          /** ROR */ 0x1: (val) => this.rotate(val, 0x1, bits),
           /** SHL */ 0x4: (val) => this.shl(val, 0x1, bits),
           /** SHR */ 0x5: (val) => this.shr(val, 0x1, bits)
         });
@@ -661,7 +667,7 @@ class CPU {
       /** JNS */  0x79: (f) => !f.sf,
       /** JP  */  0x7A: (f) => f.pf,
       /** JNP */  0x7B: (f) => !f.pf,
-      /** JG  */  0x7F: (f) => !f.zf || f.sf === f.of,
+      /** JG  */  0x7F: (f) => !f.zf && f.sf === f.of,
       /** JGE */  0x7D: (f) => f.sf === f.of,
       /** JL  */  0x7C: (f) => f.sf !== f.of,
       /** JLE */  0x7E: (f) => f.zf || f.sf !== f.of
@@ -800,29 +806,28 @@ class CPU {
    */
   initALU() {
     const flagCheckers = {
-      /** Carry flag */   [CPU.flags.cf]: function(val, bits) {
-        const unsigned = CPU.toUnsignedNumber(val, bits);
-        if(val != unsigned)
-          return unsigned;
+      /** Carry flag */   [CPU.flags.cf]: function(signed, bits, l, r, val) {
+        return val != signed;
       },
-      /** Overflow flag */   [CPU.flags.of]: function(val, bits, l, r) {
-        return (l * r >= 0 && l + r < 0) || (l < 0 && l * r > 0 && l + r > 0);
+      /** Overflow flag */   [CPU.flags.of]: function(signed, bits, l, r) {
+        let lmsbit = CPU.msbit(l, bits);
+        return l - r > 0 && CPU.msbit(signed, bits) != lmsbit && lmsbit == CPU.msbit(r, bits);
       },
-      /** Parity flag */  [CPU.flags.pf]: function(val) {
+      /** Parity flag */  [CPU.flags.pf]: function(signed) {
         /**
          * Use SWAR algorithm
          * see: http://stackoverflow.com/a/109025/6635215
          */
-        val = val - ((val >> 1) & 0x55555555);
-        val = (val & 0x33333333) + ((val >> 2) & 0x33333333);
-        val = (((val + (val >> 4)) & 0x0F0F0F0F) * 0x01010101) >> 24;
-        return !(val % 2);
+        signed = signed - ((signed >> 1) & 0x55555555);
+        signed = (signed & 0x33333333) + ((signed >> 2) & 0x33333333);
+        signed = (((signed + (signed >> 4)) & 0x0F0F0F0F) * 0x01010101) >> 24;
+        return !(signed % 2);
       },
-      /** Zero flag */    [CPU.flags.zf]: function(val) {
-        return val === 0x0;
+      /** Zero flag */    [CPU.flags.zf]: function(signed) {
+        return signed === 0x0;
       },
-      /** Sign flag */    [CPU.flags.sf]: function(val, bits) {
-        return ((val >> (0x8 * bits - 0x1)) & 0x1) == 0x1;
+      /** Sign flag */    [CPU.flags.sf]: function(signed, bits) {
+        return CPU.msbit(signed, bits) === 0x1;
       }
     };
 
@@ -878,23 +883,22 @@ class CPU {
         this.registers.flags &= !operator.clear;
 
       /** Set default flags value for operator */
-      let val = operator._c(l, r);
+      let val = operator._c(l, r),
+          signed = CPU.toUnsignedNumber(val, bits);
+
       if(typeof operator.set === 'undefined')
         operator.set = 0xFF;
 
       /** Value returned after flags */
       for(let key in flagCheckers) {
         if((operator.set & key) == key) {
-          let _val = flagCheckers[key](val, bits, l, r);
-          if((_val || _val === 0) && _val !== true)
-            val = _val;
-
+          let _val = flagCheckers[key](signed, bits, l, r, val);
           this.registers.flags ^= (-(_val ? 1 : 0) ^ this.registers.flags) & (1 << key);
         }
       }
 
       /** temp - for cmp and temporary operations */
-      return operator._flagOnly ? l : val;
+      return operator._flagOnly ? l : signed;
     };
 
     /** Multiplier opcode is shared with NEG opcode */
@@ -1100,6 +1104,13 @@ class CPU {
     /** 1B call instruction size */
     relative = CPU.getSignedNumber(relative, bits);
     this.registers.ip += relative - (relative < 0 ? 0x1 : 0);
+
+    /**
+     * If overflows its absolute, truncate value
+     * dont know why, its undocummented
+     */
+    if(this.registers.ip > CPU.bitMask[0x2] + 1)
+      this.registers.ip &= 0xFF;
   }
 
   /**

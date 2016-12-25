@@ -135,7 +135,7 @@ class BIOS extends Device {
     this.blink = {
       last: Date.now(),
       visible: false,
-      enabled: true
+      enabled: false
     };
 
     /** Blinking cursor */
@@ -199,6 +199,19 @@ class BIOS extends Device {
           dx: ticks & 0xFFFF,
           cx: (ticks >> 0x10) & 0xFFFF
         });
+      },
+
+      /** Read Time From Real Time Clock */
+      0x2: () => {
+        const now = new Date();
+
+        Object.assign(this.regs, {
+          ch: RTC.toBCD(now.getHours()),
+          cl: RTC.toBCD(now.getMinutes()),
+          dh: RTC.toBCD(now.getSeconds()),
+          dl: 0x0
+        });
+        this.regs.status.cf = 0;
       }
     });
 
@@ -325,11 +338,24 @@ class BIOS extends Device {
    */
   initScreen() {
     const writeCharacter = (character, attribute) => {
+      /** Direct write to memory */
+      this.mode.write(
+        this.cpu.memIO,
+        character,
+        typeof attribute === 'undefined' ? this.regs.bl : attribute,
+        this.cursor.x,
+        this.cursor.y
+      );
+
       switch(character) {
-        /** White characters */
+        /** Backspace */
+        case 0x8:
+          this.cursor.x--;
+        break;
+
+        /** New line */
         case 0xA:
         case 0xD:
-          this.mode.write(this.cpu.memIO, 0x0, 0x0, this.cursor.x, this.cursor.y);
           if(character == 0xD)
             this.cursor.y++;
           else
@@ -344,29 +370,11 @@ class BIOS extends Device {
 
         /** Normal characters */
         default:
-          /** Direct write to memory */
-          this.mode.write(
-            this.cpu.memIO,
-            character,
-            typeof attribute === 'undefined' ? this.regs.bl : attribute,
-            this.cursor.x,
-            this.cursor.y
-          );
-
           /** Render cursor */
           this.cursor.x++;
           if(this.cursor.x >= this.mode.w) {
             this.cursor.x = 0;
             this.cursor.y++;
-          }
-          if(this.cursor.info.show) {
-            this.mode.write(
-              this.cpu.memIO,
-              this.cursor.info.character,
-              this.cursor.info.attribute,
-              this.cursor.x,
-              this.cursor.y
-            );
           }
       }
     };
@@ -384,6 +392,15 @@ class BIOS extends Device {
         Object.assign(this.cursor, {
           x: this.regs.dl,
           y: this.regs.dh
+        });
+      },
+
+      /** Get cursor position and shape */
+      0x3: () => {
+        Object.assign(this.regs, {
+          dl: this.cursor.x,
+          dh: this.cursor.y,
+          ax: 0
         });
       },
 
@@ -410,11 +427,12 @@ class BIOS extends Device {
       },
 
       /** Write character at address */
-      0xE: () => writeCharacter(this.regs.al, false),
       0x9: () => {
         for(let i = 0;i < this.regs.cx;++i)
           writeCharacter(this.regs.al);
       },
+
+      0xE: () => writeCharacter(this.regs.al, false),
 
       /** Blinking */
       0x10: () => {
@@ -423,6 +441,13 @@ class BIOS extends Device {
 
         if(!this.regs.bx)
           this.blink.enabled = false;
+      },
+
+      /** Extensions... */
+      0x11: () => {
+        /** Extend to 80x50 */
+        if(this.regs.al === 0x12)
+          this.setVideoMode(new VideoMode(80, 50, 0x1));
       },
 
       /** Write string */
@@ -458,10 +483,10 @@ class BIOS extends Device {
   /**
    * Set video mode and resize canvas
    *
-   * @param {Number} code  Mode code
+   * @param {Number|Object} code  Mode
    */
   setVideoMode(code) {
-    this.mode = BIOS.VideoMode[code];
+    this.mode = isNaN(code) ? code : BIOS.VideoMode[code];
 
     /** Add toolbar 20px space */
     const size = {
@@ -594,7 +619,7 @@ BIOS.fontMapping = [
 BIOS.keycodes = {
   /** A */ 65:  [0x1E61, 0x1E41, 0x1E01, 0x1E00],
   /** B */ 66:	[0x3062, 0x3042, 0x3002, 0x3000],
-  /** C */ 67:  [0x2E63, 0x2E42, 0x2E03, 0x2E00],
+  /** C */ 67:  [0x2E63, 0x2E43, 0x2E03, 0x2E00],
   /** D */ 68:  [0x2064, 0x2044, 0x2004, 0x2000],
   /** E */ 69:  [0x1265, 0x1245, 0x1205, 0x1200],
   /** F */ 70:  [0x2166, 0x2146, 0x2106, 0x2100],
@@ -630,6 +655,8 @@ BIOS.keycodes = {
   /** 8 */ 56:  [0x0938, 0x092A, null, 0x7F00],
   /** 9 */ 57:  [0x0A39, 0x0A28, null, 0x8000],
 
+  /** . */ 190: [0x342E, 0x343E, null, null],
+
   /** LEFT ARROW  */ 37:  [0x4B00, 0x4B34, 0x7300, 0x9B00],
   /** RIGHT ARROW */ 39:  [0x4D00, 0x4D36, 0x7400, 0x9D00],
 
@@ -637,7 +664,10 @@ BIOS.keycodes = {
   /** DOWN ARROW  */ 40:  [0x5000, 0x5032, 0x9100, 0xA000],
 
   /** ENTER */  13: [0x1C0D, 0x01C0, 0x1C0A, 0xA600],
-  /** ESC   */  27: [0x011B, 0x011B, 0x011B, 0x0100]
+  /** ESC   */  27: [0x011B, 0x011B, 0x011B, 0x0100],
+
+  /** SPACE */  32: [0x3920, 0x3920, 0x3920, 0x3920],
+  /** BACKS */  8:  [0x0E08, 0x0E08, 0x0E7F, 0x0E00]
 };
 
 /** All video modes supported by BIOS */
