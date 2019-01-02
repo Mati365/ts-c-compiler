@@ -11,6 +11,7 @@ class Output extends React.Component {
     /** Load terminal */
     this.props.onContextInit(this.refs.canvas);
   }
+
   render() {
     return (
       <canvas ref='canvas' style={styles} />

@@ -1,6 +1,10 @@
 # i8086.js
 16bit x86 virtual machine written in modern JS ES6.
 
+**Status: 70% opcodes implemented(BIOS asm issues)**
+<br />
+![Prototype](/doc/screen.gif)
+
 ## License
 The MIT License (MIT)
 Copyright (c) 2016 Mateusz Bagiński
