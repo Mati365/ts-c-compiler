@@ -55,7 +55,7 @@ class CPU {
      * Alloc 1024 KB of RAM memory
      * todo: Implement A20 line support
      */
-    this.mem = Buffer.alloc(8 * 1048576);
+    this.mem = Buffer.alloc(2 * 1048576);
     this.memIO = {
       device: this.mem,
       read: {
@@ -215,7 +215,7 @@ class CPU {
 
   /** Last stack item address */
   get lastStackAddr() {
-    return CPU.getMemAddress(this.registers.ss, this.registers.sp);
+    return this.getMemAddress('ss', 'sp');
   }
 
   /**
@@ -225,7 +225,10 @@ class CPU {
    * @param {Number}  bits  Intel 8086 supports only 16bit stack
    */
   push(val, bits = 0x2) {
-    this.registers.sp = CPU.toUnsignedNumber(this.registers.sp - bits, 0x2);
+    this.registers.sp = this.registers.sp - bits;
+    if (this.registers.sp < 0)
+      this.registers.sp = 0xFFFE;
+
     this.memIO.write[bits](val, this.lastStackAddr);
   }
 
@@ -238,7 +241,13 @@ class CPU {
    */
   pop(bits = 0x2, read = true) {
     const val = read && this.memIO.read[bits](this.lastStackAddr);
-    this.registers.sp = CPU.toUnsignedNumber(this.registers.sp + bits, 0x2);
+
+    this.registers.sp = this.registers.sp + bits;
+    if (this.registers.sp > 0xFFFE) {
+      this.registers.sp = 0
+      // this.registers.ss += 0x1000;
+    }
+
     return val;
   }
 
@@ -465,8 +474,10 @@ class CPU {
       },
       /** RET near  */  0xC3: (bits = 0x2) => this.registers.ip = this.pop(bits),
       /** RET 16b   */  0xC2: (bits = 0x2) => {
+        const items = this.fetchOpcode(bits, false);
         this.registers.ip = this.pop();
-        this.pop(this.fetchOpcode(bits, false), false);
+
+        this.pop(items, false);
       },
 
       /** CALL 16bit/32bit dis  */  0xE8: () => {
@@ -997,7 +1008,9 @@ class CPU {
         } else {
           /** MUL / IMUL */
           this.registers.ax = CPU.toUnsignedNumber(
-            byte.reg === 0x5 ? CPU.getSignedNumber(this.registers.al) * CPU.getSignedNumber(val) : (this.registers.al * val),
+            byte.reg === 0x5
+              ? CPU.getSignedNumber(this.registers.al) * CPU.getSignedNumber(val)
+              : (this.registers.al * val),
             0x2
           );
 
@@ -1029,12 +1042,14 @@ class CPU {
         } else {
           /** MUL / IMUL */
           const output = CPU.toUnsignedNumber(
-            byte.reg === 0x5 ? CPU.getSignedNumber(this.registers.ax) * CPU.getSignedNumber(val) : (this.registers.ax * val),
+            byte.reg === 0x5
+              ? CPU.getSignedNumber(this.registers.ax) * CPU.getSignedNumber(val)
+              : (this.registers.ax * val),
             0x4
           );
 
-          this.registers.ax = output & 0xFF;
-          this.registers.dx = (output >> 8) & 0xFF;
+          this.registers.ax = output & 0xFFFF;
+          this.registers.dx = (output >> 16) & 0xFFFF;
 
           this.registers.status.cf = this.registers.status.of = (
             byte.reg === 0x5
@@ -1189,12 +1204,13 @@ class CPU {
           segRegister = 'ss';
       }
 
+      if (segRegister)
+        address = this.getMemAddress(segRegister, address);
+
       /** Callback and address calc */
       memCallback(
         /** Only effective address */
-        segRegister === null
-          ?  address
-          : CPU.getMemAddress(this.registers[segRegister], address),
+        address,
         this.regMap[mode][byte.reg],
         byte
       );
@@ -1248,8 +1264,15 @@ class CPU {
     const mapper = this.memIO.read[size];
     if(mapper) {
       const opcode = mapper(this.getMemAddress('cs', 'ip'));
-      if(incrementIP)
+      if(incrementIP) {
         this.registers.ip += size;
+
+        // increment CS if overflows
+        if (this.registers.ip > 0xFFFE) {
+          this.registers.ip = 0;
+          this.registers.cs += 0x1000;
+        }
+      }
 
       return opcode;
     } else
@@ -1476,7 +1499,7 @@ class CPU {
    * @returns
    */
   getMemAddress(sreg, reg) {
-    return (this.registers[sreg] << 4) + (isNaN(reg) ? this.registers[reg] : reg);
+    return (CPU.toUnsignedNumber(this.registers[sreg], 0x2) << 4) + CPU.toUnsignedNumber(isNaN(reg) ? this.registers[reg] : reg, 0x2);
   }
 
   /**

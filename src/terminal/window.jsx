@@ -12,7 +12,7 @@ const React = require('react')
     , CPU = require('../core/x86')
     , IO = require('../core/io');
 
-const compiled = require('buffer!../../test/bochs/build/mikeOS-master/disk_images/mikeos.flp');
+const compiled = require('buffer!../../test/bochs/build/bootsec.bin');
 
 @Radium
 class Terminal extends React.Component {

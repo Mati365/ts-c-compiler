@@ -459,7 +459,20 @@ class BIOS extends Device {
           );
           this.regs.bp++;
         }
-      }
+      },
+
+      /**
+       * Load mode columns to AH, load active mode to AL
+       *
+       * @see
+       * http://stanislavs.org/helppc/int_10-f.html
+       */
+      0xF: () => {
+        const {mode} = this;
+
+        this.regs.al = mode.code;
+        this.regs.ah = mode.w;
+      },
     });
 
     /** Monitor render loop */
@@ -487,11 +500,12 @@ class BIOS extends Device {
    */
   setVideoMode(code) {
     this.mode = isNaN(code) ? code : BIOS.VideoMode[code];
+    this.mode.clear(this.cpu.memIO);
 
     /** Add toolbar 20px space */
     const size = {
       width: this.mode.w * this.cursor.w,
-      height: this.mode.h * this.cursor.h + 20
+      height: this.mode.h * this.cursor.h + 80
     };
     Object.assign(this.canvas.handle, size);
     Object.assign(this.canvas, {
@@ -542,13 +556,21 @@ class BIOS extends Device {
     }
 
     /** Draw debugger toolkit */
-    ctx.clearRect(0, this.canvas.h - 20, this.canvas.w, 20);
+    ctx.clearRect(0, this.canvas.h - 80, this.canvas.w, 80);
 
     ctx.fillStyle = BIOS.colorTable[0xF];
     ctx.fillText(
-      `Memory usage: ${this.cpu.memIO.device.length / 1024} KB`,
+      `Virtual Machine Logs, Memory usage: ${this.cpu.memIO.device.length / 1024} KB`,
       0,
-      this.canvas.h - 6
+      this.canvas.h - 26
+    );
+
+    const {registers} = this.cpu;
+    ctx.fillStyle = BIOS.colorTable[0xA];
+    ctx.fillText(
+      `AX: ${registers.ax.toString(16)}h,  BX: ${registers.bx.toString(16)}h,  CX: ${registers.cx.toString(16)}h,  DX: ${registers.dx.toString(16)}h,  IP: ${registers.ip.toString(16)}h,  CS: ${registers.ip.toString(16)}h`,
+      0,
+      this.canvas.h - 6,
     );
   }
 }
@@ -672,7 +694,8 @@ BIOS.keycodes = {
 
 /** All video modes supported by BIOS */
 class VideoMode {
-  constructor(w, h, pages = 0x1, offset = BIOS.mapped.text) {
+  constructor(code, w, h, pages = 0x1, offset = BIOS.mapped.text) {
+    this.code = code;
     this.w = w;
     this.h = h;
     this.offset = offset;
@@ -730,11 +753,19 @@ class VideoMode {
       startOffset + lineSize
     );
   }
+
+  clear(mem) {
+    mem.device.fill(
+      0, // value
+      this.offset, // offset
+      this.offset + this.w * this.h * 2,
+    );
+  }
 }
 
 BIOS.VideoMode = {
-  0x0: new VideoMode(40, 25, 0x8),
-  0x3: new VideoMode(80, 25, 0x8)
+  0x0: new VideoMode(0x0, 40, 25, 0x8),
+  0x3: new VideoMode(0x3, 80, 25, 0x8)
 };
 
 /** Exports */
