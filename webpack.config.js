@@ -37,7 +37,7 @@ module.exports = {
     new HtmlWebpackPlugin({
       title: 'Emulator',
       template: 'src/terminal/template/window.ejs',
-      filename: 'window.html'
+      filename: 'index.html'
     })
   ]
 };

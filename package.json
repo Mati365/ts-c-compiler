@@ -2,7 +2,7 @@
   "name": "i8086.js",
   "version": "1.0.0",
   "description": "",
-  "main": "dist/window.html",
+  "main": "dist/index.html",
   "window": {
     "frame": false,
     "toolbar": false,
