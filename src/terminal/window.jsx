@@ -1,18 +1,13 @@
-/**
- * Terminal component
- */
-const React = require('react')
-    , ReactDOM = require('react-dom')
-    , Radium = require('radium')
+import React from 'react';
+import ReactDOM from 'react-dom';
+import Radium from 'radium';
 
-    /** Custom components */
-    , Output = require('./output.jsx')
+import Output from './output';
+import CPU from '../core/x86';
+import * as IO from '../core/io';
 
-    /** CPU */
-    , CPU = require('../core/x86')
-    , IO = require('../core/io');
-
-const compiled = require('buffer!../../test/bochs/build/bootsec.bin');
+import '../assembler';
+import compiled from '../../test/bochs/build/bootsec.bin';
 
 @Radium
 class Terminal extends React.Component {
@@ -26,28 +21,29 @@ class Terminal extends React.Component {
    * @param {Context} canvas Screen context
    * @memberOf Terminal
    */
-  initializeCPU(canvas) {
+  initializeCPU = (canvas) => {
     this.cpu
       .attach(IO.BIOS, canvas)
       .attach(IO.RTC)
-      .boot(compiled);
+      .boot(Buffer.from(compiled));
   }
+
   render() {
     return (
-      <div style={styles}>
-        <Output onContextInit={this.initializeCPU.bind(this)} />
+      <div
+        style={{
+          width: 'inherit',
+          height: 'inherit',
+        }}
+      >
+        <Output onContextInit={this.initializeCPU} />
       </div>
     );
   }
 }
 
-const styles = {
-  width: 'inherit',
-  height: 'inherit'
-};
-
 /** Init terminal */
 ReactDOM.render(
   <Terminal />,
-  document.getElementById('react-root')
+  document.getElementById('react-root'),
 );
