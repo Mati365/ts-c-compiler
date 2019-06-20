@@ -43,6 +43,8 @@ export const TOKEN_TYPES = Object.freeze({
  * else assign to token flags
  */
 export const TOKENS = Object.freeze({
+  [TOKEN_TYPES.LABEL]: safeFirstMatch(/^(\w+):$/),
+
   [TOKEN_TYPES.REGISTER]: R.prop(R.__, REGISTER_SET),
 
   [TOKEN_TYPES.MNEMONIC]: R.prop(R.__, INSTRUCTION_SET),
@@ -96,7 +98,7 @@ export const TOKENS = Object.freeze({
         const value = digitFormats[format](token);
         if (value !== null) {
           return {
-            type: format,
+            format,
             value,
           };
         }
@@ -130,7 +132,7 @@ const parseToken = (token) => {
     }
 
     // it might be also object without type
-    if (R.is(Object, result) && !result.type) {
+    if (!result?.type) {
       return {
         type: tokenType,
         value: result,
