@@ -6,7 +6,12 @@ import {
 } from './constants';
 
 const safeFirstMatch = regex => R.compose(
-  R.propOr(null, 1),
+  (output) => {
+    if (!output || !output.length)
+      return null;
+
+    return R.defaultTo(output[2], output[1]);
+  },
   R.match(regex),
 );
 
@@ -148,19 +153,18 @@ const parseToken = (token) => {
  *
  * @returns {Token[]}
  */
-const lexer = (code) => {
+function* lexer(code) {
   const {length} = code;
-  const tokens = [];
 
   let tokenBuffer = '';
 
-  const appendToken = (token) => {
+  function* appendToken(token) {
     if (!token)
       return;
 
-    tokens.push(token);
     tokenBuffer = '';
-  };
+    yield token;
+  }
 
   for (let i = 0; i < length; ++i) {
     const character = code[i];
@@ -171,7 +175,7 @@ const lexer = (code) => {
       for (i++; i < length && !isQuote(code[i]); ++i)
         tokenBuffer += code[i];
 
-      appendToken(
+      yield* appendToken(
         {
           type: TOKEN_TYPES.STRING,
           value: tokenBuffer,
@@ -182,10 +186,11 @@ const lexer = (code) => {
 
 
     if (character === ',') {
-      appendToken(
+      yield* appendToken(
         parseToken(tokenBuffer),
       );
-      appendToken(
+
+      yield* appendToken(
         {
           type: TOKEN_TYPES.COMMA,
         },
@@ -195,13 +200,11 @@ const lexer = (code) => {
       tokenBuffer += character;
     } else {
       // if empty character
-      appendToken(
+      yield* appendToken(
         parseToken(tokenBuffer),
       );
     }
   }
-
-  return tokens;
-};
+}
 
 export default lexer;

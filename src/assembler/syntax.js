@@ -7,12 +7,16 @@ import lexer from './lexer';
  * @param {String} code
  */
 const compile = tagFunction((code) => {
-  console.log(lexer(code));
+  const lex = lexer(code);
+  for (const keyword of lex) {
+    console.log(keyword);
+  }
 });
 
 compile`
   mov ax, ax
-  mov bx, 0x2
+  mov bx, 0b111
+  mov dx, 'asdasdasd'
 `;
 
 export default compile;
