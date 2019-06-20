@@ -1,19 +1,18 @@
-const code = `
+import tagFunction from './utils/tagFunction';
+import lexer from './lexer';
+
+/**
+ * Root of evil
+ *
+ * @param {String} code
+ */
+const compile = tagFunction((code) => {
+  console.log(lexer(code));
+});
+
+compile`
   mov ax, ax
-  inc ax
-  dec ax
-  xor ax, ax
+  mov bx, 0x2
 `;
 
-export const TOKEN_TYPES = {
-  REGISTER: 'REGISTER',
-  INSTRUCTION: 'INSTRUCTION',
-  ADDRESS: 'ADDRESS',
-  LABEL: 'LABEL',
-};
-
-export const REGISTERS = {
-  1: {},
-};
-
-export default code;
+export default compile;
