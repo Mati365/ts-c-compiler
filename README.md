@@ -4,6 +4,7 @@
 **Status: 70% opcodes implemented(BIOS asm issues)**
 <br />
 ![Prototype](/doc/screen.gif)
+![Prototype](/doc/screen-2.png)
 
 ## Docs
 http://teaching.idallen.com/dat2343/10f/notes/040_overflow.txt
