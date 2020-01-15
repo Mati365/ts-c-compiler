@@ -41,7 +41,7 @@ const createConfig = (
   module: {
     rules: [
       {
-        test: /\.bin/,
+        test: /\.(bin|flp)/,
         use: 'arraybuffer-loader',
       },
       {

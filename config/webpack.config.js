@@ -13,11 +13,13 @@ module.exports = createConfig(
     outputFolder: path.resolve(__dirname, '../dist'),
     outputFile: 'client-[hash].js',
     plugins: [
-      new HtmlWebpackPlugin({
-        title: 'Emulator',
-        template: 'src/terminal/template/window.ejs',
-        filename: 'index.html',
-      }),
+      new HtmlWebpackPlugin(
+        {
+          title: 'Emulator',
+          template: 'src/terminal/template/window.ejs',
+          filename: 'index.html',
+        },
+      ),
     ],
   },
 );

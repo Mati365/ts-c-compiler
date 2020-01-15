@@ -5,6 +5,12 @@
 <br />
 ![Prototype](/doc/screen.gif)
 
+## Docs
+http://teaching.idallen.com/dat2343/10f/notes/040_overflow.txt
+https://pdos.csail.mit.edu/6.828/2008/readings/i386/s17_02.htm
+http://dsearls.org/courses/C391OrgSys/IntelAL/8086_instruction_set.html
+http://ece425web.groups.et.byu.net/stable/labs/8086Assembly.html
+
 ## License
 The MIT License (MIT)
 Copyright (c) 2016 Mateusz Bagiński

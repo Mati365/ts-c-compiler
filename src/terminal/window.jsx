@@ -7,7 +7,8 @@ import CPU from '../core/x86';
 import * as IO from '../core/io';
 
 import '../assembler';
-import compiled from '../../test/bochs/build/bootsec.bin';
+import compiled from '../../kernels/build/mikeos/disk_images/mikeos.flp';
+// import compiled from '../../kernels/build/bootsec.bin';
 
 @Radium
 class Terminal extends React.Component {

@@ -1,0 +1,1385 @@
+               The Complete Pentium Instruction Set Table
+                    (32 Bit Addressing Mode Only)
+                            by Sang Cho
+
+**********************************************
+Explanation of the Notation used in this Table
+**********************************************
+
+
+ /digit -- A digit between 0 and 7 indicates that the ModR/M byte of the instruction uses
+           only the r/m (register or memory) operand. The reg field contains the digit 
+		   that provides an extension to the instruction's opcode.
+ /r     -- Indicates that the ModR/M byte of the instruction contains both a register operand 
+           and an r/m operand.
+ cb	    -- A relative byte offset from the next instruction for JMP, CALL etc.
+ cw	    -- A relative word offset from the next instruciton for JMP, CALL etc.
+ cd	    -- A relative doubleword offset from the next instruction for JMP, CALL etc.
+ cp     -- An absolute far pointer for JMP, CALL etc.                              
+ ib, iw, id    
+        -- 1-byte (ib), 2-byte (iw), or 4-byte (id) immediate operand 
+ +rb, +rw, +rd     
+        -- register code, from 0 through 7, added to  an  opcode byte.  
+ 
+             rb     rw     rd
+          ----------------------
+           AL = 0 AX = 0 EAX = 0
+           CL = 1 CX = 1 ECX = 1
+           DL = 2 DX = 2 EDX = 2
+           BL = 3 BX = 3 EBX = 3
+           AH = 4 SP = 4 ESP = 4
+           CH = 5 BP = 5 EBP = 5
+           DH = 6 SI = 6 ESI = 6
+           BH = 7 DI = 7 EDI = 7
+
+ +i     -- A number used in floating-point instructions when one of the operands is ST(i) from
+           the FPU register stack. 
+ rel8   -- A relative address in the range from -128 to 127 bytes from the end of the instruction.
+ rel16 and rel32    
+        -- A relative address within the same code segment as the instruction assembled. 
+ ptr16:16 and ptr16:32    
+        -- A far pointer, typically in a code segment different from that of the instruction. 
+ r8     -- One of the byte general-purpose registers.
+ r16    -- One of the word general-purpose registers.
+ r32    -- One of the doubleword general-purpose registers.
+ imm8   -- An immediate byte value. 
+ imm16  -- An immediate word value.  
+ imm32  -- An immediate doubleword value. 
+ r/m8   -- A byte general-purpose register, or a byte from memory.
+ r/m16  -- A word general-purpose register, or a word memory operand. 
+ r/m32  -- A doubleword general-purpose register, or a doubleword memory operand. 
+ m      -- A 16- or 32-bit operand in memory.
+ m8     -- A byte operand in memory,  pointed to by the DS:(E)SI or ES:(E)DI registers.  
+           Used  with the string instructions and the XLAT instruction.
+ m16    -- A word operand in memory, pointed to by the DS:(E)SI or ES:(E)DI registers. 
+           Used  only with the string instructions.
+ m32    -- A doubleword operand in memory, pointed to by the DS:(E)SI or ES:(E)DI registers. 
+           Used only with the string instructions.
+ m64    -- A memory quadword operand in memory. Used only with the CMPXCHG8B instruction.
+ m16:16, m16:32    
+        -- A memory operand containing a far pointer composed of two numbers.
+           The number to the left of the colon corresponds to the pointer's segment selector. 
+		   The number to the right corresponds to its offset.
+ m16&32, m16&16, m32&32    
+        -- A memory operand consisting of data item pairs whose
+           sizes are indicated on the left and the right side of the ampersand. 
+		   All memory addressing modes are allowed. The m16&16 and m32&32 operands are used 
+		   by the BOUND instruction to provide an operand containing an upper and lower bounds 
+		   for array indices. The m16&32 operand is used by LIDT and LGDT to provide 
+		   a word with which to load the limit field, and a doubleword with which to load 
+		   the base field of the corresponding GDTR and IDTR registers.
+ moffs8, moffs16, moffs32    
+        -- A simple memory variable (memory offset) of type byte,
+           word, or doubleword used by some variants of the MOV instruction. 
+		   The actual address is given by a simple offset relative to the segment base. 
+		   No ModR/M byte is used in the instruction. The number shown with moffs indicates 
+		   its size, which is determined by the address-size attribute of the instruction.
+ Sreg   -- A segment register. The segment register bit assignments are ES=0, CS=1, SS=2,
+           DS=3, FS=4, and GS=5.
+ m32real, m64real, m80real    
+        -- A single-, double-, and extended-real floating-point operand in memory.
+ m16int, m32int, m64int    
+        -- A word-, short-, and long-integer floating-point operand in memory.
+ ST or ST(0)    
+        -- The top element of the FPU register stack.
+ ST(i)  -- The i th element from the top of the FPU register stack. (i = 0 through 7)
+ mm     -- An MMX register. The 64-bit MMX registers are: MM0 through MM7.
+ mm/m32 -- The low order 32 bits of an MMX register or a 32-bit memory operand. 
+ mm/m64 -- An MMX register or a 64-bit memory operand. 
+
+
+
+
+Alphabetical Listing
+===============================================================================
+Opcode,Data  Instruction             Explanation
+-------------------------------------------------------------------------------
+37           AAA                     ASCII adjust AL after addition
+D5 0A        AAD                     ASCII adjust AX before division
+D4 0A        AAM                     ASCII adjust AX after multiplication
+3F           AAS                     ASCII adjust AL after subtraction
+14       ib  ADC AL,imm8             Add with carry 
+15       id  ADC EAX,imm32           Add with carry 
+80    /2 ib  ADC r/m8,imm8           Add with carry 
+81    /2 id  ADC r/m32,imm32         Add with carry
+83    /2 ib  ADC r/m32,imm8          Add with carry
+10    /r     ADC r/m8,r8             Add with carry 
+11    /r     ADC r/m32,r32           Add with carry
+12    /r     ADC r8,r/m8             Add with carry 
+13    /r     ADC r32,r/m32           Add with carry
+04       ib  ADD AL,imm8             Add 
+05       id  ADD EAX,imm32           Add 
+80    /0 ib  ADD r/m8,imm8           Add 
+81    /0 id  ADD r/m32,imm32         Add 
+83    /0 ib  ADD r/m32,imm8          Add 
+00    /r     ADD r/m8,r8             ADD 
+01    /r     ADD r/m32,r32           ADD 
+02    /r     ADD r8,r/m8             ADD 
+03    /r     ADD r32,r/m32           ADD 
+24       ib  AND AL,imm8             AND 
+25       id  AND EAX,imm32           AND
+80    /4 ib  AND r/m8,imm8           AND
+81    /4 id  AND r/m32,imm32         AND
+83    /4 ib  AND r/m32,imm8          AND
+20    /r     AND r/m8,r8             AND
+21    /r     AND r/m32,r32           AND
+22    /r     AND r8,r/m8             AND
+23    /r     AND r32,r/m32           AND
+63    /r     ARPL r/m16,r16          Adjust Request Privilege Level of Sel.
+62    /r     BOUND r32,m32&32        Check Array Index Against Bounds
+0F BC /r     BSF r32,r/m32           Bit scan forward on r/m32
+0F BD /r     BSR r32,r/m32           Bit scan reverse on r/m32
+0F C8+rd     BSWAP r32               Reverses the byte order of a r32
+0F A3 /r     BT r/m32,r32            Bit Test
+0F BA /4 ib  BT r/m32,imm8           Bit Test
+0F BB /r     BTC r/m32,r32           Bit Test and Complement
+0F BA /7 ib  BTC r/m32,imm8          Bit Test and Complement
+0F B3 /r     BTR r/m32,r32           Bit Test and Clear
+0F BA /6 ib  BTR r/m32,imm8          Bit Test and Clear
+0F AB /r     BTS r/m32,r32           Bit Test and Set
+0F BA /5 ib  BTS r/m32,imm8          Bit Test and Set
+E8       cd  CALL rel32              Call near, rel to n.inst
+FF    /2     CALL r/m32              Call near, abs.ind.add. given in r/m32
+9A       cp  CALL ptr16:32           Call far, abs.add. given in operand
+FF    /3     CALL m16:32             Call far, abs.ind.add. given in m16:32
+98           CBW                     Convert Byte to Word
+99           CWD                     Convert Word to Doubleword
+99           CDQ                     Convert Doubleword to Quadword 
+F8           CLC                     Clear CF flag
+FC           CLD                     Clear DF flag
+FA           CLI                     Clear interrupt flag
+0F 06        CLTS                    Clear Task-Switched Flag in Control Reg. Zero
+F5           CMC                     Complement CF flag
+0F 47 /r     CMOVA r32,r/m32         Move if above 
+0F 43 /r     CMOVAE r32,r/m32        Move if above or equal 
+0F 42 /r     CMOVB r32,r/m32         Move if below 
+0F 46 /r     CMOVBE r32,r/m32        Move if below or equal 
+0F 42 /r     CMOVC r32,r/m32         Move if carry 
+0F 44 /r     CMOVE r32,r/m32         Move if equal 
+0F 4F /r     CMOVG r32,r/m32         Move if greater 
+0F 4D /r     CMOVGE r32,r/m32        Move if greater or equal 
+0F 4C /r     CMOVL r32,r/m32         Move if less 
+0F 4E /r     CMOVLE r32,r/m32        Move if less or equal 
+0F 46 /r     CMOVNA r32,r/m32        Move if not above 
+0F 42 /r     CMOVNAE r32,r/m32       Move if not above or equal 
+0F 43 /r     CMOVNB r32,r/m32        Move if not below 
+0F 47 /r     CMOVNBE r32,r/m32       Move if not below or equal 
+0F 43 /r     CMOVNC r32,r/m32        Move if not carry 
+0F 45 /r     CMOVNE r32,r/m32        Move if not equal 
+0F 4E /r     CMOVNG r32,r/m32        Move if not greater 
+0F 4C /r     CMOVNGE r32,r/m32       Move if not greater or equal 
+0F 4D /r     CMOVNL r32,r/m32        Move if not less 
+0F 4F /r     CMOVNLE r32,r/m32       Move if not less or equal 
+0F 41 /r     CMOVNO r32,r/m32        Move if not overflow 
+0F 4B /r     CMOVNP r32,r/m32        Move if not parity 
+0F 49 /r     CMOVNS r32,r/m32        Move if not sign 
+0F 45 /r     CMOVNZ r32,r/m32        Move if not zero 
+0F 40 /r     CMOVO r32,r/m32         Move if overflow 
+0F 4A /r     CMOVP r32,r/m32         Move if parity 
+0F 4A /r     CMOVPE r32,r/m32        Move if parity even 
+0F 4B /r     CMOVPO r32,r/m32        Move if parity odd 
+0F 48 /r     CMOVS r32,r/m32         Move if sign 
+0F 44 /r     CMOVZ r32,r/m32         Move if zero 
+3C       ib  CMP AL,imm8             Compare 
+3D       id  CMP EAX,imm32           Compare 
+80    /7 ib  CMP r/m8,imm8           Compare 
+81    /7 id  CMP r/m32,imm32         Compare 
+83    /7 ib  CMP r/m32,imm8          Compare 
+38    /r     CMP r/m8,r8             Compare 
+39    /r     CMP r/m32,r32           Compare 
+3A    /r     CMP r8,r/m8             Compare 
+3B    /r     CMP r32,r/m32           Compare 
+A6           CMPSB                   Compare byte at DS:(E)SI with ES:(E)DI 
+A7           CMPSD                   Compare dw   at DS:(E)SI with ES:(E)DI
+0F B0 /r     CMPXCHG r/m8,r8         Compare and Exchange
+0F B1 /r     CMPXCHG r/m32,r32       Compare and Exchange
+0F C7 /1 m64 CMPXCHG8B m64           Compare and Exchange
+0F A2        CPUID                   EAX := Processor id.info.
+27           DAA                     Decimal adjust AL after addition
+2F           DAS                     Decimal adjust AL after subtraction
+FE    /1     DEC r/m8                Decrement r/m8 by 1
+FF    /1     DEC r/m32               Decrement r/m32 by 1
+48+rd        DEC r32                 Decrement r32 by 1
+F6    /6     DIV r/m8                Unsigned divide AX by r/m8
+F7    /6     DIV r/m16               Unsigned divide DX:AX by r/m16
+F7    /6     DIV r/m32               Unsigned divide EDX:EAX by r/m32 
+0F 77        EMMS                    Set the FP tag word to empty
+C8     iw 00 ENTER imm16,0           Create a stack frame for a procedure
+C8     iw 01 ENTER imm16,1           Create a nested stack frame for a proc.
+C8     iw ib ENTER imm16,imm8        Create a nested stack frame for a proc.
+D9 F0        F2XM1                   Replace ST(0) with 2**ST(0) - 1
+D9 E1        FABS                    Replace ST(0) with its absolute value
+D8    /0     FADD m32real            Add m32real to ST(0) and s.r. in ST(0)
+DC    /0     FADD m64real            Add m64real to ST(0) and s.r.in ST(0)
+D8 C0+i      FADD ST(0),ST(i)        Add ST(0) to ST(i) and s.r.in ST(0)
+DC C0+i      FADD ST(i),ST(0)        Add ST(i) to ST(0) and s.r. in ST(i)
+DE C0+i      FADDP ST(i),ST(0)       Add ST(0) to ST(i), s.r.in ST(i),pop r.stack
+DE C1        FADDP                   Add ST(0) to ST(1), s.r.in ST(1),pop r.stack
+DA    /0     FIADD m32int            Add m32int to ST(0) and s.r.in ST(0)
+DE    /0     FIADD m16int            Add m16int to ST(0) and s.r.in ST(0)
+DF    /4     FBLD m80bcd             Convert m80BCD to real and push 
+DF    /6     FBSTP m80bcd            Store ST(0) in m80bcd and pop ST(0)
+D9 E0        FCHS                    Complements sign of ST(0)
+9B DB E2     FCLEX                   Clear f.e.f. after checking for ..
+DB E2        FNCLEX                  Clear f.e.f. without checking for ..
+DA C0+i      FCMOVB ST(0),ST(i)      Move if below 
+DA C8+i      FCMOVE ST(0),ST(i)      Move if equal 
+DA D0+i      FCMOVBE ST(0),ST(i)     Move if below or equal 
+DA D8+i      FCMOVU ST(0),ST(i)      Move if unordered 
+DB C0+i      FCMOVNB ST(0),ST(i)     Move if not below 
+DB C8+i      FCMOVNE ST(0),ST(i)     Move if not equal 
+DB D0+i      FCMOVNBE ST(0),ST(i)    Move if not below or equal 
+DB D8+i      FCMOVNU ST(0),ST(i)     Move if not unordered 
+D8    /2     FCOM m32real            Compare ST(0) with m32real.
+DC    /2     FCOM m64real            Compare ST(0) with m64real.
+D8 D0+i      FCOM ST(i)              Compare ST(0) with ST(i).
+D8 D1        FCOM                    Compare ST(0) with ST(1).
+D8    /3     FCOMP m32real           Compare ST(0) with m32real,pop r.stack.
+DC    /3     FCOMP m64real           Compare ST(0) with m64real,pop r.stack.
+D8 D8+i      FCOMP ST(i)             Compare ST(0) with ST(i), pop 
+D8 D9        FCOMP                   Compare ST(0) with ST(1), pop 
+DE D9        FCOMPP                  Compare ST(0) with ST(1), pop pop
+DB F0+i      FCOMI ST,ST(i)          Compare ST(0) with ST(i), set status flags
+DF F0+i      FCOMIP ST,ST(i)         Compare ST(0) with ST(i), set s.f. ,pop 
+DB E8+i      FUCOMI ST,ST(i)         Compare ST(0) with ST(i), check o.v.set s.f.
+DF E8+i      FUCOMIP ST,ST(i)        Compare ST(0) with ST(i), check ovssf pop 
+D9 FF        FCOS                    Replace ST(0) with its cosine
+D9 F6        FDECSTP                 Decrement TOP field in FPU status word.
+D8    /6     FDIV m32real            Divide ST(0) by m32real and s.r.in ST(0)
+DC    /6     FDIV m64real            Divide ST(0) by m64real and s.r.in ST(0)
+D8 F0+i      FDIV ST(0),ST(i)        Divide ST(0) by ST(i) and s.r.in ST(0)
+DC F8+i      FDIV ST(i),ST(0)        Divide ST(i) by ST(0) and s.r.in ST(i)
+DE F8+i      FDIVP ST(i),ST(0)       Divide ST(i) by ST(0), s.r.in ST(i) pop 
+DE F9        FDIVP                   Divide ST(1) by ST(0), s.r.in ST(1) pop 
+DA    /6     FIDIV m32int            Divide ST(0) by m32int and s.r.in ST(0)
+DE    /6     FIDIV m16int            Divide ST(0) by m64int and s.r.in ST(0)
+D8    /7     FDIVR m32real           Divide m32real by ST(0) and s.r.in ST(0)
+DC    /7     FDIVR m64real           Divide m64real by ST(0) and s.r.in ST(0)
+D8 F8+i      FDIVR ST(0),ST(i)       Divide ST(i) by ST(0) and s.r.in ST(0)
+DC F0+i      FDIVR ST(i),ST(0)       Divide ST(0) by ST(i) and s.r.in ST(i)
+DE F0+i      FDIVRP ST(i),ST(0)      Divide ST(0) by ST(i), s.r.in ST(i) pop 
+DE F1        FDIVRP                  Divide ST(0) by ST(1), s.r.in ST(1) pop 
+DA    /7     FIDIVR m32int           Divide m32int by ST(0) and s.r.in ST(0)
+DE    /7     FIDIVR m16int           Divide m64int by ST(0) and s.r.in ST(0)
+DD C0+i      FFREE ST(i)             Sets tag for ST(i) to empty
+DE    /2     FICOM m16int            Compare ST(0) with m16int
+DA    /2     FICOM m32int            Compare ST(0) with m32int
+DE    /3     FICOMP m16int           Compare ST(0) with m16int and pop 
+DA    /3     FICOMP m32int           Compare ST(0) with m32int and pop 
+DF    /0     FILD m16int             Push m16int 
+DB    /0     FILD m32int             Push m32int 
+DF    /5     FILD m64int             Push m64int 
+D9 F7        FINCSTP                 Increment the TOP field FPU status r.
+9B DB E3     FINIT                   Initialize FPU after ...
+DB E3        FNINIT                  Initialize FPU without ...
+DF    /2     FIST m16int             Store ST(0) in m16int
+DB    /2     FIST m32int             Store ST(0) in m32int
+DF    /3     FISTP m16int            Store ST(0) in m16int and pop 
+DB    /3     FISTP m32int            Store ST(0) in m32int and pop 
+DF    /7     FISTP m64int            Store ST(0) in m64int and pop 
+D9    /0     FLD m32real             Push m32real 
+DD    /0     FLD m64real             Push m64real 
+DB    /5     FLD m80real             Push m80real 
+D9 C0+i      FLD ST(i)               Push ST(i) 
+D9 E8        FLD1                    Push +1.0 
+D9 E9        FLDL2T                  Push log2 10 
+D9 EA        FLDL2E                  Push log2 e 
+D9 EB        FLDPI                   Push pi 
+D9 EC        FLDLG2                  Push log10 2 
+D9 ED        FLDLN2                  Push loge 2 
+D9 EE        FLDZ                    Push +0.0 
+D9    /5     FLDCW m2byte            Load FPU control word from m2byte
+D9    /4     FLDENV m14/28byte       Load FPU environment from m14/m28
+D8    /1     FMUL m32real            Multiply ST(0) by m32real and s.r.in ST(0)
+DC    /1     FMUL m64real            Multiply ST(0) by m64real and s.r.in ST(0)
+D8 C8+i      FMUL ST(0),ST(i)        Multiply ST(0) by ST(i) and s.r.in ST(0)
+DC C8+i      FMUL ST(i),ST(0)        Multiply ST(i) by ST(0) and s.r.in ST(i)
+DE C8+i      FMULP ST(i),ST(0)       Multiply ST(i) by ST(0), s.r.in ST(i) pop 
+DE C9        FMULP                   Multiply ST(1) by ST(0), s.r.in ST(1) pop 
+DA    /1     FIMUL m32int            Multiply ST(0) by m32int and s.r.in ST(0)
+DE    /1     FIMUL m16int            Multiply ST(0) by m16int and s.r.in ST(0)
+D9 D0        FNOP                    No operation is performed
+D9 F3        FPATAN                  Repalces ST(1) with arctan(ST(1)/ST(0)) pop 
+D9 F8        FPREM                   Replaces ST(0) with rem (ST(0)/ST(1))
+D9 F5        FPREM1                  Replaces ST(0) with IEEE rem(ST(0)/ST(1))
+D9 F2        FPTAN                   Replaces ST(0) with its tangent push 1.0
+D9 FC        FRNDINT                 Round ST(0) to an integer
+DD    /4     FRSTOR m94/108byte      Load FPU status from m94 or m108 byte
+9B DD /6     FSAVE m94/108byte       Store FPU status to m94 or m108
+DD    /6     FNSAVE m94/108byte      Store FPU environment to m94 or m108
+D9 FD        FSCALE                  Scale ST(0) by ST(1)
+D9 FE        FSIN                    Replace ST(0) with its sine
+D9 FB        FSINCOS                 Compute sine and consine of ST(0) s push c
+D9 FA        FSQRT                   square root of ST(0)
+D9    /2     FST m32real             Copy ST(0) to m32real
+DD    /2     FST m64real             Copy ST(0) to m64real
+DD D0+i      FST ST(i)               Copy ST(0) to ST(i)
+D9    /3     FSTP m32real            Copy ST(0) to m32real and pop 
+DD    /3     FSTP m64real            Copy ST(0) to m64real and pop 
+DB    /7     FSTP m80real            Copy ST(0) to m80real and pop 
+DD D8+i      FSTP ST(i)              Copy ST(0) to ST(i) and pop 
+9B D9 /7     FSTCW m2byte            Store FPU control word
+D9    /7     FNSTCW m2byte           Store FPU control word without
+9B D9 /6     FSTENV m14/28byte       Store FPU environment
+D9    /6     FNSTENV m14/28byte      Store FPU env without
+9B DD /7     FSTSW m2byte            Store FPU status word at m2byte after 
+9B DF E0     FSTSW AX                Store FPU status word in AX  after 
+DD    /7     FNSTSW m2byte           Store FPU status word at m2byte without 
+DF E0        FNSTSW AX               Store FPU status word in AX without 
+D8    /4     FSUB m32real            Sub m32real from ST(0) and s.r.in ST(0)
+DC    /4     FSUB m64real            Sub m64real from ST(0) and s.r.in ST(0)
+D8 E0+i      FSUB ST(0),ST(i)        Sub ST(i) from ST(0) and s.r.in ST(0)
+DC E8+i      FSUB ST(i),ST(0)        Sub ST(0) from ST(i) and s.r.in ST(i)
+DE E8+i      FSUBP ST(i),ST(0)       Sub ST(0) from ST(i), s.r.in ST(i) pop
+DE E9        FSUBP                   Sub ST(0) from ST(1), s.r.in ST(1) pop 
+DA    /4     FISUB m32int            Sub m32int from ST(0) and s.r.in ST(0)
+DE    /4     FISUB m16int            Sub m16int from ST(0) and s.r.in ST(0)
+D8    /5     FSUBR m32real           Sub ST(0) from m32real and s.r.in ST(0)
+DC    /5     FSUBR m64real           Sub ST(0) from m64real and s.r.in ST(0)
+D8 E8+i      FSUBR ST(0),ST(i)       Sub ST(0) from ST(i) and s.r.in ST(0)
+DC E0+i      FSUBR ST(i),ST(0)       Sub ST(i) from ST(0) and s.r.in ST(i)
+DE E0+i      FSUBRP ST(i),ST(0)      Sub ST(i) from ST(0), s.r. in ST(i) pop 
+DE E1        FSUBRP                  Sub ST(1) from ST(0), s.r.in ST(1) pop 
+DA    /5     FISUBR m32int           Sub ST(0) from m32int and s.r.in ST(0)
+DE    /5     FISUBR m16int           Sub ST(0) from m16int and s.r.in ST(0)
+D9 E4        FTST                    Compare ST(0) with 0.0
+DD E0+i      FUCOM ST(i)             Compare ST(0) with ST(i)
+DD E1        FUCOM                   Compare ST(0) with ST(1)
+DD E8+i      FUCOMP ST(i)            Compare ST(0) with ST(i) and pop 
+DD E9        FUCOMP                  Compare ST(0) with ST(1) and pop 
+DA E9        FUCOMPP                 Compare ST(0) with ST(1) and pop pop
+D9 E5        FXAM                    Classify value or number in ST(0)
+D9 C8+i      FXCH ST(i)              Exchange ST(0) and ST(i)
+D9 C9        FXCH                    Exchange ST(0) and ST(1)
+D9 F4        FXTRACT                 Seperate value in ST(0) exp. and sig.
+D9 F1        FYL2X                   Replace ST(1) with ST(1)*log2ST(0) and pop
+D9 F9        FYL2XP1                 Replace ST(1) with ST(1)*log2(ST(0)+1) pop
+F4           HLT                     Halt
+F6    /7     IDIV r/m8               Divide   
+F7    /7     IDIV r/m32              Divide  
+F6    /5     IMUL r/m8               Multiply
+F7    /5     IMUL r/m32              Multiply
+0F AF /r     IMUL r32,r/m32          Multiply
+6B    /r ib  IMUL r32,r/m32,imm8     Multiply
+6B    /r ib  IMUL r32,imm8           Multiply
+69    /r id  IMUL r32,r/m32,imm32    Multiply
+69    /r id  IMUL r32,imm32          Multiply
+E4       ib  IN AL,imm8              Input byte from imm8 I/O port address into AL
+E5       ib  IN EAX,imm8             Input byte from imm8 I/O port address into EAX
+EC           IN AL,DX                Input byte from I/O port in DX into AL
+ED           IN EAX,DX               Input doubleword from I/O port in DX into EAX
+FE    /0     INC r/m8                Increment 1
+FF    /0     INC r/m32               Increment 1
+40+rd        INC r32                 Increment register by 1
+6C           INS m8                  Input byte from I/O(DX) into  ES:(E)DI
+6D           INS m32                 Input dw from I/O(DX) into ES:(E)DI
+CC           INT 3                   Interrupt 3--trap to debugger
+CD       ib  INT imm8                Interrupt vector number (imm8)
+CE           INTO                    Interrupt 4--if overflow flag is 1
+0F 08        INVD                    Flush internal caches
+0F 01 /7     INVLPG m                Invalidate TLB Entry for page (m)
+CF           IRETD                   Interrupt return(32)
+77       cb  JA rel8                 Jump short if above 
+73       cb  JAE rel8                Jump short if above or equal 
+76       cb  JBE rel8                Jump short if below or equal 
+72       cb  JC rel8                 Jump short if carry 
+E3       cb  JECXZ rel8              Jump short if ECX register is 0
+74       cb  JE rel8                 Jump short if equal 
+7F       cb  JG rel8                 Jump short if greater 
+7D       cb  JGE rel8                Jump short if greater or equal 
+7C       cb  JL rel8                 Jump short if less 
+7E       cb  JLE rel8                Jump short if less or equal 
+75       cb  JNE rel8                Jump short if not equal 
+71       cb  JNO rel8                Jump short if not overflow 
+79       cb  JNS rel8                Jump short if not sign 
+70       cb  JO rel8                 Jump short if overflow 
+7A       cb  JPE rel8                Jump short if parity even 
+7B       cb  JPO rel8                Jump short if parity odd 
+78       cb  JS rel8                 Jump short if sign 
+0F 87    cd  JA rel32                Jump near if above 
+0F 83    cd  JAE rel32               Jump near if above or equal 
+0F 82    cd  JB rel32                Jump near if below 
+0F 86    cd  JBE rel32               Jump near if below or equal 
+0F 84    cd  JE rel32                Jump near if equal 
+0F 8F    cd  JG rel32                Jump near if greater 
+0F 8D    cd  JGE rel32               Jump near if greater or equal 
+0F 8C    cd  JL rel32                Jump near if less 
+0F 8E    cd  JLE rel32               Jump near if less or equal 
+0F 85    cd  JNE rel32               Jump near if not equal 
+0F 81    cd  JNO rel32               Jump near if not overflow 
+0F 89    cd  JNS rel32               Jump near if not sign 
+0F 80    cd  JO rel32                Jump near if overflow 
+0F 8A    cd  JPE rel32               Jump near if parity even 
+0F 8B    cd  JPO rel32               Jump near if parity odd 
+0F 88    cd  JS rel32                Jump near if sign 
+EB       cb  JMP rel8                Jump short, relative, 
+E9       cd  JMP rel32               Jump near, relative, 
+FF    /4     JMP r/m32               Jump near, abs.ind.in r/m32
+EA       cp  JMP ptr16:32            Jump far, abs.add given in operand
+FF    /r     JMP m16:32              Jump far, abs.ind.in m16:32
+9F           LAHF                    Load Status Flags into AH 
+0F 02 /r     LAR r32,r/m32           Load Access Rights Byte     
+C5    /r     LDS r32,m16:32          Load DS:r32 with far ptr
+8D    /r     LEA r32,m               Load effective address  
+C9           LEAVE                   Set ESP to EBP, then pop EBP
+C4    /r     LES r32,m16:32          Load ES:r32 with far ptr 
+0F B4 /r     LFS r32,m16:32          Load FS:r32 with far ptr
+0F B5 /r     LGS r32,m16:32          Load GS:r32 with far ptr
+0F 01 /2     LGDT m16&32             Load m into GDTR
+0F 01 /3     LIDT m16&32             Load m into IDTR
+0F 00 /2     LLDT r/m16              Load segment selector r/m16 into LDTR
+0F 01 /6     LMSW r/m16              Load r/m16 in machine status word of CR0
+F0           LOCK                    Asserts LOCK signal for duration ..
+AC           LODS m8                 Load byte at address DS:(E)SI into AL
+AD           LODS m32                Load dword at address DS:(E)SI into EAX
+E2       cb  LOOP rel8               Dec count;jump if count # 0
+E1       cb  LOOPE rel8              Dec count;jump if count # 0 and ZF=1
+E1       cb  LOOPZ rel8              Dec count;jump if count # 0 and ZF=1
+E0       cb  LOOPNE rel8             Dec count;jump if count # 0 and ZF=0
+E0       cb  LOOPNZ rel8             Dec count;jump if count # 0 and ZF=0
+0F 03 /r     LSL r16,r/m16           Load Segment Limit
+0F 03 /r     LSL r32,r/m32           Load Segment Limit
+0F B2 /r     LSS r32,m16:32          Load SS:r32 with far ptr
+0F 00 /3     LTR r/m16               Load Task Register
+88    /r     MOV r/m8,r8             Move 
+89    /r     MOV r/m32,r32           Move 
+8A    /r     MOV r8,r/m8             Move 
+8B    /r     MOV r32,r/m32           Move 
+8C    /r     MOV r/m16,Sreg**        Move segment register to r/m16
+8E    /r     MOV Sreg,r/m16**        Move r/m16 to segment register
+A0           MOV AL, moffs8*         Move byte at ( seg:offset) to AL
+A1           MOV AX, moffs16*        Move word at ( seg:offset) to AX
+A1           MOV EAX, moffs32*       Move dword at ( seg:offset) to EAX
+A2           MOV moffs8*,AL          Move AL to ( seg:offset)
+A3           MOV moffs16*,AX         Move AX to ( seg:offset)
+A3           MOV moffs32*,EAX        Move EAX to ( seg:offset)
+B0+rb        MOV r8,imm8             Move imm8 to r8
+B8+rd        MOV r32,imm32           Move imm32 to r32
+C6    /0 ib  MOV r/m8,imm8           Move imm8 to r/m8
+C7    /0 id  MOV r/m32,imm32         Move imm32 to r/m32
+0F 22 /r     MOV CR0, r32            Move r32 to CR0
+0F 22 /r     MOV CR2, r32            Move r32 to CR2
+0F 22 /r     MOV CR3, r32            Move r32 to CR3
+0F 22 /r     MOV CR4, r32            Move r32 to CR4
+0F 20 /r     MOV r32,CR0             Move CR0 to r32
+0F 20 /r     MOV r32,CR2             Move CR2 to r32
+0F 20 /r     MOV r32,CR3             Move CR3 to r32
+0F 20 /r     MOV r32,CR4             Move CR4 to r32
+0F 21 /r     MOV r32,DR0-DR7         Move debug register to r32
+0F 23 /r     MOV DR0-DR7,r32         Move r32 to debug register
+0F 6E /r     MOVD mm,r/m32           Move doubleword from r/m32 to mm
+0F 7E /r     MOVD r/m32,mm           Move doubleword from mm to r/m32
+0F 6F /r     MOVQ mm,mm/m64          Move quadword from mm/m64 to mm
+0F 7F /r     MOVQ mm/m64,mm          Move quadword from mm to mm/m64
+A4           MOVS m8,m8              Move byte at DS:(E)SI to  ES:(E)DI
+A5           MOVS m32,m32            Move dword at DS:(E)SI to  ES:(E)DI
+0F BE /r     MOVSX r32,r/m8          Move byte to doubleword, sign-extension
+0F BF /r     MOVSX r32,r/m16         Move word to doubleword, sign-extension
+0F B6 /r     MOVZX r32,r/m8          Move byte to doubleword, zero-extension
+0F B7 /r     MOVZX r32,r/m16         Move word to doubleword, zero-extension
+F6    /4     MUL r/m8                Unsigned multiply 
+F7    /4     MUL r/m32               Unsigned multiply 
+F6    /3     NEG r/m8                Two's complement negate r/m8
+F7    /3     NEG r/m32               Two's complement negate r/m32
+90           NOP                     No operation
+F6    /2     NOT r/m8                Reverse each bit of r/m8
+F7    /2     NOT r/m32               Reverse each bit of r/m32
+0C       ib  OR AL,imm8              OR
+0D       id  OR EAX,imm32            OR 
+80    /1 ib  OR r/m8,imm8            OR 
+81    /1 id  OR r/m32,imm32          OR 
+83    /1 ib  OR r/m32,imm8           OR 
+08    /r     OR r/m8,r8              OR 
+09    /r     OR r/m32,r32            OR 
+0A    /r     OR r8,r/m8              OR 
+0B    /r     OR r32,r/m32            OR 
+E6       ib  OUT imm8,AL             Output byte in AL to I/O(imm8)
+E7       ib  OUT imm8,EAX            Output dword in EAX to I/O(imm8)
+EE           OUT DX,AL               Output byte in AL to I/O(DX)
+EF           OUT DX,EAX              Output dword in EAX to I/O(DX)
+6E           OUTS DX,m8              Output byte from DS:(E)SI to I/O(DX)
+6F           OUTS DX,m32             Output dword from DS:(E)SI to I/O (DX)
+0F 63 /r     PACKSSWB mm,mm/m64      Pack with Signed Saturation
+0F 6B /r     PACKSSDW mm,mm/m64      Pack with Signed Saturation
+0F 67 /r     PACKUSWB mm,mm/m64      Pack with Unsigned Saturation
+0F FC /r     PADDB mm,mm/m64         Add packed bytes 
+0F FD /r     PADDW mm,mm/m64         Add packed words 
+0F FE /r     PADDD mm,mm/m64         Add packed dwords 
+0F EC /r     PADDSB mm,mm/m64        Add signed packed bytes 
+0F ED /r     PADDSW mm,mm/m64        Add signed packed words 
+0F DC /r     PADDUSB mm,mm/m64       Add unsigned pkd bytes 
+0F DD /r     PADDUSW mm,mm/m64       Add unsigned pkd words 
+0F DB /r     PAND mm,mm/m64          AND quadword from .. to ..
+0F DF /r     PANDN mm,mm/m64         And qword from .. to NOT qw in mm
+0F 74 /r     PCMPEQB mm,mm/m64       Packed Compare for Equal
+0F 75 /r     PCMPEQW mm,mm/m64       Packed Compare for Equal
+0F 76 /r     PCMPEQD mm,mm/m64       Packed Compare for Equal
+0F 64 /r     PCMPGTB mm,mm/m64       Packed Compare for GT
+0F 65 /r     PCMPGTW mm,mm/m64       Packed Compare for GT
+0F 66 /r     PCMPGTD mm,mm/m64       Packed Compare for GT
+0F F5 /r     PMADDWD mm,mm/m64       Packed Multiply and Add
+0F E5 /r     PMULHW mm,mm/m64        Packed Multiply High
+0F D5 /r     PMULLW mm,mm/m64        Packed Multiply Low
+8F    /0     POP m32                 Pop m32
+58+rd        POP r32                 Pop r32
+1F           POP DS                  Pop DS
+07           POP ES                  Pop ES
+17           POP SS                  Pop SS
+0F A1        POP FS                  Pop FS
+0F A9        POP GS                  Pop GS
+61           POPAD                   Pop EDI,... and EAX
+9D           POPFD                   Pop Stack into EFLAGS Register
+0F EB /r     POR mm,mm/m64           OR qword from .. to mm
+0F F1 /r     PSLLW mm,mm/m64         Packed Shift Left Logical
+0F 71 /6 ib  PSLLW mm,imm8           Packed Shift Left Logical
+0F F2 /r     PSLLD mm,mm/m64         Packed Shift Left Logical
+0F 72 /6 ib  PSLLD mm,imm8           Packed Shift Left Logical
+0F F3 /r     PSLLQ mm,mm/m64         Packed Shift Left Logical
+0F 73 /6 ib  PSLLQ mm,imm8           Packed Shift Left Logical
+0F E1 /r     PSRAW mm,mm/m64         Packed Shift Right Arithmetic
+0F 71 /4 ib  PSRAW mm,imm8           Packed Shift Right Arithmetic
+0F E2 /r     PSRAD mm,mm/m64         Packed Shift Right Arithmetic
+0F 72 /4 ib  PSRAD mm,imm8           Packed Shift Right Arithmetic
+0F D1 /r     PSRLW mm,mm/m64         Packed Shift Right Logical 
+0F 71 /2 ib  PSRLW mm,imm8           Packed Shift Right Logical 
+0F D2 /r     PSRLD mm,mm/m64         Packed Shift Right Logical 
+0F 72 /2 ib  PSRLD mm,imm8           Packed Shift Right Logical 
+0F D3 /r     PSRLQ mm,mm/m64         Packed Shift Right Logical 
+0F 73 /2 ib  PSRLQ mm,imm8           Packed Shift Right Logical 
+0F F8 /r     PSUBB mm,mm/m64         Packed Subtract
+0F F9 /r     PSUBW mm,mm/m64         Packed Subtract
+0F FA /r     PSUBD mm,mm/m64         Packed Subtract
+0F E8 /r     PSUBSB mm,mm/m64        Packed Subtract with Saturation
+0F E9 /r     PSUBSW mm,mm/m64        Packed Subtract with Saturation
+0F D8 /r     PSUBUSB mm,mm/m64       Packed Subtract Unsigned with S.
+0F D9 /r     PSUBUSW mm,mm/m64       Packed Subtract Unsigned with S.
+0F 68 /r     PUNPCKHBW mm,mm/m64     Unpack High Packed Data
+0F 69 /r     PUNPCKHWD mm,mm/m64     Unpack High Packed Data
+0F 6A /r     PUNPCKHDQ mm,mm/m64     Unpack High Packed Data
+0F 60 /r     PUNPCKLBW mm,mm/m64     Unpack Low Packed Data
+0F 61 /r     PUNPCKLWD mm,mm/m64     Unpack Low Packed Data
+0F 62 /r     PUNPCKLDQ mm,mm/m64     Unpack Low Packed Data
+FF    /6     PUSH r/m32              Push r/m32
+50+rd        PUSH r32                Push r32
+6A       ib  PUSH imm8               Push imm8
+68       id  PUSH imm32              Push imm32
+0E           PUSH CS                 Push CS
+16           PUSH SS                 Push SS
+1E           PUSH DS                 Push DS
+06           PUSH ES                 Push ES
+0F A0        PUSH FS                 Push FS
+0F A8        PUSH GS                 Push GS
+60           PUSHAD                  Push All g-regs
+9C           PUSHFD                  Push EFLAGS
+0F EF /r     PXOR mm,mm/m64          XOR qword
+D0    /2     RCL r/m8,1              Rotate 9 bits left once
+D2    /2     RCL r/m8,CL             Rotate 9 bits left CL times
+C0    /2 ib  RCL r/m8,imm8           Rotate 9 bits left imm8 times
+D1    /2     RCL r/m32,1             Rotate 33 bits left once
+D3    /2     RCL r/m32,CL            Rotate 33 bits left CL times
+C1    /2 ib  RCL r/m32,imm8          Rotate 33 bits left imm8 times
+D0    /3     RCR r/m8,1              Rotate 9 bits right once
+D2    /3     RCR r/m8,CL             Rotate 9 bits right CL times
+C0    /3 ib  RCR r/m8,imm8           Rotate 9 bits right imm8 times
+D1    /3     RCR r/m32,1             Rotate 33 bits right once
+D3    /3     RCR r/m32,CL            Rotate 33 bits right CL times
+C1    /3 ib  RCR r/m32,imm8          Rotate 33 bits right imm8 times
+D0    /0     ROL r/m8,1              Rotate 8 bits r/m8 left once
+D2    /0     ROL r/m8,CL             Rotate 8 bits r/m8 left CL times
+C0    /0 ib  ROL r/m8,imm8           Rotate 8 bits r/m8 left imm8 times
+D1    /0     ROL r/m32,1             Rotate 32 bits r/m32 left once
+D3    /0     ROL r/m32,CL            Rotate 32 bits r/m32 left CL times
+C1    /0 ib  ROL r/m32,imm8          Rotate 32 bits r/m32 left imm8 times
+D0    /1     ROR r/m8,1              Rotate 8 bits r/m8 right once
+D2    /1     ROR r/m8,CL             Rotate 8 bits r/m8 right CL times
+C0    /1 ib  ROR r/m8,imm8           Rotate 8 bits r/m16 right imm8 times
+D1    /1     ROR r/m32,1             Rotate 32 bits r/m32 right once
+D3    /1     ROR r/m32,CL            Rotate 32 bits r/m32 right CL times
+C1    /1 ib  ROR r/m32,imm8          Rotate 32 bits r/m32 right imm8 times
+0F 32        RDMSR                   Read from Model Specific Register
+0F 33        RDPMC                   Read Performance-Monitoring counters
+0F 31        RDTSC                   Read Time-Stamp Counter
+F3 6C        REP INS m8,DX           Input ECX bytes from port DX into ES:[(E)DI]
+F3 6D        REP INS m32,DX          Input ECX dwords from port DX into ES:[(E)DI]
+F3 A4        REP MOVS m8,m8          Move ECX bytes from DS:[(E)SI] to ES:[(E)DI]
+F3 A5        REP MOVS m32,m32        Move ECX dwords from DS:[(E)SI] to ES:[(E)DI]
+F3 6E        REP OUTS DX,m8          Output ECX bytes from DS:[(E)SI] to port DX
+F3 6F        REP OUTS DX,m32         Output ECX dwords from DS:[(E)SI] to port DX
+F3 AC        REP LODS AL             Load ECX bytes from DS:[(E)SI] to AL
+F3 AD        REP LODS EAX            Load ECX dwords from DS:[(E)SI] to EAX
+F3 AA        REP STOS m8             Fill ECX bytes at ES:[(E)DI] with AL
+F3 AB        REP STOS m32            Fill ECX dwords at ES:[(E)DI] with EAX
+F3 A6        REPE CMPS m8,m8         Find nonmatching bytes in m and m
+F3 A7        REPE CMPS m32,m32       Find nonmatching dwords in m and m
+F3 AE        REPE SCAS m8            Find non-AL byte starting at 
+F3 AF        REPE SCAS m32           Find non-EAX dword starting at 
+F2 A6        REPNE CMPS m8,m8        Find matching bytes in m and m
+F2 A7        REPNE CMPS m32,m32      Find matching dwords in m and m
+F2 AE        REPNE SCAS m8           Find AL, starting at ES:[(E)DI]
+F2 AF        REPNE SCAS m32          Find EAX, starting at ES:[(E)DI]
+C3           RET                     Near return 
+CB           RET                     Far return 
+C2       iw  RET imm16               Near return, pop imm16 bytes from stack
+CA       iw  RET imm16               Far return, pop imm16 bytes from stack
+0F AA        RSM                     Resume from System Management
+9E           SAHF                    Store AH into Flags
+D0    /4     SAL r/m8,1              Shift Arithmetic Left
+D2    /4     SAL r/m8,CL             Shift Arithmetic Left
+C0    /4 ib  SAL r/m8,imm8           Shift Arithmetic Left
+D1    /4     SAL r/m32,1             Shift Arithmetic Left
+D3    /4     SAL r/m32,CL            Shift Arithmetic Left
+C1    /4 ib  SAL r/m32,imm8          Shift Arithmetic Left
+D0    /7     SAR r/m8,1              Shift Arithmetic Right
+D2    /7     SAR r/m8,CL             Shift Arithmetic Right
+C0    /7 ib  SAR r/m8,imm8           Shift Arithmetic Right
+D1    /7     SAR r/m32,1             Shift Arithmetic Right
+D3    /7     SAR r/m32,CL            Shift Arithmetic Right
+C1    /7 ib  SAR r/m32,imm8          Shift Arithmetic Right
+D0    /4     SHL r/m8,1              Shift Logical Left
+D2    /4     SHL r/m8,CL             Shift Logical Left
+C0    /4 ib  SHL r/m8,imm8           Shift Logical Left
+D1    /4     SHL r/m32,1             Shift Logical Left
+D3    /4     SHL r/m32,CL            Shift Logical Left
+C1    /4 ib  SHL r/m32,imm8          Shift Logical Left
+D0    /5     SHR r/m8,1              Shift Logical Right
+D2    /5     SHR r/m8,CL             Shift Logical Right
+C0    /5 ib  SHR r/m8,imm8           Shift Logical Right
+D1    /5     SHR r/m32,1             Shift Logical Right
+D3    /5     SHR r/m32,CL            Shift Logical Right
+C1    /5 ib  SHR r/m32,imm8          Shift Logical Right
+1C       ib  SBB AL,imm8             Subtract with borrow 
+1D       id  SBB EAX,imm32           Subtract with borrow 
+80    /3 ib  SBB r/m8,imm8           Subtract with borrow 
+81    /3 id  SBB r/m32,imm32         Subtract with borrow 
+83    /3 ib  SBB r/m32,imm8          Subtract with borrow 
+18    /r     SBB r/m8,r8             Subtract with borrow 
+19    /r     SBB r/m32,r32           Subtract with borrow 
+1A    /r     SBB r8,r/m8             Subtract with borrow 
+1B    /r     SBB r32,r/m32           Subtract with borrow 
+AE           SCAS m8                 Scan String 
+AF           SCAS m32                Scan String
+0F 97 /r     SETA r/m8               Set byte if above 
+0F 93 /r     SETAE r/m8              Set byte if above or equal
+0F 92 /r     SETB r/m8               Set byte if below 
+0F 96 /r     SETBE r/m8              Set byte if below or equal 
+0F 94 /r     SETE r/m8               Set byte if equal 
+0F 9F /r     SETG r/m8               Set byte if greater 
+0F 9D /r     SETGE r/m8              Set byte if greater or equal
+0F 9C /r     SETL r/m8               Set byte if less 
+0F 9E /r     SETLE r/m8              Set byte if less or equal 
+0F 95 /r     SETNE r/m8              Set byte if not equal 
+0F 91 /r     SETNO r/m8              Set byte if not overflow 
+0F 99 /r     SETNS r/m8              Set byte if not sign 
+0F 90 /r     SETO r/m8               Set byte if overflow 
+0F 9A /r     SETPE r/m8              Set byte if parity even 
+0F 9B /r     SETPO r/m8              Set byte if parity odd 
+0F 98 /r     SETS r/m8               Set byte if sign 
+0F 01 /0     SGDT m                  Store GDTR to m
+0F 01 /1     SIDT m                  Store IDTR to m
+0F A4 /r ib  SHLD r/m32,r32,imm8     Double Precision Shift Left
+0F A5 /r     SHLD r/m32,r32,CL       Double Precision Shift Left
+0F AC /r ib  SHRD r/m32,r32,imm8     Double Precision Shift Right
+0F AD /r     SHRD r/m32,r32,CL       Double Precision Shift Right
+0F 00 /0     SLDT r/m32              Store Local Descriptor Table Register
+0F 01 /4     SMSW r/m32              Store Machine Status Word
+F9           STC                     Set Carry Flag
+FD           STD                     Set Direction Flag
+FB           STI                     Set Interrup Flag
+AA           STOS m8                 Store String
+AB           STOS m32                Store String
+0F 00 /1     STR r/m16               Store Task Register
+2C       ib  SUB AL,imm8             Subtract 
+2D       id  SUB EAX,imm32           Subtract 
+80    /5 ib  SUB r/m8,imm8           Subtract 
+81    /5 id  SUB r/m32,imm32         Subtract 
+83    /5 ib  SUB r/m32,imm8          Subtract 
+28    /r     SUB r/m8,r8             Subtract 
+29    /r     SUB r/m32,r32           Subtract 
+2A    /r     SUB r8,r/m8             Subtract 
+2B    /r     SUB r32,r/m32           Subtract 
+A8       ib  TEST AL,imm8            Logical Compare
+A9       id  TEST EAX,imm32          Logical Compare
+F6    /0 ib  TEST r/m8,imm8          Logical Compare
+F7    /0 id  TEST r/m32,imm32        Logical Compare
+84    /r     TEST r/m8,r8            Logical Compare
+85    /r     TEST r/m16,r16          Logical Compare
+85    /r     TEST r/m32,r32          Logical Compare
+0F 0B        UD2                     Undifined Instruction
+0F 00 /4     VERR r/m16              Verify a Segment for Reading
+0F 00 /5     VERW r/m16              Verify a Segment for Writing
+9B           WAIT                    Wait
+9B           FWAIT                   Wait
+0F 09        WBINVD                  Write Back and Invalidate Cache
+0F 30        WRMSR                   Write to Model Specific Register
+0F C0 /r     XADD r/m8,r8            Exchange and Add
+0F C1 /r     XADD r/m16,r16          Exchange and Add
+0F C1 /r     XADD r/m32,r32          Exchange and Add
+90+rd        XCHG EAX,r32            Exchange r32 with EAX
+90+rd        XCHG r32,EAX            Exchange EAX with r32
+86    /r     XCHG r/m8,r8            Exchange byte 
+86    /r     XCHG r8,r/m8            Exchange byte 
+87    /r     XCHG r/m32,r32          Exchange doubleword 
+87    /r     XCHG r32,r/m32          Exchange doubleword 
+D7           XLAT m8                 Table Look-up Translation
+34       ib  XOR AL,imm8             Logical Exclusive OR
+35       id  XOR EAX,imm32           Logical Exclusive OR
+80    /6 ib  XOR r/m8,imm8           Logical Exclusive OR
+81    /6 id  XOR r/m32,imm32         Logical Exclusive OR
+83    /6 ib  XOR r/m32,imm8          Logical Exclusive OR
+30    /r     XOR r/m8,r8             Logical Exclusive OR
+31    /r     XOR r/m32,r32           Logical Exclusive OR
+32    /r     XOR r8,r/m8             Logical Exclusive OR
+33    /r     XOR r32,r/m32           Logical Exclusive OR
+
+
+Opcode ordered Listing
+===============================================================================
+Opcode,Data  Instruction             Explanation
+-------------------------------------------------------------------------------
+00    /r     ADD r/m8,r8             ADD 
+01    /r     ADD r/m32,r32           ADD 
+02    /r     ADD r8,r/m8             ADD 
+03    /r     ADD r32,r/m32           ADD 
+04       ib  ADD AL,imm8             Add 
+05       id  ADD EAX,imm32           Add 
+06           PUSH ES                 Push ES
+07           POP ES                  Pop ES
+08    /r     OR r/m8,r8              OR 
+09    /r     OR r/m32,r32            OR 
+0A    /r     OR r8,r/m8              OR 
+0B    /r     OR r32,r/m32            OR 
+0C       ib  OR AL,imm8              OR
+0D       id  OR EAX,imm32            OR 
+0E           PUSH CS                 Push CS
+0F 00 /0     SLDT r/m32              Store Local Descriptor Table Register
+0F 00 /1     STR r/m16               Store Task Register
+0F 00 /2     LLDT r/m16              Load segment selector r/m16 into LDTR
+0F 00 /3     LTR r/m16               Load Task Register
+0F 00 /4     VERR r/m16              Verify a Segment for Reading
+0F 00 /5     VERW r/m16              Verify a Segment for Writing
+0F 01 /0     SGDT m                  Store GDTR to m
+0F 01 /1     SIDT m                  Store IDTR to m
+0F 01 /2     LGDT m16&32             Load m into GDTR
+0F 01 /3     LIDT m16&32             Load m into IDTR
+0F 01 /4     SMSW r/m32              Store Machine Status Word
+0F 01 /6     LMSW r/m16              Load r/m16 in machine status word of CR0
+0F 01 /7     INVLPG m                Invalidate TLB Entry for page (m)
+0F 02 /r     LAR r32,r/m32           Load Access Rights Byte     
+0F 03 /r     LSL r16,r/m16           Load Segment Limit
+0F 03 /r     LSL r32,r/m32           Load Segment Limit
+0F 06        CLTS                    Clear Task-Switched Flag in Control Reg. Zero
+0F 08        INVD                    Flush internal caches
+0F 09        WBINVD                  Write Back and Invalidate Cache
+0F 0B        UD2                     Undifined Instruction
+0F 20 /r     MOV r32,CR0             Move CR0 to r32
+0F 20 /r     MOV r32,CR2             Move CR2 to r32
+0F 20 /r     MOV r32,CR3             Move CR3 to r32
+0F 20 /r     MOV r32,CR4             Move CR4 to r32
+0F 21 /r     MOV r32,DR0-DR7         Move debug register to r32
+0F 22 /r     MOV CR0, r32            Move r32 to CR0
+0F 22 /r     MOV CR2, r32            Move r32 to CR2
+0F 22 /r     MOV CR3, r32            Move r32 to CR3
+0F 22 /r     MOV CR4, r32            Move r32 to CR4
+0F 23 /r     MOV DR0-DR7,r32         Move r32 to debug register
+0F 30        WRMSR                   Write to Model Specific Register
+0F 31        RDTSC                   Read Time-Stamp Counter
+0F 32        RDMSR                   Read from Model Specific Register
+0F 33        RDPMC                   Read Performance-Monitoring counters
+0F 40 /r     CMOVO r32,r/m32         Move if overflow 
+0F 41 /r     CMOVNO r32,r/m32        Move if not overflow 
+0F 42 /r     CMOVB r32,r/m32         Move if below 
+0F 42 /r     CMOVC r32,r/m32         Move if carry 
+0F 42 /r     CMOVNAE r32,r/m32       Move if not above or equal 
+0F 43 /r     CMOVAE r32,r/m32        Move if above or equal 
+0F 43 /r     CMOVNB r32,r/m32        Move if not below 
+0F 43 /r     CMOVNC r32,r/m32        Move if not carry 
+0F 44 /r     CMOVE r32,r/m32         Move if equal 
+0F 44 /r     CMOVZ r32,r/m32         Move if zero 
+0F 45 /r     CMOVNE r32,r/m32        Move if not equal 
+0F 45 /r     CMOVNZ r32,r/m32        Move if not zero 
+0F 46 /r     CMOVBE r32,r/m32        Move if below or equal 
+0F 46 /r     CMOVNA r32,r/m32        Move if not above 
+0F 47 /r     CMOVA r32,r/m32         Move if above 
+0F 47 /r     CMOVNBE r32,r/m32       Move if not below or equal 
+0F 48 /r     CMOVS r32,r/m32         Move if sign 
+0F 49 /r     CMOVNS r32,r/m32        Move if not sign 
+0F 4A /r     CMOVP r32,r/m32         Move if parity 
+0F 4A /r     CMOVPE r32,r/m32        Move if parity even 
+0F 4B /r     CMOVNP r32,r/m32        Move if not parity 
+0F 4B /r     CMOVPO r32,r/m32        Move if parity odd 
+0F 4C /r     CMOVL r32,r/m32         Move if less 
+0F 4C /r     CMOVNGE r32,r/m32       Move if not greater or equal 
+0F 4D /r     CMOVGE r32,r/m32        Move if greater or equal 
+0F 4D /r     CMOVNL r32,r/m32        Move if not less 
+0F 4E /r     CMOVLE r32,r/m32        Move if less or equal 
+0F 4E /r     CMOVNG r32,r/m32        Move if not greater 
+0F 4F /r     CMOVG r32,r/m32         Move if greater 
+0F 4F /r     CMOVNLE r32,r/m32       Move if not less or equal 
+0F 60 /r     PUNPCKLBW mm,mm/m64     Unpack Low Packed Data
+0F 61 /r     PUNPCKLWD mm,mm/m64     Unpack Low Packed Data
+0F 62 /r     PUNPCKLDQ mm,mm/m64     Unpack Low Packed Data
+0F 63 /r     PACKSSWB mm,mm/m64      Pack with Signed Saturation
+0F 64 /r     PCMPGTB mm,mm/m64       Packed Compare for GT
+0F 65 /r     PCMPGTW mm,mm/m64       Packed Compare for GT
+0F 66 /r     PCMPGTD mm,mm/m64       Packed Compare for GT
+0F 67 /r     PACKUSWB mm,mm/m64      Pack with Unsigned Saturation
+0F 68 /r     PUNPCKHBW mm,mm/m64     Unpack High Packed Data
+0F 69 /r     PUNPCKHWD mm,mm/m64     Unpack High Packed Data
+0F 6A /r     PUNPCKHDQ mm,mm/m64     Unpack High Packed Data
+0F 6B /r     PACKSSDW mm,mm/m64      Pack with Signed Saturation
+0F 6E /r     MOVD mm,r/m32           Move doubleword from r/m32 to mm
+0F 6F /r     MOVQ mm,mm/m64          Move quadword from mm/m64 to mm
+0F 71 /2 ib  PSRLW mm,imm8           Packed Shift Right Logical 
+0F 71 /4 ib  PSRAW mm,imm8           Packed Shift Right Arithmetic
+0F 71 /6 ib  PSLLW mm,imm8           Packed Shift Left Logical
+0F 72 /2 ib  PSRLD mm,imm8           Packed Shift Right Logical 
+0F 72 /4 ib  PSRAD mm,imm8           Packed Shift Right Arithmetic
+0F 72 /6 ib  PSLLD mm,imm8           Packed Shift Left Logical
+0F 73 /2 ib  PSRLQ mm,imm8           Packed Shift Right Logical 
+0F 73 /6 ib  PSLLQ mm,imm8           Packed Shift Left Logical
+0F 74 /r     PCMPEQB mm,mm/m64       Packed Compare for Equal
+0F 75 /r     PCMPEQW mm,mm/m64       Packed Compare for Equal
+0F 76 /r     PCMPEQD mm,mm/m64       Packed Compare for Equal
+0F 77        EMMS                    Set the FP tag word to empty
+0F 7E /r     MOVD r/m32,mm           Move doubleword from mm to r/m32
+0F 7F /r     MOVQ mm/m64,mm          Move quadword from mm to mm/m64
+0F 80    cd  JO rel32                Jump near if overflow 
+0F 81    cd  JNO rel32               Jump near if not overflow 
+0F 82    cd  JB rel32                Jump near if below 
+0F 83    cd  JAE rel32               Jump near if above or equal 
+0F 84    cd  JE rel32                Jump near if equal 
+0F 85    cd  JNE rel32               Jump near if not equal 
+0F 86    cd  JBE rel32               Jump near if below or equal 
+0F 87    cd  JA rel32                Jump near if above 
+0F 88    cd  JS rel32                Jump near if sign 
+0F 89    cd  JNS rel32               Jump near if not sign 
+0F 8A    cd  JPE rel32               Jump near if parity even 
+0F 8B    cd  JPO rel32               Jump near if parity odd 
+0F 8C    cd  JL rel32                Jump near if less 
+0F 8D    cd  JGE rel32               Jump near if greater or equal 
+0F 8E    cd  JLE rel32               Jump near if less or equal 
+0F 8F    cd  JG rel32                Jump near if greater 
+0F 90 /r     SETO r/m8               Set byte if overflow 
+0F 91 /r     SETNO r/m8              Set byte if not overflow 
+0F 92 /r     SETB r/m8               Set byte if below 
+0F 93 /r     SETAE r/m8              Set byte if above or equal
+0F 94 /r     SETE r/m8               Set byte if equal 
+0F 95 /r     SETNE r/m8              Set byte if not equal 
+0F 96 /r     SETBE r/m8              Set byte if below or equal 
+0F 97 /r     SETA r/m8               Set byte if above 
+0F 98 /r     SETS r/m8               Set byte if sign 
+0F 99 /r     SETNS r/m8              Set byte if not sign 
+0F 9A /r     SETPE r/m8              Set byte if parity even 
+0F 9B /r     SETPO r/m8              Set byte if parity odd 
+0F 9C /r     SETL r/m8               Set byte if less 
+0F 9D /r     SETGE r/m8              Set byte if greater or equal
+0F 9E /r     SETLE r/m8              Set byte if less or equal 
+0F 9F /r     SETG r/m8               Set byte if greater 
+0F A0        PUSH FS                 Push FS
+0F A1        POP FS                  Pop FS
+0F A2        CPUID                   EAX := Processor id.info.
+0F A3 /r     BT r/m32,r32            Bit Test
+0F A4 /r ib  SHLD r/m32,r32,imm8     Double Precision Shift Left
+0F A5 /r     SHLD r/m32,r32,CL       Double Precision Shift Left
+0F A8        PUSH GS                 Push GS
+0F A9        POP GS                  Pop GS
+0F AA        RSM                     Resume from System Management
+0F AB /r     BTS r/m32,r32           Bit Test and Set
+0F AC /r ib  SHRD r/m32,r32,imm8     Double Precision Shift Right
+0F AD /r     SHRD r/m32,r32,CL       Double Precision Shift Right
+0F AF /r     IMUL r32,r/m32          Multiply
+0F B0 /r     CMPXCHG r/m8,r8         Compare and Exchange
+0F B1 /r     CMPXCHG r/m32,r32       Compare and Exchange
+0F B2 /r     LSS r32,m16:32          Load SS:r32 with far ptr
+0F B3 /r     BTR r/m32,r32           Bit Test and Clear
+0F B4 /r     LFS r32,m16:32          Load FS:r32 with far ptr
+0F B5 /r     LGS r32,m16:32          Load GS:r32 with far ptr
+0F B6 /r     MOVZX r32,r/m8          Move byte to doubleword, zero-extension
+0F B7 /r     MOVZX r32,r/m16         Move word to doubleword, zero-extension
+0F BA /4 ib  BT r/m32,imm8           Bit Test
+0F BA /5 ib  BTS r/m32,imm8          Bit Test and Set
+0F BA /6 ib  BTR r/m32,imm8          Bit Test and Clear
+0F BA /7 ib  BTC r/m32,imm8          Bit Test and Complement
+0F BB /r     BTC r/m32,r32           Bit Test and Complement
+0F BC /r     BSF r32,r/m32           Bit scan forward on r/m32
+0F BD /r     BSR r32,r/m32           Bit scan reverse on r/m32
+0F BE /r     MOVSX r32,r/m8          Move byte to doubleword, sign-extension
+0F BF /r     MOVSX r32,r/m16         Move word to doubleword, sign-extension
+0F C0 /r     XADD r/m8,r8            Exchange and Add
+0F C1 /r     XADD r/m16,r16          Exchange and Add
+0F C1 /r     XADD r/m32,r32          Exchange and Add
+0F C7 /1 m64 CMPXCHG8B m64           Compare and Exchange
+0F C8+rd     BSWAP r32               Reverses the byte order of a r32
+0F D1 /r     PSRLW mm,mm/m64         Packed Shift Right Logical 
+0F D2 /r     PSRLD mm,mm/m64         Packed Shift Right Logical 
+0F D3 /r     PSRLQ mm,mm/m64         Packed Shift Right Logical 
+0F D5 /r     PMULLW mm,mm/m64        Packed Multiply Low
+0F D8 /r     PSUBUSB mm,mm/m64       Packed Subtract Unsigned with S.
+0F D9 /r     PSUBUSW mm,mm/m64       Packed Subtract Unsigned with S.
+0F DB /r     PAND mm,mm/m64          AND quadword from .. to ..
+0F DC /r     PADDUSB mm,mm/m64       Add unsigned pkd bytes 
+0F DD /r     PADDUSW mm,mm/m64       Add unsigned pkd words 
+0F DF /r     PANDN mm,mm/m64         And qword from .. to NOT qw in mm
+0F E1 /r     PSRAW mm,mm/m64         Packed Shift Right Arithmetic
+0F E2 /r     PSRAD mm,mm/m64         Packed Shift Right Arithmetic
+0F E5 /r     PMULHW mm,mm/m64        Packed Multiply High
+0F E8 /r     PSUBSB mm,mm/m64        Packed Subtract with Saturation
+0F E9 /r     PSUBSW mm,mm/m64        Packed Subtract with Saturation
+0F EB /r     POR mm,mm/m64           OR qword from .. to mm
+0F EC /r     PADDSB mm,mm/m64        Add signed packed bytes 
+0F ED /r     PADDSW mm,mm/m64        Add signed packed words 
+0F EF /r     PXOR mm,mm/m64          XOR qword
+0F F1 /r     PSLLW mm,mm/m64         Packed Shift Left Logical
+0F F2 /r     PSLLD mm,mm/m64         Packed Shift Left Logical
+0F F3 /r     PSLLQ mm,mm/m64         Packed Shift Left Logical
+0F F5 /r     PMADDWD mm,mm/m64       Packed Multiply and Add
+0F F8 /r     PSUBB mm,mm/m64         Packed Subtract
+0F F9 /r     PSUBW mm,mm/m64         Packed Subtract
+0F FA /r     PSUBD mm,mm/m64         Packed Subtract
+0F FC /r     PADDB mm,mm/m64         Add packed bytes 
+0F FD /r     PADDW mm,mm/m64         Add packed words 
+0F FE /r     PADDD mm,mm/m64         Add packed dwords 
+10    /r     ADC r/m8,r8             Add with carry 
+11    /r     ADC r/m32,r32           Add with carry
+12    /r     ADC r8,r/m8             Add with carry 
+13    /r     ADC r32,r/m32           Add with carry
+14       ib  ADC AL,imm8             Add with carry 
+15       id  ADC EAX,imm32           Add with carry 
+16           PUSH SS                 Push SS
+17           POP SS                  Pop SS
+18    /r     SBB r/m8,r8             Subtract with borrow 
+19    /r     SBB r/m32,r32           Subtract with borrow 
+1A    /r     SBB r8,r/m8             Subtract with borrow 
+1B    /r     SBB r32,r/m32           Subtract with borrow 
+1C       ib  SBB AL,imm8             Subtract with borrow 
+1D       id  SBB EAX,imm32           Subtract with borrow 
+1E           PUSH DS                 Push DS
+1F           POP DS                  Pop DS
+20    /r     AND r/m8,r8             AND
+21    /r     AND r/m32,r32           AND
+22    /r     AND r8,r/m8             AND
+23    /r     AND r32,r/m32           AND
+24       ib  AND AL,imm8             AND 
+25       id  AND EAX,imm32           AND
+26           ES:                     Segment overide prefix
+27           DAA                     Decimal adjust AL after addition
+28    /r     SUB r/m8,r8             Subtract 
+29    /r     SUB r/m32,r32           Subtract 
+2A    /r     SUB r8,r/m8             Subtract 
+2B    /r     SUB r32,r/m32           Subtract 
+2C       ib  SUB AL,imm8             Subtract 
+2D       id  SUB EAX,imm32           Subtract 
+2E           CS:                     Segment overide prefix
+2F           DAS                     Decimal adjust AL after subtraction
+30    /r     XOR r/m8,r8             Logical Exclusive OR
+31    /r     XOR r/m32,r32           Logical Exclusive OR
+32    /r     XOR r8,r/m8             Logical Exclusive OR
+33    /r     XOR r32,r/m32           Logical Exclusive OR
+34       ib  XOR AL,imm8             Logical Exclusive OR
+35       id  XOR EAX,imm32           Logical Exclusive OR
+36           SS:                     Segment overide prefix
+37           AAA                     ASCII adjust AL after addition
+38    /r     CMP r/m8,r8             Compare 
+39    /r     CMP r/m32,r32           Compare 
+3A    /r     CMP r8,r/m8             Compare 
+3B    /r     CMP r32,r/m32           Compare 
+3C       ib  CMP AL,imm8             Compare 
+3D       id  CMP EAX,imm32           Compare
+3E           DS:                     Segment overide prefix
+3F           AAS                     ASCII adjust AL after subtraction
+40+rd        INC r32                 Increment register by 1
+48+rd        DEC r32                 Decrement r32 by 1
+50+rd        PUSH r32                Push r32
+58+rd        POP r32                 Pop r32
+60           PUSHAD                  Push All g-regs
+61           POPAD                   Pop EDI,... and EAX
+62    /r     BOUND r32,m32&32        Check Array Index Against Bounds
+63    /r     ARPL r/m16,r16          Adjust Request Privilege Level of Sel.
+64           FS:                     Segment overide prefix
+65           GS:                     Segment overide prefix
+66           Opsize:                 Operand size overide prefix
+67           Address:                Address size overide prefix
+68       id  PUSH imm32              Push imm32
+69    /r id  IMUL r32,imm32          Multiply
+69    /r id  IMUL r32,r/m32,imm32    Multiply
+6A       ib  PUSH imm8               Push imm8
+6B    /r ib  IMUL r32,imm8           Multiply
+6B    /r ib  IMUL r32,r/m32,imm8     Multiply
+6C           INS m8                  Input byte from I/O(DX) into  ES:(E)DI
+6D           INS m32                 Input dw from I/O(DX) into ES:(E)DI
+6E           OUTS DX,m8              Output byte from DS:(E)SI to I/O(DX)
+6F           OUTS DX,m32             Output dword from DS:(E)SI to I/O (DX)
+70       cb  JO rel8                 Jump short if overflow 
+71       cb  JNO rel8                Jump short if not overflow 
+72       cb  JC rel8                 Jump short if carry 
+73       cb  JAE rel8                Jump short if above or equal 
+74       cb  JE rel8                 Jump short if equal 
+75       cb  JNE rel8                Jump short if not equal 
+76       cb  JBE rel8                Jump short if below or equal 
+77       cb  JA rel8                 Jump short if above 
+78       cb  JS rel8                 Jump short if sign 
+79       cb  JNS rel8                Jump short if not sign 
+7A       cb  JPE rel8                Jump short if parity even 
+7B       cb  JPO rel8                Jump short if parity odd 
+7C       cb  JL rel8                 Jump short if less 
+7D       cb  JGE rel8                Jump short if greater or equal 
+7E       cb  JLE rel8                Jump short if less or equal 
+7F       cb  JG rel8                 Jump short if greater 
+80    /0 ib  ADD r/m8,imm8           Add 
+80    /1 ib  OR r/m8,imm8            OR 
+80    /2 ib  ADC r/m8,imm8           Add with carry 
+80    /3 ib  SBB r/m8,imm8           Subtract with borrow 
+80    /4 ib  AND r/m8,imm8           AND
+80    /5 ib  SUB r/m8,imm8           Subtract 
+80    /6 ib  XOR r/m8,imm8           Logical Exclusive OR
+80    /7 ib  CMP r/m8,imm8           Compare 
+81    /0 id  ADD r/m32,imm32         Add 
+81    /1 id  OR r/m32,imm32          OR 
+81    /2 id  ADC r/m32,imm32         Add with carry
+81    /3 id  SBB r/m32,imm32         Subtract with borrow 
+81    /4 id  AND r/m32,imm32         AND
+81    /5 id  SUB r/m32,imm32         Subtract 
+81    /6 id  XOR r/m32,imm32         Logical Exclusive OR
+81    /7 id  CMP r/m32,imm32         Compare 
+83    /0 ib  ADD r/m32,imm8          Add 
+83    /1 ib  OR r/m32,imm8           OR 
+83    /2 ib  ADC r/m32,imm8          Add with carry
+83    /3 ib  SBB r/m32,imm8          Subtract with borrow 
+83    /4 ib  AND r/m32,imm8          AND
+83    /5 ib  SUB r/m32,imm8          Subtract 
+83    /6 ib  XOR r/m32,imm8          Logical Exclusive OR
+83    /7 ib  CMP r/m32,imm8          Compare 
+84    /r     TEST r/m8,r8            Logical Compare
+85    /r     TEST r/m16,r16          Logical Compare
+85    /r     TEST r/m32,r32          Logical Compare
+86    /r     XCHG r/m8,r8            Exchange byte 
+86    /r     XCHG r8,r/m8            Exchange byte 
+87    /r     XCHG r/m32,r32          Exchange doubleword 
+87    /r     XCHG r32,r/m32          Exchange doubleword 
+88    /r     MOV r/m8,r8             Move 
+89    /r     MOV r/m32,r32           Move 
+8A    /r     MOV r8,r/m8             Move 
+8B    /r     MOV r32,r/m32           Move 
+8C    /r     MOV r/m16,Sreg**        Move segment register to r/m16
+8D    /r     LEA r32,m               Load effective address  
+8E    /r     MOV Sreg,r/m16**        Move r/m16 to segment register
+8F    /0     POP m32                 Pop m32
+90           NOP                     No operation
+90+rd        XCHG EAX,r32            Exchange r32 with EAX
+90+rd        XCHG r32,EAX            Exchange EAX with r32
+98           CBW                     Convert Byte to Word
+99           CDQ                     Convert Doubleword to Quadword 
+99           CWD                     Convert Word to Doubleword
+9A       cp  CALL ptr16:32           Call far, abs.add. given in operand
+9B           FWAIT                   Wait
+9B           WAIT                    Wait
+9B D9 /6     FSTENV m14/28byte       Store FPU environment
+9B D9 /7     FSTCW m2byte            Store FPU control word
+9B DB E2     FCLEX                   Clear f.e.f. after checking for ..
+9B DB E3     FINIT                   Initialize FPU after ...
+9B DD /6     FSAVE m94/108byte       Store FPU status to m94 or m108
+9B DD /7     FSTSW m2byte            Store FPU status word at m2byte after 
+9B DF E0     FSTSW AX                Store FPU status word in AX  after 
+9C           PUSHFD                  Push EFLAGS
+9D           POPFD                   Pop Stack into EFLAGS Register
+9E           SAHF                    Store AH into Flags
+9F           LAHF                    Load Status Flags into AH 
+A0           MOV AL, moffs8*         Move byte at ( seg:offset) to AL
+A1           MOV AX, moffs16*        Move word at ( seg:offset) to AX
+A1           MOV EAX, moffs32*       Move dword at ( seg:offset) to EAX
+A2           MOV moffs8*,AL          Move AL to ( seg:offset)
+A3           MOV moffs16*,AX         Move AX to ( seg:offset)
+A3           MOV moffs32*,EAX        Move EAX to ( seg:offset)
+A4           MOVS m8,m8              Move byte at DS:(E)SI to  ES:(E)DI
+A5           MOVS m32,m32            Move dword at DS:(E)SI to  ES:(E)DI
+A6           CMPSB                   Compare byte at DS:(E)SI with ES:(E)DI 
+A7           CMPSD                   Compare dw   at DS:(E)SI with ES:(E)DI
+A8       ib  TEST AL,imm8            Logical Compare
+A9       id  TEST EAX,imm32          Logical Compare
+AA           STOS m8                 Store String
+AB           STOS m32                Store String
+AC           LODS m8                 Load byte at address DS:(E)SI into AL
+AD           LODS m32                Load dword at address DS:(E)SI into EAX
+AE           SCAS m8                 Scan String 
+AF           SCAS m32                Scan String
+B0+rb        MOV r8,imm8             Move imm8 to r8
+B8+rd        MOV r32,imm32           Move imm32 to r32
+C0    /0 ib  ROL r/m8,imm8           Rotate 8 bits r/m8 left imm8 times
+C0    /1 ib  ROR r/m8,imm8           Rotate 8 bits r/m16 right imm8 times
+C0    /2 ib  RCL r/m8,imm8           Rotate 9 bits left imm8 times
+C0    /3 ib  RCR r/m8,imm8           Rotate 9 bits right imm8 times
+C0    /4 ib  SAL r/m8,imm8           Shift Arithmetic Left
+C0    /4 ib  SHL r/m8,imm8           Shift Logical Left
+C0    /5 ib  SHR r/m8,imm8           Shift Logical Right
+C0    /7 ib  SAR r/m8,imm8           Shift Arithmetic Right
+C1    /0 ib  ROL r/m32,imm8          Rotate 32 bits r/m32 left imm8 times
+C1    /1 ib  ROR r/m32,imm8          Rotate 32 bits r/m32 right imm8 times
+C1    /2 ib  RCL r/m32,imm8          Rotate 33 bits left imm8 times
+C1    /3 ib  RCR r/m32,imm8          Rotate 33 bits right imm8 times
+C1    /4 ib  SAL r/m32,imm8          Shift Arithmetic Left
+C1    /4 ib  SHL r/m32,imm8          Shift Logical Left
+C1    /5 ib  SHR r/m32,imm8          Shift Logical Right
+C1    /7 ib  SAR r/m32,imm8          Shift Arithmetic Right
+C2       iw  RET imm16               Near return, pop imm16 bytes from stack
+C3           RET                     Near return 
+C4    /r     LES r32,m16:32          Load ES:r32 with far ptr 
+C5    /r     LDS r32,m16:32          Load DS:r32 with far ptr
+C6    /0 ib  MOV r/m8,imm8           Move imm8 to r/m8
+C7    /0 id  MOV r/m32,imm32         Move imm32 to r/m32
+C8     iw 00 ENTER imm16,0           Create a stack frame for a procedure
+C8     iw 01 ENTER imm16,1           Create a nested stack frame for a proc.
+C8     iw ib ENTER imm16,imm8        Create a nested stack frame for a proc.
+C9           LEAVE                   Set ESP to EBP, then pop EBP
+CA       iw  RET imm16               Far return, pop imm16 bytes from stack
+CB           RET                     Far return 
+CC           INT 3                   Interrupt 3--trap to debugger
+CD       ib  INT imm8                Interrupt vector number (imm8)
+CE           INTO                    Interrupt 4--if overflow flag is 1
+CF           IRETD                   Interrupt return(32)
+D0    /0     ROL r/m8,1              Rotate 8 bits r/m8 left once
+D0    /1     ROR r/m8,1              Rotate 8 bits r/m8 right once
+D0    /2     RCL r/m8,1              Rotate 9 bits left once
+D0    /3     RCR r/m8,1              Rotate 9 bits right once
+D0    /4     SAL r/m8,1              Shift Arithmetic Left
+D0    /4     SHL r/m8,1              Shift Logical Left
+D0    /5     SHR r/m8,1              Shift Logical Right
+D0    /7     SAR r/m8,1              Shift Arithmetic Right
+D1    /0     ROL r/m32,1             Rotate 32 bits r/m32 left once
+D1    /1     ROR r/m32,1             Rotate 32 bits r/m32 right once
+D1    /2     RCL r/m32,1             Rotate 33 bits left once
+D1    /3     RCR r/m32,1             Rotate 33 bits right once
+D1    /4     SAL r/m32,1             Shift Arithmetic Left
+D1    /4     SHL r/m32,1             Shift Logical Left
+D1    /5     SHR r/m32,1             Shift Logical Right
+D1    /7     SAR r/m32,1             Shift Arithmetic Right
+D2    /0     ROL r/m8,CL             Rotate 8 bits r/m8 left CL times
+D2    /1     ROR r/m8,CL             Rotate 8 bits r/m8 right CL times
+D2    /2     RCL r/m8,CL             Rotate 9 bits left CL times
+D2    /3     RCR r/m8,CL             Rotate 9 bits right CL times
+D2    /4     SAL r/m8,CL             Shift Arithmetic Left
+D2    /4     SHL r/m8,CL             Shift Logical Left
+D2    /5     SHR r/m8,CL             Shift Logical Right
+D2    /7     SAR r/m8,CL             Shift Arithmetic Right
+D3    /0     ROL r/m32,CL            Rotate 32 bits r/m32 left CL times
+D3    /1     ROR r/m32,CL            Rotate 32 bits r/m32 right CL times
+D3    /2     RCL r/m32,CL            Rotate 33 bits left CL times
+D3    /3     RCR r/m32,CL            Rotate 33 bits right CL times
+D3    /4     SAL r/m32,CL            Shift Arithmetic Left
+D3    /4     SHL r/m32,CL            Shift Logical Left
+D3    /5     SHR r/m32,CL            Shift Logical Right
+D3    /7     SAR r/m32,CL            Shift Arithmetic Right
+D4 0A        AAM                     ASCII adjust AX after multiplication
+D5 0A        AAD                     ASCII adjust AX before division
+D6           SETALC                  Set ALC: undocumented
+D7           XLAT m8                 Table Look-up Translation
+D8    /0     FADD m32real            Add m32real to ST(0) and s.r. in ST(0)
+D8    /1     FMUL m32real            Multiply ST(0) by m32real and s.r.in ST(0)
+D8    /2     FCOM m32real            Compare ST(0) with m32real.
+D8    /3     FCOMP m32real           Compare ST(0) with m32real,pop r.stack.
+D8    /4     FSUB m32real            Sub m32real from ST(0) and s.r.in ST(0)
+D8    /5     FSUBR m32real           Sub ST(0) from m32real and s.r.in ST(0)
+D8    /6     FDIV m32real            Divide ST(0) by m32real and s.r.in ST(0)
+D8    /7     FDIVR m32real           Divide m32real by ST(0) and s.r.in ST(0)
+D8 C0+i      FADD ST(0),ST(i)        Add ST(0) to ST(i) and s.r.in ST(0)
+D8 C8+i      FMUL ST(0),ST(i)        Multiply ST(0) by ST(i) and s.r.in ST(0)
+D8 D0+i      FCOM ST(i)              Compare ST(0) with ST(i).
+D8 D1        FCOM                    Compare ST(0) with ST(1).
+D8 D8+i      FCOMP ST(i)             Compare ST(0) with ST(i), pop 
+D8 D9        FCOMP                   Compare ST(0) with ST(1), pop 
+D8 E0+i      FSUB ST(0),ST(i)        Sub ST(i) from ST(0) and s.r.in ST(0)
+D8 E8+i      FSUBR ST(0),ST(i)       Sub ST(0) from ST(i) and s.r.in ST(0)
+D8 F0+i      FDIV ST(0),ST(i)        Divide ST(0) by ST(i) and s.r.in ST(0)
+D8 F8+i      FDIVR ST(0),ST(i)       Divide ST(i) by ST(0) and s.r.in ST(0)
+D9    /0     FLD m32real             Push m32real 
+D9    /2     FST m32real             Copy ST(0) to m32real
+D9    /3     FSTP m32real            Copy ST(0) to m32real and pop 
+D9    /4     FLDENV m14/28byte       Load FPU environment from m14/m28
+D9    /5     FLDCW m2byte            Load FPU control word from m2byte
+D9    /6     FNSTENV m14/28byte      Store FPU env without
+D9    /7     FNSTCW m2byte           Store FPU control word without
+D9 C0+i      FLD ST(i)               Push ST(i) 
+D9 C8+i      FXCH ST(i)              Exchange ST(0) and ST(i)
+D9 C9        FXCH                    Exchange ST(0) and ST(1)
+D9 D0        FNOP                    No operation is performed
+D9 E0        FCHS                    Complements sign of ST(0)
+D9 E1        FABS                    Replace ST(0) with its absolute value
+D9 E4        FTST                    Compare ST(0) with 0.0
+D9 E5        FXAM                    Classify value or number in ST(0)
+D9 E8        FLD1                    Push +1.0 
+D9 E9        FLDL2T                  Push log2 10 
+D9 EA        FLDL2E                  Push log2 e 
+D9 EB        FLDPI                   Push pi 
+D9 EC        FLDLG2                  Push log10 2 
+D9 ED        FLDLN2                  Push loge 2 
+D9 EE        FLDZ                    Push +0.0 
+D9 F0        F2XM1                   Replace ST(0) with 2**ST(0) - 1
+D9 F1        FYL2X                   Replace ST(1) with ST(1)*log2ST(0) and pop
+D9 F2        FPTAN                   Replaces ST(0) with its tangent push 1.0
+D9 F3        FPATAN                  Repalces ST(1) with arctan(ST(1)/ST(0)) pop 
+D9 F4        FXTRACT                 Seperate value in ST(0) exp. and sig.
+D9 F5        FPREM1                  Replaces ST(0) with IEEE rem(ST(0)/ST(1))
+D9 F6        FDECSTP                 Decrement TOP field in FPU status word.
+D9 F7        FINCSTP                 Increment the TOP field FPU status r.
+D9 F8        FPREM                   Replaces ST(0) with rem (ST(0)/ST(1))
+D9 F9        FYL2XP1                 Replace ST(1) with ST(1)*log2(ST(0)+1) pop
+D9 FA        FSQRT                   square root of ST(0)
+D9 FB        FSINCOS                 Compute sine and consine of ST(0) s push c
+D9 FC        FRNDINT                 Round ST(0) to an integer
+D9 FD        FSCALE                  Scale ST(0) by ST(1)
+D9 FE        FSIN                    Replace ST(0) with its sine
+D9 FF        FCOS                    Replace ST(0) with its cosine
+DA    /0     FIADD m32int            Add m32int to ST(0) and s.r.in ST(0)
+DA    /1     FIMUL m32int            Multiply ST(0) by m32int and s.r.in ST(0)
+DA    /2     FICOM m32int            Compare ST(0) with m32int
+DA    /3     FICOMP m32int           Compare ST(0) with m32int and pop 
+DA    /4     FISUB m32int            Sub m32int from ST(0) and s.r.in ST(0)
+DA    /5     FISUBR m32int           Sub ST(0) from m32int and s.r.in ST(0)
+DA    /6     FIDIV m32int            Divide ST(0) by m32int and s.r.in ST(0)
+DA    /7     FIDIVR m32int           Divide m32int by ST(0) and s.r.in ST(0)
+DA C0+i      FCMOVB ST(0),ST(i)      Move if below 
+DA C8+i      FCMOVE ST(0),ST(i)      Move if equal 
+DA D0+i      FCMOVBE ST(0),ST(i)     Move if below or equal 
+DA D8+i      FCMOVU ST(0),ST(i)      Move if unordered 
+DA E9        FUCOMPP                 Compare ST(0) with ST(1) and pop pop
+DB    /0     FILD m32int             Push m32int 
+DB    /2     FIST m32int             Store ST(0) in m32int
+DB    /3     FISTP m32int            Store ST(0) in m32int and pop 
+DB    /5     FLD m80real             Push m80real 
+DB    /7     FSTP m80real            Copy ST(0) to m80real and pop 
+DB C0+i      FCMOVNB ST(0),ST(i)     Move if not below 
+DB C8+i      FCMOVNE ST(0),ST(i)     Move if not equal 
+DB D0+i      FCMOVNBE ST(0),ST(i)    Move if not below or equal 
+DB D8+i      FCMOVNU ST(0),ST(i)     Move if not unordered 
+DB E2        FNCLEX                  Clear f.e.f. without checking for ..
+DB E3        FNINIT                  Initialize FPU without ...
+DB E8+i      FUCOMI ST,ST(i)         Compare ST(0) with ST(i), check o.v.set s.f.
+DB F0+i      FCOMI ST,ST(i)          Compare ST(0) with ST(i), set status flags
+DC    /0     FADD m64real            Add m64real to ST(0) and s.r.in ST(0)
+DC    /1     FMUL m64real            Multiply ST(0) by m64real and s.r.in ST(0)
+DC    /2     FCOM m64real            Compare ST(0) with m64real.
+DC    /3     FCOMP m64real           Compare ST(0) with m64real,pop r.stack.
+DC    /4     FSUB m64real            Sub m64real from ST(0) and s.r.in ST(0)
+DC    /5     FSUBR m64real           Sub ST(0) from m64real and s.r.in ST(0)
+DC    /6     FDIV m64real            Divide ST(0) by m64real and s.r.in ST(0)
+DC    /7     FDIVR m64real           Divide m64real by ST(0) and s.r.in ST(0)
+DC C0+i      FADD ST(i),ST(0)        Add ST(i) to ST(0) and s.r. in ST(i)
+DC C8+i      FMUL ST(i),ST(0)        Multiply ST(i) by ST(0) and s.r.in ST(i)
+DC E0+i      FSUBR ST(i),ST(0)       Sub ST(i) from ST(0) and s.r.in ST(i)
+DC E8+i      FSUB ST(i),ST(0)        Sub ST(0) from ST(i) and s.r.in ST(i)
+DC F0+i      FDIVR ST(i),ST(0)       Divide ST(0) by ST(i) and s.r.in ST(i)
+DC F8+i      FDIV ST(i),ST(0)        Divide ST(i) by ST(0) and s.r.in ST(i)
+DD    /0     FLD m64real             Push m64real 
+DD    /2     FST m64real             Copy ST(0) to m64real
+DD    /3     FSTP m64real            Copy ST(0) to m64real and pop 
+DD    /4     FRSTOR m94/108byte      Load FPU status from m94 or m108 byte
+DD    /6     FNSAVE m94/108byte      Store FPU environment to m94 or m108
+DD    /7     FNSTSW m2byte           Store FPU status word at m2byte without 
+DD C0+i      FFREE ST(i)             Sets tag for ST(i) to empty
+DD D0+i      FST ST(i)               Copy ST(0) to ST(i)
+DD D8+i      FSTP ST(i)              Copy ST(0) to ST(i) and pop 
+DD E0+i      FUCOM ST(i)             Compare ST(0) with ST(i)
+DD E1        FUCOM                   Compare ST(0) with ST(1)
+DD E8+i      FUCOMP ST(i)            Compare ST(0) with ST(i) and pop 
+DD E9        FUCOMP                  Compare ST(0) with ST(1) and pop 
+DE    /0     FIADD m16int            Add m16int to ST(0) and s.r.in ST(0)
+DE    /1     FIMUL m16int            Multiply ST(0) by m16int and s.r.in ST(0)
+DE    /2     FICOM m16int            Compare ST(0) with m16int
+DE    /3     FICOMP m16int           Compare ST(0) with m16int and pop 
+DE    /4     FISUB m16int            Sub m16int from ST(0) and s.r.in ST(0)
+DE    /5     FISUBR m16int           Sub ST(0) from m16int and s.r.in ST(0)
+DE    /6     FIDIV m16int            Divide ST(0) by m64int and s.r.in ST(0)
+DE    /7     FIDIVR m16int           Divide m64int by ST(0) and s.r.in ST(0)
+DE C0+i      FADDP ST(i),ST(0)       Add ST(0) to ST(i), s.r.in ST(i),pop r.stack
+DE C1        FADDP                   Add ST(0) to ST(1), s.r.in ST(1),pop r.stack
+DE C8+i      FMULP ST(i),ST(0)       Multiply ST(i) by ST(0), s.r.in ST(i) pop 
+DE C9        FMULP                   Multiply ST(1) by ST(0), s.r.in ST(1) pop 
+DE D9        FCOMPP                  Compare ST(0) with ST(1), pop pop
+DE E0+i      FSUBRP ST(i),ST(0)      Sub ST(i) from ST(0), s.r. in ST(i) pop 
+DE E1        FSUBRP                  Sub ST(1) from ST(0), s.r.in ST(1) pop 
+DE E8+i      FSUBP ST(i),ST(0)       Sub ST(0) from ST(i), s.r.in ST(i) pop
+DE E9        FSUBP                   Sub ST(0) from ST(1), s.r.in ST(1) pop 
+DE F0+i      FDIVRP ST(i),ST(0)      Divide ST(0) by ST(i), s.r.in ST(i) pop 
+DE F1        FDIVRP                  Divide ST(0) by ST(1), s.r.in ST(1) pop 
+DE F8+i      FDIVP ST(i),ST(0)       Divide ST(i) by ST(0), s.r.in ST(i) pop 
+DE F9        FDIVP                   Divide ST(1) by ST(0), s.r.in ST(1) pop 
+DF    /0     FILD m16int             Push m16int 
+DF    /2     FIST m16int             Store ST(0) in m16int
+DF    /3     FISTP m16int            Store ST(0) in m16int and pop 
+DF    /4     FBLD m80bcd             Convert m80BCD to real and push 
+DF    /5     FILD m64int             Push m64int 
+DF    /6     FBSTP m80bcd            Store ST(0) in m80bcd and pop ST(0)
+DF    /7     FISTP m64int            Store ST(0) in m64int and pop 
+DF E0        FNSTSW AX               Store FPU status word in AX without 
+DF E8+i      FUCOMIP ST,ST(i)        Compare ST(0) with ST(i), check ovssf pop 
+DF F0+i      FCOMIP ST,ST(i)         Compare ST(0) with ST(i), set s.f. ,pop 
+E0       cb  LOOPNE rel8             Dec count;jump if count # 0 and ZF=0
+E0       cb  LOOPNZ rel8             Dec count;jump if count # 0 and ZF=0
+E1       cb  LOOPE rel8              Dec count;jump if count # 0 and ZF=1
+E1       cb  LOOPZ rel8              Dec count;jump if count # 0 and ZF=1
+E2       cb  LOOP rel8               Dec count;jump if count # 0
+E3       cb  JECXZ rel8              Jump short if ECX register is 0
+E4       ib  IN AL,imm8              Input byte from imm8 I/O port address into AL
+E5       ib  IN EAX,imm8             Input byte from imm8 I/O port address into EAX
+E6       ib  OUT imm8,AL             Output byte in AL to I/O(imm8)
+E7       ib  OUT imm8,EAX            Output dword in EAX to I/O(imm8)
+E8       cd  CALL rel32              Call near, rel to n.inst
+E9       cd  JMP rel32               Jump near, relative, 
+EA       cp  JMP ptr16:32            Jump far, abs.add given in operand
+EB       cb  JMP rel8                Jump short, relative, 
+EC           IN AL,DX                Input byte from I/O port in DX into AL
+ED           IN EAX,DX               Input doubleword from I/O port in DX into EAX
+EE           OUT DX,AL               Output byte in AL to I/O(DX)
+EF           OUT DX,EAX              Output dword in EAX to I/O(DX)
+F0           LOCK                    Asserts LOCK signal for duration ..
+F1           INT1                    ICEBP
+F2 A6        REPNE CMPS m8,m8        Find matching bytes in m and m
+F2 A7        REPNE CMPS m32,m32      Find matching dwords in m and m
+F2 AE        REPNE SCAS m8           Find AL, starting at ES:[(E)DI]
+F2 AF        REPNE SCAS m32          Find EAX, starting at ES:[(E)DI]
+F3 6C        REP INS m8,DX           Input ECX bytes from port DX into ES:[(E)DI]
+F3 6D        REP INS m32,DX          Input ECX dwords from port DX into ES:[(E)DI]
+F3 6E        REP OUTS DX,m8          Output ECX bytes from DS:[(E)SI] to port DX
+F3 6F        REP OUTS DX,m32         Output ECX dwords from DS:[(E)SI] to port DX
+F3 A4        REP MOVS m8,m8          Move ECX bytes from DS:[(E)SI] to ES:[(E)DI]
+F3 A5        REP MOVS m32,m32        Move ECX dwords from DS:[(E)SI] to ES:[(E)DI]
+F3 A6        REPE CMPS m8,m8         Find nonmatching bytes in m and m
+F3 A7        REPE CMPS m32,m32       Find nonmatching dwords in m and m
+F3 AA        REP STOS m8             Fill ECX bytes at ES:[(E)DI] with AL
+F3 AB        REP STOS m32            Fill ECX dwords at ES:[(E)DI] with EAX
+F3 AC        REP LODS AL             Load ECX bytes from DS:[(E)SI] to AL
+F3 AD        REP LODS EAX            Load ECX dwords from DS:[(E)SI] to EAX
+F3 AE        REPE SCAS m8            Find non-AL byte starting at 
+F3 AF        REPE SCAS m32           Find non-EAX dword starting at 
+F4           HLT                     Halt
+F5           CMC                     Complement CF flag
+F6    /2     NOT r/m8                Reverse each bit of r/m8
+F6    /3     NEG r/m8                Two's complement negate r/m8
+F6    /4     MUL r/m8                Unsigned multiply 
+F6    /5     IMUL r/m8               Multiply
+F6    /6     DIV r/m8                Unsigned divide AX by r/m8
+F6    /7     IDIV r/m8               Divide   
+F6    /0 ib  TEST r/m8,imm8          Logical Compare
+F7    /2     NOT r/m32               Reverse each bit of r/m32
+F7    /3     NEG r/m32               Two's complement negate r/m32
+F7    /4     MUL r/m32               Unsigned multiply 
+F7    /5     IMUL r/m32              Multiply
+F7    /6     DIV r/m16               Unsigned divide DX:AX by r/m16
+F7    /6     DIV r/m32               Unsigned divide EDX:EAX by r/m32 
+F7    /7     IDIV r/m32              Divide  
+F7    /0 id  TEST r/m32,imm32        Logical Compare
+F8           CLC                     Clear CF flag
+F9           STC                     Set Carry Flag
+FA           CLI                     Clear interrupt flag
+FB           STI                     Set Interrup Flag
+FC           CLD                     Clear DF flag
+FD           STD                     Set Direction Flag
+FE    /0     INC r/m8                Increment 1
+FE    /1     DEC r/m8                Decrement r/m8 by 1
+FF    /0     INC r/m32               Increment 1
+FF    /1     DEC r/m32               Decrement r/m32 by 1
+FF    /2     CALL r/m32              Call near, abs.ind.add. given in r/m32
+FF    /3     CALL m16:32             Call far, abs.ind.add. given in m16:32
+FF    /4     JMP r/m32               Jump near, abs.ind.in r/m32
+FF    /6     PUSH r/m32              Push r/m32
+FF    /r     JMP m16:32              Jump far, abs.ind.in m16:32
+===============================================================================

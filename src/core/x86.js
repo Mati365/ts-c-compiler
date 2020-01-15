@@ -5,6 +5,8 @@ import {
   X86_REGISTERS,
 } from './constants';
 
+import {setBit} from './utils/bits';
+
 const opcodesTable = {};
 
 /**
@@ -75,7 +77,7 @@ export default class CPU {
      * Alloc 1024 KB of RAM memory
      * todo: Implement A20 line support
      */
-    this.mem = Buffer.alloc(2 * 1048576);
+    this.mem = Buffer.alloc(1114112);
     this.memIO = {
       device: this.mem,
       read: {
@@ -225,10 +227,7 @@ export default class CPU {
    * @param {Number}  bits  Intel 8086 supports only 16bit stack
    */
   push(val, bits = 0x2) {
-    this.registers.sp = this.registers.sp - bits;
-    if (this.registers.sp < 0)
-      this.registers.sp = 0xFFFE;
-
+    this.registers.sp = CPU.toUnsignedNumber(this.registers.sp - bits, 0x2);
     this.memIO.write[bits](val, this.lastStackAddr);
   }
 
@@ -242,12 +241,7 @@ export default class CPU {
   pop(bits = 0x2, read = true) {
     const val = read && this.memIO.read[bits](this.lastStackAddr);
 
-    this.registers.sp = this.registers.sp + bits;
-    if (this.registers.sp > 0xFFFE) {
-      this.registers.sp = 0;
-      // this.registers.ss += 0x1000;
-    }
-
+    this.registers.sp = CPU.toUnsignedNumber(this.registers.sp + bits, 0x2);
     return val;
   }
 
@@ -399,440 +393,7 @@ export default class CPU {
       /** MOV m8, al  */ 0xA2: (bits = 0x1) => {
         this.memIO.write[bits](
           this.registers[this.regMap[bits][0x0]],
-          this.getMemAddress(this.segmentReg, this.fetchOpcode(bits)),
-        );
-      },
-      /** MOV m16, ax */ 0xA3: () => this.opcodes[0xA2](0x2),
-
-      /** MOV r/m8, imm8  */ 0xC6: (bits = 0x1) => {
-        this.parseRmByte(
-          () => { /** todo */ throw new Error('0xC6: Fix me!'); },
-          (address) => {
-            this.memIO.write[bits](this.fetchOpcode(bits), address);
-          },
-          bits,
-        );
-      },
-      /** MOV r/m16, reg16  */ 0x89: () => this.opcodes[0x88](0x2),
-      /** MOV r16, r/m16    */ 0x8B: () => this.opcodes[0x8A](0x2),
-      /** MOV r/m16, imm16  */ 0xC7: () => this.opcodes[0xC6](0x2),
-      /** PUSH/INC/DEC reg8 */ 0xFE: (bits = 0x1) => {
-        this.parseRmByte(
-          (_, modeReg, mode) => {
-            const reg = this.regMap[bits][mode.rm];
-            if (mode.reg === 0x6)
-              this.push(this.registers[reg]);
-            else {
-              this.registers[reg] = this.alu(
-                this.operators.extra[mode.reg === 0x1 ? 'decrement' : 'increment'],
-                this.registers[reg],
-                null, bits,
-              );
-            }
-          },
-          (address, reg, mode) => {
-            const memVal = this.memIO.read[bits](address);
-            if (mode.reg === 0x6)
-              this.push(memVal);
-            else {
-              this.memIO.write[bits](
-                this.alu(
-                  this.operators.extra[mode.reg === 0x1 ? 'decrement' : 'increment'],
-                  memVal, null,
-                  bits,
-                ),
-                address,
-              );
-            }
-          },
-          bits,
-        );
-      },
-      /** INC/DEC reg16 */ 0xFF: () => this.opcodes[0xFE](0x2),
-
-      /** PUSHA */ 0x60: () => {
-        const temp = this.registers.sp;
-        for (let i = 0; i <= 0x7; ++i) {
-          this.push(
-            i === 0x4 ? temp : this.registers[this.regMap[0x2][i]],
-          );
-        }
-      },
-      /** POPA  */ 0x61: () => {
-        /** Skip SP */
-        for (let i = 0x7; i >= 0; --i) {
-          const val = this.pop();
-          if (i !== 0x4)
-            this.registers[this.regMap[0x2][i]] = val;
-        }
-      },
-
-      /** PUSH imm8     */ 0x6A: () => this.push(this.fetchOpcode(), 0x2),
-      /** PUSH imm16    */ 0x68: () => this.push(this.fetchOpcode(0x2), 0x2),
-
-      /** PUSHF         */ 0x9C: () => this.push(this.registers.flags),
-      /** POPF          */ 0x9D: () => {
-        this.registers.flags = this.pop();
-      },
-
-      /** LOOPNE        */ 0xE0: () => {
-        const relativeAddress = this.fetchOpcode();
-        if (--this.registers.cx && !this.registers.status.zf)
-          this.relativeJump(0x1, relativeAddress);
-      },
-      /** LOOP 8bit rel */ 0xE2: () => {
-        const relativeAddress = this.fetchOpcode();
-        if (--this.registers.cx)
-          this.relativeJump(0x1, relativeAddress);
-      },
-
-      /** IRET 48b  */ 0xCF: () => {
-        Object.assign(this.registers, {
-          ip: this.pop(),
-          cs: this.pop(),
-          flags: this.pop(),
-        });
-      },
-
-      /** RET far   */ 0xCB: () => {
-        this.registers.ip = this.pop();
-        this.registers.cs = this.pop();
-      },
-      /** RET near  */ 0xC3: (bits = 0x2) => {
-        this.registers.ip = this.pop(bits);
-      },
-      /** RET 16b   */ 0xC2: (bits = 0x2) => {
-        const items = this.fetchOpcode(bits, false);
-        this.registers.ip = this.pop();
-
-        this.pop(items, false);
-      },
-
-      /** CALL 16bit/32bit dis  */ 0xE8: () => {
-        this.push(this.registers.ip + 0x2);
-        this.relativeJump(0x2);
-      },
-
-      /** JMP rel 8bit  */ 0xEB: () => this.relativeJump(0x1),
-      /** JMP rel 16bit */ 0xE9: () => this.relativeJump(0x2),
-      /** FAR JMP 32bit */ 0xEA: () => {
-        Object.assign(this.registers, {
-          ip: this.fetchOpcode(0x2),
-          cs: this.fetchOpcode(0x2),
-        });
-      },
-
-      /** STOSB */ 0xAA: (bits = 0x1) => {
-        this.memIO.write[bits](
-          this.registers[this.regMap[bits][0]],
-          this.getMemAddress('es', 'di'),
-        );
-        this.dfIncrement(bits, 'di');
-      },
-      /** STOSW */ 0xAB: () => this.opcodes[0xAA](0x2),
-
-      /** CLI   */ 0xFA: () => { this.registers.status.if = 0x0; },
-      /** STI   */ 0xFB: () => { this.registers.status.if = 0x1; },
-
-      /** CLC   */ 0xF8: () => { this.registers.status.cf = 0x0; },
-      /** STC   */ 0xF9: () => { this.registers.status.cf = 0x1; },
-
-      /** CLD   */ 0xFC: () => { this.registers.status.df = 0x0; },
-      /** STD   */ 0xFD: () => { this.registers.status.df = 0x1; },
-
-      /** MOVSB */ 0xA4: (bits = 0x1) => {
-        this.memIO.write[bits](
-          this.memIO.read[bits](this.getMemAddress('ds', 'si')),
-          this.getMemAddress('es', 'di'),
-        );
-
-        /** Increment indexes */
-        this.dfIncrement(bits, 'si', 'di');
-      },
-      /** MOVSW */ 0xA5: () => this.opcodes[0xA4](0x2),
-
-      /** LODSB */ 0xAC: (bits = 0x1) => {
-        this.registers[this.regMap[bits][0x0]] = this.memIO.read[bits](this.getMemAddress('ds', 'si'));
-        this.dfIncrement(bits, 'si');
-      },
-      /** LODSW */ 0xAD: () => this.opcodes[0xAC](0x2),
-
-      /** LDS r16, m16:16 */ 0xC5: (segment = 'ds') => {
-        const reg = CPU.decodeRmByte(this.fetchOpcode()).reg,
-          addr = CPU.getSegmentedAddress(this.fetchOpcode(0x2, false));
-
-        this.regMap[0x2][reg] = addr.offset;
-        this.registers[segment] = addr.segment;
-      },
-
-      /** LES r16, m16:16 */ 0xC4: () => this.opcodes[0xC5]('es'),
-      /** LEA r16, mem    */ 0x8D: () => {
-        this.parseRmByte(null, (address, reg) => { this.registers[reg] = address; }, 0x2, null);
-      },
-
-      /** INT imm8    */ 0xCD: () => {
-        const code = this.fetchOpcode(),
-          interrupt = this.interrupts[code];
-
-        if (!interrupt)
-          this.halt(`unknown interrupt 0x${code.toString(16)}`);
-        else
-          interrupt();
-      },
-
-      /** RCL r/m8,  cl */ 0xD2: (bits = 0x1, dir = 0x1) => {
-        this.parseRmByte(
-          (reg) => {
-            this.registers[reg] = this.rotl(this.registers[reg], this.registers.cl * dir, bits);
-          },
-          (address) => {
-            this.memIO.write[bits](
-              this.rotl(this.memIO.read[bits](address), this.registers.cl * dir, bits),
-              address,
-            );
-          },
-          bits,
-        );
-      },
-
-      /** RCL r/m16, cl */ 0xD3: () => this.opcodes[0xD2](0x2),
-      /** ROL/SHR/SHL   */ 0xD0: (bits = 0x1) => {
-        switchOpcode(bits, {
-          /** ROL */ 0x0: val => this.rotate(val, -0x1, bits),
-          /** ROR */ 0x1: val => this.rotate(val, 0x1, bits),
-          /** SHL */ 0x4: val => this.shl(val, 0x1, bits),
-          /** SHR */ 0x5: val => this.shr(val, 0x1, bits),
-        });
-      },
-
-      /** ROL/SHR/SHL   */ 0xC1: () => {
-        switchOpcode(0x2, {
-          /** SHL IMM8 */ 0x4: val => this.shl(val, this.fetchOpcode(), 0x2),
-          /** SHR IMM8 */ 0x5: val => this.shr(val, this.fetchOpcode(), 0x2),
-        });
-      },
-
-      /** ROR r/m8, 1   */ 0xD1: () => this.opcodes[0xD0](0x2),
-
-      /** CBW */ 0x98: () => {
-        this.registers.ah = (this.registers.al & 0x80) === 0x80 ? 0xFF : 0x0;
-      },
-      /** CWD */ 0x99: () => {
-        this.registers.ax = (this.registers.ax & 0x8000) === 0x8000 ? 0xFFFF : 0x0;
-      },
-
-      /** SALC */ 0xD6: () => {
-        this.registers.al = this.registers.status.cf ? 0xFF : 0x0;
-      },
-
-      /** XCHG bx, bx */ 0x87: () => {
-        const arg = this.fetchOpcode(0x1, false, true);
-        switch (arg) {
-          case 0xDB:
-          case 0xD2:
-            this.registers.ip++;
-            this.raiseException(CPU.Exception.MEM_DUMP);
-
-            if (arg === 0xDB)
-              this.halt('Debug dump!', true);
-            else
-              this.dumpRegisters();
-            break;
-
-          default:
-            this.parseRmByte(
-              (reg, reg2) => {
-                [
-                  this.registers[this.regMap[0x2][reg2]],
-                  this.registers[reg],
-                ] = [
-                  this.registers[reg],
-                  this.registers[this.regMap[0x2][reg2]],
-                ];
-              },
-              () => { throw new Error('todo: xchg in mem address'); },
-              0x2,
-            );
-        }
-      },
-
-      /** HLT */ 0xF4: this.halt.bind(this),
-
-      /** ICE BreakPoint */ 0xF1: () => {},
-      /** NOP */ 0x90: () => {},
-    };
-
-    /** General usage registers opcodes */
-    for (let opcode = 0; opcode < Object.keys(this.regMap[0x1]).length; ++opcode) {
-      /** MOV register opcodes */
-      ((_opcode) => {
-        const _r8 = this.regMap[0x1][_opcode],
-          _r16 = this.regMap[0x2][_opcode];
-
-        /** XCHG AX, r16 */ this.opcodes[0x90 + _opcode] = () => {
-          const dest = this.regMap[0x2][this.fetchOpcode(0x1)],
-            temp = this.registers[dest];
-
-          this.registers[dest] = this.registers.ax;
-          this.registers.ax = temp;
-        };
-
-        /** MOV reg8, imm8 $B0 + reg8 code */
-        this.opcodes[0xB0 + _opcode] = () => { this.registers[_r8] = this.fetchOpcode(); };
-
-        /** MOV reg16, imm16 $B8 + reg16 code */
-        this.opcodes[0xB8 + _opcode] = () => { this.registers[_r16] = this.fetchOpcode(0x2); };
-
-        /** INC reg16 */
-        this.opcodes[0x40 + _opcode] = () => {
-          this.registers[_r16] = this.alu(this.operators.extra.increment, this.registers[_r16], null, 0x2);
-        };
-
-        /** DEC reg16 */
-        this.opcodes[0x48 + _opcode] = () => {
-          this.registers[_r16] = this.alu(this.operators.extra.decrement, this.registers[_r16], null, 0x2);
-        };
-
-        /** PUSH reg16 */
-        this.opcodes[0x50 + _opcode] = () => this.push(this.registers[_r16]);
-
-        /** POP reg16 */
-        this.opcodes[0x58 + _opcode] = () => { this.registers[_r16] = this.pop(); };
-      })(opcode);
-    }
-
-    /** 8 bit jump instructions set */
-    const jmpOpcodes = {
-      /** JO  */ 0x70: f => f.of,
-      /** JNO */ 0x71: f => !f.of,
-      /** JB  */ 0x72: f => f.cf,
-      /** JAE */ 0x73: f => !f.cf,
-      /** JZ  */ 0x74: f => f.zf,
-      /** JNE */ 0x75: f => !f.zf,
-      /** JBE */ 0x76: f => f.cf || f.zf,
-      /** JA  */ 0x77: f => !f.cf && !f.zf,
-      /** JS  */ 0x78: f => f.sf,
-      /** JNS */ 0x79: f => !f.sf,
-      /** JP  */ 0x7A: f => f.pf,
-      /** JNP */ 0x7B: f => !f.pf,
-      /** JG  */ 0x7F: f => !f.zf && f.sf === f.of,
-      /** JGE */ 0x7D: f => f.sf === f.of,
-      /** JL  */ 0x7C: f => f.sf !== f.of,
-      /** JLE */ 0x7E: f => f.zf || f.sf !== f.of,
-    };
-
-    const jumpIf = (flagCondition, bits = 0x1) => {
-      const relative = this.fetchOpcode(bits);
-      flagCondition(this.registers.status) && this.relativeJump(bits, relative);
-    };
-
-    R.forEachObjIndexed(
-      (jmpFn, opcode) => {
-        this.opcodes[opcode] = () => jumpIf(jmpFn);
-        this.opcodes[(0x0F << 0x8) | (+opcode + 0x10)] = () => jumpIf(jmpFn, 0x2);
-      },
-      jmpOpcodes,
-    );
-
-    /** Create stack */
-    this.initStack();
-
-    /**
-     * Generate algebra offset calls
-     * todo: implement FPU
-     */
-    this.initALU();
-    this.initIO();
-  }
-
-  /**
-   * For faster exec generates CPU specific opcodes list
-   * see:
-   * http://csiflabs.cs.ucdavis.edu/~ssdavis/50/8086%20Opcodes.pdf
-   * https://en.wikipedia.org/wiki/X86_instruction_listings#Original_8086.2F8088_instructions
-   */
-  initOpcodeSet2() {
-    /** Operators binded to the same opcode, its changed using byte.rm */
-    const switchOpcode = (bits, operators) => {
-      const operatorExecutor = (val, byte) => {
-        const operator = operators[byte.reg] || operators.default;
-        if (operator)
-          return operator(val, byte);
-
-        throw new Error(`Unsupported operator! ${byte.reg}`);
-      };
-
-      this.parseRmByte(
-        (reg, _, byte) => {
-          this.registers[reg] = operatorExecutor(this.registers[reg], byte);
-        },
-        (address, _, byte) => {
-          this.memIO.write[bits](
-            operatorExecutor(this.memIO.read[bits](address), byte),
-            address,
-          );
-        },
-        bits,
-      );
-    };
-
-    this.opcodes = {
-      /** MOV r/m8, reg8 */ 0x88: (bits = 0x1) => {
-        this.parseRmByte(
-          (reg, modeReg) => {
-            this.registers[reg] = this.registers[this.regMap[bits][modeReg]];
-          },
-          (address, src) => {
-            this.memIO.write[bits](this.registers[src], address);
-          },
-          bits,
-        );
-      },
-      /** MOV r/m16, sreg */ 0x8C: () => {
-        this.parseRmByte(
-          (reg, modeReg) => {
-            this.registers[reg] = this.registers[this.regMap.sreg[modeReg]];
-          },
-          (address, _, byte) => {
-            this.memIO.write[0x2](this.registers[this.regMap.sreg[byte.reg]], address);
-          },
-          0x2,
-        );
-      },
-      /** MOV sreg, r/m16 */ 0x8E: () => {
-        this.parseRmByte(
-          (reg, modeReg) => {
-            this.registers[this.regMap.sreg[modeReg]] = this.registers[reg];
-          },
-          (address, _, byte) => {
-            this.registers[this.regMap.sreg[byte.reg]] = this.memIO.read[0x2](address);
-          },
-          0x2,
-        );
-      },
-      /** MOV r8, r/m8    */ 0x8A: (bits = 0x1) => {
-        this.parseRmByte(
-          (reg, modeReg) => {
-            this.registers[this.regMap[bits][modeReg]] = this.registers[reg];
-          },
-          (address, reg) => {
-            this.registers[reg] = this.memIO.read[bits](address);
-          },
-          bits,
-        );
-      },
-
-      /** MOV al, m16  */ 0xA0: (bits = 0x1) => {
-        this.registers[this.regMap[bits][0]] = this.memIO.read[bits](
           this.getMemAddress(this.segmentReg, this.fetchOpcode(0x2)),
-        );
-      },
-      /** MOV ax, m16 */ 0xA1: () => this.opcodes[0xA0](0x2),
-
-      /** MOV m8, al  */ 0xA2: (bits = 0x1) => {
-        this.memIO.write[bits](
-          this.registers[this.regMap[bits][0x0]],
-          this.getMemAddress(this.segmentReg, this.fetchOpcode(bits)),
         );
       },
       /** MOV m16, ax */ 0xA3: () => this.opcodes[0xA2](0x2),
@@ -1065,7 +626,7 @@ export default class CPU {
             this.raiseException(CPU.Exception.MEM_DUMP);
 
             if (arg === 0xDB)
-              this.halt('Debug dump!', true);
+              this.halt('Debugger hit!', true);
             else
               this.dumpRegisters();
             break;
@@ -1148,7 +709,7 @@ export default class CPU {
       /** JNP */ 0x7B: f => !f.pf,
       /** JG  */ 0x7F: f => !f.zf && f.sf === f.of,
       /** JGE */ 0x7D: f => f.sf === f.of,
-      /** JL  */ 0x7C: f => f.sf !== f.of,
+      /** JL  */ 0x7C: f => f.sf !== f.of, // todo: broken rsi: 00000000_000eb3e2 rdi: 00000000_00009001 does not trigger flag
       /** JLE */ 0x7E: f => f.zf || f.sf !== f.of,
     };
 
@@ -1291,14 +852,29 @@ export default class CPU {
   initALU() {
     const flagCheckers = {
       /** Carry flag */ [CPU.flags.cf]: (signed, bits, l, r, val) => val !== signed,
-      /** Overflow flag */ [CPU.flags.of]: (signed, bits, l, r) => {
-        const lmsbit = CPU.msbit(l, bits);
-        return l - r > 0 && CPU.msbit(signed, bits) !== lmsbit && lmsbit === CPU.msbit(r, bits);
+      /**
+       * Overflow occurs when the result of adding two positive numbers
+       * is negative or the result of adding two negative numbers is positive.
+       * For instance: +127+1=?
+       *
+       * @todo Not sure if it works correctly
+       * @see http://www.righto.com/2012/12/the-6502-overflow-flag-explained.html
+       */
+      [CPU.flags.of]: (signed, bits, l, r, val, operator) => {
+        const lBit = CPU.msbit(l, bits);
+        let rBit = CPU.msbit(r, bits);
+
+        // overflows in substract mode is really adding with
+        // second argument containing negative sign
+        if (operator.negativeRightOperand)
+          rBit ^= 1;
+
+        return lBit === rBit && lBit !== CPU.msbit(signed, bits);
       },
       /** Parity flag */ [CPU.flags.pf]: (signed) => {
         /**
          * Use SWAR algorithm
-         * see: http://stackoverflow.com/a/109025/6635215
+         * @see http://stackoverflow.com/a/109025/6635215
          */
         signed -= ((signed >> 1) & 0x55555555);
         signed = (signed & 0x33333333) + ((signed >> 2) & 0x33333333);
@@ -1314,9 +890,10 @@ export default class CPU {
       /** Extra operators used in other opcodes */
       extra: {
         increment: {_c: s => s + 1},
-        decrement: {_c: s => s - 1},
-        mul: {set: 0x0, _c: (s, d) => s * d},
-        div: {set: 0x0, _c: (s, d) => s / d},
+        decrement: {
+          _c: s => s - 1,
+          negativeRightOperand: true,
+        },
       },
       /** SBB */ 0b011: {
         offset: 0x18,
@@ -1328,7 +905,11 @@ export default class CPU {
       },
 
       /** + */ 0b000: {offset: 0x00, _c: (s, d) => s + d},
-      /** - */ 0b101: {offset: 0x28, _c: (s, d) => s - d},
+      /** - */ 0b101: {
+        offset: 0x28,
+        negativeRightOperand: true,
+        _c: (s, d) => s - d,
+      },
       /** & */ 0b100: {
         offset: 0x20,
         clear: CPU.flags.cf | CPU.flags.of,
@@ -1349,6 +930,7 @@ export default class CPU {
       },
       /** = */ 0b111: {
         offset: 0x38,
+        negativeRightOperand: true,
         _flagOnly: true,
         _c: (s, d) => s - d,
       },
@@ -1356,6 +938,9 @@ export default class CPU {
 
     /** ALU operation checker */
     this.alu = (operator, l, r, bits) => {
+      l = l || 0;
+      r = r || 0;
+
       /** Clear flags */
       if (operator.clear)
         this.registers.flags &= !operator.clear;
@@ -1372,8 +957,8 @@ export default class CPU {
         const key = +_key;
 
         if ((operator.set & key) === key) {
-          const _val = flagCheckers[key](signed, bits, l, r, val);
-          this.registers.flags ^= (-(_val ? 1 : 0) ^ this.registers.flags) & (1 << key);
+          const _val = flagCheckers[key](signed, bits, l, r, val, operator);
+          this.registers.flags = setBit(key, _val, this.registers.flags);
         }
       }
 
@@ -1748,8 +1333,8 @@ export default class CPU {
         this.registers.ip += size;
 
         // increment CS if overflows
-        if (this.registers.ip > 0xFFFE) {
-          this.registers.ip = 0;
+        if (this.registers.ip > 0xFFFF) {
+          this.registers.ip = CPU.toUnsignedNumber(this.registers.ip, 0x2);
           this.registers.cs += 0x1000;
         }
       }
@@ -1786,10 +1371,11 @@ export default class CPU {
           break;
 
         /** Segment registers have object instead of opcode */
-        const segmentOverride = isNaN(prefix);
-        this.prefixes[
-          CPU.prefixMap[segmentOverride ? 0x1 : prefix]
-        ] = segmentOverride ? prefix : opcode;
+        const segmentOverride = prefix._sr;
+        if (segmentOverride)
+          this.prefixes[CPU.prefixMap[0x1]] = prefix;
+        else
+          this.prefixes[CPU.prefixMap[prefix]] = opcode;
       }
 
       /** 0F prefix opcodes to 2-byte opcodes */
@@ -1821,7 +1407,7 @@ export default class CPU {
           this.registers.cx = CPU.toUnsignedNumber(this.registers.cx - 0x1, 0x2);
 
           /** Stop loop if zf, check compare flags for SCAS, CMPS  */
-          if (!!~[0xAF, 0xAE, 0xA6, 0xA7].indexOf(opcode) && !this.registers.status.zf)
+          if (!this.registers.status.zf && !!~[0xAF, 0xAE, 0xA6, 0xA7].indexOf(opcode))
             break;
         } while (this.registers.cx);
       } else
@@ -1880,7 +1466,7 @@ export default class CPU {
     for (const key in this.registers) {
       const reg = this.registers[key];
 
-      if (isNaN(reg))
+      if (Number.isNaN(reg))
         continue;
 
       let val = reg.toString(16).toUpperCase();
@@ -1982,7 +1568,7 @@ export default class CPU {
    * @returns
    */
   getMemAddress(sreg, reg) {
-    return (CPU.toUnsignedNumber(this.registers[sreg], 0x2) << 4) + CPU.toUnsignedNumber(isNaN(reg) ? this.registers[reg] : reg, 0x2);
+    return (CPU.toUnsignedNumber(this.registers[sreg], 0x2) << 4) + CPU.toUnsignedNumber(reg.length ? this.registers[reg] : reg, 0x2);
   }
 
   /**

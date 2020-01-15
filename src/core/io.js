@@ -1,9 +1,13 @@
+import * as R from 'ramda';
+
 import {
   BIOS_COLOR_TABLE,
   CP437_UNICODE_FONT_MAPPING,
   X86_REALMODE_MAPPED_ADDRESSES,
   SCAN_CODES_TABLE,
 } from './constants';
+
+import {getBit} from './utils/bits';
 
 /**
  * Basic CPU device
@@ -71,7 +75,7 @@ class Device {
         callback = list[func];
 
       if (callback)
-        callback();
+        callback(this.regs);
       else
         this.cpu.halt(`Unknown interrupt 0x${interrupt.toString(16)} function 0x${func.toString(16)}!`);
     };
@@ -86,6 +90,21 @@ export class VideoMode {
     this.h = h;
     this.offset = offset;
     this.pages = pages;
+  }
+
+  get pageSize() {
+    return this.w * this.h * 0x2;
+  }
+
+  /**
+   * Memory can contain multiple pages
+   *
+   * @param {number} [page=0x0]
+   * @returns
+   * @memberof VideoMode
+   */
+  getPageOffset(page = 0x0) {
+    return this.offset + page * this.pageSize;
   }
 
   /**
@@ -104,11 +123,27 @@ export class VideoMode {
     y *= 0x2;
 
     /** Write direct to memory */
-    const address = this.offset + (this.w * this.h * 0x4) * page + y * this.w + x;
+    const address = this.offset + this.pageSize * page + y * this.w + x;
     if (color === false)
       mem.write[0x1](char & 0xFF, address);
     else
       mem.write[0x2]((char & 0xFF) | ((color & 0xFF) << 8), address);
+  }
+
+  /**
+   * Read VRAM at address
+   *
+   * @param {Memory} mem    Memory driver
+   * @param {Number} x      X screen coordinate
+   * @param {Number} y      Y screen coordinate
+   * @param {Number} page   Page index
+   * @returns
+   * @memberof VideoMode
+   */
+  read(mem, x, y, page = 0x0) {
+    const address = this.offset + this.pageSize * page + y * this.w + x;
+
+    return mem.read[0x2](address);
   }
 
   /**
@@ -119,9 +154,8 @@ export class VideoMode {
    * @param {Number}  page  Page index
    */
   scrollUp(mem, lines = 0x1, page = 0x0) {
-    /** Line size in bytes */
+    const {pageSize} = this;
     const lineSize = this.w * 0x2,
-      pageSize = this.w * this.h * 0x4,
       startOffset = this.offset + pageSize * page;
 
     /** Copy previous lines memory */
@@ -140,11 +174,32 @@ export class VideoMode {
     );
   }
 
+  /**
+   * Iterate every pixel
+   *
+   * @param {Function} fn
+   * @memberof VideoMode
+   */
+  iterate(read, cpu, page, fn) {
+    const {w, h} = this;
+    let offset = this.getPageOffset(page);
+
+    for (let y = 0; y < h; ++y) {
+      for (let x = 0; x < w; ++x) {
+        /** Read from memory */
+        const num = read && cpu.memIO.read[0x2](offset);
+
+        fn(offset, x, y, num);
+        offset += 0x2;
+      }
+    }
+  }
+
   clear(mem) {
     mem.device.fill(
       0, // value
       this.offset, // offset
-      this.offset + this.w * this.h * 2,
+      this.offset + this.pages * this.pageSize,
     );
   }
 }
@@ -199,7 +254,61 @@ export class RTC extends Device {
     return out;
   }
 }
+export class Cursor {
+  static Type = {
+    FULL_BLOCK: 219,
+    UNDERLINE: 95,
+  };
 
+  constructor(
+    {
+      x = 0,
+      y = 0,
+      w = 8,
+      h = 16,
+      info = {
+        character: Cursor.Type.UNDERLINE,
+        visible: true,
+        blink: true,
+      },
+    } = {},
+  ) {
+    this.x = x;
+    this.y = y;
+    this.w = w;
+    this.h = h;
+    this.info = info;
+    this.saved = [];
+  }
+
+  clone() {
+    const {x, y, w, h, info} = this;
+
+    return new Cursor(
+      {
+        x,
+        y,
+        w,
+        h,
+        info: R.clone(info),
+      },
+    );
+  }
+
+  save() {
+    this.saved.push(
+      this.clone(),
+    );
+  }
+
+  restore() {
+    const {saved} = this;
+    if (!saved.length)
+      return;
+
+    Object.assign(this, saved.pop());
+  }
+}
 /**
  * Basic Input Output System
  *
@@ -213,7 +322,6 @@ export class BIOS extends Device {
    * @param {Canvas} canvas Canvas context
    */
   init(canvas) {
-    this.mode = BIOS.VideoMode[0x3];
     this.blink = {
       last: Date.now(),
       visible: false,
@@ -221,15 +329,12 @@ export class BIOS extends Device {
     };
 
     /** Blinking cursor */
-    this.cursor = {
-      x: 0, y: 0,
-      w: 8, h: 16,
-      info: {
-        character: 219,
-        attribute: (1 << 0x7) | 0x7, // enable blinking
-        show: true,
-        blink: false,
-      },
+    this.cursor = new Cursor;
+
+    /** Screen */
+    this.screen = {
+      page: 0,
+      mode: null,
     };
 
     /** Canvas config */
@@ -352,7 +457,11 @@ export class BIOS extends Device {
           if (!code)
             return;
 
-          this.regs.ax = BIOS.keycodes[code][keymap.shift ? 1 : 0];
+          const mapping = BIOS.keycodes[code];
+          if (!mapping)
+            return;
+
+          this.regs.ax = mapping[keymap.shift ? 1 : 0];
         });
       },
     });
@@ -425,43 +534,47 @@ export class BIOS extends Device {
    */
   initScreen() {
     const writeCharacter = (character, attribute) => {
-      /** Direct write to memory */
-      this.mode.write(
-        this.cpu.memIO,
-        character,
-        typeof attribute === 'undefined' ? this.regs.bl : attribute,
-        this.cursor.x,
-        this.cursor.y,
-      );
+      const {cpu, regs, cursor} = this;
+      const {page, mode} = this.screen;
 
       switch (character) {
         /** Backspace */
         case 0x8:
-          this.cursor.x--;
+          cursor.x--;
           break;
 
         /** New line */
         case 0xA:
         case 0xD:
-          if (character === 0xD)
-            this.cursor.y++;
+          if (character === 0xA)
+            cursor.y++;
           else
-            this.cursor.x = 0;
+            cursor.x = 0;
 
           /** Scroll up page, simply copy memory */
-          if (this.cursor.y >= this.mode.h) {
-            this.mode.scrollUp(this.cpu.memIO);
-            this.cursor.y = this.mode.h - 1;
+          if (cursor.y >= mode.h) {
+            mode.scrollUp(cpu.memIO);
+            cursor.y = mode.h - 1;
           }
           break;
 
         /** Normal characters */
         default:
+          /** Direct write to memory */
+          mode.write(
+            cpu.memIO,
+            character,
+            typeof attribute === 'undefined' ? regs.bl : attribute,
+            cursor.x,
+            cursor.y,
+            page,
+          );
+
           /** Render cursor */
-          this.cursor.x++;
-          if (this.cursor.x >= this.mode.w) {
-            this.cursor.x = 0;
-            this.cursor.y++;
+          cursor.x++;
+          if (cursor.x >= mode.w) {
+            cursor.x = 0;
+            cursor.y++;
           }
       }
     };
@@ -473,11 +586,33 @@ export class BIOS extends Device {
 
       /** Hide cursor */
       0x1: () => {
-        this.cursor.info.show = false;
+        /**
+         * @see http://www.ablmcc.edu.hk/~scy/CIT/8086_bios_and_dos_interrupts.htm
+         *
+         * CX=0607h is a normal underline cursor,
+         * CX=0007h is a full-block cursor.
+         * CX=2607h is an invisible cursor
+         * If bit 5 of CH is set, that often means "Hide cursor"
+         */
+        const {info} = this.cursor;
+        const {cx, ch} = this.regs;
+
+        Object.assign(
+          info,
+          {
+            visible: !getBit(5, ch),
+            character: (
+              cx === 0x0607
+                ? Cursor.Type.UNDERLINE
+                : Cursor.Type.FULL_BLOCK
+            ),
+          },
+        );
       },
 
       /** Cursor pos */
       0x2: () => {
+        // todo: add ONLY active page
         Object.assign(this.cursor, {
           x: this.regs.dl,
           y: this.regs.dh,
@@ -493,32 +628,49 @@ export class BIOS extends Device {
         });
       },
 
+      /** Change active screen */
+      0x5: () => {
+        this.screen.page = this.regs.al;
+      },
+
       /**
        * Scroll screen up
        * todo: Handle cx, dx registers params
        */
       0x6: () => {
-        if (!this.regs.al) {
+        const {cpu, regs} = this;
+        const {page, mode} = this.screen;
+
+        if (!regs.al) {
           /** Clear screen */
-          this.cpu.memIO.device.fill(
-            this.regs.bh,
-            this.mode.offset,
-            this.mode.offset + this.mode.w * this.mode.h * 0x4,
-            'utf16',
-          );
+          mode.iterate(false, cpu, page, (offset) => {
+            cpu.memIO.write[0x2](regs.bh << 0x8, offset);
+          });
         } else {
           /** Just scroll window */
-          this.mode.scrollUp(
-            this.cpu.memIO,
-            this.regs.al,
+          mode.scrollUp(
+            cpu.memIO,
+            regs.al,
+            page,
           );
         }
       },
 
-      /** Write character at address */
+      /** Read character at cursor */
+      0x8: () => {
+        const {cpu, cursor, screen: {page, mode}} = this;
+
+        this.regs.ax = mode.read(cpu.memIO, cursor.x, cursor.y, page);
+      },
+
+      /** Write character at address, do not move cursor! */
       0x9: () => {
+        const {cursor} = this;
+
+        cursor.save();
         for (let i = 0; i < this.regs.cx; ++i)
           writeCharacter(this.regs.al);
+        cursor.restore();
       },
 
       0xE: () => writeCharacter(this.regs.al, false),
@@ -557,7 +709,7 @@ export class BIOS extends Device {
        * http://stanislavs.org/helppc/int_10-f.html
        */
       0xF: () => {
-        const {mode} = this;
+        const {mode} = this.screen;
 
         this.regs.al = mode.code;
         this.regs.ah = mode.w;
@@ -588,16 +740,18 @@ export class BIOS extends Device {
    * @param {Number|Object} code  Mode
    */
   setVideoMode(code) {
-    this.mode = isNaN(code) ? code : BIOS.VideoMode[code];
-    this.mode.clear(this.cpu.memIO);
+    const {screen, canvas, cursor, cpu} = this;
+
+    screen.mode = Number.isNaN(code) ? code : BIOS.VideoMode[code];
+    screen.mode.clear(cpu.memIO);
 
     /** Add toolbar 20px space */
     const size = {
-      width: this.mode.w * this.cursor.w,
-      height: this.mode.h * this.cursor.h + 80,
+      width: screen.mode.w * cursor.w,
+      height: screen.mode.h * cursor.h + 80,
     };
-    Object.assign(this.canvas.handle, size);
-    Object.assign(this.canvas, {
+    Object.assign(canvas.handle, size);
+    Object.assign(canvas, {
       w: size.width,
       h: size.height,
     });
@@ -609,59 +763,86 @@ export class BIOS extends Device {
    * @param {Context} ctx Screen context
    */
   redraw(ctx) {
+    const {cursor, blink, cpu, screen, canvas} = this;
+    const {registers} = cpu;
+
+    const {page, mode} = screen;
+
     /** Update blinking */
-    if (Date.now() - this.blink.last >= 530) {
-      Object.assign(this.blink, {
-        visible: !this.blink.visible,
-        last: Date.now(),
-      });
+    if (Date.now() - blink.last >= 300) {
+      Object.assign(
+        blink,
+        {
+          visible: !blink.visible,
+          last: Date.now(),
+        },
+      );
     }
 
     /** Rendering from offset */
-    let offset = 0;
+    ctx.font = `${cursor.h}px Terminal`;
+    mode.iterate(true, cpu, page, (offset, x, y, num) => {
+      const attribute = (num >> 0x8) & 0xFF;
 
-    ctx.font = `${this.cursor.h}px Terminal`;
-    for (let y = 0; y < this.mode.h; ++y) {
-      for (let x = 0; x < this.mode.w; ++x) {
-        /** Read from memory */
-        const num = this.cpu.memIO.read[0x2](this.mode.offset + offset),
-          attribute = (num >> 0x8) & 0xFF;
+      /** Foreground */
+      ctx.fillStyle = BIOS.colorTable[(attribute >> 4) & 0xF];
+      ctx.fillRect(x * cursor.w, y * cursor.h, cursor.w, cursor.h);
 
-        offset += 0x2;
+      /** Text */
+      const mapping = BIOS.fontMapping[num & 0xFF];
+      if (mapping && (!blink.enabled || blink.visible)) {
+        /** Todo: add support for custom palette fonts */
+        ctx.fillStyle = BIOS.colorTable[attribute & 0xF];
+        ctx.fillText(
+          String.fromCharCode(mapping),
+          x * cursor.w,
+          (y + 0x1) * cursor.h - 0x4,
+        );
+      }
+    });
 
-        /** Foreground */
-        ctx.fillStyle = BIOS.colorTable[(attribute >> 4) & 0xF];
-        ctx.fillRect(x * this.cursor.w, y * this.cursor.h, this.cursor.w, this.cursor.h);
+    // todo: move it outside loop?
+    if (cursor.info.visible && (!cursor.info.blink || blink.visible)) {
+      const pageOffset = mode.getPageOffset(page);
 
-        /** Text */
-        if (num && (!this.blink.enabled || this.blink.visible)) {
-          ctx.fillStyle = BIOS.colorTable[attribute & 0xF];
-          ctx.fillText(
-            String.fromCharCode(BIOS.fontMapping[num & 0xFF]),
-            x * this.cursor.w,
-            (y + 0x1) * this.cursor.h - 0x4,
-          );
-        }
+      ctx.fillStyle = BIOS.colorTable[
+        (cpu.memIO.read[0x2](pageOffset + 0x2 * cursor.x * cursor.y) >> 0x8) & 0xF
+      ];
+
+      if (cursor.info.character === Cursor.Type.UNDERLINE) {
+        ctx.fillRect(
+          cursor.x * cursor.w,
+          (cursor.y + 0.9) * cursor.h,
+          cursor.w,
+          2,
+        );
+      } else {
+        ctx.fillText(
+          String.fromCharCode(cursor.info.character),
+          cursor.x * cursor.w,
+          (cursor.y + 0x1) * cursor.h - 0x4,
+        );
       }
     }
 
     /** Draw debugger toolkit */
-    ctx.clearRect(0, this.canvas.h - 80, this.canvas.w, 80);
+    ctx.clearRect(0, canvas.h - 80, canvas.w, 80);
 
     ctx.fillStyle = BIOS.colorTable[0xF];
     ctx.fillText(
-      `Virtual Machine Logs, Memory usage: ${this.cpu.memIO.device.length / 1024} KB`,
+      `Virtual Machine Logs, Memory usage: ${cpu.memIO.device.length / 1024} KB`,
       0,
-      this.canvas.h - 26,
+      canvas.h - 26,
     );
 
-    const {registers} = this.cpu;
+    /* eslint-disable max-len */
     ctx.fillStyle = BIOS.colorTable[0xA];
     ctx.fillText(
       `AX: ${registers.ax.toString(16)}h,  BX: ${registers.bx.toString(16)}h,  CX: ${registers.cx.toString(16)}h,  DX: ${registers.dx.toString(16)}h,  IP: ${registers.ip.toString(16)}h,  CS: ${registers.ip.toString(16)}h`,
       0,
-      this.canvas.h - 6,
+      canvas.h - 6,
     );
+    /* eslint-enable max-len */
   }
 }
 

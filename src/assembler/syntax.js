@@ -13,11 +13,4 @@ const compile = tagFunction((code) => {
   }
 });
 
-compile`
-  testfn:
-  mov ax, ax
-  mov bx, 0b111
-  mov dx, 'asdasdasd'
-`;
-
 export default compile;
