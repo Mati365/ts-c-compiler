@@ -3,7 +3,9 @@
  *
  * @class Device
  */
-export default class Device {
+export default uuid => class UuidDevice {
+  static uuid = uuid;
+
   /**
    * Creates device.
    *
@@ -69,4 +71,4 @@ export default class Device {
         this.cpu.halt(`Unknown interrupt 0x${interrupt.toString(16)} function 0x${func.toString(16)}!`);
     };
   }
-}
+};

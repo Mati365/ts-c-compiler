@@ -48,7 +48,7 @@ export default class CPU {
       Object.assign(this.config, config);
 
     /** Devices list */
-    this.devices = [];
+    this.devices = {};
     this.interrupts = {};
     this.ports = {};
 
@@ -188,9 +188,10 @@ export default class CPU {
    * @returns CPU
    */
   attach(Device, ...args) {
-    this.devices.push(
-      new Device().attach(this, args),
-    );
+    if (R.isNil(Device.uuid))
+      throw new Error('Missing device uuid!');
+
+    this.devices[Device.uuid] = new Device().attach(this, args);
     return this;
   }
 
@@ -795,8 +796,9 @@ export default class CPU {
    * @param {Number} code Raise exception
    */
   raiseException(code) {
-    this.devices.forEach(
+    R.forEachObjIndexed(
       device => device.exception(code),
+      this.devices,
     );
   }
 

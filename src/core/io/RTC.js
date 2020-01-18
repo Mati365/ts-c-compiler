@@ -2,12 +2,13 @@ import Device from './Device';
 
 /**
  * Real-Time Clock
- * ref: http://students.mimuw.edu.pl/SO/Projekt03-04/temat3-g4/cmos.html
+ *
+ * @see {@link http://students.mimuw.edu.pl/SO/Projekt03-04/temat3-g4/cmos.html}
  *
  * @class RTC
  * @extends {Device}
  */
-export default class RTC extends Device {
+export default class RTC extends Device('rtc') {
   init() {
     const date = new Date;
 

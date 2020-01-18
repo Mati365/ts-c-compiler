@@ -19,7 +19,7 @@ import VideoMode from './VideoMode';
  * @class BIOS
  * @extends {Device}
  */
-export default class BIOS extends Device {
+export default class BIOS extends Device('bios') {
   /**
    * Initialize BIOS
    *
