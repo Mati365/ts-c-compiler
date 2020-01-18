@@ -3,6 +3,7 @@ import {
   CP437_UNICODE_FONT_MAPPING,
   X86_REALMODE_MAPPED_ADDRESSES,
   SCAN_CODES_TABLE,
+  AT2_SCAN_CODES_QWERTY,
 } from '../constants';
 
 import {getBit} from '../utils/bits';
@@ -113,6 +114,8 @@ export default class BIOS extends Device {
 
   /**
    * Init keyboard interrupts
+   *
+   * @see {@link http://stanislavs.org/helppc/int_16.html}
    */
   initKeyboard() {
     const keymap = {
@@ -121,51 +124,95 @@ export default class BIOS extends Device {
       callback: null,
     };
 
+    const clearKeyBuffer = (clearCallback = true) => {
+      Object.assign(
+        keymap,
+        {
+          shift: false,
+          key: null,
+          callback: clearCallback ? null : keymap.callback,
+        },
+      );
+    };
+
     document.addEventListener('keydown', (e) => {
-      Object.assign(keymap, {
-        shift: e.shiftKey,
-        key: e.keyCode,
-      });
+      Object.assign(
+        keymap,
+        {
+          shift: e.shiftKey,
+          key: e.keyCode,
+        },
+      );
 
       keymap.callback && keymap.callback(e);
     });
 
-    document.addEventListener('keyup', () => {
-      Object.assign(keymap, {
-        shift: false,
-        key: null,
-      });
-    });
+    document.addEventListener('keyup', () => clearKeyBuffer(false));
 
-    /** Pause execution until press a button */
+    /**
+     * Pause execution until press a button
+     * but if user already is pressing button - do not pause
+     */
     const keyListener = (callback) => {
-      this.cpu.pause = true;
-      keymap.callback = (e) => {
-        this.cpu.pause = false;
-        e.preventDefault();
-        callback(e);
-      };
+      if (keymap.key === null) {
+        this.cpu.pause = true;
+        keymap.callback = (e) => {
+          e.preventDefault();
+
+          callback(keymap.key);
+          clearKeyBuffer();
+
+          this.cpu.pause = false;
+        };
+      } else {
+        callback(keymap.key);
+        clearKeyBuffer();
+      }
+    };
+
+    /**
+     * Reads keycode and assigns variable to AX
+     *
+     * @todo
+     *  Add better support for extened keyboards (see broken arrows)
+     */
+    const readKeyState = (keymapTable, code = keymap.key) => {
+      this.regs.ax = 0x0;
+
+      if (!code)
+        return false;
+
+      const mapping = (keymapTable || SCAN_CODES_TABLE)[code];
+      if (!mapping)
+        return false;
+
+      this.regs.ax = mapping[Math.min(mapping.length - 1, keymap.shift ? 1 : 0)];
+      return true;
     };
 
     this.intFunc(0x16, 'ah', {
+      /* Wait for keystroke and read */
       0x0: () => {
-        keyListener((e) => {
-          this.regs.al = e.keyCode;
-        });
+        // it was used from 0x10, is it ok? maybe use separate array for extended keys?
+        keyListener(
+          code => readKeyState(null, code),
+        );
       },
 
+      /* Get Keyboard Status */
+      0x1: () => {
+        const {regs} = this;
+        const status = readKeyState();
+
+        regs.status.zf = (+status) ^ 1; // 0 if character is available
+      },
+
+      /* Wait for keystroke and read, AT, PS/2 */
       0x10: () => {
-        keyListener(() => {
-          const code = keymap.key;
-          if (!code)
-            return;
-
-          const mapping = BIOS.keycodes[code];
-          if (!mapping)
-            return;
-
-          this.regs.ax = mapping[keymap.shift ? 1 : 0];
-        });
+        keyListener(
+          // todo: add release keycodes also
+          code => readKeyState(AT2_SCAN_CODES_QWERTY.PRESSED, code),
+        );
       },
     });
   }
@@ -557,9 +604,6 @@ BIOS.colorTable = BIOS_COLOR_TABLE;
 
 /** CP437 to Unicode conversion table */
 BIOS.fontMapping = CP437_UNICODE_FONT_MAPPING;
-
-/** ref: http://stanislavs.org/helppc/scan_codes.html */
-BIOS.keycodes = SCAN_CODES_TABLE;
 
 BIOS.VideoMode = {
   0x0: new VideoMode(0x0, 40, 25, 0x8),

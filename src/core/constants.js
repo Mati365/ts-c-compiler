@@ -136,11 +136,11 @@ export const SCAN_CODES_TABLE = {
 
   /** . */ 190: [0x342E, 0x343E, null, null],
 
-  /** LEFT ARROW  */ 37: [0x4BE0, 0x4B34, 0x7300, 0x9B00],
-  /** RIGHT ARROW */ 39: [0x4DE0, 0x4D36, 0x7400, 0x9D00],
+  /** LEFT ARROW  */ 37: [0x4B00, 0x4B34, 0x7300, 0x9B00],
+  /** RIGHT ARROW */ 39: [0x4D00, 0x4D36, 0x7400, 0x9D00],
 
-  /** UP ARROW    */ 38: [0x48E0, 0x4838, 0x8D00, 0x9800],
-  /** DOWN ARROW  */ 40: [0x50E0, 0x5032, 0x9100, 0xA000],
+  /** UP ARROW    */ 38: [0x4800, 0x4838, 0x8D00, 0x9800],
+  /** DOWN ARROW  */ 40: [0x5000, 0x5032, 0x9100, 0xA000],
 
   /** ENTER */ 13: [0x1C0D, 0x01C0, 0x1C0A, 0xA600],
   /** ESC   */ 27: [0x011B, 0x011B, 0x011B, 0x0100],
@@ -160,6 +160,23 @@ export const SCAN_CODES_TABLE = {
   /* F10 */ 121: [0x4400, 0x5D00, 0x6700, 0x7100],
   /* F11 */ 122: [0x8500, 0x8700, 0x8900, 0x8B00],
   /* F12 */ 123: [0x8600, 0x8800, 0x8A00, 0x8C00],
+};
+
+/**
+ * AT/PS2 SCAN_CODES
+ *
+ * @see {@link https://wiki.osdev.org/PS/2_Keyboard#Scan_Code_Set_2}
+ */
+export const AT2_SCAN_CODES_QWERTY = {
+  PRESSED: {
+    ...SCAN_CODES_TABLE, // todo: add more extensions
+
+    /** LEFT ARROW  */ 37: [0x4BE0],
+    /** RIGHT ARROW */ 39: [0x4DE0],
+
+    /** UP ARROW    */ 38: [0x48E0],
+    /** DOWN ARROW  */ 40: [0x50E0],
+  },
 };
 
 /** Mapped memory regions offsets */

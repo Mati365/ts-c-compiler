@@ -1,7 +1,7 @@
 org 0x7c00
 
-mov byte al, [token]
-mov byte [tmp], al
+mov cl, 1
+cmp cl, 9
 xchg bx, bx
 hlt
 
