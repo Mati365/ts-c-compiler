@@ -90,8 +90,13 @@ export const BIOS_COLOR_TABLE = {
   0xF: '#FFFFFF',
 };
 
-/** ref: http://stanislavs.org/helppc/scan_codes.html */
+/**
+ * @see {@link http://stanislavs.org/helppc/scan_codes.html}
+ * @see {@link https://github.com/stu/xi8088_bios/blob/master/scancode.inc}
+ * @see {@link https://www.win.tue.nl/~aeb/linux/kbd/scancodes-10.html}
+ */
 export const SCAN_CODES_TABLE = {
+  /* Key  Ascii Normal  Shift   Ctrl    Alt */
   /** A */ 65: [0x1E61, 0x1E41, 0x1E01, 0x1E00],
   /** B */ 66: [0x3062, 0x3042, 0x3002, 0x3000],
   /** C */ 67: [0x2E63, 0x2E43, 0x2E03, 0x2E00],
@@ -131,11 +136,11 @@ export const SCAN_CODES_TABLE = {
 
   /** . */ 190: [0x342E, 0x343E, null, null],
 
-  /** LEFT ARROW  */ 37: [0x4B00, 0x4B34, 0x7300, 0x9B00],
-  /** RIGHT ARROW */ 39: [0x4D00, 0x4D36, 0x7400, 0x9D00],
+  /** LEFT ARROW  */ 37: [0x4BE0, 0x4B34, 0x7300, 0x9B00],
+  /** RIGHT ARROW */ 39: [0x4DE0, 0x4D36, 0x7400, 0x9D00],
 
-  /** UP ARROW    */ 38: [0x4800, 0x4838, 0x8D00, 0x9800],
-  /** DOWN ARROW  */ 40: [0x5000, 0x5032, 0x9100, 0xA000],
+  /** UP ARROW    */ 38: [0x48E0, 0x4838, 0x8D00, 0x9800],
+  /** DOWN ARROW  */ 40: [0x50E0, 0x5032, 0x9100, 0xA000],
 
   /** ENTER */ 13: [0x1C0D, 0x01C0, 0x1C0A, 0xA600],
   /** ESC   */ 27: [0x011B, 0x011B, 0x011B, 0x0100],

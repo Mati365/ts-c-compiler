@@ -3,8 +3,11 @@ import ReactDOM from 'react-dom';
 import Radium from 'radium';
 
 import Output from './output';
-import CPU from '../core/x86';
-import * as IO from '../core/io';
+import CPU from '../core/X86';
+import {
+  BIOS,
+  RTC,
+} from '../core/io';
 
 import '../assembler';
 import compiled from '../../kernels/build/mikeos/disk_images/mikeos.flp';
@@ -24,8 +27,8 @@ class Terminal extends React.Component {
    */
   initializeCPU = (canvas) => {
     this.cpu
-      .attach(IO.BIOS, canvas)
-      .attach(IO.RTC)
+      .attach(BIOS, canvas)
+      .attach(RTC)
       .boot(Buffer.from(compiled));
   }
 

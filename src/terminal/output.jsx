@@ -5,11 +5,11 @@ import Radium from 'radium';
 export default
 @Radium
 class Output extends React.Component {
+  canvasRef = React.createRef();
+
   static propTypes = {
     onContextInit: PropTypes.func.isRequired,
   };
-
-  canvasRef = React.createRef();
 
   componentDidMount() {
     const {canvasRef, props} = this;

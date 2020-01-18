@@ -1,321 +1,24 @@
-import * as R from 'ramda';
-
 import {
   BIOS_COLOR_TABLE,
   CP437_UNICODE_FONT_MAPPING,
   X86_REALMODE_MAPPED_ADDRESSES,
   SCAN_CODES_TABLE,
-} from './constants';
+} from '../constants';
 
-import {getBit} from './utils/bits';
+import {getBit} from '../utils/bits';
 
-/**
- * Basic CPU device
- *
- * @class Device
- */
-class Device {
-  /**
-   * Creates device.
-   *
-   * @param {Number} low    Low mem address
-   * @param {Number} high   High mem address
-   */
-  constructor(low, high) {
-    if (low && high)
-      this.mem = {low, high};
+import Device from './Device';
+import Cursor from './Cursor';
+import RTC from './RTC';
+import VideoMode from './VideoMode';
 
-    /** That maps must be initialised in attach method */
-    this.interrupts = {};
-    this.ports = {};
-  }
-
-  /** Return CPU registers */
-  get regs() { return this.cpu.registers; }
-
-  /**
-   * Loads device without CPU
-   */
-  init() {}
-
-  /**
-   * Handle CPU exception
-   *
-   * @param {Number} code Exception code
-   */
-  exception() {}
-
-  /**
-   * Attach device to CPU
-   *
-   * @param {CPU}   cpu   CPU object
-   * @param {Array} args  Initializer arguments
-   */
-  attach(cpu, ...args) {
-    this.cpu = cpu;
-    this.init.apply(this, ...args);
-
-    Object.assign(this.cpu.interrupts, this.interrupts);
-    Object.assign(this.cpu.ports, this.ports);
-
-    return this;
-  }
-
-  /**
-   * Init interrupt function
-   *
-   * @param {Number}  interrupt Interrupt number
-   * @param {String}  reg       Register name
-   * @param {Assoc}   list      Functions callbacks
-   * @returns
-   */
-  intFunc(interrupt, reg, list) {
-    this.interrupts[interrupt] = () => {
-      const func = this.regs[reg],
-        callback = list[func];
-
-      if (callback)
-        callback(this.regs);
-      else
-        this.cpu.halt(`Unknown interrupt 0x${interrupt.toString(16)} function 0x${func.toString(16)}!`);
-    };
-  }
-}
-
-/** All video modes supported by BIOS */
-export class VideoMode {
-  constructor(code, w, h, pages = 0x1, offset = X86_REALMODE_MAPPED_ADDRESSES.text) {
-    this.code = code;
-    this.w = w;
-    this.h = h;
-    this.offset = offset;
-    this.pages = pages;
-  }
-
-  get pageSize() {
-    return this.w * this.h * 0x2;
-  }
-
-  /**
-   * Memory can contain multiple pages
-   *
-   * @param {number} [page=0x0]
-   * @returns
-   * @memberof VideoMode
-   */
-  getPageOffset(page = 0x0) {
-    return this.offset + page * this.pageSize;
-  }
-
-  /**
-   * Write to VRAM
-   *
-   * @param {Memory} mem    Memory driver
-   * @param {Number} char   Character code
-   * @param {Number} color  Color BIOS number
-   * @param {Number} x      X screen coordinate
-   * @param {Number} y      Y screen coordinate
-   * @param {Number} page   Page index
-   */
-  write(mem, char, color, x, y, page = 0x0) {
-    /** Multiply by each character byte size */
-    x *= 0x2;
-    y *= 0x2;
-
-    /** Write direct to memory */
-    const address = this.offset + this.pageSize * page + y * this.w + x;
-    if (color === false)
-      mem.write[0x1](char & 0xFF, address);
-    else
-      mem.write[0x2]((char & 0xFF) | ((color & 0xFF) << 8), address);
-  }
-
-  /**
-   * Read VRAM at address
-   *
-   * @param {Memory} mem    Memory driver
-   * @param {Number} x      X screen coordinate
-   * @param {Number} y      Y screen coordinate
-   * @param {Number} page   Page index
-   * @returns
-   * @memberof VideoMode
-   */
-  read(mem, x, y, page = 0x0) {
-    const address = this.offset + this.pageSize * page + y * this.w + x;
-
-    return mem.read[0x2](address);
-  }
-
-  /**
-   * Scrolls screen up
-   *
-   * @param {Memory}  mem   Memory driver
-   * @param {Number}  lines Lines amount
-   * @param {Number}  page  Page index
-   */
-  scrollUp(mem, lines = 0x1, page = 0x0) {
-    const {pageSize} = this;
-    const lineSize = this.w * 0x2,
-      startOffset = this.offset + pageSize * page;
-
-    /** Copy previous lines memory */
-    mem.device.copy(
-      mem.device,
-      startOffset,
-      startOffset + lineSize,
-      startOffset + pageSize - lineSize * lines,
-    );
-
-    /** Fill with zeros new line */
-    mem.device.fill(
-      mem.device,
-      startOffset + pageSize - lineSize * lines,
-      startOffset + lineSize,
-    );
-  }
-
-  /**
-   * Iterate every pixel
-   *
-   * @param {Function} fn
-   * @memberof VideoMode
-   */
-  iterate(read, cpu, page, fn) {
-    const {w, h} = this;
-    let offset = this.getPageOffset(page);
-
-    for (let y = 0; y < h; ++y) {
-      for (let x = 0; x < w; ++x) {
-        /** Read from memory */
-        const num = read && cpu.memIO.read[0x2](offset);
-
-        fn(offset, x, y, num);
-        offset += 0x2;
-      }
-    }
-  }
-
-  clear(mem) {
-    mem.device.fill(
-      0, // value
-      this.offset, // offset
-      this.offset + this.pages * this.pageSize,
-    );
-  }
-}
-
-/**
- * Real-Time Clock
- * ref: http://students.mimuw.edu.pl/SO/Projekt03-04/temat3-g4/cmos.html
- *
- * @class RTC
- * @extends {Device}
- */
-export class RTC extends Device {
-  init() {
-    const date = new Date;
-
-    this.index = 0;
-    this.offsets = {
-      0x0: date.getSeconds,
-      0x2: date.getMinutes,
-      0x4: date.getHours,
-      0x6: date.getDay,
-      0x7: date.getDate,
-      0x8: date.getMonth,
-      0x9: date.getFullYear,
-    };
-
-    this.ports = {
-      0x70: {
-        set: (index) => {
-          this.index = index;
-        },
-      },
-      0x71: {
-        get: () => RTC.toBCD(this.offsets[this.index].call(date)),
-      },
-    };
-  }
-
-  /**
-   * Slow method to convert each digit to binary
-   *
-   * @static
-   * @param {Number}  num Number
-   * @returns BCD encoded number
-   */
-  static toBCD(num) {
-    const str = num.toString();
-    let out = 0;
-
-    for (let i = 0; i < str.length; ++i)
-      out = (out << 4) | parseInt(str[i], 10);
-    return out;
-  }
-}
-export class Cursor {
-  static Type = {
-    FULL_BLOCK: 219,
-    UNDERLINE: 95,
-  };
-
-  constructor(
-    {
-      x = 0,
-      y = 0,
-      w = 8,
-      h = 16,
-      info = {
-        character: Cursor.Type.UNDERLINE,
-        visible: true,
-        blink: true,
-      },
-    } = {},
-  ) {
-    this.x = x;
-    this.y = y;
-    this.w = w;
-    this.h = h;
-    this.info = info;
-    this.saved = [];
-  }
-
-  clone() {
-    const {x, y, w, h, info} = this;
-
-    return new Cursor(
-      {
-        x,
-        y,
-        w,
-        h,
-        info: R.clone(info),
-      },
-    );
-  }
-
-  save() {
-    this.saved.push(
-      this.clone(),
-    );
-  }
-
-  restore() {
-    const {saved} = this;
-    if (!saved.length)
-      return;
-
-    Object.assign(this, saved.pop());
-  }
-}
 /**
  * Basic Input Output System
  *
  * @class BIOS
  * @extends {Device}
  */
-export class BIOS extends Device {
+export default class BIOS extends Device {
   /**
    * Initialize BIOS
    *
@@ -658,9 +361,9 @@ export class BIOS extends Device {
 
       /** Read character at cursor */
       0x8: () => {
-        const {cpu, cursor, screen: {page, mode}} = this;
+        const {cpu, cursor, screen: {mode}} = this;
 
-        this.regs.ax = mode.read(cpu.memIO, cursor.x, cursor.y, page);
+        this.regs.ax = mode.read(cpu.memIO, cursor.x, cursor.y, this.regs.bh);
       },
 
       /** Write character at address, do not move cursor! */
@@ -724,7 +427,7 @@ export class BIOS extends Device {
       /** Render loop */
       const vblank = setInterval(() => {
         try {
-          this.cpu.exec(1450000 / 60);
+          this.cpu.exec(1450000 / 30);
           this.redraw(this.canvas.ctx);
         } catch (e) {
           this.cpu.logger.error(e.stack);

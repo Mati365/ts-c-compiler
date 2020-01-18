@@ -3,7 +3,7 @@ import childProcess from 'child_process';
 import pasm from 'pasm';
 import {expect} from 'chai';
 
-import CPU from '../src/core/x86';
+import CPU from '../src/core/X86';
 import {BIOS} from '../src/core/io';
 
 const compile = code => pasm.parse(`

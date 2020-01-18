@@ -6,30 +6,9 @@ import {
 } from './constants';
 
 import {setBit} from './utils/bits';
+import Logger from './Logger';
 
 const opcodesTable = {};
-
-/**
- * Simple logger
- * @class Logger
- */
-export class Logger {
-  constructor() {
-    (['error', 'info', 'warn', 'table', 'log']).forEach((scope) => {
-      this[scope] = this.log.bind(this, scope);
-    });
-  }
-
-  /**
-   * Log message
-   *
-   * @param {String}  type  Message type
-   * @param {String}  msg   Message content
-   */
-  log(type, msg) {
-    console[type](msg);
-  }
-}
 
 /**
  * Main code exec
@@ -827,7 +806,9 @@ export default class CPU {
       /** IN AL, 8bits  */ 0xE4: (bits = 0x1, port) => {
         if (!port)
           port = this.fetchOpcode(0x1);
-        this.registers[this.regMap[bits][0x0]] = this.ports[port].get(bits);
+
+        const portHandler = this.ports[port];
+        this.registers[this.regMap[bits][0x0]] = portHandler ? portHandler.get(bits) : 0;
       },
       /** IN AX, 16bits */ 0xE5: () => this.opcodes[0xE4](0x2),
 
