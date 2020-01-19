@@ -319,7 +319,7 @@ export default class BIOS extends Device('bios') {
    * Load screen interrupts, buffers
    */
   initScreen() {
-    const writeCharacter = (character, attribute) => {
+    const writeCharacter = (character, attribute, color = true) => {
       const {cpu, regs, cursor} = this;
       const {page, mode} = this.screen;
 
@@ -350,7 +350,7 @@ export default class BIOS extends Device('bios') {
           mode.write(
             cpu.memIO,
             character,
-            typeof attribute === 'undefined' ? regs.bl : attribute,
+            color && (typeof attribute === 'undefined' ? regs.bl : attribute),
             cursor.x,
             cursor.y,
             page,
@@ -363,6 +363,15 @@ export default class BIOS extends Device('bios') {
             cursor.y++;
           }
       }
+    };
+
+    const writeCharacters = (attribute, color = true, moveCursor = false) => {
+      const {cursor} = this;
+
+      !moveCursor && cursor.save();
+      for (let i = 0; i < this.regs.cx; ++i)
+        writeCharacter(this.regs.al, attribute, color);
+      !moveCursor && cursor.restore();
     };
 
     /** Graphics interrupts */
@@ -451,12 +460,11 @@ export default class BIOS extends Device('bios') {
 
       /** Write character at address, do not move cursor! */
       0x9: () => {
-        const {cursor} = this;
+        writeCharacters();
+      },
 
-        cursor.save();
-        for (let i = 0; i < this.regs.cx; ++i)
-          writeCharacter(this.regs.al);
-        cursor.restore();
+      0xA: () => {
+        writeCharacters(null, false);
       },
 
       0xE: () => writeCharacter(this.regs.al, false),
