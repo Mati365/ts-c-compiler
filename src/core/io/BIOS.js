@@ -110,6 +110,42 @@ export default class BIOS extends Device('bios') {
     this.initScreen();
     this.initDrive();
     this.initKeyboard();
+    this.initServices();
+  }
+
+  /**
+   * Init bios services
+   *
+   * @see {@link http://stanislavs.org/helppc/int_15.html}
+   *
+   * @memberof BIOS
+   */
+  initServices() {
+    this.intFunc(0x15, 'ah', {
+      /**
+       * Wait in microseconds
+       * @see {@link http://stanislavs.org/helppc/int_15-86.html}
+       */
+      0x86: () => {
+        const {cpu} = this;
+        const {cx, dx, status} = this.regs;
+
+        const miliseconds = ((cx << 0xF) | dx) / 1000 * 2;
+        if (miliseconds < 2)
+          return;
+
+        status.cf = 1;
+        cpu.pause = true;
+
+        setTimeout(
+          () => {
+            status.cf = 0;
+            cpu.pause = false;
+          },
+          miliseconds,
+        );
+      },
+    });
   }
 
   /**

@@ -1,3 +1,3 @@
 #!/bin/sh
 mkdir -p build/
-fasm ./asm/bootsec2.asm ./build/bootsec.bin
+nasm ./asm/bootsec.asm -o ./build/bootsec.bin

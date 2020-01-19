@@ -569,15 +569,25 @@ export default class CPU {
         );
       },
       /** RCL r/m16, cl */ 0xD3: () => this.opcodes[0xD2](0x2),
+
       /** ROL/SHR/SHL   */ 0xD0: (bits = 0x1) => {
         switchOpcode(bits, {
-          /** ROL */ 0x0: (val) => { this.rotate(val, -0x1, bits); },
-          /** ROR */ 0x1: (val) => { this.rotate(val, 0x1, bits); },
-          /** SHL */ 0x4: (val) => { this.shl(val, 0x1, bits); },
-          /** SHR */ 0x5: (val) => { this.shr(val, 0x1, bits); },
+          /** ROL */ 0x0: val => this.rotate(val, -0x1, bits),
+          /** ROR */ 0x1: val => this.rotate(val, 0x1, bits),
+          /** SHL */ 0x4: val => this.shl(val, 0x1, bits),
+          /** SHR */ 0x5: val => this.shr(val, 0x1, bits),
         });
       },
-      /** ROL/SHR/SHL   */ 0xC1: () => {
+
+      /** TODO: check if works */
+      /** ROL/SHR/SHL r/m8  */ 0xC0: () => {
+        switchOpcode(0x1, {
+          /** SHL IMM8 */ 0x4: val => this.shl(val, this.fetchOpcode(), 0x1),
+          /** SHR IMM8 */ 0x5: val => this.shr(val, this.fetchOpcode(), 0x1),
+        });
+      },
+
+      /** ROL/SHR/SHL r/m16 */ 0xC1: () => {
         switchOpcode(0x2, {
           /** SHL IMM8 */ 0x4: val => this.shl(val, this.fetchOpcode(), 0x2),
           /** SHR IMM8 */ 0x5: val => this.shr(val, this.fetchOpcode(), 0x2),
@@ -599,16 +609,17 @@ export default class CPU {
 
       /** XCHG bx, bx */ 0x87: () => {
         const arg = this.fetchOpcode(0x1, false, true);
+
         switch (arg) {
           case 0xDB:
           case 0xD2:
             this.registers.ip++;
+
             this.raiseException(CPU.Exception.MEM_DUMP);
+            this.dumpRegisters();
 
             if (arg === 0xDB)
-              this.halt('Debugger hit!', true);
-            else
-              this.dumpRegisters();
+              debugger; // eslint-disable-line no-debugger
             break;
 
           default:
@@ -642,7 +653,7 @@ export default class CPU {
           _r16 = this.regMap[0x2][_opcode];
 
         /** XCHG AX, r16 */ this.opcodes[0x90 + _opcode] = () => {
-          const dest = this.regMap[0x2][this.fetchOpcode(0x1)],
+          const dest = this.regMap[0x2][_opcode],
             temp = this.registers[dest];
 
           this.registers[dest] = this.registers.ax;
@@ -751,22 +762,34 @@ export default class CPU {
    * @memberOf CPU
    */
   shr(num, times, bits = 0x1) {
+    const {status} = this.registers;
     const mask = CPU.bitMask[bits];
+
     for (; times > 0; --times) {
-      this.registers.status.cf = num & 0x1;
+      status.cf = num & 0x1;
       num >>= 0x1;
       num &= mask;
     }
+
+    status.zf = num === 0;
+    status.of = CPU.msbit(num) ^ status.cf;
+
     return num;
   }
 
   shl(num, times, bits = 0x1) {
+    const {status} = this.registers;
     const mask = CPU.bitMask[bits];
+
     for (; times > 0; --times) {
-      this.registers.status.cf = CPU.msbit(num, bits);
+      status.cf = CPU.msbit(num, bits);
       num <<= 0x1;
       num &= mask;
     }
+
+    status.zf = num === 0;
+    status.of = CPU.msbit(num) ^ status.cf;
+
     return num;
   }
 
@@ -779,14 +802,20 @@ export default class CPU {
    * @returns Number
    */
   rotate(num, times, bits = 0x1) {
+    const {status} = this.registers;
     const mask = CPU.bitMask[bits];
+
     if (times > 0) {
       num = (num >> (mask - times)) | (num << times);
-      this.registers.status.cf = num & 0x1;
+      status.cf = num & 0x1;
     } else {
       num = (num << (mask + times)) | (num >> -times);
-      this.registers.status.cf = CPU.msbit(num, bits);
+      status.cf = CPU.msbit(num, bits);
     }
+
+    status.zf = num === 0;
+    status.of = 0x0;
+
     return num;
   }
 
@@ -953,7 +982,15 @@ export default class CPU {
     const multiplier = (bits = 0x1, mul) => {
       this.parseRmByte(
         (reg, _, byte) => {
-          if (byte.reg === 0x2) {
+          if (byte.reg === 0 || byte.reg === 1) {
+            /** TEST r imm8 */
+            this.alu(
+              this.operators[0b100],
+              this.registers[reg],
+              this.fetchOpcode(bits),
+              bits,
+            );
+          } else if (byte.reg === 0x2) {
             /** NOT */
             this.registers[reg] = ~this.registers[reg] & CPU.bitMask[bits];
           } else if (byte.reg === 0x3) {
@@ -965,7 +1002,15 @@ export default class CPU {
         },
         (address, _, byte) => {
           const val = this.memIO.read[bits](address);
-          if (byte.reg === 0x2) {
+          if (byte.reg === 0 || byte.reg === 1) {
+            /** TEST mem imm8 */
+            this.alu(
+              this.operators[0b100],
+              val,
+              this.fetchOpcode(bits),
+              bits,
+            );
+          } else if (byte.reg === 0x2) {
             /** NOT */
             this.memIO.write[bits](~val & CPU.bitMask[bits], address);
           } else if (byte.reg === 0x3) {
@@ -1031,7 +1076,7 @@ export default class CPU {
       /** OPERATOR r/m16, imm8 */ 0x83: () => this.opcodes[0x80](0x2, 0x1),
       /** OPERATOR r/m16, imm16 */ 0x81: () => this.opcodes[0x80](0x2),
 
-      /** MULTIPLIER al, r/m8  */ 0xF6: () => multiplier(0x1, (val, byte) => {
+      /** MULTIPLIER, TEST, NEG, NOT, IMUL al, r/m8  */ 0xF6: () => multiplier(0x1, (val, byte) => {
         const {registers} = this;
         const {status} = registers;
 
@@ -1278,6 +1323,7 @@ export default class CPU {
       mod: byte >> 0x6,
       reg: (byte >> 0x3) & 0x7,
       rm: byte & 0x7,
+      bitset: byte,
     };
   }
 
@@ -1434,7 +1480,7 @@ export default class CPU {
       }
 
       /** Next instruction */
-      this.logger.info(`Next instruction ${this.fetchOpcode(0x2).toString(16)}`);
+      this.logger.info(`Halt! Next instruction ${this.fetchOpcode(0x2).toString(16)}`);
     }
   }
 
@@ -1516,10 +1562,15 @@ export default class CPU {
       this.logger.info('Booting from MBR');
 
       /** CS:IP */
-      Object.assign(this.registers, {
-        cs: 0x0,
-        ip: 0x7c00,
-      });
+      Object.assign(
+        this.registers,
+        {
+          cs: 0x0,
+          ss: 0x0,
+          ip: 0x7c00,
+          sp: 0xffd6, // same as bochs
+        },
+      );
       this.loadBuffer(
         code,
         this.getMemAddress('cs', 'ip'),
