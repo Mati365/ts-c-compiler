@@ -433,8 +433,8 @@ vgaromimage: file=$BXSHARE/VGABIOS-lgpl-latest
 # write protect switch. By default it is turned off.
 #=======================================================================
 #floppya: 1_44=/dev/fd0, status=inserted
-#floppya: 1_44=build/mikeos/disk_images/mikeos.flp, status=inserted
-floppya: 1_44=build/bootsec.bin, status=inserted
+floppya: 1_44=build/mikeos/disk_images/mikeos.flp, status=inserted
+#floppya: 1_44=build/bootsec.bin, status=inserted
 
 #floppya: 1_44=/dev/fd0H1440, status=inserted
 #floppya: 1_2=../1_2, status=inserted

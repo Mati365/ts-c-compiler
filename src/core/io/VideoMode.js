@@ -76,16 +76,13 @@ export default class VideoMode {
     mem.device.copy(
       mem.device,
       startOffset,
-      startOffset + lineSize,
-      startOffset + pageSize - lineSize * lines,
+      startOffset + lineSize * lines,
+      this.offset + pageSize * (page + 1),
     );
 
-    /** Fill with zeros new line */
-    mem.device.fill(
-      mem.device,
-      startOffset + pageSize - lineSize * lines,
-      startOffset + lineSize,
-    );
+    /** Fill with zeros new line, preserve attributes! */
+    for (let i = 0; i < this.w; ++i)
+      this.write(mem, 0, false, i, this.h - 1, page);
   }
 
   /**
