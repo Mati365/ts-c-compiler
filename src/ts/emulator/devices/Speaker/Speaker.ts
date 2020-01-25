@@ -1,4 +1,18 @@
-import Device from './Device';
+import {uuidX86Device} from '../../types/X86AbstractDevice';
+import {X86CPU} from '../../X86CPU';
+
+import {Timer2} from './CountdownTimer';
+
+type SpeakerAudioContext = {
+  ctx: AudioContext,
+  oscillator: OscillatorNode,
+  gainNode: GainNode,
+};
+
+type SpeakerFlags = {
+  enabledByte?: boolean,
+  gate2Enabled?: boolean,
+};
 
 /*
 Octave 0    1    2    3    4    5    6    7
@@ -16,54 +30,6 @@ Octave 0    1    2    3    4    5    6    7
    A#    29   58  116  233  466  932 1865 3729
    B     31   62  123  245  494  988 1975 3951
 */
-
-/**
- * @see {@link https://web.archive.org/web/20140307023908/http://fly.srk.fer.hr/GDM/articles/sndmus/speaker1.html}
- *
- * @todo
- *  Move to separate device!
- *  Timer 0 should generate 8h interrupt!
- *  Timer 1 refreshes RAM
- *  Timer 2 sound timer
- *
- * @class Timer
- */
-class CountdownTimer {
-  static SYSTEM_OSCILLATOR = 1193180;
-
-  constructor(countdown, value = countdown) {
-    this.countdown = countdown;
-    this.value = value;
-    this.state = {
-      // when send to 43h magic value it should be 2 and wait for two bytes of data
-      waitForValue: 0,
-    };
-  }
-
-  tick() {
-    this.value--;
-    if (this.value < 0)
-      this.value = this.countdown;
-  }
-
-  getFrequency() {
-    return CountdownTimer.SYSTEM_OSCILLATOR / this.countdown;
-  }
-}
-
-/**
- * Audio speaker related timer
- *
- * @class Timer2
- * @extends {CountdownTimer}
- */
-class Timer2 extends CountdownTimer {
-  // todo: maybe it should be not magic?
-  static RECEIVE_VALUE_BYTE = 0xB6;
-
-  static FREQ_COUNTDOWN_BYTE_SIZE = 2;
-}
-
 /**
  * Real-Time Clock
  *
@@ -73,23 +39,28 @@ class Timer2 extends CountdownTimer {
  * @class Speaker
  * @extends {Device}
  */
-export default class Speaker extends Device('speaker') {
+export class Speaker extends uuidX86Device<X86CPU>('speaker') {
+  private volume: number = null;
+
+  private soundTimer = new Timer2;
+
+  private audio: SpeakerAudioContext = {
+    ctx: null,
+    oscillator: null,
+    gainNode: null,
+  };
+
+  private flags: SpeakerFlags = {
+    enabledByte: false,
+    gate2Enabled: false,
+  };
+
   constructor({volume = 0.1} = {}) {
     super();
     this.volume = volume;
   }
 
   init() {
-    this.audio = {
-      ctx: null,
-      oscillator: null,
-      gainNode: null,
-    };
-
-    this.enabled = false;
-    this.controlByte = 0;
-    this.soundTimer = new Timer2;
-
     this.setFlagsBitset(0x0);
 
     this.ports = {
@@ -125,7 +96,7 @@ export default class Speaker extends Device('speaker') {
 
       /* set timer flags */
       0x61: {
-        get: ::this.getFlagsBitset,
+        get: this.getFlagsBitset.bind(this),
         set: (bitset) => {
           const {flags: prevFlags} = this;
 
@@ -150,9 +121,9 @@ export default class Speaker extends Device('speaker') {
    *
    * @memberof Speaker
    */
-  initAudio() {
+  initAudio(): void {
     try {
-      const ctx = new (window.AudioContext || window.webkitAudioContext)();
+      const ctx = new AudioContext();
       const oscillator = ctx.createOscillator();
       const gainNode = ctx.createGain();
 
@@ -185,11 +156,13 @@ export default class Speaker extends Device('speaker') {
    *
    * @memberof Speaker
    */
-  disableAudio(withBits = false) {
+  disableAudio(withBits: boolean = false): void {
     const {ctx, oscillator} = this.audio;
 
+    /* eslint-disable no-unused-expressions */
     oscillator?.stop();
     ctx?.close();
+    /* eslint-enable no-unused-expressions */
 
     if (withBits)
       this.setFlagsBitset(0x0);
@@ -201,7 +174,7 @@ export default class Speaker extends Device('speaker') {
    * @returns {Number}
    * @memberof Speaker
    */
-  getFlagsBitset() {
+  getFlagsBitset(): number {
     const {flags} = this;
 
     return (
@@ -216,11 +189,12 @@ export default class Speaker extends Device('speaker') {
    * @param {Number} bitset
    * @memberof Speaker
    */
-  setFlagsBitset(bitset) {
+  setFlagsBitset(bitset: number): SpeakerFlags {
     this.flags = {
       /* 0nth bit */ enabledByte: !!(bitset & 0x1),
       /* 1nth bit */ gate2Enabled: !!(bitset & 0x2),
     };
+
     return this.flags;
   }
 
@@ -230,7 +204,7 @@ export default class Speaker extends Device('speaker') {
    * @returns
    * @memberof Speaker
    */
-  isEnabled() {
+  isEnabled(): boolean {
     return Speaker.isEnabledByFlags(this.flags);
   }
 
@@ -242,7 +216,7 @@ export default class Speaker extends Device('speaker') {
    * @returns
    * @memberof Speaker
    */
-  static isEnabledByFlags(flags) {
+  static isEnabledByFlags(flags: SpeakerFlags): boolean {
     return flags.enabledByte && flags.gate2Enabled;
   }
 }

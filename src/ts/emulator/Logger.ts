@@ -6,7 +6,7 @@ type AbstractLogger = {
   error?: LogHandler;
   info?: LogHandler;
   table?: LogHandler;
-}
+};
 
 /**
  * Simple logger that uses javascript output console
@@ -31,9 +31,9 @@ export class Logger implements AbstractLogger {
    * @param {String}  type  Message type
    * @param {String}  msg   Message content
    */
-  /* eslint-disable class-methods-use-this */
+  /* eslint-disable no-console, class-methods-use-this */
   log(type: string, msg: any): void {
     console[type](msg);
   }
-  /* eslint-enable class-methods-use-this */
+  /* eslint-enable no-console, class-methods-use-this */
 }

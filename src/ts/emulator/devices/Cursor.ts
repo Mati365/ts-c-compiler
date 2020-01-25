@@ -4,7 +4,7 @@ import {Rectangle, RectangleDimensions} from '../../shared/types';
 export enum CursorCharacter {
   FULL_BLOCK = 219,
   UNDERLINE = 95,
-};
+}
 
 type CursorInfo = {
   character: CursorCharacter,
@@ -16,7 +16,14 @@ type CursorInitializer = RectangleDimensions & {
   info?: CursorInfo,
 };
 
-export default class Cursor extends Rectangle {
+/**
+ * Contains info about text-mode only cursor
+ *
+ * @export
+ * @class Cursor
+ * @extends {Rectangle}
+ */
+export class Cursor extends Rectangle {
   private info: CursorInfo;
 
   private saved: Cursor[] = [];
@@ -52,12 +59,24 @@ export default class Cursor extends Rectangle {
     );
   }
 
+  /**
+   * Save cursor on cursors stack
+   *
+   * @returns {void}
+   * @memberof Cursor
+   */
   save(): void {
     this.saved.push(
       this.clone(),
     );
   }
 
+  /**
+   * Pops function from cursors stack
+   *
+   * @returns {void}
+   * @memberof Cursor
+   */
   restore(): void {
     const {saved} = this;
     if (!saved.length)

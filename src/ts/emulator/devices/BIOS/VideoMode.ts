@@ -1,8 +1,29 @@
-import {X86_REALMODE_MAPPED_ADDRESSES} from '../constants';
+import {X86_REALMODE_MAPPED_ADDRESSES} from '../../constants/x86';
 
-/** All video modes supported by BIOS */
-export default class VideoMode {
-  constructor(code, w, h, pages = 0x1, offset = X86_REALMODE_MAPPED_ADDRESSES.text) {
+/**
+ * Creates video buffer description
+ *
+ * @export
+ * @class VideoMode
+ */
+export class VideoMode {
+  private w: number;
+
+  private h: number;
+
+  public code: number;
+
+  private offset: number;
+
+  private pages: number;
+
+  constructor(
+    code: number,
+    w: number,
+    h: number,
+    pages: number = 0x1,
+    offset: number = X86_REALMODE_MAPPED_ADDRESSES.text,
+  ) {
     this.code = code;
     this.w = w;
     this.h = h;
@@ -18,10 +39,10 @@ export default class VideoMode {
    * Memory can contain multiple pages
    *
    * @param {number} [page=0x0]
-   * @returns
+   * @returns {number}
    * @memberof VideoMode
    */
-  getPageOffset(page = 0x0) {
+  getPageOffset(page = 0x0): number {
     return this.offset + page * this.pageSize;
   }
 
@@ -35,13 +56,13 @@ export default class VideoMode {
    * @param {Number} y      Y screen coordinate
    * @param {Number} page   Page index
    */
-  write(mem, char, color, x, y, page = 0x0) {
+  write(mem, char: number, color: number|boolean, x: number, y: number, page: number = 0x0): void {
     /** Write direct to memory */
     const address = this.offset + this.pageSize * page + (y * this.w + x) * 0x2;
     if (color === false)
       mem.write[0x1](char & 0xFF, address);
     else
-      mem.write[0x2]((char & 0xFF) | ((color & 0xFF) << 8), address);
+      mem.write[0x2]((char & 0xFF) | ((<number> color & 0xFF) << 8), address);
   }
 
   /**
@@ -54,7 +75,7 @@ export default class VideoMode {
    * @returns
    * @memberof VideoMode
    */
-  read(mem, x, y, page = 0x0) {
+  read(mem, x: number, y: number, page: number = 0x0): void {
     const address = this.offset + this.pageSize * page + (y * this.w + x) * 0x2;
 
     return mem.read[0x2](address);
@@ -67,7 +88,7 @@ export default class VideoMode {
    * @param {Number}  lines Lines amount
    * @param {Number}  page  Page index
    */
-  scrollUp(mem, lines = 0x1, page = 0x0) {
+  scrollUp(mem, lines: number = 0x1, page: number = 0x0): void {
     const {pageSize} = this;
     const lineSize = this.w * 0x2,
       startOffset = this.offset + pageSize * page;

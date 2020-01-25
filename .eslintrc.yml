@@ -25,6 +25,8 @@
       contextType: "static public field",
       displayName: "static public field",
     }]
+    lines-between-class-members: 0
+    max-classes-per-file: 0
     spaced-comment: 0
     react-hooks/rules-of-hooks: "error"
     nonblock-statement-body-position: 0
@@ -47,7 +49,6 @@
     import/no-cycle: 0
     global-require: 0
     new-parens: 0
-    no-console: 0
     no-param-reassign: 0
     no-bitwise: 0
     no-plusplus: 0

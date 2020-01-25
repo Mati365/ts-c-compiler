@@ -7,7 +7,7 @@ class X86ByteRegsStore {
   bl?: number; bh?: number;
   cl?: number; ch?: number;
   dl?: number; dh?: number;
-};
+}
 
 /**
  * Set of flags that modifies flags variable in X86RegsStore
@@ -84,7 +84,7 @@ export class X86RegsStore extends X86ByteRegsStore {
     const defineRegisterAccessors = (
       reg: X86RegName,
       high: X86RegName,
-      low: X86RegName
+      low: X86RegName,
     ) => {
       Object.defineProperty(this, low, {
         get: () => this[<string> reg] & 0xFF,
@@ -111,6 +111,6 @@ export class X86RegsStore extends X86ByteRegsStore {
       ],
     );
   }
-};
+}
 
 export type X86RegName = keyof(X86RegsStore);

@@ -50,7 +50,9 @@ export abstract class X86AbstractDevice<
   abstract init(initConfig?: TInitConfig): void;
 
   /** Return CPU registers */
-  get regs() { return this.cpu.registers; }
+  get regs() {
+    return this.cpu.registers;
+  }
 
   /**
    * Attaches and initializes device in provided cpu
@@ -59,7 +61,7 @@ export abstract class X86AbstractDevice<
    * @param {TInitConfig} initConfig
    * @memberof AbstractDevice
    */
-  attach(cpu: TCPU, initConfig: TInitConfig): void {
+  attach(cpu: TCPU, initConfig: TInitConfig): X86AbstractDevice<TCPU, TInitConfig> {
     this.release();
 
     this.cpu = cpu;
@@ -67,6 +69,8 @@ export abstract class X86AbstractDevice<
 
     this._interruptsUnmounter = cpu.mountInterrupts(this.interrupts);
     this._portsUnmounter = cpu.mountPorts(this.ports);
+
+    return this;
   }
 
   /**
@@ -95,8 +99,10 @@ export abstract class X86AbstractDevice<
    * @memberof AbstractDevice
    */
   release() {
+    /* eslint-disable no-unused-expressions */
     this._interruptsUnmounter?.();
     this._portsUnmounter?.();
+    /* eslint-enable no-unused-expressions */
 
     this._interruptsUnmounter = null;
     this._portsUnmounter = null;
@@ -115,7 +121,7 @@ export abstract class X86AbstractDevice<
 export function uuidX86Device<
   TCPU extends X86AbstractCPU,
   TInitConfig = {},
-> (uuid: string) {
+>(uuid: string) {
   abstract class X86UuidAbstractDevice extends X86AbstractDevice<TCPU, TInitConfig> {
     static uuid: string = uuid;
   }

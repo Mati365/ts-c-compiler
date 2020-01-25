@@ -7,11 +7,6 @@
     "test": "jest --c config/rollup/jest.config.js",
     "build:production": "NODE_ENV=production rollup -c config/rollup/rollup.config.js"
   },
-  "husky": {
-    "hooks": {
-      "pre-commit": "yarn test"
-    }
-  },
   "devDependencies": {
     "@testing-library/jest-dom": "^4.2.4",
     "@testing-library/react": "^9.4.0",

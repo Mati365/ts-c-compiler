@@ -1,6 +1,6 @@
 export interface X86Port {
-  set(bits: Number): Number;
-  get(bits: Number): Number;
+  set?(bits?: number): void;
+  get?(bits?: number): number;
 }
 
 export type X86PortsSet = {
