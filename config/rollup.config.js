@@ -4,6 +4,7 @@ import typescript from 'rollup-plugin-typescript2';
 import serve from 'rollup-plugin-serve';
 import del from 'rollup-plugin-delete';
 import postcss from 'rollup-plugin-postcss';
+import resolve from '@rollup/plugin-node-resolve';
 import {eslint} from 'rollup-plugin-eslint';
 import {terser} from 'rollup-plugin-terser';
 
@@ -12,13 +13,12 @@ const devBuild = process.env.NODE_ENV === 'development';
 const createBaseRollupConfig = (
   {
     dir,
-    name,
-    globals,
     serveFiles,
     compilerOptions,
   },
 ) => {
   let plugins = [
+    resolve(),
     del(
       {
         targets: [
@@ -49,9 +49,6 @@ const createBaseRollupConfig = (
         tsconfigOverride: {
           compilerOptions: {
             target: 'es5',
-            declaration: true,
-            declarationDir: path.resolve(dir, 'dist/typings/'),
-            paths: {},
             ...compilerOptions,
           },
         },
@@ -65,10 +62,7 @@ const createBaseRollupConfig = (
         ...plugins,
         serve(
           {
-            contentBase: [
-              'packages',
-              'assets',
-            ],
+            contentBase: ['assets', 'dist'],
           },
         ),
       ];
@@ -81,28 +75,21 @@ const createBaseRollupConfig = (
   }
 
   return {
-    input: path.resolve(dir, 'src/index.ts'),
-    external: Object.keys(globals),
+    input: path.resolve(dir, 'src/ts/index.ts'),
     output: [
       {
-        format: 'es',
-        file: path.resolve(dir, 'dist/es/index.js'),
-        name,
-        globals,
+        format: 'umd',
+        file: path.resolve(dir, 'dist/umd/index.js'),
       },
     ],
     plugins,
   };
 };
 
-const SHARED_GLOBALS = {
-  ramda: 'R',
-  react: 'React',
-  'react-dom': 'ReactDOM',
-  'prop-types': 'PropTypes',
-  classnames: 'classNames',
-};
-
 /** PACKAGES BUILD */
-export default [
-];
+export default createBaseRollupConfig(
+  {
+    dir: '.',
+    serveFiles: true,
+  },
+);

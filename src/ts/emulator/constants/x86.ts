@@ -1,4 +1,19 @@
-type X86Prefix = Number | {_sr: string};
+import * as R from 'ramda';
+
+export type X86SegmentPrefix = {_sr: string};
+
+export type X86Prefix = Number | X86SegmentPrefix;
+
+export const X86_EXCEPTION = {
+  MEM_DUMP: 0x0,
+  DIV_BY_ZERO: 0x1,
+};
+
+export const X86_BINARY_MASKS = {
+  0x1: (0x2 << 0x7) - 0x1,
+  0x2: (0x2 << 0xF) - 0x1,
+  0x4: (0x2 << 0x1F) - 0x1,
+};
 
 export const X86_PREFIXES: {[key: number]: X86Prefix} = {
   0xF0: 0x0, /** LOCK */
@@ -49,6 +64,14 @@ export const X86_REGISTERS = {
     0x4: 'fs', 0x5: 'gs',
   },
 };
+
+export const X86_REGISTER_NAMES = R.compose(
+  R.unnest,
+  R.map(
+    ([, regs]) => R.values(regs),
+  ),
+  R.toPairs,
+)(X86_REGISTERS);
 
 export const X86_FLAGS_OFFSETS = {
   cf: 0x0, /** Carry flag */

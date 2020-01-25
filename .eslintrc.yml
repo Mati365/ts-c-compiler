@@ -25,6 +25,7 @@
       contextType: "static public field",
       displayName: "static public field",
     }]
+    object-property-newline: 0
     lines-between-class-members: 0
     max-classes-per-file: 0
     spaced-comment: 0
@@ -49,6 +50,9 @@
     import/no-cycle: 0
     global-require: 0
     new-parens: 0
+    guard-for-in: 0
+    no-restricted-syntax: 0
+    no-continue: 0
     no-param-reassign: 0
     no-bitwise: 0
     no-plusplus: 0

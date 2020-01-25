@@ -25,16 +25,12 @@ export abstract class X86AbstractDevice<
   TInitConfig = {},
 > {
   protected cpu: TCPU = null;
-
   protected mem: MemRange = null;
-
   protected interrupts: X86InterruptsSet = {};
-
   protected ports: X86PortsSet = {};
 
-  /* destructors */
+  /** destructors */
   protected _portsUnmounter: UnmountCallback = null;
-
   protected _interruptsUnmounter: UnmountCallback = null;
 
   /**

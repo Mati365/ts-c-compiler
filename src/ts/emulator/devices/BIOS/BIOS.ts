@@ -13,6 +13,10 @@ import {getBit} from '../../utils/bits';
 import {Cursor} from '../Cursor';
 import {VideoMode} from './VideoMode';
 
+type KeymapTable = {
+  [keycode: number]: number[],
+};
+
 type CursorBlinkState = {
   last: number,
   visible?: boolean,
@@ -120,7 +124,7 @@ export class BIOS extends uuidX86Device<X86CPU, BIOSInitConfig>('bios') {
    * @memberof BIOS
    */
   initServices() {
-    this.intFunc(0x15, 'ah', {
+    this.attachInterrupts(0x15, 'ah', {
       /**
        * Wait in microseconds
        * @see {@link http://stanislavs.org/helppc/int_15-86.html}
@@ -179,7 +183,8 @@ export class BIOS extends uuidX86Device<X86CPU, BIOSInitConfig>('bios') {
         },
       );
 
-      keymap.callback && keymap.callback(e);
+      // eslint-disable-next-line no-unused-expressions
+      keymap.callback?.(e);
     });
 
     document.addEventListener('keyup', () => clearKeyBuffer(false));
@@ -211,7 +216,7 @@ export class BIOS extends uuidX86Device<X86CPU, BIOSInitConfig>('bios') {
      * @todo
      *  Add better support for extened keyboards (see broken arrows)
      */
-    const readKeyState = (keymapTable, code = keymap.key) => {
+    const readKeyState = (keymapTable?: KeymapTable, code: number = keymap.key) => {
       this.regs.ax = 0x0;
 
       if (!code)
@@ -225,12 +230,12 @@ export class BIOS extends uuidX86Device<X86CPU, BIOSInitConfig>('bios') {
       return true;
     };
 
-    this.intFunc(0x16, 'ah', {
+    this.attachInterrupts(0x16, 'ah', {
       /* Wait for keystroke and read */
       0x0: () => {
         // it was used from 0x10, is it ok? maybe use separate array for extended keys?
         keyListener(
-          code => readKeyState(null, code),
+          (code: number) => readKeyState(null, code),
         );
       },
 
@@ -246,7 +251,7 @@ export class BIOS extends uuidX86Device<X86CPU, BIOSInitConfig>('bios') {
       0x10: () => {
         keyListener(
           // todo: add release keycodes also
-          code => readKeyState(AT2_SCAN_CODES_QWERTY.PRESSED, code),
+          (code: number) => readKeyState(AT2_SCAN_CODES_QWERTY.PRESSED, code),
         );
       },
     });
@@ -256,7 +261,7 @@ export class BIOS extends uuidX86Device<X86CPU, BIOSInitConfig>('bios') {
    * Init hard drive interrupts, buffers
    */
   initDrive() {
-    this.intFunc(0x13, 'ah', {
+    this.attachInterrupts(0x13, 'ah', {
       /** Reset floppy drive */
       0x0: () => {
         if (this.drives[this.regs.dl]) {

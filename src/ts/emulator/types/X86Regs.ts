@@ -1,6 +1,17 @@
 import * as R from 'ramda';
 
-import {X86_FLAGS_OFFSETS} from '../constants/x86';
+import {
+  X86_REGISTER_NAMES,
+  X86_FLAGS_OFFSETS,
+} from '../constants/x86';
+
+type RegistersDebugDump = {
+  flags: string,
+  regs: ({
+    register: string,
+    value: string,
+  })[],
+};
 
 class X86ByteRegsStore {
   al?: number; ah?: number;
@@ -89,14 +100,14 @@ export class X86RegsStore extends X86ByteRegsStore {
       Object.defineProperty(this, low, {
         get: () => this[<string> reg] & 0xFF,
         set: (val) => {
-          this[reg] = (this[<string> reg] & 0xFF00) | (val & 0xFF);
+          this[<string> reg] = (this[<string> reg] & 0xFF00) | (val & 0xFF);
         },
       });
 
       Object.defineProperty(this, high, {
         get: () => (this[<string>reg] >> 0x8) & 0xFF,
         set: (val) => {
-          this[reg] = (this[<string> reg] & 0xFF) | ((val & 0xFF) << 8);
+          this[<string> reg] = (this[<string> reg] & 0xFF) | ((val & 0xFF) << 8);
         },
       });
     };
@@ -110,6 +121,47 @@ export class X86RegsStore extends X86ByteRegsStore {
         ['dx', 'dh', 'dl'],
       ],
     );
+  }
+
+  /**
+   * Returns human formatted dump of all registers
+   *
+   * @returns {RegistersDebugDump}
+   * @memberof X86RegsStore
+   */
+  debugDump(): RegistersDebugDump {
+    const insertDot = (str: string, pos: number) => `${str.slice(0, pos)}.${str.slice(pos)}`;
+
+    /** Registers */
+    const table = [];
+    for (const key in X86_REGISTER_NAMES) {
+      const reg = this[key];
+
+      if (Number.isNaN(reg))
+        continue;
+
+      let val = reg.toString(16).toUpperCase();
+      if (val.length < 8)
+        val = new Array(8 - val.length + 1).join('0') + val;
+
+      /** add dots to easier reading value */
+      table.push(
+        {
+          register: key,
+          value: `${insertDot(val, 4)} (${reg} ${String.fromCharCode(reg & 0xFF)})`,
+        },
+      );
+    }
+
+    /** Flags */
+    let flags = '';
+    for (const flag in X86_FLAGS_OFFSETS)
+      flags += `${flag}: ${this.status[flag]} `;
+
+    return {
+      regs: table,
+      flags,
+    };
   }
 }
 

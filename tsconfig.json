@@ -4,7 +4,5 @@
     "target": "ES5",
     "esModuleInterop": true,
     "experimentalDecorators": true,
-  },
-  "include": ["src/**/*"],
-  "exclude": ["node_modules", "**/*.spec.ts"]
+  }
 }
