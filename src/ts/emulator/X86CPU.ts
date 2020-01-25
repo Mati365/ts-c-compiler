@@ -5,6 +5,7 @@ import {
 } from './constants/x86';
 
 import {X86AbstractCPU} from './types';
+import {X86Stack} from './X86Stack';
 
 type X86CPUConfig = {
   ignoreMagic?: boolean,
@@ -15,16 +16,21 @@ type X86CPUConfig = {
 /* eslint-disable class-methods-use-this, @typescript-eslint/no-unused-vars */
 export class X86CPU extends X86AbstractCPU {
   private config: X86CPUConfig;
+  private stack: X86Stack;
+
   private device: Buffer;
-  private opcodes: {[opcode: number]: () => void} = {};
+  public opcodes: {[opcode: number]: () => void} = {};
 
   constructor(config?: X86CPUConfig) {
     super();
+
     this.config = config || {
       ignoreMagic: false,
       debugger: false,
       silent: false,
     };
+
+    this.stack = new X86Stack(this);
   }
 
   /**

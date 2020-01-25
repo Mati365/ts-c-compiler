@@ -73,6 +73,11 @@ export abstract class X86AbstractCPU {
   abstract exec(cycles: number): void;
   abstract halt(message?: string, dump?: boolean): void;
 
+  /** Last stack item address */
+  get lastStackAddr() {
+    return this.getMemAddress('ss', 'sp');
+  }
+
   /**
    * Prints all content of registers/flags into logger
    *
