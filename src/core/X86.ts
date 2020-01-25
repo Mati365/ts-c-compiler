@@ -10,6 +10,11 @@ import Logger from './Logger';
 
 const opcodesTable = {};
 
+type CPUConfig = {
+  ignoreMagic?: boolean,
+  debugger?: boolean,
+};
+
 /**
  * Main code exec
  * @class CPU
@@ -28,27 +33,27 @@ export default class CPU {
     DIV_BY_ZERO: 0x1,
   };
 
+  private logger = new Logger;
+
+  private pause = false;
+
+  private config = {
+    ignoreMagic: true,
+    debugger: false,
+  };
+
+  private devices: {[uuid: string]: Device} = {};
+
   /**
    * Creates an instance of CPU
    *
    * @param {Config}  CPU config
    */
-  constructor(config) {
-    /** Debug logger */
-    this.logger = new Logger;
-    this.pause = false;
-
-    /** Default CPU config */
-    this.config = {
-      ignoreMagic: true,
-      debugger: false,
-    };
-
+  constructor(config?: CPUConfig) {
     if (config)
       Object.assign(this.config, config);
 
     /** Devices list */
-    this.devices = {};
     this.interrupts = {};
     this.ports = {};
 

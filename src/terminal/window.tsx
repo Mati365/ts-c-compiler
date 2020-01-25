@@ -2,7 +2,7 @@ import React from 'react';
 import ReactDOM from 'react-dom';
 import Radium from 'radium';
 
-import Output from './output';
+import {OutputCanvas} from './OutputCanvas';
 import CPU from '../core/X86';
 import {
   BIOS,
@@ -17,9 +17,7 @@ import compiled from '../../kernels/build/mikeos/disk_images/mikeos.flp';
 
 @Radium
 class Terminal extends React.Component {
-  componentWillMount() {
-    this.cpu = new CPU;
-  }
+  private cpu = new CPU;
 
   /**
    * Initialize CPU with screen
@@ -28,7 +26,8 @@ class Terminal extends React.Component {
    * @memberOf Terminal
    */
   initializeCPU = (canvas) => {
-    this.cpu
+    this
+      .cpu
       .attach(BIOS, canvas)
       .attach(RTC)
       .attach(Speaker)
@@ -43,7 +42,7 @@ class Terminal extends React.Component {
           height: 'inherit',
         }}
       >
-        <Output onContextInit={this.initializeCPU} />
+        <OutputCanvas onContextInit={this.initializeCPU} />
       </div>
     );
   }

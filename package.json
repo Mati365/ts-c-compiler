@@ -1,76 +1,48 @@
 {
-  "name": "i8086.js",
-  "version": "1.0.0",
-  "description": "",
-  "main": "dist/index.html",
-  "window": {
-    "frame": false,
-    "toolbar": false,
-    "transparent": true,
-    "resizable": false,
-    "width": 640,
-    "height": 512
-  },
-  "directories": {
-    "test": "test"
-  },
-  "scripts": {
-    "build:development": "(rm -rf dist/ && NODE_ENV=development ./node_modules/.bin/webpack --config=config/webpack.config.js --mode=development --watch)",
-    "develop": "(rm -rf dist/ && NODE_ENV=development ./node_modules/.bin/webpack-dev-server --config=config/webpack.config.js --mode=development --watch)"
-  },
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/Mati365/i8086.js.git"
-  },
-  "keywords": [
-    "emulator"
+  "workspaces": [
+    "packages/*"
   ],
-  "author": "Mateusz Bagiński",
-  "license": "MIT",
-  "bugs": {
-    "url": "https://github.com/Mati365/i8086.js/issues"
+  "scripts": {
+    "develop": "NODE_ENV=development rollup -w -c config/rollup/rollup.config.js",
+    "test": "jest --c config/rollup/jest.config.js",
+    "build:production": "NODE_ENV=production rollup -c config/rollup/rollup.config.js"
   },
-  "homepage": "https://github.com/Mati365/i8086.js#readme",
+  "husky": {
+    "hooks": {
+      "pre-commit": "yarn test"
+    }
+  },
   "devDependencies": {
-    "@babel/core": "^7.4.3",
-    "@babel/plugin-proposal-class-properties": "^7.1.0",
-    "@babel/plugin-proposal-decorators": "^7.1.2",
-    "@babel/plugin-proposal-do-expressions": "^7.0.0",
-    "@babel/plugin-proposal-function-bind": "^7.0.0",
-    "@babel/plugin-proposal-logical-assignment-operators": "^7.0.0",
-    "@babel/plugin-proposal-nullish-coalescing-operator": "^7.4.3",
-    "@babel/plugin-proposal-optional-chaining": "^7.0.0",
-    "@babel/plugin-proposal-pipeline-operator": "^7.0.0",
-    "@babel/plugin-transform-runtime": "^7.4.3",
-    "@babel/preset-env": "^7.4.3",
-    "@babel/preset-react": "^7.0.0",
-    "@babel/runtime": "^7.4.3",
-    "babel-eslint": "^10.0.1",
-    "babel-loader": "^8.0.4",
-    "eslint": "^5.7.0",
-    "pasm": "^0.0.1",
-    "mocha": "^7.0.0",
-    "eslint-config-airbnb": "^17.1.0",
-    "eslint-import-resolver-webpack": "^0.11.1",
-    "eslint-loader": "^2.1.1",
-    "eslint-plugin-import": "^2.17.2",
-    "eslint-plugin-jsx-a11y": "^6.1.2",
-    "eslint-plugin-react": "^7.11.1",
-    "nodemon-webpack-plugin": "^4.0.8",
-    "webpack-dev-server": "^3.10.1",
-    "webpack": "^4.30.0",
-    "chai": "^4.2.0",
-    "webpack-cli": "^3.1.2",
-    "arraybuffer-loader": "^1.0.7",
-    "buffer-loader": "^0.0.1",
-    "html-webpack-plugin": "^3.2.0"
-  },
-  "dependencies": {
-    "ramda": "^0.26.1",
-    "react": "^16.8.6",
-    "react-dom": "^16.8.6",
-    "radium": "^0.25.2",
+    "@testing-library/jest-dom": "^4.2.4",
+    "@testing-library/react": "^9.4.0",
+    "@types/classnames": "^2.2.3",
+    "@types/jest": "^22.2.3",
+    "@types/ramda": "^0.26.36",
+    "@typescript-eslint/eslint-plugin": "^2.7.0",
+    "@typescript-eslint/parser": "^2.10.0",
+    "eslint-config-airbnb-typescript": "^6.3.1",
+    "eslint-plugin-import": "^2.18.2",
+    "eslint-import-resolver-alias": "^1.1.2",
+    "eslint-plugin-jsx-a11y": "^6.2.3",
+    "eslint-plugin-react": "^7.15.1",
+    "eslint-plugin-react-hooks": "^2.3.0",
+    "husky": "^3.1.0",
+    "jest": "^24.9.0",
     "prop-types": "^15.7.2",
-    "classnames": "^2.2.6"
-  }
+    "ramda": "^0.26.1",
+    "react": "^16.12.0",
+    "react-dom": "^16.12.0",
+    "rollup": "^1.27.8",
+    "rollup-plugin-delete": "^1.1.0",
+    "rollup-plugin-eslint": "^7.0.0",
+    "rollup-plugin-serve": "^1.0.1",
+    "rollup-plugin-terser": "^5.1.3",
+    "rollup-plugin-typescript2": "^0.25.3",
+    "rollup-plugin-postcss": "^2.0.3",
+    "ts-jest": "^24.2.0",
+    "tslib": "^1.10.0",
+    "typescript": "^3.7.3"
+  },
+  "name": "i8086.js",
+  "private": true
 }

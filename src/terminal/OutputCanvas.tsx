@@ -1,15 +1,11 @@
 import React from 'react';
-import PropTypes from 'prop-types';
-import Radium from 'radium';
 
-export default
-@Radium
-class Output extends React.Component {
-  canvasRef = React.createRef();
+type OutputCanvasProps = {
+  onContextInit: (node?: HTMLCanvasElement) => void;
+};
 
-  static propTypes = {
-    onContextInit: PropTypes.func.isRequired,
-  };
+export class OutputCanvas extends React.Component<OutputCanvasProps> {
+  private canvasRef = React.createRef<HTMLCanvasElement>();
 
   componentDidMount() {
     const {canvasRef, props} = this;
