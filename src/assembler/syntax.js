@@ -1,5 +1,9 @@
 import tagFunction from './utils/tagFunction';
-import lexer from './lexer';
+
+import {
+  ast,
+  lexer,
+} from './parser';
 
 /**
  * Root of evil
@@ -7,10 +11,13 @@ import lexer from './lexer';
  * @param {String} code
  */
 const compile = tagFunction((code) => {
-  const lex = lexer(code);
-  for (const keyword of lex) {
-    console.log(keyword);
-  }
+  ast(lexer(code));
 });
+
+compile`
+  mov ax, bx
+  mov cx, ah
+  int 31h
+`;
 
 export default compile;
