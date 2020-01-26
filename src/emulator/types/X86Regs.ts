@@ -145,10 +145,10 @@ export class X86RegsStore extends X86ByteRegsStore {
 
     /** Registers */
     const table = [];
-    for (const key in X86_REGISTER_NAMES) {
+    for (const key of X86_REGISTER_NAMES) {
       const reg = this[key];
 
-      if (Number.isNaN(reg))
+      if (R.isNil(reg) || Number.isNaN(reg))
         continue;
 
       let val = reg.toString(16).toUpperCase();

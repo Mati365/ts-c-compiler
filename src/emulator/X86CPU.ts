@@ -242,16 +242,17 @@ export class X86CPU extends X86AbstractCPU {
     if (!ignorePrefix && this.prefixes.operandSize === 0x66)
       size = 0x4;
 
+    const {registers} = this;
     const mapper = this.memIO.read[size];
     if (mapper) {
       const opcode = mapper(this.getMemAddress('cs', 'ip'));
       if (incrementIP) {
-        this.registers.ip += size;
+        registers.ip += size;
 
         // increment CS if overflows
-        if (this.registers.ip > 0xFFFF) {
-          this.registers.ip = X86AbstractCPU.toUnsignedNumber(this.registers.ip, 0x2);
-          this.registers.cs += 0x1000;
+        if (registers.ip > 0xFFFF) {
+          registers.ip = X86AbstractCPU.toUnsignedNumber(this.registers.ip, 0x2);
+          registers.cs += 0x1000;
         }
       }
 

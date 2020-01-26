@@ -5,3 +5,6 @@ shr ah, 1
 xchg bx, bx
 halt:
 hlt
+
+times 510-($-$$) db 0
+dw 0xaa55

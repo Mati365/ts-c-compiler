@@ -62,10 +62,10 @@ export class X86Stack extends X86Unit {
    * @memberof X86CPU
    */
   push(val: number, bits: number = 0x2): void {
-    const {memIO, lastStackAddr, registers} = this.cpu;
+    const {memIO, registers} = this.cpu;
 
     registers.sp = X86AbstractCPU.toUnsignedNumber(registers.sp - bits, 0x2);
-    memIO.write[bits](val, lastStackAddr);
+    memIO.write[bits](val, this.cpu.lastStackAddr);
   }
 
   /**
