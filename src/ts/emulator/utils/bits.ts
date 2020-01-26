@@ -7,13 +7,13 @@
  * @param {number} num
  * @returns {number}
  */
-export function setBit(nth: number, value: number, num: number): number {
+export function setBit(nth: number, value: number|boolean, num: number): number {
   return (
     value
       ? (num | (1 << nth))
       : (num & ~(1 << nth))
   );
-};
+}
 
 /**
  * Flips nth bit in value, 0 -> 1, 1 -> 0

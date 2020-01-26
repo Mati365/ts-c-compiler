@@ -9,9 +9,15 @@ import {Logger} from '../Logger';
 
 import {X86InterruptsSet} from './X86Interrupt';
 import {X86PortsSet} from './X86Port';
-import {X86RegsStore, X86RegName} from './X86Regs';
-import {X86AbstractDevice} from './X86AbstractDevice';
 import {X86RAM} from './X86RAM';
+import {X86AbstractDevice} from './X86AbstractDevice';
+import {
+  X86RegsStore,
+  X86RegName,
+  X86Prefix,
+  X86SegmentPrefix,
+  X86BitsMode,
+} from './X86Regs';
 
 /**
  * @see X86_PREFIX_LABEL_MAP
@@ -20,10 +26,10 @@ import {X86RAM} from './X86RAM';
  * @class X86PrefixesStore
  */
 export class X86PrefixesStore {
-  instruction: number = 0x0;
-  segment: number = 0x0;
-  operandSize: number = 0x0;
-  addressSize: number = 0x0;
+  instruction: X86Prefix;
+  segment: X86Prefix;
+  operandSize: X86Prefix;
+  addressSize: X86Prefix;
 }
 
 export type SegmentedAddress = {
@@ -76,6 +82,16 @@ export abstract class X86AbstractCPU {
   /** Last stack item address */
   get lastStackAddr() {
     return this.getMemAddress('ss', 'sp');
+  }
+
+  /** Get active segment register */
+  get segmentReg(): X86RegName {
+    const {segment} = this.prefixes;
+
+    if (segment)
+      return (<X86SegmentPrefix> segment)._sr;
+
+    return 'ds';
   }
 
   /**
@@ -226,7 +242,7 @@ export abstract class X86AbstractCPU {
    * @param {number}  bits  0x1 if 8bits, 0x2 if 16 bits
    * @returns {number} Signed number
    */
-  static getSignedNumber(num: number, bits: number = 0x1): number {
+  static getSignedNumber(num: number, bits: X86BitsMode = 0x1): number {
     const sign = (num >> (0x8 * bits - 0x1)) & 0x1;
     if (sign)
       num -= X86_BINARY_MASKS[bits];
@@ -241,7 +257,7 @@ export abstract class X86AbstractCPU {
    * @param {number}  bits  0x1 if 8bits, 0x2 if 16 bits
    * @returns {number} Unsigned number
    */
-  static toUnsignedNumber(num: number, bits: number = 0x1): number {
+  static toUnsignedNumber(num: number, bits: X86BitsMode = 0x1): number {
     const up = X86_BINARY_MASKS[bits];
     if (num > up)
       return num - up - 0x1;
@@ -261,7 +277,7 @@ export abstract class X86AbstractCPU {
    *
    * @memberOf CPU
    */
-  static msbit(num: number, bits: number = 0x1): number {
+  static msbit(num: number, bits: X86BitsMode = 0x1): number {
     return (num >> (bits * 0x8 - 0x1)) & 0x1;
   }
 }

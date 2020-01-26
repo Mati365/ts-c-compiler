@@ -2,25 +2,30 @@ import * as R from 'ramda';
 
 import {X86AbstractCPU} from './types';
 import {X86CPU} from './X86CPU';
+import {X86Unit} from './X86Unit';
 
 /**
  * Basic CPU stack implementation
  *
  * @export
  * @class X86Stack
+ * @extends {X86Unit}
  */
-export class X86Stack {
-  private cpu: X86CPU;
-
-  constructor(cpu: X86CPU) {
-    this.cpu = cpu;
-
-    /**
-   * Default stack segment address, after push()
-   * values will be added at the end of mem
+export class X86Stack extends X86Unit {
+  /**
+   * Initialize CPU unit
    *
-   * @param {Number}  segment Stack segment index
+   * @protected
+   * @param {X86CPU} cpu
+   * @memberof X86Stack
    */
+  protected init(cpu: X86CPU) {
+    /**
+     * Default stack segment address, after push()
+     * values will be added at the end of mem
+     *
+     * @param {Number}  segment Stack segment index
+     */
     /** Set default stack environment */
     Object.assign(cpu.registers, {
       ss: 0x0,

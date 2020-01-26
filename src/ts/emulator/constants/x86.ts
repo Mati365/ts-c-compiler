@@ -1,8 +1,8 @@
 import * as R from 'ramda';
-
-export type X86SegmentPrefix = {_sr: string};
-
-export type X86Prefix = Number | X86SegmentPrefix;
+import {
+  X86Prefix,
+  X86RegsSet,
+} from '../types/X86Regs';
 
 export const X86_EXCEPTION = {
   MEM_DUMP: 0x0,
@@ -40,7 +40,7 @@ export const X86_PREFIX_LABEL_MAP = {
   0x3: 'addressSize',
 };
 
-export const X86_REGISTERS = {
+export const X86_REGISTERS: {[number: string]: X86RegsSet} = {
   /** 8bit registers indexes */
   0x1: {
     0x0: 'al', 0x1: 'cl',

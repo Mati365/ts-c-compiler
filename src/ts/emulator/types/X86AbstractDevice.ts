@@ -43,6 +43,16 @@ export abstract class X86AbstractDevice<
     this.mem = mem;
   }
 
+  /* eslint-disable @typescript-eslint/no-unused-vars, class-methods-use-this */
+  /**
+   * Handles exception from CPU
+   *
+   * @param {number} code
+   * @memberof X86AbstractDevice
+   */
+  exception(code: number): void {}
+  /* eslint-enable @typescript-eslint/no-unused-vars, class-methods-use-this */
+
   abstract init(initConfig?: TInitConfig): void;
 
   /** Return CPU registers */

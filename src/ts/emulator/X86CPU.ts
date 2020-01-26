@@ -1,11 +1,22 @@
+import * as R from 'ramda';
+
 import {
+  X86_BINARY_MASKS,
+  X86_REGISTERS,
   X86_PREFIXES,
   X86_PREFIX_LABEL_MAP,
-  X86SegmentPrefix,
 } from './constants/x86';
 
-import {X86AbstractCPU} from './types';
+import {
+  X86AbstractCPU,
+  X86RegName,
+  RMByte,
+  X86SegmentPrefix,
+  X86BitsMode,
+} from './types';
+
 import {X86Stack} from './X86Stack';
+import {X86ALU} from './X86ALU';
 
 type X86CPUConfig = {
   ignoreMagic?: boolean,
@@ -16,10 +27,12 @@ type X86CPUConfig = {
 /* eslint-disable class-methods-use-this, @typescript-eslint/no-unused-vars */
 export class X86CPU extends X86AbstractCPU {
   private config: X86CPUConfig;
+
   private stack: X86Stack;
+  private alu: X86ALU;
 
   private device: Buffer;
-  public opcodes: {[opcode: number]: () => void} = {};
+  public opcodes: {[opcode: number]: (...args: any[]) => void} = {};
 
   constructor(config?: X86CPUConfig) {
     super();
@@ -31,6 +44,7 @@ export class X86CPU extends X86AbstractCPU {
     };
 
     this.stack = new X86Stack(this);
+    this.alu = new X86ALU(this);
   }
 
   /**
@@ -236,6 +250,254 @@ export class X86CPU extends X86AbstractCPU {
 
     this.halt('Unknown opcode size!');
     return null;
+  }
+
+  /**
+   * Raise exception to all devices
+   *
+   * @param {Number} code Raise exception
+   */
+  raiseException(code: number): void {
+    R.forEachObjIndexed(
+      (device) => device.exception(code),
+      this.devices,
+    );
+  }
+
+  /**
+   * Fetch opcodes and jump to address
+   * relative to ip register. If rel < 0
+   * sub 1B instruction size
+   *
+   * @param {X86BitsMode} bits
+   * @param {number} relative
+   * @memberof X86CPU
+   */
+  relativeJump(bits: X86BitsMode, relative: number): void {
+    const {registers} = this;
+
+    if (!relative)
+      relative = this.fetchOpcode(bits);
+
+    /** 1B call instruction size */
+    relative = X86AbstractCPU.getSignedNumber(relative, bits);
+    registers.ip += relative - (relative < 0 ? 0x1 : 0);
+
+    /**
+     * If overflows its absolute, truncate value
+     * dont know why, its undocummented
+     */
+    if (registers.ip > X86_BINARY_MASKS[0x2] + 1)
+      registers.ip &= 0xFF;
+  }
+
+  /**
+   * Increment relative to DF register flag, used in file loaders
+   *
+   * @see
+   *  Only for 16bit registers!
+   *
+   * @param {number} [delta=0x1] Value to increment
+   * @param {...X86RegName[]} args
+   * @memberof X86CPU
+   */
+  dfIncrement(delta: number = 0x1, ...args: X86RegName[]): void {
+    const {registers} = this;
+
+    // todo: Move to ALU
+    const dir = (
+      registers.status.df
+        ? -delta
+        : delta
+    );
+
+    for (let i = 0; i < args.length; ++i) {
+      registers[<string> args[i]] = X86AbstractCPU.toUnsignedNumber(
+        registers[<string> args[i]] + dir,
+        0x2,
+      );
+    }
+  }
+
+  /**
+   * Parse RM mode byte
+   * see: http://www.c-jump.com/CIS77/CPU/x86/X77_0060_mod_reg_r_m_byte.htm
+   *
+   * @param {(reg: X86RegName, regByte: number, rmByte: RMByte) => void} regCallback
+   * @param {(address: number, reg: X86RegName, rmByte: RMByte) => void} memCallback
+   * @param {X86BitsMode} mode
+   * @param {X86RegName} [segRegister=this.segmentReg]
+   * @memberof X86CPU
+   */
+  parseRmByte(
+    regCallback: (reg: X86RegName, regByte: number, rmByte: RMByte) => void,
+    memCallback: (address: number, reg: X86RegName, rmByte: RMByte) => void,
+    mode: X86BitsMode,
+    segRegister: X86RegName = this.segmentReg,
+  ) {
+    const byte = X86AbstractCPU.decodeRmByte(
+      this.fetchOpcode(0x1, true, true),
+    );
+
+    /** Register */
+    if (byte.mod === 0x3)
+      regCallback(
+        X86_REGISTERS[mode][byte.rm],
+        byte.reg,
+        byte,
+      );
+
+    /** Adress */
+    else if (memCallback) {
+      let address = 0,
+        displacement = 0;
+
+      if (!byte.mod && byte.rm === 0x6) {
+        /** SIB Byte? */
+        address = this.fetchOpcode(0x2);
+      } else {
+        /** Eight-bit displacement, sign-extended to 16 bits */
+        if (byte.mod === 0x1 || byte.mod === 0x2)
+          displacement = this.fetchOpcode(byte.mod);
+
+        /** Calc address */
+        const {registers} = this;
+        switch (byte.rm) {
+          case 0x0: address = registers.bx + registers.si + displacement; break;
+          case 0x1: address = registers.bx + registers.di + displacement; break;
+          case 0x2: address = registers.bp + registers.si + displacement; break;
+          case 0x3: address = registers.bp + registers.di + displacement; break;
+
+          case 0x4: address = registers.si + displacement; break;
+          case 0x5: address = registers.di + displacement; break;
+          case 0x6: address = registers.bp + displacement; break;
+          case 0x7: address = registers.bx + displacement; break;
+
+          default:
+            this.logger.error('Unknown RM byte address!');
+        }
+
+        /** Seg register ss is set with 0x2, 0x3, 0x6 opcodes */
+        if (byte.rm >= 0x2 && !(0x6 % byte.rm) && segRegister === 'ds')
+          segRegister = 'ss';
+      }
+
+      if (segRegister)
+        address = this.getMemAddress(segRegister, address);
+
+      /** Callback and address calc */
+      memCallback(
+        /** Only effective address */
+        address,
+        X86_REGISTERS[mode][byte.reg],
+        byte,
+      );
+    }
+  }
+
+  /**
+   * Rotate bits to left with carry flag
+   *
+   * @see {@link https://github.com/NeatMonster/Intel8086/blob/master/src/fr/neatmonster/ibmpc/Intel8086.java#L4200}
+   *
+   * @param {number} num Number
+   * @param {number} times Bits to shift
+   * @param {X86BitsMode} [bits=0x1]
+   * @returns {number}
+   * @memberof X86CPU
+   */
+  rotl(num: number, times: number, bits: X86BitsMode = 0x1): number {
+    const mask = X86_BINARY_MASKS[bits];
+    const {registers: {status}} = this;
+
+    for (; times >= 0; --times) {
+      const cf = 0;
+
+      num <<= 0x1;
+      num |= cf;
+      num &= mask;
+      status.cf = cf;
+    }
+
+    return num;
+  }
+
+  /**
+   * Shift bits to right with carry flag
+   * see: https://github.com/NeatMonster/Intel8086/blob/master/src/fr/neatmonster/ibmpc/Intel8086.java#L4200
+   *
+   * @param {number} num
+   * @param {number} times Bits to shift
+   * @param {X86BitsMode} [bits=0x1]
+   * @returns {number}
+   * @memberof X86CPU
+   */
+  shr(num: number, times: number, bits: X86BitsMode = 0x1): number {
+    const {status} = this.registers;
+    const mask = X86_BINARY_MASKS[bits];
+
+    for (; times > 0; --times) {
+      status.cf = num & 0x1;
+      num >>= 0x1;
+      num &= mask;
+    }
+
+    status.zf = +(num === 0);
+    status.of = X86AbstractCPU.msbit(num) ^ status.cf;
+
+    return num;
+  }
+
+  /**
+   * Shift bits to left with carry flag
+   *
+   * @param {number} num
+   * @param {number} times Bits to shift
+   * @param {X86BitsMode} [bits=0x1]
+   * @returns
+   * @memberof X86CPU
+   */
+  shl(num: number, times: number, bits: X86BitsMode = 0x1): number {
+    const {status} = this.registers;
+    const mask = X86_BINARY_MASKS[bits];
+
+    for (; times > 0; --times) {
+      status.cf = X86AbstractCPU.msbit(num, bits);
+      num <<= 0x1;
+      num &= mask;
+    }
+
+    status.zf = +(num === 0);
+    status.of = X86AbstractCPU.msbit(num) ^ status.cf;
+
+    return num;
+  }
+
+  /**
+   * Fast bit rotate
+   *
+   * @param {number} num
+   * @param {number} times Bits to shift
+   * @param {X86BitsMode} [bits=0x1]
+   * @returns {number}
+   * @memberof X86CPU
+   */
+  rotate(num: number, times: number, bits: X86BitsMode = 0x1): number {
+    const {status} = this.registers;
+    const mask = X86_BINARY_MASKS[bits];
+
+    if (times > 0) {
+      num = (num >> (mask - times)) | (num << times);
+      status.cf = num & 0x1;
+    } else {
+      num = (num << (mask + times)) | (num >> -times);
+      status.cf = X86AbstractCPU.msbit(num, bits);
+    }
+
+    status.zf = +(num === 0);
+    status.of = 0x0;
+
+    return num;
   }
 
   /**

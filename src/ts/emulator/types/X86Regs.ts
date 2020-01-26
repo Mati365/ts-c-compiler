@@ -5,6 +5,14 @@ import {
   X86_FLAGS_OFFSETS,
 } from '../constants/x86';
 
+export type X86BitsMode = 0x1|0x2|0x4;
+
+export type X86RegsSet = {[index: number]: X86RegName};
+
+export type X86SegmentPrefix = {_sr: X86RegName};
+
+export type X86Prefix = number | X86SegmentPrefix;
+
 type RegistersDebugDump = {
   flags: string,
   regs: ({
@@ -48,6 +56,7 @@ export class X86RegsStore extends X86ByteRegsStore {
   es = 0x0;
   ss = 0x0;
   fs = 0x0;
+  gs = 0x0;
 
   /* Flags */
   flags = 0x0;
