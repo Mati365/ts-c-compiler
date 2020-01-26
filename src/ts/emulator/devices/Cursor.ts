@@ -24,7 +24,7 @@ type CursorInitializer = RectangleDimensions & {
  * @extends {Rectangle}
  */
 export class Cursor extends Rectangle {
-  private info: CursorInfo;
+  public info: CursorInfo;
 
   private saved: Cursor[] = [];
 

@@ -13,6 +13,18 @@ export type X86SegmentPrefix = {_sr: X86RegName};
 
 export type X86Prefix = number | X86SegmentPrefix;
 
+export type X86Flags = {
+  cf?: number,
+  pf?: number,
+  af?: number,
+  zf?: number,
+  sf?: number,
+  tf?: number,
+  if?: number,
+  df?: number,
+  of?: number,
+};
+
 type RegistersDebugDump = {
   flags: string,
   regs: ({
@@ -61,17 +73,7 @@ export class X86RegsStore extends X86ByteRegsStore {
   /* Flags */
   flags = 0x0;
 
-  status: {
-    cf?: number,
-    pf?: number,
-    af?: number,
-    zf?: number,
-    sf?: number,
-    tf?: number,
-    if?: number,
-    df?: number,
-    of?: number,
-  } = {};
+  status: X86Flags = {};
 
   constructor() {
     super();

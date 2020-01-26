@@ -10,7 +10,7 @@ import {uuidX86Device} from '../../types/X86AbstractDevice';
 import {X86CPU} from '../../X86CPU';
 import {getBit} from '../../utils/bits';
 
-import {Cursor} from '../Cursor';
+import {CursorCharacter, Cursor} from '../Cursor';
 import {VideoMode} from './VideoMode';
 
 type KeymapTable = {
@@ -25,7 +25,7 @@ type CursorBlinkState = {
 
 type ScreenState = {
   page: number,
-  mode: number,
+  mode: VideoMode,
 };
 
 type BIOSCanvas = {
@@ -54,6 +54,20 @@ type BIOSFloppyDrive = {
  * @extends {Device}
  */
 export class BIOS extends uuidX86Device<X86CPU, BIOSInitConfig>('bios') {
+  /** Mapped memory */
+  static mapped = X86_REALMODE_MAPPED_ADDRESSES;
+
+  /** All colors supported by BIOS */
+  static colorTable = BIOS_COLOR_TABLE;
+
+  /** CP437 to Unicode conversion table */
+  static fontMapping = CP437_UNICODE_FONT_MAPPING;
+
+  static VideoMode = {
+    0x0: new VideoMode(0x0, 40, 25, 0x8),
+    0x3: new VideoMode(0x3, 80, 25, 0x8),
+  };
+
   private cursor = new Cursor;
 
   private blink: CursorBlinkState = {
@@ -133,7 +147,7 @@ export class BIOS extends uuidX86Device<X86CPU, BIOSInitConfig>('bios') {
         const {cpu} = this;
         const {cx, dx, status} = this.regs;
 
-        const miliseconds = ((cx << 0xF) | dx) / 1000 * 2;
+        const miliseconds = (((cx << 0xF) | dx) / 1000) * 2;
         if (miliseconds < 2)
           return;
 
@@ -323,7 +337,11 @@ export class BIOS extends uuidX86Device<X86CPU, BIOSInitConfig>('bios') {
    * Load screen interrupts, buffers
    */
   initScreen() {
-    const writeCharacter = (character, attribute, color = true) => {
+    const writeCharacter = (
+      character: number,
+      attribute: number,
+      color: number|boolean = true,
+    ): void => {
       const {cpu, regs, cursor} = this;
       const {page, mode} = this.screen;
 
@@ -369,17 +387,25 @@ export class BIOS extends uuidX86Device<X86CPU, BIOSInitConfig>('bios') {
       }
     };
 
-    const writeCharacters = (attribute, color = true, moveCursor = false) => {
+    const writeCharacters = (
+      attribute?: number,
+      color: number|boolean = true,
+      moveCursor: boolean = false,
+    ): void => {
       const {cursor} = this;
 
-      !moveCursor && cursor.save();
+      if (!moveCursor)
+        cursor.save();
+
       for (let i = 0; i < this.regs.cx; ++i)
         writeCharacter(this.regs.al, attribute, color);
-      !moveCursor && cursor.restore();
+
+      if (!moveCursor)
+        cursor.restore();
     };
 
     /** Graphics interrupts */
-    this.intFunc(0x10, 'ah', {
+    this.attachInterrupts(0x10, 'ah', {
       /** Set video mode */
       0x0: () => this.setVideoMode(this.regs.al),
 
@@ -402,8 +428,8 @@ export class BIOS extends uuidX86Device<X86CPU, BIOSInitConfig>('bios') {
             visible: !getBit(5, ch),
             character: (
               cx === 0x0607
-                ? Cursor.Type.UNDERLINE
-                : Cursor.Type.FULL_BLOCK
+                ? CursorCharacter.UNDERLINE
+                : CursorCharacter.FULL_BLOCK
             ),
           },
         );
@@ -471,7 +497,7 @@ export class BIOS extends uuidX86Device<X86CPU, BIOSInitConfig>('bios') {
         writeCharacters(null, false);
       },
 
-      0xE: () => writeCharacter(this.regs.al, false),
+      0xE: () => writeCharacter(this.regs.al, undefined),
 
       /** Blinking */
       0x10: () => {
@@ -607,7 +633,7 @@ export class BIOS extends uuidX86Device<X86CPU, BIOSInitConfig>('bios') {
         (cpu.memIO.read[0x2](pageOffset + 0x2 * cursor.x * cursor.y) >> 0x8) & 0xF
       ];
 
-      if (cursor.info.character === Cursor.Type.UNDERLINE) {
+      if (cursor.info.character === CursorCharacter.UNDERLINE) {
         ctx.fillRect(
           cursor.x * cursor.w,
           (cursor.y + 0.9) * cursor.h,
@@ -624,36 +650,22 @@ export class BIOS extends uuidX86Device<X86CPU, BIOSInitConfig>('bios') {
     }
 
     /** Draw debugger toolkit */
-    ctx.clearRect(0, canvas.h - 80, canvas.w, 80);
+    ctx.clearRect(0, canvas.handle.height - 80, canvas.handle.width, 80);
 
-    ctx.fillStyle = BIOS.colorTable[0xF];
+    ctx.fillStyle = BIOS.colorTable[0xF]; // eslint-disable-line prefer-destructuring
     ctx.fillText(
       `Virtual Machine Logs, Memory usage: ${cpu.memIO.device.length / 1024} KB`,
       0,
-      canvas.h - 26,
+      canvas.handle.height - 26,
     );
 
     /* eslint-disable max-len */
-    ctx.fillStyle = BIOS.colorTable[0xA];
+    ctx.fillStyle = BIOS.colorTable[0xA]; // eslint-disable-line prefer-destructuring
     ctx.fillText(
       `AX: ${registers.ax.toString(16)}h,  BX: ${registers.bx.toString(16)}h,  CX: ${registers.cx.toString(16)}h,  DX: ${registers.dx.toString(16)}h,  IP: ${registers.ip.toString(16)}h,  CS: ${registers.ip.toString(16)}h`,
       0,
-      canvas.h - 6,
+      canvas.handle.height - 6,
     );
     /* eslint-enable max-len */
   }
 }
-
-/** Mapped memory */
-BIOS.mapped = X86_REALMODE_MAPPED_ADDRESSES;
-
-/** All colors supported by BIOS */
-BIOS.colorTable = BIOS_COLOR_TABLE;
-
-/** CP437 to Unicode conversion table */
-BIOS.fontMapping = CP437_UNICODE_FONT_MAPPING;
-
-BIOS.VideoMode = {
-  0x0: new VideoMode(0x0, 40, 25, 0x8),
-  0x3: new VideoMode(0x3, 80, 25, 0x8),
-};

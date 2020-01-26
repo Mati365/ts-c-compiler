@@ -17,6 +17,8 @@ import {
 
 import {X86Stack} from './X86Stack';
 import {X86ALU} from './X86ALU';
+import {X86IO} from './X86IO';
+import {X86InstructionSet} from './X86InstructionSet';
 
 type X86CPUConfig = {
   ignoreMagic?: boolean,
@@ -28,10 +30,12 @@ type X86CPUConfig = {
 export class X86CPU extends X86AbstractCPU {
   private config: X86CPUConfig;
 
-  private stack: X86Stack;
-  private alu: X86ALU;
+  public stack: X86Stack;
+  public alu: X86ALU;
+  public io: X86IO;
+  public instructionSet: X86InstructionSet;
 
-  private device: Buffer;
+  public device: Buffer;
   public opcodes: {[opcode: number]: (...args: any[]) => void} = {};
 
   constructor(config?: X86CPUConfig) {
@@ -45,6 +49,8 @@ export class X86CPU extends X86AbstractCPU {
 
     this.stack = new X86Stack(this);
     this.alu = new X86ALU(this);
+    this.io = new X86IO(this);
+    this.instructionSet = new X86InstructionSet(this);
   }
 
   /**
@@ -273,11 +279,10 @@ export class X86CPU extends X86AbstractCPU {
    * @param {number} relative
    * @memberof X86CPU
    */
-  relativeJump(bits: X86BitsMode, relative: number): void {
+  relativeJump(bits: X86BitsMode, relative?: number): void {
     const {registers} = this;
 
-    if (!relative)
-      relative = this.fetchOpcode(bits);
+    relative = relative ?? this.fetchOpcode(bits);
 
     /** 1B call instruction size */
     relative = X86AbstractCPU.getSignedNumber(relative, bits);

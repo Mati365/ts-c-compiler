@@ -1,5 +1,7 @@
+import {X86BitsMode} from './X86Regs';
+
 export interface X86Port {
-  set?(bits?: number): void;
+  set?(bits?: number, mode?: X86BitsMode): void;
   get?(bits?: number): number;
 }
 

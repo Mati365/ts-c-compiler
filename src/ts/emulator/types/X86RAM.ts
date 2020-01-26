@@ -21,7 +21,7 @@ type RAMBufferWriters = {
  */
 export class X86RAM<T> {
   protected cpu: T;
-  protected device: Buffer;
+  public device: Buffer;
 
   public read: RAMBufferReaders;
   public write: RAMBufferWriters;

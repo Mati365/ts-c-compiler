@@ -48,7 +48,7 @@ type ALUFlagChecker = (
  * @extends {X86Unit}
  */
 export class X86ALU extends X86Unit {
-  protected operators: ALUOperatorsSchemaSet;
+  public operators: ALUOperatorsSchemaSet;
 
   /**
    * Flags used to set values in status register
