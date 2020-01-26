@@ -343,7 +343,7 @@ export class BIOS extends uuidX86Device<X86CPU, BIOSInitConfig>('bios') {
   initScreen() {
     const writeCharacter = (
       character: number,
-      attribute: number,
+      attribute?: number,
       color: number|boolean = true,
     ): void => {
       const {cpu, regs, cursor} = this;
@@ -501,7 +501,7 @@ export class BIOS extends uuidX86Device<X86CPU, BIOSInitConfig>('bios') {
         writeCharacters(null, false);
       },
 
-      0xE: () => writeCharacter(this.regs.al, undefined),
+      0xE: () => writeCharacter(this.regs.al, null, false),
 
       /** Blinking */
       0x10: () => {
