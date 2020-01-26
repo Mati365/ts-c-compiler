@@ -37,7 +37,7 @@ export class X86CPU extends X86AbstractCPU {
   public instructionSet: X86InstructionSet;
 
   public device: Buffer;
-  public opcodes: {[opcode: number]: (...args: any[]) => void} = {};
+  public opcodes: ((...args: any[]) => void)[] = [];
 
   constructor(config?: X86CPUConfig) {
     super();
