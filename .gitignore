@@ -5,7 +5,7 @@ node_modules/*
 *~
 *.o
 
-kernels/build/
+assets/kernels/build/
 bochsout.txt
 parport.out
 

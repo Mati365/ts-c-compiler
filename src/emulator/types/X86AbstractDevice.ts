@@ -67,7 +67,7 @@ export abstract class X86AbstractDevice<
    * @param {TInitConfig} initConfig
    * @memberof AbstractDevice
    */
-  attach(cpu: TCPU, initConfig: TInitConfig): X86AbstractDevice<TCPU, TInitConfig> {
+  attach(cpu: TCPU, initConfig?: TInitConfig): X86AbstractDevice<TCPU, TInitConfig> {
     this.release();
 
     this.cpu = cpu;

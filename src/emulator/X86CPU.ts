@@ -13,6 +13,7 @@ import {
   RMByte,
   X86SegmentPrefix,
   X86BitsMode,
+  X86RAM,
 } from './types';
 
 import {X86Stack} from './X86Stack';
@@ -47,6 +48,9 @@ export class X86CPU extends X86AbstractCPU {
       silent: false,
     };
 
+    this.mem = Buffer.alloc(1114112);
+    this.memIO = new X86RAM<X86CPU>(this, this.mem);
+
     this.stack = new X86Stack(this);
     this.alu = new X86ALU(this);
     this.io = new X86IO(this);
@@ -60,7 +64,7 @@ export class X86CPU extends X86AbstractCPU {
    * @param {number} id
    * @memberof X86CPU
    */
-  boot(device: Buffer|string, id: number): void {
+  boot(device: Buffer|string, id: number = 0x0): void {
     /** Convert HEX string to Node buffer */
     if (typeof device === 'string')
       device = Buffer.from(device, 'hex');

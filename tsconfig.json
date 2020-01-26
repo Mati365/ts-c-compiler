@@ -4,5 +4,9 @@
     "target": "ES5",
     "esModuleInterop": true,
     "experimentalDecorators": true,
-  }
+  },
+  "exclude": [
+    "**/*.test.ts",
+    "node_modules/**/*"
+  ]
 }

@@ -75,7 +75,7 @@ export abstract class X86AbstractCPU {
 
   /** logic methods */
   abstract fetchOpcode(size?: number, incrementIP?: boolean, ignorePrefix?: boolean): number;
-  abstract boot(device: Buffer|string, id: number): void;
+  abstract boot(device: Buffer|string, id?: number): void;
   abstract exec(cycles: number): void;
   abstract halt(message?: string, dump?: boolean): void;
 
@@ -116,7 +116,7 @@ export abstract class X86AbstractCPU {
    * @returns {X86AbstractCPU}
    * @memberof X86AbstractCPU
    */
-  attach<C>(Device: {uuid: string, new() : X86AbstractDevice<X86AbstractCPU>}, config: C): X86AbstractCPU {
+  attach<C>(Device: {uuid: string, new() : X86AbstractDevice<X86AbstractCPU>}, config?: C): X86AbstractCPU {
     if (R.isNil(Device.uuid))
       throw new Error('Missing device uuid!');
 

@@ -273,6 +273,8 @@ export class BIOS extends uuidX86Device<X86CPU, BIOSInitConfig>('bios') {
 
   /**
    * Init hard drive interrupts, buffers
+   *
+   * @memberof BIOS
    */
   initDrive() {
     this.attachInterrupts(0x13, 'ah', {
@@ -334,7 +336,9 @@ export class BIOS extends uuidX86Device<X86CPU, BIOSInitConfig>('bios') {
   }
 
   /**
-   * Load screen interrupts, buffers
+   * Loads exec vblank
+   *
+   * @memberof BIOS
    */
   initScreen() {
     const writeCharacter = (
@@ -563,10 +567,10 @@ export class BIOS extends uuidX86Device<X86CPU, BIOSInitConfig>('bios') {
    *
    * @param {Number|Object} code  Mode
    */
-  setVideoMode(code) {
+  setVideoMode(code: number|VideoMode): void {
     const {screen, canvas, cursor, cpu} = this;
 
-    screen.mode = Number.isNaN(code) ? code : BIOS.VideoMode[code];
+    screen.mode = Number.isNaN(<number> code) ? code : BIOS.VideoMode[<number> code];
     screen.mode.clear(cpu.memIO);
 
     /** Add toolbar 20px space */
@@ -586,7 +590,7 @@ export class BIOS extends uuidX86Device<X86CPU, BIOSInitConfig>('bios') {
    *
    * @param {Context} ctx Screen context
    */
-  redraw(ctx) {
+  redraw(ctx: CanvasRenderingContext2D): void {
     const {cursor, blink, cpu, screen, canvas} = this;
     const {registers} = cpu;
 

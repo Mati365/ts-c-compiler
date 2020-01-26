@@ -1,23 +1,21 @@
 import React from 'react';
 import ReactDOM from 'react-dom';
-import Radium from 'radium';
 
 import {OutputCanvas} from './OutputCanvas';
-import CPU from '../core/X86';
+import {X86CPU} from '../emulator/X86CPU';
 import {
   BIOS,
   RTC,
   Speaker,
-} from '../core/io';
+} from '../emulator/devices';
 
-import '../assembler';
+const fetchBinaryBuffer = (path: string = 'kernels/build/mikeos.bin'): Promise<ArrayBuffer> => (
+  fetch(path)
+    .then((r) => r.arrayBuffer())
+);
 
-import compiled from '../../kernels/build/mikeos/disk_images/mikeos.flp';
-// import compiled from '../../kernels/build/bootsec.bin';
-
-@Radium
-class Terminal extends React.Component {
-  private cpu = new CPU;
+export class Terminal extends React.Component {
+  private cpu = new X86CPU;
 
   /**
    * Initialize CPU with screen
@@ -25,14 +23,14 @@ class Terminal extends React.Component {
    * @param {Context} canvas Screen context
    * @memberOf Terminal
    */
-  initializeCPU = (canvas) => {
+  initializeCPU = async (canvas: HTMLCanvasElement) => {
     this
       .cpu
-      .attach(BIOS, canvas)
+      .attach(BIOS, {canvas})
       .attach(RTC)
       .attach(Speaker)
-      .boot(Buffer.from(compiled));
-  }
+      .boot(Buffer.from(await fetchBinaryBuffer()));
+  };
 
   render() {
     return (
