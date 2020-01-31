@@ -256,12 +256,9 @@ export class X86InstructionSet extends X86Unit {
       /** JMP rel 8bit  */ 0xEB: () => cpu.relativeJump(0x1),
       /** JMP rel 16bit */ 0xE9: () => cpu.relativeJump(0x2),
       /** FAR JMP 32bit */ 0xEA: () => {
-        Object.assign(
-          registers,
-          {
-            ip: cpu.fetchOpcode(0x2),
-            cs: cpu.fetchOpcode(0x2),
-          },
+        cpu.absoluteJump(
+          cpu.fetchOpcode(0x2),
+          cpu.fetchOpcode(0x2),
         );
       },
 
@@ -323,10 +320,15 @@ export class X86InstructionSet extends X86Unit {
         const code = cpu.fetchOpcode(),
           interrupt = cpu.interrupts[code];
 
-        if (!interrupt)
-          cpu.halt(`unknown interrupt 0x${code.toString(16)}`);
-        else
-          interrupt();
+        if (!interrupt) {
+          const interruptOffset = code << 2;
+
+          cpu.absoluteJump(
+            memIO.read[0x2](interruptOffset), // offset
+            memIO.read[0x2](interruptOffset + 0x4), // segment
+          );
+        } else
+          interrupt.fn();
       },
 
       /** RCL r/m8,  cl */ 0xD2: (bits: X86BitsMode = 0x1, dir = 0x1) => {

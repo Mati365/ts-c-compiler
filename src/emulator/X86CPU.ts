@@ -238,7 +238,7 @@ export class X86CPU extends X86AbstractCPU {
    * @param {Boolean} ignorePrefix  True to ignore override
    * @returns
    */
-  fetchOpcode(size: number = 0x1, incrementIP: boolean = true, ignorePrefix: boolean = false): number {
+  fetchOpcode(size: X86BitsMode = 0x1, incrementIP: boolean = true, ignorePrefix: boolean = false): number {
     if (!ignorePrefix && this.prefixes.operandSize === 0x66)
       size = 0x4;
 
@@ -272,6 +272,23 @@ export class X86CPU extends X86AbstractCPU {
     R.forEachObjIndexed(
       (device) => device.exception(code),
       this.devices,
+    );
+  }
+
+  /**
+   * Performs jumps replacing segment and ip register
+   *
+   * @param {number} ip
+   * @param {number} cs
+   * @memberof X86CPU
+   */
+  absoluteJump(ip: number, cs: number): void {
+    Object.assign(
+      this.registers,
+      {
+        ip,
+        cs,
+      },
     );
   }
 

@@ -24,7 +24,12 @@ export class Rectangle implements RectangleDimensions {
 }
 
 /** Debugger types */
-export interface MemRange {
-  low: number,
-  high: number,
+export class MemRange {
+  low: number;
+  high: number;
+
+  constructor(low: number = 0, high: number = 0) {
+    this.low = low;
+    this.high = high;
+  }
 }

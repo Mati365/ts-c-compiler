@@ -7,7 +7,7 @@ type RAMBufferReaders = {
 type RAMBufferWriters = {
   0x1: Buffer['writeUInt8'],
   0x2: Buffer['writeUInt16LE'],
-  0x4: Buffer['writeUInt16LE'],
+  0x4: Buffer['writeUInt32LE'],
 };
 
 /**
@@ -39,7 +39,7 @@ export class X86RAM<T> {
     this.write = {
       /** 8bit  */ 0x1: device.writeUInt8.bind(device),
       /** 16bit */ 0x2: device.writeUInt16LE.bind(device),
-      /** 32bit */ 0x4: device.writeUInt16LE.bind(device),
+      /** 32bit */ 0x4: device.writeUInt32LE.bind(device),
     };
   }
 }

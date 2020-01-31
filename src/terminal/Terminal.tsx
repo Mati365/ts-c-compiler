@@ -9,7 +9,8 @@ import {
   Speaker,
 } from '../emulator/devices';
 
-const fetchBinaryBuffer = (path: string = 'kernels/build/mikeos/disk_images/mikeos.flp'): Promise<ArrayBuffer> => (
+// 'kernels/build/mikeos/disk_images/mikeos.flp'
+const fetchBinaryBuffer = (path: string = 'kernels/build/bootsec.bin'): Promise<ArrayBuffer> => (
   fetch(path)
     .then((r) => r.arrayBuffer())
 );

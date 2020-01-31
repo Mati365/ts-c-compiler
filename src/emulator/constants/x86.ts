@@ -1,8 +1,12 @@
 import * as R from 'ramda';
+
+import {MemRange} from '../../shared/types';
 import {
   X86Prefix,
   X86RegsSet,
 } from '../types/X86Regs';
+
+export const X86_MAPPED_VM_MEM = Object.freeze(new MemRange(0xC8000, 0xEFFFF));
 
 export const X86_EXCEPTION = {
   MEM_DUMP: 0x0,

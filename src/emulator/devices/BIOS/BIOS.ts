@@ -1,9 +1,10 @@
 import {
   BIOS_COLOR_TABLE,
   CP437_UNICODE_FONT_MAPPING,
-  X86_REALMODE_MAPPED_ADDRESSES,
   SCAN_CODES_TABLE,
   AT2_SCAN_CODES_QWERTY,
+  X86_MAPPED_VM_MEM,
+  X86_REALMODE_MAPPED_ADDRESSES,
 } from '../../constants/x86';
 
 import {uuidX86Device} from '../../types/X86AbstractDevice';
@@ -84,6 +85,15 @@ export class BIOS extends uuidX86Device<X86CPU, BIOSInitConfig>('bios') {
   private canvas: BIOSCanvas;
 
   private drives: {[drive: number]: BIOSFloppyDrive} = null;
+
+  /**
+   * Creates an instance of BIOS.
+   *
+   * @memberof BIOS
+   */
+  constructor() {
+    super(X86_MAPPED_VM_MEM);
+  }
 
   /**
    * Initialize BIOS
@@ -207,10 +217,10 @@ export class BIOS extends uuidX86Device<X86CPU, BIOSInitConfig>('bios') {
      * Pause execution until press a button
      * but if user already is pressing button - do not pause
      */
-    const keyListener = (callback) => {
+    const keyListener = (callback: (key: any) => void) => {
       if (keymap.key === null) {
         this.cpu.pause = true;
-        keymap.callback = (e) => {
+        keymap.callback = (e: KeyboardEvent): void => {
           e.preventDefault();
 
           callback(keymap.key);

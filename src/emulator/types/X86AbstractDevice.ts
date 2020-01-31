@@ -1,9 +1,11 @@
+import {X86_MAPPED_VM_MEM} from '../constants/x86';
+
 import {
   MemRange,
   UnmountCallback,
 } from '../../shared/types';
 
-import {X86InterruptsSet} from './X86Interrupt';
+import {X86InterruptsSet, X86InterruptHandlerCallback} from './X86Interrupt';
 import {X86PortsSet} from './X86Port';
 import {X86RegName} from './X86Regs';
 import {X86AbstractCPU} from './X86AbstractCPU';
@@ -84,18 +86,27 @@ export abstract class X86AbstractDevice<
    *
    * @param {(string|number)} interruptCode
    * @param {X86RegName} reg
-   * @param {X86InterruptsSet} list
-   * @memberof AbstractDevice
+   * @param {{[address: number]: X86InterruptHandlerCallback}} list
+   * @param {number} [physicalAddress=(this.mem?.low || X86_MAPPED_VM_BIOS_MEM.low) + +interruptCode]
+   * @memberof X86AbstractDevice
    */
-  attachInterrupts(interruptCode: string|number, reg: X86RegName, list: X86InterruptsSet) {
-    this.interrupts[interruptCode] = () => {
-      const func = <number> this.regs[reg];
-      const callback = list[func];
+  attachInterrupts(
+    interruptCode: string|number,
+    reg: X86RegName,
+    list: {[address: number]: X86InterruptHandlerCallback},
+    physicalAddress: number = (this.mem?.low || X86_MAPPED_VM_MEM.low) + +interruptCode,
+  ) {
+    this.interrupts[interruptCode] = {
+      physicalAddress,
+      fn: () => {
+        const func = <number> this.regs[reg];
+        const callback = list[func];
 
-      if (callback)
-        callback(this.regs);
-      else
-        this.cpu.halt(`Unknown interrupt 0x${interruptCode.toString(16)} function 0x${func.toString(16)}!`);
+        if (callback)
+          callback(this.regs);
+        else
+          this.cpu.halt(`Unknown interrupt 0x${interruptCode.toString(16)} function 0x${func.toString(16)}!`);
+      },
     };
   }
 
