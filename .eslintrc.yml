@@ -59,7 +59,7 @@
     no-underscore-dangle: 0
     no-console: ["error", {"allow": ["warn", "error", "info"]}]
     no-use-before-define: ["error", {"variables": false}]
-    no-unused-expressions: ["error", {"allowShortCircuit": true}]
+    no-unused-expressions: ["error", {"allowTaggedTemplates": true, "allowShortCircuit": true}]
     react/destructuring-assignment: 0
     react/forbid-prop-types: 0
     react/prefer-stateless-function: [1, {"ignorePureComponents": true}]

@@ -249,7 +249,10 @@ export class X86InstructionSet extends X86Unit {
       },
 
       /** CALL 16bit/32bit dis  */ 0xE8: () => {
-        stack.push(registers.ip + 0x2);
+        stack.push(
+          X86AbstractCPU.toUnsignedNumber(registers.ip + 0x2, 0x2),
+        );
+
         cpu.relativeJump(0x2);
       },
 
@@ -322,6 +325,11 @@ export class X86InstructionSet extends X86Unit {
 
         if (!interrupt) {
           const interruptOffset = code << 2;
+
+          stack
+            .push(registers.flags)
+            .push(registers.cs)
+            .push(registers.ip);
 
           cpu.absoluteJump(
             memIO.read[0x2](interruptOffset), // offset

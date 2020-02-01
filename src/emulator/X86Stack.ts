@@ -59,13 +59,16 @@ export class X86Stack extends X86Unit {
    *
    * @param {number} val Value to be stored on stack
    * @param {number} [bits=0x2] Intel 8086 supports only 16bit stack
-   * @memberof X86CPU
+   * @returns {X86Stack}
+   * @memberof X86Stack
    */
-  push(val: number, bits: number = 0x2): void {
+  push(val: number, bits: number = 0x2): X86Stack {
     const {memIO, registers} = this.cpu;
 
     registers.sp = X86AbstractCPU.toUnsignedNumber(registers.sp - bits, 0x2);
     memIO.write[bits](val, this.cpu.lastStackAddr);
+
+    return this;
   }
 
   /**

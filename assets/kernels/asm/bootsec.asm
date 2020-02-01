@@ -33,6 +33,7 @@ macro load_interrupt_handler interrupt_index, fn_address {
 
 load_interrupt_handler 9h, fuk_interrupt_handler
 int 9h
+xchg bx, bx
 
 sysSuspend:
   cli
@@ -42,7 +43,6 @@ sysSuspend:
 ; przerwanie 9h PIC
 fuk_interrupt_handler:
   pusha
-    xchg bx, bx
   popa
   iret
 

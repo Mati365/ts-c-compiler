@@ -35,7 +35,7 @@ export class ASTParser {
     return nextToken;
   }
 
-  parse() {
+  getTree() {
     const {nodeParsers, tokens} = this;
     const astNodes = [];
 
