@@ -1,7 +1,27 @@
 import * as R from 'ramda';
+import {X86BitsMode, X86RegName} from '../../emulator/types';
 
 export class Register {
-  constructor(mnemonic, index, size, segment) {
+  public mnemonic: X86RegName;
+  public index: number;
+  public size: X86BitsMode;
+  public segment: boolean;
+
+  /**
+   * Creates an instance of Register.
+   *
+   * @param {X86RegName} mnemonic
+   * @param {number} index
+   * @param {X86BitsMode} size
+   * @param {boolean} segment
+   * @memberof Register
+   */
+  constructor(
+    mnemonic: X86RegName,
+    index: number,
+    size: X86BitsMode,
+    segment: boolean,
+  ) {
     this.mnemonic = mnemonic;
     this.index = index;
     this.size = size;
@@ -12,9 +32,9 @@ export class Register {
 /**
  * Reduce registers to object with [regName]: Register
  */
-export default R.reduce(
+export const COMPILER_REGISTERS_SET = R.reduce(
   (acc, register) => {
-    acc[register.mnemonic] = register;
+    acc[register.mnemonic] = Object.freeze(register);
     return acc;
   },
   {},

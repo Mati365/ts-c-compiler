@@ -4,7 +4,7 @@ const defaultToEmpty = R.defaultTo('');
 
 const indexedReduce = R.addIndex(R.reduce);
 
-const tagFunction = fn => (strings, ...values) => {
+export const tagFunction = (fn: (...args: any[]) => any) => (strings: TemplateStringsArray, ...values: any[]) => {
   const template = indexedReduce(
     (prev, string, index) => `${prev}${string}${defaultToEmpty(values[index])}`,
     '',
@@ -13,5 +13,3 @@ const tagFunction = fn => (strings, ...values) => {
 
   return fn(template);
 };
-
-export default tagFunction;

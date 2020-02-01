@@ -1,4 +1,5 @@
 import * as R from 'ramda';
+import {X86BitsMode} from '../../emulator/types';
 
 /**
  * Mnemonic notation:
@@ -17,14 +18,22 @@ import * as R from 'ramda';
  * r0 - relative short displacement to label 'sl' (-128/+127 bytes)
  * r0 r1 - relative long displacement to label 'll' (-32768/+32767 bytes)
  */
+export enum InstructionArgType {
+  MEM,
+  REGISTER,
+  REGISTER_MEM,
+}
+
 export class InstructionArgValue {
-  static Type = {
-    MEMORY_ADDRESS: 1,
-    REGISTER: 2,
+  public type: InstructionArgType;
+  public size: X86BitsMode;
+  public value: number;
 
-  };
-
-  constructor(type, size, value) {
+  constructor(
+    type: InstructionArgType,
+    size: X86BitsMode,
+    value: number,
+  ) {
     this.type = type;
     this.size = size;
     this.value = value;
@@ -40,14 +49,21 @@ export class InstructionArgValue {
  * http://www.mathemainzel.info/files/x86asmref.html
  */
 export class InstructionSchema {
-  constructor(mnemonic, argsSchema, binarySchema) {
-    this.mnemonic = mnemonic;
+  public mnemonic: string;
+  public argsSchema: string[];
+  public binarySchema: string;
 
+  constructor(
+    mnemonic: string,
+    argsSchema: string|string[],
+    binarySchema: string,
+  ) {
+    this.mnemonic = mnemonic;
     this.binarySchema = binarySchema;
     this.argsSchema = (
       R.is(String, argsSchema)
-        ? R.split(' ', argsSchema)
-        : argsSchema
+        ? R.split(' ', <string> argsSchema)
+        : <string[]> argsSchema
     );
   }
 }
@@ -58,13 +74,13 @@ const mapIndexedInstructions = R.mapObjIndexed(
       instructionList = [instructionList];
 
     return R.map(
-      args => new InstructionSchema(instructionName, ...args),
-      instructionList,
+      ([argsSchema, binarySchema]) => new InstructionSchema(instructionName, argsSchema, binarySchema),
+      <any[]> instructionList,
     );
   },
 );
 
-export default mapIndexedInstructions({
+export const COMPILER_INSTRUCTIONS_SET = mapIndexedInstructions({
   mov: [
     ['al rmb', 'a0 d0 d1'],
     ['ax rmw', 'a1 d0 d1'],

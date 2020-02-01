@@ -1,2 +1,2 @@
-export {default as ast} from './ast/ast';
-export {default as lexer} from './lexer/lexer';
+export * from './ast/ast';
+export * from './lexer/lexer';

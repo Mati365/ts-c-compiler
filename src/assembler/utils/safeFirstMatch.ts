@@ -4,18 +4,15 @@ import * as R from 'ramda';
  * Returns first matching group of regex
  *
  * @param {Regex} regex
- * @param {String} str
+ * @param {string} str
  *
- * @returns {String} first match
+ * @returns {string} first match
  */
-const safeFirstMatch = regex => R.compose(
-  (output) => {
-    if (!output || !output.length)
-      return null;
+export const safeFirstMatch = R.curry((regex: RegExp, str: string): string => {
+  const output = R.match(regex, str);
 
-    return R.defaultTo(output[2], output[1]);
-  },
-  R.match(regex),
-);
+  if (!output || !output.length)
+    return null;
 
-export default safeFirstMatch;
+  return R.defaultTo(output[2], output[1]);
+});

@@ -5,15 +5,34 @@ import {
   isNewline,
 } from '../../utils/matchCharacter';
 
-import Token, {TokenLocation, TOKEN_PARSERS, TOKEN_TYPES} from './Token';
+import {
+  Token,
+  NumberToken,
+  TokenType,
+  TokenLocation,
+} from './tokens';
+
+/**
+ * Set of all parsers
+ */
+export const TOKEN_PARSERS = Object.freeze(
+  {
+    /** NUMBER */
+    [TokenType.NUMBER]: NumberToken.parse,
+
+    /** KEYWORD */
+    [TokenType.KEYWORD]: R.T,
+  },
+);
 
 /**
  * Analyze single token
  *
- * @param {TokenLocation} locaiton
- * @param {String} token
+ * @param {TokenLocation} location
+ * @param {string} token
+ * @returns {Token}
  */
-const parseToken = (location, token) => {
+function parseToken(location: TokenLocation, token: string): Token {
   if (!token || !token.length)
     return null;
 
@@ -24,17 +43,17 @@ const parseToken = (location, token) => {
 
     // result might return boolean return from has() function
     if (result === true)
-      return new Token(tokenType, token, location.clone());
+      return new Token(<any> tokenType, token, location.clone());
 
     // it might be also object without type
     if (!result?.type)
-      return new Token(tokenType, token, location.clone(), result);
+      return new Token(<any> tokenType, token, location.clone(), result);
 
     return result;
   }
 
   throw new Error(`Unknown "${token}" token!`);
-};
+}
 
 /**
  * Split code into tokens
@@ -46,13 +65,13 @@ const parseToken = (location, token) => {
  *
  * @returns {Token[]}
  */
-function* lexer(code) {
+export function* lexer(code: string): IterableIterator<Token> {
   const {length} = code;
 
   let tokenBuffer = '';
   const location = new TokenLocation;
 
-  function* appendToken(token) {
+  function* appendToken(token: Token): Iterable<Token> {
     if (!token)
       return;
 
@@ -95,7 +114,7 @@ function* lexer(code) {
 
       yield* appendToken(
         new Token(
-          TOKEN_TYPES.QUOTE,
+          TokenType.QUOTE,
           tokenBuffer,
           location.clone(),
         ),
@@ -105,9 +124,9 @@ function* lexer(code) {
 
 
     if (newLine)
-      yield* appendCharToken(TOKEN_TYPES.EOL, character);
+      yield* appendCharToken(TokenType.EOL, character);
     else if (character === ',')
-      yield* appendCharToken(TOKEN_TYPES.COMMA, character);
+      yield* appendCharToken(TokenType.COMMA, character);
     else if (character !== ' ') {
       // append character and find matching token
       tokenBuffer += character;
@@ -119,7 +138,5 @@ function* lexer(code) {
     }
   }
 
-  yield* appendCharToken(TOKEN_TYPES.EOF, null);
+  yield* appendCharToken(TokenType.EOF, null);
 }
-
-export default lexer;

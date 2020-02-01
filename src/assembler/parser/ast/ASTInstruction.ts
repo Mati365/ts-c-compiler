@@ -1,17 +1,30 @@
-import INSTRUCTION_SET_SCHEMA from '../../constants/instructionSetSchema';
-import {TOKEN_TYPES} from '../lexer/Token';
+import {InstructionSchema, COMPILER_INSTRUCTIONS_SET} from '../../constants/instructionSetSchema';
 
-import ASTNode from './ASTNode';
+import {ASTParser} from './ASTParser';
+import {
+  KindASTNode,
+  ASTNodeLocation,
+} from './ASTNode';
 
-// import * as R from 'ramda';
+import {
+  TokenType,
+  Token,
+} from '../lexer/tokens';
 
-export default class ASTInstruction extends ASTNode('Instruction') {
-  constructor(schema, loc, args) {
+/**
+ * Parser for:
+ * [opcode] [arg1] [arg2] [argX]
+ *
+ * @export
+ * @class ASTInstruction
+ * @extends {KindASTNode('Instruction')}
+ */
+export class ASTInstruction extends KindASTNode('Instruction') {
+  public schema: InstructionSchema;
+
+  constructor(schema: InstructionSchema, loc: ASTNodeLocation) {
     super(loc);
-
-    this.loc = loc;
     this.schema = schema;
-    this.args = args;
   }
 
   /**
@@ -24,11 +37,11 @@ export default class ASTInstruction extends ASTNode('Instruction') {
    * @returns ASTInstruction
    * @memberof ASTInstruction
    */
-  static parse(token, {fetchNextToken}) {
-    if (token.type !== TOKEN_TYPES.KEYWORD)
+  static parse(token: Token, parser: ASTParser): ASTInstruction {
+    if (token.type !== TokenType.KEYWORD)
       return null;
 
-    const schema = INSTRUCTION_SET_SCHEMA[token.text];
+    const schema = COMPILER_INSTRUCTIONS_SET[token.text];
     if (!schema)
       return null;
 
@@ -38,23 +51,18 @@ export default class ASTInstruction extends ASTNode('Instruction') {
     while (true) {
       // value
       args.push(
-        fetchNextToken(1, true),
+        parser.fetchNextToken(1, true),
       );
 
       // comma
-      const commaToken = fetchNextToken();
-      if (commaToken?.type !== TOKEN_TYPES.COMMA)
+      const commaToken = parser.fetchNextToken();
+      if (commaToken?.type !== TokenType.COMMA)
         break;
     }
 
-    console.log(args);
     return new ASTInstruction(
-      schema,
-      {
-        start: token.loc,
-        end: token.loc,
-      },
-      args,
+      schema[0],
+      new ASTNodeLocation(token.loc, token.loc),
     );
   }
 }
