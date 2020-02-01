@@ -2,6 +2,7 @@ import {TokenLocation} from './TokenLocation';
 
 export enum TokenType {
   QUOTE = 'QUOTE',
+  BRACKET = 'BRACKET',
   COMMA = 'COMMA',
   NUMBER = 'NUMBER',
   OPERATOR = 'OPERATOR',

@@ -3,6 +3,7 @@ import * as R from 'ramda';
 import {
   isQuote,
   isNewline,
+  isBracket,
 } from '../../utils/matchCharacter';
 
 import {
@@ -67,9 +68,10 @@ function parseToken(location: TokenLocation, token: string): Token {
  */
 export function* lexer(code: string): IterableIterator<Token> {
   const {length} = code;
+  const location = new TokenLocation;
 
   let tokenBuffer = '';
-  const location = new TokenLocation;
+  let offset = 0;
 
   function* appendToken(token: Token): Iterable<Token> {
     if (!token)
@@ -79,7 +81,7 @@ export function* lexer(code: string): IterableIterator<Token> {
     yield token;
   }
 
-  function* appendCharToken(type, character) {
+  function* appendCharToken(type: TokenType, character: string): IterableIterator<Token> {
     if (R.trim(tokenBuffer).length) {
       yield* appendToken(
         parseToken(location, tokenBuffer),
@@ -95,8 +97,24 @@ export function* lexer(code: string): IterableIterator<Token> {
     );
   }
 
-  for (let i = 0; i < length; ++i) {
-    const character = code[i];
+  function* appendTokenWithSpaces(type: TokenType, fetchUntil: (str: string) => boolean): Iterable<Token> {
+    tokenBuffer = '';
+    for (; offset < length && !fetchUntil(code[offset]); ++offset)
+      tokenBuffer += code[offset];
+
+    yield* appendToken(
+      new Token(
+        type,
+        tokenBuffer,
+        location.clone(),
+      ),
+    );
+
+    tokenBuffer = '';
+  }
+
+  for (; offset < length; ++offset) {
+    const character = code[offset];
     const newLine = isNewline(character);
 
     // used for logger
@@ -106,22 +124,18 @@ export function* lexer(code: string): IterableIterator<Token> {
     } else
       location.column++;
 
-    // special quote token, ignore all content, mark as ignored area
+    // special tokens that might contain spaces inside them
     if (isQuote(character)) {
-      tokenBuffer = '';
-      for (i++; i < length && !isQuote(code[i]); ++i)
-        tokenBuffer += code[i];
-
-      yield* appendToken(
-        new Token(
-          TokenType.QUOTE,
-          tokenBuffer,
-          location.clone(),
-        ),
-      );
+      offset++;
+      yield* appendTokenWithSpaces(TokenType.QUOTE, isQuote);
       continue;
     }
 
+    if (isBracket(character)) {
+      offset++;
+      yield* appendTokenWithSpaces(TokenType.BRACKET, isBracket);
+      continue;
+    }
 
     if (newLine)
       yield* appendCharToken(TokenType.EOL, character);
