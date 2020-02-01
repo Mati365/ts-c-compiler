@@ -22,6 +22,7 @@ export enum InstructionArgType {
   MEM,
   REGISTER,
   REGISTER_MEM,
+  NUMBER,
 }
 
 export class InstructionArgValue {

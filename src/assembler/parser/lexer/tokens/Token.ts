@@ -1,15 +1,15 @@
 import {TokenLocation} from './TokenLocation';
 
 export enum TokenType {
-  QUOTE,
-  COMMA,
-  NUMBER,
-  OPERATOR,
-  KEYWORD,
-  CHARACTER,
-  STRING,
-  EOL,
-  EOF,
+  QUOTE = 'QUOTE',
+  COMMA = 'COMMA',
+  NUMBER = 'NUMBER',
+  OPERATOR = 'OPERATOR',
+  KEYWORD = 'KEYWORD',
+  CHARACTER = 'CHARACTER',
+  STRING = 'STRING',
+  EOL = 'EOL',
+  EOF = 'EOF',
 }
 
 /**

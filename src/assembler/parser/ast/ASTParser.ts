@@ -1,6 +1,6 @@
 import {isWhitespace} from '../../utils/matchCharacter';
 
-import {Token} from '../lexer/tokens';
+import {Token, TokenType} from '../lexer/tokens';
 import {ASTNode} from './ASTNode';
 
 export type ASTInstructionParser = {
@@ -35,7 +35,13 @@ export class ASTParser {
     return nextToken;
   }
 
-  getTree() {
+  /**
+   * Fetches array of matched instructions, labels etc
+   *
+   * @returns {ASTNode[]}
+   * @memberof ASTParser
+   */
+  getTree(): ASTNode[] {
     const {nodeParsers, tokens} = this;
     const astNodes = [];
 
@@ -44,6 +50,9 @@ export class ASTParser {
     for (; this.tokenIndex < tokens.length; ++this.tokenIndex) {
       const token = tokens[this.tokenIndex];
       let tokenParsed = false;
+
+      if (token.type === TokenType.EOF)
+        break;
 
       for (let j = 0; j < nodeParsers.length; ++j) {
         const astNode = nodeParsers[j].parse(token, this);
@@ -55,8 +64,10 @@ export class ASTParser {
         }
       }
 
-      if (!isWhitespace(<string> token.text) && !tokenParsed)
+      if (!tokenParsed && !isWhitespace(<string> token.text))
         throw new Error(`Unknown token "${token.text}" (type: ${token.type}) at line ${token.loc.row}!`);
     }
+
+    return astNodes;
   }
 }

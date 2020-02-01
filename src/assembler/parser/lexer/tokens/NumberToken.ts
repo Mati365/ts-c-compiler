@@ -1,6 +1,7 @@
 import * as R from 'ramda';
 
 import {safeFirstMatch} from '../../../utils/safeFirstMatch';
+import {numberByteSize} from '../../../utils/numberByteSize';
 
 import {TokenLocation} from './TokenLocation';
 import {TokenType, Token} from './Token';
@@ -13,6 +14,7 @@ export enum NumberFormat {
 
 export type NumberTokenValue = {
   number: number,
+  byteSize: number,
   format: NumberFormat,
 };
 
@@ -35,6 +37,7 @@ export class NumberToken extends Token<NumberTokenValue> {
       text,
       loc,
       {
+        byteSize: numberByteSize(number),
         number,
         format,
       },

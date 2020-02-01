@@ -4,7 +4,7 @@ import {X86BitsMode, X86RegName} from '../../emulator/types';
 export class Register {
   public mnemonic: X86RegName;
   public index: number;
-  public size: X86BitsMode;
+  public byteSize: X86BitsMode;
   public segment: boolean;
 
   /**
@@ -12,19 +12,19 @@ export class Register {
    *
    * @param {X86RegName} mnemonic
    * @param {number} index
-   * @param {X86BitsMode} size
+   * @param {X86BitsMode} byteSize
    * @param {boolean} segment
    * @memberof Register
    */
   constructor(
     mnemonic: X86RegName,
     index: number,
-    size: X86BitsMode,
+    byteSize: X86BitsMode,
     segment: boolean,
   ) {
     this.mnemonic = mnemonic;
     this.index = index;
-    this.size = size;
+    this.byteSize = byteSize;
     this.segment = segment;
   }
 }
@@ -32,7 +32,7 @@ export class Register {
 /**
  * Reduce registers to object with [regName]: Register
  */
-export const COMPILER_REGISTERS_SET = R.reduce(
+export const COMPILER_REGISTERS_SET: {[name: string]: Register} = R.reduce(
   (acc, register) => {
     acc[register.mnemonic] = Object.freeze(register);
     return acc;

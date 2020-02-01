@@ -1,1 +1,2 @@
-import './terminal/Terminal';
+// import './terminal/Terminal';
+import './assembler/syntax';
