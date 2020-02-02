@@ -1,7 +1,7 @@
 import {
   InstructionArgValue,
   InstructionArgType,
-} from '../../types/InstructionArg';
+} from '../../../types/InstructionArg';
 
 /**
  * Used for parser to check argument size or type

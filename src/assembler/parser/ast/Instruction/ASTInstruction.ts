@@ -1,18 +1,19 @@
 import * as R from 'ramda';
 
-import {COMPILER_INSTRUCTIONS_SET} from '../../constants/instructionSetSchema';
+import {COMPILER_INSTRUCTIONS_SET} from '../../../constants/instructionSetSchema';
 
-import {InstructionSchema} from '../../types/InstructionSchema';
-import {InstructionArgType} from '../../types/InstructionArg';
+import {InstructionPrefixesBitset} from '../../../constants';
+import {InstructionSchema} from '../../../types/InstructionSchema';
+import {InstructionArgType} from '../../../types/InstructionArg';
 
-import {ASTParser} from './ASTParser';
+import {ASTParser} from '../ASTParser';
 import {ASTInstructionArg} from './ASTInstructionArg';
 import {ASTInstructionMemArg} from './ASTInstructionMemArg';
 
 import {
   KindASTNode,
   ASTNodeLocation,
-} from './ASTNode';
+} from '../ASTNode';
 
 import {
   TokenType,
@@ -20,7 +21,7 @@ import {
   NumberToken,
   RegisterToken,
   TokenKind,
-} from '../lexer/tokens';
+} from '../../lexer/tokens';
 
 /**
  * Parser for:
@@ -33,16 +34,19 @@ import {
 export class ASTInstruction extends KindASTNode('Instruction') {
   public schema: InstructionSchema;
   public args: ASTInstructionArg[];
+  public prefixes: number;
 
   constructor(
     schema: InstructionSchema,
     args: ASTInstructionArg[],
     loc: ASTNodeLocation,
+    prefixes: number = 0x0,
   ) {
     super(loc);
 
     this.schema = schema;
     this.args = args;
+    this.prefixes = prefixes;
   }
 
   /**
@@ -102,6 +106,20 @@ export class ASTInstruction extends KindASTNode('Instruction') {
     if (token.type !== TokenType.KEYWORD)
       return null;
 
+    // match prefixes
+    /* eslint-disable no-constant-condition */
+    let prefixes = 0x0;
+    do {
+      const prefix = InstructionPrefixesBitset[R.toUpper(<string> token.text)];
+      if (!prefix)
+        break;
+
+      prefixes |= prefix;
+      token = parser.fetchNextToken();
+    } while (true);
+    /* eslint-enable no-constant-condition */
+
+    // match mnemonic
     const schema = COMPILER_INSTRUCTIONS_SET[token.text];
     if (!schema)
       return null;
@@ -125,6 +143,7 @@ export class ASTInstruction extends KindASTNode('Instruction') {
       schema[0],
       ASTInstruction.parseInstructionArgsTokens(argsTokens),
       new ASTNodeLocation(token.loc, token.loc),
+      prefixes,
     );
   }
 }

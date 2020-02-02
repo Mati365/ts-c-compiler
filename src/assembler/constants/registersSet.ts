@@ -1,6 +1,12 @@
 import * as R from 'ramda';
 import {RegisterSchema} from '../types/RegisterSchema';
 
+export enum InstructionPrefixesBitset {
+  REP = 1 << 0,
+  REPNE = 1 << 1,
+  LOCK = 1 << 2,
+}
+
 /**
  * Reduce registers to object with [regName]: Register
  */

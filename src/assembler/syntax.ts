@@ -17,6 +17,7 @@ console.log(compile`
   mov cx, [ds:si * 4 + cx + 16]
   mov ax, bx
   mov cx, ah
+  repne mov ax
   int 0x31
 `);
 /* eslint-enable no-console,@typescript-eslint/no-unused-expressions */

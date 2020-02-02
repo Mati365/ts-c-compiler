@@ -1,6 +1,7 @@
 import {Token} from '../lexer/tokens';
-import {ASTInstruction} from './ASTInstruction';
+
 import {ASTParser} from './ASTParser';
+import {ASTInstruction} from './Instruction/ASTInstruction';
 
 export const ASTNodesParsers = [
   ASTInstruction,

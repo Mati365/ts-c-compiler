@@ -1,9 +1,9 @@
 import * as R from 'ramda';
 
-import {COMPILER_REGISTERS_SET} from '../../constants';
+import {COMPILER_REGISTERS_SET} from '../../../constants';
 
-import {lexer} from '../lexer/lexer';
-import {isOperator} from '../../utils/matchCharacter';
+import {lexer} from '../../lexer/lexer';
+import {isOperator} from '../../../utils/matchCharacter';
 
 import {
   TokenType,
@@ -11,15 +11,15 @@ import {
   Token,
   RegisterToken,
   NumberToken,
-} from '../lexer/tokens';
+} from '../../lexer/tokens';
 
-import {RegisterSchema} from '../../types/RegisterSchema';
+import {RegisterSchema} from '../../../types/RegisterSchema';
 import {
   InstructionArgType,
   MemAddressDescription,
   isValidScale,
   MemSIBScale,
-} from '../../types/InstructionArg';
+} from '../../../types/InstructionArg';
 
 import {ASTInstructionArg} from './ASTInstructionArg';
 
