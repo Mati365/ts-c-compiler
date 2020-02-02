@@ -6,10 +6,8 @@ import {InstructionSchema} from '../../types/InstructionSchema';
 import {InstructionArgType} from '../../types/InstructionArg';
 
 import {ASTParser} from './ASTParser';
-import {
-  ASTInstructionMemArg,
-  ASTInstructionArg,
-} from './ASTInstructionArgs';
+import {ASTInstructionArg} from './ASTInstructionArg';
+import {ASTInstructionMemArg} from './ASTInstructionMemArg';
 
 import {
   KindASTNode,
