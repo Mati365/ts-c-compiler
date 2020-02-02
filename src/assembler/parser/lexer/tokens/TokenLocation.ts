@@ -18,4 +18,10 @@ export class TokenLocation {
 
     return new TokenLocation(row, column);
   }
+
+  toString() {
+    const {row, column} = this;
+
+    return `row: ${row}, col: ${column}`;
+  }
 }

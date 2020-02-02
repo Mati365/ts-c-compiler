@@ -36,6 +36,7 @@ export const TOKEN_PARSERS: {
 
 const SEPARATOR_CHARACTERS: {[operator: string]: TokenType} = {
   ',': TokenType.COMMA,
+  ':': TokenType.COLON,
   '+': TokenType.PLUS,
   '-': TokenType.MINUS,
   '*': TokenType.MUL,
@@ -78,11 +79,12 @@ function parseToken(location: TokenLocation, token: string): Token {
  * @see
  *  It contains also lexer logic!
  *
- * @param {String} code
- *
- * @returns {Token[]}
+ * @export
+ * @param {string} code
+ * @param {boolean} [appendEOF=true]
+ * @returns {IterableIterator<Token>}
  */
-export function* lexer(code: string): IterableIterator<Token> {
+export function* lexer(code: string, appendEOF: boolean = true): IterableIterator<Token> {
   const {length} = code;
   const location = new TokenLocation;
 
@@ -159,22 +161,30 @@ export function* lexer(code: string): IterableIterator<Token> {
     // end of line
     if (newLine)
       yield* appendCharToken(TokenType.EOL, character);
-
-    // match cahracters that divides word
-    const separator = SEPARATOR_CHARACTERS[character];
-    if (separator)
-      yield* appendCharToken(separator, character);
-    else if (character !== ' ') {
-      // append character and find matching token
-      tokenBuffer += character;
-    } else {
-      // if empty character
-      yield* appendToken(
-        parseToken(location, tokenBuffer),
-      );
+    else {
+      // match cahracters that divides word
+      const separator = SEPARATOR_CHARACTERS[character];
+      if (separator)
+        yield* appendCharToken(separator, character);
+      else if (character !== ' ') {
+        // append character and find matching token
+        tokenBuffer += character;
+      } else {
+        // if empty character
+        yield* appendToken(
+          parseToken(location, tokenBuffer),
+        );
+      }
     }
   }
 
+  if (tokenBuffer) {
+    yield* appendToken(
+      parseToken(location, tokenBuffer),
+    );
+  }
+
   // end of file
-  yield* appendCharToken(TokenType.EOF, null);
+  if (appendEOF)
+    yield* appendCharToken(TokenType.EOF, null);
 }

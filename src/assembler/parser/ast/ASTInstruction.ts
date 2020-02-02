@@ -1,16 +1,16 @@
 import * as R from 'ramda';
 
 import {COMPILER_INSTRUCTIONS_SET} from '../../constants/instructionSetSchema';
-import {lexer} from '../lexer/lexer';
 
 import {InstructionSchema} from '../../types/InstructionSchema';
-import {
-  InstructionArgValue,
-  InstructionArgType,
-  MemAddressDescription,
-} from '../../types/InstructionArg';
+import {InstructionArgType} from '../../types/InstructionArg';
 
 import {ASTParser} from './ASTParser';
+import {
+  ASTInstructionMemArg,
+  ASTInstructionArg,
+} from './ASTInstructionArgs';
+
 import {
   KindASTNode,
   ASTNodeLocation,
@@ -23,27 +23,6 @@ import {
   RegisterToken,
   TokenKind,
 } from '../lexer/tokens';
-
-/**
- * Used for parser to check argument size or type
- *
- * @class ASTInstructionArg
- */
-class ASTInstructionArg {
-  public type: InstructionArgType;
-  public value: InstructionArgValue;
-  public byteSize: number;
-
-  constructor(
-    type: InstructionArgType,
-    value: InstructionArgValue,
-    byteSize: number = 1,
-  ) {
-    this.type = type;
-    this.value = value;
-    this.byteSize = byteSize;
-  }
-}
 
 /**
  * Parser for:
@@ -66,20 +45,6 @@ export class ASTInstruction extends KindASTNode('Instruction') {
 
     this.schema = schema;
     this.args = args;
-  }
-
-  /**
-   * Resolves from string expression instruction address
-   *
-   * @static
-   * @param {string} expression
-   * @returns {MemAddressDescription}
-   * @memberof ASTInstruction
-   */
-  static parseInstructionMemExpression(expression: string): MemAddressDescription {
-    console.log(Array.from(lexer(expression)));
-
-    return {};
   }
 
   /**
@@ -111,13 +76,8 @@ export class ASTInstruction extends KindASTNode('Instruction') {
 
         // Mem address
         case TokenType.BRACKET:
-          if (token.kind === TokenKind.SQUARE_BRACKET) {
-            return new ASTInstructionArg(
-              InstructionArgType.MEMORY,
-              ASTInstruction.parseInstructionMemExpression(<string> token.text),
-              null,
-            );
-          }
+          if (token.kind === TokenKind.SQUARE_BRACKET)
+            return new ASTInstructionMemArg(<string> token.text);
           break;
 
         default:

@@ -66,7 +66,7 @@ export class NumberToken extends Token<NumberTokenValue> {
        *  - 0xc8
        *  - 0hc8
        */
-      HEX: safeNumberMatch(/^(?:\$?0c|0x|0h)([\da-f]+)|([\da-f]+h)$/, 16),
+      HEX: safeNumberMatch(/^(?:\$?0c|0x|0h)([\da-f]+)|(\d+h)|(0[\da-f]+h)$/i, 16),
 
       /**
        * Allowed DEC format:

@@ -63,12 +63,17 @@ export class ASTParser {
         break;
 
       for (let j = 0; j < nodeParsers.length; ++j) {
-        const astNode = nodeParsers[j].parse(token, this);
+        try {
+          const astNode = nodeParsers[j].parse(token, this);
 
-        if (astNode) {
-          astNodes.push(astNode);
-          tokenParsed = true;
-          break;
+          if (astNode) {
+            astNodes.push(astNode);
+            tokenParsed = true;
+            break;
+          }
+        } catch (e) {
+          console.error(`(${token.loc.toString()}): ${e.message}`);
+          return null;
         }
       }
 

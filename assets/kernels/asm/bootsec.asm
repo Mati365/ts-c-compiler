@@ -33,6 +33,7 @@ macro load_interrupt_handler interrupt_index, fn_address {
 
 load_interrupt_handler 9h, fuk_interrupt_handler
 int 9h
+mov ah, [ds:ax + bx * 4]
 xchg bx, bx
 
 sysSuspend:
