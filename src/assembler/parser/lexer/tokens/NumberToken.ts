@@ -34,6 +34,7 @@ export class NumberToken extends Token<NumberTokenValue> {
   ) {
     super(
       TokenType.NUMBER,
+      null,
       text,
       loc,
       {
@@ -91,7 +92,7 @@ export class NumberToken extends Token<NumberTokenValue> {
       for (const format in digitFormats) {
         const number = digitFormats[format](token);
         if (number !== null)
-          return new NumberToken(token, number, <any> format, loc);
+          return new NumberToken(token, number, <any> format, loc.clone());
       }
 
       return null;

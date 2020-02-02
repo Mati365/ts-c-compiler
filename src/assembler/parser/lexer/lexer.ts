@@ -4,6 +4,8 @@ import {
   isQuote,
   isNewline,
   isBracket,
+  matchQuote,
+  matchBracket,
 } from '../../utils/matchCharacter';
 
 import {
@@ -11,20 +13,34 @@ import {
   NumberToken,
   TokenType,
   TokenLocation,
+  RegisterToken,
+  TokenKind,
 } from './tokens';
 
 /**
  * Set of all parsers
  */
-export const TOKEN_PARSERS = Object.freeze(
+export const TOKEN_PARSERS: {
+  [parser: number]: (token: string, loc?: TokenLocation) => boolean|Token,
+} = Object.freeze(
   {
     /** NUMBER */
     [TokenType.NUMBER]: NumberToken.parse,
 
     /** KEYWORD */
-    [TokenType.KEYWORD]: R.T,
+    [TokenType.KEYWORD]: (token: string, loc?: TokenLocation): boolean|Token => (
+      RegisterToken.parse(token, loc) || true
+    ),
   },
 );
+
+const SEPARATOR_CHARACTERS: {[operator: string]: TokenType} = {
+  ',': TokenType.COMMA,
+  '+': TokenType.PLUS,
+  '-': TokenType.MINUS,
+  '*': TokenType.MUL,
+  '/': TokenType.DIV,
+};
 
 /**
  * Analyze single token
@@ -38,17 +54,17 @@ function parseToken(location: TokenLocation, token: string): Token {
     return null;
 
   for (const tokenType in TOKEN_PARSERS) {
-    const result = TOKEN_PARSERS[tokenType](token);
+    const result = TOKEN_PARSERS[tokenType](token, location);
     if (!result)
       continue;
 
     // result might return boolean return from has() function
     if (result === true)
-      return new Token(<any> tokenType, token, location.clone());
+      return new Token(<any> tokenType, null, token, location.clone());
 
     // it might be also object without type
     if (!result?.type)
-      return new Token(<any> tokenType, token, location.clone(), result);
+      return new Token(<any> tokenType, null, token, location.clone(), result);
 
     return result;
   }
@@ -91,23 +107,24 @@ export function* lexer(code: string): IterableIterator<Token> {
     yield* appendToken(
       new Token(
         type,
+        null,
         character,
         location.clone(),
       ),
     );
   }
 
-  function* appendTokenWithSpaces(type: TokenType, fetchUntil: (str: string) => boolean): Iterable<Token> {
+  function* appendTokenWithSpaces(
+    type: TokenType,
+    kind: TokenKind,
+    fetchUntil: (str: string) => boolean,
+  ): Iterable<Token> {
     tokenBuffer = '';
     for (; offset < length && !fetchUntil(code[offset]); ++offset)
       tokenBuffer += code[offset];
 
     yield* appendToken(
-      new Token(
-        type,
-        tokenBuffer,
-        location.clone(),
-      ),
+      new Token(type, kind, tokenBuffer, location.clone()),
     );
 
     tokenBuffer = '';
@@ -125,22 +142,28 @@ export function* lexer(code: string): IterableIterator<Token> {
       location.column++;
 
     // special tokens that might contain spaces inside them
-    if (isQuote(character)) {
+    const quote = matchQuote(character);
+    if (quote) {
       offset++;
-      yield* appendTokenWithSpaces(TokenType.QUOTE, isQuote);
+      yield* appendTokenWithSpaces(TokenType.QUOTE, quote, isQuote);
       continue;
     }
 
-    if (isBracket(character)) {
+    const bracket = matchBracket(character);
+    if (bracket) {
       offset++;
-      yield* appendTokenWithSpaces(TokenType.BRACKET, isBracket);
+      yield* appendTokenWithSpaces(TokenType.BRACKET, bracket, isBracket);
       continue;
     }
 
+    // end of line
     if (newLine)
       yield* appendCharToken(TokenType.EOL, character);
-    else if (character === ',')
-      yield* appendCharToken(TokenType.COMMA, character);
+
+    // match cahracters that divides word
+    const separator = SEPARATOR_CHARACTERS[character];
+    if (separator)
+      yield* appendCharToken(separator, character);
     else if (character !== ' ') {
       // append character and find matching token
       tokenBuffer += character;
@@ -152,5 +175,6 @@ export function* lexer(code: string): IterableIterator<Token> {
     }
   }
 
+  // end of file
   yield* appendCharToken(TokenType.EOF, null);
 }

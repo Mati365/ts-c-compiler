@@ -1,6 +1,13 @@
 import {TokenLocation} from './TokenLocation';
 
+/**
+ * It can be shared with preprocessor pseudolanguage
+ *
+ * @export
+ * @enum {number}
+ */
 export enum TokenType {
+  // Text
   QUOTE = 'QUOTE',
   BRACKET = 'BRACKET',
   COMMA = 'COMMA',
@@ -11,6 +18,32 @@ export enum TokenType {
   STRING = 'STRING',
   EOL = 'EOL',
   EOF = 'EOF',
+
+  // Math
+  PLUS = 'PLUS',
+  MINUS = 'MINUS',
+  MUL = 'MUL',
+  DIV = 'DIV',
+}
+
+/**
+ * Token type related meta kind
+ *
+ * @export
+ * @enum {number}
+ */
+export enum TokenKind {
+  // QUOTE
+  SINGLE_QUOTE = 'SINGLE_QUOTE', // '
+  DOUBLE_QUOTE = 'DOUBLE_QUOTE', // "
+
+  // BRACKETS
+  PARENTHES_BRACKET = 'PARENTHES_BRACKET', // ()
+  CURLY_BRACKET = 'CURLY_BRACKET', // {}
+  SQUARE_BRACKET = 'SQUARE_BRACKET', // []
+
+  // ASM
+  REGISTER = 'REGISTER',
 }
 
 /**
@@ -21,9 +54,9 @@ export enum TokenType {
  * @template ValueType
  * @template KindType
  */
-export class Token<ValueType = any, KindType = any> {
+export class Token<ValueType = any> {
   public type: TokenType;
-  public kind: KindType;
+  public kind: TokenKind;
 
   public text: string|number;
   public loc: TokenLocation;
@@ -40,12 +73,13 @@ export class Token<ValueType = any, KindType = any> {
    */
   constructor(
     type: TokenType,
+    kind: TokenKind,
     text: string,
     loc: TokenLocation,
     value: ValueType = null,
   ) {
     this.type = type;
-    this.kind = null;
+    this.kind = kind;
 
     this.text = text;
     this.value = value;

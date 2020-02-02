@@ -1,11 +1,14 @@
 import * as R from 'ramda';
 
-import {Register, COMPILER_REGISTERS_SET} from '../../constants';
+import {COMPILER_INSTRUCTIONS_SET} from '../../constants/instructionSetSchema';
+import {lexer} from '../lexer/lexer';
+
+import {InstructionSchema} from '../../types/InstructionSchema';
 import {
+  InstructionArgValue,
   InstructionArgType,
-  InstructionSchema,
-  COMPILER_INSTRUCTIONS_SET,
-} from '../../constants/instructionSetSchema';
+  MemAddressDescription,
+} from '../../types/InstructionArg';
 
 import {ASTParser} from './ASTParser';
 import {
@@ -17,9 +20,9 @@ import {
   TokenType,
   Token,
   NumberToken,
+  RegisterToken,
+  TokenKind,
 } from '../lexer/tokens';
-
-type ASTInstructionArgValue = string|number|Register;
 
 /**
  * Used for parser to check argument size or type
@@ -28,12 +31,12 @@ type ASTInstructionArgValue = string|number|Register;
  */
 class ASTInstructionArg {
   public type: InstructionArgType;
-  public value: ASTInstructionArgValue;
+  public value: InstructionArgValue;
   public byteSize: number;
 
   constructor(
     type: InstructionArgType,
-    value: ASTInstructionArgValue,
+    value: InstructionArgValue,
     byteSize: number = 1,
   ) {
     this.type = type;
@@ -61,8 +64,22 @@ export class ASTInstruction extends KindASTNode('Instruction') {
   ) {
     super(loc);
 
-    this.args = args;
     this.schema = schema;
+    this.args = args;
+  }
+
+  /**
+   * Resolves from string expression instruction address
+   *
+   * @static
+   * @param {string} expression
+   * @returns {MemAddressDescription}
+   * @memberof ASTInstruction
+   */
+  static parseInstructionMemExpression(expression: string): MemAddressDescription {
+    console.log(Array.from(lexer(expression)));
+
+    return {};
   }
 
   /**
@@ -75,20 +92,38 @@ export class ASTInstruction extends KindASTNode('Instruction') {
    */
   static parseInstructionArgsTokens(tokens: Token[]): ASTInstructionArg[] {
     const parseToken = (token: Token): ASTInstructionArg => {
-      // register might be also number token (for example AH, Bh etc.)
-      // so do not check token type in this case
-      const register = COMPILER_REGISTERS_SET[token.text];
-      if (register)
-        return new ASTInstructionArg(InstructionArgType.REGISTER, register, register.byteSize);
+      switch (token.type) {
+        // Registers
+        case TokenType.KEYWORD:
+          if (token.kind === TokenKind.REGISTER) {
+            const {schema, byteSize} = (<RegisterToken> token).value;
 
-      // try to check if it is number
-      // check number size to perform better instruction matching
-      if (token.type === TokenType.NUMBER) {
-        const {number, byteSize} = (<NumberToken> token).value;
+            return new ASTInstructionArg(InstructionArgType.REGISTER, schema, byteSize);
+          }
+          break;
 
-        return new ASTInstructionArg(InstructionArgType.NUMBER, number, byteSize);
+        // Numeric
+        case TokenType.NUMBER: {
+          const {number, byteSize} = (<NumberToken> token).value;
+
+          return new ASTInstructionArg(InstructionArgType.NUMBER, number, byteSize);
+        }
+
+        // Mem address
+        case TokenType.BRACKET:
+          if (token.kind === TokenKind.SQUARE_BRACKET) {
+            return new ASTInstructionArg(
+              InstructionArgType.MEMORY,
+              ASTInstruction.parseInstructionMemExpression(<string> token.text),
+              null,
+            );
+          }
+          break;
+
+        default:
       }
 
+      // force throw error if not known format
       throw new Error(`Invalid instruction operand ${token.text}(${token.type})!`);
     };
 

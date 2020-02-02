@@ -27,6 +27,14 @@ export class ASTParser {
     this.tokens = Array.from(tokensIterator);
   }
 
+  /**
+   * Fetches precceing token related to current tokenIndex
+   *
+   * @param {number} [offset=1]
+   * @param {boolean} [increment=true]
+   * @returns {Token}
+   * @memberof ASTParser
+   */
   fetchNextToken(offset: number = 1, increment: boolean = true): Token {
     const nextToken = this.tokens[this.tokenIndex + offset];
     if (increment)
