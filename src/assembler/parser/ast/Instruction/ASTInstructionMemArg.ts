@@ -1,7 +1,5 @@
 import * as R from 'ramda';
 
-import {COMPILER_REGISTERS_SET} from '../../../constants';
-
 import {lexer} from '../../lexer/lexer';
 import {isOperator} from '../../../utils/matchCharacter';
 
@@ -59,7 +57,6 @@ function parseMemExpression(expression: string): MemAddressDescription {
   );
 
   const addressDescription: MemAddressDescription = {
-    sreg: COMPILER_REGISTERS_SET.ds,
     disp: 0,
   };
 
@@ -71,7 +68,7 @@ function parseMemExpression(expression: string): MemAddressDescription {
       throw new Error('Missing mul second arg!');
 
     if (addressDescription.scale)
-      throw new Error('Scale is already dfined!');
+      throw new Error('Scale is already defined!');
 
     // pick args values
     let scale: number = null;
@@ -127,7 +124,18 @@ function parseMemExpression(expression: string): MemAddressDescription {
         if (resolveScale(op2, tokens[i + 2], tokens[i + 3]))
           i += 3;
         else if (op2.kind === TokenKind.REGISTER) {
-          addressDescription.reg = (<RegisterToken> op2).value.schema;
+          const reg = (<RegisterToken> op2).value.schema;
+
+          if (!addressDescription.reg)
+            addressDescription.reg = reg;
+          else if (!addressDescription.scale) {
+            addressDescription.scale = {
+              value: 1,
+              reg,
+            };
+          } else
+            throw new Error('Incorrect expression!');
+
           ++i;
         } else if (op2.type === TokenType.NUMBER) {
           addressDescription.disp += (<NumberToken> op2).value.number;
@@ -152,11 +160,11 @@ function parseMemExpression(expression: string): MemAddressDescription {
  * @extends {ASTInstructionArg}
  */
 export class ASTInstructionMemArg extends ASTInstructionArg {
-  private phrase: string;
-  private addressDescription: MemAddressDescription;
+  public phrase: string;
+  public addressDescription: MemAddressDescription;
 
-  constructor(phrase: string) {
-    super(InstructionArgType.MEMORY, null, null, false);
+  constructor(phrase: string, byteSize: number) {
+    super(InstructionArgType.MEMORY, null, byteSize, false);
 
     this.phrase = phrase;
     this.tryResolve();

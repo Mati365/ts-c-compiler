@@ -1,6 +1,7 @@
 import * as R from 'ramda';
 
 import {
+  isComment,
   isQuote,
   isNewline,
   isBracket,
@@ -15,6 +16,7 @@ import {
   TokenLocation,
   RegisterToken,
   TokenKind,
+  SizeOverrideToken,
 } from './tokens';
 
 /**
@@ -29,7 +31,9 @@ export const TOKEN_PARSERS: {
 
     /** KEYWORD */
     [TokenType.KEYWORD]: (token: string, loc?: TokenLocation): boolean|Token => (
-      RegisterToken.parse(token, loc) || true
+      RegisterToken.parse(token, loc)
+        ?? SizeOverrideToken.parse(token, loc)
+        ?? true
     ),
   },
 );
@@ -142,6 +146,15 @@ export function* lexer(code: string, appendEOF: boolean = true): IterableIterato
       location.row++;
     } else
       location.column++;
+
+    // ignore line, it is comment
+    if (isComment(character)) {
+      for (; offset < length - 1; ++offset) {
+        if (isNewline(code[offset + 1]))
+          break;
+      }
+      continue;
+    }
 
     // special tokens that might contain spaces inside them
     const quote = matchQuote(character);

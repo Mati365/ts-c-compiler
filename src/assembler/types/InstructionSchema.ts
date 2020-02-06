@@ -17,8 +17,7 @@ import * as R from 'ramda';
  * r0 - relative short displacement to label 'sl' (-128/+127 bytes)
  * r0 r1 - relative long displacement to label 'll' (-32768/+32767 bytes)
  *
- * @see
- * http://www.mathemainzel.info/files/x86asmref.html
+ * @see {@link http://www.mathemainzel.info/files/x86asmref.html}
  */
 export class InstructionSchema {
   public mnemonic: string;

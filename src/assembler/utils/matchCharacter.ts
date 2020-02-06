@@ -31,3 +31,5 @@ export const isNewline = R.equals('\n');
 export const isWhitespace = R.test(/[\s]/);
 
 export const isOperator = R.test(/[+-/*]/);
+
+export const isComment = R.test(/[;#]/);

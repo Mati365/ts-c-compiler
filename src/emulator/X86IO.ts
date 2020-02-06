@@ -24,7 +24,7 @@ export class X86IO extends X86Unit {
     const {registers, opcodes, ports} = cpu;
 
     Object.assign(opcodes, {
-      /** IN AL, 8bits  */ 0xE4: (bits = 0x1, port) => {
+      /** IN AL, 8bits  */ 0xE4: (bits = 0x1, port: number) => {
         if (!port)
           port = cpu.fetchOpcode(0x1);
 

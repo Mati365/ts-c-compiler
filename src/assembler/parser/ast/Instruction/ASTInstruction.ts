@@ -2,6 +2,9 @@ import * as R from 'ramda';
 
 import {COMPILER_INSTRUCTIONS_SET} from '../../../constants/instructionSetSchema';
 
+import {ok, err} from '../../../../shared/monads/Result';
+import {ParserResult} from '../../../types/ParserError';
+
 import {InstructionPrefixesBitset} from '../../../constants';
 import {InstructionSchema} from '../../../types/InstructionSchema';
 import {InstructionArgType} from '../../../types/InstructionArg';
@@ -21,6 +24,7 @@ import {
   NumberToken,
   RegisterToken,
   TokenKind,
+  SizeOverrideToken,
 } from '../../lexer/tokens';
 
 /**
@@ -57,7 +61,8 @@ export class ASTInstruction extends KindASTNode('Instruction') {
    * @returns {ASTInstructionArg[]}
    * @memberof ASTInstruction
    */
-  static parseInstructionArgsTokens(tokens: Token[]): ASTInstructionArg[] {
+  static parseInstructionArgsTokens(tokens: Token[]): ParserResult<ASTInstructionArg[]> {
+    let byteSizeOverride: number = null;
     const parseToken = (token: Token): ASTInstructionArg => {
       switch (token.type) {
         // Registers
@@ -65,21 +70,39 @@ export class ASTInstruction extends KindASTNode('Instruction') {
           if (token.kind === TokenKind.REGISTER) {
             const {schema, byteSize} = (<RegisterToken> token).value;
 
-            return new ASTInstructionArg(InstructionArgType.REGISTER, schema, byteSize);
+            return new ASTInstructionArg(
+              InstructionArgType.REGISTER,
+              schema,
+              byteSizeOverride ?? byteSize,
+            );
           }
+
+          if (token.kind === TokenKind.BYTE_SIZE_OVERRIDE) {
+            byteSizeOverride = (<SizeOverrideToken> token).value.byteSize;
+            return null;
+          }
+
           break;
 
         // Numeric
         case TokenType.NUMBER: {
           const {number, byteSize} = (<NumberToken> token).value;
 
-          return new ASTInstructionArg(InstructionArgType.NUMBER, number, byteSize);
+          return new ASTInstructionArg(
+            InstructionArgType.NUMBER,
+            number,
+            byteSizeOverride ?? byteSize,
+          );
         }
 
         // Mem address
         case TokenType.BRACKET:
-          if (token.kind === TokenKind.SQUARE_BRACKET)
-            return new ASTInstructionMemArg(<string> token.text);
+          if (token.kind === TokenKind.SQUARE_BRACKET) {
+            if (R.isNil(byteSizeOverride))
+              throw new Error('Specify mem operand size!');
+
+            return new ASTInstructionMemArg(<string> token.text, byteSizeOverride);
+          }
           break;
 
         default:
@@ -89,7 +112,20 @@ export class ASTInstruction extends KindASTNode('Instruction') {
       throw new Error(`Invalid instruction operand ${token.text}(${token.type})!`);
     };
 
-    return R.map(parseToken, tokens);
+    // a bit faster than transduce
+    return ok(
+      R.reduce(
+        (acc: ASTInstructionArg[], item: Token) => {
+          const result = parseToken(item);
+          if (result)
+            acc.push(result);
+
+          return acc;
+        },
+        <ASTInstructionArg[]> [],
+        tokens,
+      ),
+    );
   }
 
   /**
@@ -129,10 +165,16 @@ export class ASTInstruction extends KindASTNode('Instruction') {
     let commaToken = null;
 
     do {
-      // value
-      argsTokens.push(
-        parser.fetchNextToken(),
-      );
+      // value or size operand
+      const op1 = parser.fetchNextToken();
+      argsTokens.push(op1);
+
+      // if it was size operand - fetch next token which is prefixed
+      if (op1.kind === TokenKind.BYTE_SIZE_OVERRIDE) {
+        argsTokens.push(
+          parser.fetchNextToken(),
+        );
+      }
 
       // comma
       commaToken = parser.fetchNextToken();

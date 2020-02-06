@@ -44,6 +44,7 @@ export enum TokenKind {
 
   // ASM
   REGISTER = 'REGISTER',
+  BYTE_SIZE_OVERRIDE = 'BYTE_SIZE_OVERRIDE',
 }
 
 /**

@@ -78,7 +78,7 @@ export class ASTParser {
       }
 
       if (!tokenParsed && !isWhitespace(<string> token.text))
-        throw new Error(`Unknown token "${token.text}" (type: ${token.type}) at line ${token.loc.row}!`);
+        throw new Error(`ASTParser: Invalid operation at line ${token.loc.row}!`);
     }
 
     return astNodes;

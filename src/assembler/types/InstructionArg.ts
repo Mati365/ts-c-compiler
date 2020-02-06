@@ -6,6 +6,11 @@ export enum InstructionArgType {
   NUMBER,
 }
 
+export enum InstructionArgSize {
+  BYTE = 1,
+  WORD = 2,
+}
+
 /**
  * @see {@link https://cs.lmu.edu/~ray/notes/nasmtutorial/}
  */
