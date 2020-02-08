@@ -1,5 +1,6 @@
 import {isWhitespace} from '../../utils/matchCharacter';
 
+import {ParserError, ParserErrorCode} from '../../types/ParserError';
 import {Token, TokenType} from '../lexer/tokens';
 import {ASTNode} from './ASTNode';
 
@@ -78,7 +79,7 @@ export class ASTParser {
       }
 
       if (!tokenParsed && !isWhitespace(<string> token.text))
-        throw new Error(`ASTParser: Invalid operation at line ${token.loc.row}!`);
+        throw new ParserError(ParserErrorCode.INVALID_OPERATION, token.loc);
     }
 
     return astNodes;

@@ -9,6 +9,7 @@ import {
   matchBracket,
 } from '../../utils/matchCharacter';
 
+import {ParserError, ParserErrorCode} from '../../types/ParserError';
 import {
   Token,
   NumberToken,
@@ -74,7 +75,7 @@ function parseToken(location: TokenLocation, token: string): Token {
     return result;
   }
 
-  throw new Error(`Unknown "${token}" token!`);
+  throw new ParserError(ParserErrorCode.UNKNOWN_TOKEN, null, {token});
 }
 
 /**

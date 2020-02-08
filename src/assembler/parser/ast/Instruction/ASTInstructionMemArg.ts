@@ -3,6 +3,7 @@ import * as R from 'ramda';
 import {lexer} from '../../lexer/lexer';
 import {isOperator} from '../../../utils/matchCharacter';
 
+import {ParserError, ParserErrorCode} from '../../../types/ParserError';
 import {
   TokenType,
   TokenKind,
@@ -43,6 +44,53 @@ function prefixMemPhraseWithSign(sign: string, phrase: string): string {
 }
 
 /**
+ * Decode si*4
+ *
+ * @param {Token} op1
+ * @param {Token} op2
+ * @param {Token} op3
+ * @param {MemAddressDescription} addressDescription
+ * @returns {boolean}
+ */
+function resolveScale(
+  op1: Token,
+  op2: Token,
+  op3: Token,
+  addressDescription: MemAddressDescription,
+): boolean {
+  if (!op1 || !op2 || !op3 || op2.type !== TokenType.MUL)
+    return false;
+
+  if (!op3)
+    throw new ParserError(ParserErrorCode.MISSING_MUL_SECOND_ARG);
+
+  if (addressDescription.scale)
+    throw new ParserError(ParserErrorCode.SCALE_IS_ALREADY_DEFINED);
+
+  // pick args values
+  let scale: number = null;
+  let reg: RegisterSchema = null;
+
+  if (op1.kind === TokenKind.REGISTER && op3.type === TokenType.NUMBER)
+    [scale, reg] = [(<NumberToken> op3).value.number, (<RegisterToken> op1).value.schema];
+  else if (op3.kind === TokenKind.REGISTER && op1.type === TokenType.NUMBER)
+    [scale, reg] = [(<NumberToken> op1).value.number, (<RegisterToken> op3).value.schema];
+  else
+    throw new ParserError(ParserErrorCode.INCORRECT_SCALE_MEM_PARAMS);
+
+  if (!isValidScale(scale))
+    throw new ParserError(ParserErrorCode.INCORRECT_SCALE, null, {scale});
+
+  // assign value
+  addressDescription.scale = {
+    value: <MemSIBScale> scale,
+    reg,
+  };
+
+  return true;
+}
+
+/**
  * Transforms [ax:bx+si*4] into descriptor object
  *
  * @param {string} expression
@@ -60,39 +108,6 @@ function parseMemExpression(expression: string): MemAddressDescription {
     disp: 0,
   };
 
-  const resolveScale = (op1: Token, op2: Token, op3: Token): boolean => {
-    if (!op1 || !op2 || !op3 || op2.type !== TokenType.MUL)
-      return false;
-
-    if (!op3)
-      throw new Error('Missing mul second arg!');
-
-    if (addressDescription.scale)
-      throw new Error('Scale is already defined!');
-
-    // pick args values
-    let scale: number = null;
-    let reg: RegisterSchema = null;
-
-    if (op1.kind === TokenKind.REGISTER && op3.type === TokenType.NUMBER)
-      [scale, reg] = [(<NumberToken> op3).value.number, (<RegisterToken> op1).value.schema];
-    else if (op3.kind === TokenKind.REGISTER && op1.type === TokenType.NUMBER)
-      [scale, reg] = [(<NumberToken> op1).value.number, (<RegisterToken> op3).value.schema];
-    else
-      throw new Error('Incorrect scale mem params!');
-
-    if (!isValidScale(scale))
-      throw new Error(`Incorrect scale! It must be 1, 2, 4 or 8 instead of ${scale}!`);
-
-    // assign value
-    addressDescription.scale = {
-      value: <MemSIBScale> scale,
-      reg,
-    };
-
-    return true;
-  };
-
   for (let i = 0; i < tokens.length; ++i) {
     const [op1, op2] = [tokens[i], tokens[i + 1]];
 
@@ -106,9 +121,9 @@ function parseMemExpression(expression: string): MemAddressDescription {
           ++i;
 
           if (!addressDescription?.sreg)
-            throw new Error(`Provided register ${op1.text} is not segment register!`);
+            throw new ParserError(ParserErrorCode.REGISTER_IS_NOT_SEGMENT_REG, null, {reg: op1.text});
         } else
-          throw new Error('Syntax error!');
+          throw new ParserError(ParserErrorCode.SYNTAX_ERROR);
         break;
 
       // [..:+ah+si*4] etc
@@ -117,11 +132,11 @@ function parseMemExpression(expression: string): MemAddressDescription {
           addressDescription.disp -= (<NumberToken> op2).value.number;
           ++i;
         } else
-          throw new Error('Incorrect operand must be number!');
+          throw new ParserError(ParserErrorCode.OPERAND_MUST_BE_NUMBER);
         break;
 
       case TokenType.PLUS:
-        if (resolveScale(op2, tokens[i + 2], tokens[i + 3]))
+        if (resolveScale(op2, tokens[i + 2], tokens[i + 3], addressDescription))
           i += 3;
         else if (op2.kind === TokenKind.REGISTER) {
           const reg = (<RegisterToken> op2).value.schema;
@@ -134,18 +149,18 @@ function parseMemExpression(expression: string): MemAddressDescription {
               reg,
             };
           } else
-            throw new Error('Incorrect expression!');
+            throw new ParserError(ParserErrorCode.INCORRECT_EXPRESSION);
 
           ++i;
         } else if (op2.type === TokenType.NUMBER) {
           addressDescription.disp += (<NumberToken> op2).value.number;
           ++i;
         } else
-          throw new Error('Incorrect right operand!');
+          throw new ParserError(ParserErrorCode.INCORRECT_OPERAND);
         break;
 
       default:
-        throw new Error(`Unknown mem token ${op1.text}(${op1.type})!`);
+        throw new ParserError(ParserErrorCode.UNKNOWN_MEM_TOKEN, null, {token: op1.text});
     }
   }
 

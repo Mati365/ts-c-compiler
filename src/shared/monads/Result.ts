@@ -1,6 +1,9 @@
-type ResultMatch<T, E> = {
-  ok(value: T): void;
-  err(value: E): void;
+/* eslint-disable class-methods-use-this */
+import * as R from 'ramda';
+
+type ResultMatch<T, E, O> = {
+  ok(value: T): O;
+  err(value: E): O;
 };
 
 export abstract class Result<T, E, ValType = T|E> {
@@ -20,37 +23,42 @@ export abstract class Result<T, E, ValType = T|E> {
    * @returns {ValType}
    * @memberof Result
    */
-  abstract unwrap(): ValType;
+  abstract unwrap(): T|never;
+  abstract unwrapErr(): E|never;
+  abstract unwrapOr(val: T): T;
 
   /**
    * Executes function provided via arg with monad value and returns its value
    *
    * @abstract
-   * @param {(val: ValType) => ValType} fn
-   * @returns {ValType}
+   * @template O
+   * @param {(val: T) => Result<O, E>} fn
+   * @returns {Result<O, E>}
    * @memberof Result
    */
-  abstract andThen(fn: (val: ValType) => ValType): ValType;
+  abstract andThen<O>(fn: (val: T) => Result<O, E>): Result<O, E>;
 
   /**
    * Rust match alternative, executes ok/err callback based on type
    *
    * @abstract
-   * @param {ResultMatch<T, E>} match
+   * @template O
+   * @param {ResultMatch<T, E, O>} match
+   * @returns {O}
    * @memberof Result
    */
-  abstract match(match: ResultMatch<T, E>): void;
-
+  abstract match<O>(match: ResultMatch<T, E, O>): O;
 
   /**
    * Modifies internal monad value and returns new value
    *
    * @abstract
-   * @param {(fn: T) => T} fn
-   * @returns {Result<T, E>}
+   * @template O
+   * @param {(fn: T) => O} fn
+   * @returns {Result<O, E>}
    * @memberof Result
    */
-  abstract map(fn: (fn: T) => T): Result<T, E>;
+  abstract map<O>(fn: (fn: T) => O): Result<O, E>;
 }
 
 /**
@@ -67,21 +75,28 @@ export class Ok<T, E = never> extends Result<T, E> {
     return <T> this._value;
   }
 
-  andThen(fn: (val: T) => T): T {
-    return fn(<T> this._value);
+  unwrapErr(): never {
+    throw new Error('Cannot unwrap error from ok!');
   }
 
-  /* eslint-disable class-methods-use-this */
+  unwrapOr(): T {
+    return <T> this._value;
+  }
+
   isOk() { return true; }
-  isErr() { return false; }
-  /* eslint-enable class-methods-use-this */
 
-  match(match: ResultMatch<T, E>): void {
-    match.ok(<T> this._value);
+  isErr() { return false; }
+
+  match<O>(match: ResultMatch<T, E, O>): O {
+    return match.ok(<T> this._value);
   }
 
-  map(fn: (fn: T) => T): Ok<T, E> {
-    return new Ok<T, E>(fn(<T> this._value));
+  map<O>(fn: (fn: T) => O): Ok<O, E> {
+    return new Ok<O, E>(fn(<T> this._value));
+  }
+
+  andThen<O>(fn: (val: T) => Result<O, E>): Result<O, E> {
+    return fn(<T> this._value);
   }
 }
 
@@ -95,27 +110,76 @@ export class Ok<T, E = never> extends Result<T, E> {
  * @template E
  */
 export class Err<T, E> extends Result<T, E> {
-  unwrap(): E {
+  unwrap(): T|never {
+    throw new Error('Cannot unwrap error!');
+  }
+
+  unwrapErr(): E {
     return <E> this._value;
   }
 
-  andThen(): E {
-    return <E> this._value;
+  unwrapOr<A = T>(a: A): A {
+    return a;
   }
 
-  /* eslint-disable class-methods-use-this */
-  isOk() { return true; }
-  isErr() { return false; }
-  /* eslint-enable class-methods-use-this */
+  isOk() { return false; }
 
-  match(match: ResultMatch<T, E>): void {
-    match.err(<E> this._value);
+  isErr() { return true; }
+
+  match<O>(match: ResultMatch<T, E, O>): O {
+    return match.err(<E> this._value);
   }
 
-  map(): Err<T, E> {
-    return new Err<T, E>(this._value);
+  map<O>(): Err<O, E> {
+    return new Err<O, E>(<E> this._value);
+  }
+
+  andThen<O>(): Result<O, E> {
+    return new Err<O, E>(<E> this._value);
   }
 }
 
-export const ok = <T>(value: T): Result<T, never> => new Ok<T>(value);
+export const ok = <T>(value: T = null): Result<T, never> => new Ok<T>(value);
 export const err = <E>(value: E): Result<never, E> => new Err<never, E>(value);
+
+/**
+ * Reduces array of items to accumulator, if error stops and return error result
+ *
+ * @export
+ * @template T
+ * @template E
+ * @template A
+ * @param {(a: A) => Result<T, E>} mapper
+ * @param {Ok<T>[]} init
+ * @param {A[]} array
+ * @returns {Result<Ok<T>[], E>}
+ */
+export function tryFold<A, T, E>(
+  mapper: (a: A) => Result<T, E>,
+  init: T[],
+  array: A[]|Iterable<A>,
+): Result<(T|null)[], E> {
+  const acc: T[] = init || [];
+
+  for (const item of array) {
+    const result = mapper(item);
+
+    if (result) {
+      if (result.isErr())
+        return <Err<never, E>> result;
+
+      acc.push(<T> result.unwrap());
+    } else
+      acc.push(<null> result);
+  }
+
+  return ok(acc);
+}
+
+export function collect<A, T, E>(array: A[]|Iterable<A>): Result<(T|null)[], E> {
+  return tryFold<A, T, E>(
+    <any> R.identity,
+    <T[]> [],
+    array,
+  );
+}

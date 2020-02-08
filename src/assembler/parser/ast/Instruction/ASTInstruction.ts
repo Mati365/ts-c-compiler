@@ -2,13 +2,11 @@ import * as R from 'ramda';
 
 import {COMPILER_INSTRUCTIONS_SET} from '../../../constants/instructionSetSchema';
 
-import {ok, err} from '../../../../shared/monads/Result';
-import {ParserResult} from '../../../types/ParserError';
-
 import {InstructionPrefixesBitset} from '../../../constants';
 import {InstructionSchema} from '../../../types/InstructionSchema';
 import {InstructionArgType} from '../../../types/InstructionArg';
 
+import {ParserError, ParserErrorCode} from '../../../types/ParserError';
 import {ASTParser} from '../ASTParser';
 import {ASTInstructionArg} from './ASTInstructionArg';
 import {ASTInstructionMemArg} from './ASTInstructionMemArg';
@@ -61,7 +59,7 @@ export class ASTInstruction extends KindASTNode('Instruction') {
    * @returns {ASTInstructionArg[]}
    * @memberof ASTInstruction
    */
-  static parseInstructionArgsTokens(tokens: Token[]): ParserResult<ASTInstructionArg[]> {
+  static parseInstructionArgsTokens(tokens: Token[]): ASTInstructionArg[] {
     let byteSizeOverride: number = null;
     const parseToken = (token: Token): ASTInstructionArg => {
       switch (token.type) {
@@ -99,7 +97,7 @@ export class ASTInstruction extends KindASTNode('Instruction') {
         case TokenType.BRACKET:
           if (token.kind === TokenKind.SQUARE_BRACKET) {
             if (R.isNil(byteSizeOverride))
-              throw new Error('Specify mem operand size!');
+              throw new ParserError(ParserErrorCode.MISSING_MEM_OPERAND_SIZE);
 
             return new ASTInstructionMemArg(<string> token.text, byteSizeOverride);
           }
@@ -109,22 +107,26 @@ export class ASTInstruction extends KindASTNode('Instruction') {
       }
 
       // force throw error if not known format
-      throw new Error(`Invalid instruction operand ${token.text}(${token.type})!`);
+      throw new ParserError(
+        ParserErrorCode.INVALID_INSTRUCTION_OPERAND,
+        token.loc,
+        {
+          operand: token.text,
+        },
+      );
     };
 
     // a bit faster than transduce
-    return ok(
-      R.reduce(
-        (acc: ASTInstructionArg[], item: Token) => {
-          const result = parseToken(item);
-          if (result)
-            acc.push(result);
+    return R.reduce(
+      (acc: ASTInstructionArg[], item: Token) => {
+        const result = parseToken(item);
+        if (result)
+          acc.push(result);
 
-          return acc;
-        },
-        <ASTInstructionArg[]> [],
-        tokens,
-      ),
+        return acc;
+      },
+      <ASTInstructionArg[]> [],
+      tokens,
     );
   }
 

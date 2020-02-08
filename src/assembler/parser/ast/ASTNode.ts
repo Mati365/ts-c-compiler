@@ -9,6 +9,10 @@ export class ASTNodeLocation {
     this.start = start;
     this.end = end;
   }
+
+  static fromTokenLoc(tokenLoc: TokenLocation): ASTNodeLocation {
+    return new ASTNodeLocation(tokenLoc, tokenLoc);
+  }
 }
 
 /**
