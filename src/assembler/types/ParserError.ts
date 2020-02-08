@@ -16,7 +16,7 @@ export const ERROR_TRANSLATIONS: {[key in ParserErrorCode]: string} = {
   [ParserErrorCode.OPERAND_MUST_BE_NUMBER]: 'Operand must be number!',
   [ParserErrorCode.MISSING_MEM_OPERAND_SIZE]: 'Missing mem operand size!',
   [ParserErrorCode.INVALID_INSTRUCTION_OPERAND]: 'Invalid operand %{operand}!',
-  [ParserErrorCode.INVALID_OPERATION]: 'Invalid operation!',
+  [ParserErrorCode.UNKNOWN_OPERATION]: 'Unknown operation!',
   [ParserErrorCode.REGISTER_IS_NOT_SEGMENT_REG]: 'Provided register %{reg} is not segment register!',
 
   // mem

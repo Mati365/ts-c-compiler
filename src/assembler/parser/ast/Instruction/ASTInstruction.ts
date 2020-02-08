@@ -25,6 +25,8 @@ import {
   SizeOverrideToken,
 } from '../../lexer/tokens';
 
+import {findMatchingOpcode} from './ASTInstructionMatchers';
+
 /**
  * Parser for:
  * [opcode] [arg1] [arg2] [argX]
@@ -157,11 +159,6 @@ export class ASTInstruction extends KindASTNode('Instruction') {
     } while (true);
     /* eslint-enable no-constant-condition */
 
-    // match mnemonic
-    const schema = COMPILER_INSTRUCTIONS_SET[token.text];
-    if (!schema)
-      return null;
-
     // parse arguments
     const argsTokens = [];
     let commaToken = null;
@@ -183,8 +180,15 @@ export class ASTInstruction extends KindASTNode('Instruction') {
     } while (commaToken?.type === TokenType.COMMA);
 
     // find matching instruction schema
+    const opcode = <string> token.text;
+    const args = ASTInstruction.parseInstructionArgsTokens(argsTokens);
+    const schema = findMatchingOpcode(COMPILER_INSTRUCTIONS_SET, opcode, args);
+
+    if (!schema)
+      return null;
+
     return new ASTInstruction(
-      schema[0],
+      schema,
       ASTInstruction.parseInstructionArgsTokens(argsTokens),
       new ASTNodeLocation(token.loc, token.loc),
       prefixes,

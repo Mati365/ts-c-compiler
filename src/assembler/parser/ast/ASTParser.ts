@@ -79,7 +79,7 @@ export class ASTParser {
       }
 
       if (!tokenParsed && !isWhitespace(<string> token.text))
-        throw new ParserError(ParserErrorCode.INVALID_OPERATION, token.loc);
+        throw new ParserError(ParserErrorCode.UNKNOWN_OPERATION, token.loc);
     }
 
     return astNodes;
