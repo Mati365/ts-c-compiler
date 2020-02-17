@@ -1,7 +1,7 @@
 import {
   InstructionArgValue,
   InstructionArgType,
-} from '../../../types/InstructionArg';
+} from '../../../types';
 
 /**
  * Used for parser to check argument size or type
@@ -9,22 +9,12 @@ import {
  * @class ASTInstructionArg
  */
 export class ASTInstructionArg {
-  public type: InstructionArgType;
-  public value: InstructionArgValue;
-  public byteSize: number;
-  public resolved: boolean;
-
   constructor(
-    type: InstructionArgType,
-    value: InstructionArgValue,
-    byteSize: number = 1,
-    resolved = true,
-  ) {
-    this.type = type;
-    this.value = value;
-    this.byteSize = byteSize;
-    this.resolved = resolved;
-  }
+    public readonly type: InstructionArgType,
+    public readonly value: InstructionArgValue,
+    public readonly byteSize: number = 1,
+    private _resolved = true,
+  ) {}
 
   /**
    * Used for second pass compiler, some instruction args
@@ -37,12 +27,18 @@ export class ASTInstructionArg {
    * @memberof ASTInstructionArg
    */
   tryResolve(): boolean {
-    this.resolved = true;
+    this._resolved = true;
 
     return true;
   }
 
+  /**
+   * Returns resolved flag
+   *
+   * @returns
+   * @memberof ASTInstructionArg
+   */
   isResolved() {
-    return this.resolved;
+    return this._resolved;
   }
 }

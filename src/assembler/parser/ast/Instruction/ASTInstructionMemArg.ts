@@ -3,7 +3,7 @@ import * as R from 'ramda';
 import {lexer} from '../../lexer/lexer';
 import {isOperator} from '../../../utils/matchCharacter';
 
-import {ParserError, ParserErrorCode} from '../../../types/ParserError';
+import {ParserError, ParserErrorCode} from '../../../shared/ParserError';
 import {
   TokenType,
   TokenKind,
@@ -12,13 +12,13 @@ import {
   NumberToken,
 } from '../../lexer/tokens';
 
-import {RegisterSchema} from '../../../types/RegisterSchema';
+import {RegisterSchema} from '../../../shared/RegisterSchema';
 import {
   InstructionArgType,
   MemAddressDescription,
   isValidScale,
   MemSIBScale,
-} from '../../../types/InstructionArg';
+} from '../../../types';
 
 import {ASTInstructionArg} from './ASTInstructionArg';
 
@@ -175,8 +175,8 @@ function parseMemExpression(expression: string): MemAddressDescription {
  * @extends {ASTInstructionArg}
  */
 export class ASTInstructionMemArg extends ASTInstructionArg {
-  public phrase: string;
-  public addressDescription: MemAddressDescription;
+  public readonly phrase: string;
+  private _addressDescription: MemAddressDescription;
 
   constructor(phrase: string, byteSize: number) {
     super(InstructionArgType.MEMORY, null, byteSize, false);
@@ -184,6 +184,8 @@ export class ASTInstructionMemArg extends ASTInstructionArg {
     this.phrase = phrase;
     this.tryResolve();
   }
+
+  get addressDescription() { return this._addressDescription; }
 
   /**
    * See format example:
@@ -195,7 +197,7 @@ export class ASTInstructionMemArg extends ASTInstructionArg {
   tryResolve(): boolean {
     const {phrase} = this;
 
-    this.addressDescription = parseMemExpression(phrase);
+    this._addressDescription = parseMemExpression(phrase);
     return super.tryResolve();
   }
 }

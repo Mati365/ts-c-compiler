@@ -5,13 +5,10 @@
  * @class TokenLocation
  */
 export class TokenLocation {
-  public row: number;
-  public column: number;
-
-  constructor(row: number = 0, column: number = 0) {
-    this.row = row;
-    this.column = column;
-  }
+  constructor(
+    public row: number = 0,
+    public column: number = 0,
+  ) {}
 
   clone(): TokenLocation {
     const {row, column} = this;

@@ -1,20 +1,25 @@
 import {tagFunction} from './utils/tagFunction';
-import {ast, lexer} from './parser';
+import {
+  compile,
+  ast,
+  lexer,
+} from './parser';
 
 /**
  * Root of evil
  *
  * @param {String} code
  */
-const compile = tagFunction((code: string) => ast(lexer(code)));
+const make = tagFunction(
+  (code: string) => compile(ast(lexer(code))),
+);
 
 /* eslint-disable no-console,@typescript-eslint/no-unused-expressions */
-console.log(compile`
+make`
+  label:
   mov al, bl
-  ; mov al, byte [ds:bx+5]
-  ; mov ax, byte [ds:bx+cx*4+10+5] ; testowy komentarz
+  .abc:
+  mov ax, word [ds:bx+cx*4+10+5] ; testowy komentarz
   ; mov ax, byte [ds:bx+cx+10+5] ; testowy komentarz
-  ; brajan
-  ; mov ax, ax
-`);
+`;
 /* eslint-enable no-console,@typescript-eslint/no-unused-expressions */

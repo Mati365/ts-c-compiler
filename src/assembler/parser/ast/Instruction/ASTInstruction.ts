@@ -3,12 +3,12 @@ import * as R from 'ramda';
 import {COMPILER_INSTRUCTIONS_SET} from '../../../constants/instructionSetSchema';
 
 import {InstructionPrefixesBitset} from '../../../constants';
-import {InstructionSchema} from '../../../types/InstructionSchema';
-import {InstructionArgType} from '../../../types/InstructionArg';
+import {InstructionArgType} from '../../../types';
 
-import {ParserError, ParserErrorCode} from '../../../types/ParserError';
+import {ParserError, ParserErrorCode} from '../../../shared/ParserError';
 import {ASTParser} from '../ASTParser';
 import {ASTInstructionArg} from './ASTInstructionArg';
+import {ASTInstructionSchema} from './ASTInstructionSchema';
 import {ASTInstructionMemArg} from './ASTInstructionMemArg';
 
 import {
@@ -25,7 +25,9 @@ import {
   SizeOverrideToken,
 } from '../../lexer/tokens';
 
-import {findMatchingOpcode} from './ASTInstructionMatchers';
+import {findMatchingOpcode} from './ASTInstructionArgMatchers';
+
+export const AST_INSTRUCTION = 'Instruction';
 
 /**
  * Parser for:
@@ -35,22 +37,14 @@ import {findMatchingOpcode} from './ASTInstructionMatchers';
  * @class ASTInstruction
  * @extends {KindASTNode('Instruction')}
  */
-export class ASTInstruction extends KindASTNode('Instruction') {
-  public schema: InstructionSchema;
-  public args: ASTInstructionArg[];
-  public prefixes: number;
-
+export class ASTInstruction extends KindASTNode(AST_INSTRUCTION) {
   constructor(
-    schema: InstructionSchema,
-    args: ASTInstructionArg[],
+    public readonly schema: ASTInstructionSchema,
+    public readonly args: ASTInstructionArg[],
+    public readonly prefixes: number = 0x0,
     loc: ASTNodeLocation,
-    prefixes: number = 0x0,
   ) {
     super(loc);
-
-    this.schema = schema;
-    this.args = args;
-    this.prefixes = prefixes;
   }
 
   /**
@@ -122,8 +116,12 @@ export class ASTInstruction extends KindASTNode('Instruction') {
     return R.reduce(
       (acc: ASTInstructionArg[], item: Token) => {
         const result = parseToken(item);
-        if (result)
+        if (result) {
+          if (acc.length && result.byteSize !== acc[acc.length - 1].byteSize)
+            throw new ParserError(ParserErrorCode.OPERAND_SIZES_MISMATCH);
+
           acc.push(result);
+        }
 
         return acc;
       },
@@ -143,7 +141,9 @@ export class ASTInstruction extends KindASTNode('Instruction') {
    * @memberof ASTInstruction
    */
   static parse(token: Token, parser: ASTParser): ASTInstruction {
-    if (token.type !== TokenType.KEYWORD)
+    // if not opcode, ignore
+    const opcode = <string> token.text;
+    if (token.type !== TokenType.KEYWORD || !COMPILER_INSTRUCTIONS_SET[opcode])
       return null;
 
     // match prefixes
@@ -155,7 +155,7 @@ export class ASTInstruction extends KindASTNode('Instruction') {
         break;
 
       prefixes |= prefix;
-      token = parser.fetchNextToken();
+      token = parser.fetchRelativeToken();
     } while (true);
     /* eslint-enable no-constant-condition */
 
@@ -165,33 +165,33 @@ export class ASTInstruction extends KindASTNode('Instruction') {
 
     do {
       // value or size operand
-      const op1 = parser.fetchNextToken();
+      const op1 = parser.fetchRelativeToken();
       argsTokens.push(op1);
 
       // if it was size operand - fetch next token which is prefixed
       if (op1.kind === TokenKind.BYTE_SIZE_OVERRIDE) {
         argsTokens.push(
-          parser.fetchNextToken(),
+          parser.fetchRelativeToken(),
         );
       }
 
       // comma
-      commaToken = parser.fetchNextToken();
+      commaToken = parser.fetchRelativeToken();
     } while (commaToken?.type === TokenType.COMMA);
 
-    // find matching instruction schema
-    const opcode = <string> token.text;
+    // decode instructions
     const args = ASTInstruction.parseInstructionArgsTokens(argsTokens);
-    const schema = findMatchingOpcode(COMPILER_INSTRUCTIONS_SET, opcode, args);
 
+    // find matching schema
+    const schema = findMatchingOpcode(COMPILER_INSTRUCTIONS_SET, opcode, args);
     if (!schema)
       return null;
 
     return new ASTInstruction(
       schema,
       ASTInstruction.parseInstructionArgsTokens(argsTokens),
-      new ASTNodeLocation(token.loc, token.loc),
       prefixes,
+      ASTNodeLocation.fromTokenLoc(token.loc),
     );
   }
 }

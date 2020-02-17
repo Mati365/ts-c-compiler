@@ -1,4 +1,4 @@
-import {RegisterSchema} from './RegisterSchema';
+import {RegisterSchema} from './shared/RegisterSchema';
 
 export enum InstructionArgType {
   MEMORY,

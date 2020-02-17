@@ -1,6 +1,6 @@
 import * as R from 'ramda';
 
-import {InstructionArgSize} from '../../../types/InstructionArg';
+import {InstructionArgSize} from '../../../types';
 import {TokenLocation} from './TokenLocation';
 import {
   TokenType,

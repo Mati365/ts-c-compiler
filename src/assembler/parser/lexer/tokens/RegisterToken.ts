@@ -2,7 +2,7 @@ import * as R from 'ramda';
 
 import {COMPILER_REGISTERS_SET} from '../../../constants';
 
-import {RegisterSchema} from '../../../types/RegisterSchema';
+import {RegisterSchema} from '../../../shared/RegisterSchema';
 import {TokenLocation} from './TokenLocation';
 import {
   TokenType,

@@ -1,11 +1,11 @@
 import {isWhitespace} from '../../utils/matchCharacter';
 
-import {ParserError, ParserErrorCode} from '../../types/ParserError';
+import {ParserError, ParserErrorCode} from '../../shared/ParserError';
 import {Token, TokenType} from '../lexer/tokens';
 import {ASTNode} from './ASTNode';
 
 export type ASTInstructionParser = {
-  parse(token: Token, parser: ASTParser): ASTNode;
+  parse(token: Token, parser: ASTParser, astNodes: ASTNode[]): ASTNode;
 };
 
 /**
@@ -16,7 +16,6 @@ export type ASTInstructionParser = {
  */
 export class ASTParser {
   private nodeParsers: ASTInstructionParser[];
-
   private tokens: Token[];
   private tokenIndex: number = 0;
 
@@ -36,7 +35,7 @@ export class ASTParser {
    * @returns {Token}
    * @memberof ASTParser
    */
-  fetchNextToken(offset: number = 1, increment: boolean = true): Token {
+  fetchRelativeToken(offset: number = 1, increment: boolean = true): Token {
     const nextToken = this.tokens[this.tokenIndex + offset];
     if (increment)
       this.tokenIndex += offset;
@@ -52,7 +51,7 @@ export class ASTParser {
    */
   getTree(): ASTNode[] {
     const {nodeParsers, tokens} = this;
-    const astNodes = [];
+    const astNodes: ASTNode[] = [];
 
     this.tokenIndex = 0;
 
@@ -65,7 +64,7 @@ export class ASTParser {
 
       for (let j = 0; j < nodeParsers.length; ++j) {
         try {
-          const astNode = nodeParsers[j].parse(token, this);
+          const astNode = nodeParsers[j].parse(token, this, astNodes);
 
           if (astNode) {
             astNodes.push(astNode);

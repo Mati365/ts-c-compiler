@@ -9,7 +9,7 @@ import {
   matchBracket,
 } from '../../utils/matchCharacter';
 
-import {ParserError, ParserErrorCode} from '../../types/ParserError';
+import {ParserError, ParserErrorCode} from '../../shared/ParserError';
 import {
   Token,
   NumberToken,

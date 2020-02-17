@@ -2,13 +2,10 @@ import {TokenLocation, Token} from '../lexer/tokens';
 import {ASTParser} from './ASTParser';
 
 export class ASTNodeLocation {
-  public start: TokenLocation;
-  public end: TokenLocation;
-
-  constructor(start: TokenLocation, end: TokenLocation) {
-    this.start = start;
-    this.end = end;
-  }
+  constructor(
+    public readonly start: TokenLocation,
+    public readonly end: TokenLocation,
+  ) {}
 
   static fromTokenLoc(tokenLoc: TokenLocation): ASTNodeLocation {
     return new ASTNodeLocation(tokenLoc, tokenLoc);
@@ -22,25 +19,21 @@ export class ASTNodeLocation {
  * @class ASTNode
  */
 export class ASTNode {
-  public kind: string;
-  public loc: ASTNodeLocation;
-  public children: ASTNode[];
-
-  constructor(kind: string, loc: ASTNodeLocation, children: ASTNode[] = []) {
-    this.kind = kind;
-    this.loc = loc;
-    this.children = children || [];
-  }
+  constructor(
+    public readonly kind: string,
+    public readonly loc: ASTNodeLocation,
+    public readonly children: ASTNode[] = null,
+  ) {}
 
   /* eslint-disable @typescript-eslint/no-unused-vars */
-  static parse(token: Token, parser: ASTParser): ASTNode {
+  static parse(token: Token, parser: ASTParser, astNodes: ASTNode[]): ASTNode {
     return null;
   }
   /* eslint-enable @typescript-eslint/no-unused-vars */
 }
 
 export const KindASTNode = (kind: string) => class extends ASTNode {
-  constructor(loc: ASTNodeLocation, children: ASTNode[] = []) {
+  constructor(loc: ASTNodeLocation, children: ASTNode[] = null) {
     super(kind, loc, children);
   }
 };

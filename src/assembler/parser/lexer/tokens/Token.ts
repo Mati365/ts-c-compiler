@@ -56,13 +56,6 @@ export enum TokenKind {
  * @template KindType
  */
 export class Token<ValueType = any> {
-  public type: TokenType;
-  public kind: TokenKind;
-
-  public text: string|number;
-  public loc: TokenLocation;
-  public value: ValueType;
-
   /**
    * Creates an instance of Token.
    *
@@ -73,17 +66,10 @@ export class Token<ValueType = any> {
    * @memberof Token
    */
   constructor(
-    type: TokenType,
-    kind: TokenKind,
-    text: string,
-    loc: TokenLocation,
-    value: ValueType = null,
-  ) {
-    this.type = type;
-    this.kind = kind;
-
-    this.text = text;
-    this.value = value;
-    this.loc = loc;
-  }
+    public readonly type: TokenType,
+    public readonly kind: TokenKind,
+    public readonly text: string,
+    public readonly loc: TokenLocation,
+    public readonly value: ValueType = null,
+  ) {}
 }

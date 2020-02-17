@@ -1,10 +1,10 @@
 import * as R from 'ramda';
 
 import {X86BitsMode} from '../../../../emulator/types';
-import {InstructionArgType} from '../../../types/InstructionArg';
-import {InstructionSchema} from '../../../types/InstructionSchema';
-import {RegisterSchema} from '../../../types/RegisterSchema';
+import {InstructionArgType} from '../../../types';
+import {RegisterSchema} from '../../../shared/RegisterSchema';
 import {ASTInstructionArg} from './ASTInstructionArg';
+import {ASTInstructionSchema} from './ASTInstructionSchema';
 
 function mem(arg: ASTInstructionArg, byteSize: X86BitsMode): boolean {
   return arg.type === InstructionArgType.MEMORY && arg.byteSize === byteSize;
@@ -42,7 +42,7 @@ export type ASTInstructionArgMatcher = (arg: ASTInstructionArg) => boolean;
 export type ASTInstructionArgMatcherFactory<T = any> = (config?: T) => ASTInstructionArgMatcher;
 
 export type ASTOpcodeMatchers = {
-  [key: string]: InstructionSchema[],
+  [key: string]: ASTInstructionSchema[],
 };
 
 export const ASTInstructionArgMatchers: {[key: string]: ASTInstructionArgMatcherFactory} = {
@@ -101,13 +101,13 @@ export const argMatchersFromStr = R.compose(
  * @param {ASTOpcodeMatchers} matchersSet
  * @param {string} opcode
  * @param {ASTInstructionArg[]} args
- * @returns {InstructionSchema}
+ * @returns {ASTInstructionSchema}
  */
 export function findMatchingOpcode(
   matchersSet: ASTOpcodeMatchers,
   opcode: string,
   args: ASTInstructionArg[],
-): InstructionSchema {
+): ASTInstructionSchema {
   const opcodeSchemas = matchersSet[opcode];
   if (!opcodeSchemas)
     return null;

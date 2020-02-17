@@ -20,14 +20,10 @@ export class CountdownTimer {
     waitForValue: 0,
   };
 
-  public countdown: number;
-
-  public value: number;
-
-  constructor(countdown: number = 0, value: number = countdown) {
-    this.countdown = countdown;
-    this.value = value;
-  }
+  constructor(
+    public countdown: number = 0,
+    public value: number = countdown,
+  ) {}
 
   tick() {
     this.value--;

@@ -12,29 +12,13 @@ import {
  * @class VideoMode
  */
 export class VideoMode {
-  public w: number;
-
-  public h: number;
-
-  public code: number;
-
-  private offset: number;
-
-  private pages: number;
-
   constructor(
-    code: number,
-    w: number,
-    h: number,
-    pages: number = 0x1,
-    offset: number = X86_REALMODE_MAPPED_ADDRESSES.text,
-  ) {
-    this.code = code;
-    this.w = w;
-    this.h = h;
-    this.offset = offset;
-    this.pages = pages;
-  }
+    public code: number,
+    public w: number,
+    public h: number,
+    public pages: number = 0x1,
+    public offset: number = X86_REALMODE_MAPPED_ADDRESSES.text,
+  ) {}
 
   get pageSize() {
     return this.w * this.h * 0x2;

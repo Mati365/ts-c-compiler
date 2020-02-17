@@ -1,5 +1,5 @@
 import * as R from 'ramda';
-import {RegisterSchema} from '../types/RegisterSchema';
+import {RegisterSchema} from '../shared/RegisterSchema';
 
 export enum InstructionPrefixesBitset {
   REP = 1 << 0,

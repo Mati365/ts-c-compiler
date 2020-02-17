@@ -1,25 +1,30 @@
-import {InstructionSchema} from '../types/InstructionSchema';
+import {ASTInstructionSchema} from '../parser/ast/Instruction/ASTInstructionSchema';
 import {
   argMatchersFromStr,
-  ASTInstructionArgMatcher,
   ASTOpcodeMatchers,
-} from '../parser/ast/Instruction/ASTInstructionMatchers';
+} from '../parser/ast/Instruction/ASTInstructionArgMatchers';
 
-const _ = argMatchersFromStr;
 const _op = (
   mnemonic: string,
-  argsSchema: ASTInstructionArgMatcher[],
+  argsSchema: string,
   binarySchema: string,
-) => new InstructionSchema(mnemonic, argsSchema, binarySchema);
+) => new ASTInstructionSchema(mnemonic, argMatchersFromStr(argsSchema), binarySchema);
 
+/**
+ * @see {@link http://www.mathemainzel.info/files/x86asmref.html}
+ */
 export const COMPILER_INSTRUCTIONS_SET: ASTOpcodeMatchers = {
   mov: [
-    _op('mov', _('al rmb'), 'a0 d0 d1'),
-    _op('mov', _('ax rmw'), 'a0 d0 d1'),
+    _op('mov', 'al mw', 'A0 d0 d1'),
+    _op('mov', 'ax mw', 'A0 d0 d1'),
 
-    _op('mov', _('al ib'), 'b0 i0'),
-    _op('mov', _('ah ib'), 'b4 i0'),
-    _op('mov', _('ax iw'), 'b8 i0 i1'),
+    _op('mov', 'al ib', 'B0 i0'),
+    _op('mov', 'ah ib', 'B4 i0'),
+    _op('mov', 'ax iw', 'B8 i0 i1'),
+
+    _op('mov', 'rmb rb', '88 mr d0 d1'),
+    _op('mov', 'rb rmb', '8A mr d0 d1'),
+    _op('mov', 'rw rmw', '8B mr d0 d1'),
 
     // ['al rmb', 'a0 d0 d1'],
     // ['ax rmw', 'a1 d0 d1'],
