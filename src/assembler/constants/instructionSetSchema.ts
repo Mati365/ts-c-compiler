@@ -1,3 +1,5 @@
+import * as R from 'ramda';
+
 import {ASTInstructionSchema} from '../parser/ast/Instruction/ASTInstructionSchema';
 import {
   argMatchersFromStr,
@@ -8,7 +10,11 @@ const _op = (
   mnemonic: string,
   argsSchema: string,
   binarySchema: string,
-) => new ASTInstructionSchema(mnemonic, argMatchersFromStr(argsSchema), binarySchema);
+) => new ASTInstructionSchema(
+  mnemonic,
+  argMatchersFromStr(argsSchema),
+  R.split(' ', binarySchema),
+);
 
 /**
  * @see {@link http://www.mathemainzel.info/files/x86asmref.html}

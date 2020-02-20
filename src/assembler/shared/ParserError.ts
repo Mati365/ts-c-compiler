@@ -23,13 +23,14 @@ export enum ParserErrorCode {
   INCORRECT_SCALE_MEM_PARAMS,
   INCORRECT_SCALE,
   UNKNOWN_MEM_TOKEN,
+  INCORRECT_MODRM,
 
   // labels
   MISSING_PARENT_LABEL,
 }
 
 export const ERROR_TRANSLATIONS: {[key in ParserErrorCode]: string} = {
-  [ParserErrorCode.UNKNOWN_TOKEN]: 'Unknown token %{token}!',
+  [ParserErrorCode.UNKNOWN_TOKEN]: 'Unknown token "%{token}"!',
   [ParserErrorCode.SYNTAX_ERROR]: 'Syntax error!',
   [ParserErrorCode.INCORRECT_EXPRESSION]: 'Incorrect expression!',
 
@@ -37,9 +38,9 @@ export const ERROR_TRANSLATIONS: {[key in ParserErrorCode]: string} = {
   [ParserErrorCode.OPERAND_SIZES_MISMATCH]: 'Operand sizes mismatch!',
 
   [ParserErrorCode.MISSING_MEM_OPERAND_SIZE]: 'Missing mem operand size!',
-  [ParserErrorCode.INVALID_INSTRUCTION_OPERAND]: 'Invalid operand %{operand}!',
+  [ParserErrorCode.INVALID_INSTRUCTION_OPERAND]: 'Invalid operand "%{operand}"!',
   [ParserErrorCode.UNKNOWN_OPERATION]: 'Unknown operation!',
-  [ParserErrorCode.REGISTER_IS_NOT_SEGMENT_REG]: 'Provided register %{reg} is not segment register!',
+  [ParserErrorCode.REGISTER_IS_NOT_SEGMENT_REG]: 'Provided register "%{reg}" is not segment register!',
 
   // mem
   [ParserErrorCode.UNKNOWN_MEM_TOKEN]: 'Unknown mem definition token %{token}!',
@@ -47,7 +48,8 @@ export const ERROR_TRANSLATIONS: {[key in ParserErrorCode]: string} = {
   [ParserErrorCode.MISSING_MUL_SECOND_ARG]: 'Missing mul second arg!',
   [ParserErrorCode.SCALE_IS_ALREADY_DEFINED]: 'Scale is already defined!',
   [ParserErrorCode.INCORRECT_SCALE_MEM_PARAMS]: 'Incorrect scale mem params!',
-  [ParserErrorCode.INCORRECT_SCALE]: 'Incorrect scale! It must be 1, 2, 4 or 8 instead of %{scale}!',
+  [ParserErrorCode.INCORRECT_SCALE]: 'Incorrect scale! It must be 1, 2, 4 or 8 instead of "%{scale}"!',
+  [ParserErrorCode.INCORRECT_MODRM]: 'Error during "%{phrase}" ModRM instruction byte parsing!',
 
   // labels
   [ParserErrorCode.MISSING_PARENT_LABEL]: 'Unable to resolve local label %{label}, missing parent label!',

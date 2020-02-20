@@ -3,6 +3,8 @@ import {
   InstructionArgType,
 } from '../../../types';
 
+import {ASTInstructionArgSchema} from './ASTInstructionSchema';
+
 /**
  * Used for parser to check argument size or type
  *
@@ -13,6 +15,7 @@ export class ASTInstructionArg {
     public readonly type: InstructionArgType,
     public readonly value: InstructionArgValue,
     public readonly byteSize: number = 1,
+    public schema: ASTInstructionArgSchema = null,
     private _resolved = true,
   ) {}
 

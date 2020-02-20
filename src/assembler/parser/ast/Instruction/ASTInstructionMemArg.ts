@@ -179,7 +179,7 @@ export class ASTInstructionMemArg extends ASTInstructionArg {
   private _addressDescription: MemAddressDescription;
 
   constructor(phrase: string, byteSize: number) {
-    super(InstructionArgType.MEMORY, null, byteSize, false);
+    super(InstructionArgType.MEMORY, null, byteSize, null, false);
 
     this.phrase = phrase;
     this.tryResolve();

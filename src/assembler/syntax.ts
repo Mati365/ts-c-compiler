@@ -16,10 +16,6 @@ const make = tagFunction(
 
 /* eslint-disable no-console,@typescript-eslint/no-unused-expressions */
 make`
-  label:
-  mov al, bl
-  .abc:
-  mov ax, word [ds:bx+cx*4+10+5] ; testowy komentarz
-  ; mov ax, byte [ds:bx+cx+10+5] ; testowy komentarz
+  mov al, byte [si + 0xFF]
 `;
 /* eslint-enable no-console,@typescript-eslint/no-unused-expressions */

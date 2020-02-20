@@ -41,7 +41,7 @@ export type RMByte = {
   mod: number,
   reg: number,
   rm: number,
-  bitset: number,
+  bitset?: number,
 };
 
 export type SibByte = {
@@ -162,7 +162,8 @@ export abstract class X86AbstractCPU {
 
   /**
    * Decodes MOD RM byte
-   * see: http://www.c-jump.com/CIS77/CPU/x86/X77_0060_mod_reg_r_m_byte.htm
+   *
+   * @see {@link http://www.c-jump.com/CIS77/CPU/x86/X77_0060_mod_reg_r_m_byte.htm}
    *
    * @static
    * @param {number} byte
@@ -180,7 +181,8 @@ export abstract class X86AbstractCPU {
 
   /**
    * Decodes SIB byte
-   * see: http://www.swansontec.com/sintel.html
+   *
+   * @see {@link http://www.swansontec.com/sintel.html}
    *
    * @static
    * @param {Integer} byte  8bit SIB byte

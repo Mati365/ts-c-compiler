@@ -4,7 +4,10 @@ import {X86BitsMode} from '../../../../emulator/types';
 import {InstructionArgType} from '../../../types';
 import {RegisterSchema} from '../../../shared/RegisterSchema';
 import {ASTInstructionArg} from './ASTInstructionArg';
-import {ASTInstructionSchema} from './ASTInstructionSchema';
+import {
+  ASTInstructionSchema,
+  ASTInstructionMatcherSchema,
+} from './ASTInstructionSchema';
 
 function mem(arg: ASTInstructionArg, byteSize: X86BitsMode): boolean {
   return arg.type === InstructionArgType.MEMORY && arg.byteSize === byteSize;
@@ -84,10 +87,11 @@ export const argMatchersFromStr = R.compose(
     (str) => {
       const matcher = ASTInstructionArgMatchers[str];
 
-      return (
+      return new ASTInstructionMatcherSchema(
+        str,
         matcher
           ? matcher()
-          : ASTInstructionArgMatchers.eq(str)
+          : ASTInstructionArgMatchers.eq(str),
       );
     },
   ),
@@ -117,7 +121,7 @@ export function findMatchingOpcode(
       const {argsSchema: matchers} = schema;
 
       for (let i = matchers.length - 1; i >= 0; --i) {
-        if (R.isNil(args[i]) || !matchers[i](args[i]))
+        if (R.isNil(args[i]) || !matchers[i].matcher(args[i]))
           return false;
       }
 

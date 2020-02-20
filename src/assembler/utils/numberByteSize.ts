@@ -6,7 +6,7 @@
  * @returns {number} bytesCount
  */
 export const numberByteSize = (num: number): number => {
-  let bytes = 0;
+  let bytes = 1;
   while ((num >> 8) !== 0)
     bytes++;
 

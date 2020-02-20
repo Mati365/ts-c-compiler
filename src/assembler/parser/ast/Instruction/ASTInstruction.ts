@@ -10,6 +10,7 @@ import {ASTParser} from '../ASTParser';
 import {ASTInstructionArg} from './ASTInstructionArg';
 import {ASTInstructionSchema} from './ASTInstructionSchema';
 import {ASTInstructionMemArg} from './ASTInstructionMemArg';
+import {ASTNodeKind} from '../types';
 
 import {
   KindASTNode,
@@ -27,8 +28,6 @@ import {
 
 import {findMatchingOpcode} from './ASTInstructionArgMatchers';
 
-export const AST_INSTRUCTION = 'Instruction';
-
 /**
  * Parser for:
  * [opcode] [arg1] [arg2] [argX]
@@ -37,7 +36,7 @@ export const AST_INSTRUCTION = 'Instruction';
  * @class ASTInstruction
  * @extends {KindASTNode('Instruction')}
  */
-export class ASTInstruction extends KindASTNode(AST_INSTRUCTION) {
+export class ASTInstruction extends KindASTNode(ASTNodeKind.INSTRUCTION) {
   constructor(
     public readonly schema: ASTInstructionSchema,
     public readonly args: ASTInstructionArg[],
@@ -180,16 +179,20 @@ export class ASTInstruction extends KindASTNode(AST_INSTRUCTION) {
     } while (commaToken?.type === TokenType.COMMA);
 
     // decode instructions
+    // find matching opcode emitter by args
     const args = ASTInstruction.parseInstructionArgsTokens(argsTokens);
-
-    // find matching schema
     const schema = findMatchingOpcode(COMPILER_INSTRUCTIONS_SET, opcode, args);
+
     if (!schema)
       return null;
 
+    // assign matching schema
+    for (let i = 0; i < schema.argsSchema.length; ++i)
+      args[i].schema = schema.argsSchema[i];
+
     return new ASTInstruction(
       schema,
-      ASTInstruction.parseInstructionArgsTokens(argsTokens),
+      args,
       prefixes,
       ASTNodeLocation.fromTokenLoc(token.loc),
     );

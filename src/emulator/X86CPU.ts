@@ -347,8 +347,10 @@ export class X86CPU extends X86AbstractCPU {
   }
 
   /**
-   * Parse RM mode byte
-   * see: http://www.c-jump.com/CIS77/CPU/x86/X77_0060_mod_reg_r_m_byte.htm
+   * Parse RM mode byte:
+   *
+   * @see {@link http://www.c-jump.com/CIS77/CPU/x86/lecture.html}
+   * @see {@link https://en.wikibooks.org/wiki/X86_Assembly/Machine_Language_Conversion}
    *
    * @param {(reg: X86RegName, regByte: number, rmByte: RMByte) => void} regCallback
    * @param {(address: number, reg: X86RegName, rmByte: RMByte) => void} memCallback
@@ -381,11 +383,14 @@ export class X86CPU extends X86AbstractCPU {
 
       if (!byte.mod && byte.rm === 0x6) {
         /** SIB Byte? */
-        address = this.fetchOpcode(0x2);
+        // address = this.fetchOpcode(0x2);
+        throw new Error('SIB byte support is not implemented!');
       } else {
         /** Eight-bit displacement, sign-extended to 16 bits */
-        if (byte.mod === 0x1 || byte.mod === 0x2)
-          displacement = this.fetchOpcode(byte.mod);
+        if (byte.mod === 0x1)
+          displacement = this.fetchOpcode(0x1);
+        else if (byte.mod === 0x2)
+          displacement = this.fetchOpcode(0x4);
 
         /** Calc address */
         const {registers} = this;

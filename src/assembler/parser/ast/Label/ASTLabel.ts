@@ -2,14 +2,13 @@ import * as R from 'ramda';
 
 import {ParserErrorCode, ParserError} from '../../../shared/ParserError';
 import {ASTParser} from '../ASTParser';
+import {ASTNodeKind} from '../types';
 import {Token, TokenType} from '../../lexer/tokens';
 import {
   ASTNodeLocation,
   KindASTNode,
   ASTNode,
 } from '../ASTNode';
-
-export const AST_LABEL = 'LABEL';
 
 /**
  * Label is used to define jumps and other stuff such as variables
@@ -18,7 +17,7 @@ export const AST_LABEL = 'LABEL';
  * @class ASTLabel
  * @extends {KindASTNode(AST_LABEL)}
  */
-export class ASTLabel extends KindASTNode(AST_LABEL) {
+export class ASTLabel extends KindASTNode(ASTNodeKind.LABEL) {
   public readonly local: boolean;
 
   constructor(
@@ -62,7 +61,7 @@ export class ASTLabel extends KindASTNode(AST_LABEL) {
     if (localName[0] === '.') {
       for (let i = astNodes.length - 1; i >= 0; --i) {
         const node = <ASTLabel> astNodes[i];
-        if (node.kind === AST_LABEL && !node.local) {
+        if (node.kind === ASTNodeKind.LABEL && !node.local) {
           name = node.name + localName;
           break;
         }

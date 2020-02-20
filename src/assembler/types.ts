@@ -16,6 +16,13 @@ export enum InstructionArgSize {
  */
 export type MemSIBScale = 1|2|4|8;
 
+export enum RMAddressingMode {
+  INDIRECT_ADDRESSING = 0b00,
+  ONE_BYTE_SIGNED_DISP = 0b01,
+  FOUR_BYTE_SIGNED_DISP = 0b10,
+  REG_ADDRESSING = 0b11,
+}
+
 export type MemAddressDescription = {
   sreg?: RegisterSchema,
   reg?: RegisterSchema,

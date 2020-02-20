@@ -1,5 +1,6 @@
 import {TokenLocation, Token} from '../lexer/tokens';
 import {ASTParser} from './ASTParser';
+import {ASTNodeKind} from './types';
 
 export class ASTNodeLocation {
   constructor(
@@ -20,7 +21,7 @@ export class ASTNodeLocation {
  */
 export class ASTNode {
   constructor(
-    public readonly kind: string,
+    public readonly kind: ASTNodeKind,
     public readonly loc: ASTNodeLocation,
     public readonly children: ASTNode[] = null,
   ) {}
@@ -32,7 +33,7 @@ export class ASTNode {
   /* eslint-enable @typescript-eslint/no-unused-vars */
 }
 
-export const KindASTNode = (kind: string) => class extends ASTNode {
+export const KindASTNode = (kind: ASTNodeKind) => class extends ASTNode {
   constructor(loc: ASTNodeLocation, children: ASTNode[] = null) {
     super(kind, loc, children);
   }
