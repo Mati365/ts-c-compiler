@@ -10,7 +10,7 @@ import {
 } from '../emulator/devices';
 
 // 'kernels/build/mikeos/disk_images/mikeos.flp'
-const fetchBinaryBuffer = (path: string = 'kernels/build/bootsec.bin'): Promise<ArrayBuffer> => (
+const fetchBinaryBuffer = (path: string = 'kernels/build/mikeos/disk_images/mikeos.flp'): Promise<ArrayBuffer> => (
   fetch(path)
     .then((r) => r.arrayBuffer())
 );

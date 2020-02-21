@@ -1,4 +1,4 @@
-import {X86BitsMode, X86RegName} from '../../emulator/types';
+import {X86BitsMode, ExtendedX86RegName} from '../../emulator/types';
 
 export class RegisterSchema {
   /**
@@ -11,9 +11,13 @@ export class RegisterSchema {
    * @memberof Register
    */
   constructor(
-    public readonly mnemonic: X86RegName,
+    public readonly mnemonic: ExtendedX86RegName,
     public readonly index: number,
     public readonly byteSize: X86BitsMode,
     public readonly segment: boolean,
   ) {}
+
+  toString() {
+    return this.mnemonic;
+  }
 }

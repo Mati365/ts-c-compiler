@@ -29,6 +29,10 @@ export class ASTLabel extends KindASTNode(ASTNodeKind.LABEL) {
     this.local = localName !== name;
   }
 
+  toString(): string {
+    return `${this.name}:`;
+  }
+
   /**
    * Checks if previous token is keyword and current token is colon
    *

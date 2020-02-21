@@ -1,7 +1,10 @@
 import * as R from 'ramda';
 
 import {safeFirstMatch} from '../../../utils/safeFirstMatch';
-import {numberByteSize} from '../../../utils/numberByteSize';
+import {
+  numberByteSize,
+  roundToPowerOfTwo,
+} from '../../../utils/numberByteSize';
 
 import {TokenLocation} from './TokenLocation';
 import {TokenType, Token} from './Token';
@@ -38,7 +41,7 @@ export class NumberToken extends Token<NumberTokenValue> {
       text,
       loc,
       {
-        byteSize: numberByteSize(number),
+        byteSize: roundToPowerOfTwo(numberByteSize(number)),
         number,
         format,
       },

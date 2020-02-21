@@ -37,6 +37,12 @@ import {findMatchingOpcode} from './ASTInstructionArgMatchers';
  * @extends {KindASTNode('Instruction')}
  */
 export class ASTInstruction extends KindASTNode(ASTNodeKind.INSTRUCTION) {
+  public readonly typedArgs: {[type in InstructionArgType]: (ASTInstructionArg|ASTInstructionMemArg)[]} = {
+    [InstructionArgType.MEMORY]: [],
+    [InstructionArgType.NUMBER]: [],
+    [InstructionArgType.REGISTER]: [],
+  };
+
   constructor(
     public readonly schema: ASTInstructionSchema,
     public readonly args: ASTInstructionArg[],
@@ -44,7 +50,51 @@ export class ASTInstruction extends KindASTNode(ASTNodeKind.INSTRUCTION) {
     loc: ASTNodeLocation,
   ) {
     super(loc);
+
+    this.typedArgs = <any> R.reduce(
+      (acc, item) => {
+        acc[<any> item.type].push(item);
+        return acc;
+      },
+      this.typedArgs,
+      this.args,
+    );
   }
+
+  /**
+   * @todo
+   * Add prefixes
+   *
+   * @returns {string}
+   * @memberof ASTInstruction
+   */
+  toString(): string {
+    const {schema, args} = this;
+    const formattedArgs = R.map(
+      R.toString,
+      args,
+    );
+
+    return R.toLower(`${schema.mnemonic} ${R.join(', ', formattedArgs)}`);
+  }
+
+  /**
+   * Search for ModRM byte parameter, it might be register or memory,
+   * it is flagged using schema.rm boolean
+   *
+   * @returns {ASTInstructionArg}
+   * @memberof ASTInstruction
+   */
+  findRMArg(): ASTInstructionArg {
+    return R.find<ASTInstructionArg>(
+      (arg) => arg.schema.rm,
+      this.args,
+    );
+  }
+
+  get numArgs() { return this.typedArgs[InstructionArgType.NUMBER]; }
+  get memArgs() { return this.typedArgs[InstructionArgType.MEMORY]; }
+  get regArgs() { return this.typedArgs[InstructionArgType.REGISTER]; }
 
   /**
    * Transforms list of tokens into arguments

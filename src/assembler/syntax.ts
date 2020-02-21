@@ -16,6 +16,7 @@ const make = tagFunction(
 
 /* eslint-disable no-console,@typescript-eslint/no-unused-expressions */
 make`
-  mov al, byte [si + 0xFF]
+  int 3
+  mov al, byte [si + 0x5]
 `;
 /* eslint-enable no-console,@typescript-eslint/no-unused-expressions */

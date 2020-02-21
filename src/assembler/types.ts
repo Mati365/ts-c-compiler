@@ -7,8 +7,9 @@ export enum InstructionArgType {
 }
 
 export enum InstructionArgSize {
-  BYTE = 1,
-  WORD = 2,
+  BYTE = 0x1,
+  WORD = 0x2,
+  DWORD = 0x4,
 }
 
 /**
@@ -30,9 +31,11 @@ export type MemAddressDescription = {
     reg: RegisterSchema,
     value: MemSIBScale,
   },
+
   disp?: number,
+  dispByteSize?: number,
 };
 
 export const isValidScale = (num: number): boolean => num === 1 || num === 2 || num === 4 || num === 8;
 
-export type InstructionArgValue = string|number|RegisterSchema|MemAddressDescription;
+export type InstructionArgValue = string|number|RegisterSchema|MemAddressDescription|MemAddressDescription;

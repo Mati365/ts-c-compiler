@@ -68,8 +68,8 @@ export const COMPILER_INSTRUCTIONS_SET: ASTOpcodeMatchers = {
     // MOV     sr,rmw  8E mr d0 d1     2~4  --------
   ],
 
-  // int: [
-  //   ['3', 'CC'],
-  //   ['ib', 'CD i0'],
-  // ],
+  int: [
+    _op('int', '3', '33'),
+    _op('int', 'ib', 'CD i0'),
+  ],
 };

@@ -18,9 +18,15 @@ import {
   MemAddressDescription,
   isValidScale,
   MemSIBScale,
+  InstructionArgSize,
 } from '../../../types';
 
 import {ASTInstructionArg} from './ASTInstructionArg';
+
+import {
+  numberByteSize,
+  roundToPowerOfTwo,
+} from '../../../utils/numberByteSize';
 
 /**
  * Transforms:
@@ -105,7 +111,8 @@ function parseMemExpression(expression: string): MemAddressDescription {
   );
 
   const addressDescription: MemAddressDescription = {
-    disp: 0,
+    disp: null,
+    dispByteSize: null,
   };
 
   for (let i = 0; i < tokens.length; ++i) {
@@ -164,6 +171,9 @@ function parseMemExpression(expression: string): MemAddressDescription {
     }
   }
 
+  if (addressDescription.disp !== null)
+    addressDescription.dispByteSize = numberByteSize(addressDescription.disp);
+
   return addressDescription;
 }
 
@@ -176,7 +186,6 @@ function parseMemExpression(expression: string): MemAddressDescription {
  */
 export class ASTInstructionMemArg extends ASTInstructionArg {
   public readonly phrase: string;
-  private _addressDescription: MemAddressDescription;
 
   constructor(phrase: string, byteSize: number) {
     super(InstructionArgType.MEMORY, null, byteSize, null, false);
@@ -185,7 +194,22 @@ export class ASTInstructionMemArg extends ASTInstructionArg {
     this.tryResolve();
   }
 
-  get addressDescription() { return this._addressDescription; }
+  get addressDescription(): MemAddressDescription {
+    return <MemAddressDescription> this.value;
+  }
+
+  /**
+   * Used in diassembler
+   *
+   * @returns {string}
+   * @memberof ASTInstructionMemArg
+   */
+  toString(): string {
+    const {phrase, addressDescription} = this;
+    const sizePrefix = InstructionArgSize[roundToPowerOfTwo(addressDescription.dispByteSize)];
+
+    return `${sizePrefix} [${phrase}]`;
+  }
 
   /**
    * See format example:
@@ -197,7 +221,7 @@ export class ASTInstructionMemArg extends ASTInstructionArg {
   tryResolve(): boolean {
     const {phrase} = this;
 
-    this._addressDescription = parseMemExpression(phrase);
+    this.value = parseMemExpression(phrase);
     return super.tryResolve();
   }
 }

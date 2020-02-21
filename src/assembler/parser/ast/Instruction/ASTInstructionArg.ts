@@ -13,11 +13,20 @@ import {ASTInstructionArgSchema} from './ASTInstructionSchema';
 export class ASTInstructionArg {
   constructor(
     public readonly type: InstructionArgType,
-    public readonly value: InstructionArgValue,
+    public value: InstructionArgValue,
     public readonly byteSize: number = 1,
     public schema: ASTInstructionArgSchema = null,
     private _resolved = true,
   ) {}
+
+  toString(): string {
+    const {value} = this;
+
+    if (typeof value === 'number')
+      return `0x${value.toString(16)}`;
+
+    return value.toString();
+  }
 
   /**
    * Used for second pass compiler, some instruction args

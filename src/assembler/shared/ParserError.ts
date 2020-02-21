@@ -27,6 +27,14 @@ export enum ParserErrorCode {
 
   // labels
   MISSING_PARENT_LABEL,
+
+  // compiler
+  UNSUPPORTED_COMPILER_MODE,
+  UNKNOWN_BINARY_SCHEMA_DEF,
+  MISSING_RM_BYTE_DEF,
+  MISSING_MEM_ARG_DEF,
+  MISSING_IMM_ARG_DEF,
+  INVALID_ADDRESSING_MODE,
 }
 
 export const ERROR_TRANSLATIONS: {[key in ParserErrorCode]: string} = {
@@ -53,6 +61,14 @@ export const ERROR_TRANSLATIONS: {[key in ParserErrorCode]: string} = {
 
   // labels
   [ParserErrorCode.MISSING_PARENT_LABEL]: 'Unable to resolve local label %{label}, missing parent label!',
+
+  // compiler
+  [ParserErrorCode.UNSUPPORTED_COMPILER_MODE]: 'Unsupported compiler mode!',
+  [ParserErrorCode.MISSING_RM_BYTE_DEF]: 'Missing RM byte arg definition but in binary schema is present!',
+  [ParserErrorCode.MISSING_MEM_ARG_DEF]: 'Missing mem arg definition but in binary schema is present!',
+  [ParserErrorCode.MISSING_IMM_ARG_DEF]: 'Missing imm arg definition but in binary schema is present!',
+  [ParserErrorCode.UNKNOWN_BINARY_SCHEMA_DEF]: 'Unknown binary schema token %{schema}',
+  [ParserErrorCode.INVALID_ADDRESSING_MODE]: 'Invalid addressing mode!',
 };
 
 /**

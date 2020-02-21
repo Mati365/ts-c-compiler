@@ -176,4 +176,16 @@ export class X86RegsStore extends X86ByteRegsStore {
   }
 }
 
+/**
+ * 8/16bit regs only
+ */
 export type X86RegName = keyof(X86RegsStore);
+
+/**
+ * 32bit regs
+ */
+export type ExtendedX86RegName = (
+  X86RegName
+  | 'eax' | 'ebx' | 'ecx' | 'edx' | 'esi'
+  | 'edi' | 'eip' | 'esp' | 'ebp' | 'eflags'
+);

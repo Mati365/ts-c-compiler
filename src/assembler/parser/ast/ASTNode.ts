@@ -31,6 +31,12 @@ export class ASTNode {
     return null;
   }
   /* eslint-enable @typescript-eslint/no-unused-vars */
+
+  /* eslint-disable class-methods-use-this */
+  toString(): string {
+    return null;
+  }
+  /* eslint-enable class-methods-use-this */
 }
 
 export const KindASTNode = (kind: ASTNodeKind) => class extends ASTNode {

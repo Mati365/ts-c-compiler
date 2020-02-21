@@ -37,18 +37,45 @@ export type SegmentedAddress = {
   segment: number,
 };
 
-export type RMByte = {
-  mod: number,
-  reg: number,
-  rm: number,
-  bitset?: number,
-};
+/**
+ * Addressing mode byte
+ *
+ * @export
+ * @class RMByte
+ */
+export class RMByte {
+  constructor(
+    public mod: number,
+    public reg: number,
+    public rm: number,
+  ) {}
 
-export type SibByte = {
-  scale: number,
-  index: number,
-  base: number,
-};
+  get byte() {
+    const {rm, mod, reg} = this;
+
+    return (rm & 0b111) | ((reg & 0b111) << 0x3) | ((mod & 0b11) << 0x6);
+  }
+}
+
+/**
+ * Scale index byte, used in addressing in 32mode
+ *
+ * @export
+ * @class SibByte
+ */
+export class SibByte {
+  constructor(
+    public scale: number,
+    public index: number,
+    public base: number,
+  ) {}
+
+  get byte() {
+    const {scale, index, base} = this;
+
+    return (scale & 0b111) | ((index & 0b111) << 0x3) | ((base & 0b11) << 0x6);
+  }
+}
 
 /**
  * Base for creation other X86 16Bit CPU emulators
@@ -171,12 +198,11 @@ export abstract class X86AbstractCPU {
    * @memberof X86AbstractCPU
    */
   static decodeRmByte(byte: number): RMByte {
-    return {
-      mod: byte >> 0x6,
-      reg: (byte >> 0x3) & 0x7,
-      rm: byte & 0x7,
-      bitset: byte,
-    };
+    return new RMByte(
+      byte >> 0x6, // byte
+      (byte >> 0x3) & 0x7, // reg
+      byte & 0x7, // rm
+    );
   }
 
   /**
@@ -189,11 +215,11 @@ export abstract class X86AbstractCPU {
    * @returns Extracted value
    */
   static decodeSibByte(byte: number): SibByte {
-    return {
-      scale: (byte & 0xC0) >> 0x6,
-      index: (byte & 0x38) >> 0x3,
-      base: byte & 0x7,
-    };
+    return new SibByte(
+      (byte & 0xC0) >> 0x6, // scale
+      (byte & 0x38) >> 0x3, // index
+      byte & 0x7, // base
+    );
   }
 
   /**

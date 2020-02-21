@@ -1,3 +1,4 @@
 #!/bin/sh
 mkdir -p build/
-fasm ./asm/bootsec.asm ./build/bootsec.bin
+nasm -f bin -o ./build/bootsec.bin ./asm/bootsec.asm
+objdump -D -b binary -mi386 -M intel -Maddr16,data16 ./build/bootsec.bin
