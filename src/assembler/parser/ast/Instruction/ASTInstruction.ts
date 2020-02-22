@@ -117,8 +117,10 @@ export class ASTInstruction extends KindASTNode(ASTNodeKind.INSTRUCTION) {
    */
   toString(): string {
     const {schema, args} = this;
+    if (schema)
+      return toStringArgsList(schema.mnemonic, args);
 
-    return toStringArgsList(schema.mnemonic, args);
+    return `unresolved: ${toStringArgsList(this.opcode, this.argsTokens)}`;
   }
 
   /**
@@ -149,17 +151,8 @@ export class ASTInstruction extends KindASTNode(ASTNodeKind.INSTRUCTION) {
     const args = ASTInstruction.parseInstructionArgsTokens(argsTokens);
     const schema = findMatchingOpcode(COMPILER_INSTRUCTIONS_SET, opcode, args);
 
-    // there can be une
-    if (!schema) {
-      const unresolvedLabel = R.any(
-        ({type}) => type === InstructionArgType.LABEL,
-        args,
-      );
-
-      console.log(args, unresolvedLabel); // eslint-disable-line
-      return null;
-    }
-
+    this.schema = schema;
+    this.args = args;
     this.typedArgs = <any> R.reduce(
       (acc, item) => {
         acc[<any> item.type].push(item);
@@ -174,12 +167,21 @@ export class ASTInstruction extends KindASTNode(ASTNodeKind.INSTRUCTION) {
       args,
     );
 
+    // there can be une
+    if (!schema) {
+      const unresolvedLabel = R.any(
+        ({type}) => type === InstructionArgType.LABEL,
+        args,
+      );
+
+      // it will be resolved later
+      return unresolvedLabel ? this : null;
+    }
+
     // assign matching schema
     for (let i = 0; i < schema.argsSchema.length; ++i)
       args[i].schema = schema.argsSchema[i];
 
-    this.args = args;
-    this.schema = schema;
     return this;
   }
 

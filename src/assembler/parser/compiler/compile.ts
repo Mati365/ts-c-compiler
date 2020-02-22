@@ -133,9 +133,13 @@ export class X86Compiler {
           case ASTNodeKind.INSTRUCTION: {
             const instruction = <ASTInstruction> node;
 
-            this.emitBlob(
-              new BinaryInstruction(instruction).compile(this),
-            );
+            if (instruction.isResolvedSchema()) {
+              this.emitBlob(
+                new BinaryInstruction(instruction).compile(this),
+              );
+            } else {
+              console.warn(instruction.toString());
+            }
           } break;
 
           case ASTNodeKind.LABEL:

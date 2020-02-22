@@ -13,6 +13,13 @@ export class BinaryBlob<ASTNodeType = any> {
   get ast() { return this._ast; }
   get binary() { return this._binary; }
 
+  /**
+   * Print blob like objdump
+   *
+   * @param {boolean} [withAST=true]
+   * @returns {string}
+   * @memberof BinaryBlob
+   */
   toString(withAST: boolean = true): string {
     const {binary, ast} = this;
     const binStr = binary
