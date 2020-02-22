@@ -29,6 +29,58 @@ import {
 import {findMatchingOpcode} from './ASTInstructionArgMatchers';
 
 /**
+ * Used in string serializers
+ *
+ * @export
+ * @param {string} prefix
+ * @param {any[]} args
+ * @returns {string}
+ */
+export function toStringArgsList(prefix: string, args: any[]): string {
+  const formattedArgs = R.map(
+    R.toString,
+    args,
+  );
+
+  return R.toLower(`${prefix} ${R.join(', ', formattedArgs)}`);
+}
+
+/**
+ * Fetches array of args such as:
+ * ax, 0x55, byte ax
+ *
+ * @export
+ * @param {ASTParser} parser
+ * @param {boolean} [allowSizeOverride=true]
+ * @returns {Token[]}
+ */
+export function fetchTokensArgsList(
+  parser: ASTParser,
+  allowSizeOverride: boolean = true,
+): Token[] {
+  // parse arguments
+  const argsTokens: Token[] = [];
+  let commaToken = null;
+
+  do {
+    // value or size operand
+    const op1 = parser.fetchRelativeToken();
+    argsTokens.push(op1);
+
+    // if it was size operand - fetch next token which is prefixed
+    if (allowSizeOverride && op1.kind === TokenKind.BYTE_SIZE_OVERRIDE) {
+      argsTokens.push(
+        parser.fetchRelativeToken(),
+      );
+    }
+
+    // comma
+    commaToken = parser.fetchRelativeToken();
+  } while (commaToken?.type === TokenType.COMMA);
+
+  return argsTokens;
+}
+/**
  * Parser for:
  * [opcode] [arg1] [arg2] [argX]
  *
@@ -70,12 +122,8 @@ export class ASTInstruction extends KindASTNode(ASTNodeKind.INSTRUCTION) {
    */
   toString(): string {
     const {schema, args} = this;
-    const formattedArgs = R.map(
-      R.toString,
-      args,
-    );
 
-    return R.toLower(`${schema.mnemonic} ${R.join(', ', formattedArgs)}`);
+    return toStringArgsList(schema.mnemonic, args);
   }
 
   /**
@@ -209,24 +257,7 @@ export class ASTInstruction extends KindASTNode(ASTNodeKind.INSTRUCTION) {
     /* eslint-enable no-constant-condition */
 
     // parse arguments
-    const argsTokens = [];
-    let commaToken = null;
-
-    do {
-      // value or size operand
-      const op1 = parser.fetchRelativeToken();
-      argsTokens.push(op1);
-
-      // if it was size operand - fetch next token which is prefixed
-      if (op1.kind === TokenKind.BYTE_SIZE_OVERRIDE) {
-        argsTokens.push(
-          parser.fetchRelativeToken(),
-        );
-      }
-
-      // comma
-      commaToken = parser.fetchRelativeToken();
-    } while (commaToken?.type === TokenType.COMMA);
+    const argsTokens = fetchTokensArgsList(parser);
 
     // decode instructions
     // find matching opcode emitter by args

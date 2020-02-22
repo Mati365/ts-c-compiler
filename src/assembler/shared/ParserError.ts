@@ -29,6 +29,7 @@ export enum ParserErrorCode {
   MISSING_PARENT_LABEL,
 
   // compiler
+  UNKNOWN_COMPILER_INSTRUCTION,
   UNSUPPORTED_COMPILER_MODE,
   UNKNOWN_BINARY_SCHEMA_DEF,
   MISSING_RM_BYTE_DEF,
@@ -63,6 +64,7 @@ export const ERROR_TRANSLATIONS: {[key in ParserErrorCode]: string} = {
   [ParserErrorCode.MISSING_PARENT_LABEL]: 'Unable to resolve local label %{label}, missing parent label!',
 
   // compiler
+  [ParserErrorCode.UNKNOWN_COMPILER_INSTRUCTION]: 'Unknown instruction!',
   [ParserErrorCode.UNSUPPORTED_COMPILER_MODE]: 'Unsupported compiler mode!',
   [ParserErrorCode.MISSING_RM_BYTE_DEF]: 'Missing RM byte arg definition but in binary schema is present!',
   [ParserErrorCode.MISSING_MEM_ARG_DEF]: 'Missing mem arg definition but in binary schema is present!',

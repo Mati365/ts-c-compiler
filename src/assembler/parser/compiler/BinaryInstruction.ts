@@ -1,24 +1,26 @@
 import * as R from 'ramda';
 
-import {RMByte, ExtendedX86RegName} from '../../../../emulator/types';
-import {RegisterSchema} from '../../../shared/RegisterSchema';
+import {RMByte, ExtendedX86RegName} from '../../../emulator/types';
+import {RegisterSchema} from '../../shared/RegisterSchema';
 
-import {ASTInstruction} from '../../ast/Instruction/ASTInstruction';
-import {ASTInstructionArg} from '../../ast/Instruction/ASTInstructionArg';
-import {ASTInstructionMemArg} from '../../ast/Instruction/ASTInstructionMemArg';
+import {ASTInstruction} from '../ast/Instruction/ASTInstruction';
+import {ASTInstructionArg} from '../ast/Instruction/ASTInstructionArg';
+import {ASTInstructionMemArg} from '../ast/Instruction/ASTInstructionMemArg';
 
 import {
   RMAddressingMode,
   InstructionArgSize,
-} from '../../../types';
+} from '../../types';
 
 import {
   ParserError,
   ParserErrorCode,
-} from '../../../shared/ParserError';
+} from '../../shared/ParserError';
 
-import {X86Compiler} from '../compile';
-import {roundToPowerOfTwo} from '../../../utils/numberByteSize';
+import {X86Compiler} from './compile';
+import {BinaryBlob} from './BinaryBlob';
+
+import {roundToPowerOfTwo} from '../../utils/numberByteSize';
 
 const extractNthByte = (nth: number, num: number): number => (num >> (nth * 0x8)) & 0xFF;
 
@@ -95,15 +97,9 @@ function findMatchingMemAddressingRMByte(
  * @export
  * @class BinaryInstruction
  */
-export class BinaryInstruction {
-  private _binary: Uint8Array;
+export class BinaryInstruction extends BinaryBlob<ASTInstruction> {
   private _rmByte: RMByte;
 
-  constructor(
-    public readonly ast: ASTInstruction,
-  ) {}
-
-  get binary() { return this._binary; }
   get rmByte() { return this._rmByte; }
 
   /**
@@ -114,7 +110,7 @@ export class BinaryInstruction {
    * @returns {BinaryInstruction}
    * @memberof BinaryInstruction
    */
-  compile(compiler: X86Compiler): Uint8Array {
+  compile(compiler: X86Compiler): BinaryInstruction {
     const {ast} = this;
     const binary = [];
 
@@ -176,8 +172,8 @@ export class BinaryInstruction {
       },
     );
 
-    this._binary = new Uint8Array(binary);
-    return this._binary;
+    this._binary = binary;
+    return this;
   }
 
   /**
@@ -195,7 +191,11 @@ export class BinaryInstruction {
    * @returns {RMByte}
    * @memberof BinaryInstruction
    */
-  static encodeRMByte(mode: InstructionArgSize, regArg: ASTInstructionArg, rmArg: ASTInstructionArg): RMByte {
+  static encodeRMByte(
+    mode: InstructionArgSize,
+    regArg: ASTInstructionArg,
+    rmArg: ASTInstructionArg,
+  ): RMByte {
     const rmByte = new RMByte(0, 0, 0);
 
     // memory

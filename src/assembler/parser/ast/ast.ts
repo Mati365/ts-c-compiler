@@ -5,10 +5,12 @@ import {ASTNode} from './ASTNode';
 
 import {ASTInstruction} from './Instruction/ASTInstruction';
 import {ASTLabel} from './Label/ASTLabel';
+import {ASTDef} from './Def/ASTDef';
 
 export const ASTNodesParsers = [
   ASTInstruction,
   ASTLabel,
+  ASTDef,
 ];
 
 /**

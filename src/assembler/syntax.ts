@@ -17,6 +17,7 @@ const make = tagFunction(
 /* eslint-disable no-console,@typescript-eslint/no-unused-expressions */
 make`
   int 3
-  mov al, byte [si + 0x5]
+  mov al, 3
+  db 'abc', 'bca'
 `;
 /* eslint-enable no-console,@typescript-eslint/no-unused-expressions */

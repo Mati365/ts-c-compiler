@@ -72,4 +72,8 @@ export class Token<ValueType = any> {
     public readonly loc: TokenLocation,
     public readonly value: ValueType = null,
   ) {}
+
+  toString() {
+    return this.text;
+  }
 }
