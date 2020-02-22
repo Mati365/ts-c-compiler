@@ -35,6 +35,8 @@ function imm(arg: ASTInstructionArg, byteSize: X86BitsMode) {
  * d0 d1 - displacement
  * i0 i1 - immediate word
  * s0 s1 - short value
+ * o0, o1 - offset value
+ * s0, s1 - segment value
  * r0 - relative short displacement to label 'sl' (-128/+127 bytes)
  * r0 r1 - relative long displacement to label 'll' (-32768/+32767 bytes)
  *

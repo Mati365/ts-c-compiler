@@ -89,29 +89,24 @@ export function fetchTokensArgsList(
  * @extends {KindASTNode('Instruction')}
  */
 export class ASTInstruction extends KindASTNode(ASTNodeKind.INSTRUCTION) {
-  public readonly typedArgs: {[type in InstructionArgType]: (ASTInstructionArg|ASTInstructionMemArg)[]} = {
-    [InstructionArgType.MEMORY]: [],
-    [InstructionArgType.NUMBER]: [],
-    [InstructionArgType.REGISTER]: [],
-  };
+  public typedArgs: {[type in InstructionArgType]: (ASTInstructionArg|ASTInstructionMemArg)[]};
+  public args: ASTInstructionArg[];
+  public schema: ASTInstructionSchema;
 
   constructor(
-    public readonly schema: ASTInstructionSchema,
-    public readonly args: ASTInstructionArg[],
+    public readonly opcode: string,
+    public readonly argsTokens: Token<any>[],
     public readonly prefixes: number = 0x0,
     loc: ASTNodeLocation,
   ) {
     super(loc);
-
-    this.typedArgs = <any> R.reduce(
-      (acc, item) => {
-        acc[<any> item.type].push(item);
-        return acc;
-      },
-      this.typedArgs,
-      this.args,
-    );
   }
+
+  isResolvedSchema(): boolean { return !!this.schema; }
+
+  get numArgs() { return this.typedArgs[InstructionArgType.NUMBER]; }
+  get memArgs() { return this.typedArgs[InstructionArgType.MEMORY]; }
+  get regArgs() { return this.typedArgs[InstructionArgType.REGISTER]; }
 
   /**
    * @todo
@@ -140,9 +135,53 @@ export class ASTInstruction extends KindASTNode(ASTNodeKind.INSTRUCTION) {
     );
   }
 
-  get numArgs() { return this.typedArgs[InstructionArgType.NUMBER]; }
-  get memArgs() { return this.typedArgs[InstructionArgType.MEMORY]; }
-  get regArgs() { return this.typedArgs[InstructionArgType.REGISTER]; }
+  /**
+   * Search if all labels are present
+   *
+   * @returns {ASTInstruction}
+   * @memberof ASTInstruction
+   */
+  tryResolveSchema(): ASTInstruction {
+    const {opcode, argsTokens} = this;
+
+    // decode instructions
+    // find matching opcode emitter by args
+    const args = ASTInstruction.parseInstructionArgsTokens(argsTokens);
+    const schema = findMatchingOpcode(COMPILER_INSTRUCTIONS_SET, opcode, args);
+
+    // there can be une
+    if (!schema) {
+      const unresolvedLabel = R.any(
+        ({type}) => type === InstructionArgType.LABEL,
+        args,
+      );
+
+      console.log(args, unresolvedLabel); // eslint-disable-line
+      return null;
+    }
+
+    this.typedArgs = <any> R.reduce(
+      (acc, item) => {
+        acc[<any> item.type].push(item);
+        return acc;
+      },
+      {
+        [InstructionArgType.MEMORY]: [],
+        [InstructionArgType.NUMBER]: [],
+        [InstructionArgType.REGISTER]: [],
+        [InstructionArgType.LABEL]: [],
+      },
+      args,
+    );
+
+    // assign matching schema
+    for (let i = 0; i < schema.argsSchema.length; ++i)
+      args[i].schema = schema.argsSchema[i];
+
+    this.args = args;
+    this.schema = schema;
+    return this;
+  }
 
   /**
    * Transforms list of tokens into arguments
@@ -173,7 +212,8 @@ export class ASTInstruction extends KindASTNode(ASTNodeKind.INSTRUCTION) {
             return null;
           }
 
-          break;
+          // it will be resovled later..
+          return new ASTInstructionArg(InstructionArgType.LABEL, token.text);
 
         // Numeric
         case TokenType.NUMBER: {
@@ -214,7 +254,10 @@ export class ASTInstruction extends KindASTNode(ASTNodeKind.INSTRUCTION) {
       (acc: ASTInstructionArg[], item: Token) => {
         const result = parseToken(item);
         if (result) {
-          if (acc.length && result.byteSize !== acc[acc.length - 1].byteSize)
+          if (acc.length
+              && result.type !== InstructionArgType.LABEL
+              && acc[acc.length - 1].type !== InstructionArgType.LABEL
+              && result.byteSize !== acc[acc.length - 1].byteSize)
             throw new ParserError(ParserErrorCode.OPERAND_SIZES_MISMATCH);
 
           acc.push(result);
@@ -258,24 +301,13 @@ export class ASTInstruction extends KindASTNode(ASTNodeKind.INSTRUCTION) {
 
     // parse arguments
     const argsTokens = fetchTokensArgsList(parser);
-
-    // decode instructions
-    // find matching opcode emitter by args
-    const args = ASTInstruction.parseInstructionArgsTokens(argsTokens);
-    const schema = findMatchingOpcode(COMPILER_INSTRUCTIONS_SET, opcode, args);
-
-    if (!schema)
-      return null;
-
-    // assign matching schema
-    for (let i = 0; i < schema.argsSchema.length; ++i)
-      args[i].schema = schema.argsSchema[i];
-
-    return new ASTInstruction(
-      schema,
-      args,
+    const instruction = new ASTInstruction(
+      opcode,
+      argsTokens,
       prefixes,
       ASTNodeLocation.fromTokenLoc(token.loc),
     );
+
+    return instruction.tryResolveSchema();
   }
 }

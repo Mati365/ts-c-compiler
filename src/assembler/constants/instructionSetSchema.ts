@@ -20,6 +20,15 @@ const _op = (
  * @see {@link http://www.mathemainzel.info/files/x86asmref.html}
  */
 export const COMPILER_INSTRUCTIONS_SET: ASTOpcodeMatchers = {
+  int: [
+    _op('int', '3', '33'),
+    _op('int', 'ib', 'CD i0'),
+  ],
+
+  jmp: [
+    _op('jmp', 'sl', 'EB r0'),
+  ],
+
   mov: [
     _op('mov', 'al mw', 'A0 d0 d1'),
     _op('mov', 'ax mw', 'A0 d0 d1'),
@@ -66,10 +75,5 @@ export const COMPILER_INSTRUCTIONS_SET: ASTOpcodeMatchers = {
     // MOV     rw,rmw  8B mr d0 d1   W  2~4  --------
     // MOV     rmw,sr  8C mr d0 d1     2~4  --------
     // MOV     sr,rmw  8E mr d0 d1     2~4  --------
-  ],
-
-  int: [
-    _op('int', '3', '33'),
-    _op('int', 'ib', 'CD i0'),
   ],
 };

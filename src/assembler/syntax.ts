@@ -19,5 +19,6 @@ make`
   int 3
   abc:
   mov al, 3
+  ; jmp abc
 `;
 /* eslint-enable no-console,@typescript-eslint/no-unused-expressions */

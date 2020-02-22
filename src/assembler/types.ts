@@ -4,6 +4,7 @@ export enum InstructionArgType {
   MEMORY,
   REGISTER,
   NUMBER,
+  LABEL,
 }
 
 export enum InstructionArgSize {

@@ -28,6 +28,11 @@ function flipMap<Key, Value>(map: Map<Key, Value>): Map<Value, Key> {
 }
 
 /**
+ * User for resolve labels in AST
+ */
+export type BinaryLabelsOffsets = Map<string, number>;
+
+/**
  * Contains meta information about compiled data
  *
  * @export
@@ -36,7 +41,7 @@ function flipMap<Key, Value>(map: Map<Key, Value>): Map<Value, Key> {
 export class BinaryBlobSet {
   constructor(
     public readonly offset: number = 0,
-    public labelsOffsets: Map<string, number> = new Map,
+    public labelsOffsets: BinaryLabelsOffsets = new Map,
     public blobs: Map<number, BinaryBlob> = new Map,
   ) {}
 
@@ -77,7 +82,7 @@ export class X86Compiler {
     public readonly nodes: ASTNode[],
     public readonly mode: InstructionArgSize = InstructionArgSize.WORD,
 
-    private _blobSets: BinaryBlobSet[] = null,
+    private _blobSets: BinaryBlobSet[] = [],
     private _offset: number = 0,
   ) {}
 
@@ -109,12 +114,12 @@ export class X86Compiler {
   }
 
   /**
-   * Transform provided AST nodes array into binary blobs
+   * First pass compiler, omit labels and split into multiple chunks
    *
-   * @returns {X86Compiler}
+   * @private
    * @memberof X86Compiler
    */
-  compile(): X86Compiler {
+  private firstPass(): void {
     const {nodes} = this;
 
     this._offset = 0;
@@ -125,11 +130,13 @@ export class X86Compiler {
     R.forEach(
       (node) => {
         switch (node.kind) {
-          case ASTNodeKind.INSTRUCTION:
+          case ASTNodeKind.INSTRUCTION: {
+            const instruction = <ASTInstruction> node;
+
             this.emitBlob(
-              new BinaryInstruction(<ASTInstruction> node).compile(this),
+              new BinaryInstruction(instruction).compile(this),
             );
-            break;
+          } break;
 
           case ASTNodeKind.LABEL:
             this.emitLabel((<ASTLabel> node).name);
@@ -143,6 +150,17 @@ export class X86Compiler {
       },
       nodes,
     );
+  }
+
+  /**
+   * Transform provided AST nodes array into binary blobs
+   *
+   * @returns {X86Compiler}
+   * @memberof X86Compiler
+   */
+  compile(): X86Compiler {
+    if (this.nodes)
+      this.firstPass();
 
     return this;
   }
@@ -157,6 +175,9 @@ export class X86Compiler {
 export function compile(nodes: ASTNode[]): void {
   const output = new X86Compiler(nodes).compile();
 
-  // eslint-disable-next-line
-  console.log(output.blobSets.map(String).join('\n'));
+  /* eslint-disable no-console */
+  const str = output.blobSets.map(String).join('\n');
+  if (str)
+    console.log(str);
+  /* eslint-enable no-console */
 }
