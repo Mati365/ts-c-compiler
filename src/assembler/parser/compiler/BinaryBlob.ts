@@ -12,4 +12,19 @@ export class BinaryBlob<ASTNodeType = any> {
 
   get ast() { return this._ast; }
   get binary() { return this._binary; }
+
+  toString(withAST: boolean = true): string {
+    const {binary, ast} = this;
+    const binStr = binary
+      .map(
+        (num) => `0x${num.toString(16).padStart(2, '0')}`,
+      )
+      .join(', ');
+
+    if (!withAST || !ast)
+      return binStr;
+
+    const astStr = ast.toString().padEnd(15);
+    return `${astStr} ${binStr}`;
+  }
 }
