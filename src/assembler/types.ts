@@ -14,6 +14,11 @@ export enum InstructionArgSize {
 }
 
 /**
+ * User for resolve labels in AST
+ */
+export type BinaryLabelsOffsets = Map<string, number>;
+
+/**
  * @see {@link https://cs.lmu.edu/~ray/notes/nasmtutorial/}
  */
 export type MemSIBScale = 1|2|4|8;

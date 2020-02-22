@@ -3,7 +3,7 @@ import * as R from 'ramda';
 import {COMPILER_INSTRUCTIONS_SET} from '../../../constants/instructionSetSchema';
 
 import {InstructionPrefixesBitset} from '../../../constants';
-import {InstructionArgType} from '../../../types';
+import {InstructionArgType, BinaryLabelsOffsets} from '../../../types';
 
 import {ParserError, ParserErrorCode} from '../../../shared/ParserError';
 import {ASTParser} from '../ASTParser';
@@ -140,15 +140,16 @@ export class ASTInstruction extends KindASTNode(ASTNodeKind.INSTRUCTION) {
   /**
    * Search if all labels are present
    *
+   * @param {BinaryLabelsOffsets} [binaryLabelOffsets]
    * @returns {ASTInstruction}
    * @memberof ASTInstruction
    */
-  tryResolveSchema(): ASTInstruction {
+  tryResolveSchema(binaryLabelOffsets?: BinaryLabelsOffsets): ASTInstruction {
     const {opcode, argsTokens} = this;
 
     // decode instructions
     // find matching opcode emitter by args
-    const args = ASTInstruction.parseInstructionArgsTokens(argsTokens);
+    const args = ASTInstruction.parseInstructionArgsTokens(binaryLabelOffsets, argsTokens);
     const schema = findMatchingOpcode(COMPILER_INSTRUCTIONS_SET, opcode, args);
 
     this.schema = schema;
@@ -189,11 +190,15 @@ export class ASTInstruction extends KindASTNode(ASTNodeKind.INSTRUCTION) {
    * Transforms list of tokens into arguments
    *
    * @static
+   * @param {BinaryLabelsOffsets} binaryLabelOffsets
    * @param {Token[]} tokens
    * @returns {ASTInstructionArg[]}
    * @memberof ASTInstruction
    */
-  static parseInstructionArgsTokens(tokens: Token[]): ASTInstructionArg[] {
+  static parseInstructionArgsTokens(
+    binaryLabelOffsets: BinaryLabelsOffsets,
+    tokens: Token[],
+  ): ASTInstructionArg[] {
     let byteSizeOverride: number = null;
     const parseToken = (token: Token): ASTInstructionArg => {
       switch (token.type) {

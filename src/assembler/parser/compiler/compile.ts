@@ -1,7 +1,10 @@
 import * as R from 'ramda';
 
 import {ParserError, ParserErrorCode} from '../../shared/ParserError';
-import {InstructionArgSize} from '../../types';
+import {
+  InstructionArgSize,
+  BinaryLabelsOffsets,
+} from '../../types';
 
 import {ASTNode} from '../ast/ASTNode';
 import {ASTNodeKind} from '../ast/types';
@@ -26,11 +29,6 @@ function flipMap<Key, Value>(map: Map<Key, Value>): Map<Value, Key> {
 
   return flipped;
 }
-
-/**
- * User for resolve labels in AST
- */
-export type BinaryLabelsOffsets = Map<string, number>;
 
 /**
  * Contains meta information about compiled data
