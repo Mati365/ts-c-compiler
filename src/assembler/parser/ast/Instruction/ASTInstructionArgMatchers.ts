@@ -21,6 +21,10 @@ function imm(arg: ASTInstructionArg, byteSize: X86BitsMode) {
   return arg.type === InstructionArgType.NUMBER && arg.byteSize === byteSize;
 }
 
+function label(arg: ASTInstructionArg, byteSize: X86BitsMode) {
+  return arg.type === InstructionArgType.LABEL || (arg.type === InstructionArgType.NUMBER && arg.byteSize === byteSize);
+}
+
 /**
  * Mnemonic notation:
  * mb,mw,md,mq - memory byte, word, double word, quad word
@@ -76,6 +80,10 @@ export const ASTInstructionArgMatchers: {[key: string]: ASTInstructionArgMatcher
   /** IMM */
   ib: () => (arg: ASTInstructionArg) => imm(arg, 1),
   iw: () => (arg: ASTInstructionArg) => imm(arg, 2),
+
+  /** LABEL - size of label will be matched in second phrase */
+  sl: () => (arg: ASTInstructionArg) => label(arg, 1),
+  ll: () => (arg: ASTInstructionArg) => label(arg, 2),
 };
 
 /**
@@ -101,24 +109,24 @@ export const argMatchersFromStr = R.compose(
 );
 
 /**
- * Looksup in opcodes table nad matches arguments to schema
+ * Looksup in opcodes table nad matches arguments to schemas
  *
  * @export
  * @param {ASTOpcodeMatchers} matchersSet
  * @param {string} opcode
  * @param {ASTInstructionArg[]} args
- * @returns {ASTInstructionSchema}
+ * @returns {ASTInstructionSchema[]}
  */
-export function findMatchingOpcode(
+export function findMatchingInstructionSchemas(
   matchersSet: ASTOpcodeMatchers,
   opcode: string,
   args: ASTInstructionArg[],
-): ASTInstructionSchema {
+): ASTInstructionSchema[] {
   const opcodeSchemas = matchersSet[opcode];
   if (!opcodeSchemas)
     return null;
 
-  return R.find(
+  return R.filter(
     (schema) => {
       const {argsSchema: matchers} = schema;
 

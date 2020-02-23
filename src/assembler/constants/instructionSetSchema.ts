@@ -29,6 +29,11 @@ export const COMPILER_INSTRUCTIONS_SET: ASTOpcodeMatchers = {
     _op('jmp', 'sl', 'EB r0'),
   ],
 
+  jnc: [
+    _op('jnc', 'll', '0F 83 r0 r1'),
+    _op('jnc', 'sl', '73 r0'),
+  ],
+
   mov: [
     _op('mov', 'al mw', 'A0 d0 d1'),
     _op('mov', 'ax mw', 'A0 d0 d1'),

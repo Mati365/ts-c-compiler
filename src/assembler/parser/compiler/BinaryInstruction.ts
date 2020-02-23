@@ -118,7 +118,7 @@ export class BinaryInstruction extends BinaryBlob<ASTInstruction> {
     const rmByte = rmArg && BinaryInstruction.encodeRMByte(compiler.mode, ast.regArgs[0], rmArg);
 
     // full instruction code
-    ast.schema.binarySchema.forEach(
+    ast.schemas[0].binarySchema.forEach(
       (schema) => {
         switch (schema) {
           // immediate

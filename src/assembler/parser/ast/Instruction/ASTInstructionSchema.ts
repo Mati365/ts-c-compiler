@@ -23,4 +23,6 @@ export class ASTInstructionSchema {
     public readonly argsSchema: ASTInstructionMatcherSchema[],
     public readonly binarySchema: string[],
   ) {}
+
+  get byteSize() { return this.binarySchema.length; }
 }

@@ -1,10 +1,7 @@
 import * as R from 'ramda';
 
 import {ParserError, ParserErrorCode} from '../../shared/ParserError';
-import {
-  InstructionArgSize,
-  BinaryLabelsOffsets,
-} from '../../types';
+import {InstructionArgSize} from '../../types';
 
 import {ASTNode} from '../ast/ASTNode';
 import {ASTNodeKind} from '../ast/types';
@@ -31,6 +28,11 @@ function flipMap<Key, Value>(map: Map<Key, Value>): Map<Value, Key> {
 }
 
 /**
+ * User for resolve labels in AST
+ */
+export type BinaryLabelsOffsets = Map<string, number>;
+
+/**
  * Contains meta information about compiled data
  *
  * @export
@@ -43,6 +45,11 @@ export class BinaryBlobSet {
     public blobs: Map<number, BinaryBlob> = new Map,
   ) {}
 
+  /**
+   * Resets whole blob
+   *
+   * @memberof BinaryBlobSet
+   */
   clear() {
     const {labelsOffsets, blobs} = this;
 
@@ -50,6 +57,12 @@ export class BinaryBlobSet {
     blobs.clear();
   }
 
+  /**
+   * Prints in human way, like objdump blob
+   *
+   * @returns
+   * @memberof BinaryBlobSet
+   */
   toString() {
     const {labelsOffsets, blobs} = this;
     const labelsByOffsets = flipMap(labelsOffsets);
@@ -72,6 +85,10 @@ export class BinaryBlobSet {
 /**
  * Transforms AST tree into binary set of data
  *
+ * @see
+ *  Output may contain unresolved ASTInstruction (like jmps) for second pass!
+ *  They should be erased after second pass
+ *
  * @export
  * @class X86Compiler
  */
@@ -80,12 +97,11 @@ export class X86Compiler {
     public readonly nodes: ASTNode[],
     public readonly mode: InstructionArgSize = InstructionArgSize.WORD,
 
-    private _blobSets: BinaryBlobSet[] = [],
+    private _output: BinaryBlobSet = null,
     private _offset: number = 0,
   ) {}
 
-  get lastBlob() { return R.last(this._blobSets); }
-  get blobSets() { return this._blobSets; }
+  get output() { return this._output; }
   get currentLength() { return this._offset; }
 
   /**
@@ -96,7 +112,7 @@ export class X86Compiler {
    * @memberof X86Compiler
    */
   private emitBlob(blob: BinaryBlob): void {
-    this.lastBlob.blobs.set(this._offset, blob);
+    this._output.blobs.set(this._offset, blob);
     this._offset += blob.binary.length;
   }
 
@@ -108,7 +124,7 @@ export class X86Compiler {
    * @memberof X86Compiler
    */
   private emitLabel(name: string): void {
-    this.lastBlob.labelsOffsets.set(name, this._offset);
+    this._output.labelsOffsets.set(name, this._offset);
   }
 
   /**
@@ -121,9 +137,7 @@ export class X86Compiler {
     const {nodes} = this;
 
     this._offset = 0;
-    this._blobSets = [
-      new BinaryBlobSet,
-    ];
+    this._output = new BinaryBlobSet;
 
     R.forEach(
       (node) => {
@@ -131,12 +145,12 @@ export class X86Compiler {
           case ASTNodeKind.INSTRUCTION: {
             const instruction = <ASTInstruction> node;
 
-            if (instruction.isResolvedSchema()) {
+            if (!instruction.hasSingleSchemaCandidate || instruction.hasUnresolvedLabels()) {
+              console.log(instruction); // eslint-disable-line
+            } else {
               this.emitBlob(
                 new BinaryInstruction(instruction).compile(this),
               );
-            } else {
-              console.warn(instruction.toString());
             }
           } break;
 
@@ -155,14 +169,42 @@ export class X86Compiler {
   }
 
   /**
+   * Find unresolved instructions, try resolve them and emit binaries
+   *
+   * @private
+   * @memberof X86Compiler
+   */
+  private secondPass(): void {
+    console.log(this); // eslint-disable-line
+    // const {_output} = this;
+
+    // for (let i = 0; i < _output.length; ++i) {
+    //   const item = _output[i];
+
+    //   if (item instanceof ASTInstruction) {
+    //     item.tryResolveSchema(
+    //       {
+    //         resolveLabelAddress(relative: boolean, label: string): number {
+    //           console.log(relative, label);
+    //           return null;
+    //         },
+    //       },
+    //     );
+    //   }
+    // }
+  }
+
+  /**
    * Transform provided AST nodes array into binary blobs
    *
    * @returns {X86Compiler}
    * @memberof X86Compiler
    */
   compile(): X86Compiler {
-    if (this.nodes)
+    if (this.nodes) {
       this.firstPass();
+      this.secondPass();
+    }
 
     return this;
   }
@@ -178,7 +220,7 @@ export function compile(nodes: ASTNode[]): void {
   const output = new X86Compiler(nodes).compile();
 
   /* eslint-disable no-console */
-  const str = output.blobSets.map(String).join('\n');
+  const str = output.output.toString();
   if (str)
     console.log(str);
   /* eslint-enable no-console */

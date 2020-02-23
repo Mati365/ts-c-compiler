@@ -3,7 +3,7 @@ import * as R from 'ramda';
 import {COMPILER_INSTRUCTIONS_SET} from '../../../constants/instructionSetSchema';
 
 import {InstructionPrefixesBitset} from '../../../constants';
-import {InstructionArgType, BinaryLabelsOffsets} from '../../../types';
+import {InstructionArgType} from '../../../types';
 
 import {ParserError, ParserErrorCode} from '../../../shared/ParserError';
 import {ASTParser} from '../ASTParser';
@@ -26,7 +26,7 @@ import {
   SizeOverrideToken,
 } from '../../lexer/tokens';
 
-import {findMatchingOpcode} from './ASTInstructionArgMatchers';
+import {findMatchingInstructionSchemas} from './ASTInstructionArgMatchers';
 
 /**
  * Used in string serializers
@@ -91,7 +91,7 @@ export function fetchTokensArgsList(
 export class ASTInstruction extends KindASTNode(ASTNodeKind.INSTRUCTION) {
   public typedArgs: {[type in InstructionArgType]: (ASTInstructionArg|ASTInstructionMemArg)[]};
   public args: ASTInstructionArg[];
-  public schema: ASTInstructionSchema;
+  public schemas: ASTInstructionSchema[];
 
   constructor(
     public readonly opcode: string,
@@ -102,11 +102,36 @@ export class ASTInstruction extends KindASTNode(ASTNodeKind.INSTRUCTION) {
     super(loc);
   }
 
-  isResolvedSchema(): boolean { return !!this.schema; }
+  /**
+   * Get size used in second phase, there can be used
+   * by multiple schemas, choose the biggest and emit
+   * there bytes
+   *
+   * @returns {number}
+   * @memberof ASTInstruction
+   */
+  getPessimisticByteSize(): number {
+    return R.reduce(
+      (acc, schema) => Math.max(acc || 0, schema.byteSize),
+      null,
+      this.schemas,
+    );
+  }
+
+  hasSingleSchemaCandidate(): boolean {
+    const {schemas} = this;
+
+    return schemas && schemas.length === 1;
+  }
+
+  hasUnresolvedLabels(): boolean {
+    return this.labelArgs.length !== 0;
+  }
 
   get numArgs() { return this.typedArgs[InstructionArgType.NUMBER]; }
   get memArgs() { return this.typedArgs[InstructionArgType.MEMORY]; }
   get regArgs() { return this.typedArgs[InstructionArgType.REGISTER]; }
+  get labelArgs() { return this.typedArgs[InstructionArgType.LABEL]; }
 
   /**
    * @todo
@@ -116,11 +141,11 @@ export class ASTInstruction extends KindASTNode(ASTNodeKind.INSTRUCTION) {
    * @memberof ASTInstruction
    */
   toString(): string {
-    const {schema, args} = this;
-    if (schema)
-      return toStringArgsList(schema.mnemonic, args);
+    const {schemas, args} = this;
+    if (this.hasSingleSchemaCandidate())
+      return toStringArgsList(schemas[0].mnemonic, args);
 
-    return `unresolved: ${toStringArgsList(this.opcode, this.argsTokens)}`;
+    return `[unresolved] ${toStringArgsList(this.opcode, this.argsTokens)}`;
   }
 
   /**
@@ -140,19 +165,18 @@ export class ASTInstruction extends KindASTNode(ASTNodeKind.INSTRUCTION) {
   /**
    * Search if all labels are present
    *
-   * @param {BinaryLabelsOffsets} [binaryLabelOffsets]
    * @returns {ASTInstruction}
    * @memberof ASTInstruction
    */
-  tryResolveSchema(binaryLabelOffsets?: BinaryLabelsOffsets): ASTInstruction {
+  tryResolveSchema(): ASTInstruction {
     const {opcode, argsTokens} = this;
 
     // decode instructions
     // find matching opcode emitter by args
-    const args = ASTInstruction.parseInstructionArgsTokens(binaryLabelOffsets, argsTokens);
-    const schema = findMatchingOpcode(COMPILER_INSTRUCTIONS_SET, opcode, args);
+    const args = ASTInstruction.parseInstructionArgsTokens(argsTokens);
+    const schemas = findMatchingInstructionSchemas(COMPILER_INSTRUCTIONS_SET, opcode, args);
 
-    this.schema = schema;
+    this.schemas = schemas;
     this.args = args;
     this.typedArgs = <any> R.reduce(
       (acc, item) => {
@@ -168,20 +192,13 @@ export class ASTInstruction extends KindASTNode(ASTNodeKind.INSTRUCTION) {
       args,
     );
 
-    // there can be une
-    if (!schema) {
-      const unresolvedLabel = R.any(
-        ({type}) => type === InstructionArgType.LABEL,
-        args,
-      );
-
-      // it will be resolved later
-      return unresolvedLabel ? this : null;
-    }
-
     // assign matching schema
-    for (let i = 0; i < schema.argsSchema.length; ++i)
-      args[i].schema = schema.argsSchema[i];
+    for (let i = 0; i < args.length; ++i)
+      args[i].schema = schemas.length === 1 ? schemas[0].argsSchema[i] : null;
+
+    // there can be multiple matched schemas
+    if (!schemas.length)
+      return null;
 
     return this;
   }
@@ -190,15 +207,11 @@ export class ASTInstruction extends KindASTNode(ASTNodeKind.INSTRUCTION) {
    * Transforms list of tokens into arguments
    *
    * @static
-   * @param {BinaryLabelsOffsets} binaryLabelOffsets
    * @param {Token[]} tokens
    * @returns {ASTInstructionArg[]}
    * @memberof ASTInstruction
    */
-  static parseInstructionArgsTokens(
-    binaryLabelOffsets: BinaryLabelsOffsets,
-    tokens: Token[],
-  ): ASTInstructionArg[] {
+  static parseInstructionArgsTokens(tokens: Token[]): ASTInstructionArg[] {
     let byteSizeOverride: number = null;
     const parseToken = (token: Token): ASTInstructionArg => {
       switch (token.type) {
@@ -219,7 +232,7 @@ export class ASTInstruction extends KindASTNode(ASTNodeKind.INSTRUCTION) {
             return null;
           }
 
-          // it will be resovled later..
+          // used for mem matching, in first phase
           return new ASTInstructionArg(InstructionArgType.LABEL, token.text);
 
         // Numeric
