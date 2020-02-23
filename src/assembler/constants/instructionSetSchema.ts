@@ -24,6 +24,7 @@ export const COMPILER_INSTRUCTIONS_SET: ASTOpcodeMatchers = {
     _op('int3', '', '33'),
   ],
   int: [
+    _op('int', '3', '33'), // todo: remove
     _op('int', 'ib', 'CD i0'),
   ],
 

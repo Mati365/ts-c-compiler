@@ -16,14 +16,10 @@ const make = tagFunction(
 
 /* eslint-disable no-console,@typescript-eslint/no-unused-expressions */
 make`
-  int3
-  hlt
-  abc:
-  mov al, 3
-  jmp abc
-  jmp dupa_blada
-  int 32
-  dupa_blada:
-  int 4
+  jmp dupa
+  int 3
+  mov ax, word 2
+  dupa:
+  mov al, byte 1
 `;
 /* eslint-enable no-console,@typescript-eslint/no-unused-expressions */

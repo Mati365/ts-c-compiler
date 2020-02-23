@@ -97,8 +97,8 @@ export function fetchTokensArgsList(
  */
 export class ASTInstruction extends KindASTNode(ASTNodeKind.INSTRUCTION) {
   public typedArgs: {[type in InstructionArgType]: (ASTInstructionArg|ASTInstructionMemArg)[]};
-  public args: ASTInstructionArg[];
   public schemas: ASTInstructionSchema[];
+  public args: ASTInstructionArg[];
 
   constructor(
     public readonly opcode: string,
@@ -107,6 +107,29 @@ export class ASTInstruction extends KindASTNode(ASTNodeKind.INSTRUCTION) {
     loc: ASTNodeLocation,
   ) {
     super(loc);
+  }
+
+  /**
+   * Used for resolving jmp instructions, sometimes
+   * it must be multiple passes to check if instrucion
+   * can shrink
+   *
+   * @returns {ASTInstruction}
+   * @memberof ASTInstruction
+   */
+  shallowClone(): ASTInstruction {
+    const copy = new ASTInstruction(
+      this.opcode,
+      this.argsTokens,
+      this.prefixes,
+      this.loc,
+    );
+
+    copy.typedArgs = this.typedArgs;
+    copy.schemas = this.schemas;
+    copy.args = this.args;
+
+    return copy;
   }
 
   /**
@@ -209,6 +232,9 @@ export class ASTInstruction extends KindASTNode(ASTNodeKind.INSTRUCTION) {
    * @memberof ASTInstruction
    */
   replaceLabelsArgsWithAddresses(labels: BinaryLabelsOffsets): ASTInstruction {
+    if (!this.hasUnresolvedLabels())
+      return this;
+
     this.args = R.map(
       (arg) => {
         if (arg.type === InstructionArgType.LABEL) {

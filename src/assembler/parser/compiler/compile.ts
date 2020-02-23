@@ -8,24 +8,10 @@ import {ASTNodeKind, BinaryLabelsOffsets} from '../ast/types';
 import {ASTInstruction} from '../ast/Instruction/ASTInstruction';
 import {ASTLabel} from '../ast/Label/ASTLabel';
 
+import {flipMap} from './utils/flipMap';
+
 import {BinaryInstruction} from './BinaryInstruction';
 import {BinaryBlob} from './BinaryBlob';
-
-/**
- * Flips value with key in Map
- *
- * @template Key
- * @template Value
- * @param {Map<Key, Value>} map
- * @returns {Map<Value, Key>}
- */
-function flipMap<Key, Value>(map: Map<Key, Value>): Map<Value, Key> {
-  const flipped = new Map<Value, Key>();
-  for (const [key, val] of map)
-    flipped.set(val, key);
-
-  return flipped;
-}
 
 /**
  * Contains meta information about compiled data
@@ -184,19 +170,12 @@ export class X86Compiler {
           }
 
           // if so decrement precceding instruction offsets and label offsets
-          const newOffsets = new Map<number, ASTNode>();
-          for (const [instructionOffset, instruction] of nodesOffsets) {
-            if (instructionOffset > offset)
-              newOffsets.set(instructionOffset - shrinkBytes, instruction);
+          for (const [instructionOffset, instruction] of Array.from(nodesOffsets)) {
+            if (instructionOffset > offset) {
+              nodesOffsets.delete(instructionOffset);
+              nodesOffsets.set(instructionOffset - shrinkBytes, instruction);
+            }
           }
-
-          // no need for old already parsed nodes, just clear
-          nodesOffsets.clear();
-          Array.from(newOffsets).forEach(
-            ([instructionOffset, instruction]) => {
-              nodesOffsets.set(instructionOffset, instruction);
-            },
-          );
         }
 
         // todo: handle still unresolved labels
