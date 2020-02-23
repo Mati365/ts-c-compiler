@@ -21,8 +21,11 @@ function imm(arg: ASTInstructionArg, byteSize: X86BitsMode) {
   return arg.type === InstructionArgType.NUMBER && arg.byteSize === byteSize;
 }
 
-function label(arg: ASTInstructionArg, byteSize: X86BitsMode) {
-  return arg.type === InstructionArgType.LABEL || (arg.type === InstructionArgType.NUMBER && arg.byteSize === byteSize);
+function relLabel(arg: ASTInstructionArg, byteSize: X86BitsMode) {
+  return (
+    arg.type === InstructionArgType.LABEL
+      || (arg.type === InstructionArgType.RELATIVE_ADDR && arg.byteSize === byteSize)
+  );
 }
 
 /**
@@ -59,7 +62,7 @@ export const ASTInstructionArgMatchers: {[key: string]: ASTInstructionArgMatcher
     if (arg.value instanceof RegisterSchema)
       return arg.value.mnemonic === str;
 
-    return false;
+    return str === arg.value?.toString();
   },
 
   /** MEM */
@@ -82,8 +85,8 @@ export const ASTInstructionArgMatchers: {[key: string]: ASTInstructionArgMatcher
   iw: () => (arg: ASTInstructionArg) => imm(arg, 2),
 
   /** LABEL - size of label will be matched in second phrase */
-  sl: () => (arg: ASTInstructionArg) => label(arg, 1),
-  ll: () => (arg: ASTInstructionArg) => label(arg, 2),
+  sl: () => (arg: ASTInstructionArg) => relLabel(arg, 1),
+  ll: () => (arg: ASTInstructionArg) => relLabel(arg, 2),
 };
 
 /**
@@ -92,20 +95,24 @@ export const ASTInstructionArgMatchers: {[key: string]: ASTInstructionArgMatcher
  * @example
  *  'al rmb' => [_al, _rmb]
  */
-export const argMatchersFromStr = R.compose(
-  R.map(
-    (str) => {
-      const matcher = ASTInstructionArgMatchers[str];
+export const argMatchersFromStr = R.ifElse(
+  R.either(R.isEmpty, R.isNil),
+  R.always([]),
+  R.compose(
+    R.map(
+      (str) => {
+        const matcher = ASTInstructionArgMatchers[str];
 
-      return new ASTInstructionMatcherSchema(
-        str,
-        matcher
-          ? matcher()
-          : ASTInstructionArgMatchers.eq(str),
-      );
-    },
+        return new ASTInstructionMatcherSchema(
+          str,
+          matcher
+            ? matcher()
+            : ASTInstructionArgMatchers.eq(str),
+        );
+      },
+    ),
+    R.split(' '),
   ),
-  R.split(' '),
 );
 
 /**

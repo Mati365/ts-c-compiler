@@ -5,6 +5,7 @@ export enum InstructionArgType {
   REGISTER,
   NUMBER,
   LABEL,
+  RELATIVE_ADDR,
 }
 
 export enum InstructionArgSize {

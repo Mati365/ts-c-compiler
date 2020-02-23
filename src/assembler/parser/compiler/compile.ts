@@ -4,7 +4,7 @@ import {ParserError, ParserErrorCode} from '../../shared/ParserError';
 import {InstructionArgSize} from '../../types';
 
 import {ASTNode} from '../ast/ASTNode';
-import {ASTNodeKind} from '../ast/types';
+import {ASTNodeKind, BinaryLabelsOffsets} from '../ast/types';
 import {ASTInstruction} from '../ast/Instruction/ASTInstruction';
 import {ASTLabel} from '../ast/Label/ASTLabel';
 
@@ -28,17 +28,12 @@ function flipMap<Key, Value>(map: Map<Key, Value>): Map<Value, Key> {
 }
 
 /**
- * User for resolve labels in AST
- */
-export type BinaryLabelsOffsets = Map<string, number>;
-
-/**
  * Contains meta information about compiled data
  *
  * @export
  * @class BinaryBlobSet
  */
-export class BinaryBlobSet {
+export class SecondPassResult {
   constructor(
     public readonly offset: number = 0,
     public labelsOffsets: BinaryLabelsOffsets = new Map,
@@ -65,9 +60,14 @@ export class BinaryBlobSet {
    */
   toString() {
     const {labelsOffsets, blobs} = this;
-    const labelsByOffsets = flipMap(labelsOffsets);
-
     const lines = [];
+
+    const labelsByOffsets = flipMap(labelsOffsets);
+    const maxLabelLength = R.reduce(
+      (acc, label) => Math.max(acc, label.length),
+      0,
+      Array.from(labelsOffsets.keys()),
+    );
 
     for (const [offset, blob] of blobs) {
       const offsetStr = `0x${offset.toString(16).padStart(4, '0')}`;
@@ -75,11 +75,18 @@ export class BinaryBlobSet {
       if (labelStr)
         labelStr = `${labelStr}:`;
 
-      lines.push(`${labelStr.padEnd(10)}${offsetStr}: ${blob.toString(true)}`);
+      lines.push(`${labelStr.padEnd(maxLabelLength + 4)}${offsetStr}: ${blob.toString(true)}`);
     }
 
     return R.join('\n', lines);
   }
+}
+
+export class FirstPassResult {
+  constructor(
+    public readonly labels: BinaryLabelsOffsets = new Map<string, number>(),
+    public readonly nodesOffsets = new Map<number, ASTNode>(),
+  ) {}
 }
 
 /**
@@ -96,66 +103,33 @@ export class X86Compiler {
   constructor(
     public readonly nodes: ASTNode[],
     public readonly mode: InstructionArgSize = InstructionArgSize.WORD,
-
-    private _output: BinaryBlobSet = null,
-    private _offset: number = 0,
   ) {}
-
-  get output() { return this._output; }
-  get currentLength() { return this._offset; }
-
-  /**
-   * Appends new block into last blob
-   *
-   * @private
-   * @param {BinaryBlob} blob
-   * @memberof X86Compiler
-   */
-  private emitBlob(blob: BinaryBlob): void {
-    this._output.blobs.set(this._offset, blob);
-    this._offset += blob.binary.length;
-  }
-
-  /**
-   * Emits label into last blob
-   *
-   * @private
-   * @param {string} name
-   * @memberof X86Compiler
-   */
-  private emitLabel(name: string): void {
-    this._output.labelsOffsets.set(name, this._offset);
-  }
 
   /**
    * First pass compiler, omit labels and split into multiple chunks
    *
    * @private
+   * @returns {FirstPassResult}
    * @memberof X86Compiler
    */
-  private firstPass(): void {
+  private firstPass(): FirstPassResult {
     const {nodes} = this;
-
-    this._offset = 0;
-    this._output = new BinaryBlobSet;
+    const result = new FirstPassResult;
+    let offset = 0;
 
     R.forEach(
       (node) => {
         switch (node.kind) {
           case ASTNodeKind.INSTRUCTION: {
             const instruction = <ASTInstruction> node;
+            const size = instruction.getPessimisticByteSize();
 
-            if (!instruction.hasSingleSchemaCandidate || instruction.hasUnresolvedLabels()) {
-              console.log(instruction); // eslint-disable-line
-            } else {
-              this.emitBlob(
-                new BinaryInstruction(instruction).compile(this),
-              );
-            }
+            result.nodesOffsets.set(offset, instruction);
+            offset += size;
           } break;
 
           case ASTNodeKind.LABEL:
-            this.emitLabel((<ASTLabel> node).name);
+            result.labels.set((<ASTLabel> node).name, offset);
             break;
 
           case ASTNodeKind.DEFINE: break;
@@ -166,33 +140,76 @@ export class X86Compiler {
       },
       nodes,
     );
+
+    return result;
   }
 
+  /* eslint-disable class-methods-use-this */
   /**
    * Find unresolved instructions, try resolve them and emit binaries
    *
    * @private
+   * @param {FirstPassResult} firstPassResult
+   * @returns {SecondPassResult}
    * @memberof X86Compiler
    */
-  private secondPass(): void {
-    console.log(this); // eslint-disable-line
-    // const {_output} = this;
+  private secondPass(firstPassResult: FirstPassResult): SecondPassResult {
+    const {labels, nodesOffsets} = firstPassResult;
+    const result = new SecondPassResult(0x0, labels);
 
-    // for (let i = 0; i < _output.length; ++i) {
-    //   const item = _output[i];
+    // eslint-disable-next-line prefer-const
+    for (let [offset, node] of nodesOffsets) {
+      if (node instanceof ASTInstruction) {
+        const pessimisticSize = node.getPessimisticByteSize();
 
-    //   if (item instanceof ASTInstruction) {
-    //     item.tryResolveSchema(
-    //       {
-    //         resolveLabelAddress(relative: boolean, label: string): number {
-    //           console.log(relative, label);
-    //           return null;
-    //         },
-    //       },
-    //     );
-    //   }
-    // }
+        if (node.hasUnresolvedLabels()) {
+          const resolved = (
+            node
+              .replaceLabelsArgsWithAddresses(labels)
+              .tryResolveSchema()
+          );
+
+          // todo: fixme, it should be loop until satisfy
+          if (!resolved)
+            throw new ParserError(ParserErrorCode.UNKNOWN_COMPILER_INSTRUCTION, null, {instruction: node.toString()});
+        }
+
+        // check if size shrinked
+        const shrinkBytes = pessimisticSize - node.schemas[0].byteSize;
+        if (shrinkBytes) {
+          // if so decrement precceding instruction offsets and label offsets
+          for (const [label, labelOffset] of labels) {
+            if (labelOffset > offset)
+              labels.set(label, labelOffset - shrinkBytes);
+          }
+
+          // if so decrement precceding instruction offsets and label offsets
+          const newOffsets = new Map<number, ASTNode>();
+          for (const [instructionOffset, instruction] of nodesOffsets) {
+            if (instructionOffset > offset)
+              newOffsets.set(instructionOffset - shrinkBytes, instruction);
+          }
+
+          // no need for old already parsed nodes, just clear
+          nodesOffsets.clear();
+          Array.from(newOffsets).forEach(
+            ([instructionOffset, instruction]) => {
+              nodesOffsets.set(instructionOffset, instruction);
+            },
+          );
+        }
+
+        // todo: handle still unresolved labels
+        result.blobs.set(
+          offset,
+          new BinaryInstruction(node).compile(this, offset),
+        );
+      }
+    }
+
+    return result;
   }
+  /* eslint-enable class-methods-use-this */
 
   /**
    * Transform provided AST nodes array into binary blobs
@@ -200,13 +217,13 @@ export class X86Compiler {
    * @returns {X86Compiler}
    * @memberof X86Compiler
    */
-  compile(): X86Compiler {
-    if (this.nodes) {
-      this.firstPass();
-      this.secondPass();
-    }
+  compile(): SecondPassResult {
+    if (!this.nodes)
+      return null;
 
-    return this;
+    return this.secondPass(
+      this.firstPass(),
+    );
   }
 }
 
@@ -220,7 +237,7 @@ export function compile(nodes: ASTNode[]): void {
   const output = new X86Compiler(nodes).compile();
 
   /* eslint-disable no-console */
-  const str = output.output.toString();
+  const str = output?.toString();
   if (str)
     console.log(str);
   /* eslint-enable no-console */

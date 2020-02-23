@@ -1,6 +1,6 @@
 import * as R from 'ramda';
 
-import {RMByte, ExtendedX86RegName} from '../../../emulator/types';
+import {RMByte, ExtendedX86RegName, X86AbstractCPU} from '../../../emulator/types';
 import {RegisterSchema} from '../../shared/RegisterSchema';
 
 import {ASTInstruction} from '../ast/Instruction/ASTInstruction';
@@ -107,10 +107,11 @@ export class BinaryInstruction extends BinaryBlob<ASTInstruction> {
    *
    * @private
    * @param {X86Compiler} compiler
+   * @param {number} offset
    * @returns {BinaryInstruction}
    * @memberof BinaryInstruction
    */
-  compile(compiler: X86Compiler): BinaryInstruction {
+  compile(compiler: X86Compiler, offset: number): BinaryInstruction {
     const {ast} = this;
     const binary = [];
 
@@ -121,6 +122,19 @@ export class BinaryInstruction extends BinaryBlob<ASTInstruction> {
     ast.schemas[0].binarySchema.forEach(
       (schema) => {
         switch (schema) {
+          // relative jump
+          case 'r0': case 'r1': {
+            const addrArg = ast.relAddrArgs[0];
+            const relAddress = (<number> addrArg.value) - offset - ast.schemas[0].byteSize;
+
+            binary.push(
+              X86AbstractCPU.toUnsignedNumber(
+                extractNthByte(+schema[1], relAddress),
+                <any> addrArg.byteSize,
+              ),
+            );
+          } break;
+
           // immediate
           case 'i0': case 'i1': case 'i2': case 'i3':
             if (R.isNil(immArg))
@@ -141,11 +155,11 @@ export class BinaryInstruction extends BinaryBlob<ASTInstruction> {
 
             const {addressDescription} = (<ASTInstructionMemArg> rmArg);
             if (addressDescription.disp !== null) {
-              const offset = +schema[1];
+              const byteOffset = +schema[1];
 
-              if (offset < addressDescription.dispByteSize) {
+              if (byteOffset < addressDescription.dispByteSize) {
                 binary.push(
-                  extractNthByte(offset, addressDescription.disp),
+                  extractNthByte(byteOffset, addressDescription.disp),
                 );
               }
             }

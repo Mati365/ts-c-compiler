@@ -10,7 +10,7 @@ import {ASTParser} from '../ASTParser';
 import {ASTInstructionArg} from './ASTInstructionArg';
 import {ASTInstructionSchema} from './ASTInstructionSchema';
 import {ASTInstructionMemArg} from './ASTInstructionMemArg';
-import {ASTNodeKind} from '../types';
+import {ASTNodeKind, BinaryLabelsOffsets} from '../types';
 
 import {
   KindASTNode,
@@ -27,6 +27,10 @@ import {
 } from '../../lexer/tokens';
 
 import {findMatchingInstructionSchemas} from './ASTInstructionArgMatchers';
+import {
+  numberByteSize,
+  roundToPowerOfTwo,
+} from '../../../utils/numberByteSize';
 
 /**
  * Used in string serializers
@@ -65,6 +69,9 @@ export function fetchTokensArgsList(
   do {
     // value or size operand
     const op1 = parser.fetchRelativeToken();
+    if (op1.type === TokenType.EOL || op1.type === TokenType.EOF)
+      break;
+
     argsTokens.push(op1);
 
     // if it was size operand - fetch next token which is prefixed
@@ -111,10 +118,14 @@ export class ASTInstruction extends KindASTNode(ASTNodeKind.INSTRUCTION) {
    * @memberof ASTInstruction
    */
   getPessimisticByteSize(): number {
+    const {schemas} = this;
+    if (schemas?.length === 0)
+      return schemas[0].byteSize;
+
     return R.reduce(
       (acc, schema) => Math.max(acc || 0, schema.byteSize),
       null,
-      this.schemas,
+      schemas,
     );
   }
 
@@ -132,6 +143,7 @@ export class ASTInstruction extends KindASTNode(ASTNodeKind.INSTRUCTION) {
   get memArgs() { return this.typedArgs[InstructionArgType.MEMORY]; }
   get regArgs() { return this.typedArgs[InstructionArgType.REGISTER]; }
   get labelArgs() { return this.typedArgs[InstructionArgType.LABEL]; }
+  get relAddrArgs() { return this.typedArgs[InstructionArgType.RELATIVE_ADDR]; }
 
   /**
    * @todo
@@ -142,7 +154,7 @@ export class ASTInstruction extends KindASTNode(ASTNodeKind.INSTRUCTION) {
    */
   toString(): string {
     const {schemas, args} = this;
-    if (this.hasSingleSchemaCandidate())
+    if (!this.hasUnresolvedLabels())
       return toStringArgsList(schemas[0].mnemonic, args);
 
     return `[unresolved] ${toStringArgsList(this.opcode, this.argsTokens)}`;
@@ -157,9 +169,69 @@ export class ASTInstruction extends KindASTNode(ASTNodeKind.INSTRUCTION) {
    */
   findRMArg(): ASTInstructionArg {
     return R.find<ASTInstructionArg>(
-      (arg) => arg.schema.rm,
+      (arg) => arg.schema?.rm,
       this.args,
     );
+  }
+
+  /**
+   * Groups args into types
+   *
+   * @todo
+   *  Find better solution, it is not memory friendly
+   *
+   * @private
+   * @memberof ASTInstruction
+   */
+  private refreshTypedArgs(): void {
+    this.typedArgs = <any> R.reduce(
+      (acc, item) => {
+        acc[<any> item.type].push(item);
+        return acc;
+      },
+      // todo: optimize
+      {
+        [InstructionArgType.MEMORY]: [],
+        [InstructionArgType.NUMBER]: [],
+        [InstructionArgType.REGISTER]: [],
+        [InstructionArgType.LABEL]: [],
+        [InstructionArgType.RELATIVE_ADDR]: [],
+      },
+      this.args,
+    );
+  }
+
+  /**
+   * Assigns aboslute label address to labels
+   *
+   * @param {BinaryLabelsOffsets} labels
+   * @returns {ASTInstruction}
+   * @memberof ASTInstruction
+   */
+  replaceLabelsArgsWithAddresses(labels: BinaryLabelsOffsets): ASTInstruction {
+    this.args = R.map(
+      (arg) => {
+        if (arg.type === InstructionArgType.LABEL) {
+          const label = <string> arg.value;
+          const labelAddress = labels.get(label);
+
+          if (R.isNil(labelAddress))
+            throw new ParserError(ParserErrorCode.UNKNOWN_LABEL, null, {label});
+
+          return new ASTInstructionArg(
+            InstructionArgType.RELATIVE_ADDR,
+            labelAddress,
+            roundToPowerOfTwo(numberByteSize(labelAddress)),
+          );
+        }
+
+        return arg;
+      },
+      this.args,
+    );
+
+    this.refreshTypedArgs();
+    return this;
   }
 
   /**
@@ -171,36 +243,22 @@ export class ASTInstruction extends KindASTNode(ASTNodeKind.INSTRUCTION) {
   tryResolveSchema(): ASTInstruction {
     const {opcode, argsTokens} = this;
 
-    // decode instructions
-    // find matching opcode emitter by args
-    const args = ASTInstruction.parseInstructionArgsTokens(argsTokens);
-    const schemas = findMatchingInstructionSchemas(COMPILER_INSTRUCTIONS_SET, opcode, args);
+    // generate first time args from tokenArgs, it is in first phrase
+    // in second phrase args might be overriden
+    if (!this.args) {
+      this.args = ASTInstruction.parseInstructionArgsTokens(argsTokens);
+      this.refreshTypedArgs();
+    }
 
-    this.schemas = schemas;
-    this.args = args;
-    this.typedArgs = <any> R.reduce(
-      (acc, item) => {
-        acc[<any> item.type].push(item);
-        return acc;
-      },
-      {
-        [InstructionArgType.MEMORY]: [],
-        [InstructionArgType.NUMBER]: [],
-        [InstructionArgType.REGISTER]: [],
-        [InstructionArgType.LABEL]: [],
-      },
-      args,
-    );
+    this.schemas = findMatchingInstructionSchemas(COMPILER_INSTRUCTIONS_SET, opcode, this.args);
 
     // assign matching schema
+    const {schemas, args} = this;
     for (let i = 0; i < args.length; ++i)
       args[i].schema = schemas.length === 1 ? schemas[0].argsSchema[i] : null;
 
-    // there can be multiple matched schemas
-    if (!schemas.length)
-      return null;
-
-    return this;
+    // if not found any matching schema - resolving failed
+    return schemas.length ? this : null;
   }
 
   /**

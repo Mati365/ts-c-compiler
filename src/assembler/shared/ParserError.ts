@@ -27,6 +27,7 @@ export enum ParserErrorCode {
 
   // labels
   MISSING_PARENT_LABEL,
+  UNKNOWN_LABEL,
 
   // compiler
   UNKNOWN_COMPILER_INSTRUCTION,
@@ -36,6 +37,7 @@ export enum ParserErrorCode {
   MISSING_MEM_ARG_DEF,
   MISSING_IMM_ARG_DEF,
   INVALID_ADDRESSING_MODE,
+  UNMATCHED_SCHEMA_POSTPROCESS,
 }
 
 export const ERROR_TRANSLATIONS: {[key in ParserErrorCode]: string} = {
@@ -61,7 +63,8 @@ export const ERROR_TRANSLATIONS: {[key in ParserErrorCode]: string} = {
   [ParserErrorCode.INCORRECT_MODRM]: 'Error during "%{phrase}" ModRM instruction byte parsing!',
 
   // labels
-  [ParserErrorCode.MISSING_PARENT_LABEL]: 'Unable to resolve local label %{label}, missing parent label!',
+  [ParserErrorCode.MISSING_PARENT_LABEL]: 'Unable to resolve local label "%{label}", missing parent label!',
+  [ParserErrorCode.UNKNOWN_LABEL]: 'Unknown label "%{label}"!',
 
   // compiler
   [ParserErrorCode.UNKNOWN_COMPILER_INSTRUCTION]: 'Unknown compile token "%{instruction}"!',
@@ -71,6 +74,8 @@ export const ERROR_TRANSLATIONS: {[key in ParserErrorCode]: string} = {
   [ParserErrorCode.MISSING_IMM_ARG_DEF]: 'Missing imm arg definition but in binary schema is present!',
   [ParserErrorCode.UNKNOWN_BINARY_SCHEMA_DEF]: 'Unknown binary schema token %{schema}',
   [ParserErrorCode.INVALID_ADDRESSING_MODE]: 'Invalid addressing mode!',
+
+  [ParserErrorCode.UNMATCHED_SCHEMA_POSTPROCESS]: 'Cannot find instruction "%{instruction}"!',
 };
 
 /**
