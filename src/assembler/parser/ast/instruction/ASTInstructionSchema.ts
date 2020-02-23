@@ -1,4 +1,4 @@
-import {ASTInstructionArgMatcher} from './ASTInstructionArgMatchers';
+import {ASTInstructionArgMatcher} from './args/ASTInstructionArgMatchers';
 
 export class ASTInstructionMatcherSchema {
   public readonly rm: boolean;

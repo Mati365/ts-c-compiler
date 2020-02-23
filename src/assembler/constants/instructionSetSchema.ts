@@ -1,10 +1,10 @@
 import * as R from 'ramda';
 
-import {ASTInstructionSchema} from '../parser/ast/Instruction/ASTInstructionSchema';
+import {ASTInstructionSchema} from '../parser/ast/instruction/ASTInstructionSchema';
 import {
   argMatchersFromStr,
   ASTOpcodeMatchers,
-} from '../parser/ast/Instruction/ASTInstructionArgMatchers';
+} from '../parser/ast/instruction/args/ASTInstructionArgMatchers';
 
 const _op = (
   mnemonic: string,

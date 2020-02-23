@@ -1,32 +1,32 @@
 import * as R from 'ramda';
 
-import {lexer} from '../../lexer/lexer';
-import {isOperator} from '../../../utils/matchCharacter';
+import {lexer} from '../../../lexer/lexer';
+import {isOperator} from '../../../../utils/matchCharacter';
 
-import {ParserError, ParserErrorCode} from '../../../shared/ParserError';
+import {ParserError, ParserErrorCode} from '../../../../shared/ParserError';
 import {
   TokenType,
   TokenKind,
   Token,
   RegisterToken,
   NumberToken,
-} from '../../lexer/tokens';
+} from '../../../lexer/tokens';
 
-import {RegisterSchema} from '../../../shared/RegisterSchema';
+import {RegisterSchema} from '../../../../shared/RegisterSchema';
 import {
   InstructionArgType,
   MemAddressDescription,
   isValidScale,
   MemSIBScale,
   InstructionArgSize,
-} from '../../../types';
+} from '../../../../types';
 
 import {ASTInstructionArg} from './ASTInstructionArg';
 
 import {
   numberByteSize,
   roundToPowerOfTwo,
-} from '../../../utils/numberByteSize';
+} from '../../../../utils/numberByteSize';
 
 /**
  * Transforms:

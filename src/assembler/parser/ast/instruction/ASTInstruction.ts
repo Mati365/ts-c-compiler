@@ -7,10 +7,10 @@ import {InstructionArgType} from '../../../types';
 
 import {ParserError, ParserErrorCode} from '../../../shared/ParserError';
 import {ASTParser} from '../ASTParser';
-import {ASTInstructionArg} from './ASTInstructionArg';
+import {ASTInstructionArg} from './args/ASTInstructionArg';
 import {ASTInstructionSchema} from './ASTInstructionSchema';
-import {ASTNumberInstructionArg} from './ASTNumberInstructionArg';
-import {ASTInstructionMemArg} from './ASTInstructionMemArg';
+import {ASTNumberInstructionArg} from './args/ASTNumberInstructionArg';
+import {ASTInstructionMemArg} from './args/ASTInstructionMemArg';
 import {ASTNodeKind, BinaryLabelsOffsets} from '../types';
 
 import {
@@ -27,7 +27,7 @@ import {
   SizeOverrideToken,
 } from '../../lexer/tokens';
 
-import {findMatchingInstructionSchemas} from './ASTInstructionArgMatchers';
+import {findMatchingInstructionSchemas} from './args/ASTInstructionArgMatchers';
 
 /**
  * Used in string serializers

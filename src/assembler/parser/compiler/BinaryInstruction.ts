@@ -3,9 +3,9 @@ import * as R from 'ramda';
 import {RMByte, ExtendedX86RegName, X86AbstractCPU} from '../../../emulator/types';
 import {RegisterSchema} from '../../shared/RegisterSchema';
 
-import {ASTInstruction} from '../ast/Instruction/ASTInstruction';
-import {ASTInstructionArg} from '../ast/Instruction/ASTInstructionArg';
-import {ASTInstructionMemArg} from '../ast/Instruction/ASTInstructionMemArg';
+import {ASTInstruction} from '../ast/instruction/ASTInstruction';
+import {ASTInstructionArg} from '../ast/instruction/args/ASTInstructionArg';
+import {ASTInstructionMemArg} from '../ast/instruction/args/ASTInstructionMemArg';
 
 import {
   RMAddressingMode,

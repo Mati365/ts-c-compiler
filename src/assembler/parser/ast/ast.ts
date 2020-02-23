@@ -3,9 +3,9 @@ import {Token} from '../lexer/tokens';
 import {ASTParser} from './ASTParser';
 import {ASTNode} from './ASTNode';
 
-import {ASTInstruction} from './Instruction/ASTInstruction';
-import {ASTLabel} from './Label/ASTLabel';
-import {ASTDef} from './Def/ASTDef';
+import {ASTInstruction} from './instruction/ASTInstruction';
+import {ASTLabel} from './label/ASTLabel';
+import {ASTDef} from './def/ASTDef';
 
 export const ASTNodesParsers = [
   ASTInstruction,

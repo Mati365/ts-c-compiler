@@ -1,11 +1,6 @@
 org 0x7c00
 
-jnc kill
-int3
-mov al, byte 2
-times 110 db 0xFF
-kill:
-mov al, byte 4
+mov ax, 0xff
 
 bootsec: db 0x55
 

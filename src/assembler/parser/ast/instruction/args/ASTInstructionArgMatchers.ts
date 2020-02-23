@@ -1,15 +1,15 @@
 import * as R from 'ramda';
 
-import {X86BitsMode} from '../../../../emulator/types';
-import {RegisterSchema} from '../../../shared/RegisterSchema';
+import {X86BitsMode} from '../../../../../emulator/types';
+import {RegisterSchema} from '../../../../shared/RegisterSchema';
 
-import {InstructionArgType} from '../../../types';
+import {InstructionArgType} from '../../../../types';
 import {ASTInstructionArg} from './ASTInstructionArg';
 import {ASTNumberInstructionArg} from './ASTNumberInstructionArg';
 import {
   ASTInstructionSchema,
   ASTInstructionMatcherSchema,
-} from './ASTInstructionSchema';
+} from '../ASTInstructionSchema';
 
 function mem(arg: ASTInstructionArg, byteSize: X86BitsMode): boolean {
   return arg.type === InstructionArgType.MEMORY && arg.byteSize === byteSize;

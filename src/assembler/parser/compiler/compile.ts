@@ -5,8 +5,8 @@ import {InstructionArgSize} from '../../types';
 
 import {ASTNode} from '../ast/ASTNode';
 import {ASTNodeKind, BinaryLabelsOffsets} from '../ast/types';
-import {ASTInstruction} from '../ast/Instruction/ASTInstruction';
-import {ASTLabel} from '../ast/Label/ASTLabel';
+import {ASTInstruction} from '../ast/instruction/ASTInstruction';
+import {ASTLabel} from '../ast/label/ASTLabel';
 
 import {flipMap} from './utils/flipMap';
 

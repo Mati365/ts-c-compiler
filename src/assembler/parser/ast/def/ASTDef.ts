@@ -12,7 +12,7 @@ import {
 import {
   fetchTokensArgsList,
   toStringArgsList,
-} from '../Instruction/ASTInstruction';
+} from '../instruction/ASTInstruction';
 
 export enum DefTokenNames {
   DB = InstructionArgSize.BYTE,

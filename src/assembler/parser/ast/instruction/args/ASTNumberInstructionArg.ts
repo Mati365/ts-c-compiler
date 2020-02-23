@@ -1,10 +1,10 @@
 import {
   roundToPowerOfTwo,
   numberByteSize,
-} from '../../../utils/numberByteSize';
+} from '../../../../utils/numberByteSize';
 
-import {X86AbstractCPU} from '../../../../emulator/types';
-import {InstructionArgType} from '../../../types';
+import {X86AbstractCPU} from '../../../../../emulator/types';
+import {InstructionArgType} from '../../../../types';
 import {ASTInstructionArg} from './ASTInstructionArg';
 
 /**
