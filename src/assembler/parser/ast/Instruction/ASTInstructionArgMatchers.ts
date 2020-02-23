@@ -1,9 +1,11 @@
 import * as R from 'ramda';
 
 import {X86BitsMode} from '../../../../emulator/types';
-import {InstructionArgType} from '../../../types';
 import {RegisterSchema} from '../../../shared/RegisterSchema';
+
+import {InstructionArgType} from '../../../types';
 import {ASTInstructionArg} from './ASTInstructionArg';
+import {ASTNumberInstructionArg} from './ASTNumberInstructionArg';
 import {
   ASTInstructionSchema,
   ASTInstructionMatcherSchema,
@@ -21,11 +23,14 @@ function imm(arg: ASTInstructionArg, byteSize: X86BitsMode) {
   return arg.type === InstructionArgType.NUMBER && arg.byteSize === byteSize;
 }
 
-function relLabel(arg: ASTInstructionArg, byteSize: X86BitsMode) {
-  return (
-    arg.type === InstructionArgType.LABEL
-      || (arg.type === InstructionArgType.RELATIVE_ADDR && arg.byteSize === byteSize)
-  );
+function relLabel(arg: ASTInstructionArg, signedByteSize: X86BitsMode) {
+  if (arg.type === InstructionArgType.LABEL)
+    return true;
+
+  if (arg.type === InstructionArgType.RELATIVE_ADDR)
+    return (<ASTNumberInstructionArg> arg).signedByteSize === signedByteSize;
+
+  return false;
 }
 
 /**

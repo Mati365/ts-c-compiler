@@ -1,3 +1,5 @@
+import {truncateText} from '../../utils/truncateText';
+
 /**
  * Binary portion of data
  *
@@ -22,11 +24,15 @@ export class BinaryBlob<ASTNodeType = any> {
    */
   toString(withAST: boolean = true): string {
     const {binary, ast} = this;
-    const binStr = binary
-      .map(
-        (num) => `0x${num.toString(16).padStart(2, '0')}`,
-      )
-      .join(', ');
+    const binStr = truncateText(
+      ' ...',
+      35,
+      binary
+        .map(
+          (num) => `0x${num.toString(16).padStart(2, '0')}`,
+        )
+        .join(', '),
+    );
 
     if (!withAST || !ast)
       return binStr;

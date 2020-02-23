@@ -14,16 +14,30 @@ import {BinaryInstruction} from './BinaryInstruction';
 import {BinaryBlob} from './BinaryBlob';
 
 /**
- * Contains meta information about compiled data
+ * Contains non compiled instruction labels and node offsets
  *
  * @export
- * @class BinaryBlobSet
+ * @class FirstPassResult
+ */
+export class FirstPassResult {
+  constructor(
+    public readonly labels: BinaryLabelsOffsets = new Map<string, number>(),
+    public readonly nodesOffsets = new Map<number, ASTNode>(),
+  ) {}
+}
+
+/**
+ * Contains compiled instructions labels and offsets
+ *
+ * @export
+ * @class SecondPassResult
  */
 export class SecondPassResult {
   constructor(
     public readonly offset: number = 0,
     public labelsOffsets: BinaryLabelsOffsets = new Map,
     public blobs: Map<number, BinaryBlob> = new Map,
+    public totalPasses: number = 0,
   ) {}
 
   /**
@@ -45,7 +59,7 @@ export class SecondPassResult {
    * @memberof BinaryBlobSet
    */
   toString() {
-    const {labelsOffsets, blobs} = this;
+    const {labelsOffsets, blobs, totalPasses} = this;
     const lines = [];
 
     const labelsByOffsets = flipMap(labelsOffsets);
@@ -64,15 +78,8 @@ export class SecondPassResult {
       lines.push(`${labelStr.padEnd(maxLabelLength + 4)}${offsetStr}: ${blob.toString(true)}`);
     }
 
-    return R.join('\n', lines);
+    return `Total passes: ${totalPasses}\n\n${R.join('\n', lines)}`;
   }
-}
-
-export class FirstPassResult {
-  constructor(
-    public readonly labels: BinaryLabelsOffsets = new Map<string, number>(),
-    public readonly nodesOffsets = new Map<number, ASTNode>(),
-  ) {}
 }
 
 /**
@@ -89,6 +96,7 @@ export class X86Compiler {
   constructor(
     public readonly nodes: ASTNode[],
     public readonly mode: InstructionArgSize = InstructionArgSize.WORD,
+    public readonly maxPasses: number = 4,
   ) {}
 
   /**
@@ -143,42 +151,64 @@ export class X86Compiler {
     const {labels, nodesOffsets} = firstPassResult;
     const result = new SecondPassResult(0x0, labels);
 
-    // eslint-disable-next-line prefer-const
-    for (let [offset, node] of nodesOffsets) {
-      if (node instanceof ASTInstruction) {
-        const pessimisticSize = node.getPessimisticByteSize();
+    // proper resolve labels
+    for (let pass = 0; pass < this.maxPasses; ++pass) {
+      let needPass = false;
 
-        if (node.hasUnresolvedLabels()) {
-          const resolved = (
+      // eslint-disable-next-line prefer-const
+      for (let [offset, node] of nodesOffsets) {
+        if (node instanceof ASTInstruction) {
+          const pessimisticSize = node.getPessimisticByteSize();
+
+          // generally check for JMP/CALL etc instructions
+          if (node.hasLabelsInOriginalAST()) {
             node
-              .replaceLabelsArgsWithAddresses(labels)
-              .tryResolveSchema()
-          );
-
-          // todo: fixme, it should be loop until satisfy
-          if (!resolved)
-            throw new ParserError(ParserErrorCode.UNKNOWN_COMPILER_INSTRUCTION, null, {instruction: node.toString()});
-        }
-
-        // check if size shrinked
-        const shrinkBytes = pessimisticSize - node.schemas[0].byteSize;
-        if (shrinkBytes) {
-          // if so decrement precceding instruction offsets and label offsets
-          for (const [label, labelOffset] of labels) {
-            if (labelOffset > offset)
-              labels.set(label, labelOffset - shrinkBytes);
+              .assignLabelsToArgs(labels)
+              .tryResolveSchema();
           }
 
-          // if so decrement precceding instruction offsets and label offsets
-          for (const [instructionOffset, instruction] of Array.from(nodesOffsets)) {
-            if (instructionOffset > offset) {
-              nodesOffsets.delete(instructionOffset);
-              nodesOffsets.set(instructionOffset - shrinkBytes, instruction);
+          // single instruction might contain multiple schemas but never 0
+          const {schemas} = node;
+          if (!schemas.length)
+            throw new ParserError(ParserErrorCode.UNKNOWN_COMPILER_INSTRUCTION, null, {instruction: node.toString()});
+
+          // check if instruction after replacing labels has been shrinked
+          // if so - force rewrite precceding instrutions and labels
+          const shrinkBytes = pessimisticSize - schemas[0].byteSize;
+          if (shrinkBytes) {
+            needPass = true;
+
+            // if so decrement precceding instruction offsets and label offsets
+            for (const [label, labelOffset] of labels) {
+              if (labelOffset > offset)
+                labels.set(label, labelOffset - shrinkBytes);
+            }
+
+            // if so decrement precceding instruction offsets and label offsets
+            for (const [instructionOffset, instruction] of Array.from(nodesOffsets)) {
+              if (instructionOffset > offset) {
+                nodesOffsets.delete(instructionOffset);
+                nodesOffsets.set(instructionOffset - shrinkBytes, instruction);
+              }
             }
           }
-        }
 
-        // todo: handle still unresolved labels
+          // select first schema, it will be discarded if next instruction have label
+          node.schemas = [
+            node.schemas[0],
+          ];
+        }
+      }
+
+      if (!needPass) {
+        result.totalPasses = pass + 1;
+        break;
+      }
+    }
+
+    // produce binaries
+    for (const [offset, node] of nodesOffsets) {
+      if (node instanceof ASTInstruction) {
         result.blobs.set(
           offset,
           new BinaryInstruction(node).compile(this, offset),

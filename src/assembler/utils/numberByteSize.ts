@@ -20,10 +20,15 @@ export function numberByteSize(num: number): number {
  * @returns {number}
  */
 export function roundToPowerOfTwo(num: number): number {
-  if (num === 1)
+  if (num <= 1)
     return 1;
 
-  return (
-    Math.ceil(Math.log(num) / Math.log(2)) ** 2
-  );
+  let power = 2;
+  num--;
+
+  // eslint-disable-next-line no-cond-assign
+  while (num >>= 1)
+    power <<= 1;
+
+  return power;
 }

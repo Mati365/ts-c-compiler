@@ -9,6 +9,7 @@ import {ParserError, ParserErrorCode} from '../../../shared/ParserError';
 import {ASTParser} from '../ASTParser';
 import {ASTInstructionArg} from './ASTInstructionArg';
 import {ASTInstructionSchema} from './ASTInstructionSchema';
+import {ASTNumberInstructionArg} from './ASTNumberInstructionArg';
 import {ASTInstructionMemArg} from './ASTInstructionMemArg';
 import {ASTNodeKind, BinaryLabelsOffsets} from '../types';
 
@@ -27,10 +28,6 @@ import {
 } from '../../lexer/tokens';
 
 import {findMatchingInstructionSchemas} from './ASTInstructionArgMatchers';
-import {
-  numberByteSize,
-  roundToPowerOfTwo,
-} from '../../../utils/numberByteSize';
 
 /**
  * Used in string serializers
@@ -91,6 +88,10 @@ export function fetchTokensArgsList(
  * Parser for:
  * [opcode] [arg1] [arg2] [argX]
  *
+ * @todo
+ *  Maybe remove originalArgs and check if instruction
+ *  has LABEL etc stuff in better way?
+ *
  * @export
  * @class ASTInstruction
  * @extends {KindASTNode('Instruction')}
@@ -98,6 +99,11 @@ export function fetchTokensArgsList(
 export class ASTInstruction extends KindASTNode(ASTNodeKind.INSTRUCTION) {
   public typedArgs: {[type in InstructionArgType]: (ASTInstructionArg|ASTInstructionMemArg)[]};
   public schemas: ASTInstructionSchema[];
+
+  // initial args is constant, it is
+  // toggled on first pass, during AST tree analyze
+  // args might change in second phase
+  private originalArgs: ASTInstructionArg[];
   public args: ASTInstructionArg[];
 
   constructor(
@@ -107,29 +113,6 @@ export class ASTInstruction extends KindASTNode(ASTNodeKind.INSTRUCTION) {
     loc: ASTNodeLocation,
   ) {
     super(loc);
-  }
-
-  /**
-   * Used for resolving jmp instructions, sometimes
-   * it must be multiple passes to check if instrucion
-   * can shrink
-   *
-   * @returns {ASTInstruction}
-   * @memberof ASTInstruction
-   */
-  shallowClone(): ASTInstruction {
-    const copy = new ASTInstruction(
-      this.opcode,
-      this.argsTokens,
-      this.prefixes,
-      this.loc,
-    );
-
-    copy.typedArgs = this.typedArgs;
-    copy.schemas = this.schemas;
-    copy.args = this.args;
-
-    return copy;
   }
 
   /**
@@ -152,14 +135,17 @@ export class ASTInstruction extends KindASTNode(ASTNodeKind.INSTRUCTION) {
     );
   }
 
-  hasSingleSchemaCandidate(): boolean {
-    const {schemas} = this;
-
-    return schemas && schemas.length === 1;
-  }
-
-  hasUnresolvedLabels(): boolean {
-    return this.labelArgs.length !== 0;
+  /**
+   * Lookups in original args that are emitted after compiling AST
+   *
+   * @returns {boolean}
+   * @memberof ASTInstruction
+   */
+  hasLabelsInOriginalAST(): boolean {
+    return R.any(
+      (arg: ASTInstructionArg) => arg.type === InstructionArgType.LABEL,
+      this.originalArgs,
+    );
   }
 
   get numArgs() { return this.typedArgs[InstructionArgType.NUMBER]; }
@@ -167,35 +153,6 @@ export class ASTInstruction extends KindASTNode(ASTNodeKind.INSTRUCTION) {
   get regArgs() { return this.typedArgs[InstructionArgType.REGISTER]; }
   get labelArgs() { return this.typedArgs[InstructionArgType.LABEL]; }
   get relAddrArgs() { return this.typedArgs[InstructionArgType.RELATIVE_ADDR]; }
-
-  /**
-   * @todo
-   * Add prefixes
-   *
-   * @returns {string}
-   * @memberof ASTInstruction
-   */
-  toString(): string {
-    const {schemas, args} = this;
-    if (!this.hasUnresolvedLabels())
-      return toStringArgsList(schemas[0].mnemonic, args);
-
-    return `[unresolved] ${toStringArgsList(this.opcode, this.argsTokens)}`;
-  }
-
-  /**
-   * Search for ModRM byte parameter, it might be register or memory,
-   * it is flagged using schema.rm boolean
-   *
-   * @returns {ASTInstructionArg}
-   * @memberof ASTInstruction
-   */
-  findRMArg(): ASTInstructionArg {
-    return R.find<ASTInstructionArg>(
-      (arg) => arg.schema?.rm,
-      this.args,
-    );
-  }
 
   /**
    * Groups args into types
@@ -225,35 +182,56 @@ export class ASTInstruction extends KindASTNode(ASTNodeKind.INSTRUCTION) {
   }
 
   /**
+   * @todo
+   * Add prefixes
+   *
+   * @returns {string}
+   * @memberof ASTInstruction
+   */
+  toString(): string {
+    const {schemas, args} = this;
+    if (schemas.length === 1)
+      return toStringArgsList(schemas[0].mnemonic, args);
+
+    return `[?] ${toStringArgsList(this.opcode, this.argsTokens)}`;
+  }
+
+  /**
+   * Search for ModRM byte parameter, it might be register or memory,
+   * it is flagged using schema.rm boolean
+   *
+   * @returns {ASTInstructionArg}
+   * @memberof ASTInstruction
+   */
+  findRMArg(): ASTInstructionArg {
+    return R.find<ASTInstructionArg>(
+      (arg) => arg.schema?.rm,
+      this.args,
+    );
+  }
+
+  /**
    * Assigns aboslute label address to labels
    *
    * @param {BinaryLabelsOffsets} labels
    * @returns {ASTInstruction}
    * @memberof ASTInstruction
    */
-  replaceLabelsArgsWithAddresses(labels: BinaryLabelsOffsets): ASTInstruction {
-    if (!this.hasUnresolvedLabels())
-      return this;
-
+  assignLabelsToArgs(labels: BinaryLabelsOffsets): ASTInstruction {
     this.args = R.map(
       (arg) => {
-        if (arg.type === InstructionArgType.LABEL) {
-          const label = <string> arg.value;
-          const labelAddress = labels.get(label);
+        if (arg.type !== InstructionArgType.LABEL)
+          return arg;
 
-          if (R.isNil(labelAddress))
-            throw new ParserError(ParserErrorCode.UNKNOWN_LABEL, null, {label});
+        const label = <string> arg.value;
+        const labelAddress = labels.get(label);
 
-          return new ASTInstructionArg(
-            InstructionArgType.RELATIVE_ADDR,
-            labelAddress,
-            roundToPowerOfTwo(numberByteSize(labelAddress)),
-          );
-        }
+        if (R.isNil(labelAddress))
+          throw new ParserError(ParserErrorCode.UNKNOWN_LABEL, null, {label});
 
-        return arg;
+        return new ASTNumberInstructionArg(labelAddress, null, null, InstructionArgType.RELATIVE_ADDR);
       },
-      this.args,
+      this.originalArgs,
     );
 
     this.refreshTypedArgs();
@@ -271,11 +249,14 @@ export class ASTInstruction extends KindASTNode(ASTNodeKind.INSTRUCTION) {
 
     // generate first time args from tokenArgs, it is in first phrase
     // in second phrase args might be overriden
-    if (!this.args) {
-      this.args = ASTInstruction.parseInstructionArgsTokens(argsTokens);
+    if (!this.originalArgs) {
+      this.originalArgs = ASTInstruction.parseInstructionArgsTokens(argsTokens);
+      this.args = this.originalArgs;
+
       this.refreshTypedArgs();
     }
 
+    // list all of schemas
     this.schemas = findMatchingInstructionSchemas(COMPILER_INSTRUCTIONS_SET, opcode, this.args);
 
     // assign matching schema
@@ -323,11 +304,7 @@ export class ASTInstruction extends KindASTNode(ASTNodeKind.INSTRUCTION) {
         case TokenType.NUMBER: {
           const {number, byteSize} = (<NumberToken> token).value;
 
-          return new ASTInstructionArg(
-            InstructionArgType.NUMBER,
-            number,
-            byteSizeOverride ?? byteSize,
-          );
+          return new ASTNumberInstructionArg(number, byteSize ?? byteSizeOverride);
         }
 
         // Mem address
@@ -357,16 +334,30 @@ export class ASTInstruction extends KindASTNode(ASTNodeKind.INSTRUCTION) {
     return R.reduce(
       (acc: ASTInstructionArg[], item: Token) => {
         const result = parseToken(item);
-        if (result) {
-          if (acc.length
-              && result.type !== InstructionArgType.LABEL
-              && acc[acc.length - 1].type !== InstructionArgType.LABEL
-              && result.byteSize !== acc[acc.length - 1].byteSize)
-            throw new ParserError(ParserErrorCode.OPERAND_SIZES_MISMATCH);
+        if (!result)
+          return acc;
 
-          acc.push(result);
+        const sizeMismatch = (
+          acc.length
+            && result.type !== InstructionArgType.LABEL
+            && acc[acc.length - 1].type !== InstructionArgType.LABEL
+            && result.byteSize !== acc[acc.length - 1].byteSize
+        );
+
+        if (sizeMismatch) {
+          // handle something like this: mov ax, 2
+          // second argument has byteSize equal to 1, but ax is 2
+          // try to cast
+          const prevByteSize = acc[acc.length - 1].byteSize;
+          if (result.type === InstructionArgType.NUMBER && result.byteSize < prevByteSize)
+            (<ASTNumberInstructionArg> result).upperCastByteSize(prevByteSize);
+
+          // otherwise if it is mem arg, throw error
+          else
+            throw new ParserError(ParserErrorCode.OPERAND_SIZES_MISMATCH);
         }
 
+        acc.push(result);
         return acc;
       },
       <ASTInstructionArg[]> [],

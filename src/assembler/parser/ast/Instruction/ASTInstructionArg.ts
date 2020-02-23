@@ -13,9 +13,9 @@ import {ASTResolvableArg} from '../ASTResolvableArg';
  */
 export class ASTInstructionArg extends ASTResolvableArg<InstructionArgValue> {
   constructor(
-    public readonly type: InstructionArgType,
+    public type: InstructionArgType,
     value: InstructionArgValue,
-    public readonly byteSize: number = 1,
+    public byteSize: number = 1, // unsigned
     public schema: ASTInstructionArgSchema = null,
     _resolved = true,
   ) {

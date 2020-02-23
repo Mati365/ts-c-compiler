@@ -20,11 +20,16 @@ const _op = (
  * @see {@link http://www.mathemainzel.info/files/x86asmref.html}
  */
 export const COMPILER_INSTRUCTIONS_SET: ASTOpcodeMatchers = {
-  int3: [
-    _op('int3', '', '33'),
+  shit: [
+    _op('shit', '', R.times(R.always('FF'), 110).join(' ')),
   ],
+
+  int3: [
+    _op('int3', '', 'CC'),
+  ],
+
   int: [
-    _op('int', '3', '33'), // todo: remove
+    _op('int', '3', 'CC'), // todo: remove
     _op('int', 'ib', 'CD i0'),
   ],
 
