@@ -28,11 +28,11 @@ function reg(arg: ASTInstructionArg, byteSize: X86BitsMode): boolean {
   return arg.type === InstructionArgType.REGISTER && arg.byteSize === byteSize;
 }
 
-function imm(arg: ASTInstructionArg, byteSize: X86BitsMode) {
+function imm(arg: ASTInstructionArg, byteSize: X86BitsMode): boolean {
   return arg.type === InstructionArgType.NUMBER && arg.byteSize === byteSize;
 }
 
-function relLabel(arg: ASTInstructionArg, signedByteSize: X86BitsMode) {
+function relLabel(arg: ASTInstructionArg, signedByteSize: X86BitsMode): boolean {
   if (arg.type === InstructionArgType.LABEL)
     return true;
 
@@ -40,6 +40,10 @@ function relLabel(arg: ASTInstructionArg, signedByteSize: X86BitsMode) {
     return (<ASTInstructionNumberArg> arg).signedByteSize === signedByteSize;
 
   return false;
+}
+
+function farSegPointer(arg: ASTInstructionArg, byteSize: X86BitsMode): boolean {
+  return arg.type === InstructionArgType.SEGMENTED_MEMORY && arg.byteSize === byteSize;
 }
 
 /**
@@ -50,6 +54,8 @@ function relLabel(arg: ASTInstructionArg, signedByteSize: X86BitsMode) {
  * ib, iw - immediate byte, word
  * sl, ll - short label, long label
  * mwr, mdr, mqr, mtr - memory word, double word, quad word, ten byte
+ * fptrw - far pointer word
+ * fptrd - far pointer double word
  *
  * Binary notation:
  * mr - addressing mode byte
@@ -101,6 +107,10 @@ export const ASTInstructionArgMatchers: {[key: string]: ASTInstructionArgMatcher
   /** LABEL - size of label will be matched in second phrase */
   sl: () => (arg: ASTInstructionArg) => relLabel(arg, 1),
   ll: () => (arg: ASTInstructionArg) => relLabel(arg, 2),
+
+  /** FAR POINTER */
+  fptrw: () => (arg: ASTInstructionArg) => farSegPointer(arg, 2),
+  fptrd: () => (arg: ASTInstructionArg) => farSegPointer(arg, 4),
 };
 
 /**

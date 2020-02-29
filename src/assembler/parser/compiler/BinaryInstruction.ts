@@ -4,8 +4,11 @@ import {RMByte, X86AbstractCPU} from '../../../emulator/types';
 import {RegisterSchema} from '../../shared/RegisterSchema';
 
 import {ASTInstruction} from '../ast/instruction/ASTInstruction';
-import {ASTInstructionArg} from '../ast/instruction/args/ASTInstructionArg';
-import {ASTInstructionMemPtrArg} from '../ast/instruction/args/ASTInstructionMemPtrArg';
+import {
+  ASTInstructionArg,
+  ASTInstructionMemPtrArg,
+  ASTInstructionMemSegmentedArg,
+} from '../ast/instruction/args';
 
 import {
   RMAddressingMode,
@@ -73,6 +76,25 @@ export class BinaryInstruction extends BinaryBlob<ASTInstruction> {
     ast.schemas[0].binarySchema.forEach(
       (schema) => {
         switch (schema) {
+          // far jump
+          case 's0': case 's1':
+            binary.push(
+              extractNthByte(
+                +schema[1],
+                (<ASTInstructionMemSegmentedArg > ast.segMemArgs[0]).value.segment.number,
+              ),
+            );
+            break;
+
+          case 'o0': case 'o1': case 'o2': case 'o3':
+            binary.push(
+              extractNthByte(
+                +schema[1],
+                (<ASTInstructionMemSegmentedArg > ast.segMemArgs[0]).value.offset.number,
+              ),
+            );
+            break;
+
           // relative jump
           case 'r0': case 'r1': {
             const addrArg = ast.relAddrArgs[0];

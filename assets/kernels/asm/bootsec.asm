@@ -1,9 +1,10 @@
 org 0x7c00
 
-dupa:
+jmp word 0x7c00:0x1234
+; dupa:
 ; mov ax, word [cs:bx+0x2]
 ; jmp far [cs:bx+2]
-jmp dupa:dupa
+; jmp dupa:dupa
 ;dupa:
 ;  mov ax, word [cs:bx+0x2]
 ;  int 3
