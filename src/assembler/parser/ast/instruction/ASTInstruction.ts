@@ -200,9 +200,9 @@ export class ASTInstruction extends KindASTNode(ASTNodeKind.INSTRUCTION) {
    * @memberof ASTInstruction
    */
   toString(): string {
-    const {schemas, args} = this;
+    const {schemas, originalArgs} = this;
     if (schemas.length === 1)
-      return toStringArgsList(schemas[0].mnemonic, args);
+      return toStringArgsList(schemas[0].mnemonic, originalArgs);
 
     return `[?] ${toStringArgsList(this.opcode, this.argsTokens)}`;
   }
