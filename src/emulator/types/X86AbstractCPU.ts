@@ -32,10 +32,18 @@ export class X86PrefixesStore {
   addressSize: X86Prefix;
 }
 
-export type SegmentedAddress = {
-  offset: number,
-  segment: number,
-};
+export class SegmentedAddress {
+  constructor(
+    public offset: number,
+    public segment: number,
+  ) {}
+
+  toString() {
+    const {offset, segment} = this;
+
+    return `${offset.toString(16)}:${segment.toString(16)}`;
+  }
+}
 
 /**
  * Addressing mode byte
@@ -230,10 +238,10 @@ export abstract class X86AbstractCPU {
    * @returns Segmented address
    */
   static getSegmentedAddress(num: number): SegmentedAddress {
-    return {
-      offset: num & 0xFFFF,
-      segment: (num >> 0x10) & 0xFFFF,
-    };
+    return new SegmentedAddress(
+      num & 0xFFFF,
+      (num >> 0x10) & 0xFFFF,
+    );
   }
 
   /**

@@ -9,23 +9,16 @@ export type ASTInstructionParser = {
 };
 
 /**
- * Creates tree from provided tokens
+ * Iterates through tokens list
  *
  * @export
- * @class ASTParser
+ * @class ASTTokensIterator
  */
-export class ASTParser {
-  private nodeParsers: ASTInstructionParser[];
-  private tokens: Token[];
-  private tokenIndex: number = 0;
-
+export class ASTTokensIterator {
   constructor(
-    nodeParsers: ASTInstructionParser[],
-    tokensIterator: IterableIterator<Token>,
-  ) {
-    this.nodeParsers = nodeParsers;
-    this.tokens = Array.from(tokensIterator);
-  }
+    protected tokens: Token[],
+    protected tokenIndex: number = 0,
+  ) {}
 
   /**
    * Fetches precceing token related to current tokenIndex
@@ -33,7 +26,7 @@ export class ASTParser {
    * @param {number} [offset=1]
    * @param {boolean} [increment=true]
    * @returns {Token}
-   * @memberof ASTParser
+   * @memberof ASTTokensIterator
    */
   fetchRelativeToken(offset: number = 1, increment: boolean = true): Token {
     const nextToken = this.tokens[this.tokenIndex + offset];
@@ -44,42 +37,92 @@ export class ASTParser {
   }
 
   /**
+   * Just increments tokenIndex
+   *
+   * @param {number} [count=1]
+   * @returns {Token}
+   * @memberof ASTTokensIterator
+   */
+  consume(count: number = 1): Token {
+    return this.fetchRelativeToken(count);
+  }
+
+  /**
+   * Loops through tokens
+   *
+   * @param {(token: Token, iterator?: ASTTokensIterator) => any} fn
+   * @memberof ASTTokensIterator
+   */
+  iterate(fn: (token: Token, iterator?: ASTTokensIterator) => any): void {
+    const {tokens} = this;
+
+    this.tokenIndex = 0;
+
+    for (; this.tokenIndex < tokens.length; ++this.tokenIndex) {
+      const result = fn(
+        tokens[this.tokenIndex],
+        this,
+      );
+
+      if (result === false)
+        break;
+    }
+  }
+}
+
+/**
+ * Creates tree from provided tokens
+ *
+ * @export
+ * @class ASTParser
+ * @extends {ASTTokensIterator}
+ */
+export class ASTParser extends ASTTokensIterator {
+  constructor(
+    private nodeParsers: ASTInstructionParser[],
+    tokensIterator: IterableIterator<Token>,
+  ) {
+    super(Array.from(tokensIterator));
+  }
+
+  /**
    * Fetches array of matched instructions, labels etc
    *
    * @returns {ASTNode[]}
    * @memberof ASTParser
    */
   getTree(): ASTNode[] {
-    const {nodeParsers, tokens} = this;
+    const {nodeParsers} = this;
     const astNodes: ASTNode[] = [];
 
-    this.tokenIndex = 0;
+    this.iterate(
+      (token) => {
+        let tokenParsed = false;
 
-    for (; this.tokenIndex < tokens.length; ++this.tokenIndex) {
-      const token = tokens[this.tokenIndex];
-      let tokenParsed = false;
+        if (token.type === TokenType.EOF)
+          return false;
 
-      if (token.type === TokenType.EOF)
-        break;
+        for (let j = 0; j < nodeParsers.length; ++j) {
+          try {
+            const astNode = nodeParsers[j].parse(token, this, astNodes);
 
-      for (let j = 0; j < nodeParsers.length; ++j) {
-        try {
-          const astNode = nodeParsers[j].parse(token, this, astNodes);
-
-          if (astNode) {
-            astNodes.push(astNode);
-            tokenParsed = true;
-            break;
+            if (astNode) {
+              astNodes.push(astNode);
+              tokenParsed = true;
+              return false;
+            }
+          } catch (e) {
+            console.error(`(${token.loc.toString()}): ${e.message}`);
+            return null;
           }
-        } catch (e) {
-          console.error(`(${token.loc.toString()}): ${e.message}`);
-          return null;
         }
-      }
 
-      if (!tokenParsed && !isWhitespace(<string> token.text))
-        throw new ParserError(ParserErrorCode.UNKNOWN_OPERATION, token.loc);
-    }
+        if (!tokenParsed && !isWhitespace(<string> token.text))
+          throw new ParserError(ParserErrorCode.UNKNOWN_OPERATION, token.loc);
+
+        return true;
+      },
+    );
 
     return astNodes;
   }

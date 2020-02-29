@@ -205,6 +205,12 @@ export class ASTInstructionMemPtrArg extends ASTInstructionArg<MemAddressDescrip
     return !!(value && R.isNil(value.reg) && R.isNil(value.scale) && R.is(Number, value.disp));
   }
 
+  isScaled() {
+    const {value} = this;
+
+    return !R.isNil(value.scale);
+  }
+
   /**
    * Used in diassembler
    *
@@ -226,9 +232,11 @@ export class ASTInstructionMemPtrArg extends ASTInstructionArg<MemAddressDescrip
    * @memberof ASTInstructionMemPtrArg
    */
   tryResolve(): boolean {
-    const {phrase} = this;
+    const {phrase, resolved} = this;
 
-    this.value = parseMemExpression(phrase);
+    if (!resolved)
+      this.value = parseMemExpression(phrase);
+
     return super.tryResolve();
   }
 }

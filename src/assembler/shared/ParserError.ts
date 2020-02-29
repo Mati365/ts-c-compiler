@@ -15,6 +15,7 @@ export enum ParserErrorCode {
   INVALID_INSTRUCTION_OPERAND,
   UNKNOWN_OPERATION,
   REGISTER_IS_NOT_SEGMENT_REG,
+  EXCEEDING_CASTED_NUMBER_SIZE,
 
   // mem
   INCORRECT_OPERAND,
@@ -24,6 +25,14 @@ export enum ParserErrorCode {
   INCORRECT_SCALE,
   UNKNOWN_MEM_TOKEN,
   INCORRECT_MODRM,
+
+  // segmented mem
+  INCORRECT_SEGMENTED_MEM_FORMAT,
+  INCORRECT_SEGMENTED_MEM_ARGS_COUNT,
+
+  INCORRECT_SEGMENT_MEM_ARG_SIZE,
+  INCORRECT_OFFSET_MEM_ARG_SIZE,
+  OFFSET_MEM_ARG_SIZE_EXCEEDING_SIZE,
 
   // prefixes
   INCORRECT_SREG_OVERRIDE,
@@ -43,6 +52,7 @@ export enum ParserErrorCode {
   UNMATCHED_SCHEMA_POSTPROCESS,
 }
 
+/* eslint-disable max-len */
 export const ERROR_TRANSLATIONS: {[key in ParserErrorCode]: string} = {
   [ParserErrorCode.UNKNOWN_TOKEN]: 'Unknown token "%{token}"!',
   [ParserErrorCode.SYNTAX_ERROR]: 'Syntax error!',
@@ -56,6 +66,8 @@ export const ERROR_TRANSLATIONS: {[key in ParserErrorCode]: string} = {
   [ParserErrorCode.UNKNOWN_OPERATION]: 'Unknown operation!',
   [ParserErrorCode.REGISTER_IS_NOT_SEGMENT_REG]: 'Provided register "%{reg}" is not segment register!',
 
+  [ParserErrorCode.EXCEEDING_CASTED_NUMBER_SIZE]: 'Provided value "%{value}" is exceeding casted arg size (provided %{size} bytes but max is %{maxSize} bytes)!',
+
   // mem
   [ParserErrorCode.UNKNOWN_MEM_TOKEN]: 'Unknown mem definition token %{token}!',
   [ParserErrorCode.INCORRECT_OPERAND]: 'Incorrect operand!',
@@ -64,6 +76,14 @@ export const ERROR_TRANSLATIONS: {[key in ParserErrorCode]: string} = {
   [ParserErrorCode.INCORRECT_SCALE_MEM_PARAMS]: 'Incorrect scale mem params!',
   [ParserErrorCode.INCORRECT_SCALE]: 'Incorrect scale! It must be 1, 2, 4 or 8 instead of "%{scale}"!',
   [ParserErrorCode.INCORRECT_MODRM]: 'Error during "%{phrase}" ModRM instruction byte parsing!',
+
+  // segmented mem
+  [ParserErrorCode.INCORRECT_SEGMENTED_MEM_FORMAT]: 'Incorrect segmented memory format "%{address}"!',
+  [ParserErrorCode.INCORRECT_SEGMENTED_MEM_ARGS_COUNT]: 'Incorrect segmented memory address args count %{count}!',
+
+  [ParserErrorCode.INCORRECT_SEGMENT_MEM_ARG_SIZE]: 'Incorrect address segment size, provided %{size} bytes but required is 2 bytes!',
+  [ParserErrorCode.INCORRECT_OFFSET_MEM_ARG_SIZE]: 'Incorrect address offset size, provided %{size} bytes but required is <= 4 bytes!',
+  [ParserErrorCode.OFFSET_MEM_ARG_SIZE_EXCEEDING_SIZE]: 'Incorrect address offset size, provided %{size} bytes but should be <= %{maxSize} bytes!',
 
   // prefixes
   [ParserErrorCode.INCORRECT_SREG_OVERRIDE]: 'Incorrect segment register override "%{sreg}"!',
@@ -83,6 +103,7 @@ export const ERROR_TRANSLATIONS: {[key in ParserErrorCode]: string} = {
 
   [ParserErrorCode.UNMATCHED_SCHEMA_POSTPROCESS]: 'Cannot find instruction "%{instruction}"!',
 };
+/* eslint-enable max-len */
 
 /**
  * Errors thrown during compiling

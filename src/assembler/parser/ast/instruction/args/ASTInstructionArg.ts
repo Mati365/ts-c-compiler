@@ -17,8 +17,8 @@ export class ASTInstructionArg<V = any> extends ASTResolvableArg<V> {
     value: V,
     public byteSize: number = 1, // unsigned
     public schema: ASTInstructionArgSchema = null,
-    _resolved = true,
+    resolved = true,
   ) {
-    super(value, _resolved);
+    super(value, resolved);
   }
 }

@@ -11,7 +11,7 @@
 export class ASTResolvableArg<T> {
   constructor(
     public value: T,
-    private _resolved = true,
+    protected resolved = true,
   ) {}
 
   toString(): string {
@@ -30,7 +30,7 @@ export class ASTResolvableArg<T> {
    * @memberof ASTResolvableArg
    */
   tryResolve(): boolean {
-    this._resolved = true;
+    this.resolved = true;
     return true;
   }
 
@@ -41,6 +41,6 @@ export class ASTResolvableArg<T> {
    * @memberof ASTResolvableArg
    */
   isResolved() {
-    return this._resolved;
+    return this.resolved;
   }
 }

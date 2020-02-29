@@ -7,13 +7,14 @@ import {InstructionArgType} from '../../../types';
 
 import {ParserError, ParserErrorCode} from '../../../shared/ParserError';
 
-import {ASTParser} from '../ASTParser';
+import {ASTParser, ASTTokensIterator} from '../ASTParser';
 import {ASTNodeKind, BinaryLabelsOffsets} from '../types';
 
 import {ASTInstructionSchema} from './ASTInstructionSchema';
 import {
   ASTInstructionNumberArg,
   ASTInstructionMemPtrArg,
+  ASTInstructionMemSegmentedArg,
   ASTInstructionRegisterArg,
   ASTInstructionArg,
 } from './args';
@@ -161,6 +162,7 @@ export class ASTInstruction extends KindASTNode(ASTNodeKind.INSTRUCTION) {
 
   get numArgs() { return this.typedArgs[InstructionArgType.NUMBER]; }
   get memArgs() { return this.typedArgs[InstructionArgType.MEMORY]; }
+  get segMemArgs() { return this.typedArgs[InstructionArgType.SEGMENTED_MEMORY]; }
   get regArgs() { return this.typedArgs[InstructionArgType.REGISTER]; }
   get labelArgs() { return this.typedArgs[InstructionArgType.LABEL]; }
   get relAddrArgs() { return this.typedArgs[InstructionArgType.RELATIVE_ADDR]; }
@@ -183,6 +185,7 @@ export class ASTInstruction extends KindASTNode(ASTNodeKind.INSTRUCTION) {
       // todo: optimize
       {
         [InstructionArgType.MEMORY]: [],
+        [InstructionArgType.SEGMENTED_MEMORY]: [],
         [InstructionArgType.NUMBER]: [],
         [InstructionArgType.REGISTER]: [],
         [InstructionArgType.LABEL]: [],
@@ -290,14 +293,16 @@ export class ASTInstruction extends KindASTNode(ASTNodeKind.INSTRUCTION) {
   static parseInstructionArgsTokens(tokens: Token[]): ASTInstructionArg<any>[] {
     let byteSizeOverride: number = null;
 
-    const parseToken = (token: Token): ASTInstructionArg<any> => {
+    const parseToken = (token: Token, iterator: ASTTokensIterator): ASTInstructionArg<any> => {
+      const nextToken = iterator.fetchRelativeToken(1, false);
+
       switch (token.type) {
         // Registers
         case TokenType.KEYWORD:
           if (token.kind === TokenKind.REGISTER) {
             const {schema, byteSize} = (<RegisterToken> token).value;
 
-            return new ASTInstructionRegisterArg(schema, byteSizeOverride ?? byteSize);
+            return new ASTInstructionRegisterArg(schema, byteSize);
           }
 
           if (token.kind === TokenKind.BYTE_SIZE_OVERRIDE) {
@@ -308,9 +313,35 @@ export class ASTInstruction extends KindASTNode(ASTNodeKind.INSTRUCTION) {
           // used for mem matching, in first phase
           return new ASTInstructionArg(InstructionArgType.LABEL, token.text);
 
-        // Numeric
+        // Numeric or address segmented address
         case TokenType.NUMBER: {
           const {number, byteSize} = (<NumberToken> token).value;
+
+          // check if next token is colon, if so - it is segmented arg
+          // do not pass it directly as SegmentedAddress into AST argument
+          // it can contain label, just ignore type of precceding token
+          // and throw error if not pass inside arg parser
+          if (nextToken?.type === TokenType.COLON) {
+            iterator.consume();
+
+            return new ASTInstructionMemSegmentedArg(
+              `${token.text}:${iterator.consume()?.text}`,
+              byteSizeOverride ?? byteSize,
+            );
+          }
+
+          // if no - number
+          if (!R.isNil(byteSizeOverride) && byteSizeOverride < byteSize) {
+            throw new ParserError(
+              ParserErrorCode.EXCEEDING_CASTED_NUMBER_SIZE,
+              null,
+              {
+                value: token.text,
+                size: byteSize,
+                maxSize: byteSizeOverride,
+              },
+            );
+          }
 
           return new ASTInstructionNumberArg(number, byteSize ?? byteSizeOverride);
         }
@@ -339,11 +370,14 @@ export class ASTInstruction extends KindASTNode(ASTNodeKind.INSTRUCTION) {
     };
 
     // a bit faster than transduce
-    return R.reduce(
-      (acc: ASTInstructionArg[], item: Token) => {
-        const result = parseToken(item);
+    const argsTokensIterator = new ASTTokensIterator(tokens);
+    const acc: ASTInstructionArg[] = [];
+
+    argsTokensIterator.iterate(
+      (token: Token) => {
+        const result = parseToken(token, argsTokensIterator);
         if (!result)
-          return acc;
+          return;
 
         const sizeMismatch = (
           acc.length
@@ -366,11 +400,10 @@ export class ASTInstruction extends KindASTNode(ASTNodeKind.INSTRUCTION) {
         }
 
         acc.push(result);
-        return acc;
       },
-      <ASTInstructionArg[]> [],
-      tokens,
     );
+
+    return acc;
   }
 
   /**
