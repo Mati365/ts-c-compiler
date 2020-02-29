@@ -8,12 +8,15 @@ import {InstructionArgType} from '../../../types';
 import {ParserError, ParserErrorCode} from '../../../shared/ParserError';
 
 import {ASTParser} from '../ASTParser';
-import {ASTInstructionArg} from './args/ASTInstructionArg';
-import {ASTInstructionSchema} from './ASTInstructionSchema';
-import {ASTNumberInstructionArg} from './args/ASTNumberInstructionArg';
-import {ASTInstructionMemArg} from './args/ASTInstructionMemArg';
-import {ASTRegisterInstructionArg} from './args/ASTInstructionRegisterArg';
 import {ASTNodeKind, BinaryLabelsOffsets} from '../types';
+
+import {ASTInstructionSchema} from './ASTInstructionSchema';
+import {
+  ASTInstructionNumberArg,
+  ASTInstructionMemArg,
+  ASTInstructionRegisterArg,
+  ASTInstructionArg,
+} from './args';
 
 import {
   KindASTNode,
@@ -231,7 +234,7 @@ export class ASTInstruction extends KindASTNode(ASTNodeKind.INSTRUCTION) {
         if (R.isNil(labelAddress))
           throw new ParserError(ParserErrorCode.UNKNOWN_LABEL, null, {label});
 
-        return new ASTNumberInstructionArg(labelAddress, null, null, InstructionArgType.RELATIVE_ADDR);
+        return new ASTInstructionNumberArg(labelAddress, null, null, InstructionArgType.RELATIVE_ADDR);
       },
       this.originalArgs,
     );
@@ -287,7 +290,7 @@ export class ASTInstruction extends KindASTNode(ASTNodeKind.INSTRUCTION) {
           if (token.kind === TokenKind.REGISTER) {
             const {schema, byteSize} = (<RegisterToken> token).value;
 
-            return new ASTRegisterInstructionArg(schema, byteSizeOverride ?? byteSize);
+            return new ASTInstructionRegisterArg(schema, byteSizeOverride ?? byteSize);
           }
 
           if (token.kind === TokenKind.BYTE_SIZE_OVERRIDE) {
@@ -302,7 +305,7 @@ export class ASTInstruction extends KindASTNode(ASTNodeKind.INSTRUCTION) {
         case TokenType.NUMBER: {
           const {number, byteSize} = (<NumberToken> token).value;
 
-          return new ASTNumberInstructionArg(number, byteSize ?? byteSizeOverride);
+          return new ASTInstructionNumberArg(number, byteSize ?? byteSizeOverride);
         }
 
         // Mem address
@@ -348,7 +351,7 @@ export class ASTInstruction extends KindASTNode(ASTNodeKind.INSTRUCTION) {
           // try to cast
           const prevByteSize = acc[acc.length - 1].byteSize;
           if (result.type === InstructionArgType.NUMBER && result.byteSize < prevByteSize)
-            (<ASTNumberInstructionArg> result).upperCastByteSize(prevByteSize);
+            (<ASTInstructionNumberArg> result).upperCastByteSize(prevByteSize);
 
           // otherwise if it is mem arg, throw error
           else

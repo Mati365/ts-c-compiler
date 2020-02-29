@@ -11,10 +11,10 @@ import {ASTInstructionArg} from './ASTInstructionArg';
  * Instruction arg that contains number
  *
  * @export
- * @class ASTNumberInstructionArg
+ * @class ASTInstructionNumberArg
  * @extends {ASTInstructionArg}
  */
-export class ASTNumberInstructionArg extends ASTInstructionArg<number> {
+export class ASTInstructionNumberArg extends ASTInstructionArg<number> {
   public signedByteSize: number;
   public signedNumber: number;
 
@@ -41,7 +41,7 @@ export class ASTNumberInstructionArg extends ASTInstructionArg<number> {
    * Used for upper cast for some instructions
    *
    * @param {number} byteSize
-   * @memberof ASTNumberInstructionArg
+   * @memberof ASTInstructionNumberArg
    */
   upperCastByteSize(byteSize: number): void {
     this.byteSize = Math.max(this.byteSize, byteSize);

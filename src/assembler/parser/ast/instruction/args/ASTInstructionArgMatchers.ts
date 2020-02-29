@@ -5,7 +5,7 @@ import {RegisterSchema} from '../../../../shared/RegisterSchema';
 
 import {InstructionArgType} from '../../../../types';
 import {ASTInstructionArg} from './ASTInstructionArg';
-import {ASTNumberInstructionArg} from './ASTNumberInstructionArg';
+import {ASTInstructionNumberArg} from './ASTInstructionNumberArg';
 import {
   ASTInstructionSchema,
   ASTInstructionMatcherSchema,
@@ -28,7 +28,7 @@ function relLabel(arg: ASTInstructionArg, signedByteSize: X86BitsMode) {
     return true;
 
   if (arg.type === InstructionArgType.RELATIVE_ADDR)
-    return (<ASTNumberInstructionArg> arg).signedByteSize === signedByteSize;
+    return (<ASTInstructionNumberArg> arg).signedByteSize === signedByteSize;
 
   return false;
 }

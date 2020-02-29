@@ -6,10 +6,10 @@ import {RegisterSchema} from '../../../../shared/RegisterSchema';
  * Instruction arg that contains register
  *
  * @export
- * @class ASTRegisterInstructionArg
+ * @class ASTInstructionRegisterArg
  * @extends {ASTInstructionArg}
  */
-export class ASTRegisterInstructionArg extends ASTInstructionArg<RegisterSchema> {
+export class ASTInstructionRegisterArg extends ASTInstructionArg<RegisterSchema> {
   constructor(schema: RegisterSchema, byteSize: number) {
     super(
       InstructionArgType.REGISTER,
