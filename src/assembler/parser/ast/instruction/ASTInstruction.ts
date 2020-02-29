@@ -284,12 +284,18 @@ export class ASTInstruction extends KindASTNode(ASTNodeKind.INSTRUCTION) {
    * @memberof ASTInstruction
    */
   tryResolveSchema(): ASTInstruction {
-    const {branchAddressingType, argsTokens} = this;
+    const {branchAddressingType, argsTokens, jumpInstruction} = this;
 
     // generate first time args from tokenArgs, it is in first phrase
     // in second phrase args might be overriden
     if (!this.originalArgs) {
-      const args = ASTInstruction.parseInstructionArgsTokens(branchAddressingType, argsTokens);
+      const args = ASTInstruction.parseInstructionArgsTokens(
+        branchAddressingType,
+        argsTokens,
+        jumpInstruction
+          ? InstructionArgSize.WORD
+          : null,
+      );
 
       this.originalArgs = args;
       this.args = args;
@@ -315,12 +321,14 @@ export class ASTInstruction extends KindASTNode(ASTNodeKind.INSTRUCTION) {
    * @static
    * @param {BranchAddressingType} branchAddressingType
    * @param {Token[]} tokens
+   * @param {number} [defaultMemArgByteSize=null]
    * @returns {ASTInstructionArg<any>[]}
    * @memberof ASTInstruction
    */
   static parseInstructionArgsTokens(
     branchAddressingType: BranchAddressingType,
     tokens: Token[],
+    defaultMemArgByteSize: number = null,
   ): ASTInstructionArg<any>[] {
     let byteSizeOverride = null;
     const branchSizeOverride: number = (
@@ -331,8 +339,6 @@ export class ASTInstruction extends KindASTNode(ASTNodeKind.INSTRUCTION) {
 
     const parseToken = (token: Token, iterator: ASTTokensIterator): ASTInstructionArg<any> => {
       const nextToken = iterator.fetchRelativeToken(1, false);
-      const prevToken = iterator.fetchRelativeToken(-1, false);
-      const onlyToken = !nextToken && !prevToken;
 
       switch (token.type) {
         // Registers
@@ -398,16 +404,10 @@ export class ASTInstruction extends KindASTNode(ASTNodeKind.INSTRUCTION) {
         // Mem address ptr
         case TokenType.BRACKET:
           if (token.kind === TokenKind.SQUARE_BRACKET) {
-            let memSize = byteSizeOverride ?? branchSizeOverride;
+            const memSize = byteSizeOverride ?? branchSizeOverride ?? defaultMemArgByteSize;
 
-            // if it is only token - it is propably JMP,
-            // assume that it is 2 bytes length due to offset address size
-            if (R.isNil(memSize)) {
-              if (onlyToken)
-                memSize = InstructionArgSize.WORD;
-              else
-                throw new ParserError(ParserErrorCode.MISSING_MEM_OPERAND_SIZE);
-            }
+            if (R.isNil(memSize))
+              throw new ParserError(ParserErrorCode.MISSING_MEM_OPERAND_SIZE);
 
             return new ASTInstructionMemPtrArg(
               <string> token.text,

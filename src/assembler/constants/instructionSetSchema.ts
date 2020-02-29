@@ -47,6 +47,19 @@ export const COMPILER_INSTRUCTIONS_SET: ASTOpcodeMatchers = {
     _op('jnc', 'sl', '73 r0'),
   ],
 
+  inc: [
+    _op('inc', 'ax', '40'),
+    _op('inc', 'cx', '41'),
+    _op('inc', 'dx', '42'),
+    _op('inc', 'bx', '43'),
+    _op('inc', 'sp', '44'),
+    _op('inc', 'bp', '45'),
+    _op('inc', 'si', '46'),
+    _op('inc', 'di', '47'),
+    _op('inc', 'rmb', 'FE /0 d0 d1'),
+    _op('inc', 'rmw', 'FF /0 d0 d1'),
+  ],
+
   mov: [
     _op('mov', 'al mw', 'A0 d0 d1'),
     _op('mov', 'ax mw', 'A0 d0 d1'),
