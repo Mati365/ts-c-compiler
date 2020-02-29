@@ -26,6 +26,9 @@ const make = tagFunction(
 
 /* eslint-disable no-console,@typescript-eslint/no-unused-expressions */
 make`
+  dupa:
   mov ax, word [cs:bx+0x2]
+  int 3
+  jmp dupa
 `;
 /* eslint-enable no-console,@typescript-eslint/no-unused-expressions */

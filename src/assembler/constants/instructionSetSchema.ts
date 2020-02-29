@@ -29,7 +29,7 @@ export const COMPILER_INSTRUCTIONS_SET: ASTOpcodeMatchers = {
   ],
 
   int: [
-    _op('int', '3', 'CC'), // todo: remove
+    // _op('int', '3', 'CC'), // todo: remove
     _op('int', 'ib', 'CD i0'),
   ],
 

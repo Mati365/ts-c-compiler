@@ -31,13 +31,12 @@ export class BinaryBlob<ASTNodeType = any> {
         .map(
           (num) => `0x${num.toString(16).padStart(2, '0')}`,
         )
-        .join(', '),
+        .join(' '),
     );
 
     if (!withAST || !ast)
       return binStr;
 
-    const astStr = ast.toString().padEnd(15);
-    return `${astStr} ${binStr}`;
+    return `${binStr.padEnd(32)}${ast.toString()}`;
   }
 }
