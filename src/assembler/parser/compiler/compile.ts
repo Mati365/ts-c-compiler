@@ -22,7 +22,7 @@ import {BinaryBlob} from './BinaryBlob';
 export class FirstPassResult {
   constructor(
     public readonly labels: BinaryLabelsOffsets = new Map<string, number>(),
-    public readonly nodesOffsets = new Map<number, ASTNode>(),
+    public readonly nodesOffsets = new Map<number, BinaryInstruction>(),
   ) {}
 }
 
@@ -116,10 +116,10 @@ export class X86Compiler {
         switch (node.kind) {
           case ASTNodeKind.INSTRUCTION: {
             const instruction = <ASTInstruction> node;
-            const size = instruction.getPessimisticByteSize();
+            const compiled = new BinaryInstruction(instruction).compile(this, offset);
 
-            result.nodesOffsets.set(offset, instruction);
-            offset += size;
+            result.nodesOffsets.set(offset, compiled);
+            offset += compiled.binary.length;
           } break;
 
           case ASTNodeKind.LABEL:
@@ -156,25 +156,28 @@ export class X86Compiler {
       let needPass = false;
 
       // eslint-disable-next-line prefer-const
-      for (let [offset, node] of nodesOffsets) {
-        if (node instanceof ASTInstruction) {
-          const pessimisticSize = node.getPessimisticByteSize();
+      for (let [offset, blob] of nodesOffsets) {
+        if (blob instanceof BinaryInstruction) {
+          const {ast, binary} = blob;
+          const pessimisticSize = binary.length;
 
           // generally check for JMP/CALL etc instructions
-          if (node.hasLabelsInOriginalAST()) {
-            node
+          const shrinkable = ast.hasLabelsInOriginalAST();
+          if (shrinkable) {
+            ast
               .assignLabelsToArgs(labels)
               .tryResolveSchema();
           }
 
           // single instruction might contain multiple schemas but never 0
-          const {schemas} = node;
+          const {schemas} = ast;
           if (!schemas.length)
-            throw new ParserError(ParserErrorCode.UNKNOWN_COMPILER_INSTRUCTION, null, {instruction: node.toString()});
+            throw new ParserError(ParserErrorCode.UNKNOWN_COMPILER_INSTRUCTION, null, {instruction: ast.toString()});
 
           // check if instruction after replacing labels has been shrinked
           // if so - force rewrite precceding instrutions and labels
-          const shrinkBytes = pessimisticSize - schemas[0].byteSize;
+          const recompiled = new BinaryInstruction(ast).compile(this, offset);
+          const shrinkBytes = pessimisticSize - recompiled.binary.length;
           if (shrinkBytes) {
             needPass = true;
 
@@ -185,17 +188,17 @@ export class X86Compiler {
             }
 
             // if so decrement precceding instruction offsets and label offsets
-            for (const [instructionOffset, instruction] of Array.from(nodesOffsets)) {
+            for (const [instructionOffset] of Array.from(nodesOffsets)) {
               if (instructionOffset > offset) {
                 nodesOffsets.delete(instructionOffset);
-                nodesOffsets.set(instructionOffset - shrinkBytes, instruction);
+                nodesOffsets.set(instructionOffset - shrinkBytes, recompiled);
               }
             }
           }
 
           // select first schema, it will be discarded if next instruction have label
-          node.schemas = [
-            node.schemas[0],
+          ast.schemas = [
+            ast.schemas[0],
           ];
         }
       }
@@ -207,11 +210,11 @@ export class X86Compiler {
     }
 
     // produce binaries
-    for (const [offset, node] of nodesOffsets) {
-      if (node instanceof ASTInstruction) {
+    for (const [offset, blob] of nodesOffsets) {
+      if (blob instanceof BinaryInstruction) {
         result.blobs.set(
           offset,
-          new BinaryInstruction(node).compile(this, offset),
+          blob.compile(this, offset),
         );
       }
     }

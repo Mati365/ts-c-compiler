@@ -3,7 +3,10 @@ import * as R from 'ramda';
 import {COMPILER_INSTRUCTIONS_SET} from '../../../constants/instructionSetSchema';
 
 import {InstructionPrefix} from '../../../constants';
-import {InstructionArgType} from '../../../types';
+import {
+  BRANCH_ADDRESSING_SIZE_MAPPING,
+  InstructionArgType, BranchAddressingType,
+} from '../../../types';
 
 import {ParserError, ParserErrorCode} from '../../../shared/ParserError';
 
@@ -31,6 +34,7 @@ import {
   RegisterToken,
   TokenKind,
   SizeOverrideToken,
+  BranchAddressingTypeToken,
 } from '../../lexer/tokens';
 
 import {findMatchingInstructionSchemas} from './args/ASTInstructionArgMatchers';
@@ -67,31 +71,40 @@ export function fetchTokensArgsList(
 ): Token[] {
   // parse arguments
   const argsTokens: Token[] = [];
-  let commaToken = null;
+  let separatorToken = null;
 
   do {
     // value or size operand
-    const op1 = parser.fetchRelativeToken();
-    if (op1.type === TokenType.EOL || op1.type === TokenType.EOF)
+    let token = parser.fetchRelativeToken();
+    if (token.type === TokenType.EOL || token.type === TokenType.EOF)
       break;
 
-    argsTokens.push(op1);
+    argsTokens.push(token);
+
+    // far / near jmp instruction args prefix
+    if (token.kind === TokenKind.BRANCH_ADDRESSING_TYPE) {
+      token = parser.fetchRelativeToken();
+      argsTokens.push(token);
+    }
 
     // if it was size operand - fetch next token which is prefixed
-    if ((allowSizeOverride && op1.kind === TokenKind.BYTE_SIZE_OVERRIDE)) {
+    if (allowSizeOverride && token.kind === TokenKind.BYTE_SIZE_OVERRIDE) {
       argsTokens.push(
         parser.fetchRelativeToken(),
       );
     }
 
-    // comma
-    commaToken = parser.fetchRelativeToken();
+    // comma or other separator
+    separatorToken = parser.fetchRelativeToken();
 
     // handle comma between numbers in some addressing modes
-    if (commaToken?.type === TokenType.COLON)
-      argsTokens.push(commaToken);
+    if (separatorToken?.type === TokenType.COLON)
+      argsTokens.push(separatorToken);
   } while (
-    commaToken && (commaToken.type === TokenType.COMMA || commaToken.type === TokenType.COLON)
+    separatorToken && (
+      separatorToken.type === TokenType.COMMA
+        || separatorToken.type === TokenType.COLON
+    )
   );
 
   return argsTokens;
@@ -111,41 +124,36 @@ export function fetchTokensArgsList(
 export class ASTInstruction extends KindASTNode(ASTNodeKind.INSTRUCTION) {
   public typedArgs: {[type in InstructionArgType]: (ASTInstructionArg|ASTInstructionMemPtrArg)[]};
   public schemas: ASTInstructionSchema[];
+  public branchAddressingType: BranchAddressingType = null;
 
   // initial args is constant, it is
   // toggled on first pass, during AST tree analyze
   // args might change in second phase
-  private originalArgs: ASTInstructionArg[];
+  public originalArgs: ASTInstructionArg[];
   public args: ASTInstructionArg[];
 
   constructor(
     public readonly opcode: string,
-    public readonly argsTokens: Token<any>[],
+    public argsTokens: Token<any>[],
     public readonly prefixes: InstructionPrefix[] = [],
     loc: ASTNodeLocation,
   ) {
     super(loc);
+
+    // decode FAR/NEAR JMP addressing type prefixes
+    if (argsTokens.length && argsTokens[0].kind === TokenKind.BRANCH_ADDRESSING_TYPE) {
+      this.branchAddressingType = (<BranchAddressingTypeToken> argsTokens[0]).value;
+      this.argsTokens = R.tail(argsTokens);
+    } else
+      this.argsTokens = argsTokens;
   }
 
-  /**
-   * Get size used in second phase, there can be used
-   * by multiple schemas, choose the biggest and emit
-   * there bytes
-   *
-   * @returns {number}
-   * @memberof ASTInstruction
-   */
-  getPessimisticByteSize(): number {
-    const {schemas} = this;
-    if (schemas?.length === 0)
-      return schemas[0].byteSize;
-
-    return R.reduce(
-      (acc, schema) => Math.max(acc || 0, schema.byteSize),
-      null,
-      schemas,
-    );
-  }
+  get numArgs() { return this.typedArgs[InstructionArgType.NUMBER]; }
+  get memArgs() { return this.typedArgs[InstructionArgType.MEMORY]; }
+  get segMemArgs() { return this.typedArgs[InstructionArgType.SEGMENTED_MEMORY]; }
+  get regArgs() { return this.typedArgs[InstructionArgType.REGISTER]; }
+  get labelArgs() { return this.typedArgs[InstructionArgType.LABEL]; }
+  get relAddrArgs() { return this.typedArgs[InstructionArgType.RELATIVE_ADDR]; }
 
   /**
    * Lookups in original args that are emitted after compiling AST
@@ -159,13 +167,6 @@ export class ASTInstruction extends KindASTNode(ASTNodeKind.INSTRUCTION) {
       this.originalArgs,
     );
   }
-
-  get numArgs() { return this.typedArgs[InstructionArgType.NUMBER]; }
-  get memArgs() { return this.typedArgs[InstructionArgType.MEMORY]; }
-  get segMemArgs() { return this.typedArgs[InstructionArgType.SEGMENTED_MEMORY]; }
-  get regArgs() { return this.typedArgs[InstructionArgType.REGISTER]; }
-  get labelArgs() { return this.typedArgs[InstructionArgType.LABEL]; }
-  get relAddrArgs() { return this.typedArgs[InstructionArgType.RELATIVE_ADDR]; }
 
   /**
    * Groups args into types
@@ -203,9 +204,14 @@ export class ASTInstruction extends KindASTNode(ASTNodeKind.INSTRUCTION) {
    * @memberof ASTInstruction
    */
   toString(): string {
-    const {schemas, originalArgs} = this;
-    if (schemas.length === 1)
-      return toStringArgsList(schemas[0].mnemonic, originalArgs);
+    const {schemas, originalArgs, branchAddressingType} = this;
+    if (schemas.length === 1) {
+      let {mnemonic} = schemas[0];
+      if (branchAddressingType)
+        mnemonic = `${mnemonic} ${branchAddressingType}`;
+
+      return toStringArgsList(mnemonic, originalArgs);
+    }
 
     return `[?] ${toStringArgsList(this.opcode, this.argsTokens)}`;
   }
@@ -259,19 +265,21 @@ export class ASTInstruction extends KindASTNode(ASTNodeKind.INSTRUCTION) {
    * @memberof ASTInstruction
    */
   tryResolveSchema(): ASTInstruction {
-    const {opcode, argsTokens} = this;
+    const {branchAddressingType, argsTokens} = this;
 
     // generate first time args from tokenArgs, it is in first phrase
     // in second phrase args might be overriden
     if (!this.originalArgs) {
-      this.originalArgs = ASTInstruction.parseInstructionArgsTokens(argsTokens);
-      this.args = this.originalArgs;
+      const args = ASTInstruction.parseInstructionArgsTokens(branchAddressingType, argsTokens);
+
+      this.originalArgs = args;
+      this.args = args;
 
       this.refreshTypedArgs();
     }
 
     // list all of schemas
-    this.schemas = findMatchingInstructionSchemas(COMPILER_INSTRUCTIONS_SET, opcode, this.args);
+    this.schemas = findMatchingInstructionSchemas(COMPILER_INSTRUCTIONS_SET, this);
 
     // assign matching schema
     const {schemas, args} = this;
@@ -286,12 +294,21 @@ export class ASTInstruction extends KindASTNode(ASTNodeKind.INSTRUCTION) {
    * Transforms list of tokens into arguments
    *
    * @static
+   * @param {BranchAddressingType} branchAddressingType
    * @param {Token[]} tokens
-   * @returns {ASTInstructionArg[]}
+   * @returns {ASTInstructionArg<any>[]}
    * @memberof ASTInstruction
    */
-  static parseInstructionArgsTokens(tokens: Token[]): ASTInstructionArg<any>[] {
-    let byteSizeOverride: number = null;
+  static parseInstructionArgsTokens(
+    branchAddressingType: BranchAddressingType,
+    tokens: Token[],
+  ): ASTInstructionArg<any>[] {
+    let byteSizeOverride = null;
+    const branchSizeOverride: number = (
+      branchAddressingType
+        ? BRANCH_ADDRESSING_SIZE_MAPPING[branchAddressingType] * 2
+        : null
+    );
 
     const parseToken = (token: Token, iterator: ASTTokensIterator): ASTInstructionArg<any> => {
       const nextToken = iterator.fetchRelativeToken(1, false);
@@ -306,7 +323,18 @@ export class ASTInstruction extends KindASTNode(ASTNodeKind.INSTRUCTION) {
           }
 
           if (token.kind === TokenKind.BYTE_SIZE_OVERRIDE) {
-            byteSizeOverride = (<SizeOverrideToken> token).value.byteSize;
+            let newByteSize = (<SizeOverrideToken> token).value.byteSize;
+
+            // not sure if it is ok but in nasm byte size in branch mode
+            // is as twice as big as override so multiply by 2
+            if (branchSizeOverride) {
+              if (newByteSize * 2 < branchSizeOverride)
+                throw new ParserError(ParserErrorCode.OPERAND_SIZES_MISMATCH);
+              else
+                newByteSize *= 2;
+            }
+
+            byteSizeOverride = newByteSize;
             return null;
           }
 
@@ -326,7 +354,7 @@ export class ASTInstruction extends KindASTNode(ASTNodeKind.INSTRUCTION) {
 
             return new ASTInstructionMemSegmentedArg(
               `${token.text}:${iterator.consume()?.text}`,
-              byteSizeOverride ?? byteSize,
+              byteSizeOverride ?? branchSizeOverride ?? byteSize,
             );
           }
 
@@ -349,10 +377,14 @@ export class ASTInstruction extends KindASTNode(ASTNodeKind.INSTRUCTION) {
         // Mem address ptr
         case TokenType.BRACKET:
           if (token.kind === TokenKind.SQUARE_BRACKET) {
-            if (R.isNil(byteSizeOverride))
+            const memSize = byteSizeOverride ?? branchSizeOverride;
+            if (R.isNil(memSize))
               throw new ParserError(ParserErrorCode.MISSING_MEM_OPERAND_SIZE);
 
-            return new ASTInstructionMemPtrArg(<string> token.text, byteSizeOverride);
+            return new ASTInstructionMemPtrArg(
+              <string> token.text,
+              memSize,
+            );
           }
           break;
 

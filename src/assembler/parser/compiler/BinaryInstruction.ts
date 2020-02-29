@@ -98,14 +98,17 @@ export class BinaryInstruction extends BinaryBlob<ASTInstruction> {
           // relative jump
           case 'r0': case 'r1': {
             const addrArg = ast.relAddrArgs[0];
-            const relAddress = (<number> addrArg.value) - offset - ast.schemas[0].byteSize;
+            if (addrArg) {
+              const relAddress = (<number> addrArg.value) - offset - ast.schemas[0].byteSize;
 
-            binary.push(
-              X86AbstractCPU.toUnsignedNumber(
-                extractNthByte(+schema[1], relAddress),
-                <any> addrArg.byteSize,
-              ),
-            );
+              binary.push(
+                X86AbstractCPU.toUnsignedNumber(
+                  extractNthByte(+schema[1], relAddress),
+                  <any> addrArg.byteSize,
+                ),
+              );
+            } else
+              binary.push(0x0);
           } break;
 
           // immediate
@@ -140,8 +143,14 @@ export class BinaryInstruction extends BinaryBlob<ASTInstruction> {
 
           // RM byte
           case 'mr':
+          case '/0': case '/1': case '/2': case '/3':
+          case '/4': case '/5': case '/6': case '/7':
             if (!rmByte)
               throw new ParserError(ParserErrorCode.MISSING_RM_BYTE_DEF);
+
+            // reg byte override
+            if (schema[0] === '/')
+              rmByte.reg = +schema[1];
 
             binary.push(rmByte.byte);
             this._rmByte = rmByte;

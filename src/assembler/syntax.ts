@@ -26,6 +26,11 @@ const make = tagFunction(
 
 /* eslint-disable no-console,@typescript-eslint/no-unused-expressions */
 make`
-  jmp word 0x7c00:0x1234
+  dupa:
+  int 3
+  jmp word 0x7C00:0xFF
+  jmp far word [cs:bx+0xFFF]
+  mov ax, word [es:bx+0x5]
+  jmp dupa
 `;
 /* eslint-enable no-console,@typescript-eslint/no-unused-expressions */

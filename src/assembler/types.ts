@@ -13,13 +13,18 @@ export enum InstructionArgSize {
   BYTE = 0x1,
   WORD = 0x2,
   DWORD = 0x4,
+  FWORD = 0x8,
 }
 
-export enum BranchAddressingType{
-  SHORT = 'short',
+export enum BranchAddressingType {
   NEAR = 'near',
   FAR = 'far',
 }
+
+export const BRANCH_ADDRESSING_SIZE_MAPPING = {
+  [BranchAddressingType.NEAR]: InstructionArgSize.BYTE,
+  [BranchAddressingType.FAR]: InstructionArgSize.WORD,
+};
 
 /**
  * @see {@link https://cs.lmu.edu/~ray/notes/nasmtutorial/}

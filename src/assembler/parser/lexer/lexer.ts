@@ -18,6 +18,7 @@ import {
   RegisterToken,
   TokenKind,
   SizeOverrideToken,
+  BranchAddressingTypeToken,
 } from './tokens';
 
 /**
@@ -33,6 +34,7 @@ export const TOKEN_PARSERS: {
     /** KEYWORD */
     [TokenType.KEYWORD]: (token: string, loc?: TokenLocation): boolean|Token => (
       RegisterToken.parse(token, loc)
+        ?? BranchAddressingTypeToken.parse(token, loc)
         ?? SizeOverrideToken.parse(token, loc)
         ?? true
     ),

@@ -109,7 +109,7 @@ export class ASTParser extends ASTTokensIterator {
             if (astNode) {
               astNodes.push(astNode);
               tokenParsed = true;
-              return false;
+              break;
             }
           } catch (e) {
             console.error(`(${token.loc.toString()}): ${e.message}`);

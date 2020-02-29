@@ -1,4 +1,4 @@
-import {ASTInstructionArgMatcher} from './args/ASTInstructionArgMatchers';
+import {ASTInstructionArgMatcher, isRMSchemaArg} from './args/ASTInstructionArgMatchers';
 
 export class ASTInstructionMatcherSchema {
   public readonly rm: boolean;
@@ -7,7 +7,7 @@ export class ASTInstructionMatcherSchema {
     public readonly name: string,
     public readonly matcher: ASTInstructionArgMatcher,
   ) {
-    this.rm = name === 'rmb' || name === 'rmw' || name === 'rmq';
+    this.rm = isRMSchemaArg(name);
   }
 }
 

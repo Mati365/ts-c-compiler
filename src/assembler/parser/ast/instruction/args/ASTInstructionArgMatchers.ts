@@ -4,6 +4,7 @@ import {X86BitsMode} from '../../../../../emulator/types';
 import {RegisterSchema} from '../../../../shared/RegisterSchema';
 
 import {InstructionArgType} from '../../../../types';
+import {ASTInstruction} from '../ASTInstruction';
 import {ASTInstructionArg} from './ASTInstructionArg';
 import {ASTInstructionNumberArg} from './ASTInstructionNumberArg';
 import {ASTInstructionMemPtrArg} from './ASTInstructionMemPtrArg';
@@ -46,6 +47,10 @@ function farSegPointer(arg: ASTInstructionArg, byteSize: X86BitsMode): boolean {
   return arg.type === InstructionArgType.SEGMENTED_MEMORY && arg.byteSize === byteSize;
 }
 
+function indirectFarSegPointer(arg: ASTInstructionArg, instruction: ASTInstruction): boolean {
+  return arg.type === InstructionArgType.MEMORY && instruction.branchAddressingType !== null;
+}
+
 /**
  * Mnemonic notation:
  * mb,mw,md,mq - memory byte, word, double word, quad word
@@ -54,8 +59,10 @@ function farSegPointer(arg: ASTInstructionArg, byteSize: X86BitsMode): boolean {
  * ib, iw - immediate byte, word
  * sl, ll - short label, long label
  * mwr, mdr, mqr, mtr - memory word, double word, quad word, ten byte
- * fptrw - far pointer word
- * fptrd - far pointer double word
+ *
+ * fptrw - absolute indirect far pointer word, 0x7C00:0x123
+ * fptrw - absolute indirect far pointer double word
+ * ifptr - indirect absolute far pointer
  *
  * Binary notation:
  * mr - addressing mode byte
@@ -69,7 +76,7 @@ function farSegPointer(arg: ASTInstructionArg, byteSize: X86BitsMode): boolean {
  *
  * @see {@link http://www.mathemainzel.info/files/x86asmref.html}
  */
-export type ASTInstructionArgMatcher = (arg: ASTInstructionArg) => boolean;
+export type ASTInstructionArgMatcher = (arg: ASTInstructionArg, instruction?: ASTInstruction) => boolean;
 
 export type ASTInstructionArgMatcherFactory<T = any> = (config?: T) => ASTInstructionArgMatcher;
 
@@ -108,10 +115,15 @@ export const ASTInstructionArgMatchers: {[key: string]: ASTInstructionArgMatcher
   sl: () => (arg: ASTInstructionArg) => relLabel(arg, 1),
   ll: () => (arg: ASTInstructionArg) => relLabel(arg, 2),
 
-  /** FAR POINTER */
+  /** ABSOLUTE FAR POINTERS */
   fptrw: () => (arg: ASTInstructionArg) => farSegPointer(arg, 2),
   fptrd: () => (arg: ASTInstructionArg) => farSegPointer(arg, 4),
+
+  /** INDIRECT ABSOLUTE FAR POINTERS */
+  ifptr: () => indirectFarSegPointer,
 };
+
+export const isRMSchemaArg = R.contains(R.__, ['rmb', 'rmw', 'rmq', 'ifptr']);
 
 /**
  * Transforms string of arg schema to array
@@ -144,16 +156,16 @@ export const argMatchersFromStr = R.ifElse(
  *
  * @export
  * @param {ASTOpcodeMatchers} matchersSet
- * @param {string} opcode
- * @param {ASTInstructionArg[]} args
+ * @param {ASTInstruction} instruction
  * @returns {ASTInstructionSchema[]}
  */
 export function findMatchingInstructionSchemas(
   matchersSet: ASTOpcodeMatchers,
-  opcode: string,
-  args: ASTInstructionArg[],
+  instruction: ASTInstruction,
 ): ASTInstructionSchema[] {
+  const {opcode, args} = instruction;
   const opcodeSchemas = matchersSet[opcode];
+
   if (!opcodeSchemas)
     return null;
 
@@ -162,7 +174,7 @@ export function findMatchingInstructionSchemas(
       const {argsSchema: matchers} = schema;
 
       for (let i = matchers.length - 1; i >= 0; --i) {
-        if (R.isNil(args[i]) || !matchers[i].matcher(args[i]))
+        if (R.isNil(args[i]) || !matchers[i].matcher(args[i], instruction))
           return false;
       }
 
