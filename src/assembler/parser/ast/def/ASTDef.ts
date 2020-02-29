@@ -1,9 +1,10 @@
 import * as R from 'ramda';
 
+import {ParserError, ParserErrorCode} from '../../../shared/ParserError';
 import {ASTParser} from '../ASTParser';
 import {ASTNodeKind} from '../types';
 import {InstructionArgSize} from '../../../types';
-import {Token, TokenType} from '../../lexer/tokens';
+import {Token, TokenType, NumberToken} from '../../lexer/tokens';
 import {
   ASTNodeLocation,
   KindASTNode,
@@ -70,7 +71,28 @@ export class ASTDef extends KindASTNode(ASTNodeKind.DEFINE) {
     // pick all args
     const argsTokens = fetchTokensArgsList(parser, false);
 
-    // define ast node
+    // throw error if any number exceddes token def size
+    // todo: check strings?
+    R.forEach(
+      (arg) => {
+        if (arg.type !== TokenType.NUMBER)
+          return;
+
+        const numberToken = <NumberToken> arg;
+        if (numberToken.value.byteSize > tokenDefSize) {
+          throw new ParserError(
+            ParserErrorCode.DEFINED_DATA_EXCEEDES_BOUNDS,
+            null,
+            {
+              data: numberToken.text,
+              maxSize: tokenDefSize,
+            },
+          );
+        }
+      },
+      argsTokens,
+    );
+
     return new ASTDef(
       tokenDefSize,
       argsTokens,

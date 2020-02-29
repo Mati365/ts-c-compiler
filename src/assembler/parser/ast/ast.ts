@@ -8,9 +8,9 @@ import {ASTLabel} from './label/ASTLabel';
 import {ASTDef} from './def/ASTDef';
 
 export const ASTNodesParsers = [
+  ASTDef,
   ASTInstruction,
   ASTLabel,
-  ASTDef,
 ];
 
 /**

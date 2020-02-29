@@ -12,6 +12,8 @@ import {flipMap} from './utils/flipMap';
 
 import {BinaryInstruction} from './BinaryInstruction';
 import {BinaryBlob} from './BinaryBlob';
+import {BinaryDefinition} from './BinaryDefinition';
+import {ASTDef} from '../ast/def/ASTDef';
 
 /**
  * Contains non compiled instruction labels and node offsets
@@ -22,7 +24,7 @@ import {BinaryBlob} from './BinaryBlob';
 export class FirstPassResult {
   constructor(
     public readonly labels: BinaryLabelsOffsets = new Map<string, number>(),
-    public readonly nodesOffsets = new Map<number, BinaryInstruction>(),
+    public readonly nodesOffsets = new Map<number, BinaryBlob>(),
   ) {}
 }
 
@@ -78,7 +80,7 @@ export class SecondPassResult {
       lines.push(`${labelStr.padEnd(maxLabelLength + 4)}${offsetStr}: ${blob.toString(true)}`);
     }
 
-    return `Total passes: ${totalPasses}\n\n${R.join('\n', lines)}`;
+    return `Total passes: ${totalPasses + 1}\n\n${R.join('\n', lines)}`;
   }
 }
 
@@ -111,22 +113,25 @@ export class X86Compiler {
     const result = new FirstPassResult;
     let offset = 0;
 
+    const emitBlob = (blob: BinaryBlob): void => {
+      result.nodesOffsets.set(offset, blob);
+      offset += blob.binary.length;
+    };
+
     R.forEach(
       (node) => {
         switch (node.kind) {
-          case ASTNodeKind.INSTRUCTION: {
-            const instruction = <ASTInstruction> node;
-            const compiled = new BinaryInstruction(instruction).compile(this, offset);
+          case ASTNodeKind.INSTRUCTION:
+            emitBlob(new BinaryInstruction(<ASTInstruction> node).compile(this, offset));
+            break;
 
-            result.nodesOffsets.set(offset, compiled);
-            offset += compiled.binary.length;
-          } break;
+          case ASTNodeKind.DEFINE:
+            emitBlob(new BinaryDefinition(<ASTDef> node).compile());
+            break;
 
           case ASTNodeKind.LABEL:
             result.labels.set((<ASTLabel> node).name, offset);
             break;
-
-          case ASTNodeKind.DEFINE: break;
 
           default:
             throw new ParserError(ParserErrorCode.UNKNOWN_COMPILER_INSTRUCTION, null, {instruction: node.toString()});
@@ -150,6 +155,7 @@ export class X86Compiler {
   private secondPass(firstPassResult: FirstPassResult): SecondPassResult {
     const {labels, nodesOffsets} = firstPassResult;
     const result = new SecondPassResult(0x0, labels);
+    let success = false;
 
     // proper resolve labels
     for (let pass = 0; pass < this.maxPasses; ++pass) {
@@ -205,18 +211,21 @@ export class X86Compiler {
 
       if (!needPass) {
         result.totalPasses = pass + 1;
+        success = true;
         break;
       }
     }
 
+    // exhaust tries count
+    if (!success)
+      throw new ParserError(ParserErrorCode.UNABLE_TO_COMPILE_FILE);
+
     // produce binaries
     for (const [offset, blob] of nodesOffsets) {
-      if (blob instanceof BinaryInstruction) {
-        result.blobs.set(
-          offset,
-          blob.compile(this, offset),
-        );
-      }
+      result.blobs.set(
+        offset,
+        blob.compile(this, offset),
+      );
     }
 
     return result;

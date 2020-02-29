@@ -75,6 +75,11 @@ export class Token<ValueType = any> {
   ) {}
 
   toString() {
-    return this.text;
+    const {text, type} = this;
+
+    if (type === TokenType.QUOTE)
+      return `"${text}"`;
+
+    return text;
   }
 }

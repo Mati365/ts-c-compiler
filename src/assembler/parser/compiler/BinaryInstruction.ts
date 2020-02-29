@@ -44,7 +44,6 @@ export class BinaryInstruction extends BinaryBlob<ASTInstruction> {
   /**
    * Transforms provided AST instruction into binary
    *
-   * @private
    * @param {X86Compiler} compiler
    * @param {number} offset
    * @returns {BinaryInstruction}

@@ -51,6 +51,11 @@ export enum ParserErrorCode {
   MISSING_IMM_ARG_DEF,
   INVALID_ADDRESSING_MODE,
   UNMATCHED_SCHEMA_POSTPROCESS,
+  UNABLE_TO_COMPILE_FILE,
+
+  // define data
+  DEFINED_DATA_EXCEEDES_BOUNDS,
+  UNSUPPORTED_DEFINE_TOKEN,
 }
 
 /* eslint-disable max-len */
@@ -102,8 +107,12 @@ export const ERROR_TRANSLATIONS: {[key in ParserErrorCode]: string} = {
   [ParserErrorCode.MISSING_IMM_ARG_DEF]: 'Missing imm arg definition but in binary schema is present!',
   [ParserErrorCode.UNKNOWN_BINARY_SCHEMA_DEF]: 'Unknown binary schema token %{schema}',
   [ParserErrorCode.INVALID_ADDRESSING_MODE]: 'Invalid addressing mode!',
-
   [ParserErrorCode.UNMATCHED_SCHEMA_POSTPROCESS]: 'Cannot find instruction "%{instruction}"!',
+  [ParserErrorCode.UNABLE_TO_COMPILE_FILE]: 'Unable to compile file!',
+
+  // defined data
+  [ParserErrorCode.DEFINED_DATA_EXCEEDES_BOUNDS]: 'Defined data "%{data}" excedees bounds (%{maxSize} bytes)!',
+  [ParserErrorCode.UNSUPPORTED_DEFINE_TOKEN]: 'Invalid "%{token}" define token value!',
 };
 /* eslint-enable max-len */
 

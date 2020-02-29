@@ -1,4 +1,5 @@
 import {truncateText} from '../../utils/truncateText';
+import {X86Compiler} from './compile';
 
 /**
  * Binary portion of data
@@ -26,7 +27,7 @@ export class BinaryBlob<ASTNodeType = any> {
     const {binary, ast} = this;
     const binStr = truncateText(
       ' ...',
-      35,
+      25,
       binary
         .map(
           (num) => `0x${num.toString(16).padStart(2, '0')}`,
@@ -39,4 +40,13 @@ export class BinaryBlob<ASTNodeType = any> {
 
     return `${binStr.padEnd(32)}${ast.toString()}`;
   }
+
+  /* eslint-disable @typescript-eslint/no-unused-vars */
+  compile(compiler?: X86Compiler, offset?: number): BinaryBlob<ASTNodeType> {
+    if (!this._binary)
+      this._binary = [];
+
+    return this;
+  }
+  /* eslint-enable @typescript-eslint/no-unused-vars */
 }
