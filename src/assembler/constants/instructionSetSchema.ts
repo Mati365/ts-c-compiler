@@ -35,6 +35,8 @@ export const COMPILER_INSTRUCTIONS_SET: ASTOpcodeMatchers = {
 
   jmp: [
     _op('jmp', 'sl', 'EB r0'),
+    _op('jmp', 'rmw', 'FF /4 d0 d1'),
+
     _op('jmp', 'fptrw', 'EA o0 o1 s0 s1'),
     _op('jmp', 'fptrd', 'EA o0 o1 o2 o3 s0 s1'),
     _op('jmp', 'ifptr', 'FF /5 d0 d1'),

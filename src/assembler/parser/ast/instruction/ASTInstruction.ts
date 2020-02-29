@@ -5,7 +5,9 @@ import {COMPILER_INSTRUCTIONS_SET} from '../../../constants/instructionSetSchema
 import {InstructionPrefix} from '../../../constants';
 import {
   BRANCH_ADDRESSING_SIZE_MAPPING,
-  InstructionArgType, BranchAddressingType,
+  InstructionArgType,
+  BranchAddressingType,
+  InstructionArgSize,
 } from '../../../types';
 
 import {ParserError, ParserErrorCode} from '../../../shared/ParserError';
@@ -312,6 +314,8 @@ export class ASTInstruction extends KindASTNode(ASTNodeKind.INSTRUCTION) {
 
     const parseToken = (token: Token, iterator: ASTTokensIterator): ASTInstructionArg<any> => {
       const nextToken = iterator.fetchRelativeToken(1, false);
+      const prevToken = iterator.fetchRelativeToken(-1, false);
+      const onlyToken = !nextToken && !prevToken;
 
       switch (token.type) {
         // Registers
@@ -377,9 +381,16 @@ export class ASTInstruction extends KindASTNode(ASTNodeKind.INSTRUCTION) {
         // Mem address ptr
         case TokenType.BRACKET:
           if (token.kind === TokenKind.SQUARE_BRACKET) {
-            const memSize = byteSizeOverride ?? branchSizeOverride;
-            if (R.isNil(memSize))
-              throw new ParserError(ParserErrorCode.MISSING_MEM_OPERAND_SIZE);
+            let memSize = byteSizeOverride ?? branchSizeOverride;
+
+            // if it is only token - it is propably JMP,
+            // assume that it is 2 bytes length due to offset address size
+            if (R.isNil(memSize)) {
+              if (onlyToken)
+                memSize = InstructionArgSize.WORD;
+              else
+                throw new ParserError(ParserErrorCode.MISSING_MEM_OPERAND_SIZE);
+            }
 
             return new ASTInstructionMemPtrArg(
               <string> token.text,

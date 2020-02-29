@@ -13,6 +13,7 @@ import {
 import {
   RMAddressingMode,
   InstructionArgSize,
+  BRANCH_ADDRESSING_SIZE_MAPPING,
 } from '../../types';
 
 import {
@@ -56,12 +57,25 @@ export class BinaryInstruction extends BinaryBlob<ASTInstruction> {
     const binaryPrefixes: number[] = [];
 
     const [rmArg, immArg] = [ast.findRMArg(), ast.numArgs[0]];
-    const rmByte = rmArg && BinaryInstruction.encodeRMByte(compiler.mode, ast.regArgs[0], rmArg);
 
-    // sreg override
     // todo: check if it is only available in addressing mode
-    if (rmArg) {
-      const {sreg} = rmArg.addressDescription;
+    if (rmArg?.addressDescription) {
+      const {addressDescription} = rmArg;
+      const {sreg} = addressDescription;
+
+      // minimum displacement size for JMP far
+      // nasm produces minimum 16bit offset
+      if (!R.isNil(addressDescription.dispByteSize)) {
+        addressDescription.dispByteSize = Math.max(
+          ast.branchAddressingType
+            ? BRANCH_ADDRESSING_SIZE_MAPPING[ast.branchAddressingType]
+            : rmArg.byteSize,
+
+          addressDescription.dispByteSize,
+        );
+      }
+
+      // sreg override
       if (sreg) {
         const sregPrefix = findMatchingSregPrefix(sreg);
         if (R.isNil(sregPrefix))
@@ -70,6 +84,12 @@ export class BinaryInstruction extends BinaryBlob<ASTInstruction> {
           binaryPrefixes.push(sregPrefix);
       }
     }
+
+    const rmByte = rmArg && BinaryInstruction.encodeRMByte(
+      compiler.mode,
+      ast.regArgs[0],
+      rmArg,
+    );
 
     // full instruction code
     ast.schemas[0].binarySchema.forEach(
@@ -107,7 +127,7 @@ export class BinaryInstruction extends BinaryBlob<ASTInstruction> {
                 ),
               );
             } else
-              binary.push(0x0);
+              binary.push(0x0); // pessimistic stage
           } break;
 
           // immediate
@@ -129,7 +149,7 @@ export class BinaryInstruction extends BinaryBlob<ASTInstruction> {
               throw new ParserError(ParserErrorCode.MISSING_MEM_ARG_DEF);
 
             const {addressDescription} = rmArg;
-            if (addressDescription.disp !== null) {
+            if (addressDescription && addressDescription.disp !== null) {
               const byteOffset = +schema[1];
 
               if (byteOffset < addressDescription.dispByteSize) {
