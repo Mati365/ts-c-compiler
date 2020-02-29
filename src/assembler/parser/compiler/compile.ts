@@ -255,11 +255,12 @@ export class X86Compiler {
  * @param {ASTNode[]} nodes
  */
 export function compile(nodes: ASTNode[]): void {
+  const t = Date.now();
   const output = new X86Compiler(nodes).compile();
 
   /* eslint-disable no-console */
   const str = output?.toString();
   if (str)
-    console.log(str);
+    console.log(`Took: ${Date.now() - t}ms\n${str}`);
   /* eslint-enable no-console */
 }
