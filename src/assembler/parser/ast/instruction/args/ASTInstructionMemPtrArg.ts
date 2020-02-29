@@ -181,13 +181,14 @@ function parseMemExpression(expression: string): MemAddressDescription {
  * Resolves instrction from text schema like this:
  * [ds:cx+4*si+disp]
  *
- * @class ASTInstructionMemArg
+ * @class ASTInstructionMemPtrArg
  * @extends {ASTInstructionArg}
  */
-export class ASTInstructionMemArg extends ASTInstructionArg<MemAddressDescription> {
-  public readonly phrase: string;
-
-  constructor(phrase: string, byteSize: number) {
+export class ASTInstructionMemPtrArg extends ASTInstructionArg<MemAddressDescription> {
+  constructor(
+    public readonly phrase: string,
+    byteSize: number,
+  ) {
     super(InstructionArgType.MEMORY, null, byteSize, null, false);
 
     this.phrase = phrase;
@@ -198,11 +199,17 @@ export class ASTInstructionMemArg extends ASTInstructionArg<MemAddressDescriptio
     return <MemAddressDescription> this.value;
   }
 
+  isDisplacementOnly(): boolean {
+    const {value} = this;
+
+    return !!(value && R.isNil(value.reg) && R.isNil(value.scale) && R.is(Number, value.disp));
+  }
+
   /**
    * Used in diassembler
    *
    * @returns {string}
-   * @memberof ASTInstructionMemArg
+   * @memberof ASTInstructionMemPtrArg
    */
   toString(): string {
     const {phrase, addressDescription} = this;
@@ -216,7 +223,7 @@ export class ASTInstructionMemArg extends ASTInstructionArg<MemAddressDescriptio
    * @see {@link https://stackoverflow.com/a/34058400}
    *
    * @returns {boolean}
-   * @memberof ASTInstructionMemArg
+   * @memberof ASTInstructionMemPtrArg
    */
   tryResolve(): boolean {
     const {phrase} = this;

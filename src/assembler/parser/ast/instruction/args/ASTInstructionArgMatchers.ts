@@ -6,13 +6,22 @@ import {RegisterSchema} from '../../../../shared/RegisterSchema';
 import {InstructionArgType} from '../../../../types';
 import {ASTInstructionArg} from './ASTInstructionArg';
 import {ASTInstructionNumberArg} from './ASTInstructionNumberArg';
+import {ASTInstructionMemPtrArg} from './ASTInstructionMemPtrArg';
 import {
   ASTInstructionSchema,
   ASTInstructionMatcherSchema,
 } from '../ASTInstructionSchema';
 
-function mem(arg: ASTInstructionArg, byteSize: X86BitsMode): boolean {
-  return arg.type === InstructionArgType.MEMORY && arg.byteSize === byteSize;
+function mem(
+  arg: ASTInstructionArg,
+  byteSize: X86BitsMode,
+  displacementOnly: boolean = false,
+): boolean {
+  if (arg.type !== InstructionArgType.MEMORY || arg.byteSize !== byteSize)
+    return false;
+
+  const memArg = <ASTInstructionMemPtrArg> arg;
+  return !displacementOnly || memArg.isDisplacementOnly();
 }
 
 function reg(arg: ASTInstructionArg, byteSize: X86BitsMode): boolean {
@@ -71,9 +80,9 @@ export const ASTInstructionArgMatchers: {[key: string]: ASTInstructionArgMatcher
   },
 
   /** MEM */
-  mb: () => (arg: ASTInstructionArg) => mem(arg, 1),
-  mw: () => (arg: ASTInstructionArg) => mem(arg, 2),
-  mq: () => (arg: ASTInstructionArg) => mem(arg, 4),
+  mb: () => (arg: ASTInstructionArg) => mem(arg, 1, true),
+  mw: () => (arg: ASTInstructionArg) => mem(arg, 2, true),
+  mq: () => (arg: ASTInstructionArg) => mem(arg, 4, true),
 
   /** REG */
   rb: () => (arg: ASTInstructionArg) => reg(arg, 1),

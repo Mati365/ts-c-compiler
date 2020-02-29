@@ -2,6 +2,7 @@ import {RegisterSchema} from './shared/RegisterSchema';
 
 export enum InstructionArgType {
   MEMORY,
+  SEGMENTED_MEMORY,
   REGISTER,
   NUMBER,
   LABEL,

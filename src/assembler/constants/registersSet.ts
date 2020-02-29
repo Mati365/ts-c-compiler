@@ -1,10 +1,25 @@
 import * as R from 'ramda';
 import {RegisterSchema as Reg} from '../shared/RegisterSchema';
 
-export enum InstructionPrefixesBitset {
-  REP = 1 << 0,
-  REPNE = 1 << 1,
-  LOCK = 1 << 2,
+export enum InstructionPrefix {
+  LOCK = 0x0,
+
+  // REP
+  REP = 0x3,
+  REPE = 0x3,
+  REPNE = 0x2,
+
+  // SEGMENT OVERRIDE
+  SREG_CS = 0x2E,
+  SREG_SS = 0x36,
+  SREG_DS = 0x3E,
+  SREG_ES = 0x26,
+  SREG_FS = 0x64,
+  SREG_GS = 0x65,
+
+  // OPERAND OVERRIDE
+  OPERAND_OVERRIDE = 0x66,
+  ADDRESS_OVERRIDE = 0x67,
 }
 
 /**

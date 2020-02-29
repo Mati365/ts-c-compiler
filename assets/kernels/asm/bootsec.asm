@@ -1,6 +1,8 @@
 org 0x7c00
 
-mov ax, 0xff
+mov ax, word [cs:bx+0x2]
+jmp far [cs:bx+2]
+jmp 0x7c : 0x1
 
 bootsec: db 0x55
 

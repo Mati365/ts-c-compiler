@@ -25,6 +25,9 @@ export enum ParserErrorCode {
   UNKNOWN_MEM_TOKEN,
   INCORRECT_MODRM,
 
+  // prefixes
+  INCORRECT_SREG_OVERRIDE,
+
   // labels
   MISSING_PARENT_LABEL,
   UNKNOWN_LABEL,
@@ -61,6 +64,9 @@ export const ERROR_TRANSLATIONS: {[key in ParserErrorCode]: string} = {
   [ParserErrorCode.INCORRECT_SCALE_MEM_PARAMS]: 'Incorrect scale mem params!',
   [ParserErrorCode.INCORRECT_SCALE]: 'Incorrect scale! It must be 1, 2, 4 or 8 instead of "%{scale}"!',
   [ParserErrorCode.INCORRECT_MODRM]: 'Error during "%{phrase}" ModRM instruction byte parsing!',
+
+  // prefixes
+  [ParserErrorCode.INCORRECT_SREG_OVERRIDE]: 'Incorrect segment register override "%{sreg}"!',
 
   // labels
   [ParserErrorCode.MISSING_PARENT_LABEL]: 'Unable to resolve local label "%{label}", missing parent label!',

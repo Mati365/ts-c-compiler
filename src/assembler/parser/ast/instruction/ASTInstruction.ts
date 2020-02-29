@@ -2,7 +2,7 @@ import * as R from 'ramda';
 
 import {COMPILER_INSTRUCTIONS_SET} from '../../../constants/instructionSetSchema';
 
-import {InstructionPrefixesBitset} from '../../../constants';
+import {InstructionPrefix} from '../../../constants';
 import {InstructionArgType} from '../../../types';
 
 import {ParserError, ParserErrorCode} from '../../../shared/ParserError';
@@ -13,7 +13,7 @@ import {ASTNodeKind, BinaryLabelsOffsets} from '../types';
 import {ASTInstructionSchema} from './ASTInstructionSchema';
 import {
   ASTInstructionNumberArg,
-  ASTInstructionMemArg,
+  ASTInstructionMemPtrArg,
   ASTInstructionRegisterArg,
   ASTInstructionArg,
 } from './args';
@@ -77,7 +77,7 @@ export function fetchTokensArgsList(
     argsTokens.push(op1);
 
     // if it was size operand - fetch next token which is prefixed
-    if (allowSizeOverride && op1.kind === TokenKind.BYTE_SIZE_OVERRIDE) {
+    if ((allowSizeOverride && op1.kind === TokenKind.BYTE_SIZE_OVERRIDE)) {
       argsTokens.push(
         parser.fetchRelativeToken(),
       );
@@ -85,7 +85,13 @@ export function fetchTokensArgsList(
 
     // comma
     commaToken = parser.fetchRelativeToken();
-  } while (commaToken?.type === TokenType.COMMA);
+
+    // handle comma between numbers in some addressing modes
+    if (commaToken?.type === TokenType.COLON)
+      argsTokens.push(commaToken);
+  } while (
+    commaToken && (commaToken.type === TokenType.COMMA || commaToken.type === TokenType.COLON)
+  );
 
   return argsTokens;
 }
@@ -102,7 +108,7 @@ export function fetchTokensArgsList(
  * @extends {KindASTNode('Instruction')}
  */
 export class ASTInstruction extends KindASTNode(ASTNodeKind.INSTRUCTION) {
-  public typedArgs: {[type in InstructionArgType]: (ASTInstructionArg|ASTInstructionMemArg)[]};
+  public typedArgs: {[type in InstructionArgType]: (ASTInstructionArg|ASTInstructionMemPtrArg)[]};
   public schemas: ASTInstructionSchema[];
 
   // initial args is constant, it is
@@ -114,7 +120,7 @@ export class ASTInstruction extends KindASTNode(ASTNodeKind.INSTRUCTION) {
   constructor(
     public readonly opcode: string,
     public readonly argsTokens: Token<any>[],
-    public readonly prefixes: number = 0x0,
+    public readonly prefixes: InstructionPrefix[] = [],
     loc: ASTNodeLocation,
   ) {
     super(loc);
@@ -208,8 +214,8 @@ export class ASTInstruction extends KindASTNode(ASTNodeKind.INSTRUCTION) {
    * @returns {ASTInstructionArg}
    * @memberof ASTInstruction
    */
-  findRMArg(): ASTInstructionArg {
-    return R.find<ASTInstructionArg>(
+  findRMArg(): ASTInstructionMemPtrArg {
+    return <ASTInstructionMemPtrArg> R.find<ASTInstructionArg>(
       (arg) => arg.schema?.rm,
       this.args,
     );
@@ -267,7 +273,7 @@ export class ASTInstruction extends KindASTNode(ASTNodeKind.INSTRUCTION) {
     // assign matching schema
     const {schemas, args} = this;
     for (let i = 0; i < args.length; ++i)
-      args[i].schema = schemas.length === 1 ? schemas[0].argsSchema[i] : null;
+      args[i].schema = schemas.length > 0 ? schemas[0].argsSchema[i] : null;
 
     // if not found any matching schema - resolving failed
     return schemas.length ? this : null;
@@ -283,6 +289,7 @@ export class ASTInstruction extends KindASTNode(ASTNodeKind.INSTRUCTION) {
    */
   static parseInstructionArgsTokens(tokens: Token[]): ASTInstructionArg<any>[] {
     let byteSizeOverride: number = null;
+
     const parseToken = (token: Token): ASTInstructionArg<any> => {
       switch (token.type) {
         // Registers
@@ -308,13 +315,13 @@ export class ASTInstruction extends KindASTNode(ASTNodeKind.INSTRUCTION) {
           return new ASTInstructionNumberArg(number, byteSize ?? byteSizeOverride);
         }
 
-        // Mem address
+        // Mem address ptr
         case TokenType.BRACKET:
           if (token.kind === TokenKind.SQUARE_BRACKET) {
             if (R.isNil(byteSizeOverride))
               throw new ParserError(ParserErrorCode.MISSING_MEM_OPERAND_SIZE);
 
-            return new ASTInstructionMemArg(<string> token.text, byteSizeOverride);
+            return new ASTInstructionMemPtrArg(<string> token.text, byteSizeOverride);
           }
           break;
 
@@ -384,13 +391,13 @@ export class ASTInstruction extends KindASTNode(ASTNodeKind.INSTRUCTION) {
 
     // match prefixes
     /* eslint-disable no-constant-condition */
-    let prefixes = 0x0;
+    const prefixes: InstructionPrefix[] = [];
     do {
-      const prefix = InstructionPrefixesBitset[R.toUpper(<string> token.text)];
+      const prefix = InstructionPrefix[R.toUpper(<string> token.text)];
       if (!prefix)
         break;
 
-      prefixes |= prefix;
+      prefixes.push(prefix);
       token = parser.fetchRelativeToken();
     } while (true);
     /* eslint-enable no-constant-condition */

@@ -11,3 +11,5 @@ parport.out
 
 dist/
 yarn.lock
+
+*.swp
