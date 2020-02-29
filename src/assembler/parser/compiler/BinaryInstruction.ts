@@ -65,7 +65,10 @@ export class BinaryInstruction extends BinaryBlob<ASTInstruction> {
 
       // minimum displacement size for JMP far
       // nasm produces minimum 16bit offset
-      if (!R.isNil(addressDescription.dispByteSize)) {
+      // dont know why, maybe because IMM value
+      // must be at least as big as IP register?
+      // todo: check it
+      if (ast.jumpInstruction && !R.isNil(addressDescription.dispByteSize)) {
         addressDescription.dispByteSize = Math.max(
           ast.branchAddressingType
             ? BRANCH_ADDRESSING_SIZE_MAPPING[ast.branchAddressingType]

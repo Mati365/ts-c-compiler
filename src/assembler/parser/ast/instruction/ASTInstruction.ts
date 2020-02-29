@@ -42,6 +42,19 @@ import {
 import {findMatchingInstructionSchemas} from './args/ASTInstructionArgMatchers';
 
 /**
+ * Used to detect if instruction wants to consume some bytes,
+ * if so - it will popably consume at least 2 imm bytes
+ * (due to IP size)
+ *
+ * @export
+ * @param {string} opcode
+ * @returns {boolean}
+ */
+export function isJumpInstruction(opcode: string): boolean {
+  return opcode[0] === 'j' || opcode === 'call';
+}
+
+/**
  * Used in string serializers
  *
  * @export
@@ -127,6 +140,7 @@ export class ASTInstruction extends KindASTNode(ASTNodeKind.INSTRUCTION) {
   public typedArgs: {[type in InstructionArgType]: (ASTInstructionArg|ASTInstructionMemPtrArg)[]};
   public schemas: ASTInstructionSchema[];
   public branchAddressingType: BranchAddressingType = null;
+  public jumpInstruction: boolean = false;
 
   // initial args is constant, it is
   // toggled on first pass, during AST tree analyze
@@ -148,6 +162,9 @@ export class ASTInstruction extends KindASTNode(ASTNodeKind.INSTRUCTION) {
       this.argsTokens = R.tail(argsTokens);
     } else
       this.argsTokens = argsTokens;
+
+    // check if instruction is branch instruction
+    this.jumpInstruction = isJumpInstruction(opcode);
   }
 
   get numArgs() { return this.typedArgs[InstructionArgType.NUMBER]; }
