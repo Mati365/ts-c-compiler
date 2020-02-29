@@ -14,7 +14,7 @@ import {ASTInstructionArg} from './ASTInstructionArg';
  * @class ASTNumberInstructionArg
  * @extends {ASTInstructionArg}
  */
-export class ASTNumberInstructionArg extends ASTInstructionArg {
+export class ASTNumberInstructionArg extends ASTInstructionArg<number> {
   public signedByteSize: number;
   public signedNumber: number;
 

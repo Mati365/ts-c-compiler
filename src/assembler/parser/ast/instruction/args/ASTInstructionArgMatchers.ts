@@ -63,7 +63,7 @@ export type ASTOpcodeMatchers = {
 };
 
 export const ASTInstructionArgMatchers: {[key: string]: ASTInstructionArgMatcherFactory} = {
-  eq: (str: string) => (arg: ASTInstructionArg) => {
+  eq: (str: string) => (arg: ASTInstructionArg<any>) => {
     if (arg.value instanceof RegisterSchema)
       return arg.value.mnemonic === str;
 

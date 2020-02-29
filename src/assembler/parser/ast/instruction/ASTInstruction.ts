@@ -6,11 +6,13 @@ import {InstructionPrefixesBitset} from '../../../constants';
 import {InstructionArgType} from '../../../types';
 
 import {ParserError, ParserErrorCode} from '../../../shared/ParserError';
+
 import {ASTParser} from '../ASTParser';
 import {ASTInstructionArg} from './args/ASTInstructionArg';
 import {ASTInstructionSchema} from './ASTInstructionSchema';
 import {ASTNumberInstructionArg} from './args/ASTNumberInstructionArg';
 import {ASTInstructionMemArg} from './args/ASTInstructionMemArg';
+import {ASTRegisterInstructionArg} from './args/ASTInstructionRegisterArg';
 import {ASTNodeKind, BinaryLabelsOffsets} from '../types';
 
 import {
@@ -276,20 +278,16 @@ export class ASTInstruction extends KindASTNode(ASTNodeKind.INSTRUCTION) {
    * @returns {ASTInstructionArg[]}
    * @memberof ASTInstruction
    */
-  static parseInstructionArgsTokens(tokens: Token[]): ASTInstructionArg[] {
+  static parseInstructionArgsTokens(tokens: Token[]): ASTInstructionArg<any>[] {
     let byteSizeOverride: number = null;
-    const parseToken = (token: Token): ASTInstructionArg => {
+    const parseToken = (token: Token): ASTInstructionArg<any> => {
       switch (token.type) {
         // Registers
         case TokenType.KEYWORD:
           if (token.kind === TokenKind.REGISTER) {
             const {schema, byteSize} = (<RegisterToken> token).value;
 
-            return new ASTInstructionArg(
-              InstructionArgType.REGISTER,
-              schema,
-              byteSizeOverride ?? byteSize,
-            );
+            return new ASTRegisterInstructionArg(schema, byteSizeOverride ?? byteSize);
           }
 
           if (token.kind === TokenKind.BYTE_SIZE_OVERRIDE) {

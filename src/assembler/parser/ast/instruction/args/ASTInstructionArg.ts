@@ -1,7 +1,4 @@
-import {
-  InstructionArgValue,
-  InstructionArgType,
-} from '../../../../types';
+import {InstructionArgType} from '../../../../types';
 
 import {ASTInstructionArgSchema} from '../ASTInstructionSchema';
 import {ASTResolvableArg} from '../../ASTResolvableArg';
@@ -9,12 +6,15 @@ import {ASTResolvableArg} from '../../ASTResolvableArg';
 /**
  * Used for parser to check argument size or type
  *
+ * @export
  * @class ASTInstructionArg
+ * @extends {ASTResolvableArg<V>}
+ * @template V
  */
-export class ASTInstructionArg extends ASTResolvableArg<InstructionArgValue> {
+export class ASTInstructionArg<V = any> extends ASTResolvableArg<V> {
   constructor(
     public type: InstructionArgType,
-    value: InstructionArgValue,
+    value: V,
     public byteSize: number = 1, // unsigned
     public schema: ASTInstructionArgSchema = null,
     _resolved = true,

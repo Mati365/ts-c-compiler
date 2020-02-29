@@ -184,7 +184,7 @@ function parseMemExpression(expression: string): MemAddressDescription {
  * @class ASTInstructionMemArg
  * @extends {ASTInstructionArg}
  */
-export class ASTInstructionMemArg extends ASTInstructionArg {
+export class ASTInstructionMemArg extends ASTInstructionArg<MemAddressDescription> {
   public readonly phrase: string;
 
   constructor(phrase: string, byteSize: number) {

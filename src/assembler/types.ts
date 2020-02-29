@@ -14,6 +14,12 @@ export enum InstructionArgSize {
   DWORD = 0x4,
 }
 
+export enum BranchAddressingType{
+  SHORT = 'short',
+  NEAR = 'near',
+  FAR = 'far',
+}
+
 /**
  * @see {@link https://cs.lmu.edu/~ray/notes/nasmtutorial/}
  */
@@ -39,5 +45,3 @@ export type MemAddressDescription = {
 };
 
 export const isValidScale = (num: number): boolean => num === 1 || num === 2 || num === 4 || num === 8;
-
-export type InstructionArgValue = string|number|RegisterSchema|MemAddressDescription|MemAddressDescription;

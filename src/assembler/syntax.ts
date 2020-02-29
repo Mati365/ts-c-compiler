@@ -26,6 +26,7 @@ const make = tagFunction(
 
 /* eslint-disable no-console,@typescript-eslint/no-unused-expressions */
 make`
-  mov ax, 0xFF
+  mov ax, word 4
+  ; jmp far 0x0:0xFF
 `;
 /* eslint-enable no-console,@typescript-eslint/no-unused-expressions */
