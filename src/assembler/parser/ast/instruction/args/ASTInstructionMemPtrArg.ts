@@ -26,6 +26,7 @@ import {ASTInstructionArg} from './ASTInstructionArg';
 import {
   numberByteSize,
   roundToPowerOfTwo,
+  signedNumberByteSize,
 } from '../../../../utils/numberByteSize';
 
 /**
@@ -171,8 +172,10 @@ function parseMemExpression(expression: string): MemAddressDescription {
     }
   }
 
-  if (addressDescription.disp !== null)
+  if (addressDescription.disp !== null) {
     addressDescription.dispByteSize = numberByteSize(addressDescription.disp);
+    addressDescription.signedByteSize = signedNumberByteSize(addressDescription.disp);
+  }
 
   return addressDescription;
 }

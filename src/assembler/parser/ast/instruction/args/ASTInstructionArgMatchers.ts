@@ -14,11 +14,17 @@ import {
   ASTInstructionMatcherSchema,
 } from '../ASTInstructionSchema';
 
+/**
+ * Args matchers used to match args to schema,
+ * if there is label in jmp/call instruction - return true,
+ * it is used in pessimistic optimistic arg size deduce
+ */
+
 function mem(arg: ASTInstructionArg, byteSize: X86BitsMode): boolean {
   return arg.type === InstructionArgType.MEMORY && arg.byteSize === byteSize;
 }
 
-function moffs(arg: ASTInstructionArg, maxByteSize: number): boolean {
+function moffs(arg: ASTInstructionArg, maxByteSize: X86BitsMode): boolean {
   if (arg.type !== InstructionArgType.MEMORY)
     return false;
 
@@ -48,6 +54,16 @@ function relLabel(arg: ASTInstructionArg, signedByteSize: X86BitsMode): boolean 
 
   if (arg.type === InstructionArgType.RELATIVE_ADDR)
     return (<ASTInstructionNumberArg> arg).signedByteSize === signedByteSize;
+
+  return false;
+}
+
+function nearPointer(arg: ASTInstructionArg, maxByteSize: X86BitsMode): boolean {
+  if (arg.type === InstructionArgType.LABEL)
+    return true;
+
+  if (arg.type === InstructionArgType.RELATIVE_ADDR)
+    return (<ASTInstructionNumberArg> arg).signedByteSize <= maxByteSize;
 
   return false;
 }
@@ -125,6 +141,9 @@ export const ASTInstructionArgMatchers: {[key: string]: ASTInstructionArgMatcher
   /** LABEL - size of label will be matched in second phrase */
   sl: () => (arg: ASTInstructionArg) => relLabel(arg, 1),
   ll: () => (arg: ASTInstructionArg) => relLabel(arg, 2),
+
+  /** NEAR POINTER */
+  np: () => (arg: ASTInstructionArg) => nearPointer(arg, 2),
 
   /** ABSOLUTE FAR POINTERS */
   fptrw: () => (arg: ASTInstructionArg) => farSegPointer(arg, 2),

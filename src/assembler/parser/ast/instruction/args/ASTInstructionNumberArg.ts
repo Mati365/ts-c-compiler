@@ -1,6 +1,7 @@
 import {
   roundToPowerOfTwo,
   numberByteSize,
+  signedNumberByteSize,
 } from '../../../../utils/numberByteSize';
 
 import {X86AbstractCPU} from '../../../../../emulator/types';
@@ -30,7 +31,7 @@ export class ASTInstructionNumberArg extends ASTInstructionArg<number> {
       byteSize ?? roundToPowerOfTwo(numberByteSize(number)),
     );
 
-    this.signedByteSize = signedByteSize ?? roundToPowerOfTwo(numberByteSize(number << 1));
+    this.signedByteSize = signedByteSize ?? roundToPowerOfTwo(signedNumberByteSize(number));
     this.signedNumber = X86AbstractCPU.toUnsignedNumber(
       number,
       <any> this.signedByteSize,

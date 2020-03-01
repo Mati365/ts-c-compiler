@@ -41,6 +41,7 @@ export type MemAddressDescription = {
 
   disp?: number,
   dispByteSize?: number,
+  signedByteSize?: number,
 };
 
 export const isValidScale = (num: number): boolean => num === 1 || num === 2 || num === 4 || num === 8;

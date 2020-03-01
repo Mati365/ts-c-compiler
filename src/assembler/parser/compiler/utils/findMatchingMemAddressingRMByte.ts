@@ -13,21 +13,21 @@ import {InstructionArgSize} from '../../../types';
  * @param {InstructionArgSize} mode
  * @param {ExtendedX86RegName} baseReg
  * @param {ExtendedX86RegName} scaleReg
- * @param {number} dispRoundedSize
+ * @param {number} signedDispRoundedSize
  * @returns {[number, number]}
  */
 export function findMatchingMemAddressingRMByte(
   mode: InstructionArgSize,
   baseReg: ExtendedX86RegName,
   scaleReg: ExtendedX86RegName,
-  dispRoundedSize: number,
+  signedDispRoundedSize: number,
   swapped: boolean = false,
 ): [number, number] {
   let rm = null;
 
   if (mode === InstructionArgSize.WORD) {
     // MOD = 00
-    if (dispRoundedSize === null) {
+    if (signedDispRoundedSize === null) {
       if (baseReg === 'bx' && scaleReg === 'si') rm = 0b000;
       else if (baseReg === 'bx' && scaleReg === 'di') rm = 0b001;
       else if (baseReg === 'bp' && scaleReg === 'si') rm = 0b010;
@@ -40,11 +40,11 @@ export function findMatchingMemAddressingRMByte(
 
       if (rm !== null)
         return [RMAddressingMode.INDIRECT_ADDRESSING, rm];
-    } else if (!baseReg && !scaleReg && dispRoundedSize <= InstructionArgSize.WORD)
+    } else if (!baseReg && !scaleReg && signedDispRoundedSize <= InstructionArgSize.WORD)
       return [RMAddressingMode.INDIRECT_ADDRESSING, 0b110];
 
     // MOD = 01 / MOD = 10
-    if (dispRoundedSize === 0x1 || dispRoundedSize === 0x2) {
+    if (signedDispRoundedSize === 0x1 || signedDispRoundedSize === 0x2) {
       if (baseReg === 'bx' && scaleReg === 'si') rm = 0b000;
       else if (baseReg === 'bx' && scaleReg === 'di') rm = 0b001;
       else if (baseReg === 'bp' && scaleReg === 'si') rm = 0b010;
@@ -57,13 +57,13 @@ export function findMatchingMemAddressingRMByte(
       }
 
       if (rm !== null)
-        return [dispRoundedSize, rm];
+        return [signedDispRoundedSize, rm];
     }
   }
 
   // it might be mov ax, [si + bx] or mov [ax, bx + si]
   if (!swapped)
-    return findMatchingMemAddressingRMByte(mode, scaleReg, baseReg, dispRoundedSize, true);
+    return findMatchingMemAddressingRMByte(mode, scaleReg, baseReg, signedDispRoundedSize, true);
 
   return null;
 }

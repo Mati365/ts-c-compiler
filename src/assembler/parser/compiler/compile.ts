@@ -111,8 +111,15 @@ export class X86Compiler {
 
           // single instruction might contain multiple schemas but never 0
           const {schemas} = ast;
-          if (!schemas.length)
-            throw new ParserError(ParserErrorCode.UNKNOWN_COMPILER_INSTRUCTION, null, {instruction: ast.toString()});
+          if (!schemas.length) {
+            throw new ParserError(
+              ParserErrorCode.UNKNOWN_COMPILER_INSTRUCTION,
+              null,
+              {
+                instruction: ast.toString(),
+              },
+            );
+          }
 
           // check if instruction after replacing labels has been shrinked
           // if so - force rewrite precceding instrutions and labels

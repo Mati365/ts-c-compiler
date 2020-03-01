@@ -13,7 +13,12 @@
     ["rmb rb", "10 mr d0 d1"],
     ["rmw rw", "11 mr d0 d1"]
   ],
-
+  "call": [
+    ["np", "E8 r0 r1"],
+    ["rw", "FF /2 d0 d1"],
+    ["ifptr", "FF /3 d0 d1"],
+    ["fptrd", "9A o0 o1 s0 s1"]
+  ],
   "hlt": "F4",
   "int3": "CC",
   "int": ["ib", "CD i0"],
@@ -21,7 +26,7 @@
     ["sl", "EB r0"],
     ["rmw", "FF /4 d0 d1"],
     ["fptrw", "EA o0 o1 s0 s1"],
-    ["fptrd", "EA o0 o1 o2 o3 s0 s1"],
+    ["fptrd", "EA o0 o1 s0 s1"],
     ["ifptr", "FF /5 d0 d1"]
   ],
   "jnc": [

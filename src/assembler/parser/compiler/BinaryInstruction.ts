@@ -13,10 +13,7 @@ import {
 } from '../ast/instruction/args';
 
 import {RegisterSchema} from '../../shared/RegisterSchema';
-import {
-  InstructionArgSize,
-  BRANCH_ADDRESSING_SIZE_MAPPING,
-} from '../../types';
+import {InstructionArgSize} from '../../types';
 
 import {
   ParserError,
@@ -60,7 +57,7 @@ export class BinaryInstruction extends BinaryBlob<ASTInstruction> {
     const binaryPrefixes: number[] = [];
 
     const [memArg, rmArg, immArg] = [ast.memArgs[0], ast.findRMArg(), ast.numArgs[0]];
-    const rmByte = rmArg && BinaryInstruction.encodeRMByte(
+    let rmByte = rmArg && BinaryInstruction.encodeRMByte(
       compiler.mode,
       R.find(
         (arg) => arg !== <ASTInstructionArg> rmArg,
@@ -84,21 +81,6 @@ export class BinaryInstruction extends BinaryBlob<ASTInstruction> {
             byteSize: addressDescription.dispByteSize,
             maxSize: memArg.byteSize,
           },
-        );
-      }
-
-      // minimum displacement size for JMP far
-      // nasm produces minimum 16bit offset
-      // dont know why, maybe because IMM value
-      // must be at least as big as IP register?
-      // todo: check it
-      if (ast.jumpInstruction && !R.isNil(addressDescription.dispByteSize)) {
-        addressDescription.dispByteSize = Math.max(
-          ast.branchAddressingType
-            ? BRANCH_ADDRESSING_SIZE_MAPPING[ast.branchAddressingType]
-            : memArg.byteSize,
-
-          addressDescription.dispByteSize,
         );
       }
 
@@ -200,17 +182,24 @@ export class BinaryInstruction extends BinaryBlob<ASTInstruction> {
           // RM byte
           case 'mr':
           case '/0': case '/1': case '/2': case '/3':
-          case '/4': case '/5': case '/6': case '/7':
-            if (!rmByte)
-              throw new ParserError(ParserErrorCode.MISSING_RM_BYTE_DEF);
+          case '/4': case '/5': case '/6': case '/7': {
+            const regByteOverride = schema[0] === '/';
+
+            if (!rmByte) {
+              // see CALL instruction, FF /2 d0 d1
+              if (regByteOverride)
+                rmByte = new RMByte(RMAddressingMode.REG_ADDRESSING, 0, 0);
+              else
+                throw new ParserError(ParserErrorCode.MISSING_RM_BYTE_DEF);
+            }
 
             // reg byte override
-            if (schema[0] === '/')
+            if (regByteOverride)
               rmByte.reg = +schema[1];
 
             binary.push(rmByte.byte);
             this._rmByte = rmByte;
-            break;
+          } break;
 
           // emit binary number
           default: {
@@ -253,17 +242,17 @@ export class BinaryInstruction extends BinaryBlob<ASTInstruction> {
     // memory
     if (rmArg instanceof ASTInstructionMemPtrArg) {
       const {addressDescription} = <ASTInstructionMemPtrArg> rmArg;
-      const dispByteSize = (
+      const signedDispByteSize = (
         R.isNil(addressDescription.disp)
           ? null
-          : roundToPowerOfTwo(addressDescription.dispByteSize)
+          : roundToPowerOfTwo(addressDescription.signedByteSize)
       );
 
       const [mod, rm] = findMatchingMemAddressingRMByte(
         mode,
         addressDescription.reg?.mnemonic,
         addressDescription.scale?.reg.mnemonic,
-        dispByteSize,
+        signedDispByteSize,
       ) || [];
 
       if (R.isNil(mod) && R.isNil(rm))

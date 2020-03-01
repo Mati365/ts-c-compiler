@@ -82,6 +82,6 @@ export class SecondPassResult {
       lines.push(...parsedLines);
     }
 
-    return `Total passes: ${totalPasses + 1}\n\n${R.join('\n', lines)}`;
+    return `Total passes: ${totalPasses + 1}\nBinary mapping:\n\n${R.join('\n', lines)}`;
   }
 }

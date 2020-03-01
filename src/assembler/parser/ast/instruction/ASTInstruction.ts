@@ -305,7 +305,7 @@ export class ASTInstruction extends KindASTNode(ASTNodeKind.INSTRUCTION) {
     // generate first time args from tokenArgs, it is in first phrase
     // in second phrase args might be overriden
     if (!this.originalArgs) {
-      const args = ASTInstruction.parseInstructionArgsTokens(
+      const [overridenBranchAddressingType, args] = ASTInstruction.parseInstructionArgsTokens(
         branchAddressingType,
         argsTokens,
         jumpInstruction
@@ -313,6 +313,7 @@ export class ASTInstruction extends KindASTNode(ASTNodeKind.INSTRUCTION) {
           : null,
       );
 
+      this.branchAddressingType = overridenBranchAddressingType ?? branchAddressingType;
       this.originalArgs = args;
       this.args = args;
 
@@ -334,6 +335,9 @@ export class ASTInstruction extends KindASTNode(ASTNodeKind.INSTRUCTION) {
   /**
    * Transforms list of tokens into arguments
    *
+   * @see
+   *  BranchAddressingType might be overriden so return both values!
+   *
    * @static
    * @param {BranchAddressingType} branchAddressingType
    * @param {Token[]} tokens
@@ -345,9 +349,9 @@ export class ASTInstruction extends KindASTNode(ASTNodeKind.INSTRUCTION) {
     branchAddressingType: BranchAddressingType,
     tokens: Token[],
     defaultMemArgByteSize: number = null,
-  ): ASTInstructionArg<any>[] {
-    let byteSizeOverride = null;
-    const branchSizeOverride: number = (
+  ): [BranchAddressingType, ASTInstructionArg<any>[]] {
+    let byteSizeOverride: number = null;
+    let branchSizeOverride: number = (
       branchAddressingType
         ? BRANCH_ADDRESSING_SIZE_MAPPING[branchAddressingType] * 2
         : null
@@ -449,6 +453,14 @@ export class ASTInstruction extends KindASTNode(ASTNodeKind.INSTRUCTION) {
           // it can contain label, just ignore type of precceding token
           // and throw error if not pass inside arg parser
           if (nextToken?.type === TokenType.COLON) {
+            // sometimes instruction might be not prefixed with far or near prefix
+            // for example jmp 0x7C00:0x123, force detect addressing type
+            if (R.isNil(branchAddressingType)) {
+              branchAddressingType = BranchAddressingType.FAR;
+              branchSizeOverride = BRANCH_ADDRESSING_SIZE_MAPPING[branchAddressingType] * 2;
+            }
+
+            // eat colon
             iterator.consume();
 
             return new ASTInstructionMemSegmentedArg(
@@ -539,7 +551,7 @@ export class ASTInstruction extends KindASTNode(ASTNodeKind.INSTRUCTION) {
       },
     );
 
-    return acc;
+    return [branchAddressingType, acc];
   }
 
   /**

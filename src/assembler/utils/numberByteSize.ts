@@ -13,6 +13,17 @@ export function numberByteSize(num: number): number {
 }
 
 /**
+ * Size of bytes to encode signed number
+ *
+ * @export
+ * @param {number} num
+ * @returns {number}
+ */
+export function signedNumberByteSize(num: number): number {
+  return numberByteSize(Math.abs(num) << 1);
+}
+
+/**
  * Find next power of two
  *
  * @export
