@@ -25,9 +25,15 @@ export const COMPILER_INSTRUCTIONS_SET: ASTOpcodeMatchers = <any> R.mapObjIndexe
   (instructions, mneomonic) => R.ifElse(
     R.is(String),
     (binarySchema) => [_op(mneomonic, '', binarySchema)],
-    R.map(
-      ([argsSchema, binarySchema]) => _op(mneomonic, argsSchema, binarySchema),
-    ),
+    (binarySchemas) => {
+      if (R.is(String, binarySchemas[0]))
+        binarySchemas = [binarySchemas];
+
+      return R.map(
+        ([argsSchema, binarySchema]) => _op(mneomonic, argsSchema, binarySchema),
+        binarySchemas,
+      );
+    },
   )(instructions),
 
   <any> BINARY_INSTRUCTION_DEFS,

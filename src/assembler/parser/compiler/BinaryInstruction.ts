@@ -1,7 +1,10 @@
 import * as R from 'ramda';
 
-import {RMByte, X86AbstractCPU} from '../../../emulator/types';
-import {RegisterSchema} from '../../shared/RegisterSchema';
+import {
+  RMByte,
+  RMAddressingMode,
+  X86AbstractCPU,
+} from '../../../emulator/types';
 
 import {ASTInstruction} from '../ast/instruction/ASTInstruction';
 import {
@@ -9,8 +12,8 @@ import {
   ASTInstructionMemPtrArg,
 } from '../ast/instruction/args';
 
+import {RegisterSchema} from '../../shared/RegisterSchema';
 import {
-  RMAddressingMode,
   InstructionArgSize,
   BRANCH_ADDRESSING_SIZE_MAPPING,
 } from '../../types';
@@ -177,11 +180,16 @@ export class BinaryInstruction extends BinaryBlob<ASTInstruction> {
 
             const {addressDescription} = memArg;
             if (addressDescription && addressDescription.disp !== null) {
+              // rm byte has several mode, if mode = 0x0 we are not able to detect
+              // displacement size, it is instruction various, so limit it by schema
+              // check nasm binary output anyway
               const byteOffset = +schema[1];
+              const rmMaxByteSize = R.defaultTo(Infinity, rmByte.getDisplacementByteSize());
 
               // destination without mod rm byte always produces exactly
               // equal number of bytes of displacement, see nasm
-              if (!memArg.schema.rm || byteOffset < addressDescription.dispByteSize) {
+              if (!memArg.schema.rm
+                  || byteOffset < Math.max(rmMaxByteSize, addressDescription.dispByteSize)) {
                 binary.push(
                   extractNthByte(byteOffset, addressDescription.disp),
                 );

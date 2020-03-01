@@ -45,6 +45,13 @@ export class SegmentedAddress {
   }
 }
 
+export enum RMAddressingMode {
+  INDIRECT_ADDRESSING = 0b00,
+  ONE_BYTE_SIGNED_DISP = 0b01,
+  FOUR_BYTE_SIGNED_DISP = 0b10,
+  REG_ADDRESSING = 0b11,
+}
+
 /**
  * Addressing mode byte
  *
@@ -57,6 +64,19 @@ export class RMByte {
     public reg: number,
     public rm: number,
   ) {}
+
+  getDisplacementByteSize(): number {
+    switch (this.mod) {
+      case RMAddressingMode.FOUR_BYTE_SIGNED_DISP:
+        return 0x4;
+
+      case RMAddressingMode.ONE_BYTE_SIGNED_DISP:
+        return 0x1;
+
+      default:
+        return null;
+    }
+  }
 
   get byte() {
     const {rm, mod, reg} = this;

@@ -1,9 +1,5 @@
-import {ExtendedX86RegName} from '../../../../emulator/types';
-
-import {
-  RMAddressingMode,
-  InstructionArgSize,
-} from '../../../types';
+import {ExtendedX86RegName, RMAddressingMode} from '../../../../emulator/types';
+import {InstructionArgSize} from '../../../types';
 
 /**
  * Matches addressing mode

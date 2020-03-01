@@ -1,10 +1,22 @@
 {
   "aaa": "37",
+  "aad": "D5 0A",
+  "aam": "D4 0A",
+  "aas": "3F",
+  "adc": [
+    ["al ib", "14 i0"],
+    ["ax iw", "15 i0 i1"],
+    ["rb rmb", "12 mr d0 d1"],
+    ["rmb ib", "80 /2 d0 d1 i0"],
+    ["rmw iw", "81 /2 d0 d1 i0 i1"],
+    ["rmw ib", "83 /2 d0 d1 i0"],
+    ["rmb rb", "10 mr d0 d1"],
+    ["rmw rw", "11 mr d0 d1"]
+  ],
+
   "hlt": "F4",
   "int3": "CC",
-  "int": [
-    ["ib", "CD i0"]
-  ],
+  "int": ["ib", "CD i0"],
   "jmp": [
     ["sl", "EB r0"],
     ["rmw", "FF /4 d0 d1"],
