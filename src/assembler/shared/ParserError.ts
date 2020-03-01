@@ -17,6 +17,9 @@ export enum ParserErrorCode {
   REGISTER_IS_NOT_SEGMENT_REG,
   EXCEEDING_CASTED_NUMBER_SIZE,
 
+  // other args
+  INCORRECT_ARG_QUOTE_TEXT_LENGTH,
+
   // mem
   INCORRECT_OPERAND,
   MISSING_MUL_SECOND_ARG,
@@ -73,6 +76,9 @@ export const ERROR_TRANSLATIONS: {[key in ParserErrorCode]: string} = {
   [ParserErrorCode.REGISTER_IS_NOT_SEGMENT_REG]: 'Provided register "%{reg}" is not segment register!',
 
   [ParserErrorCode.EXCEEDING_CASTED_NUMBER_SIZE]: 'Provided value "%{value}" is exceeding casted arg size (provided %{size} bytes but max is %{maxSize} bytes)!',
+
+  // other args
+  [ParserErrorCode.INCORRECT_ARG_QUOTE_TEXT_LENGTH]: 'Incorrect text "%{text}" length! It must be less than %{maxSize} bytes!',
 
   // mem
   [ParserErrorCode.UNKNOWN_MEM_TOKEN]: 'Unknown mem definition token %{token}!',

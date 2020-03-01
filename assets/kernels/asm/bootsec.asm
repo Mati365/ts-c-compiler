@@ -1,6 +1,6 @@
 org 0x7c00
 
-mov ax, 'a'
+mov ax, 'ac'
 
 ; jmp far [cs:bx+0xFF]
 ; mov byte al, [bx]

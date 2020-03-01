@@ -26,7 +26,7 @@ const make = tagFunction(
 
 /* eslint-disable no-console,@typescript-eslint/no-unused-expressions */
 make`
-mov al, 0xFF
+  mov ax, 'ac'
   ; jmp far [cs:bx+0xFF]
   ; mov byte al, [bx]
   ; dupa:

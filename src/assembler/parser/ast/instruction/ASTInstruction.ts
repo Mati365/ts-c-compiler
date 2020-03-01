@@ -2,7 +2,7 @@ import * as R from 'ramda';
 
 import {COMPILER_INSTRUCTIONS_SET} from '../../../constants/instructionSetSchema';
 
-import {InstructionPrefix} from '../../../constants';
+import {InstructionPrefix, MAX_COMPILER_REG_LENGTH} from '../../../constants';
 import {
   BRANCH_ADDRESSING_SIZE_MAPPING,
   InstructionArgType,
@@ -40,6 +40,7 @@ import {
 } from '../../lexer/tokens';
 
 import {findMatchingInstructionSchemas} from './args/ASTInstructionArgMatchers';
+import {reduceTextToBitset} from '../../compiler/utils';
 
 /**
  * Used to detect if instruction wants to consume some bytes,
@@ -139,6 +140,8 @@ export function fetchTokensArgsList(
 export class ASTInstruction extends KindASTNode(ASTNodeKind.INSTRUCTION) {
   public typedArgs: {[type in InstructionArgType]: (ASTInstructionArg|ASTInstructionMemPtrArg)[]};
   public schemas: ASTInstructionSchema[];
+
+  // jump/branch related args
   public branchAddressingType: BranchAddressingType = null;
   public jumpInstruction: boolean = false;
 
@@ -337,10 +340,60 @@ export class ASTInstruction extends KindASTNode(ASTNodeKind.INSTRUCTION) {
         : null
     );
 
-    const parseToken = (token: Token, iterator: ASTTokensIterator): ASTInstructionArg<any> => {
+    /**
+     * Checks size of number, applies override and throw if error
+     *
+     * @param {Token} token
+     * @param {number} number
+     * @param {number} byteSize
+     * @returns {ASTInstructionNumberArg}
+     */
+    function parseNumberArg(token: Token, number: number, byteSize: number): ASTInstructionNumberArg {
+      // if no - number
+      if (!R.isNil(byteSizeOverride) && byteSizeOverride < byteSize) {
+        throw new ParserError(
+          ParserErrorCode.EXCEEDING_CASTED_NUMBER_SIZE,
+          null,
+          {
+            value: token.text,
+            size: byteSize,
+            maxSize: byteSizeOverride,
+          },
+        );
+      }
+
+      return new ASTInstructionNumberArg(number, byteSizeOverride ?? byteSize);
+    }
+
+    /**
+     * Consumes token and product instruction arg
+     *
+     * @param {Token} token
+     * @param {ASTTokensIterator} iterator
+     * @returns {ASTInstructionArg<any>}
+     */
+    function parseToken(token: Token, iterator: ASTTokensIterator): ASTInstructionArg<any> {
       const nextToken = iterator.fetchRelativeToken(1, false);
 
       switch (token.type) {
+        // Quotes are converted into digits
+        case TokenType.QUOTE: {
+          const {text} = token;
+
+          if (text.length > MAX_COMPILER_REG_LENGTH) {
+            throw new ParserError(
+              ParserErrorCode.INCORRECT_ARG_QUOTE_TEXT_LENGTH,
+              null,
+              {
+                maxSize: MAX_COMPILER_REG_LENGTH,
+                text,
+              },
+            );
+          }
+
+          return parseNumberArg(token, reduceTextToBitset(text), text.length);
+        }
+
         // Registers
         case TokenType.KEYWORD:
           if (token.kind === TokenKind.REGISTER) {
@@ -385,20 +438,7 @@ export class ASTInstruction extends KindASTNode(ASTNodeKind.INSTRUCTION) {
             );
           }
 
-          // if no - number
-          if (!R.isNil(byteSizeOverride) && byteSizeOverride < byteSize) {
-            throw new ParserError(
-              ParserErrorCode.EXCEEDING_CASTED_NUMBER_SIZE,
-              null,
-              {
-                value: token.text,
-                size: byteSize,
-                maxSize: byteSizeOverride,
-              },
-            );
-          }
-
-          return new ASTInstructionNumberArg(number, byteSizeOverride ?? byteSize);
+          return parseNumberArg(token, number, byteSize);
         }
 
         // Mem address ptr
@@ -422,12 +462,12 @@ export class ASTInstruction extends KindASTNode(ASTNodeKind.INSTRUCTION) {
       // force throw error if not known format
       throw new ParserError(
         ParserErrorCode.INVALID_INSTRUCTION_OPERAND,
-        token.loc,
+        null,
         {
           operand: token.text,
         },
       );
-    };
+    }
 
     // a bit faster than transduce
     const argsTokensIterator = new ASTTokensIterator(tokens);

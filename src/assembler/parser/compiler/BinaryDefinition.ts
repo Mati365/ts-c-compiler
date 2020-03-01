@@ -5,24 +5,11 @@ import {ASTDef} from '../ast/def/ASTDef';
 import {Token, TokenType, NumberToken} from '../lexer/tokens';
 import {ParserError, ParserErrorCode} from '../../shared/ParserError';
 
-import {extractNthByte} from './utils';
+import {
+  extractBytesFromText,
+  extractMultipleNumberBytes,
+} from './utils';
 
-/**
- * Extends digit to byteSize number of bytes
- * and emits array of bytes of data
- *
- * @param {number} byteSize
- * @param {number} num
- * @returns {number[]}
- */
-function emitExtendedNumber(byteSize: number, num: number): number[] {
-  const buffer: number[] = [];
-
-  for (let i = 0; i < byteSize; ++i)
-    buffer.push(extractNthByte(i, num));
-
-  return buffer;
-}
 /**
  * Transforms token into binary array of numbers
  *
@@ -36,12 +23,15 @@ export function encodeDefineToken(byteSize: number, token: Token): number[] {
 
   switch (token.type) {
     case TokenType.NUMBER:
-      buffer.push(...emitExtendedNumber(byteSize, (<NumberToken> token).value.number));
+      buffer.push(
+        ...extractMultipleNumberBytes(byteSize, (<NumberToken> token).value.number),
+      );
       break;
 
     case TokenType.QUOTE:
-      for (let i = 0; i < token.text.length; ++i)
-        buffer.push(...emitExtendedNumber(byteSize, token.text.charCodeAt(i)));
+      buffer.push(
+        ...extractBytesFromText(byteSize, token.text),
+      );
       break;
 
     default:
