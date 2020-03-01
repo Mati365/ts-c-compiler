@@ -1,0 +1,46 @@
+{
+  "int3": [
+    ["", "CC"]
+  ],
+  "int": [
+    ["ib", "CD i0"]
+  ],
+  "hlt": [
+    ["", "F4"]
+  ],
+  "jmp": [
+    ["sl", "EB r0"],
+    ["rmw", "FF /4 d0 d1"],
+    ["fptrw", "EA o0 o1 s0 s1"],
+    ["fptrd", "EA o0 o1 o2 o3 s0 s1"],
+    ["ifptr", "FF /5 d0 d1"]
+  ],
+  "jnc": [
+    ["ll", "0F 83 r0 r1"],
+    ["sl", "73 r0"]
+  ],
+  "inc": [
+    ["ax", "40"],
+    ["cx", "41"],
+    ["dx", "42"],
+    ["bx", "43"],
+    ["sp", "44"],
+    ["bp", "45"],
+    ["si", "46"],
+    ["di", "47"],
+    ["rmb", "FE /0 d0 d1"],
+    ["rmw", "FF /0 d0 d1"]
+  ],
+  "mov": [
+    ["al mw", "A0 d0 d1"],
+    ["ax mw", "A0 d0 d1"],
+
+    ["al ib", "B0 i0"],
+    ["ah ib", "B4 i0"],
+    ["ax iw", "B8 i0 i1"],
+
+    ["rmb rb", "88 mr d0 d1"],
+    ["rb rmb", "8A mr d0 d1"],
+    ["rw rmw", "8B mr d0 d1"]
+  ]
+}
