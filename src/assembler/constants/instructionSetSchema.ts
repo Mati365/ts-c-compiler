@@ -22,9 +22,13 @@ const _op = (
  * @see {@link http://www.mathemainzel.info/files/x86asmref.html}
  */
 export const COMPILER_INSTRUCTIONS_SET: ASTOpcodeMatchers = <any> R.mapObjIndexed(
-  (instructions, mneomonic) => R.map(
-    ([argsSchema, binarySchema]) => _op(mneomonic, argsSchema, binarySchema),
-    <(string[])[]> instructions,
-  ),
+  (instructions, mneomonic) => R.ifElse(
+    R.is(String),
+    (binarySchema) => [_op(mneomonic, '', binarySchema)],
+    R.map(
+      ([argsSchema, binarySchema]) => _op(mneomonic, argsSchema, binarySchema),
+    ),
+  )(instructions),
+
   <any> BINARY_INSTRUCTION_DEFS,
 );

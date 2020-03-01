@@ -33,6 +33,6 @@ const make = tagFunction(
 
 /* eslint-disable no-console,@typescript-eslint/no-unused-expressions */
 make`
-mov es, ax
+mov ax, bx
 `;
 /* eslint-enable no-console,@typescript-eslint/no-unused-expressions */

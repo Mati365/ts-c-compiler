@@ -554,7 +554,7 @@ export class ASTInstruction extends KindASTNode(ASTNodeKind.INSTRUCTION) {
    */
   static parse(token: Token, parser: ASTParser): ASTInstruction {
     // if not opcode, ignore
-    const opcode = <string> token.text;
+    const opcode = R.toLower(<string> token.text);
     if (token.type !== TokenType.KEYWORD || !COMPILER_INSTRUCTIONS_SET[opcode])
       return null;
 
