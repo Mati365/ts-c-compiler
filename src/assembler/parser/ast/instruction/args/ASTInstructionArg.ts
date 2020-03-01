@@ -1,6 +1,6 @@
 import {InstructionArgType} from '../../../../types';
 
-import {ASTInstructionArgSchema} from '../ASTInstructionSchema';
+import {ASTInstructionMatcherSchema} from '../ASTInstructionSchema';
 import {ASTResolvableArg} from '../../ASTResolvableArg';
 
 /**
@@ -16,7 +16,7 @@ export class ASTInstructionArg<V = any> extends ASTResolvableArg<V> {
     public type: InstructionArgType,
     value: V,
     public byteSize: number = 1, // unsigned
-    public schema: ASTInstructionArgSchema = null,
+    public schema: ASTInstructionMatcherSchema = null,
     resolved = true,
   ) {
     super(value, resolved);

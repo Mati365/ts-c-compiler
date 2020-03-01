@@ -20,6 +20,8 @@ export class ASTTokensIterator {
     protected tokenIndex: number = 0,
   ) {}
 
+  getTokenIndex(): number { return this.tokenIndex; }
+
   /**
    * Fetches precceing token related to current tokenIndex
    *

@@ -1,21 +1,21 @@
-import {ASTInstructionArgMatcher, isRMSchemaArg} from './args/ASTInstructionArgMatchers';
+import {
+  ASTInstructionArgMatcher,
+  isRMSchemaArg,
+  isMoffsSchemaArg,
+} from './args/ASTInstructionArgMatchers';
 
 export class ASTInstructionMatcherSchema {
   public readonly rm: boolean;
+  public readonly moffset: boolean;
 
   constructor(
     public readonly name: string,
     public readonly matcher: ASTInstructionArgMatcher,
   ) {
     this.rm = isRMSchemaArg(name);
+    this.moffset = isMoffsSchemaArg(name);
   }
 }
-
-export type ASTInstructionArgSchema = {
-  name: string,
-  matcher: ASTInstructionArgMatcher,
-  rm: boolean,
-};
 
 export class ASTInstructionSchema {
   constructor(

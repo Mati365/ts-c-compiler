@@ -170,11 +170,24 @@ export class ASTInstruction extends KindASTNode(ASTNodeKind.INSTRUCTION) {
     this.jumpInstruction = isJumpInstruction(opcode);
   }
 
-  get numArgs() { return this.typedArgs[InstructionArgType.NUMBER]; }
-  get memArgs() { return this.typedArgs[InstructionArgType.MEMORY]; }
-  get segMemArgs() { return this.typedArgs[InstructionArgType.SEGMENTED_MEMORY]; }
-  get regArgs() { return this.typedArgs[InstructionArgType.REGISTER]; }
+  get memArgs() {
+    return <ASTInstructionMemPtrArg[]> this.typedArgs[InstructionArgType.MEMORY];
+  }
+
+  get numArgs() {
+    return <ASTInstructionNumberArg[]> this.typedArgs[InstructionArgType.NUMBER];
+  }
+
+  get segMemArgs() {
+    return <ASTInstructionMemSegmentedArg[]> this.typedArgs[InstructionArgType.SEGMENTED_MEMORY];
+  }
+
+  get regArgs() {
+    return <ASTInstructionRegisterArg[]> this.typedArgs[InstructionArgType.REGISTER];
+  }
+
   get labelArgs() { return this.typedArgs[InstructionArgType.LABEL]; }
+
   get relAddrArgs() { return this.typedArgs[InstructionArgType.RELATIVE_ADDR]; }
 
   /**
@@ -368,12 +381,18 @@ export class ASTInstruction extends KindASTNode(ASTNodeKind.INSTRUCTION) {
     /**
      * Consumes token and product instruction arg
      *
+     * @param {ASTInstructionArg} prevArgs
      * @param {Token} token
      * @param {ASTTokensIterator} iterator
      * @returns {ASTInstructionArg<any>}
      */
-    function parseToken(token: Token, iterator: ASTTokensIterator): ASTInstructionArg<any> {
+    function parseToken(
+      prevArgs: ASTInstructionArg[],
+      token: Token,
+      iterator: ASTTokensIterator,
+    ): ASTInstructionArg<any> {
       const nextToken = iterator.fetchRelativeToken(1, false);
+      const destinationArg = !prevArgs.length;
 
       switch (token.type) {
         // Quotes are converted into digits
@@ -444,15 +463,32 @@ export class ASTInstruction extends KindASTNode(ASTNodeKind.INSTRUCTION) {
         // Mem address ptr
         case TokenType.BRACKET:
           if (token.kind === TokenKind.SQUARE_BRACKET) {
-            const memSize = byteSizeOverride ?? branchSizeOverride ?? defaultMemArgByteSize;
+            let memSize = byteSizeOverride ?? branchSizeOverride ?? defaultMemArgByteSize;
 
-            if (R.isNil(memSize))
-              throw new ParserError(ParserErrorCode.MISSING_MEM_OPERAND_SIZE);
+            // when read from memory size must be known
+            // try to deduce from previous args size of
+            // memory argument
+            if (R.isNil(memSize)) {
+              if (destinationArg) {
+                // if destination - next register should contain size
+                if (nextToken?.kind === TokenKind.REGISTER)
+                  memSize = (<RegisterToken> nextToken).value.byteSize;
+              } else {
+                // if not destination - there should be some registers before
+                // try to find matching
+                const prevRegArg = R.find(
+                  (arg) => arg.type === InstructionArgType.REGISTER,
+                  prevArgs,
+                );
 
-            return new ASTInstructionMemPtrArg(
-              <string> token.text,
-              memSize,
-            );
+                if (prevRegArg?.byteSize)
+                  memSize = prevRegArg.byteSize;
+                else
+                  throw new ParserError(ParserErrorCode.MISSING_MEM_OPERAND_SIZE);
+              }
+            }
+
+            return new ASTInstructionMemPtrArg(<string> token.text, memSize);
           }
           break;
 
@@ -475,7 +511,7 @@ export class ASTInstruction extends KindASTNode(ASTNodeKind.INSTRUCTION) {
 
     argsTokensIterator.iterate(
       (token: Token) => {
-        const result = parseToken(token, argsTokensIterator);
+        const result = parseToken(acc, token, argsTokensIterator);
         if (!result)
           return;
 

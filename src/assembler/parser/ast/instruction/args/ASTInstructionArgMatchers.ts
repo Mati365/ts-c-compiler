@@ -6,6 +6,7 @@ import {RegisterSchema} from '../../../../shared/RegisterSchema';
 import {InstructionArgType} from '../../../../types';
 import {ASTInstruction} from '../ASTInstruction';
 import {ASTInstructionArg} from './ASTInstructionArg';
+import {ASTInstructionRegisterArg} from './ASTInstructionRegisterArg';
 import {ASTInstructionNumberArg} from './ASTInstructionNumberArg';
 import {ASTInstructionMemPtrArg} from './ASTInstructionMemPtrArg';
 import {
@@ -13,20 +14,28 @@ import {
   ASTInstructionMatcherSchema,
 } from '../ASTInstructionSchema';
 
-function mem(
-  arg: ASTInstructionArg,
-  byteSize: X86BitsMode,
-  displacementOnly: boolean = false,
-): boolean {
-  if (arg.type !== InstructionArgType.MEMORY || arg.byteSize !== byteSize)
+function mem(arg: ASTInstructionArg, byteSize: X86BitsMode): boolean {
+  return arg.type === InstructionArgType.MEMORY && arg.byteSize === byteSize;
+}
+
+function moffs(arg: ASTInstructionArg, maxByteSize: number): boolean {
+  if (arg.type !== InstructionArgType.MEMORY)
     return false;
 
   const memArg = <ASTInstructionMemPtrArg> arg;
-  return !displacementOnly || memArg.isDisplacementOnly();
+  return memArg.isDisplacementOnly() && memArg.addressDescription.dispByteSize <= maxByteSize;
 }
 
-function reg(arg: ASTInstructionArg, byteSize: X86BitsMode): boolean {
-  return arg.type === InstructionArgType.REGISTER && arg.byteSize === byteSize;
+function reg(arg: ASTInstructionArg, byteSize: X86BitsMode, segment: boolean = false): boolean {
+  return (
+    arg.type === InstructionArgType.REGISTER
+      && arg.byteSize === byteSize
+      && (<ASTInstructionRegisterArg> arg).value.segment === segment
+  );
+}
+
+function sreg(arg: ASTInstructionArg, byteSize: X86BitsMode): boolean {
+  return reg(arg, byteSize, true);
 }
 
 function imm(arg: ASTInstructionArg, byteSize: X86BitsMode): boolean {
@@ -53,8 +62,9 @@ function indirectFarSegPointer(arg: ASTInstructionArg, instruction: ASTInstructi
 
 /**
  * Mnemonic notation:
- * mb,mw,md,mq - memory byte, word, double word, quad word
+ * moffs - memory word offset etc
  * rb, rw, rd - register byte, word, double word
+ * sr - segment register
  * rmb, rmw - register or memory byte, word
  * ib, iw - immediate byte, word
  * sl, ll - short label, long label
@@ -92,10 +102,11 @@ export const ASTInstructionArgMatchers: {[key: string]: ASTInstructionArgMatcher
     return str === arg.value?.toString();
   },
 
-  /** MEM */
-  mb: () => (arg: ASTInstructionArg) => mem(arg, 1, true),
-  mw: () => (arg: ASTInstructionArg) => mem(arg, 2, true),
-  mq: () => (arg: ASTInstructionArg) => mem(arg, 4, true),
+  /** MEM OFFSET */
+  moffs: () => (arg: ASTInstructionArg) => moffs(arg, 2),
+
+  /** SREG */
+  sr: () => (arg: ASTInstructionArg) => sreg(arg, 2),
 
   /** REG */
   rb: () => (arg: ASTInstructionArg) => reg(arg, 1),
@@ -124,6 +135,8 @@ export const ASTInstructionArgMatchers: {[key: string]: ASTInstructionArgMatcher
 };
 
 export const isRMSchemaArg = R.contains(R.__, ['rmb', 'rmw', 'rmq', 'ifptr']);
+
+export const isMoffsSchemaArg = R.contains(R.__, ['moffs']);
 
 /**
  * Transforms string of arg schema to array

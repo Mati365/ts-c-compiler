@@ -218,8 +218,11 @@ export class ASTInstructionMemPtrArg extends ASTInstructionArg<MemAddressDescrip
    * @memberof ASTInstructionMemPtrArg
    */
   toString(): string {
-    const {phrase, byteSize} = this;
+    const {phrase, byteSize, schema} = this;
     const sizePrefix = InstructionArgSize[roundToPowerOfTwo(byteSize)];
+
+    if (schema?.moffset)
+      return phrase;
 
     return `${sizePrefix} ptr [${phrase}]`;
   }
@@ -236,15 +239,12 @@ export class ASTInstructionMemPtrArg extends ASTInstructionArg<MemAddressDescrip
 
     if (!resolved) {
       const parsedMem = parseMemExpression(phrase);
-      if (parsedMem.dispByteSize > byteSize) {
-        throw new ParserError(
-          ParserErrorCode.DISPLACEMENT_EXCEEDING_BYTE_SIZE,
-          null,
-          {
-            address: phrase,
-            byteSize,
-          },
-        );
+
+      if (R.isNil(byteSize)) {
+        if (R.isNil(parsedMem.dispByteSize))
+          throw new ParserError(ParserErrorCode.MISSING_MEM_OPERAND_SIZE);
+
+        this.byteSize = parsedMem.dispByteSize;
       }
 
       this.value = parsedMem;

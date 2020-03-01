@@ -88,7 +88,7 @@ export const ERROR_TRANSLATIONS: {[key in ParserErrorCode]: string} = {
   [ParserErrorCode.INCORRECT_SCALE_MEM_PARAMS]: 'Incorrect scale mem params!',
   [ParserErrorCode.INCORRECT_SCALE]: 'Incorrect scale! It must be 1, 2, 4 or 8 instead of "%{scale}"!',
   [ParserErrorCode.INCORRECT_MODRM]: 'Error during "%{phrase}" ModRM instruction byte parsing!',
-  [ParserErrorCode.DISPLACEMENT_EXCEEDING_BYTE_SIZE]: 'Displacement of "%{address}" exceedes arg byte size (%{byteSize} bytes)!',
+  [ParserErrorCode.DISPLACEMENT_EXCEEDING_BYTE_SIZE]: 'Displacement of "%{address}" exceedes arg byte size (%{byteSize} bytes but should be <= %{maxSize} bytes)!',
 
   // segmented mem
   [ParserErrorCode.INCORRECT_SEGMENTED_MEM_FORMAT]: 'Incorrect segmented memory format "%{address}"!',
@@ -112,7 +112,7 @@ export const ERROR_TRANSLATIONS: {[key in ParserErrorCode]: string} = {
   [ParserErrorCode.MISSING_MEM_ARG_DEF]: 'Missing mem arg definition but in binary schema is present!',
   [ParserErrorCode.MISSING_IMM_ARG_DEF]: 'Missing imm arg definition but in binary schema is present!',
   [ParserErrorCode.UNKNOWN_BINARY_SCHEMA_DEF]: 'Unknown binary schema token %{schema}',
-  [ParserErrorCode.INVALID_ADDRESSING_MODE]: 'Invalid addressing mode!',
+  [ParserErrorCode.INVALID_ADDRESSING_MODE]: 'Invalid address!',
   [ParserErrorCode.UNMATCHED_SCHEMA_POSTPROCESS]: 'Cannot find instruction "%{instruction}"!',
   [ParserErrorCode.UNABLE_TO_COMPILE_FILE]: 'Unable to compile file!',
 

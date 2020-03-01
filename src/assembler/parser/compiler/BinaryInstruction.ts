@@ -7,7 +7,6 @@ import {ASTInstruction} from '../ast/instruction/ASTInstruction';
 import {
   ASTInstructionArg,
   ASTInstructionMemPtrArg,
-  ASTInstructionMemSegmentedArg,
 } from '../ast/instruction/args';
 
 import {
@@ -52,16 +51,38 @@ export class BinaryInstruction extends BinaryBlob<ASTInstruction> {
    */
   compile(compiler: X86Compiler, offset: number): BinaryInstruction {
     const {ast} = this;
+    const [primarySchema] = ast.schemas;
 
     const binary: number[] = [];
     const binaryPrefixes: number[] = [];
 
-    const [rmArg, immArg] = [ast.findRMArg(), ast.numArgs[0]];
+    const [memArg, rmArg, immArg] = [ast.memArgs[0], ast.findRMArg(), ast.numArgs[0]];
+    const rmByte = rmArg && BinaryInstruction.encodeRMByte(
+      compiler.mode,
+      R.find(
+        (arg) => arg !== <ASTInstructionArg> rmArg,
+        ast.regArgs,
+      ),
+      rmArg,
+    );
 
     // todo: check if it is only available in addressing mode
-    if (rmArg?.addressDescription) {
-      const {addressDescription} = rmArg;
+    if (memArg?.addressDescription) {
+      const {addressDescription} = memArg;
       const {sreg} = addressDescription;
+
+      // check if excedding, only if RM byte present, moffset can be bigger
+      if (!memArg.schema?.moffset && addressDescription.dispByteSize > memArg.byteSize) {
+        throw new ParserError(
+          ParserErrorCode.DISPLACEMENT_EXCEEDING_BYTE_SIZE,
+          null,
+          {
+            address: memArg.phrase,
+            byteSize: addressDescription.dispByteSize,
+            maxSize: memArg.byteSize,
+          },
+        );
+      }
 
       // minimum displacement size for JMP far
       // nasm produces minimum 16bit offset
@@ -72,7 +93,7 @@ export class BinaryInstruction extends BinaryBlob<ASTInstruction> {
         addressDescription.dispByteSize = Math.max(
           ast.branchAddressingType
             ? BRANCH_ADDRESSING_SIZE_MAPPING[ast.branchAddressingType]
-            : rmArg.byteSize,
+            : memArg.byteSize,
 
           addressDescription.dispByteSize,
         );
@@ -81,21 +102,21 @@ export class BinaryInstruction extends BinaryBlob<ASTInstruction> {
       // sreg override
       if (sreg) {
         const sregPrefix = findMatchingSregPrefix(sreg);
-        if (R.isNil(sregPrefix))
-          throw new ParserError(ParserErrorCode.INCORRECT_SREG_OVERRIDE, null, {sreg: sreg.mnemonic});
-        else
+        if (R.isNil(sregPrefix)) {
+          throw new ParserError(
+            ParserErrorCode.INCORRECT_SREG_OVERRIDE,
+            null,
+            {
+              sreg: sreg.mnemonic,
+            },
+          );
+        } else
           binaryPrefixes.push(sregPrefix);
       }
     }
 
-    const rmByte = rmArg && BinaryInstruction.encodeRMByte(
-      compiler.mode,
-      ast.regArgs[0],
-      rmArg,
-    );
-
     // full instruction code
-    ast.schemas[0].binarySchema.forEach(
+    primarySchema.binarySchema.forEach(
       (schema) => {
         switch (schema) {
           // far jump
@@ -103,7 +124,7 @@ export class BinaryInstruction extends BinaryBlob<ASTInstruction> {
             binary.push(
               extractNthByte(
                 +schema[1],
-                (<ASTInstructionMemSegmentedArg > ast.segMemArgs[0]).value.segment.number,
+                ast.segMemArgs[0].value.segment.number,
               ),
             );
             break;
@@ -112,7 +133,7 @@ export class BinaryInstruction extends BinaryBlob<ASTInstruction> {
             binary.push(
               extractNthByte(
                 +schema[1],
-                (<ASTInstructionMemSegmentedArg > ast.segMemArgs[0]).value.offset.number,
+                ast.segMemArgs[0].value.offset.number,
               ),
             );
             break;
@@ -145,17 +166,22 @@ export class BinaryInstruction extends BinaryBlob<ASTInstruction> {
 
           // displacement
           case 'd0': case 'd1': case 'd2': case 'd3': {
-            if (!rmByte)
-              throw new ParserError(ParserErrorCode.MISSING_RM_BYTE_DEF);
+            // it can be also moffs arg, so do not use rmArg
+            if (!memArg) {
+              // register addressing, mov ax, bx
+              if (rmByte)
+                return;
 
-            if (!rmArg)
               throw new ParserError(ParserErrorCode.MISSING_MEM_ARG_DEF);
+            }
 
-            const {addressDescription} = rmArg;
+            const {addressDescription} = memArg;
             if (addressDescription && addressDescription.disp !== null) {
               const byteOffset = +schema[1];
 
-              if (byteOffset < addressDescription.dispByteSize) {
+              // destination without mod rm byte always produces exactly
+              // equal number of bytes of displacement, see nasm
+              if (!memArg.schema.rm || byteOffset < addressDescription.dispByteSize) {
                 binary.push(
                   extractNthByte(byteOffset, addressDescription.disp),
                 );
@@ -227,7 +253,7 @@ export class BinaryInstruction extends BinaryBlob<ASTInstruction> {
 
       const [mod, rm] = findMatchingMemAddressingRMByte(
         mode,
-        addressDescription.reg.mnemonic,
+        addressDescription.reg?.mnemonic,
         addressDescription.scale?.reg.mnemonic,
         dispByteSize,
       ) || [];
@@ -237,16 +263,18 @@ export class BinaryInstruction extends BinaryBlob<ASTInstruction> {
 
       rmByte.mod = mod;
       rmByte.rm = rm;
-
-    // register mov ax, bx
     } else {
       rmByte.mod = RMAddressingMode.REG_ADDRESSING;
       rmByte.rm = (<RegisterSchema> rmArg.value).index;
     }
 
-    // register (source / destination)
-    if (regArg)
+    if (regArg) {
+      // register mov ax, bx
+      if (!rmArg)
+        rmByte.mod = RMAddressingMode.REG_ADDRESSING;
+
       rmByte.reg = (<RegisterSchema> regArg.value).index;
+    }
 
     return rmByte;
   }

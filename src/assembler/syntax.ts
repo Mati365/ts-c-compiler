@@ -16,16 +16,8 @@ const make = tagFunction(
 
 /*
   Best way to test if jmps works ok:
-  jnc kill
-  int3
-  mov al, byte 2
-  shit
-  kill:
-  mov al, byte 4
-*/
-
-/* eslint-disable no-console,@typescript-eslint/no-unused-expressions */
-make`
+  mov cl, 2
+  mov cx, 2
   mov ax, 'ac'
   jmp far [cs:bx+0xFF]
   mov byte al, [bx]
@@ -37,5 +29,10 @@ make`
   jmp dupa
   stuff: db 0xFF, 0x75, "abcdefghijktlmneoprste"
   mov ax, bx
+*/
+
+/* eslint-disable no-console,@typescript-eslint/no-unused-expressions */
+make`
+mov es, ax
 `;
 /* eslint-enable no-console,@typescript-eslint/no-unused-expressions */

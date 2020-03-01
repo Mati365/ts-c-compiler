@@ -32,15 +32,40 @@
     ["rmw", "FF /0 d0 d1"]
   ],
   "mov": [
-    ["al mw", "A0 d0 d1"],
-    ["ax mw", "A0 d0 d1"],
+    ["al moffs", "A0 d0 d1"],
+    ["ax moffs", "A1 d0 d1"],
 
     ["al ib", "B0 i0"],
     ["ah ib", "B4 i0"],
     ["ax iw", "B8 i0 i1"],
 
-    ["rmb rb", "88 mr d0 d1"],
+    ["cl ib", "B1 i0"],
+    ["ch ib", "B5 i0"],
+    ["cx iw", "B9 i0 i1"],
+
+    ["dl ib", "B2 i0"],
+    ["dh ib", "B6 i0"],
+    ["dx iw", "BA i0 i1"],
+
+    ["bl ib", "B3 i0"],
+    ["bh ib", "B7 i0"],
+    ["bx iw", "BB i0 i1"],
+
+    ["sp iw", "BC i0 i1"],
+    ["bp iw", "BD i0 i1"],
+    ["si iw", "BE i0 i1"],
+    ["di iw", "BF i0 i1"],
+
     ["rb rmb", "8A mr d0 d1"],
-    ["rw rmw", "8B mr d0 d1"]
+    ["rmb rb", "88 mr d0 d1"],
+
+    ["rmw rw", "89 mr d0 d1"],
+    ["rw rmw", "8B mr d0 d1"],
+
+    ["rmb ib", "C6 mr d0 d1 i0"],
+    ["rmw iw", "C7 mr d0 d1 i0 i1"],
+
+    ["rmw sr", "8C mr d0 d1"],
+    ["sr rmw", "8E mr d0 d1"]
   ]
 }
