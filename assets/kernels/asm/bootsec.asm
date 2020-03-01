@@ -1,16 +1,7 @@
 org 0x7c00
 
-jmp far [cs:bx+0xFF]
-jmp [cs:bx+0xFF]
-inc ax
-inc bx
-inc cx
-inc dx
-inc sp
-inc bp
-inc si
-inc di
-inc word [bx+0x2]
+mov ax, 'a'
+
 ; jmp far [cs:bx+0xFF]
 ; mov byte al, [bx]
 ; dupa:

@@ -398,7 +398,7 @@ export class ASTInstruction extends KindASTNode(ASTNodeKind.INSTRUCTION) {
             );
           }
 
-          return new ASTInstructionNumberArg(number, byteSize ?? byteSizeOverride);
+          return new ASTInstructionNumberArg(number, byteSizeOverride ?? byteSize);
         }
 
         // Mem address ptr
