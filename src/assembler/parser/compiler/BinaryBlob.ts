@@ -1,5 +1,15 @@
-import {truncateText} from '../../utils/truncateText';
+import * as R from 'ramda';
 import {X86Compiler} from './compile';
+
+const toMultilineBinaryBlockString = R.compose(
+  R.map(
+    R.join(' '),
+  ),
+  R.splitEvery(8),
+  R.map(
+    (num: number) => `${num.toString(16).padStart(2, '0')}`,
+  ),
+);
 
 /**
  * Binary portion of data
@@ -20,25 +30,20 @@ export class BinaryBlob<ASTNodeType = any> {
    * Print blob like objdump
    *
    * @param {boolean} [withAST=true]
-   * @returns {string}
+   * @returns {string[]}
    * @memberof BinaryBlob
    */
-  toString(withAST: boolean = true): string {
+  toString(withAST: boolean = true): string[] {
     const {binary, ast} = this;
-    const binStr = truncateText(
-      ' ...',
-      25,
-      binary
-        .map(
-          (num) => `0x${num.toString(16).padStart(2, '0')}`,
-        )
-        .join(' '),
-    );
+    const binLines = toMultilineBinaryBlockString(binary);
 
     if (!withAST || !ast)
-      return binStr;
+      return binLines;
 
-    return `${binStr.padEnd(32)}${ast.toString()}`;
+    return [
+      `${binLines[0].padEnd(30)}${ast.toString()}`,
+      ...R.tail(binLines),
+    ];
   }
 
   /* eslint-disable @typescript-eslint/no-unused-vars */
