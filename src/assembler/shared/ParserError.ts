@@ -44,6 +44,7 @@ export enum ParserErrorCode {
   // labels
   MISSING_PARENT_LABEL,
   UNKNOWN_LABEL,
+  LABEL_ALREADY_DEFINED,
 
   // compiler
   UNKNOWN_COMPILER_INSTRUCTION,
@@ -104,6 +105,7 @@ export const ERROR_TRANSLATIONS: {[key in ParserErrorCode]: string} = {
   // labels
   [ParserErrorCode.MISSING_PARENT_LABEL]: 'Unable to resolve local label "%{label}", missing parent label!',
   [ParserErrorCode.UNKNOWN_LABEL]: 'Unknown label "%{label}"!',
+  [ParserErrorCode.LABEL_ALREADY_DEFINED]: 'Label "%{label}" is already defined!',
 
   // compiler
   [ParserErrorCode.UNKNOWN_COMPILER_INSTRUCTION]: 'Unknown compile token "%{instruction}"!',

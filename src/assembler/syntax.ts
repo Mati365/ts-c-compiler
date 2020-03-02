@@ -33,20 +33,13 @@ const make = tagFunction(
 
 /* eslint-disable no-console,@typescript-eslint/no-unused-expressions */
 make`
-innylabel:
-  aaa
-  hlt
+label:
+  .nested:
+    mov ax, bx
 
-jakislabel:
-  mov ax, bx
-  inc bx
-  jmp 0x7C00:0x000
-  jmp innylabel
+  .nested2:
+    mov bx, ax
 
-call innylabel
-jmp far [cs:bx+0xFF]
-mov ax, 'ac'
-int 3
-stuff: db 0xFF, 0x75, "abcdefghijktlmneoprste"
+  jmp .nested2
 `;
 /* eslint-enable no-console,@typescript-eslint/no-unused-expressions */

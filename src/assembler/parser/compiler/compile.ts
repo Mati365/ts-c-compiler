@@ -3,10 +3,14 @@ import * as R from 'ramda';
 import {ParserError, ParserErrorCode} from '../../shared/ParserError';
 import {InstructionArgSize} from '../../types';
 
-import {ASTNode} from '../ast/ASTNode';
+import {ASTTree} from '../ast/ASTParser';
 import {ASTNodeKind} from '../ast/types';
-import {ASTInstruction} from '../ast/instruction/ASTInstruction';
-import {ASTLabel} from '../ast/label/ASTLabel';
+import {ASTInstruction, ASTLabelAddrResolver} from '../ast/instruction/ASTInstruction';
+import {
+  ASTLabel,
+  isLocalLabel,
+  resolveLocalTokenAbsName,
+} from '../ast/label/ASTLabel';
 
 import {BinaryInstruction} from './BinaryInstruction';
 import {BinaryBlob} from './BinaryBlob';
@@ -30,7 +34,7 @@ import {
  */
 export class X86Compiler {
   constructor(
-    public readonly nodes: ASTNode[],
+    public readonly tree: ASTTree,
     public readonly mode: InstructionArgSize = InstructionArgSize.WORD,
     public readonly maxPasses: number = 4,
   ) {}
@@ -43,8 +47,11 @@ export class X86Compiler {
    * @memberof X86Compiler
    */
   private firstPass(): FirstPassResult {
-    const {nodes} = this;
     const result = new FirstPassResult;
+
+    const {astNodes} = this.tree;
+    const {labels} = result;
+
     let offset = 0;
 
     const emitBlob = (blob: BinaryBlob): void => {
@@ -63,15 +70,20 @@ export class X86Compiler {
             emitBlob(new BinaryDefinition(<ASTDef> node).compile());
             break;
 
-          case ASTNodeKind.LABEL:
-            result.labels.set((<ASTLabel> node).name, offset);
-            break;
+          case ASTNodeKind.LABEL: {
+            const labelName = (<ASTLabel> node).name;
+
+            if (labels.has(labelName))
+              throw new ParserError(ParserErrorCode.LABEL_ALREADY_DEFINED, null, {label: labelName});
+
+            labels.set(labelName, offset);
+          } break;
 
           default:
             throw new ParserError(ParserErrorCode.UNKNOWN_COMPILER_INSTRUCTION, null, {instruction: node.toString()});
         }
       },
-      nodes,
+      astNodes,
     );
 
     return result;
@@ -87,13 +99,39 @@ export class X86Compiler {
    * @memberof X86Compiler
    */
   private secondPass(firstPassResult: FirstPassResult): SecondPassResult {
+    const {tree} = this;
     const {labels, nodesOffsets} = firstPassResult;
+
     const result = new SecondPassResult(0x0, labels);
     let success = false;
+
+    /**
+     * Lookups into tree and resolves nested label args
+     *
+     * @see
+     *  instructionIndex must be equal count of instructions in first phase!
+     *
+     * @param {number} instructionIndex
+     * @returns {ASTLabelAddrResolver}
+     */
+    function labelResolver(instructionIndex: number): ASTLabelAddrResolver {
+      return (name: string): number => {
+        if (isLocalLabel(name)) {
+          name = resolveLocalTokenAbsName(
+            tree,
+            name,
+            instructionIndex,
+          );
+        }
+
+        return labels.get(name);
+      };
+    }
 
     // proper resolve labels
     for (let pass = 0; pass < this.maxPasses; ++pass) {
       let needPass = false;
+      let instructionsCounter = 0;
 
       // eslint-disable-next-line prefer-const
       for (let [offset, blob] of nodesOffsets) {
@@ -105,7 +143,7 @@ export class X86Compiler {
           const shrinkable = ast.hasLabelsInOriginalAST();
           if (shrinkable) {
             ast
-              .assignLabelsToArgs(labels)
+              .assignLabelsToArgs(labelResolver(instructionsCounter))
               .tryResolveSchema();
           }
 
@@ -147,6 +185,10 @@ export class X86Compiler {
           ast.schemas = [
             ast.schemas[0],
           ];
+
+
+          // used for fast local labels resolve
+          ++instructionsCounter;
         }
       }
 
@@ -180,7 +222,7 @@ export class X86Compiler {
    * @memberof X86Compiler
    */
   compile(): SecondPassResult {
-    if (!this.nodes)
+    if (!this.tree)
       return null;
 
     return this.secondPass(
@@ -193,11 +235,11 @@ export class X86Compiler {
  * Transform array of nodes into binary
  *
  * @export
- * @param {ASTNode[]} nodes
+ * @param {ASTTree} tree
  */
-export function compile(nodes: ASTNode[]): void {
+export function compile(tree: ASTTree): void {
   const t = Date.now();
-  const output = new X86Compiler(nodes).compile();
+  const output = new X86Compiler(tree).compile();
 
   /* eslint-disable no-console */
   const str = output?.toString();

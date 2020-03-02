@@ -4,10 +4,6 @@ import {ParserError, ParserErrorCode} from '../../shared/ParserError';
 import {Token, TokenType} from '../lexer/tokens';
 import {ASTNode} from './ASTNode';
 
-export type ASTInstructionParser = {
-  parse(token: Token, parser: ASTParser, astNodes: ASTNode[]): ASTNode;
-};
-
 /**
  * Iterates through tokens list
  *
@@ -73,6 +69,23 @@ export class ASTTokensIterator {
 }
 
 /**
+ * @todo
+ *  Add more metadata about tree
+ *
+ * @export
+ * @class ASTTree
+ */
+export class ASTTree {
+  constructor(
+    public astNodes: ASTNode[] = [],
+  ) {}
+}
+
+export type ASTInstructionParser = {
+  parse(token: Token, parser: ASTParser, tree: ASTTree): ASTNode;
+};
+
+/**
  * Creates tree from provided tokens
  *
  * @export
@@ -90,12 +103,12 @@ export class ASTParser extends ASTTokensIterator {
   /**
    * Fetches array of matched instructions, labels etc
    *
-   * @returns {ASTNode[]}
+   * @returns {ASTTree}
    * @memberof ASTParser
    */
-  getTree(): ASTNode[] {
+  getTree(): ASTTree {
     const {nodeParsers} = this;
-    const astNodes: ASTNode[] = [];
+    const tree = new ASTTree;
 
     this.iterate(
       (token) => {
@@ -106,10 +119,10 @@ export class ASTParser extends ASTTokensIterator {
 
         for (let j = 0; j < nodeParsers.length; ++j) {
           try {
-            const astNode = nodeParsers[j].parse(token, this, astNodes);
+            const astNode = nodeParsers[j].parse(token, this, tree);
 
             if (astNode) {
-              astNodes.push(astNode);
+              tree.astNodes.push(astNode);
               tokenParsed = true;
               break;
             }
@@ -126,6 +139,6 @@ export class ASTParser extends ASTTokensIterator {
       },
     );
 
-    return astNodes;
+    return tree;
   }
 }

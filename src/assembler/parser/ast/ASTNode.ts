@@ -1,5 +1,5 @@
 import {TokenLocation, Token} from '../lexer/tokens';
-import {ASTParser} from './ASTParser';
+import {ASTParser, ASTTree} from './ASTParser';
 import {ASTNodeKind} from './types';
 
 export class ASTNodeLocation {
@@ -27,7 +27,7 @@ export class ASTNode {
   ) {}
 
   /* eslint-disable @typescript-eslint/no-unused-vars */
-  static parse(token: Token, parser: ASTParser, astNodes: ASTNode[]): ASTNode {
+  static parse(token: Token, parser: ASTParser, tree: ASTTree): ASTNode {
     return null;
   }
   /* eslint-enable @typescript-eslint/no-unused-vars */

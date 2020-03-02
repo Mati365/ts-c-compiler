@@ -13,7 +13,7 @@ import {
 import {ParserError, ParserErrorCode} from '../../../shared/ParserError';
 
 import {ASTParser, ASTTokensIterator} from '../ASTParser';
-import {ASTNodeKind, BinaryLabelsOffsets} from '../types';
+import {ASTNodeKind} from '../types';
 
 import {ASTInstructionSchema} from './ASTInstructionSchema';
 import {
@@ -125,6 +125,15 @@ export function fetchTokensArgsList(
 
   return argsTokens;
 }
+
+/**
+ * Resolves label address by name
+ *
+ * @see
+ *  name might be also local name!
+ */
+export type ASTLabelAddrResolver = (name: string) => number;
+
 /**
  * Parser for:
  * [opcode] [arg1] [arg2] [argX]
@@ -268,18 +277,18 @@ export class ASTInstruction extends KindASTNode(ASTNodeKind.INSTRUCTION) {
   /**
    * Assigns aboslute label address to labels
    *
-   * @param {BinaryLabelsOffsets} labels
+   * @param {ASTLabelAddrResolver} labelResolver
    * @returns {ASTInstruction}
    * @memberof ASTInstruction
    */
-  assignLabelsToArgs(labels: BinaryLabelsOffsets): ASTInstruction {
+  assignLabelsToArgs(labelResolver: ASTLabelAddrResolver): ASTInstruction {
     this.args = R.map(
       (arg) => {
         if (arg.type !== InstructionArgType.LABEL)
           return arg;
 
         const label = <string> arg.value;
-        const labelAddress = labels.get(label);
+        const labelAddress = labelResolver(label);
 
         if (R.isNil(labelAddress))
           throw new ParserError(ParserErrorCode.UNKNOWN_LABEL, null, {label});

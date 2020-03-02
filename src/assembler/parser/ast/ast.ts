@@ -1,7 +1,9 @@
 import {Token} from '../lexer/tokens';
 
-import {ASTParser} from './ASTParser';
-import {ASTNode} from './ASTNode';
+import {
+  ASTParser,
+  ASTTree,
+} from './ASTParser';
 
 import {ASTInstruction} from './instruction/ASTInstruction';
 import {ASTLabel} from './label/ASTLabel';
@@ -18,9 +20,9 @@ export const ASTNodesParsers = [
  *
  * @export
  * @param {IterableIterator<Token>} tokensIterator
- * @returns {ASTNode[]}
+ * @returns {ASTTree}
  */
-export function ast(tokensIterator: IterableIterator<Token>): ASTNode[] {
+export function ast(tokensIterator: IterableIterator<Token>): ASTTree {
   const parser = new ASTParser(ASTNodesParsers, tokensIterator);
 
   return parser.getTree();
