@@ -111,16 +111,16 @@ export class X86Compiler {
      * @see
      *  instructionIndex must be equal count of instructions in first phase!
      *
-     * @param {number} instructionIndex
+     * @param {ASTInstruction} astInstruction
      * @returns {ASTLabelAddrResolver}
      */
-    function labelResolver(instructionIndex: number): ASTLabelAddrResolver {
+    function labelResolver(astInstruction: ASTInstruction): ASTLabelAddrResolver {
       return (name: string): number => {
         if (isLocalLabel(name)) {
           name = resolveLocalTokenAbsName(
             tree,
             name,
-            instructionIndex,
+            R.indexOf(astInstruction, tree.astNodes),
           );
         }
 
@@ -131,7 +131,6 @@ export class X86Compiler {
     // proper resolve labels
     for (let pass = 0; pass < this.maxPasses; ++pass) {
       let needPass = false;
-      let instructionsCounter = 0;
 
       // eslint-disable-next-line prefer-const
       for (let [offset, blob] of nodesOffsets) {
@@ -143,7 +142,7 @@ export class X86Compiler {
           const shrinkable = ast.hasLabelsInOriginalAST();
           if (shrinkable) {
             ast
-              .assignLabelsToArgs(labelResolver(instructionsCounter))
+              .assignLabelsToArgs(labelResolver(ast))
               .tryResolveSchema();
           }
 
@@ -185,10 +184,6 @@ export class X86Compiler {
           ast.schemas = [
             ast.schemas[0],
           ];
-
-
-          // used for fast local labels resolve
-          ++instructionsCounter;
         }
       }
 

@@ -108,6 +108,7 @@ function parseMemExpression(expression: string): MemAddressDescription {
     lexer(
       prefixMemPhraseWithSign('+', expression),
       false,
+      true,
     ),
   );
 

@@ -109,7 +109,7 @@ export class BinaryInstruction extends BinaryBlob<ASTInstruction> {
             binary.push(
               extractNthByte(
                 +schema[1],
-                ast.segMemArgs[0].value.segment.number,
+                ast.segMemArgs[0].val.segment.number,
               ),
             );
             break;
@@ -118,7 +118,7 @@ export class BinaryInstruction extends BinaryBlob<ASTInstruction> {
             binary.push(
               extractNthByte(
                 +schema[1],
-                ast.segMemArgs[0].value.offset.number,
+                ast.segMemArgs[0].val.offset.number,
               ),
             );
             break;
@@ -127,7 +127,7 @@ export class BinaryInstruction extends BinaryBlob<ASTInstruction> {
           case 'r0': case 'r1': {
             const addrArg = ast.relAddrArgs[0];
             if (addrArg) {
-              const relAddress = (<number> addrArg.value) - offset - ast.schemas[0].byteSize;
+              const relAddress = (<number> addrArg.val) - offset - ast.schemas[0].byteSize;
 
               binary.push(
                 X86AbstractCPU.toUnsignedNumber(
@@ -145,7 +145,7 @@ export class BinaryInstruction extends BinaryBlob<ASTInstruction> {
               throw new ParserError(ParserErrorCode.MISSING_IMM_ARG_DEF);
 
             binary.push(
-              extractNthByte(+schema[1], <number> immArg.value),
+              extractNthByte(+schema[1], <number> immArg.val),
             );
             break;
 
@@ -262,7 +262,7 @@ export class BinaryInstruction extends BinaryBlob<ASTInstruction> {
       rmByte.rm = rm;
     } else {
       rmByte.mod = RMAddressingMode.REG_ADDRESSING;
-      rmByte.rm = (<RegisterSchema> rmArg.value).index;
+      rmByte.rm = (<RegisterSchema> rmArg.val).index;
     }
 
     if (regArg) {
@@ -270,7 +270,7 @@ export class BinaryInstruction extends BinaryBlob<ASTInstruction> {
       if (!rmArg)
         rmByte.mod = RMAddressingMode.REG_ADDRESSING;
 
-      rmByte.reg = (<RegisterSchema> regArg.value).index;
+      rmByte.reg = (<RegisterSchema> regArg.val).index;
     }
 
     return rmByte;

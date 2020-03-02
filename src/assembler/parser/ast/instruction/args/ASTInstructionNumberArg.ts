@@ -46,6 +46,11 @@ export class ASTInstructionNumberArg extends ASTInstructionArg<number> {
    */
   upperCastByteSize(byteSize: number): void {
     this.byteSize = Math.max(this.byteSize, byteSize);
+
     this.signedByteSize = roundToPowerOfTwo(numberByteSize(0xFF << (this.byteSize * 0x8 + 1)));
+    this.signedNumber = X86AbstractCPU.toUnsignedNumber(
+      this.value,
+      <any> byteSize,
+    );
   }
 }

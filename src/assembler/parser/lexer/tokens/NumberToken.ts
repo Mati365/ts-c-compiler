@@ -41,7 +41,9 @@ export class NumberToken extends Token<NumberTokenValue> {
       text,
       loc,
       {
-        byteSize: roundToPowerOfTwo(numberByteSize(number)),
+        // do not use signedNumberByteSize
+        // do not resize number even if overflows
+        byteSize: roundToPowerOfTwo(numberByteSize(Math.abs(number))),
         number,
         format,
       },
@@ -78,7 +80,7 @@ export class NumberToken extends Token<NumberTokenValue> {
        *  - 0200d
        *  - 0d200
        */
-      DEC: safeNumberMatch(/^(?:(?:(?:0d?)?(\d+))|(?:0(\d+)d))$/, 10),
+      DEC: safeNumberMatch(/^(?:(?:(?:0d?)?([+-]?\d+))|(?:0(\d+)d))$/, 10),
 
       /**
        * Allowed BIN format:

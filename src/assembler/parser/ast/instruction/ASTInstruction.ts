@@ -287,7 +287,7 @@ export class ASTInstruction extends KindASTNode(ASTNodeKind.INSTRUCTION) {
         if (arg.type !== InstructionArgType.LABEL)
           return arg;
 
-        const label = <string> arg.value;
+        const label = <string> arg.val;
         const labelAddress = labelResolver(label);
 
         if (R.isNil(labelAddress))

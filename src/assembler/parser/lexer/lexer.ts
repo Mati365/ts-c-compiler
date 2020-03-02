@@ -89,9 +89,14 @@ function parseToken(location: TokenLocation, token: string): Token {
  * @export
  * @param {string} code
  * @param {boolean} [appendEOF=true]
+ * @param {boolean} [signOperatorsAsSeparateTokens=false]
  * @returns {IterableIterator<Token>}
  */
-export function* lexer(code: string, appendEOF: boolean = true): IterableIterator<Token> {
+export function* lexer(
+  code: string,
+  appendEOF: boolean = true,
+  signOperatorsAsSeparateTokens: boolean = false,
+): IterableIterator<Token> {
   const {length} = code;
   const location = new TokenLocation;
 
@@ -180,9 +185,16 @@ export function* lexer(code: string, appendEOF: boolean = true): IterableIterato
     else {
       // match cahracters that divides word
       const separator = SEPARATOR_CHARACTERS[character];
-      if (separator)
-        yield* appendCharToken(separator, character);
-      else if (character !== ' ') {
+
+      if (separator) {
+        // numbers - +1, -2
+        if (!signOperatorsAsSeparateTokens
+            && (separator === TokenType.PLUS || separator === TokenType.MINUS)
+            && Number.isInteger(+code[offset + 1]))
+          tokenBuffer += character;
+        else
+          yield* appendCharToken(separator, character);
+      } else if (character !== ' ') {
         // append character and find matching token
         tokenBuffer += character;
       } else {

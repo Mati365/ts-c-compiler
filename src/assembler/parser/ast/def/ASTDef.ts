@@ -22,6 +22,20 @@ export enum DefTokenNames {
 }
 
 /**
+ * Checks if token is size def, if so - return size
+ *
+ * @export
+ * @param {string} string
+ * @returns {number}
+ */
+export function tokenDefSize(string: string): number {
+  if (!string)
+    return null;
+
+  return DefTokenNames[R.toUpper(string)];
+}
+
+/**
  * Used to define binary data variables
  *
  * @export
@@ -64,8 +78,8 @@ export class ASTDef extends KindASTNode(ASTNodeKind.DEFINE) {
       return null;
 
     // check definition size
-    const tokenDefSize: number = DefTokenNames[R.toUpper(token.text)];
-    if (!tokenDefSize)
+    const tokenSize: number = tokenDefSize(token.text);
+    if (!tokenSize)
       return null;
 
     // pick all args
@@ -79,7 +93,7 @@ export class ASTDef extends KindASTNode(ASTNodeKind.DEFINE) {
           return;
 
         const numberToken = <NumberToken> arg;
-        if (numberToken.value.byteSize > tokenDefSize) {
+        if (numberToken.value.byteSize > tokenSize) {
           throw new ParserError(
             ParserErrorCode.DEFINED_DATA_EXCEEDES_BOUNDS,
             null,
@@ -94,7 +108,7 @@ export class ASTDef extends KindASTNode(ASTNodeKind.DEFINE) {
     );
 
     return new ASTDef(
-      tokenDefSize,
+      tokenSize,
       argsTokens,
       ASTNodeLocation.fromTokenLoc(token.loc),
     );

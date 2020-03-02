@@ -36,7 +36,7 @@ function reg(arg: ASTInstructionArg, byteSize: X86BitsMode, segment: boolean = f
   return (
     arg.type === InstructionArgType.REGISTER
       && arg.byteSize === byteSize
-      && (<ASTInstructionRegisterArg> arg).value.segment === segment
+      && (<ASTInstructionRegisterArg> arg).val.segment === segment
   );
 }
 
@@ -112,10 +112,12 @@ export type ASTOpcodeMatchers = {
 
 export const ASTInstructionArgMatchers: {[key: string]: ASTInstructionArgMatcherFactory} = {
   eq: (str: string) => (arg: ASTInstructionArg<any>) => {
-    if (arg.value instanceof RegisterSchema)
-      return arg.value.mnemonic === str;
+    const {val} = arg;
 
-    return str === arg.value?.toString();
+    if (val instanceof RegisterSchema)
+      return val.mnemonic === str;
+
+    return str === val?.toString();
   },
 
   /** MEM OFFSET */

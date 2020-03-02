@@ -10,15 +10,19 @@
  */
 export class ASTResolvableArg<T> {
   constructor(
-    public value: T,
+    protected value: T,
     protected resolved = true,
   ) {}
+
+  get val() {
+    return this.value;
+  }
 
   toString(): string {
     const {value} = this;
 
     if (typeof value === 'number')
-      return `0x${value.toString(16)}`;
+      return `${value < 0 ? '-' : ''}0x${Math.abs(value).toString(16)}`;
 
     return value.toString();
   }

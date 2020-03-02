@@ -1,5 +1,7 @@
 import * as R from 'ramda';
 
+import {tokenDefSize} from '../def/ASTDef';
+
 import {ParserErrorCode, ParserError} from '../../../shared/ParserError';
 import {ASTParser, ASTTree} from '../ASTParser';
 import {ASTNodeKind} from '../types';
@@ -72,6 +74,9 @@ export class ASTLabel extends KindASTNode(ASTNodeKind.LABEL) {
   /**
    * Checks if previous token is keyword and current token is colon
    *
+   * @see
+   *  Label auto defines if precceding token is DB/DW etc
+   *
    * @static
    * @param {Token} token
    * @param {ASTParser} parser
@@ -83,12 +88,16 @@ export class ASTLabel extends KindASTNode(ASTNodeKind.LABEL) {
     const nextToken = parser.fetchRelativeToken(1, false);
     if (!nextToken
         || token.type !== TokenType.KEYWORD
-        || token.kind // it should be plain keyword, not register
-        || nextToken.type !== TokenType.COLON)
+        || token.kind) // it should be plain keyword, not register
+      return null;
+
+    const sizeTokenDef = nextToken.type === TokenType.KEYWORD && tokenDefSize(nextToken.text);
+    if (!sizeTokenDef && nextToken.type !== TokenType.COLON)
       return null;
 
     // consume colon token
-    parser.fetchRelativeToken();
+    if (nextToken.type === TokenType.COLON)
+      parser.fetchRelativeToken();
 
     // detect if resolving label starting with .
     const localName: string = token.text;
