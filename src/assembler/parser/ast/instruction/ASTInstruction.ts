@@ -37,10 +37,21 @@ import {
   TokenKind,
   SizeOverrideToken,
   BranchAddressingTypeToken,
+  NumberFormat,
 } from '../../lexer/tokens';
 
 import {findMatchingInstructionSchemas} from './args/ASTInstructionArgMatchers';
 import {reduceTextToBitset} from '../../compiler/utils';
+
+/**
+ * Returns true if token might be label
+ *
+ * @param {Token} token
+ * @returns {boolean}
+ */
+function isPossibleLabelToken(token: Token): boolean {
+  return token.type === TokenType.KEYWORD && !token.kind;
+}
 
 /**
  * Used to detect if instruction wants to consume some bytes,
@@ -197,8 +208,6 @@ export class ASTInstruction extends KindASTNode(ASTNodeKind.INSTRUCTION) {
 
   get labelArgs() { return this.typedArgs[InstructionArgType.LABEL]; }
 
-  get relAddrArgs() { return this.typedArgs[InstructionArgType.RELATIVE_ADDR]; }
-
   /**
    * Lookups in original args that are emitted after compiling AST
    *
@@ -206,10 +215,7 @@ export class ASTInstruction extends KindASTNode(ASTNodeKind.INSTRUCTION) {
    * @memberof ASTInstruction
    */
   hasLabelsInOriginalAST(): boolean {
-    return R.any(
-      (arg: ASTInstructionArg) => arg.type === InstructionArgType.LABEL,
-      this.originalArgs,
-    );
+    return R.any(isPossibleLabelToken, this.argsTokens);
   }
 
   /**
@@ -234,7 +240,6 @@ export class ASTInstruction extends KindASTNode(ASTNodeKind.INSTRUCTION) {
         [InstructionArgType.NUMBER]: [],
         [InstructionArgType.REGISTER]: [],
         [InstructionArgType.LABEL]: [],
-        [InstructionArgType.RELATIVE_ADDR]: [],
       },
       this.args,
     );
@@ -248,13 +253,13 @@ export class ASTInstruction extends KindASTNode(ASTNodeKind.INSTRUCTION) {
    * @memberof ASTInstruction
    */
   toString(): string {
-    const {schemas, originalArgs, branchAddressingType} = this;
+    const {schemas, args, branchAddressingType} = this;
     if (schemas.length === 1) {
       let {mnemonic} = schemas[0];
       if (branchAddressingType)
         mnemonic = `${mnemonic} ${branchAddressingType}`;
 
-      return toStringArgsList(mnemonic, originalArgs);
+      return toStringArgsList(mnemonic, args);
     }
 
     return `[?] ${toStringArgsList(this.opcode, this.argsTokens)}`;
@@ -282,20 +287,25 @@ export class ASTInstruction extends KindASTNode(ASTNodeKind.INSTRUCTION) {
    * @memberof ASTInstruction
    */
   assignLabelsToArgs(labelResolver: ASTLabelAddrResolver): ASTInstruction {
-    this.args = R.map(
-      (arg) => {
-        if (arg.type !== InstructionArgType.LABEL)
-          return arg;
+    this.argsTokens = R.map(
+      (token) => {
+        if (!isPossibleLabelToken(token))
+          return token;
 
-        const label = <string> arg.val;
-        const labelAddress = labelResolver(label);
+        const labelAddress = labelResolver(token.text);
+        if (R.isNil(labelAddress)) {
+          throw new ParserError(
+            ParserErrorCode.UNKNOWN_LABEL,
+            null,
+            {
+              label: token.text,
+            },
+          );
+        }
 
-        if (R.isNil(labelAddress))
-          throw new ParserError(ParserErrorCode.UNKNOWN_LABEL, null, {label});
-
-        return new ASTInstructionNumberArg(labelAddress, null, null, InstructionArgType.RELATIVE_ADDR);
+        return new NumberToken(token.text, labelAddress, NumberFormat.DEC, token.loc);
       },
-      this.originalArgs,
+      this.argsTokens,
     );
 
     this.refreshTypedArgs();
@@ -311,23 +321,20 @@ export class ASTInstruction extends KindASTNode(ASTNodeKind.INSTRUCTION) {
   tryResolveSchema(): ASTInstruction {
     const {branchAddressingType, argsTokens, jumpInstruction} = this;
 
-    // generate first time args from tokenArgs, it is in first phrase
-    // in second phrase args might be overriden
-    if (!this.originalArgs) {
-      const [overridenBranchAddressingType, args] = ASTInstruction.parseInstructionArgsTokens(
-        branchAddressingType,
-        argsTokens,
-        jumpInstruction
-          ? InstructionArgSize.WORD
-          : null,
-      );
+    // regenerate schema args
+    const [overridenBranchAddressingType, newArgs] = ASTInstruction.parseInstructionArgsTokens(
+      branchAddressingType,
+      argsTokens,
+      jumpInstruction
+        ? InstructionArgSize.WORD
+        : null,
+    );
 
-      this.branchAddressingType = overridenBranchAddressingType ?? branchAddressingType;
-      this.originalArgs = args;
-      this.args = args;
+    this.branchAddressingType = overridenBranchAddressingType ?? branchAddressingType;
+    this.args = newArgs;
 
-      this.refreshTypedArgs();
-    }
+    // group into arrays
+    this.refreshTypedArgs();
 
     // list all of schemas
     this.schemas = findMatchingInstructionSchemas(COMPILER_INSTRUCTIONS_SET, this);
@@ -451,7 +458,11 @@ export class ASTInstruction extends KindASTNode(ASTNodeKind.INSTRUCTION) {
           }
 
           // used for mem matching, in first phase
-          return new ASTInstructionArg(InstructionArgType.LABEL, token.text);
+          return new ASTInstructionArg(
+            InstructionArgType.LABEL,
+            token.text,
+            byteSizeOverride ?? branchSizeOverride,
+          );
 
         // Numeric or address segmented address
         case TokenType.NUMBER: {

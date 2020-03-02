@@ -124,29 +124,28 @@ export class BinaryInstruction extends BinaryBlob<ASTInstruction> {
             break;
 
           // relative jump
-          case 'r0': case 'r1': {
-            const addrArg = ast.relAddrArgs[0];
-            if (addrArg) {
-              const relAddress = (<number> addrArg.val) - offset - ast.schemas[0].byteSize;
+          case 'r0': case 'r1':
+            if (immArg) {
+              const relAddress = immArg.val - offset - ast.schemas[0].byteSize;
 
               binary.push(
                 X86AbstractCPU.toUnsignedNumber(
                   extractNthByte(+schema[1], relAddress),
-                  <any> addrArg.byteSize,
+                  <any> immArg.byteSize,
                 ),
               );
             } else
               binary.push(0x0); // pessimistic stage
-          } break;
+            break;
 
           // immediate
           case 'i0': case 'i1': case 'i2': case 'i3':
-            if (R.isNil(immArg))
-              throw new ParserError(ParserErrorCode.MISSING_IMM_ARG_DEF);
-
-            binary.push(
-              extractNthByte(+schema[1], <number> immArg.val),
-            );
+            if (immArg) {
+              binary.push(
+                extractNthByte(+schema[1], <number> immArg.val),
+              );
+            } else
+              binary.push(0x0); // pessimistic stage
             break;
 
           // displacement

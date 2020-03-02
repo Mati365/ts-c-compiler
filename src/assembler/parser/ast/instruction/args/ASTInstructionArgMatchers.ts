@@ -45,14 +45,14 @@ function sreg(arg: ASTInstructionArg, byteSize: X86BitsMode): boolean {
 }
 
 function imm(arg: ASTInstructionArg, byteSize: X86BitsMode): boolean {
-  return arg.type === InstructionArgType.NUMBER && arg.byteSize === byteSize;
+  return arg.type === InstructionArgType.LABEL || (arg.type === InstructionArgType.NUMBER && arg.byteSize === byteSize);
 }
 
 function relLabel(arg: ASTInstructionArg, signedByteSize: X86BitsMode): boolean {
   if (arg.type === InstructionArgType.LABEL)
     return true;
 
-  if (arg.type === InstructionArgType.RELATIVE_ADDR)
+  if (arg.type === InstructionArgType.NUMBER)
     return (<ASTInstructionNumberArg> arg).signedByteSize === signedByteSize;
 
   return false;
@@ -62,7 +62,7 @@ function nearPointer(arg: ASTInstructionArg, maxByteSize: X86BitsMode): boolean 
   if (arg.type === InstructionArgType.LABEL)
     return true;
 
-  if (arg.type === InstructionArgType.RELATIVE_ADDR)
+  if (arg.type === InstructionArgType.NUMBER)
     return (<ASTInstructionNumberArg> arg).signedByteSize <= maxByteSize;
 
   return false;
@@ -203,7 +203,7 @@ export function findMatchingInstructionSchemas(
   if (!opcodeSchemas)
     return null;
 
-  return R.filter(
+  const schemas = R.filter(
     (schema) => {
       const {argsSchema: matchers} = schema;
 
@@ -215,5 +215,10 @@ export function findMatchingInstructionSchemas(
       return true;
     },
     opcodeSchemas,
+  );
+
+  return R.sort(
+    (a, b) => a.byteSize - b.byteSize,
+    schemas,
   );
 }

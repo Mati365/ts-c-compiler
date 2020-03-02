@@ -33,7 +33,8 @@ const make = tagFunction(
 
 /* eslint-disable no-console,@typescript-eslint/no-unused-expressions */
 make`
-begin:
+mov bx, bx
+test:
 mov cl, 2
 mov cx, 2
 mov ax, 'ac'
@@ -45,9 +46,9 @@ jmp word 0x7C00:0xFF
 jmp far word [cs:bx+0xFFF]
 mov ax, word [es:bx+0x5]
 jmp dupa
-mov ax, -5
 stuff: db 0xFF, 0x75, "abcdefghijktlmneoprste"
 mov ax, bx
-jmp begin
+jmp test
+mov ax, dupa
 `;
 /* eslint-enable no-console,@typescript-eslint/no-unused-expressions */
