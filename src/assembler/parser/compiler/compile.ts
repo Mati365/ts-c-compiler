@@ -70,7 +70,7 @@ export class X86Compiler {
    * @memberof X86Compiler
    */
   setMode(mode: number): void {
-    if (this._mode < MIN_COMPILER_REG_LENGTH || this._mode > MAX_COMPILER_REG_LENGTH)
+    if (mode < MIN_COMPILER_REG_LENGTH || mode > MAX_COMPILER_REG_LENGTH)
       throw new ParserError(ParserErrorCode.UNSUPPORTED_COMPILER_MODE);
 
     this._mode = mode;
@@ -89,6 +89,7 @@ export class X86Compiler {
     const {labels} = result;
 
     let offset = 0;
+    let originDefined = false;
 
     const emitBlob = (blob: BinaryBlob): void => {
       result.nodesOffsets.set(
@@ -109,11 +110,17 @@ export class X86Compiler {
 
             // origin set
             if (compilerOption.option === CompilerOptions.ORG) {
+              if (originDefined)
+                throw new ParserError(ParserErrorCode.ORIGIN_REDEFINED);
+
               this.setOrigin(arg.value.number);
+
               offset = 0;
+              originDefined = true;
+
             // mode set
             } else if (compilerOption.option === CompilerOptions.BITS)
-              this.setMode(arg.value.number);
+              this.setMode(arg.value.number / 8);
           } break;
 
           case ASTNodeKind.INSTRUCTION:

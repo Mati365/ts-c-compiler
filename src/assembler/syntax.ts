@@ -33,24 +33,43 @@ const make = tagFunction(
 
 /* eslint-disable no-console,@typescript-eslint/no-unused-expressions */
 make`
-[org 0x7C00]
+; NASM MBR boot loader
+[bits 16]                               ; 16-bit code
+[org 0x7c00]                            ; BIOS loads us at 0x07c0:0000
+jmp 0x0000:initialize_bios              ; reset code segment to 0x0000 with long jump
 
-abc23:
-jmp 0x0:dupa
-  mov cl, 2
-  mov cx, 2
-  mov ax, 'ac'
-  jmp far [cs:bx+0xFF]
-  mov byte al, [bx]
-  dupa:
-  int 3
-  jmp 0x7C00:0xFF
-  jmp far [cs:bx+0xFFF]
-  mov ax, word [es:bx+0x5]
-  jmp dupa
-  stuff: db 0xFF, 0x75, "abcdefghijktlmneoprste"
-  mov ax, bx
-  shit
-jmp abc23
+initialize_bios:
+        xor ax, ax
+        mov ds, ax                      ; reset data segments to 0x0000
+        mov es, ax
+        mov [bootdrive], dl             ; store boot drive
+        mov si, welcome                 ; print welcome string
+        call print
+        jmp load_kernel_header         ; proceed to load kernel
+
+halt:
+        hlt                             ; halt CPU to save power
+        jmp halt                        ; loop if halt interrupted
+
+print:                                  ; Print string in SI with bios
+        mov al, [si]
+        inc si
+        or al, al
+        jz exit_function                ; end at NUL
+        mov ah, 0x0e                    ; op 0x0e
+        mov bh, 0x00                    ; page number
+        mov bl, 0x07                    ; color
+        int 0x10                        ; INT 10 - BIOS print char
+        jmp print
+        exit_function:
+        ret
+
+data:
+        welcome db 'Loading...', 0      ; welcome message
+        error db 'Error', 0             ; error message
+        bootdrive db 0x00
+
+load_kernel_header:
+  xor ax, ax
 `;
 /* eslint-enable no-console,@typescript-eslint/no-unused-expressions */

@@ -72,7 +72,7 @@ export class BinaryInstruction extends BinaryBlob<ASTInstruction> {
       const {sreg} = addressDescription;
 
       // check if excedding, only if RM byte present, moffset can be bigger
-      if (!memArg.schema?.moffset && addressDescription.dispByteSize > memArg.byteSize) {
+      if (!memArg.schema?.moffset && addressDescription.dispByteSize > compiler.mode) {
         throw new ParserError(
           ParserErrorCode.DISPLACEMENT_EXCEEDING_BYTE_SIZE,
           null,

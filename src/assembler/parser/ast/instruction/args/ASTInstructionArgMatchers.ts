@@ -14,9 +14,7 @@ import {
   ASTInstructionMatcherSchema,
 } from '../ASTInstructionSchema';
 
-import {
-  roundedSignedNumberByteSize,
-} from '../../../../utils/numberByteSize';
+import {roundedSignedNumberByteSize} from '../../../../utils/numberByteSize';
 
 /**
  * Args matchers used to match args to schema,

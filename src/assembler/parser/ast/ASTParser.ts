@@ -137,8 +137,15 @@ export class ASTParser extends ASTTokensIterator {
           }
         }
 
-        if (!tokenParsed && !isWhitespace(<string> token.text))
-          throw new ParserError(ParserErrorCode.UNKNOWN_OPERATION, token.loc);
+        if (!tokenParsed && !isWhitespace(<string> token.text)) {
+          throw new ParserError(
+            ParserErrorCode.UNKNOWN_OPERATION,
+            token.loc,
+            {
+              operation: token.text,
+            },
+          );
+        }
 
         return true;
       },

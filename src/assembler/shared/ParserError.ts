@@ -60,6 +60,9 @@ export enum ParserErrorCode {
   // define data
   DEFINED_DATA_EXCEEDES_BOUNDS,
   UNSUPPORTED_DEFINE_TOKEN,
+
+  // options
+  ORIGIN_REDEFINED,
 }
 
 /* eslint-disable max-len */
@@ -73,7 +76,7 @@ export const ERROR_TRANSLATIONS: {[key in ParserErrorCode]: string} = {
 
   [ParserErrorCode.MISSING_MEM_OPERAND_SIZE]: 'Missing mem operand size!',
   [ParserErrorCode.INVALID_INSTRUCTION_OPERAND]: 'Invalid operand "%{operand}"!',
-  [ParserErrorCode.UNKNOWN_OPERATION]: 'Unknown operation!',
+  [ParserErrorCode.UNKNOWN_OPERATION]: 'Unknown operation "%{operation}"!',
   [ParserErrorCode.REGISTER_IS_NOT_SEGMENT_REG]: 'Provided register "%{reg}" is not segment register!',
 
   [ParserErrorCode.EXCEEDING_CASTED_NUMBER_SIZE]: 'Provided value "%{value}" is exceeding casted arg size (provided %{size} bytes but max is %{maxSize} bytes)!',
@@ -121,6 +124,9 @@ export const ERROR_TRANSLATIONS: {[key in ParserErrorCode]: string} = {
   // defined data
   [ParserErrorCode.DEFINED_DATA_EXCEEDES_BOUNDS]: 'Defined data "%{data}" excedees bounds (%{maxSize} bytes)!',
   [ParserErrorCode.UNSUPPORTED_DEFINE_TOKEN]: 'Invalid "%{token}" define token value!',
+
+  // options
+  [ParserErrorCode.ORIGIN_REDEFINED]: 'Origin redefined!',
 };
 /* eslint-enable max-len */
 

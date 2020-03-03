@@ -31,9 +31,21 @@
     ["fptrd", "EA o0 o1 s0 s1"],
     ["ifptr", "FF /5 d0 d1"]
   ],
+  "jz": [
+    ["ll", "0F 84 r0 r1"],
+    ["sl", "74 r0"]
+  ],
   "jnc": [
     ["ll", "0F 83 r0 r1"],
     ["sl", "73 r0"]
+  ],
+  "ret": [
+    ["", "C3"],
+    ["iw", "C2 i0 i1"]
+  ],
+  "retf": [
+    ["", "CB"],
+    ["iw", "CA i0 i1"]
   ],
   "inc": [
     ["ax", "40"],
@@ -46,6 +58,28 @@
     ["di", "47"],
     ["rmb", "FE /0 d0 d1"],
     ["rmw", "FF /0 d0 d1"]
+  ],
+  "or": [
+    ["al ib", "0C i0"],
+    ["ax iw", "0D i0 i1"],
+    ["rb rmb", "0A mr d0 d1"],
+    ["rw rmw", "0B mr d0 d1"],
+    ["rmb ib", "80 /1 d0 d1 i0"],
+    ["rmw iw", "81 /1 d0 d1 i0 i1"],
+    ["rmw ib", "83 /1 d0 d1 i0"],
+    ["rmb rb", "08 mr d0 d1"],
+    ["rmw rw", "09 mr d0 d1"]
+  ],
+  "xor": [
+    ["rmb rb", "30 mr d0 d1"],
+    ["rmw rw", "31 mr d0 d1"],
+    ["rb rmb", "32 mr d0 d1"],
+    ["rw rmw", "33 mr d0 d1"],
+    ["al ib", "34 i0"],
+    ["ax iw", "35 i0 i1"],
+    ["rmb ib", "80 /6 d0 d1 i0"],
+    ["rmw iw", "81 /6 d0 d1 i0 i1"],
+    ["rmw ib", "83 /6 d0 d1 i0"]
   ],
   "mov": [
     ["al moffs", "A0 d0 d1"],
