@@ -20,6 +20,17 @@
     ["ifptr", "FF /3 d0 d1"],
     ["fptrd", "9A o0 o1 s0 s1"]
   ],
+  "cmp": [
+    ["rmb rb", "38 mr d0 d1"],
+    ["rmw rw", "39 mr d0 d1"],
+    ["rb rmb", "3A mr d0 d1"],
+    ["rw rmw", "3B mr d0 d1"],
+    ["al ib", "3C i0"],
+    ["ax iw", "3D i0 i1"],
+    ["rmb ib", "80 /7 d0 d1 i0"],
+    ["rmw iw", "81 /7 d0 d1 i0 i1"],
+    ["rmw ib", "83 /7 d0 d1 i0"]
+  ],
   "hlt": "F4",
   "int3": "CC",
   "int": ["ib", "CD i0"],

@@ -71,5 +71,6 @@ data:
 
 load_kernel_header:
   xor ax, ax
+
 `;
 /* eslint-enable no-console,@typescript-eslint/no-unused-expressions */
