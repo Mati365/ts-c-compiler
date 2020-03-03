@@ -13,7 +13,10 @@ import {Token, NumberFormat, NumberToken} from '../lexer/tokens';
  * @param {Token<any>[]} tokens
  * @returns
  */
-export function assignLabelsToTokens(labelResolver: ASTLabelAddrResolver, tokens: Token<any>[]) {
+export function assignLabelsToTokens(
+  labelResolver: ASTLabelAddrResolver,
+  tokens: Token<any>[],
+) {
   if (!labelResolver)
     return tokens;
 

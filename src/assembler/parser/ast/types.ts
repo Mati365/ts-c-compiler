@@ -2,6 +2,7 @@ export enum ASTNodeKind {
   INSTRUCTION,
   LABEL,
   DEFINE,
+  COMPILER_OPTION,
 }
 
 /**

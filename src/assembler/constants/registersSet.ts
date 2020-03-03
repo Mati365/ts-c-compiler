@@ -1,5 +1,7 @@
 import * as R from 'ramda';
+
 import {RegisterSchema as Reg} from '../shared/RegisterSchema';
+import {InstructionArgSize} from '../types';
 
 export enum InstructionPrefix {
   LOCK = 0x0,
@@ -52,6 +54,8 @@ export const COMPILER_REGISTERS_SET: {[name: string]: Reg} = R.reduce(
     /* eslint-enable max-len */
   ],
 );
+
+export const MIN_COMPILER_REG_LENGTH = InstructionArgSize.WORD;
 
 export const MAX_COMPILER_REG_LENGTH = R.reduce(
   (acc, {byteSize}) => Math.max(acc, byteSize),

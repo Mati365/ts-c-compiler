@@ -1,8 +1,15 @@
 import * as R from 'ramda';
 
+import {
+  MIN_COMPILER_REG_LENGTH,
+  MAX_COMPILER_REG_LENGTH,
+} from '../../constants';
+
 import {ParserError, ParserErrorCode} from '../../shared/ParserError';
 import {InstructionArgSize} from '../../types';
+import {NumberToken} from '../lexer/tokens';
 
+import {ASTCompilerOption, CompilerOptions} from '../ast/def/ASTCompilerOption';
 import {ASTLabelAddrResolver} from '../ast/instruction/ASTResolvableArg';
 import {ASTTree} from '../ast/ASTParser';
 import {ASTNodeKind} from '../ast/types';
@@ -34,11 +41,40 @@ import {
  * @class X86Compiler
  */
 export class X86Compiler {
+  private _mode: InstructionArgSize = InstructionArgSize.WORD;
+  private _origin: number = 0x0;
+
   constructor(
     public readonly tree: ASTTree,
-    public readonly mode: InstructionArgSize = InstructionArgSize.WORD,
     public readonly maxPasses: number = 4,
   ) {}
+
+  get origin() { return this._origin; }
+  get mode() { return this._mode; }
+
+  /**
+   * Set origin which is absolute address
+   * used to generated absolute offsets
+   *
+   * @param {number} origin
+   * @memberof X86Compiler
+   */
+  setOrigin(origin: number): void {
+    this._origin = origin;
+  }
+
+  /**
+   * Change bits mode
+   *
+   * @param {number} mode
+   * @memberof X86Compiler
+   */
+  setMode(mode: number): void {
+    if (this._mode < MIN_COMPILER_REG_LENGTH || this._mode > MAX_COMPILER_REG_LENGTH)
+      throw new ParserError(ParserErrorCode.UNSUPPORTED_COMPILER_MODE);
+
+    this._mode = mode;
+  }
 
   /**
    * First pass compiler, omit labels and split into multiple chunks
@@ -49,39 +85,73 @@ export class X86Compiler {
    */
   private firstPass(): FirstPassResult {
     const result = new FirstPassResult;
-
     const {astNodes} = this.tree;
     const {labels} = result;
 
     let offset = 0;
 
     const emitBlob = (blob: BinaryBlob): void => {
-      result.nodesOffsets.set(offset, blob);
+      result.nodesOffsets.set(
+        this._origin + offset,
+        blob,
+      );
       offset += blob.binary.length;
     };
 
     R.forEach(
       (node) => {
+        const absoluteAddress = this._origin + offset;
+
         switch (node.kind) {
+          case ASTNodeKind.COMPILER_OPTION: {
+            const compilerOption = <ASTCompilerOption> node;
+            const arg = <NumberToken> compilerOption.args[0];
+
+            // origin set
+            if (compilerOption.option === CompilerOptions.ORG) {
+              this.setOrigin(arg.value.number);
+              offset = 0;
+            // mode set
+            } else if (compilerOption.option === CompilerOptions.BITS)
+              this.setMode(arg.value.number);
+          } break;
+
           case ASTNodeKind.INSTRUCTION:
-            emitBlob(new BinaryInstruction(<ASTInstruction> node).compile(this, offset));
+            emitBlob(
+              new BinaryInstruction(<ASTInstruction> node).compile(this, absoluteAddress),
+            );
             break;
 
           case ASTNodeKind.DEFINE:
-            emitBlob(new BinaryDefinition(<ASTDef> node).compile());
+            emitBlob(
+              new BinaryDefinition(<ASTDef> node).compile(),
+            );
             break;
 
           case ASTNodeKind.LABEL: {
             const labelName = (<ASTLabel> node).name;
 
-            if (labels.has(labelName))
-              throw new ParserError(ParserErrorCode.LABEL_ALREADY_DEFINED, null, {label: labelName});
+            if (labels.has(labelName)) {
+              throw new ParserError(
+                ParserErrorCode.LABEL_ALREADY_DEFINED,
+                null,
+                {
+                  label: labelName,
+                },
+              );
+            }
 
-            labels.set(labelName, offset);
+            labels.set(labelName, absoluteAddress);
           } break;
 
           default:
-            throw new ParserError(ParserErrorCode.UNKNOWN_COMPILER_INSTRUCTION, null, {instruction: node.toString()});
+            throw new ParserError(
+              ParserErrorCode.UNKNOWN_COMPILER_INSTRUCTION,
+              null,
+              {
+                instruction: node.toString(),
+              },
+            );
         }
       },
       astNodes,
@@ -143,7 +213,13 @@ export class X86Compiler {
           if (!ast.labeledInstruction && !ast.unresolvedArgs)
             continue;
 
-          ast.tryResolveSchema(labelResolver(ast));
+          // matcher must choose which instruction to match
+          // based on origin it must choose between short relative
+          // jump and long
+          ast.tryResolveSchema(
+            labelResolver(ast),
+            offset,
+          );
 
           // single instruction might contain multiple schemas but never 0
           const {schemas} = ast;

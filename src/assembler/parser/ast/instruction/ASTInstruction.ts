@@ -216,10 +216,12 @@ export class ASTInstruction extends KindASTNode(ASTNodeKind.INSTRUCTION) {
    * Search if all labels are present
    *
    * @param {ASTLabelAddrResolver} labelResolver
+   * @param {number} absoluteAddress
+   *
    * @returns {ASTInstruction}
    * @memberof ASTInstruction
    */
-  tryResolveSchema(labelResolver?: ASTLabelAddrResolver): ASTInstruction {
+  tryResolveSchema(labelResolver?: ASTLabelAddrResolver, absoluteAddress?: number): ASTInstruction {
     this.argsTokens = assignLabelsToTokens(labelResolver, this.originalArgsTokens);
 
     // regenerate schema args
@@ -237,7 +239,7 @@ export class ASTInstruction extends KindASTNode(ASTNodeKind.INSTRUCTION) {
     this.tryResolveArgs(labelResolver, newArgs);
 
     // list all of schemas
-    this.schemas = findMatchingInstructionSchemas(COMPILER_INSTRUCTIONS_SET, this);
+    this.schemas = findMatchingInstructionSchemas(COMPILER_INSTRUCTIONS_SET, this, absoluteAddress);
 
     // assign matching schema
     const {schemas, args} = this;

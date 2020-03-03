@@ -43,3 +43,14 @@ export function roundToPowerOfTwo(num: number): number {
 
   return power;
 }
+
+/**
+ * Returns size in bytes number rounded to power of two
+ *
+ * @export
+ * @param {number} num
+ * @returns {number}
+ */
+export function roundedSignedNumberByteSize(num: number): number {
+  return roundToPowerOfTwo(signedNumberByteSize(num));
+}

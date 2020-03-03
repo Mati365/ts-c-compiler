@@ -14,6 +14,10 @@ import {
   ASTInstructionMatcherSchema,
 } from '../ASTInstructionSchema';
 
+import {
+  roundedSignedNumberByteSize,
+} from '../../../../utils/numberByteSize';
+
 /**
  * Args matchers used to match args to schema,
  * if there is label in jmp/call instruction - return true,
@@ -48,22 +52,30 @@ function imm(arg: ASTInstructionArg, byteSize: X86BitsMode): boolean {
   return arg.type === InstructionArgType.LABEL || (arg.type === InstructionArgType.NUMBER && arg.byteSize === byteSize);
 }
 
-function relLabel(arg: ASTInstructionArg, signedByteSize: X86BitsMode): boolean {
+function relLabel(
+  arg: ASTInstructionArg,
+  signedByteSize: X86BitsMode,
+  absoluteAddress: number,
+): boolean {
   if (arg.type === InstructionArgType.LABEL)
     return true;
 
   if (arg.type === InstructionArgType.NUMBER)
-    return (<ASTInstructionNumberArg> arg).signedByteSize === signedByteSize;
+    return roundedSignedNumberByteSize(((<ASTInstructionNumberArg> arg).val - absoluteAddress)) === signedByteSize;
 
   return false;
 }
 
-function nearPointer(arg: ASTInstructionArg, maxByteSize: X86BitsMode): boolean {
+function nearPointer(
+  arg: ASTInstructionArg,
+  maxByteSize: X86BitsMode,
+  absoluteAddress: number,
+): boolean {
   if (arg.type === InstructionArgType.LABEL)
     return true;
 
   if (arg.type === InstructionArgType.NUMBER)
-    return (<ASTInstructionNumberArg> arg).signedByteSize <= maxByteSize;
+    return roundedSignedNumberByteSize((<ASTInstructionNumberArg> arg).val - absoluteAddress) <= maxByteSize;
 
   return false;
 }
@@ -102,7 +114,11 @@ function indirectFarSegPointer(arg: ASTInstructionArg, instruction: ASTInstructi
  *
  * @see {@link http://www.mathemainzel.info/files/x86asmref.html}
  */
-export type ASTInstructionArgMatcher = (arg: ASTInstructionArg, instruction?: ASTInstruction) => boolean;
+export type ASTInstructionArgMatcher = (
+  arg: ASTInstructionArg,
+  instruction?: ASTInstruction,
+  absoluteAddress?: number,
+) => boolean;
 
 export type ASTInstructionArgMatcherFactory<T = any> = (config?: T) => ASTInstructionArgMatcher;
 
@@ -141,11 +157,11 @@ export const ASTInstructionArgMatchers: {[key: string]: ASTInstructionArgMatcher
   iw: () => (arg: ASTInstructionArg) => imm(arg, 2),
 
   /** LABEL - size of label will be matched in second phrase */
-  sl: () => (arg: ASTInstructionArg) => relLabel(arg, 1),
-  ll: () => (arg: ASTInstructionArg) => relLabel(arg, 2),
+  sl: () => (arg: ASTInstructionArg, _: ASTInstruction, addr: number) => relLabel(arg, 1, addr),
+  ll: () => (arg: ASTInstructionArg, _: ASTInstruction, addr: number) => relLabel(arg, 2, addr),
 
   /** NEAR POINTER */
-  np: () => (arg: ASTInstructionArg) => nearPointer(arg, 2),
+  np: () => (arg: ASTInstructionArg, _: ASTInstruction, addr: number) => nearPointer(arg, 2, addr),
 
   /** ABSOLUTE FAR POINTERS */
   fptrw: () => (arg: ASTInstructionArg) => farSegPointer(arg, 2),
@@ -191,11 +207,13 @@ export const argMatchersFromStr = R.ifElse(
  * @export
  * @param {ASTOpcodeMatchers} matchersSet
  * @param {ASTInstruction} instruction
+ * @param {number} offset
  * @returns {ASTInstructionSchema[]}
  */
 export function findMatchingInstructionSchemas(
   matchersSet: ASTOpcodeMatchers,
   instruction: ASTInstruction,
+  offset: number,
 ): ASTInstructionSchema[] {
   const {opcode, args} = instruction;
   const opcodeSchemas = matchersSet[opcode];
@@ -208,7 +226,7 @@ export function findMatchingInstructionSchemas(
       const {argsSchema: matchers} = schema;
 
       for (let i = matchers.length - 1; i >= 0; --i) {
-        if (R.isNil(args[i]) || !matchers[i].matcher(args[i], instruction))
+        if (R.isNil(args[i]) || !matchers[i].matcher(args[i], instruction, offset))
           return false;
       }
 

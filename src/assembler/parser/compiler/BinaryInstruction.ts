@@ -45,11 +45,11 @@ export class BinaryInstruction extends BinaryBlob<ASTInstruction> {
    * Transforms provided AST instruction into binary
    *
    * @param {X86Compiler} compiler
-   * @param {number} offset
+   * @param {number} absoluteAddress
    * @returns {BinaryInstruction}
    * @memberof BinaryInstruction
    */
-  compile(compiler: X86Compiler, offset: number): BinaryInstruction {
+  compile(compiler: X86Compiler, absoluteAddress: number): BinaryInstruction {
     const {ast} = this;
     const [primarySchema] = ast.schemas;
 
@@ -131,7 +131,7 @@ export class BinaryInstruction extends BinaryBlob<ASTInstruction> {
           // relative jump
           case 'r0': case 'r1':
             if (immArg) {
-              const relAddress = immArg.val - offset - primarySchema.byteSize;
+              const relAddress = immArg.val - absoluteAddress - primarySchema.byteSize;
 
               binary.push(
                 X86AbstractCPU.toUnsignedNumber(
