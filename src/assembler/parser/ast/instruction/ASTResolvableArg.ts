@@ -1,4 +1,12 @@
 /**
+ * Resolves label address by name
+ *
+ * @see
+ *  name might be also local name!
+ */
+export type ASTLabelAddrResolver = (name: string) => number;
+
+/**
  * Lazy resoleable instruction arg, used for
  * label resolving in more advanced arguments
  * such as mem address calculation, in simpler
@@ -27,16 +35,19 @@ export class ASTResolvableArg<T> {
     return value.toString();
   }
 
+  /* eslint-disable @typescript-eslint/no-unused-vars */
   /**
    * Called when compiler tries to resolve label
    *
+   * @param {ASTLabelAddrResolver} [labelResolver]
    * @returns {boolean}
    * @memberof ASTResolvableArg
    */
-  tryResolve(): boolean {
+  tryResolve(labelResolver?: ASTLabelAddrResolver): boolean {
     this.resolved = true;
     return true;
   }
+  /* eslint-enable @typescript-eslint/no-unused-vars */
 
   /**
    * Returns resolved flag

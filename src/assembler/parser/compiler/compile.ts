@@ -3,9 +3,11 @@ import * as R from 'ramda';
 import {ParserError, ParserErrorCode} from '../../shared/ParserError';
 import {InstructionArgSize} from '../../types';
 
+import {ASTLabelAddrResolver} from '../ast/instruction/ASTResolvableArg';
 import {ASTTree} from '../ast/ASTParser';
 import {ASTNodeKind} from '../ast/types';
-import {ASTInstruction, ASTLabelAddrResolver} from '../ast/instruction/ASTInstruction';
+import {ASTInstruction} from '../ast/instruction/ASTInstruction';
+import {ASTDef} from '../ast/def/ASTDef';
 import {
   ASTLabel,
   isLocalLabel,
@@ -15,7 +17,6 @@ import {
 import {BinaryInstruction} from './BinaryInstruction';
 import {BinaryBlob} from './BinaryBlob';
 import {BinaryDefinition} from './BinaryDefinition';
-import {ASTDef} from '../ast/def/ASTDef';
 
 import {
   FirstPassResult,
@@ -139,12 +140,8 @@ export class X86Compiler {
           const pessimisticSize = binary.length;
 
           // generally check for JMP/CALL etc instructions
-          const shrinkable = ast.hasLabelsInOriginalAST();
-          if (shrinkable) {
-            ast
-              .assignLabelsToArgs(labelResolver(ast))
-              .tryResolveSchema();
-          }
+          if (ast.labeledInstruction)
+            ast.tryResolveSchema(labelResolver(ast));
 
           // single instruction might contain multiple schemas but never 0
           const {schemas} = ast;
@@ -164,6 +161,7 @@ export class X86Compiler {
           const shrinkBytes = pessimisticSize - recompiled.binary.length;
           if (shrinkBytes) {
             needPass = true;
+            nodesOffsets.set(offset, recompiled);
 
             // if so decrement precceding instruction offsets and label offsets
             for (const [label, labelOffset] of labels) {
@@ -172,10 +170,10 @@ export class X86Compiler {
             }
 
             // if so decrement precceding instruction offsets and label offsets
-            for (const [instructionOffset] of Array.from(nodesOffsets)) {
+            for (const [instructionOffset, nextInstruction] of Array.from(nodesOffsets)) {
               if (instructionOffset > offset) {
                 nodesOffsets.delete(instructionOffset);
-                nodesOffsets.set(instructionOffset - shrinkBytes, recompiled);
+                nodesOffsets.set(instructionOffset - shrinkBytes, nextInstruction);
               }
             }
           }

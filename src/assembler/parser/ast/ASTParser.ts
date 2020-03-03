@@ -1,3 +1,5 @@
+import * as R from 'ramda';
+
 import {isWhitespace} from '../../utils/matchCharacter';
 
 import {ParserError, ParserErrorCode} from '../../shared/ParserError';
@@ -127,7 +129,10 @@ export class ASTParser extends ASTTokensIterator {
               break;
             }
           } catch (e) {
-            console.error(`(${token.loc.toString()}): ${e.message}`);
+            if (R.has('code', e))
+              console.error(`(${token.loc.toString()}): ${e.message}`);
+            else
+              console.error(e);
             return null;
           }
         }

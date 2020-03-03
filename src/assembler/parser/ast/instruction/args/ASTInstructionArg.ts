@@ -1,7 +1,7 @@
 import {InstructionArgType} from '../../../../types';
 
 import {ASTInstructionMatcherSchema} from '../ASTInstructionSchema';
-import {ASTResolvableArg} from '../../ASTResolvableArg';
+import {ASTResolvableArg} from '../ASTResolvableArg';
 
 /**
  * Used for parser to check argument size or type

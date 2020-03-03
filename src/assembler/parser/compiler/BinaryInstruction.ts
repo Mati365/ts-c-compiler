@@ -56,7 +56,7 @@ export class BinaryInstruction extends BinaryBlob<ASTInstruction> {
     const binary: number[] = [];
     const binaryPrefixes: number[] = [];
 
-    const [memArg, rmArg, immArg] = [ast.memArgs[0], ast.findRMArg(), ast.numArgs[0]];
+    const [memArg, rmArg, immArg, segMemArg] = [ast.memArgs[0], ast.findRMArg(), ast.numArgs[0], ast.segMemArgs[0]];
     let rmByte = rmArg && BinaryInstruction.encodeRMByte(
       compiler.mode,
       R.find(
@@ -104,29 +104,34 @@ export class BinaryInstruction extends BinaryBlob<ASTInstruction> {
     primarySchema.binarySchema.forEach(
       (schema) => {
         switch (schema) {
-          // far jump
-          case 's0': case 's1':
-            binary.push(
-              extractNthByte(
-                +schema[1],
-                ast.segMemArgs[0].val.segment.number,
-              ),
-            );
-            break;
+          // segment
+          case 's0': case 's1': {
+            const segOffset = segMemArg.val?.segment;
 
-          case 'o0': case 'o1': case 'o2': case 'o3':
-            binary.push(
-              extractNthByte(
-                +schema[1],
-                ast.segMemArgs[0].val.offset.number,
-              ),
-            );
-            break;
+            if (segOffset) {
+              binary.push(
+                extractNthByte(+schema[1], segOffset.number),
+              );
+            } else
+              binary.push(0x0); // pessimistic stage
+          } break;
+
+          // offset
+          case 'o0': case 'o1': case 'o2': case 'o3': {
+            const immOffset = segMemArg.val?.offset;
+
+            if (segMemArg.val) {
+              binary.push(
+                extractNthByte(+schema[1], immOffset.number),
+              );
+            } else
+              binary.push(0x0); // pessimistic stage
+          } break;
 
           // relative jump
           case 'r0': case 'r1':
             if (immArg) {
-              const relAddress = immArg.val - offset - ast.schemas[0].byteSize;
+              const relAddress = immArg.val - offset - primarySchema.byteSize;
 
               binary.push(
                 X86AbstractCPU.toUnsignedNumber(

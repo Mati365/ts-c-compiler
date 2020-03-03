@@ -11,9 +11,9 @@ import {
 } from '../ASTNode';
 
 import {
-  fetchTokensArgsList,
+  fetchInstructionTokensArgsList,
   toStringArgsList,
-} from '../instruction/ASTInstruction';
+} from '../../utils';
 
 export enum DefTokenNames {
   DB = InstructionArgSize.BYTE,
@@ -83,7 +83,7 @@ export class ASTDef extends KindASTNode(ASTNodeKind.DEFINE) {
       return null;
 
     // pick all args
-    const argsTokens = fetchTokensArgsList(parser, false);
+    const argsTokens = fetchInstructionTokensArgsList(parser, false);
 
     // throw error if any number exceddes token def size
     // todo: check strings?

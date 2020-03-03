@@ -15,6 +15,7 @@ import {ParserError, ParserErrorCode} from '../../../shared/ParserError';
 import {ASTParser, ASTTokensIterator} from '../ASTParser';
 import {ASTNodeKind} from '../types';
 
+import {ASTLabelAddrResolver} from './ASTResolvableArg';
 import {ASTInstructionSchema} from './ASTInstructionSchema';
 import {
   ASTInstructionNumberArg,
@@ -37,113 +38,18 @@ import {
   TokenKind,
   SizeOverrideToken,
   BranchAddressingTypeToken,
-  NumberFormat,
 } from '../../lexer/tokens';
 
 import {findMatchingInstructionSchemas} from './args/ASTInstructionArgMatchers';
 import {reduceTextToBitset} from '../../compiler/utils';
 
-/**
- * Returns true if token might be label
- *
- * @param {Token} token
- * @returns {boolean}
- */
-function isPossibleLabelToken(token: Token): boolean {
-  return token.type === TokenType.KEYWORD && !token.kind;
-}
-
-/**
- * Used to detect if instruction wants to consume some bytes,
- * if so - it will popably consume at least 2 imm bytes
- * (due to IP size)
- *
- * @export
- * @param {string} opcode
- * @returns {boolean}
- */
-export function isJumpInstruction(opcode: string): boolean {
-  return opcode[0] === 'j' || opcode === 'call';
-}
-
-/**
- * Used in string serializers
- *
- * @export
- * @param {string} prefix
- * @param {any[]} args
- * @returns {string}
- */
-export function toStringArgsList(prefix: string, args: any[]): string {
-  const formattedArgs = R.map(
-    R.toString,
-    args,
-  );
-
-  return R.toLower(`${prefix} ${R.join(', ', formattedArgs)}`);
-}
-
-/**
- * Fetches array of args such as:
- * ax, 0x55, byte ax
- *
- * @export
- * @param {ASTParser} parser
- * @param {boolean} [allowSizeOverride=true]
- * @returns {Token[]}
- */
-export function fetchTokensArgsList(
-  parser: ASTParser,
-  allowSizeOverride: boolean = true,
-): Token[] {
-  // parse arguments
-  const argsTokens: Token[] = [];
-  let separatorToken = null;
-
-  do {
-    // value or size operand
-    let token = parser.fetchRelativeToken();
-    if (token.type === TokenType.EOL || token.type === TokenType.EOF)
-      break;
-
-    argsTokens.push(token);
-
-    // far / near jmp instruction args prefix
-    if (token.kind === TokenKind.BRANCH_ADDRESSING_TYPE) {
-      token = parser.fetchRelativeToken();
-      argsTokens.push(token);
-    }
-
-    // if it was size operand - fetch next token which is prefixed
-    if (allowSizeOverride && token.kind === TokenKind.BYTE_SIZE_OVERRIDE) {
-      argsTokens.push(
-        parser.fetchRelativeToken(),
-      );
-    }
-
-    // comma or other separator
-    separatorToken = parser.fetchRelativeToken();
-
-    // handle comma between numbers in some addressing modes
-    if (separatorToken?.type === TokenType.COLON)
-      argsTokens.push(separatorToken);
-  } while (
-    separatorToken && (
-      separatorToken.type === TokenType.COMMA
-        || separatorToken.type === TokenType.COLON
-    )
-  );
-
-  return argsTokens;
-}
-
-/**
- * Resolves label address by name
- *
- * @see
- *  name might be also local name!
- */
-export type ASTLabelAddrResolver = (name: string) => number;
+import {
+  isJumpInstruction,
+  toStringArgsList,
+  fetchInstructionTokensArgsList,
+  assignLabelsToTokens,
+  isAnyLabelInTokensList,
+} from '../../utils';
 
 /**
  * Parser for:
@@ -158,17 +64,21 @@ export type ASTLabelAddrResolver = (name: string) => number;
  * @extends {KindASTNode('Instruction')}
  */
 export class ASTInstruction extends KindASTNode(ASTNodeKind.INSTRUCTION) {
+  // used for optimistic instruction size predictions
+  public readonly originalArgsTokens: Token<any>[];
+
   public typedArgs: {[type in InstructionArgType]: (ASTInstructionArg|ASTInstructionMemPtrArg)[]};
   public schemas: ASTInstructionSchema[];
 
   // jump/branch related args
   public branchAddressingType: BranchAddressingType = null;
-  public jumpInstruction: boolean = false;
+
+  public readonly jumpInstruction: boolean;
+  public readonly labeledInstruction: boolean;
 
   // initial args is constant, it is
   // toggled on first pass, during AST tree analyze
   // args might change in second phase
-  public originalArgs: ASTInstructionArg[];
   public args: ASTInstructionArg[];
 
   constructor(
@@ -188,6 +98,8 @@ export class ASTInstruction extends KindASTNode(ASTNodeKind.INSTRUCTION) {
 
     // check if instruction is branch instruction
     this.jumpInstruction = isJumpInstruction(opcode);
+    this.labeledInstruction = isAnyLabelInTokensList(this.argsTokens);
+    this.originalArgsTokens = [...argsTokens];
   }
 
   get memArgs() {
@@ -207,16 +119,6 @@ export class ASTInstruction extends KindASTNode(ASTNodeKind.INSTRUCTION) {
   }
 
   get labelArgs() { return this.typedArgs[InstructionArgType.LABEL]; }
-
-  /**
-   * Lookups in original args that are emitted after compiling AST
-   *
-   * @returns {boolean}
-   * @memberof ASTInstruction
-   */
-  hasLabelsInOriginalAST(): boolean {
-    return R.any(isPossibleLabelToken, this.argsTokens);
-  }
 
   /**
    * Groups args into types
@@ -280,48 +182,17 @@ export class ASTInstruction extends KindASTNode(ASTNodeKind.INSTRUCTION) {
   }
 
   /**
-   * Assigns aboslute label address to labels
+   * Search if all labels are present
    *
    * @param {ASTLabelAddrResolver} labelResolver
    * @returns {ASTInstruction}
    * @memberof ASTInstruction
    */
-  assignLabelsToArgs(labelResolver: ASTLabelAddrResolver): ASTInstruction {
-    this.argsTokens = R.map(
-      (token) => {
-        if (!isPossibleLabelToken(token))
-          return token;
-
-        const labelAddress = labelResolver(token.text);
-        if (R.isNil(labelAddress)) {
-          throw new ParserError(
-            ParserErrorCode.UNKNOWN_LABEL,
-            null,
-            {
-              label: token.text,
-            },
-          );
-        }
-
-        return new NumberToken(token.text, labelAddress, NumberFormat.DEC, token.loc);
-      },
-      this.argsTokens,
-    );
-
-    this.refreshTypedArgs();
-    return this;
-  }
-
-  /**
-   * Search if all labels are present
-   *
-   * @returns {ASTInstruction}
-   * @memberof ASTInstruction
-   */
-  tryResolveSchema(): ASTInstruction {
-    const {branchAddressingType, argsTokens, jumpInstruction} = this;
+  tryResolveSchema(labelResolver?: ASTLabelAddrResolver): ASTInstruction {
+    this.argsTokens = assignLabelsToTokens(labelResolver, this.originalArgsTokens);
 
     // regenerate schema args
+    const {branchAddressingType, jumpInstruction, argsTokens} = this;
     const [overridenBranchAddressingType, newArgs] = ASTInstruction.parseInstructionArgsTokens(
       branchAddressingType,
       argsTokens,
@@ -330,8 +201,18 @@ export class ASTInstruction extends KindASTNode(ASTNodeKind.INSTRUCTION) {
         : null,
     );
 
+    // assign labels resolver into not fully resolved args
     this.branchAddressingType = overridenBranchAddressingType ?? branchAddressingType;
-    this.args = newArgs;
+    this.args = R.map(
+      (arg) => {
+        if (arg.isResolved())
+          return arg;
+
+        arg.tryResolve(labelResolver);
+        return arg;
+      },
+      newArgs,
+    );
 
     // group into arrays
     this.refreshTypedArgs();
@@ -414,6 +295,28 @@ export class ASTInstruction extends KindASTNode(ASTNodeKind.INSTRUCTION) {
       const nextToken = iterator.fetchRelativeToken(1, false);
       const destinationArg = !prevArgs.length;
 
+      // check if next token is colon, if so - it is segmented arg
+      // do not pass it directly as SegmentedAddress into AST argument
+      // it can contain label, just ignore type of precceding token
+      // and throw error if not pass inside arg parser
+      if (nextToken?.type === TokenType.COLON) {
+        // sometimes instruction might be not prefixed with far or near prefix
+        // for example jmp 0x7C00:0x123, force detect addressing type
+        if (R.isNil(branchAddressingType)) {
+          branchAddressingType = BranchAddressingType.FAR;
+          branchSizeOverride = BRANCH_ADDRESSING_SIZE_MAPPING[branchAddressingType] * 2;
+        }
+
+        // eat colon
+        iterator.consume();
+
+        return new ASTInstructionMemSegmentedArg(
+          `${token.text}:${iterator.consume()?.text}`,
+          byteSizeOverride ?? branchSizeOverride ?? token.value.byteSize,
+        );
+      }
+
+      // watch for other instruction arg types
       switch (token.type) {
         // Quotes are converted into digits
         case TokenType.QUOTE: {
@@ -467,27 +370,6 @@ export class ASTInstruction extends KindASTNode(ASTNodeKind.INSTRUCTION) {
         // Numeric or address segmented address
         case TokenType.NUMBER: {
           const {number, byteSize} = (<NumberToken> token).value;
-
-          // check if next token is colon, if so - it is segmented arg
-          // do not pass it directly as SegmentedAddress into AST argument
-          // it can contain label, just ignore type of precceding token
-          // and throw error if not pass inside arg parser
-          if (nextToken?.type === TokenType.COLON) {
-            // sometimes instruction might be not prefixed with far or near prefix
-            // for example jmp 0x7C00:0x123, force detect addressing type
-            if (R.isNil(branchAddressingType)) {
-              branchAddressingType = BranchAddressingType.FAR;
-              branchSizeOverride = BRANCH_ADDRESSING_SIZE_MAPPING[branchAddressingType] * 2;
-            }
-
-            // eat colon
-            iterator.consume();
-
-            return new ASTInstructionMemSegmentedArg(
-              `${token.text}:${iterator.consume()?.text}`,
-              byteSizeOverride ?? branchSizeOverride ?? byteSize,
-            );
-          }
 
           return parseNumberArg(token, number, byteSize);
         }
@@ -604,7 +486,7 @@ export class ASTInstruction extends KindASTNode(ASTNodeKind.INSTRUCTION) {
     /* eslint-enable no-constant-condition */
 
     // parse arguments
-    const argsTokens = fetchTokensArgsList(parser);
+    const argsTokens = fetchInstructionTokensArgsList(parser);
     const instruction = new ASTInstruction(
       opcode,
       argsTokens,

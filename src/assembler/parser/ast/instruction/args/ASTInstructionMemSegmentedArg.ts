@@ -1,5 +1,11 @@
 import {lexer} from '../../../lexer/lexer';
+
 import {ParserError, ParserErrorCode} from '../../../../shared/ParserError';
+import {
+  ASTExpressionParserResult,
+  ASTExpressionParserError,
+  ok,
+} from '../../ASTExpression';
 
 import {
   InstructionArgSize,
@@ -7,7 +13,15 @@ import {
 } from '../../../../types';
 
 import {ASTInstructionArg} from './ASTInstructionArg';
-import {NumberToken, Token, NumberTokenValue} from '../../../lexer/tokens';
+import {ASTLabelAddrResolver} from '../ASTResolvableArg';
+import {
+  NumberToken,
+  Token,
+  NumberTokenValue,
+} from '../../../lexer/tokens';
+
+import {isPossibleLabelToken, assignLabelsToTokens} from '../../../utils';
+import {err} from '../../../../../shared/monads/Result';
 
 export class ASTSegmentedAddressDescription {
   constructor(
@@ -17,32 +31,66 @@ export class ASTSegmentedAddressDescription {
 }
 
 /**
- * Transforms [ax:bx+si*4] into descriptor object
+ * Parses 0x7C00:0x123 into segment / offset
  *
  * @export
+ * @param {ASTLabelAddrResolverr} labelResolver
  * @param {string} expression
- * @returns {ASTSegmentedAddressDescription}
+ * @returns {ASTExpressionParserResult<ASTSegmentedAddressDescription>}
  */
-export function parseSegmentedMemExpression(expression: string): ASTSegmentedAddressDescription {
-  const tokens = Array.from(
+export function parseSegmentedMemExpression(
+  labelResolver: ASTLabelAddrResolver,
+  expression: string,
+): ASTExpressionParserResult<ASTSegmentedAddressDescription> {
+  let tokens = Array.from(
     lexer(expression, false),
   );
 
-  if (tokens?.length !== 3)
-    throw new ParserError(ParserErrorCode.INCORRECT_SEGMENTED_MEM_ARGS_COUNT, null, {count: tokens?.length || 0});
+  if (tokens?.length !== 3) {
+    throw new ParserError(
+      ParserErrorCode.INCORRECT_SEGMENTED_MEM_ARGS_COUNT,
+      null,
+      {
+        count: tokens?.length || 0,
+      },
+    );
+  }
+
+  // assign labels if labelResolver is present
+  if (labelResolver)
+    tokens = assignLabelsToTokens(labelResolver, tokens);
 
   // segment, colon, offset
   const [segment,, offset] = <[NumberToken, Token, NumberToken]> tokens;
+  if (isPossibleLabelToken(segment) || isPossibleLabelToken(offset))
+    return err(ASTExpressionParserError.UNRESOLVED_LABEL);
+
   const {byteSize: segByteSize} = segment.value;
   const {byteSize: offsetByteSize} = offset.value;
 
-  if (segByteSize > InstructionArgSize.WORD)
-    throw new ParserError(ParserErrorCode.INCORRECT_SEGMENT_MEM_ARG_SIZE, null, {size: segByteSize});
+  if (segByteSize > InstructionArgSize.WORD) {
+    throw new ParserError(
+      ParserErrorCode.INCORRECT_SEGMENT_MEM_ARG_SIZE,
+      null,
+      {
+        size: segByteSize,
+      },
+    );
+  }
 
-  if (offsetByteSize > InstructionArgSize.DWORD)
-    throw new ParserError(ParserErrorCode.INCORRECT_OFFSET_MEM_ARG_SIZE, null, {size: offsetByteSize});
+  if (offsetByteSize > InstructionArgSize.DWORD) {
+    throw new ParserError(
+      ParserErrorCode.INCORRECT_OFFSET_MEM_ARG_SIZE,
+      null,
+      {
+        size: offsetByteSize,
+      },
+    );
+  }
 
-  return new ASTSegmentedAddressDescription(segment.value, offset.value);
+  return ok(
+    new ASTSegmentedAddressDescription(segment.value, offset.value),
+  );
 }
 
 /**
@@ -83,37 +131,43 @@ export class ASTInstructionMemSegmentedArg extends ASTInstructionArg<ASTSegmente
   }
 
   /**
+   * Try to decode phrase
+   *
+   * @param {ASTLabelAddrResolver} [labelResolver]
    * @returns {boolean}
    * @memberof ASTInstructionMemSegmentedArg
    */
-  tryResolve(): boolean {
+  tryResolve(labelResolver?: ASTLabelAddrResolver): boolean {
     const {phrase, resolved} = this;
-    if (!resolved) {
-      const parsedMem = parseSegmentedMemExpression(phrase);
+    if (resolved)
+      return resolved;
 
-      if (parsedMem) {
-        const {byteSize: offsetByteSize} = parsedMem.offset;
+    const parsedMemResult = parseSegmentedMemExpression(labelResolver, phrase);
 
-        // prefixed size only includes offset
-        // example: jmp byte 0xFFFF:0xFF
-        // so byte is offset
-        if (offsetByteSize > this.byteSize) {
-          throw new ParserError(
-            ParserErrorCode.OFFSET_MEM_ARG_SIZE_EXCEEDING_SIZE,
-            null,
-            {
-              size: offsetByteSize,
-              maxSize: this.byteSize,
-            },
-          );
-        }
+    if (parsedMemResult.isOk()) {
+      const parsedMem = parsedMemResult.unwrap();
+      const {byteSize: offsetByteSize} = parsedMem.offset;
 
-        parsedMem.offset.byteSize = this.offsetByteSize;
+      // prefixed size only includes offset
+      // example: jmp byte 0xFFFF:0xFF
+      // so byte is offset
+      if (offsetByteSize > this.byteSize) {
+        throw new ParserError(
+          ParserErrorCode.OFFSET_MEM_ARG_SIZE_EXCEEDING_SIZE,
+          null,
+          {
+            size: offsetByteSize,
+            maxSize: this.byteSize,
+          },
+        );
       }
 
+      parsedMem.offset.byteSize = this.offsetByteSize;
+
       this.value = parsedMem;
+      this.resolved = true;
     }
 
-    return super.tryResolve();
+    return this.resolved;
   }
 }
