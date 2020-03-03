@@ -5,6 +5,7 @@ import {
   ASTExpressionParserResult,
   ASTExpressionParserError,
   ok,
+  err,
 } from '../../ASTExpression';
 
 import {
@@ -21,7 +22,6 @@ import {
 } from '../../../lexer/tokens';
 
 import {isPossibleLabelToken, assignLabelsToTokens} from '../../../utils';
-import {err} from '../../../../../shared/monads/Result';
 
 export class ASTSegmentedAddressDescription {
   constructor(
@@ -62,8 +62,18 @@ export function parseSegmentedMemExpression(
 
   // segment, colon, offset
   const [segment,, offset] = <[NumberToken, Token, NumberToken]> tokens;
-  if (isPossibleLabelToken(segment) || isPossibleLabelToken(offset))
-    return err(ASTExpressionParserError.UNRESOLVED_LABEL);
+  if (isPossibleLabelToken(segment) || isPossibleLabelToken(offset)) {
+    if (labelResolver) {
+      throw new ParserError(
+        ParserErrorCode.UNKNOWN_MEM_TOKEN,
+        null,
+        {
+          token: expression,
+        },
+      );
+    } else
+      return err(ASTExpressionParserError.UNRESOLVED_LABEL);
+  }
 
   const {byteSize: segByteSize} = segment.value;
   const {byteSize: offsetByteSize} = offset.value;

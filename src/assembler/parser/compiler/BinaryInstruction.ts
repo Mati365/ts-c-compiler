@@ -246,6 +246,9 @@ export class BinaryInstruction extends BinaryBlob<ASTInstruction> {
     // memory
     if (rmArg instanceof ASTInstructionMemPtrArg) {
       const {addressDescription} = <ASTInstructionMemPtrArg> rmArg;
+      if (!addressDescription)
+        return rmByte;
+
       const signedDispByteSize = (
         R.isNil(addressDescription.disp)
           ? null

@@ -140,8 +140,10 @@ export class X86Compiler {
           const pessimisticSize = binary.length;
 
           // generally check for JMP/CALL etc instructions
-          if (ast.labeledInstruction)
-            ast.tryResolveSchema(labelResolver(ast));
+          if (!ast.labeledInstruction && !ast.unresolvedArgs)
+            continue;
+
+          ast.tryResolveSchema(labelResolver(ast));
 
           // single instruction might contain multiple schemas but never 0
           const {schemas} = ast;
@@ -161,6 +163,7 @@ export class X86Compiler {
           const shrinkBytes = pessimisticSize - recompiled.binary.length;
           if (shrinkBytes) {
             needPass = true;
+            ast.unresolvedArgs = true;
             nodesOffsets.set(offset, recompiled);
 
             // if so decrement precceding instruction offsets and label offsets
@@ -170,11 +173,15 @@ export class X86Compiler {
             }
 
             // if so decrement precceding instruction offsets and label offsets
-            for (const [instructionOffset, nextInstruction] of Array.from(nodesOffsets)) {
-              if (instructionOffset > offset) {
+            const offsetsArray = Array.from(nodesOffsets);
+            for (const [instructionOffset] of offsetsArray) {
+              if (instructionOffset > offset)
                 nodesOffsets.delete(instructionOffset);
+            }
+
+            for (const [instructionOffset, nextInstruction] of offsetsArray) {
+              if (instructionOffset > offset)
                 nodesOffsets.set(instructionOffset - shrinkBytes, nextInstruction);
-              }
             }
           }
 

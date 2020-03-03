@@ -1,7 +1,16 @@
 import * as R from 'ramda';
 
 import {lexer} from '../../../lexer/lexer';
+import {assignLabelsToTokens} from '../../../utils';
 import {isOperator} from '../../../../utils/matchCharacter';
+
+import {ASTLabelAddrResolver} from '../ASTResolvableArg';
+import {
+  ASTExpressionParserResult,
+  ASTExpressionParserError,
+  ok,
+  err,
+} from '../../ASTExpression';
 
 import {ParserError, ParserErrorCode} from '../../../../shared/ParserError';
 import {
@@ -98,19 +107,41 @@ function resolveScale(
 }
 
 /**
+ * Raise error in parser in first phase - when label resolved is not defined
+ *
+ * @param {boolean} exception
+ * @param {ParserErrorCode} code
+ * @param {object} [data]
+ * @returns
+ */
+function raiseMemParserError(exception: boolean, code: ParserErrorCode, data?: object) {
+  if (exception)
+    throw new ParserError(code, null, data);
+  else
+    return err(ASTExpressionParserError.UNRESOLVED_LABEL);
+}
+
+/**
  * Transforms [ax:bx+si*4] into descriptor object
  *
  * @param {string} expression
- * @returns {MemAddressDescription}
+ * @returns {ASTExpressionParserResult<MemAddressDescription>}
  */
-function parseMemExpression(expression: string): MemAddressDescription {
-  const tokens = Array.from(
+function parseMemExpression(
+  labelResolver: ASTLabelAddrResolver,
+  expression: string,
+): ASTExpressionParserResult<MemAddressDescription> {
+  let tokens = Array.from(
     lexer(
       prefixMemPhraseWithSign('+', expression),
       false,
       true,
     ),
   );
+
+  // assign labels if labelResolver is present
+  if (labelResolver)
+    tokens = assignLabelsToTokens(labelResolver, tokens);
 
   const addressDescription: MemAddressDescription = {
     disp: null,
@@ -131,8 +162,12 @@ function parseMemExpression(expression: string): MemAddressDescription {
 
           if (!addressDescription?.sreg)
             throw new ParserError(ParserErrorCode.REGISTER_IS_NOT_SEGMENT_REG, null, {reg: op1.text});
-        } else
-          throw new ParserError(ParserErrorCode.SYNTAX_ERROR);
+        } else {
+          return raiseMemParserError(
+            !!labelResolver,
+            ParserErrorCode.SYNTAX_ERROR,
+          );
+        }
         break;
 
       // [..:+ah+si*4] etc
@@ -140,8 +175,12 @@ function parseMemExpression(expression: string): MemAddressDescription {
         if (op2.type === TokenType.NUMBER) {
           addressDescription.disp -= (<NumberToken> op2).value.number;
           ++i;
-        } else
-          throw new ParserError(ParserErrorCode.OPERAND_MUST_BE_NUMBER);
+        } else {
+          return raiseMemParserError(
+            !!labelResolver,
+            ParserErrorCode.OPERAND_MUST_BE_NUMBER,
+          );
+        }
         break;
 
       case TokenType.PLUS:
@@ -164,12 +203,22 @@ function parseMemExpression(expression: string): MemAddressDescription {
         } else if (op2.type === TokenType.NUMBER) {
           addressDescription.disp += (<NumberToken> op2).value.number;
           ++i;
-        } else
-          throw new ParserError(ParserErrorCode.INCORRECT_OPERAND);
+        } else {
+          return raiseMemParserError(
+            !!labelResolver,
+            ParserErrorCode.INCORRECT_OPERAND,
+          );
+        }
         break;
 
       default:
-        throw new ParserError(ParserErrorCode.UNKNOWN_MEM_TOKEN, null, {token: op1.text});
+        raiseMemParserError(
+          !!labelResolver,
+          ParserErrorCode.UNKNOWN_MEM_TOKEN,
+          {
+            token: op1.text,
+          },
+        );
     }
   }
 
@@ -178,7 +227,7 @@ function parseMemExpression(expression: string): MemAddressDescription {
     addressDescription.signedByteSize = signedNumberByteSize(addressDescription.disp);
   }
 
-  return addressDescription;
+  return ok(addressDescription);
 }
 
 /**
@@ -235,14 +284,18 @@ export class ASTInstructionMemPtrArg extends ASTInstructionArg<MemAddressDescrip
    * See format example:
    * @see {@link https://stackoverflow.com/a/34058400}
    *
+   * @param {ASTLabelAddrResolver} [labelResolver]
    * @returns {boolean}
    * @memberof ASTInstructionMemPtrArg
    */
-  tryResolve(): boolean {
+  tryResolve(labelResolver?: ASTLabelAddrResolver): boolean {
     const {phrase, resolved, byteSize} = this;
+    if (resolved)
+      return resolved;
 
-    if (!resolved) {
-      const parsedMem = parseMemExpression(phrase);
+    const parsedMemResult = parseMemExpression(labelResolver, phrase);
+    if (parsedMemResult.isOk()) {
+      const parsedMem = parsedMemResult.unwrap();
 
       if (R.isNil(byteSize)) {
         if (R.isNil(parsedMem.dispByteSize))
@@ -252,8 +305,9 @@ export class ASTInstructionMemPtrArg extends ASTInstructionArg<MemAddressDescrip
       }
 
       this.value = parsedMem;
+      this.resolved = true;
     }
 
-    return super.tryResolve();
+    return this.resolved;
   }
 }

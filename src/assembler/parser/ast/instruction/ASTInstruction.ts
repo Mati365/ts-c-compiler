@@ -64,22 +64,23 @@ import {
  * @extends {KindASTNode('Instruction')}
  */
 export class ASTInstruction extends KindASTNode(ASTNodeKind.INSTRUCTION) {
-  // used for optimistic instruction size predictions
-  public readonly originalArgsTokens: Token<any>[];
-
-  public typedArgs: {[type in InstructionArgType]: (ASTInstructionArg|ASTInstructionMemPtrArg)[]};
-  public schemas: ASTInstructionSchema[];
-
-  // jump/branch related args
-  public branchAddressingType: BranchAddressingType = null;
-
-  public readonly jumpInstruction: boolean;
-  public readonly labeledInstruction: boolean;
-
   // initial args is constant, it is
   // toggled on first pass, during AST tree analyze
   // args might change in second phase
   public args: ASTInstructionArg[];
+
+  // used for optimistic instruction size predictions
+  public readonly originalArgsTokens: Token<any>[];
+  public unresolvedArgs: boolean;
+  public typedArgs: {[type in InstructionArgType]: (ASTInstructionArg|ASTInstructionMemPtrArg)[]};
+
+  // matched for args
+  public schemas: ASTInstructionSchema[];
+
+  // jump/branch related args
+  public branchAddressingType: BranchAddressingType = null;
+  public readonly jumpInstruction: boolean;
+  public readonly labeledInstruction: boolean;
 
   constructor(
     public readonly opcode: string,
@@ -92,14 +93,13 @@ export class ASTInstruction extends KindASTNode(ASTNodeKind.INSTRUCTION) {
     // decode FAR/NEAR JMP addressing type prefixes
     if (argsTokens.length && argsTokens[0].kind === TokenKind.BRANCH_ADDRESSING_TYPE) {
       this.branchAddressingType = (<BranchAddressingTypeToken> argsTokens[0]).value;
-      this.argsTokens = R.tail(argsTokens);
+      this.originalArgsTokens = R.tail(argsTokens);
     } else
-      this.argsTokens = argsTokens;
+      this.originalArgsTokens = argsTokens;
 
     // check if instruction is branch instruction
     this.jumpInstruction = isJumpInstruction(opcode);
-    this.labeledInstruction = isAnyLabelInTokensList(this.argsTokens);
-    this.originalArgsTokens = [...argsTokens];
+    this.labeledInstruction = isAnyLabelInTokensList(this.originalArgsTokens);
   }
 
   get memArgs() {
@@ -135,7 +135,6 @@ export class ASTInstruction extends KindASTNode(ASTNodeKind.INSTRUCTION) {
         acc[<any> item.type].push(item);
         return acc;
       },
-      // todo: optimize
       {
         [InstructionArgType.MEMORY]: [],
         [InstructionArgType.SEGMENTED_MEMORY]: [],
@@ -156,7 +155,7 @@ export class ASTInstruction extends KindASTNode(ASTNodeKind.INSTRUCTION) {
    */
   toString(): string {
     const {schemas, args, branchAddressingType} = this;
-    if (schemas.length === 1) {
+    if (schemas.length > 0) {
       let {mnemonic} = schemas[0];
       if (branchAddressingType)
         mnemonic = `${mnemonic} ${branchAddressingType}`;
@@ -182,6 +181,38 @@ export class ASTInstruction extends KindASTNode(ASTNodeKind.INSTRUCTION) {
   }
 
   /**
+   * Iterates through args and watches which is unresolved
+   *
+   * @private
+   * @param {ASTLabelAddrResolver} labelResolver
+   * @param {ASTInstructionArg[]} newArgs
+   * @returns
+   * @memberof ASTInstruction
+   */
+  private tryResolveArgs(labelResolver: ASTLabelAddrResolver, newArgs: ASTInstructionArg[]): void {
+    let unresolvedArgs = null;
+
+    this.args = R.map(
+      (arg) => {
+        if (arg.isResolved())
+          return arg;
+
+        if (labelResolver)
+          arg.tryResolve(labelResolver);
+
+        if (!unresolvedArgs && !arg.isResolved())
+          unresolvedArgs = true;
+
+        return arg;
+      },
+      newArgs,
+    );
+
+    this.unresolvedArgs = unresolvedArgs;
+    this.refreshTypedArgs();
+  }
+
+  /**
    * Search if all labels are present
    *
    * @param {ASTLabelAddrResolver} labelResolver
@@ -203,19 +234,7 @@ export class ASTInstruction extends KindASTNode(ASTNodeKind.INSTRUCTION) {
 
     // assign labels resolver into not fully resolved args
     this.branchAddressingType = overridenBranchAddressingType ?? branchAddressingType;
-    this.args = R.map(
-      (arg) => {
-        if (arg.isResolved())
-          return arg;
-
-        arg.tryResolve(labelResolver);
-        return arg;
-      },
-      newArgs,
-    );
-
-    // group into arrays
-    this.refreshTypedArgs();
+    this.tryResolveArgs(labelResolver, newArgs);
 
     // list all of schemas
     this.schemas = findMatchingInstructionSchemas(COMPILER_INSTRUCTIONS_SET, this);
