@@ -29,6 +29,7 @@ export enum ParserErrorCode {
   UNKNOWN_MEM_TOKEN,
   INCORRECT_MODRM,
   DISPLACEMENT_EXCEEDING_BYTE_SIZE,
+  SCALE_INDEX_IS_UNSUPPORTED_IN_MODE,
 
   // segmented mem
   INCORRECT_SEGMENTED_MEM_FORMAT,
@@ -93,6 +94,7 @@ export const ERROR_TRANSLATIONS: {[key in ParserErrorCode]: string} = {
   [ParserErrorCode.INCORRECT_SCALE]: 'Incorrect scale! It must be 1, 2, 4 or 8 instead of "%{scale}"!',
   [ParserErrorCode.INCORRECT_MODRM]: 'Error during "%{phrase}" ModRM instruction byte parsing!',
   [ParserErrorCode.DISPLACEMENT_EXCEEDING_BYTE_SIZE]: 'Displacement of "%{address}" exceedes arg byte size (%{byteSize} bytes but should be <= %{maxSize} bytes)!',
+  [ParserErrorCode.SCALE_INDEX_IS_UNSUPPORTED_IN_MODE]: 'Scale index is unsupported in this mode!',
 
   // segmented mem
   [ParserErrorCode.INCORRECT_SEGMENTED_MEM_FORMAT]: 'Incorrect segmented memory format "%{address}"!',

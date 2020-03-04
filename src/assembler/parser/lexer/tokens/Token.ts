@@ -1,3 +1,5 @@
+import * as R from 'ramda';
+
 import {TokenLocation} from './TokenLocation';
 
 /**
@@ -57,6 +59,9 @@ export enum TokenKind {
  * @template KindType
  */
 export class Token<ValueType = any> {
+  public readonly upperText: string;
+  public readonly lowerText: string;
+
   /**
    * Creates an instance of Token.
    *
@@ -72,7 +77,10 @@ export class Token<ValueType = any> {
     public readonly text: string,
     public readonly loc: TokenLocation,
     public readonly value: ValueType = null,
-  ) {}
+  ) {
+    this.upperText = text && R.toUpper(text);
+    this.lowerText = text && R.toLower(text);
+  }
 
   toString() {
     const {text, type} = this;

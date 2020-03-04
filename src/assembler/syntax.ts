@@ -45,7 +45,7 @@ initialize_bios:
         mov [bootdrive], dl             ; store boot drive
         mov si, welcome                 ; print welcome string
         call print
-        jmp load_kernel_header         ; proceed to load kernel
+        ;jmp load_kernel_header         ; proceed to load kernel
 
 halt:
         hlt                             ; halt CPU to save power
@@ -67,10 +67,11 @@ print:                                  ; Print string in SI with bios
 data:
         welcome db 'Loading...', 0      ; welcome message
         error db 'Error', 0             ; error message
-        bootdrive db 0x00
+        bootdrive db 0x00               ; original BIOS boot drive
 
-load_kernel_header:
-  xor ax, ax
-
+;times 200 - ($ - $$) db 0               ; should fill to 510 bytes. For demo changed to 200 bytes.
+dw 0xaa55                               ; boot signature (fills to 512 bytes)
+                                        ;
+                                        ; Bootloader by Kenneth Falck
 `;
 /* eslint-enable no-console,@typescript-eslint/no-unused-expressions */

@@ -32,7 +32,7 @@ export function tokenDefSize(string: string): number {
   if (!string)
     return null;
 
-  return DefTokenNames[R.toUpper(string)];
+  return DefTokenNames[string];
 }
 
 /**
@@ -78,7 +78,7 @@ export class ASTDef extends KindASTNode(ASTNodeKind.DEFINE) {
       return null;
 
     // check definition size
-    const tokenSize: number = tokenDefSize(token.text);
+    const tokenSize: number = tokenDefSize(token.upperText);
     if (!tokenSize)
       return null;
 

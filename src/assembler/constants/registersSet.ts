@@ -4,12 +4,12 @@ import {RegisterSchema as Reg} from '../shared/RegisterSchema';
 import {InstructionArgSize} from '../types';
 
 export enum InstructionPrefix {
-  LOCK = 0x0,
+  LOCK = 0xF0,
 
   // REP
-  REP = 0x3,
-  REPE = 0x3,
-  REPNE = 0x2,
+  REP = 0xF3,
+  REPE = 0xF3,
+  REPNE = 0xF2,
 
   // SEGMENT OVERRIDE
   SREG_CS = 0x2E,

@@ -45,15 +45,13 @@ export class ASTCompilerOption extends KindASTNode(ASTNodeKind.COMPILER_OPTION) 
    * @memberof ASTLabel
    */
   static parse(token: Token, parser: ASTParser): ASTCompilerOption {
-    let optionName = token.text;
+    let optionName = token.upperText;
     const inBrackets = token.kind === TokenKind.SQUARE_BRACKET;
 
     if (inBrackets)
       [optionName] = R.split(' ', optionName);
 
-    optionName = R.toUpper(optionName);
     const option = CompilerOptions[optionName];
-
     if (R.isNil(option))
       return null;
 

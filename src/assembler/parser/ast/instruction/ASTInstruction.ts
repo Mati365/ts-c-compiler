@@ -118,7 +118,24 @@ export class ASTInstruction extends KindASTNode(ASTNodeKind.INSTRUCTION) {
     return <ASTInstructionRegisterArg[]> this.typedArgs[InstructionArgType.REGISTER];
   }
 
-  get labelArgs() { return this.typedArgs[InstructionArgType.LABEL]; }
+  get labelArgs() {
+    return this.typedArgs[InstructionArgType.LABEL];
+  }
+
+  getScale() {
+    return this.memArgs[0]?.addressDescription?.scale;
+  }
+
+  /**
+   * Used for matching instruction in jump labels
+   *
+   * @param {ASTInstructionSchema} schema
+   * @returns
+   * @memberof ASTInstruction
+   */
+  getPredictedBinarySchemaSize(schema: ASTInstructionSchema) {
+    return this.prefixes.length + schema.byteSize + +!!this.getScale();
+  }
 
   /**
    * Groups args into types
@@ -489,17 +506,20 @@ export class ASTInstruction extends KindASTNode(ASTNodeKind.INSTRUCTION) {
    */
   static parse(token: Token, parser: ASTParser): ASTInstruction {
     // if not opcode, ignore
-    const opcode = R.toLower(<string> token.text);
-    if (token.type !== TokenType.KEYWORD || !COMPILER_INSTRUCTIONS_SET[opcode])
+    let opcode = token.lowerText;
+    if (token.type !== TokenType.KEYWORD
+        || (!COMPILER_INSTRUCTIONS_SET[opcode] && !InstructionPrefix[token.upperText]))
       return null;
 
     // match prefixes
     /* eslint-disable no-constant-condition */
     const prefixes: InstructionPrefix[] = [];
     do {
-      const prefix = InstructionPrefix[R.toUpper(<string> token.text)];
-      if (!prefix)
+      const prefix = InstructionPrefix[token.upperText];
+      if (!prefix) {
+        opcode = token.lowerText;
         break;
+      }
 
       prefixes.push(prefix);
       token = parser.fetchRelativeToken();

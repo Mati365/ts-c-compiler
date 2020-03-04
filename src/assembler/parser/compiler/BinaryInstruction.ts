@@ -53,10 +53,8 @@ export class BinaryInstruction extends BinaryBlob<ASTInstruction> {
     const {ast} = this;
     const [primarySchema] = ast.schemas;
 
-    const binary: number[] = [];
-    const binaryPrefixes: number[] = [];
-
     const [memArg, rmArg, immArg, segMemArg] = [ast.memArgs[0], ast.findRMArg(), ast.numArgs[0], ast.segMemArgs[0]];
+    const sibByte = ast.getScale();
     let rmByte = rmArg && BinaryInstruction.encodeRMByte(
       compiler.mode,
       R.find(
@@ -65,6 +63,15 @@ export class BinaryInstruction extends BinaryBlob<ASTInstruction> {
       ),
       rmArg,
     );
+
+    // sibByte is supported in modes > 16bits
+    if (sibByte && compiler.mode > InstructionArgSize.WORD)
+      throw new ParserError(ParserErrorCode.SCALE_INDEX_IS_UNSUPPORTED_IN_MODE);
+
+    // output
+    const binary: number[] = [];
+    const binaryPrefixes: number[] = [...ast.prefixes];
+    const binaryOutputSize = primarySchema.byteSize + binaryPrefixes.length + +!!sibByte;
 
     // todo: check if it is only available in addressing mode
     if (memArg?.addressDescription) {
@@ -131,7 +138,7 @@ export class BinaryInstruction extends BinaryBlob<ASTInstruction> {
           // relative jump
           case 'r0': case 'r1':
             if (immArg) {
-              const relAddress = immArg.val - absoluteAddress - primarySchema.byteSize;
+              const relAddress = immArg.val - absoluteAddress - binaryOutputSize;
 
               binary.push(
                 X86AbstractCPU.toUnsignedNumber(

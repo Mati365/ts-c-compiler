@@ -91,7 +91,7 @@ export class ASTLabel extends KindASTNode(ASTNodeKind.LABEL) {
         || token.kind) // it should be plain keyword, not register
       return null;
 
-    const sizeTokenDef = nextToken.type === TokenType.KEYWORD && tokenDefSize(nextToken.text);
+    const sizeTokenDef = nextToken.type === TokenType.KEYWORD && tokenDefSize(nextToken.upperText);
     if (!sizeTokenDef && nextToken.type !== TokenType.COLON)
       return null;
 

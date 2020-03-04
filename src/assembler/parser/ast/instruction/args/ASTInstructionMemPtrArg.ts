@@ -32,6 +32,7 @@ import {
 
 import {ASTInstructionArg} from './ASTInstructionArg';
 
+import {reduceTextToBitset} from '../../../compiler/utils';
 import {
   numberByteSize,
   roundToPowerOfTwo,
@@ -175,6 +176,9 @@ function parseMemExpression(
         if (op2.type === TokenType.NUMBER) {
           addressDescription.disp -= (<NumberToken> op2).value.number;
           ++i;
+        } else if (op2.type === TokenType.QUOTE) {
+          addressDescription.disp -= reduceTextToBitset(op2.text);
+          ++i;
         } else {
           return raiseMemParserError(
             !!labelResolver,
@@ -202,6 +206,9 @@ function parseMemExpression(
           ++i;
         } else if (op2.type === TokenType.NUMBER) {
           addressDescription.disp += (<NumberToken> op2).value.number;
+          ++i;
+        } else if (op2.type === TokenType.QUOTE) {
+          addressDescription.disp += reduceTextToBitset(op2.text);
           ++i;
         } else {
           return raiseMemParserError(
