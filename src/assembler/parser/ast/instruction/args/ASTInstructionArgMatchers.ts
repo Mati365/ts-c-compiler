@@ -50,36 +50,26 @@ function imm(arg: ASTInstructionArg, byteSize: X86BitsMode): boolean {
   return arg.type === InstructionArgType.LABEL || (arg.type === InstructionArgType.NUMBER && arg.byteSize === byteSize);
 }
 
-function relLabel(
-  arg: ASTInstructionArg,
-  signedByteSize: X86BitsMode,
-  absoluteAddress: number,
-  instructionSize: number,
-): boolean {
+function relLabel(arg: ASTInstructionArg, signedByteSize: X86BitsMode, absoluteAddress: number): boolean {
   if (arg.type === InstructionArgType.LABEL)
     return true;
 
   if (arg.type === InstructionArgType.NUMBER) {
     return roundedSignedNumberByteSize(
-      (<ASTInstructionNumberArg> arg).val - (absoluteAddress + instructionSize),
+      (<ASTInstructionNumberArg> arg).val - absoluteAddress - signedByteSize,
     ) === signedByteSize;
   }
 
   return false;
 }
 
-function nearPointer(
-  arg: ASTInstructionArg,
-  maxByteSize: X86BitsMode,
-  absoluteAddress: number,
-  instructionSize: number,
-): boolean {
+function nearPointer(arg: ASTInstructionArg, maxByteSize: X86BitsMode, absoluteAddress: number): boolean {
   if (arg.type === InstructionArgType.LABEL)
     return true;
 
   if (arg.type === InstructionArgType.NUMBER) {
     return roundedSignedNumberByteSize(
-      (<ASTInstructionNumberArg> arg).val - (absoluteAddress + instructionSize),
+      (<ASTInstructionNumberArg> arg).val - absoluteAddress - maxByteSize,
     ) <= maxByteSize;
   }
 
@@ -168,18 +158,16 @@ export const ASTInstructionArgMatchers: {[key: string]: ASTInstructionArgMatcher
     arg: ASTInstructionArg,
     instruction: ASTInstruction,
     addr: number,
-    schema: ASTInstructionSchema,
   ) => (
-    relLabel(arg, 1, addr, instruction.getPredictedBinarySchemaSize(schema))
+    relLabel(arg, 1, addr)
   ),
 
   ll: () => (
     arg: ASTInstructionArg,
     instruction: ASTInstruction,
     addr: number,
-    schema: ASTInstructionSchema,
   ) => (
-    relLabel(arg, 2, addr, instruction.getPredictedBinarySchemaSize(schema))
+    relLabel(arg, 2, addr)
   ),
 
   /** NEAR POINTER */
@@ -187,9 +175,8 @@ export const ASTInstructionArgMatchers: {[key: string]: ASTInstructionArgMatcher
     arg: ASTInstructionArg,
     instruction: ASTInstruction,
     addr: number,
-    schema: ASTInstructionSchema,
   ) => (
-    nearPointer(arg, 2, addr, instruction.getPredictedBinarySchemaSize(schema))
+    nearPointer(arg, 2, addr)
   ),
 
   /** ABSOLUTE FAR POINTERS */

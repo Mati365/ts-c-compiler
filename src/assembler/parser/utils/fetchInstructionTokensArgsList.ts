@@ -21,7 +21,7 @@ export function fetchInstructionTokensArgsList(
   do {
     // value or size operand
     let token = parser.fetchRelativeToken();
-    if (token.type === TokenType.EOL || token.type === TokenType.EOF)
+    if (!token || token.type === TokenType.EOL || token.type === TokenType.EOF)
       break;
 
     argsTokens.push(token);

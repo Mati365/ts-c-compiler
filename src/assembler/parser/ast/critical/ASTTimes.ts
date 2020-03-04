@@ -54,6 +54,8 @@ export class ASTTimes extends KindASTNode(ASTNodeKind.TIMES) {
     // divide line tokens into times expression and repeated node expression
     do {
       const argToken = parser.fetchRelativeToken();
+      if (!argToken)
+        break;
 
       if (!repeatedNodeTokens && (isTokenInstructionBeginning(argToken) || tokenDefSize(argToken)))
         repeatedNodeTokens = [argToken];

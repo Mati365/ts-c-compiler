@@ -242,7 +242,7 @@ export class ASTInstruction extends KindASTNode(ASTNodeKind.INSTRUCTION) {
       return toStringArgsList(mnemonic, args);
     }
 
-    return `[?] ${toStringArgsList(this.opcode, this.argsTokens)}`;
+    return `${toStringArgsList(this.opcode, this.argsTokens)}`;
   }
 
   /**
