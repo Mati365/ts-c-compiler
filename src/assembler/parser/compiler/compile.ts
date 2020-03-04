@@ -26,11 +26,13 @@ import {
 
 import {BinaryInstruction} from './types/BinaryInstruction';
 import {BinaryDefinition} from './types/BinaryDefinition';
+import {BinaryRepeatedNode} from './types/BinaryRepeatedNode';
 import {BinaryBlob} from './BinaryBlob';
 
 import {
   FirstPassResult,
   SecondPassResult,
+  BinaryBlobsMap,
 } from './BinaryPassResults';
 
 /**
@@ -82,16 +84,22 @@ export class X86Compiler {
   /**
    * First pass compiler, omit labels and split into multiple chunks
    *
-   * @private
+   * @param {ASTTree} [tree=this.tree]
+   * @param {boolean} [noAbstractInstructions=false]
+   * @param {number} [initialOffset=0]
    * @returns {FirstPassResult}
    * @memberof X86Compiler
    */
-  private firstPass(): FirstPassResult {
-    const result = new FirstPassResult;
-    const {astNodes} = this.tree;
+  firstPass(
+    tree: ASTTree = this.tree,
+    noAbstractInstructions: boolean = false,
+    initialOffset: number = 0,
+  ): FirstPassResult {
+    const result = new FirstPassResult(tree);
+    const {astNodes} = tree;
     const {labels} = result;
 
-    let offset = 0;
+    let offset = initialOffset;
     let originDefined = false;
 
     /**
@@ -104,7 +112,7 @@ export class X86Compiler {
         this._origin + offset,
         blob,
       );
-      offset += blob.binary.length;
+      offset += blob.binary?.length ?? 1;
     };
 
     /**
@@ -116,6 +124,16 @@ export class X86Compiler {
      */
     const processNode = (node: ASTNode): void => {
       const absoluteAddress = this._origin + offset;
+
+      if (noAbstractInstructions && node.kind !== ASTNodeKind.INSTRUCTION && node.kind !== ASTNodeKind.DEFINE) {
+        throw new ParserError(
+          ParserErrorCode.UNPERMITTED_NODE_IN_POSTPROCESS_MODE,
+          null,
+          {
+            node: node.toString(),
+          },
+        );
+      }
 
       switch (node.kind) {
         case ASTNodeKind.COMPILER_OPTION: {
@@ -137,15 +155,11 @@ export class X86Compiler {
             this.setMode(arg.value.number / 8);
         } break;
 
-        case ASTNodeKind.TIMES: {
-          const timesNode = <ASTTimes> node;
-
-          R.times(
-            () => processNode(timesNode.repeatedNode),
-            // todo: add expression parser
-            +(timesNode.timesExpression.map((n) => n.text).join('')),
+        case ASTNodeKind.TIMES:
+          emitBlob(
+            new BinaryRepeatedNode(<ASTTimes> node),
           );
-        } break;
+          break;
 
         case ASTNodeKind.INSTRUCTION:
           emitBlob(
@@ -190,7 +204,6 @@ export class X86Compiler {
     return result;
   }
 
-  /* eslint-disable class-methods-use-this */
   /**
    * Find unresolved instructions, try resolve them and emit binaries
    *
@@ -200,11 +213,12 @@ export class X86Compiler {
    * @memberof X86Compiler
    */
   private secondPass(firstPassResult: FirstPassResult): SecondPassResult {
-    const {tree} = this;
+    const {tree} = firstPassResult;
     const {labels, nodesOffsets} = firstPassResult;
 
     const result = new SecondPassResult(0x0, labels);
     let success = false;
+    let needSort = false;
 
     /**
      * Lookups into tree and resolves nested label args
@@ -229,13 +243,64 @@ export class X86Compiler {
       };
     }
 
+    /**
+     * Resizes all block after offset which is enlarged
+     *
+     * @param {number} offset
+     * @param {number} enlarge
+     */
+    function resizeBlockAtOffset(offset: number, enlarge: number): void {
+      // if so decrement precceding instruction offsets and label offsets
+      for (const [label, labelOffset] of labels) {
+        if (labelOffset > offset)
+          labels.set(label, labelOffset + enlarge);
+      }
+
+      // if so decrement precceding instruction offsets and label offsets
+      const offsetsArray = Array.from(nodesOffsets);
+      for (const [instructionOffset] of offsetsArray) {
+        if (instructionOffset > offset)
+          nodesOffsets.delete(instructionOffset);
+      }
+
+      for (const [instructionOffset, nextInstruction] of offsetsArray) {
+        if (instructionOffset > offset)
+          nodesOffsets.set(instructionOffset + enlarge, nextInstruction);
+      }
+    }
+
+    /**
+     * Appends blobs map at current offset to nodesOffsets
+     *
+     * @param {number} offset
+     * @param {BinaryBlobsMap} blobs
+     */
+    function appendBlobsAtOffset(offset: number, blobs: BinaryBlobsMap): void {
+      needSort = true;
+      for (const [blobOffset, blob] of blobs)
+        nodesOffsets.set(offset + blobOffset, blob);
+    }
+
     // proper resolve labels
     for (let pass = 0; pass < this.maxPasses; ++pass) {
       let needPass = false;
 
       // eslint-disable-next-line prefer-const
       for (let [offset, blob] of nodesOffsets) {
-        if (blob instanceof BinaryInstruction) {
+        // repeats instruction nth times
+        if (blob instanceof BinaryRepeatedNode) {
+          const blobResult = blob.pass(this, offset - this._origin);
+          const blobSize = blobResult.getByteSize();
+
+          // prevent loop, kill times
+          nodesOffsets.delete(offset);
+
+          resizeBlockAtOffset(offset, Math.max(1, blobSize - 1));
+          appendBlobsAtOffset(0, blobResult.nodesOffsets);
+
+          needPass = true;
+          break;
+        } else if (blob instanceof BinaryInstruction) {
           const {ast, binary} = blob;
           const pessimisticSize = binary.length;
 
@@ -270,25 +335,9 @@ export class X86Compiler {
           if (shrinkBytes) {
             needPass = true;
             ast.unresolvedArgs = true;
+
             nodesOffsets.set(offset, recompiled);
-
-            // if so decrement precceding instruction offsets and label offsets
-            for (const [label, labelOffset] of labels) {
-              if (labelOffset > offset)
-                labels.set(label, labelOffset - shrinkBytes);
-            }
-
-            // if so decrement precceding instruction offsets and label offsets
-            const offsetsArray = Array.from(nodesOffsets);
-            for (const [instructionOffset] of offsetsArray) {
-              if (instructionOffset > offset)
-                nodesOffsets.delete(instructionOffset);
-            }
-
-            for (const [instructionOffset, nextInstruction] of offsetsArray) {
-              if (instructionOffset > offset)
-                nodesOffsets.set(instructionOffset - shrinkBytes, nextInstruction);
-            }
+            resizeBlockAtOffset(offset, -shrinkBytes);
           }
 
           // select first schema, it will be discarded if next instruction have label
@@ -310,7 +359,17 @@ export class X86Compiler {
       throw new ParserError(ParserErrorCode.UNABLE_TO_COMPILE_FILE);
 
     // produce binaries
-    for (const [offset, blob] of nodesOffsets) {
+    const orderedOffsets = (
+      needSort
+        ? (
+          Array
+            .from(nodesOffsets)
+            .sort((a, b) => a[0] - b[0])
+        )
+        : nodesOffsets
+    );
+
+    for (const [offset, blob] of orderedOffsets) {
       result.blobs.set(
         offset,
         blob.compile(this, offset),
@@ -319,7 +378,6 @@ export class X86Compiler {
 
     return result;
   }
-  /* eslint-enable class-methods-use-this */
 
   /**
    * Transform provided AST nodes array into binary blobs

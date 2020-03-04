@@ -33,6 +33,10 @@ export class ASTNode {
   /* eslint-enable @typescript-eslint/no-unused-vars */
 
   /* eslint-disable class-methods-use-this */
+  clone(): ASTNode {
+    throw new Error('Unimplemented clone in ASTNode!');
+  }
+
   toString(): string {
     return null;
   }

@@ -37,7 +37,7 @@ export class BinaryBlob<ASTNodeType = any> {
     const {binary, ast} = this;
     const binLines = toMultilineBinaryBlockString(binary);
 
-    if (!withAST || !ast)
+    if (!binLines.length || !withAST || !ast)
       return binLines;
 
     return [

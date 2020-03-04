@@ -62,6 +62,7 @@ export enum ParserErrorCode {
   INVALID_ADDRESSING_MODE,
   UNMATCHED_SCHEMA_POSTPROCESS,
   UNABLE_TO_COMPILE_FILE,
+  UNPERMITTED_NODE_IN_POSTPROCESS_MODE,
 
   // define data
   DEFINED_DATA_EXCEEDES_BOUNDS,
@@ -132,6 +133,7 @@ export const ERROR_TRANSLATIONS: {[key in ParserErrorCode]: string} = {
   [ParserErrorCode.INVALID_ADDRESSING_MODE]: 'Invalid address!',
   [ParserErrorCode.UNMATCHED_SCHEMA_POSTPROCESS]: 'Cannot find instruction "%{instruction}"!',
   [ParserErrorCode.UNABLE_TO_COMPILE_FILE]: 'Unable to compile file!',
+  [ParserErrorCode.UNPERMITTED_NODE_IN_POSTPROCESS_MODE]: 'Unpermitted node "%{node}" in compiler first pass mode!',
 
   // defined data
   [ParserErrorCode.DEFINED_DATA_EXCEEDES_BOUNDS]: 'Defined data "%{data}" excedees bounds (%{maxSize} bytes)!',

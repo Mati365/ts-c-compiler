@@ -52,6 +52,12 @@ export class ASTDef extends KindASTNode(ASTNodeKind.DEFINE) {
     super(loc);
   }
 
+  clone(): ASTDef {
+    const {byteSize, args, loc} = this;
+
+    return new ASTDef(byteSize, args, loc);
+  }
+
   /**
    * @returns {string}
    * @memberof ASTInstruction

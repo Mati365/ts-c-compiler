@@ -85,7 +85,7 @@ export class ASTInstruction extends KindASTNode(ASTNodeKind.INSTRUCTION) {
   public args: ASTInstructionArg[];
 
   // used for optimistic instruction size predictions
-  public readonly originalArgsTokens: Token<any>[];
+  public originalArgsTokens: Token<any>[];
   public unresolvedArgs: boolean;
   public typedArgs: {[type in InstructionArgType]: (ASTInstructionArg|ASTInstructionMemPtrArg)[]};
 
@@ -94,8 +94,8 @@ export class ASTInstruction extends KindASTNode(ASTNodeKind.INSTRUCTION) {
 
   // jump/branch related args
   public branchAddressingType: BranchAddressingType = null;
-  public readonly jumpInstruction: boolean;
-  public readonly labeledInstruction: boolean;
+  public jumpInstruction: boolean;
+  public labeledInstruction: boolean;
 
   constructor(
     public readonly opcode: string,
@@ -105,16 +105,19 @@ export class ASTInstruction extends KindASTNode(ASTNodeKind.INSTRUCTION) {
   ) {
     super(loc);
 
-    // decode FAR/NEAR JMP addressing type prefixes
-    if (argsTokens.length && argsTokens[0].kind === TokenKind.BRANCH_ADDRESSING_TYPE) {
-      this.branchAddressingType = (<BranchAddressingTypeToken> argsTokens[0]).value;
-      this.originalArgsTokens = R.tail(argsTokens);
-    } else
-      this.originalArgsTokens = argsTokens;
+    // optimized clone()
+    if (argsTokens) {
+      // decode FAR/NEAR JMP addressing type prefixes
+      if (argsTokens.length && argsTokens[0].kind === TokenKind.BRANCH_ADDRESSING_TYPE) {
+        this.branchAddressingType = (<BranchAddressingTypeToken> argsTokens[0]).value;
+        this.originalArgsTokens = R.tail(argsTokens);
+      } else
+        this.originalArgsTokens = argsTokens;
 
-    // check if instruction is branch instruction
-    this.jumpInstruction = isJumpInstruction(opcode);
-    this.labeledInstruction = isAnyLabelInTokensList(this.originalArgsTokens);
+      // check if instruction is branch instruction
+      this.jumpInstruction = isJumpInstruction(opcode);
+      this.labeledInstruction = isAnyLabelInTokensList(this.originalArgsTokens);
+    }
   }
 
   get memArgs() {
@@ -137,6 +140,38 @@ export class ASTInstruction extends KindASTNode(ASTNodeKind.INSTRUCTION) {
     return this.typedArgs[InstructionArgType.LABEL];
   }
 
+  clone(): ASTInstruction {
+    const {
+      opcode, argsTokens, prefixes, loc, args,
+      unresolvedArgs, typedArgs, schemas, branchAddressingType,
+      labeledInstruction, jumpInstruction, originalArgsTokens,
+    } = this;
+
+    const cloned = new ASTInstruction(
+      opcode,
+      null,
+      prefixes,
+      loc,
+    );
+
+    Object.assign(
+      cloned,
+      {
+        args,
+        argsTokens,
+        originalArgsTokens,
+        unresolvedArgs,
+        typedArgs,
+        schemas,
+        branchAddressingType,
+        jumpInstruction,
+        labeledInstruction,
+      },
+    );
+
+    return cloned;
+  }
+
   getScale() {
     return this.memArgs[0]?.addressDescription?.scale;
   }
@@ -148,7 +183,7 @@ export class ASTInstruction extends KindASTNode(ASTNodeKind.INSTRUCTION) {
    * @returns
    * @memberof ASTInstruction
    */
-  getPredictedBinarySchemaSize(schema: ASTInstructionSchema) {
+  getPredictedBinarySchemaSize(schema: ASTInstructionSchema = this.schemas[0]) {
     return this.prefixes.length + schema.byteSize + +!!this.getScale();
   }
 

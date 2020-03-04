@@ -3,12 +3,11 @@ import * as R from 'ramda';
 import {ParserError, ParserErrorCode} from '../../../shared/ParserError';
 import {Token, TokenType} from '../../lexer/tokens';
 
-import {ASTParser} from '../ASTParser';
+import {ASTParser, ASTTree} from '../ASTParser';
 import {ASTNodeKind} from '../types';
 import {
   ASTNodeLocation,
   KindASTNode,
-  ASTNode,
 } from '../ASTNode';
 
 import {isTokenInstructionBeginning} from '../instruction/ASTInstruction';
@@ -26,7 +25,7 @@ export const TIMES_TOKEN_NAME = 'times';
 export class ASTTimes extends KindASTNode(ASTNodeKind.TIMES) {
   constructor(
     public readonly timesExpression: Token[],
-    public readonly repeatedNode: ASTNode,
+    public readonly repatedNodesTree: ASTTree,
     loc: ASTNodeLocation,
   ) {
     super(loc);
@@ -56,7 +55,7 @@ export class ASTTimes extends KindASTNode(ASTNodeKind.TIMES) {
     do {
       const argToken = parser.fetchRelativeToken();
 
-      if (!repeatedNodeTokens && (isTokenInstructionBeginning(argToken) || tokenDefSize(argToken.text))) {
+      if (!repeatedNodeTokens && (isTokenInstructionBeginning(argToken) || tokenDefSize(argToken.upperText))) {
         repeatedNodeTokens = [argToken];
       } else if (argToken.type === TokenType.EOF || argToken.type === TokenType.EOL)
         break;
@@ -68,18 +67,17 @@ export class ASTTimes extends KindASTNode(ASTNodeKind.TIMES) {
     if (!timesExpression.length)
       throw new ParserError(ParserErrorCode.INCORRECT_TIMES_ARGS_COUNT);
 
-    if (!repeatedNodeTokens.length)
+    if (!repeatedNodeTokens?.length)
       throw new ParserError(ParserErrorCode.MISSING_TIMES_REPEATED_INSTRUCTION);
 
     // try generate AST for repeated instruction
-    const repeatedNode = (
+    const repatedNodesTree = (
       parser
         .fork(repeatedNodeTokens)
         .getTree()
-        ?.astNodes?.[0]
     );
 
-    if (!repeatedNode) {
+    if (!repatedNodesTree?.astNodes?.[0]) {
       throw new ParserError(
         ParserErrorCode.UNABLE_PARSE_REPEATED_INSTRUCTION,
         null,
@@ -94,7 +92,7 @@ export class ASTTimes extends KindASTNode(ASTNodeKind.TIMES) {
 
     return new ASTTimes(
       timesExpression,
-      repeatedNode,
+      repatedNodesTree,
       ASTNodeLocation.fromTokenLoc(token.loc),
     );
   }
