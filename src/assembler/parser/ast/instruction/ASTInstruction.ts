@@ -221,11 +221,23 @@ export class ASTInstruction extends KindASTNode(ASTNodeKind.INSTRUCTION) {
    * @memberof ASTInstruction
    */
   toString(): string {
-    const {schemas, args, branchAddressingType} = this;
+    const {schemas, args, prefixes, branchAddressingType} = this;
     if (schemas.length > 0) {
       let {mnemonic} = schemas[0];
+
       if (branchAddressingType)
         mnemonic = `${mnemonic} ${branchAddressingType}`;
+
+      if (prefixes) {
+        R.forEach(
+          (prefix) => {
+            const prefixName = InstructionPrefix[prefix];
+            if (prefixName)
+              mnemonic = `${prefixName} ${mnemonic}`;
+          },
+          prefixes,
+        );
+      }
 
       return toStringArgsList(mnemonic, args);
     }
