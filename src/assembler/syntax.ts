@@ -69,7 +69,7 @@ data:
         error db 'Error', 0             ; error message
         bootdrive db 0x00               ; original BIOS boot drive
 
-;times 200 - ($ - $$) db 0               ; should fill to 510 bytes. For demo changed to 200 bytes.
+; times 200 - ($ - $$) db 0               ; should fill to 510 bytes. For demo changed to 200 bytes.
 dw 0xaa55                               ; boot signature (fills to 512 bytes)
                                         ;
                                         ; Bootloader by Kenneth Falck

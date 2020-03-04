@@ -52,6 +52,21 @@ import {
 } from '../../utils';
 
 /**
+ * Returns true if token might be beginning of instruction
+ *
+ * @export
+ * @param {Token} token
+ * @returns {boolean}
+ */
+export function isTokenInstructionBeginning(token: Token): boolean {
+  if (token.type !== TokenType.KEYWORD
+      || (!COMPILER_INSTRUCTIONS_SET[token.lowerText] && !InstructionPrefix[token.upperText]))
+    return false;
+
+  return true;
+}
+
+/**
  * Parser for:
  * [opcode] [arg1] [arg2] [argX]
  *
@@ -61,7 +76,7 @@ import {
  *
  * @export
  * @class ASTInstruction
- * @extends {KindASTNode('Instruction')}
+ * @extends {KindASTNode(ASTNodeKind.INSTRUCTION)}
  */
 export class ASTInstruction extends KindASTNode(ASTNodeKind.INSTRUCTION) {
   // initial args is constant, it is
@@ -506,13 +521,12 @@ export class ASTInstruction extends KindASTNode(ASTNodeKind.INSTRUCTION) {
    */
   static parse(token: Token, parser: ASTParser): ASTInstruction {
     // if not opcode, ignore
-    let opcode = token.lowerText;
-    if (token.type !== TokenType.KEYWORD
-        || (!COMPILER_INSTRUCTIONS_SET[opcode] && !InstructionPrefix[token.upperText]))
+    if (!isTokenInstructionBeginning(token))
       return null;
 
+    let opcode = token.lowerText;
+
     // match prefixes
-    /* eslint-disable no-constant-condition */
     const prefixes: InstructionPrefix[] = [];
     do {
       const prefix = InstructionPrefix[token.upperText];
@@ -524,7 +538,6 @@ export class ASTInstruction extends KindASTNode(ASTNodeKind.INSTRUCTION) {
       prefixes.push(prefix);
       token = parser.fetchRelativeToken();
     } while (true);
-    /* eslint-enable no-constant-condition */
 
     // parse arguments
     const argsTokens = fetchInstructionTokensArgsList(parser);

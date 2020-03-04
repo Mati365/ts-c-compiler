@@ -4,31 +4,31 @@ import {
   RMByte,
   RMAddressingMode,
   X86AbstractCPU,
-} from '../../../emulator/types';
+} from '../../../../emulator/types';
 
-import {ASTInstruction} from '../ast/instruction/ASTInstruction';
+import {ASTInstruction} from '../../ast/instruction/ASTInstruction';
 import {
   ASTInstructionArg,
   ASTInstructionMemPtrArg,
-} from '../ast/instruction/args';
+} from '../../ast/instruction/args';
 
-import {RegisterSchema} from '../../shared/RegisterSchema';
-import {InstructionArgSize} from '../../types';
+import {RegisterSchema} from '../../../shared/RegisterSchema';
+import {InstructionArgSize} from '../../../types';
 
 import {
   ParserError,
   ParserErrorCode,
-} from '../../shared/ParserError';
+} from '../../../shared/ParserError';
 
-import {X86Compiler} from './compile';
-import {BinaryBlob} from './BinaryBlob';
+import {X86Compiler} from '../compile';
+import {BinaryBlob} from '../BinaryBlob';
 
-import {roundToPowerOfTwo} from '../../utils/numberByteSize';
+import {roundToPowerOfTwo} from '../../../utils/numberByteSize';
 import {
   extractNthByte,
   findMatchingMemAddressingRMByte,
   findMatchingSregPrefix,
-} from './utils';
+} from '../utils';
 
 /**
  * Compiles single instruction into:

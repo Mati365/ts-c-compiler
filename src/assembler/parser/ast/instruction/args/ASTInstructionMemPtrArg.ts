@@ -10,7 +10,7 @@ import {
   ASTExpressionParserError,
   ok,
   err,
-} from '../../ASTExpression';
+} from '../../critical/ASTExpression';
 
 import {ParserError, ParserErrorCode} from '../../../../shared/ParserError';
 import {

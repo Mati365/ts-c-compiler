@@ -9,21 +9,24 @@ import {ParserError, ParserErrorCode} from '../../shared/ParserError';
 import {InstructionArgSize} from '../../types';
 import {NumberToken} from '../lexer/tokens';
 
+import {ASTNode} from '../ast/ASTNode';
 import {ASTCompilerOption, CompilerOptions} from '../ast/def/ASTCompilerOption';
 import {ASTLabelAddrResolver} from '../ast/instruction/ASTResolvableArg';
 import {ASTTree} from '../ast/ASTParser';
 import {ASTNodeKind} from '../ast/types';
 import {ASTInstruction} from '../ast/instruction/ASTInstruction';
 import {ASTDef} from '../ast/def/ASTDef';
+
+import {ASTTimes} from '../ast/critical/ASTTimes';
 import {
   ASTLabel,
   isLocalLabel,
   resolveLocalTokenAbsName,
-} from '../ast/label/ASTLabel';
+} from '../ast/critical/ASTLabel';
 
-import {BinaryInstruction} from './BinaryInstruction';
+import {BinaryInstruction} from './types/BinaryInstruction';
+import {BinaryDefinition} from './types/BinaryDefinition';
 import {BinaryBlob} from './BinaryBlob';
-import {BinaryDefinition} from './BinaryDefinition';
 
 import {
   FirstPassResult,
@@ -91,6 +94,11 @@ export class X86Compiler {
     let offset = 0;
     let originDefined = false;
 
+    /**
+     * Emits binary set of data for instruction
+     *
+     * @param {BinaryBlob} blob
+     */
     const emitBlob = (blob: BinaryBlob): void => {
       result.nodesOffsets.set(
         this._origin + offset,
@@ -99,71 +107,86 @@ export class X86Compiler {
       offset += blob.binary.length;
     };
 
-    R.forEach(
-      (node) => {
-        const absoluteAddress = this._origin + offset;
+    /**
+     * Emits bytes for node from ASTnode,
+     * performs initial compilation of instruction
+     * with known size schemas
+     *
+     * @param {ASTNode} node
+     */
+    const processNode = (node: ASTNode): void => {
+      const absoluteAddress = this._origin + offset;
 
-        switch (node.kind) {
-          case ASTNodeKind.COMPILER_OPTION: {
-            const compilerOption = <ASTCompilerOption> node;
-            const arg = <NumberToken> compilerOption.args[0];
+      switch (node.kind) {
+        case ASTNodeKind.COMPILER_OPTION: {
+          const compilerOption = <ASTCompilerOption> node;
+          const arg = <NumberToken> compilerOption.args[0];
 
-            // origin set
-            if (compilerOption.option === CompilerOptions.ORG) {
-              if (originDefined)
-                throw new ParserError(ParserErrorCode.ORIGIN_REDEFINED);
+          // origin set
+          if (compilerOption.option === CompilerOptions.ORG) {
+            if (originDefined)
+              throw new ParserError(ParserErrorCode.ORIGIN_REDEFINED);
 
-              this.setOrigin(arg.value.number);
+            this.setOrigin(arg.value.number);
 
-              offset = 0;
-              originDefined = true;
+            offset = 0;
+            originDefined = true;
 
-            // mode set
-            } else if (compilerOption.option === CompilerOptions.BITS)
-              this.setMode(arg.value.number / 8);
-          } break;
+          // mode set
+          } else if (compilerOption.option === CompilerOptions.BITS)
+            this.setMode(arg.value.number / 8);
+        } break;
 
-          case ASTNodeKind.INSTRUCTION:
-            emitBlob(
-              new BinaryInstruction(<ASTInstruction> node).compile(this, absoluteAddress),
-            );
-            break;
+        case ASTNodeKind.TIMES: {
+          const timesNode = <ASTTimes> node;
 
-          case ASTNodeKind.DEFINE:
-            emitBlob(
-              new BinaryDefinition(<ASTDef> node).compile(),
-            );
-            break;
+          R.times(
+            () => processNode(timesNode.repeatedNode),
+            // todo: add expression parser
+            +(timesNode.timesExpression.map((n) => n.text).join('')),
+          );
+        } break;
 
-          case ASTNodeKind.LABEL: {
-            const labelName = (<ASTLabel> node).name;
+        case ASTNodeKind.INSTRUCTION:
+          emitBlob(
+            new BinaryInstruction(<ASTInstruction> node).compile(this, absoluteAddress),
+          );
+          break;
 
-            if (labels.has(labelName)) {
-              throw new ParserError(
-                ParserErrorCode.LABEL_ALREADY_DEFINED,
-                null,
-                {
-                  label: labelName,
-                },
-              );
-            }
+        case ASTNodeKind.DEFINE:
+          emitBlob(
+            new BinaryDefinition(<ASTDef> node).compile(),
+          );
+          break;
 
-            labels.set(labelName, absoluteAddress);
-          } break;
+        case ASTNodeKind.LABEL: {
+          const labelName = (<ASTLabel> node).name;
 
-          default:
+          if (labels.has(labelName)) {
             throw new ParserError(
-              ParserErrorCode.UNKNOWN_COMPILER_INSTRUCTION,
+              ParserErrorCode.LABEL_ALREADY_DEFINED,
               null,
               {
-                instruction: node.toString(),
+                label: labelName,
               },
             );
-        }
-      },
-      astNodes,
-    );
+          }
 
+          labels.set(labelName, absoluteAddress);
+        } break;
+
+        default:
+          throw new ParserError(
+            ParserErrorCode.UNKNOWN_COMPILER_INSTRUCTION,
+            null,
+            {
+              instruction: node.toString(),
+            },
+          );
+      }
+    };
+
+    R.forEach(processNode, astNodes);
     return result;
   }
 

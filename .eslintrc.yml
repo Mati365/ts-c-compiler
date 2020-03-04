@@ -25,6 +25,7 @@
       contextType: "static public field",
       displayName: "static public field",
     }]
+    no-constant-condition: ["error", {"checkLoops": false}]
     object-property-newline: 0
     lines-between-class-members: 0
     max-classes-per-file: 0

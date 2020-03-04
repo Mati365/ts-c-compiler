@@ -1,4 +1,4 @@
-import {Result, ok, err} from '../../../shared/monads/Result';
+import {Result, ok, err} from '../../../../shared/monads/Result';
 
 export {
   ok,

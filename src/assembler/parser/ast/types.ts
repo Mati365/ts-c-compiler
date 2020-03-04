@@ -3,6 +3,7 @@ export enum ASTNodeKind {
   LABEL,
   DEFINE,
   COMPILER_OPTION,
+  TIMES,
 }
 
 /**

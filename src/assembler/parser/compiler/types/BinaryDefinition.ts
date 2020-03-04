@@ -1,14 +1,14 @@
 import * as R from 'ramda';
 
-import {BinaryBlob} from './BinaryBlob';
-import {ASTDef} from '../ast/def/ASTDef';
-import {Token, TokenType, NumberToken} from '../lexer/tokens';
-import {ParserError, ParserErrorCode} from '../../shared/ParserError';
+import {BinaryBlob} from '../BinaryBlob';
+import {ASTDef} from '../../ast/def/ASTDef';
+import {Token, TokenType, NumberToken} from '../../lexer/tokens';
+import {ParserError, ParserErrorCode} from '../../../shared/ParserError';
 
 import {
   extractBytesFromText,
   extractMultipleNumberBytes,
-} from './utils';
+} from '../utils';
 
 /**
  * Transforms token into binary array of numbers

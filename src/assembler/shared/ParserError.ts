@@ -47,6 +47,11 @@ export enum ParserErrorCode {
   UNKNOWN_LABEL,
   LABEL_ALREADY_DEFINED,
 
+  // critical expressions
+  INCORRECT_TIMES_ARGS_COUNT,
+  MISSING_TIMES_REPEATED_INSTRUCTION,
+  UNABLE_PARSE_REPEATED_INSTRUCTION,
+
   // compiler
   UNKNOWN_COMPILER_INSTRUCTION,
   UNSUPPORTED_COMPILER_MODE,
@@ -106,6 +111,11 @@ export const ERROR_TRANSLATIONS: {[key in ParserErrorCode]: string} = {
 
   // prefixes
   [ParserErrorCode.INCORRECT_SREG_OVERRIDE]: 'Incorrect segment register override "%{sreg}"!',
+
+  // critical expressions
+  [ParserErrorCode.INCORRECT_TIMES_ARGS_COUNT]: 'Incorrect times expression args count!',
+  [ParserErrorCode.MISSING_TIMES_REPEATED_INSTRUCTION]: 'Missing times expression instruction!',
+  [ParserErrorCode.UNABLE_PARSE_REPEATED_INSTRUCTION]: 'Unable to parse repeated instruction "%{expression}"!',
 
   // labels
   [ParserErrorCode.MISSING_PARENT_LABEL]: 'Unable to resolve local label "%{label}", missing parent label!',

@@ -6,6 +6,8 @@ import {ParserError, ParserErrorCode} from '../../shared/ParserError';
 import {Token, TokenType} from '../lexer/tokens';
 import {ASTNode} from './ASTNode';
 
+export type ASTLexerTokensList = Token[]|IterableIterator<Token>;
+
 /**
  * Iterates through tokens list
  *
@@ -17,6 +19,8 @@ export class ASTTokensIterator {
     protected tokens: Token[],
     protected tokenIndex: number = 0,
   ) {}
+
+  getTokens(): Token[] { return this.tokens; }
 
   getTokenIndex(): number { return this.tokenIndex; }
 
@@ -97,9 +101,26 @@ export type ASTInstructionParser = {
 export class ASTParser extends ASTTokensIterator {
   constructor(
     private nodeParsers: ASTInstructionParser[],
-    tokensIterator: IterableIterator<Token>,
+    tokensIterator: ASTLexerTokensList,
   ) {
-    super(Array.from(tokensIterator));
+    super(
+      'length' in tokensIterator
+        ? <Token[]> tokensIterator
+        : Array.from(tokensIterator),
+    );
+  }
+
+  getParsers() { return this.nodeParsers; }
+
+  /**
+   * Creates clone of ASTParser but with new tokens list,
+   * used in some nested parsers like TIMES
+   *
+   * @param {ASTLexerTokensList} tokensIterator
+   * @memberof ASTParser
+   */
+  fork(tokensIterator: ASTLexerTokensList): ASTParser {
+    return new ASTParser(this.nodeParsers, tokensIterator);
   }
 
   /**

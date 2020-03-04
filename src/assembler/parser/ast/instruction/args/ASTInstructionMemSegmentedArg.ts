@@ -6,7 +6,7 @@ import {
   ASTExpressionParserError,
   ok,
   err,
-} from '../../ASTExpression';
+} from '../../critical/ASTExpression';
 
 import {
   InstructionArgSize,

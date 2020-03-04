@@ -6,12 +6,14 @@ import {
 } from './ASTParser';
 
 import {ASTInstruction} from './instruction/ASTInstruction';
-import {ASTLabel} from './label/ASTLabel';
+import {ASTLabel} from './critical/ASTLabel';
+import {ASTTimes} from './critical/ASTTimes';
 import {ASTDef} from './def/ASTDef';
 import {ASTCompilerOption} from './def/ASTCompilerOption';
 
 export const ASTNodesParsers = [
   ASTCompilerOption,
+  ASTTimes,
   ASTDef,
   ASTInstruction,
   ASTLabel,
