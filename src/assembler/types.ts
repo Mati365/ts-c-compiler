@@ -12,7 +12,7 @@ export enum InstructionArgSize {
   BYTE = 0x1,
   WORD = 0x2,
   DWORD = 0x4,
-  FWORD = 0x8,
+  QWORD = 0x8,
 }
 
 export enum BranchAddressingType {

@@ -276,10 +276,10 @@ export class X86Compiler {
       }
 
       if (!needPass) {
-        result.totalPasses = pass + 1;
         success = true;
         break;
-      }
+      } else
+        result.totalPasses = pass + 1;
     }
 
     // exhaust tries count

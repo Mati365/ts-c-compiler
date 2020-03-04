@@ -18,7 +18,8 @@ import {
 export enum DefTokenNames {
   DB = InstructionArgSize.BYTE,
   DW = InstructionArgSize.WORD,
-  DQ = InstructionArgSize.DWORD,
+  DD = InstructionArgSize.DWORD,
+  DQ = InstructionArgSize.QWORD,
 }
 
 /**
