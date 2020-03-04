@@ -3,6 +3,6 @@
 [org 0x0]                            ; BIOS loads us at 0x07c0:0000
 dupa:
 xor ax, ax
-times 44 mov bx, [es:bx+0x5]
+times 4 mov bx, [es:bx+0x5]
 hlt
 times 9 jmp dupa

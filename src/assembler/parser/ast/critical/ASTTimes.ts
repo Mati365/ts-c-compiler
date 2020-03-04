@@ -55,9 +55,9 @@ export class ASTTimes extends KindASTNode(ASTNodeKind.TIMES) {
     do {
       const argToken = parser.fetchRelativeToken();
 
-      if (!repeatedNodeTokens && (isTokenInstructionBeginning(argToken) || tokenDefSize(argToken.upperText))) {
+      if (!repeatedNodeTokens && (isTokenInstructionBeginning(argToken) || tokenDefSize(argToken)))
         repeatedNodeTokens = [argToken];
-      } else if (argToken.type === TokenType.EOF || argToken.type === TokenType.EOL)
+      else if (argToken.type === TokenType.EOF || argToken.type === TokenType.EOL)
         break;
       else
         (repeatedNodeTokens || timesExpression).push(argToken);

@@ -26,14 +26,14 @@ export enum DefTokenNames {
  * Checks if token is size def, if so - return size
  *
  * @export
- * @param {string} string
+ * @param {Token} token
  * @returns {number}
  */
-export function tokenDefSize(string: string): number {
-  if (!string)
+export function tokenDefSize(token: Token): number {
+  if (token.type !== TokenType.KEYWORD)
     return null;
 
-  return DefTokenNames[string];
+  return DefTokenNames[token.lowerText];
 }
 
 /**
@@ -85,7 +85,7 @@ export class ASTDef extends KindASTNode(ASTNodeKind.DEFINE) {
       return null;
 
     // check definition size
-    const tokenSize: number = tokenDefSize(token.upperText);
+    const tokenSize: number = tokenDefSize(token);
     if (!tokenSize)
       return null;
 
