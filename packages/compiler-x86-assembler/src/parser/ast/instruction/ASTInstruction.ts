@@ -15,6 +15,7 @@ import {
   InstructionArgType,
   BranchAddressingType,
   InstructionArgSize,
+  X86TargetCPU,
 } from '../../../types';
 
 import {ParserError, ParserErrorCode} from '../../../shared/ParserError';
@@ -244,7 +245,7 @@ export class ASTInstruction extends KindASTNode(ASTNodeKind.INSTRUCTION) {
       return toStringArgsList(mnemonic, args);
     }
 
-    return `${toStringArgsList(this.opcode, this.argsTokens)}`;
+    return toStringArgsList(this.opcode, args);
   }
 
   /**
@@ -298,11 +299,16 @@ export class ASTInstruction extends KindASTNode(ASTNodeKind.INSTRUCTION) {
    *
    * @param {ASTLabelAddrResolver} labelResolver
    * @param {number} absoluteAddress
+   * @param {X86TargetCPU} targetCPU
    *
    * @returns {ASTInstruction}
    * @memberof ASTInstruction
    */
-  tryResolveSchema(labelResolver?: ASTLabelAddrResolver, absoluteAddress?: number): ASTInstruction {
+  tryResolveSchema(
+    labelResolver?: ASTLabelAddrResolver,
+    absoluteAddress?: number,
+    targetCPU?: X86TargetCPU,
+  ): ASTInstruction {
     this.argsTokens = assignLabelsToTokens(labelResolver, this.originalArgsTokens);
 
     // regenerate schema args
@@ -320,7 +326,12 @@ export class ASTInstruction extends KindASTNode(ASTNodeKind.INSTRUCTION) {
     this.tryResolveArgs(labelResolver, newArgs);
 
     // list all of schemas
-    this.schemas = findMatchingInstructionSchemas(COMPILER_INSTRUCTIONS_SET, this, absoluteAddress);
+    this.schemas = findMatchingInstructionSchemas(
+      COMPILER_INSTRUCTIONS_SET,
+      targetCPU,
+      this,
+      absoluteAddress,
+    );
 
     // assign matching schema
     const {schemas, args} = this;
@@ -489,7 +500,7 @@ export class ASTInstruction extends KindASTNode(ASTNodeKind.INSTRUCTION) {
                 // if destination - next register should contain size
                 if (nextToken?.kind === TokenKind.REGISTER)
                   memSize = (<RegisterToken> nextToken).value.byteSize;
-              } else {
+              } else if (prevArgs.length) {
                 // if not destination - there should be some registers before
                 // try to find matching
                 const prevRegArg = R.find(
@@ -543,11 +554,7 @@ export class ASTInstruction extends KindASTNode(ASTNodeKind.INSTRUCTION) {
           // second argument has byteSize equal to 1, but ax is 2
           // try to cast
           const prevByteSize = acc[acc.length - 1].byteSize;
-          if (result.type === InstructionArgType.NUMBER && result.byteSize < prevByteSize)
-            (<ASTInstructionNumberArg> result).upperCastByteSize(prevByteSize);
-
-          // otherwise if it is mem arg, throw error
-          else
+          if (result.type !== InstructionArgType.NUMBER || result.byteSize > prevByteSize)
             throw new ParserError(ParserErrorCode.OPERAND_SIZES_MISMATCH);
         }
 
@@ -597,6 +604,6 @@ export class ASTInstruction extends KindASTNode(ASTNodeKind.INSTRUCTION) {
       ASTNodeLocation.fromTokenLoc(token.loc),
     );
 
-    return instruction.tryResolveSchema();
+    return instruction;
   }
 }

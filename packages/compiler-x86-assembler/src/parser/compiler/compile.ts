@@ -6,7 +6,7 @@ import {
 } from '../../constants';
 
 import {ParserError, ParserErrorCode} from '../../shared/ParserError';
-import {InstructionArgSize} from '../../types';
+import {InstructionArgSize, X86TargetCPU} from '../../types';
 import {NumberToken} from '../lexer/tokens';
 
 import {ASTNode} from '../ast/ASTNode';
@@ -48,6 +48,7 @@ import {
 export class X86Compiler {
   private _mode: InstructionArgSize = InstructionArgSize.WORD;
   private _origin: number = 0x0;
+  private _target: X86TargetCPU = X86TargetCPU.I_486;
 
   constructor(
     public readonly tree: ASTTree,
@@ -56,6 +57,7 @@ export class X86Compiler {
 
   get origin() { return this._origin; }
   get mode() { return this._mode; }
+  get target() { return this._target; }
 
   /**
    * Set origin which is absolute address
@@ -96,6 +98,8 @@ export class X86Compiler {
     initialOffset: number = 0,
   ): FirstPassResult {
     const result = new FirstPassResult(tree);
+
+    const {target} = this;
     const {astNodes} = tree;
     const {labels} = result;
 
@@ -161,11 +165,24 @@ export class X86Compiler {
           );
           break;
 
-        case ASTNodeKind.INSTRUCTION:
+        case ASTNodeKind.INSTRUCTION: {
+          const astInstruction = <ASTInstruction> node;
+          const resolved = astInstruction.tryResolveSchema(null, null, target);
+
+          if (!resolved) {
+            throw new ParserError(
+              ParserErrorCode.UNKNOWN_COMPILER_INSTRUCTION,
+              null,
+              {
+                instruction: astInstruction.toString(),
+              },
+            );
+          }
+
           emitBlob(
-            new BinaryInstruction(<ASTInstruction> node).compile(this, absoluteAddress),
+            new BinaryInstruction(astInstruction).compile(this, absoluteAddress),
           );
-          break;
+        } break;
 
         case ASTNodeKind.DEFINE:
           emitBlob(
@@ -213,6 +230,7 @@ export class X86Compiler {
    * @memberof X86Compiler
    */
   private secondPass(firstPassResult: FirstPassResult): SecondPassResult {
+    const {target} = this;
     const {tree} = firstPassResult;
     const {labels, nodesOffsets} = firstPassResult;
 
@@ -314,6 +332,7 @@ export class X86Compiler {
           ast.tryResolveSchema(
             labelResolver(ast),
             offset,
+            target,
           );
 
           // single instruction might contain multiple schemas but never 0

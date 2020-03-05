@@ -126,31 +126,33 @@ export class BinaryInstruction extends BinaryBlob<ASTInstruction> {
               binary.push(0x0); // pessimistic stage
           } break;
 
-          // offset
-          case 'o0': case 'o1': case 'o2': case 'o3': {
-            const immOffset = segMemArg.val?.offset;
-
-            if (segMemArg.val) {
-              binary.push(
-                extractNthByte(+schema[1], immOffset.number),
-              );
-            } else
-              binary.push(0x0); // pessimistic stage
-          } break;
-
-          // relative jump
+          // handle relative jump or near pointer
+          // near poiner might be written also as offset
+          // but really is only relative jump, check x86asmref
           case 'r0': case 'r1':
-            if (immArg) {
-              const relAddress = immArg.val - absoluteAddress - binaryOutputSize;
+          case 'o0': case 'o1': case 'o2': case 'o3':
+            if (schema[0] === 'r' || !segMemArg) {
+              if (immArg) {
+                const relAddress = immArg.val - absoluteAddress - binaryOutputSize;
 
-              binary.push(
-                X86AbstractCPU.toUnsignedNumber(
-                  extractNthByte(+schema[1], relAddress),
-                  <any> immArg.byteSize,
-                ),
-              );
-            } else
-              binary.push(0x0); // pessimistic stage
+                binary.push(
+                  X86AbstractCPU.toUnsignedNumber(
+                    extractNthByte(+schema[1], relAddress),
+                    <any> immArg.byteSize,
+                  ),
+                );
+              } else
+                binary.push(0x0); // pessimistic stage
+            } else {
+              const immOffset = segMemArg.val?.offset;
+
+              if (segMemArg.val) {
+                binary.push(
+                  extractNthByte(+schema[1], immOffset.number),
+                );
+              } else
+                binary.push(0x0); // pessimistic stage
+            }
             break;
 
           // immediate
@@ -184,6 +186,7 @@ export class BinaryInstruction extends BinaryBlob<ASTInstruction> {
 
               // destination without mod rm byte always produces exactly
               // equal number of bytes of displacement, see nasm
+              // use max for A0, A1 instructions
               if (!memArg.schema.rm
                   || byteOffset < Math.max(rmMaxByteSize, addressDescription.dispByteSize)) {
                 binary.push(

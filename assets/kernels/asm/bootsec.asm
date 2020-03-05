@@ -13,9 +13,26 @@ mov cl, 2
   jmp far word [cs:bx+0xFFF]
   mov ax, word [es:bx+0x5]
   jmp dupa2
-  stuff: db 0xFF, 0x75, "abcdefghijktlmneoprste"
+  stuff: times 10 nop
   mov ax, bx
-times 0xFF jmp dupa
+
+alloc_byte:
+  ; left border
+  mov ax, si
+  mov bx, 2
+  xor dx, dx
+  div bx
+  cmp ax, 0x0
+  div bx
+  sub ax, cx
+  jg .jesli_wieksze
+  xor bx, dx
+  call test_call
+  .jesli_wieksze:
+    hlt
+test_call:
+mov ax, [bp+0x4]
+times 0x2 jmp dupa
 dupa:
 xor ax, ax
 jmp start

@@ -5,7 +5,7 @@ import {roundedSignedNumberByteSize} from '@compiler/core/utils/numberByteSize';
 import {X86BitsMode} from '@emulator/x86-cpu/types';
 import {RegisterSchema} from '../../../../shared/RegisterSchema';
 
-import {InstructionArgType} from '../../../../types';
+import {InstructionArgType, X86TargetCPU} from '../../../../types';
 import {ASTInstruction} from '../ASTInstruction';
 import {ASTInstructionArg} from './ASTInstructionArg';
 import {ASTInstructionRegisterArg} from './ASTInstructionRegisterArg';
@@ -23,7 +23,7 @@ import {
  */
 
 function mem(arg: ASTInstructionArg, byteSize: X86BitsMode): boolean {
-  return arg.type === InstructionArgType.MEMORY && arg.byteSize === byteSize;
+  return arg.type === InstructionArgType.MEMORY && (!byteSize || arg.byteSize === byteSize);
 }
 
 function moffs(arg: ASTInstructionArg, maxByteSize: X86BitsMode): boolean {
@@ -46,8 +46,10 @@ function sreg(arg: ASTInstructionArg, byteSize: X86BitsMode): boolean {
   return reg(arg, byteSize, true);
 }
 
-function imm(arg: ASTInstructionArg, byteSize: X86BitsMode): boolean {
-  return arg.type === InstructionArgType.LABEL || (arg.type === InstructionArgType.NUMBER && arg.byteSize === byteSize);
+function imm(arg: ASTInstructionArg, maxByteSize: X86BitsMode): boolean {
+  return arg.type === InstructionArgType.LABEL || (
+    arg.type === InstructionArgType.NUMBER && arg.byteSize <= maxByteSize
+  );
 }
 
 function relLabel(arg: ASTInstructionArg, signedByteSize: X86BitsMode, absoluteAddress: number): boolean {
@@ -76,8 +78,8 @@ function nearPointer(arg: ASTInstructionArg, maxByteSize: X86BitsMode, absoluteA
   return false;
 }
 
-function farSegPointer(arg: ASTInstructionArg, byteSize: X86BitsMode): boolean {
-  return arg.type === InstructionArgType.SEGMENTED_MEMORY && arg.byteSize === byteSize;
+function farSegPointer(arg: ASTInstructionArg, maxByteSize: X86BitsMode): boolean {
+  return arg.type === InstructionArgType.SEGMENTED_MEMORY && arg.byteSize <= maxByteSize;
 }
 
 function indirectFarSegPointer(arg: ASTInstructionArg, instruction: ASTInstruction): boolean {
@@ -94,8 +96,7 @@ function indirectFarSegPointer(arg: ASTInstructionArg, instruction: ASTInstructi
  * sl, ll - short label, long label
  * mwr, mdr, mqr, mtr - memory word, double word, quad word, ten byte
  *
- * fptrw - absolute indirect far pointer word, 0x7C00:0x123
- * fptrw - absolute indirect far pointer double word
+ * fptr - absolute indirect far pointer word, 0x7C00:0x123
  * ifptr - indirect absolute far pointer
  *
  * Binary notation:
@@ -136,6 +137,9 @@ export const ASTInstructionArgMatchers: {[key: string]: ASTInstructionArgMatcher
   /** MEM OFFSET */
   moffs: () => (arg: ASTInstructionArg) => moffs(arg, 2),
 
+  /** MEM */
+  m: () => (arg: ASTInstructionArg) => mem(arg, null),
+
   /** SREG */
   sr: () => (arg: ASTInstructionArg) => sreg(arg, 2),
 
@@ -154,40 +158,27 @@ export const ASTInstructionArgMatchers: {[key: string]: ASTInstructionArgMatcher
   iw: () => (arg: ASTInstructionArg) => imm(arg, 2),
 
   /** LABEL - size of label will be matched in second phrase */
-  sl: () => (
-    arg: ASTInstructionArg,
-    instruction: ASTInstruction,
-    addr: number,
-  ) => (
+  sl: () => (arg: ASTInstructionArg, _: ASTInstruction, addr: number) => (
     relLabel(arg, 1, addr)
   ),
 
-  ll: () => (
-    arg: ASTInstructionArg,
-    instruction: ASTInstruction,
-    addr: number,
-  ) => (
+  ll: () => (arg: ASTInstructionArg, _: ASTInstruction, addr: number) => (
     relLabel(arg, 2, addr)
   ),
 
   /** NEAR POINTER */
-  np: () => (
-    arg: ASTInstructionArg,
-    instruction: ASTInstruction,
-    addr: number,
-  ) => (
+  np: () => (arg: ASTInstructionArg, _: ASTInstruction, addr: number) => (
     nearPointer(arg, 2, addr)
   ),
 
   /** ABSOLUTE FAR POINTERS */
-  fptrw: () => (arg: ASTInstructionArg) => farSegPointer(arg, 2),
-  fptrd: () => (arg: ASTInstructionArg) => farSegPointer(arg, 4),
+  fptr: () => (arg: ASTInstructionArg) => farSegPointer(arg, 4),
 
   /** INDIRECT ABSOLUTE FAR POINTERS */
   ifptr: () => indirectFarSegPointer,
 };
 
-export const isRMSchemaArg = R.contains(R.__, ['rmb', 'rmw', 'rmq', 'ifptr']);
+export const isRMSchemaArg = R.contains(R.__, ['m', 'rmb', 'rmw', 'rmq', 'ifptr', 'moffs']);
 
 export const isMoffsSchemaArg = R.contains(R.__, ['moffs']);
 
@@ -222,12 +213,14 @@ export const argMatchersFromStr = R.ifElse(
  *
  * @export
  * @param {ASTOpcodeMatchers} matchersSet
+ * @param {X86TargetCPU} targetCPU
  * @param {ASTInstruction} instruction
  * @param {number} offset
  * @returns {ASTInstructionSchema[]}
  */
 export function findMatchingInstructionSchemas(
   matchersSet: ASTOpcodeMatchers,
+  targetCPU: X86TargetCPU,
   instruction: ASTInstruction,
   offset: number,
 ): ASTInstructionSchema[] {
@@ -237,9 +230,13 @@ export function findMatchingInstructionSchemas(
   if (!opcodeSchemas)
     return null;
 
+  const targetCheck = R.isNil(targetCPU);
   const schemas = R.filter(
     (schema) => {
       const {argsSchema: matchers} = schema;
+
+      if (targetCheck && schema.targetCPU > targetCPU)
+        return false;
 
       for (let i = matchers.length - 1; i >= 0; --i) {
         if (R.isNil(args[i]) || !matchers[i].matcher(args[i], instruction, offset, schema))

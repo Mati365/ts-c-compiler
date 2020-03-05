@@ -1,5 +1,19 @@
 import {RegisterSchema} from './shared/RegisterSchema';
 
+/**
+ * Newer CPU = higher value
+ *
+ * @export
+ * @enum {number}
+ */
+export enum X86TargetCPU {
+  I_186 = 1,
+  I_286 = 2,
+  I_386 = 3,
+  I_486 = 4,
+  I_32BIT = 5,
+}
+
 export enum InstructionArgType {
   MEMORY,
   SEGMENTED_MEMORY,
