@@ -1,8 +1,15 @@
 # i8086.js
 16bit x86 virtual machine written in modern JS ES6.
 
-**Status: 70% opcodes implemented(BIOS asm issues)**
-<br />
+## Status
+- [x] Basic ASM compiler with NASM Syntax
+- [ ] Preprocessor for NASM
+- [ ] Improve diassembler (add jump arrows)
+- [ ] FPU Support
+- [ ] Add VGA mode (13h)
+- [ ] App frontend
+
+## Screens
 ![Prototype](/doc/screen.gif)
 ![Prototype](/doc/screen-2.png)
 
