@@ -5,7 +5,24 @@
     "resolveJsonModule": true,
     "esModuleInterop": true,
     "experimentalDecorators": true,
-    "downlevelIteration": true
+    "downlevelIteration": true,
+    "baseUrl": "./packages",
+    "paths": {
+      "@compiler/core": ["compiler-core/src/"],
+      "@compiler/core/*": ["compiler-core/src/*"],
+
+      "@compiler/lexer": ["compiler-lexer/src/"],
+      "@compiler/lexer/*": ["compiler-lexer/src/*"],
+
+      "@compiler/x86-assembler": ["compiler-x86-assembler/src/"],
+      "@compiler/x86-assembler/*": ["compiler-x86-assembler/src/*"],
+
+      "@emulator/ui": ["emulator-ui/src/"],
+      "@emulator/ui/*": ["emulator-ui/src/*"],
+
+      "@emulator/x86-cpu": ["emulator-x86-cpu/src/"],
+      "@emulator/x86-cpu/*": ["emulator-x86-cpu/src/*"],
+    }
   },
   "exclude": [
     "**/*.test.ts",

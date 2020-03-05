@@ -5,6 +5,19 @@
     ecmaVersion: 6
     sourceType: module
 
+  settings:
+    import/resolver:
+      alias: {
+        map: [
+          ['@compiler/core', './packages/compiler-core/src/'],
+          ['@compiler/lexer', './packages/compiler-lexer/src/'],
+          ['@compiler/x86-assembler', './packages/compiler-x86-assembler/src/'],
+          ['@emulator/ui', './packages/emulator-ui/src/'],
+          ['@emulator/x86-cpu', './packages/emulator-x86-cpu/src']
+        ],
+        extensions: ['.js', '.ts', '.tsx', '.scss', '.json']
+      }
+
   env:
     browser: true
     mocha: true

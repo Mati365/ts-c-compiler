@@ -1,0 +1,4 @@
+{
+  "name": "@emulator/compiler-lexer",
+  "main": "src/lexer.ts"
+}

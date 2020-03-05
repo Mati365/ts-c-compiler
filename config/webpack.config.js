@@ -1,8 +1,10 @@
 const path = require('path');
 
+const pkgResolve = (pkgPath) => path.resolve(__dirname, path.join('../packages/', pkgPath));
+
 module.exports = {
   target: 'web',
-  entry: path.resolve(__dirname, '../src/index.ts'),
+  entry: pkgResolve('emulator-ui/src/main.ts'),
   devServer: {
     port: 8080,
     contentBase: path.resolve(__dirname, '../assets/'),
@@ -47,6 +49,13 @@ module.exports = {
   },
   resolve: {
     extensions: ['.tsx', '.ts', '.js', '.jsx'],
+    alias: {
+      '@compiler/core': pkgResolve('compiler-core/src/'),
+      '@compiler/lexer': pkgResolve('compiler-lexer/src/'),
+      '@compiler/x86-assembler': pkgResolve('compiler-x86-assembler/src/'),
+      '@emulator/ui': pkgResolve('emulator-ui/src/'),
+      '@emulator/x86-cpu': pkgResolve('emulator-x86-cpu/src'),
+    },
   },
   output: {
     filename: 'bundle.js',

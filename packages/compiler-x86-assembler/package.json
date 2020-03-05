@@ -1,0 +1,4 @@
+{
+  "name": "@emulator/compiler-assembler",
+  "main": "src/make.ts"
+}
