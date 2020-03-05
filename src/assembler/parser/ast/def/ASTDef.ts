@@ -33,7 +33,7 @@ export function tokenDefSize(token: Token): number {
   if (token.type !== TokenType.KEYWORD)
     return null;
 
-  return DefTokenNames[token.lowerText];
+  return DefTokenNames[token.upperText];
 }
 
 /**
