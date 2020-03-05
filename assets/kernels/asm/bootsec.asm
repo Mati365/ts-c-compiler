@@ -2,6 +2,7 @@
 [org 0x0]
 start:
 jmp dupa
+lds ax, [fs:bx+0x4]
 mov cl, 2
   mov cx, 2
   mov ax, 'ac'

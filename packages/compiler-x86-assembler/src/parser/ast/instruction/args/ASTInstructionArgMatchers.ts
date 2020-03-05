@@ -22,8 +22,8 @@ import {
  * it is used in pessimistic optimistic arg size deduce
  */
 
-function mem(arg: ASTInstructionArg, byteSize: X86BitsMode): boolean {
-  return arg.type === InstructionArgType.MEMORY && (!byteSize || arg.byteSize === byteSize);
+function mem(arg: ASTInstructionArg, maxByteSize: X86BitsMode): boolean {
+  return arg.type === InstructionArgType.MEMORY && (!maxByteSize || arg.byteSize <= maxByteSize);
 }
 
 function moffs(arg: ASTInstructionArg, maxByteSize: X86BitsMode): boolean {
@@ -139,6 +139,9 @@ export const ASTInstructionArgMatchers: {[key: string]: ASTInstructionArgMatcher
 
   /** MEM */
   m: () => (arg: ASTInstructionArg) => mem(arg, null),
+  mb: () => (arg: ASTInstructionArg) => mem(arg, 1),
+  mw: () => (arg: ASTInstructionArg) => mem(arg, 2),
+  md: () => (arg: ASTInstructionArg) => mem(arg, 4),
 
   /** SREG */
   sr: () => (arg: ASTInstructionArg) => sreg(arg, 2),
@@ -178,7 +181,7 @@ export const ASTInstructionArgMatchers: {[key: string]: ASTInstructionArgMatcher
   ifptr: () => indirectFarSegPointer,
 };
 
-export const isRMSchemaArg = R.contains(R.__, ['m', 'rmb', 'rmw', 'rmq', 'ifptr', 'moffs']);
+export const isRMSchemaArg = R.contains(R.__, ['m', 'mw', 'mb', 'md', 'rmb', 'rmw', 'rmq', 'ifptr', 'moffs']);
 
 export const isMoffsSchemaArg = R.contains(R.__, ['moffs']);
 

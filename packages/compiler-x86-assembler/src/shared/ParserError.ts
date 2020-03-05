@@ -120,7 +120,7 @@ export const ERROR_TRANSLATIONS: {[key in ParserErrorCode]: string} = {
   [ParserErrorCode.LABEL_ALREADY_DEFINED]: 'Label "%{label}" is already defined!',
 
   // compiler
-  [ParserErrorCode.UNKNOWN_COMPILER_INSTRUCTION]: 'Unknown compile token "%{instruction}"!',
+  [ParserErrorCode.UNKNOWN_COMPILER_INSTRUCTION]: 'Unknown compile instruction "%{instruction}"!',
   [ParserErrorCode.UNSUPPORTED_COMPILER_MODE]: 'Unsupported compiler mode!',
   [ParserErrorCode.MISSING_RM_BYTE_DEF]: 'Missing RM byte arg definition but in binary schema is present!',
   [ParserErrorCode.MISSING_MEM_ARG_DEF]: 'Missing mem arg definition but in binary schema is present!',
