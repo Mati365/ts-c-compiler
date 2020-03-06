@@ -1,4 +1,4 @@
 {
-  "name": "@emulator/compiler-assembler",
-  "main": "src/make.ts"
+  "name": "@emulator/compiler-x86-assembler",
+  "main": "src/asm.ts"
 }

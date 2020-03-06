@@ -4,7 +4,7 @@ import {ASTTimes} from '../../ast/critical/ASTTimes';
 import {ASTTree} from '../../ast/ASTParser';
 
 import {BinaryBlob} from '../BinaryBlob';
-import {X86Compiler} from '../compile';
+import {X86Compiler} from '../X86Compiler';
 import {FirstPassResult} from '../BinaryPassResults';
 
 /**

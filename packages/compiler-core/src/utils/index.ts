@@ -7,3 +7,5 @@ export * from './tagFunction';
 export * from './truncateText';
 export * from './bits';
 export * from './mutableOmitChildKeys';
+export * from './mapMapValues';
+export * from './setCharAt';

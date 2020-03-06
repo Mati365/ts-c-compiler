@@ -1,5 +1,5 @@
 import * as R from 'ramda';
-import {X86Compiler} from './compile';
+import {X86Compiler} from './X86Compiler';
 
 const toMultilineBinaryBlockString = R.compose(
   R.map(

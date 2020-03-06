@@ -10,6 +10,6 @@ import {
  *
  * @param {String} code
  */
-export const make = tagFunction(
+export const asm = tagFunction(
   (code: string) => compile(ast(asmLexer(code))),
 );

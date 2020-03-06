@@ -1,7 +1,5 @@
 import * as R from 'ramda';
 
-import {flipMap} from '@compiler/core/utils/flipMap';
-
 import {ASTTree} from '../ast/ASTParser';
 import {BinaryLabelsOffsets} from '../ast/types';
 import {BinaryBlob} from './BinaryBlob';
@@ -59,47 +57,5 @@ export class SecondPassResult {
 
     labelsOffsets.clear();
     blobs.clear();
-  }
-
-  /**
-   * Prints in human way, like objdump blob
-   *
-   * @returns
-   * @memberof BinaryBlobSet
-   */
-  toString() {
-    const {labelsOffsets, blobs, totalPasses} = this;
-    const lines = [];
-
-    const labelsByOffsets = flipMap(labelsOffsets);
-    const maxLabelLength = R.reduce(
-      (acc, label) => Math.max(acc, label.length),
-      0,
-      Array.from(labelsOffsets.keys()),
-    );
-
-    for (const [offset, blob] of blobs) {
-      const offsetStr = `0x${offset.toString(16).padStart(4, '0')}`;
-      let labelStr = (labelsByOffsets.get(offset) || '');
-      if (labelStr)
-        labelStr = `${labelStr}:`;
-
-      const prefix = `${labelStr.padEnd(maxLabelLength + 4)}${offsetStr}: `;
-      const blobStr = blob.toString(true);
-
-      // handle multiline serialize
-      const parsedLines = R.addIndex(R.map)(
-        (str: string, index: number) => (
-          index
-            ? (`  .    ${str}`).padStart(prefix.length + str.length, ' ')
-            : `${prefix}${str}`
-        ),
-        <string[]> blobStr,
-      );
-
-      lines.push(...parsedLines);
-    }
-
-    return `Total passes: ${totalPasses + 1}\nBinary mapping:\n\n${R.join('\n', lines)}`;
   }
 }
