@@ -8,5 +8,5 @@
  * @returns {boolean}
  */
 export function isJumpInstruction(opcode: string): boolean {
-  return opcode[0] === 'j' || opcode === 'call';
+  return opcode[0] === 'j' || opcode === 'call' || opcode === 'loop';
 }

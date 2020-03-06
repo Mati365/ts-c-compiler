@@ -11,6 +11,7 @@
     "@typescript-eslint/eslint-plugin": "^2.7.0",
     "@typescript-eslint/parser": "^2.10.0",
     "arraybuffer-loader": "^1.0.8",
+    "buffer": "^5.4.3",
     "eslint": "^6.8.0",
     "eslint-config-airbnb-typescript": "^6.3.1",
     "eslint-import-resolver-alias": "^1.1.2",
@@ -32,8 +33,7 @@
     "typescript": "^3.7.3",
     "webpack": "^4.41.5",
     "webpack-cli": "^3.3.10",
-    "webpack-dev-server": "^3.10.1",
-    "buffer": "^5.4.3"
+    "webpack-dev-server": "^3.10.1"
   },
   "name": "i8086.js",
   "private": true

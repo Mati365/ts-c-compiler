@@ -31,6 +31,7 @@ alloc_byte:
   call test_call
   .jesli_wieksze:
     hlt
+  loop alloc_byte
 test_call:
 mov ax, [bp+0x4]
 times 0x2 jmp dupa
