@@ -13,6 +13,7 @@
 ## Screens
 ![Prototype](/doc/screen.gif)
 ![Prototype](/doc/screen-2.png)
+![Prototype](/doc/screen-3.png)
 
 ## Docs
 https://gist.github.com/mikesmullin/6259449
