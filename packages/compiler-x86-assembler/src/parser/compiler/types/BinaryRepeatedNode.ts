@@ -7,6 +7,8 @@ import {BinaryBlob} from '../BinaryBlob';
 import {X86Compiler} from '../X86Compiler';
 import {FirstPassResult} from '../BinaryPassResults';
 
+import {rpnTokens} from '../utils';
+
 /**
  * Define binary set of data
  *
@@ -23,7 +25,7 @@ export class BinaryRepeatedNode extends BinaryBlob<ASTTimes> {
       },
     } = this;
 
-    const times = +timesExpression[0].value.number;
+    const times = rpnTokens(timesExpression);
     const compiledPass = compiler.firstPass(
       new ASTTree(
         R.times(

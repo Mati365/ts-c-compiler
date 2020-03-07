@@ -26,6 +26,8 @@ type BinaryPrintConfig = {
     },
     arrows: {
       left: string,
+      top: string,
+      bottom: string,
     },
   },
 };
@@ -51,6 +53,8 @@ export class ConsoleBinaryView extends BinaryView<string> {
         },
         arrows: {
           left: '◀',
+          top: '▲',
+          bottom: '▼',
         },
       },
     },
@@ -92,12 +96,18 @@ export class ConsoleBinaryView extends BinaryView<string> {
 
       for (let i = 0; i < jmpLinesEntries.length; ++i) {
         let [jmpSrc, jmpDest] = jmpLinesEntries[i];
+        let infinityArrow: string = null;
 
         if (jmpSrc > offset && jmpSrc < nextOffset)
           jmpSrc = offset;
 
-        if (jmpDest > offset && jmpDest < nextOffset)
-          jmpDest = offset;
+        // detect bottom arrow, jump overflow
+        if (jmpDest > offset && jmpDest < nextOffset) {
+          if (nextOffset === Infinity)
+            infinityArrow = t.arrows.bottom;
+          else
+            jmpDest = offset;
+        }
 
         const toUpper = jmpDest > jmpSrc;
         const nesting = i * 2;
@@ -130,7 +140,7 @@ export class ConsoleBinaryView extends BinaryView<string> {
 
           str += `${arrowInserted ? t.horizontal : t.arrows.left}${toUpper ? t.corners.bottomLeft : t.corners.topLeft}`;
         } else if (inArrowBody)
-          str += ` ${t.vertical}`;
+          str += ` ${infinityArrow ?? t.vertical}`;
       }
 
       for (let i = 0; i < str.length; ++i) {

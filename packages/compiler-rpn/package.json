@@ -1,0 +1,4 @@
+{
+  "name": "@emulator/compiler-rpn",
+  "main": "src/rpn.ts"
+}

@@ -16,6 +16,8 @@
 ![Prototype](/doc/screen-3.png)
 
 ## Docs
+https://gist.github.com/nikAizuddin/0e307cac142792dcdeba
+http://www.plantation-productions.com/Webster/www.artofasm.com/Windows/HTML/RealArithmetica3.html
 https://gist.github.com/mikesmullin/6259449
 http://teaching.idallen.com/dat2343/10f/notes/040_overflow.txt
 http://ece425web.groups.et.byu.net/stable/labs/8086Assembly.html

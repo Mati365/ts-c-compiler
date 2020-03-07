@@ -1,6 +1,8 @@
 import {TokenKind, TokenType, Token} from '@compiler/lexer/tokens';
 import {ASTParser} from '../ast/ASTParser';
 
+import {mergeTokensTexts} from '../compiler/utils';
+
 /**
  * Fetches array of args such as:
  * ax, 0x55, byte ax
@@ -10,13 +12,31 @@ import {ASTParser} from '../ast/ASTParser';
  * @param {boolean} [allowSizeOverride=true]
  * @returns {Token[]}
  */
-export function fetchInstructionTokensArgsList(
-  parser: ASTParser,
-  allowSizeOverride: boolean = true,
-): Token[] {
+export function fetchInstructionTokensArgsList(parser: ASTParser, allowSizeOverride: boolean = true): Token[] {
   // parse arguments
   const argsTokens: Token[] = [];
-  let separatorToken = null;
+  let argTokenBuffer: Token[] = [];
+
+  function flushTokenBuffer() {
+    if (!argTokenBuffer.length)
+      return;
+
+    if (argTokenBuffer.length === 1) {
+      argsTokens.push(argTokenBuffer[0]);
+    } else {
+      // merge tokens (math expressions etc) into single token keyword
+      argsTokens.push(
+        new Token(
+          TokenType.KEYWORD,
+          null,
+          mergeTokensTexts(argTokenBuffer),
+          argTokenBuffer[0].loc,
+        ),
+      );
+    }
+
+    argTokenBuffer = [];
+  }
 
   do {
     // value or size operand
@@ -24,33 +44,30 @@ export function fetchInstructionTokensArgsList(
     if (!token || token.type === TokenType.EOL || token.type === TokenType.EOF)
       break;
 
-    argsTokens.push(token);
+    // single spearator characters
+    if (token.type === TokenType.COLON) {
+      flushTokenBuffer();
+      argsTokens.push(token);
+    } else if (token.type === TokenType.COMMA)
+      flushTokenBuffer();
+    else
+      argTokenBuffer.push(token);
 
     // far / near jmp instruction args prefix
     if (token.kind === TokenKind.BRANCH_ADDRESSING_TYPE) {
+      flushTokenBuffer();
       token = parser.fetchRelativeToken();
       argsTokens.push(token);
-    }
 
     // if it was size operand - fetch next token which is prefixed
-    if (allowSizeOverride && token.kind === TokenKind.BYTE_SIZE_OVERRIDE) {
+    } else if (allowSizeOverride && token.kind === TokenKind.BYTE_SIZE_OVERRIDE) {
+      flushTokenBuffer();
       argsTokens.push(
         parser.fetchRelativeToken(),
       );
     }
+  } while (true);
 
-    // comma or other separator
-    separatorToken = parser.fetchRelativeToken();
-
-    // handle comma between numbers in some addressing modes
-    if (separatorToken?.type === TokenType.COLON)
-      argsTokens.push(separatorToken);
-  } while (
-    separatorToken && (
-      separatorToken.type === TokenType.COMMA
-        || separatorToken.type === TokenType.COLON
-    )
-  );
-
+  flushTokenBuffer();
   return argsTokens;
 }

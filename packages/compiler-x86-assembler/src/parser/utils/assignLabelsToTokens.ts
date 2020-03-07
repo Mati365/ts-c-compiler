@@ -1,11 +1,12 @@
 import * as R from 'ramda';
 
-import {Token} from '@compiler/lexer/tokens';
+import {rpn} from '@compiler/rpn/rpn';
 
+import {Token} from '@compiler/lexer/tokens';
 import {ParserErrorCode, ParserError} from '../../shared/ParserError';
-import {isPossibleLabelToken} from './isPossibleLabelToken';
 import {ASTLabelAddrResolver} from '../ast/instruction/ASTResolvableArg';
 import {NumberFormat, NumberToken} from '../lexer/tokens';
+import {isPossibleLabelToken} from './isPossibleLabelToken';
 
 /**
  * Replaces all tokens in list with label (which is simple number)
@@ -27,7 +28,7 @@ export function assignLabelsToTokens(
       if (!isPossibleLabelToken(token))
         return token;
 
-      const labelAddress = labelResolver(token.text);
+      const labelAddress = rpn(token.text, labelResolver);
       if (R.isNil(labelAddress)) {
         throw new ParserError(
           ParserErrorCode.UNKNOWN_LABEL,

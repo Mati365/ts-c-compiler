@@ -11,6 +11,7 @@
         map: [
           ['@compiler/core', './packages/compiler-core/src/'],
           ['@compiler/lexer', './packages/compiler-lexer/src/'],
+          ['@compiler/rpn', './packages/compiler-rpn/src/'],
           ['@compiler/x86-assembler', './packages/compiler-x86-assembler/src/'],
           ['@emulator/ui', './packages/emulator-ui/src/'],
           ['@emulator/x86-cpu', './packages/emulator-x86-cpu/src']
