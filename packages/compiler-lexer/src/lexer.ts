@@ -4,9 +4,9 @@ import {
   isComment,
   isQuote,
   isNewline,
-  isBracket,
   matchQuote,
   matchBracket,
+  flipBracket,
 } from './utils/matchCharacter';
 
 import {LexerError, LexerErrorCode} from './shared/LexerError';
@@ -121,8 +121,15 @@ export function* lexer(
     fetchUntil: (str: string) => boolean,
   ): Iterable<Token> {
     tokenBuffer = '';
-    for (; offset < length && !fetchUntil(code[offset]); ++offset)
+    for (;; ++offset) {
+      if (fetchUntil(code[offset]))
+        break;
+
+      if (offset >= length)
+        throw new LexerError(LexerErrorCode.UNTERMINATED_STRING);
+
       tokenBuffer += code[offset];
+    }
 
     yield* appendToken(
       new Token(type, kind, tokenBuffer, location.clone()),
@@ -154,6 +161,9 @@ export function* lexer(
     // special tokens that might contain spaces inside them
     const quote = matchQuote(character);
     if (quote) {
+      if (tokenBuffer)
+        throw new LexerError(LexerErrorCode.UNKNOWN_TOKEN, null, {token: tokenBuffer});
+
       offset++;
       yield* appendTokenWithSpaces(TokenType.QUOTE, quote, isQuote);
       continue;
@@ -161,8 +171,25 @@ export function* lexer(
 
     const bracket = matchBracket(character);
     if (bracket) {
+      if (tokenBuffer)
+        throw new LexerError(LexerErrorCode.UNKNOWN_TOKEN, null, {token: tokenBuffer});
+
+      const flippedBracket = flipBracket(character);
+      let nesting = 1;
+
       offset++;
-      yield* appendTokenWithSpaces(TokenType.BRACKET, bracket, isBracket);
+      yield* appendTokenWithSpaces(
+        TokenType.BRACKET,
+        bracket,
+        (c) => {
+          if (c === character)
+            nesting++;
+          else if (c === flippedBracket)
+            nesting--;
+
+          return nesting <= 0;
+        },
+      );
       continue;
     }
 

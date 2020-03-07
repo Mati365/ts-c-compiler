@@ -1,11 +1,44 @@
 import * as R from 'ramda';
 
+import {isQuote} from '@compiler/lexer/utils/matchCharacter';
+import {reduceTextToBitset} from '@compiler/core/utils';
+
 import {MathOperator} from './MathOperators';
 import {MathError, MathErrorCode} from './MathError';
 
 export type MathPostfixTokens = (string|MathOperator)[];
 
-export type MathKeywordValueResolver = (name: string) => number;
+export type MathParserConfig = {
+  keywordResolver?: (name: string) => number,
+};
+
+/**
+ * Replaces all quotes in string to ascii numbers
+ *
+ * @export
+ * @param {string} expression
+ * @returns {string}
+ */
+export function replaceQuotesWithNumbers(expression: string): string {
+  for (let i = 0; i < expression.length; ++i) {
+    const c = expression[i];
+
+    if (isQuote(c)) {
+      let quoteBuffer = '';
+
+      for (let j = i + 1; j < expression.length && !isQuote(expression[j]); ++j)
+        quoteBuffer += expression[j];
+
+      expression = (
+        expression.slice(0, i)
+          + reduceTextToBitset(quoteBuffer)
+          + expression.slice(i + quoteBuffer.length + 2)
+      );
+    }
+  }
+
+  return expression;
+}
 
 /**
  * Concerts expression to RPN and calculates it
@@ -19,14 +52,14 @@ export class MathExpression {
    *
    * @static
    * @param {string} phrase
-   * @param {MathKeywordValueResolver} [keywordResolver]
+   * @param {MathParserConfig} [parserConfig]
    * @returns {number}
    * @memberof MathExpression
    */
-  static evaluate(phrase: string, keywordResolver?: MathKeywordValueResolver): number {
+  static evaluate(phrase: string, parserConfig?: MathParserConfig): number {
     return MathExpression.reducePostfixToNumber(
       MathExpression.toRPN(phrase),
-      keywordResolver,
+      parserConfig,
     );
   }
 
@@ -41,18 +74,24 @@ export class MathExpression {
   static toRPN(phrase: string): MathPostfixTokens {
     const stack: MathOperator[] = [];
     const buffer: MathPostfixTokens = [];
-    const tokens: string[] = R.split(
-      MathOperator.MATCH_OPERATOR_REGEX,
-      phrase.replace(/\s/g, ''),
+    const tokens: string[] = R.reject(
+      R.isEmpty,
+      R.split(
+        MathOperator.MATCH_OPERATOR_REGEX,
+        replaceQuotesWithNumbers(phrase.replace(/\s/g, '')),
+      ),
     );
 
     for (let i = 0; i < tokens.length; ++i) {
       const c = tokens[i];
-      if (R.isEmpty(c))
-        continue;
-
       const operator = MathOperator.findOperatorByCharacter(c);
+
       if (operator) {
+        // prefix cases with 0: (-1), +1+2
+        if ((operator === MathOperator.PLUS || operator === MathOperator.MINUS) && (!i || (tokens[i - 1]
+            && MathOperator.findOperatorByCharacter(tokens[i - 1]) === MathOperator.RIGHT_BRACKET)))
+          buffer.push('0');
+
         if (operator === MathOperator.RIGHT_BRACKET) {
           let foundLeftBracket = false;
           while (stack.length) {
@@ -106,11 +145,11 @@ export class MathExpression {
    *
    * @static
    * @param {MathPostfixTokens} tokens
-   * @param {MathKeywordValueResolver} [keywordResolver]
+   * @param {MathParserConfig} [parserConfig]
    * @returns {number}
    * @memberof MathExpression
    */
-  static reducePostfixToNumber(tokens: MathPostfixTokens, keywordResolver?: MathKeywordValueResolver): number {
+  static reducePostfixToNumber(tokens: MathPostfixTokens, parserConfig?: MathParserConfig): number {
     const numberStack: number[] = [];
 
     for (let i = 0; i < tokens.length; ++i) {
@@ -132,7 +171,7 @@ export class MathExpression {
         let number = +token;
 
         if (Number.isNaN(number)) {
-          number = keywordResolver?.(token);
+          number = parserConfig?.keywordResolver?.(token);
           if (R.isNil(number))
             throw new MathError(MathErrorCode.UNKNOWN_KEYWORD, {token});
         }

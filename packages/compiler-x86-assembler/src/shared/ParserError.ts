@@ -18,13 +18,10 @@ export enum ParserErrorCode {
   INCORRECT_ARG_QUOTE_TEXT_LENGTH,
 
   // mem
-  INCORRECT_OPERAND,
-  MISSING_MUL_SECOND_ARG,
   SCALE_IS_ALREADY_DEFINED,
-  INCORRECT_SCALE_MEM_PARAMS,
   INCORRECT_SCALE,
-  UNKNOWN_MEM_TOKEN,
   INCORRECT_MODRM,
+  INCORRECT_MEM_EXPRESSION,
   DISPLACEMENT_EXCEEDING_BYTE_SIZE,
   SCALE_INDEX_IS_UNSUPPORTED_IN_MODE,
 
@@ -88,11 +85,8 @@ export const ERROR_TRANSLATIONS: {[key in ParserErrorCode]: string} = {
   [ParserErrorCode.INCORRECT_ARG_QUOTE_TEXT_LENGTH]: 'Incorrect text "%{text}" length! It must be less than %{maxSize} bytes!',
 
   // mem
-  [ParserErrorCode.UNKNOWN_MEM_TOKEN]: 'Unknown mem definition token %{token}!',
-  [ParserErrorCode.INCORRECT_OPERAND]: 'Incorrect operand!',
-  [ParserErrorCode.MISSING_MUL_SECOND_ARG]: 'Missing mul second arg!',
   [ParserErrorCode.SCALE_IS_ALREADY_DEFINED]: 'Scale is already defined!',
-  [ParserErrorCode.INCORRECT_SCALE_MEM_PARAMS]: 'Incorrect scale mem params!',
+  [ParserErrorCode.INCORRECT_MEM_EXPRESSION]: 'Incorrect mem expression "%{expression}"!',
   [ParserErrorCode.INCORRECT_SCALE]: 'Incorrect scale! It must be 1, 2, 4 or 8 instead of "%{scale}"!',
   [ParserErrorCode.INCORRECT_MODRM]: 'Error during "%{phrase}" ModRM instruction byte parsing!',
   [ParserErrorCode.DISPLACEMENT_EXCEEDING_BYTE_SIZE]: 'Displacement of "%{address}" exceedes arg byte size (%{byteSize} bytes but should be <= %{maxSize} bytes)!',

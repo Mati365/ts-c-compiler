@@ -68,7 +68,7 @@ export class BinaryInstruction extends BinaryBlob<ASTInstruction> {
     );
 
     // sibByte is supported in modes > 16bits
-    if (sibByte && compiler.mode > InstructionArgSize.WORD)
+    if (sibByte && compiler.mode <= InstructionArgSize.WORD)
       throw new ParserError(ParserErrorCode.SCALE_INDEX_IS_UNSUPPORTED_IN_MODE);
 
     // output

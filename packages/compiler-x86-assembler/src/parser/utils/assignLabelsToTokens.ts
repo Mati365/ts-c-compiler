@@ -28,7 +28,12 @@ export function assignLabelsToTokens(
       if (!isPossibleLabelToken(token))
         return token;
 
-      const labelAddress = rpn(token.text, labelResolver);
+      const labelAddress = rpn(
+        token.text,
+        {
+          keywordResolver: labelResolver,
+        },
+      );
       if (R.isNil(labelAddress)) {
         throw new ParserError(
           ParserErrorCode.UNKNOWN_LABEL,

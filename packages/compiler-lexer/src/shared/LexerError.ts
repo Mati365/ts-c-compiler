@@ -3,10 +3,12 @@ import {TokenLocation} from '../tokens';
 
 export enum LexerErrorCode {
   UNKNOWN_TOKEN,
+  UNTERMINATED_STRING,
 }
 
 export const LEXER_ERROR_TRANSLATIONS: {[key in LexerErrorCode]: string} = {
   [LexerErrorCode.UNKNOWN_TOKEN]: 'Unknown token "%{token}"!',
+  [LexerErrorCode.UNTERMINATED_STRING]: 'Unterminated string!',
 };
 
 /**

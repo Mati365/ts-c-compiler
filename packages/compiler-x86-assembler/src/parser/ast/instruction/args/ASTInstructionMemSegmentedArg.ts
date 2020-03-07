@@ -68,10 +68,10 @@ export function parseSegmentedMemExpression(
   if (isPossibleLabelToken(segment) || isPossibleLabelToken(offset)) {
     if (labelResolver) {
       throw new ParserError(
-        ParserErrorCode.UNKNOWN_MEM_TOKEN,
+        ParserErrorCode.INCORRECT_MEM_EXPRESSION,
         null,
         {
-          token: expression,
+          expression,
         },
       );
     } else

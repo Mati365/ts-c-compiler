@@ -1,7 +1,7 @@
 import * as R from 'ramda';
 
-import {Token} from '@compiler/lexer/tokens';
-import {MathKeywordValueResolver} from '@compiler/rpn/utils/MathExpression';
+import {Token, TokenType} from '@compiler/lexer/tokens';
+import {MathParserConfig} from '@compiler/rpn/utils/MathExpression';
 import {rpn} from '@compiler/rpn/rpn';
 
 /**
@@ -12,7 +12,21 @@ import {rpn} from '@compiler/rpn/rpn';
  * @returns {string}
  */
 export function mergeTokensTexts(tokens: Token[]): string {
-  return R.join('', R.pluck('text', tokens));
+  return R.join(
+    '',
+    R.map(
+      (token) => {
+        if (token.type === TokenType.QUOTE)
+          return `'${token.text}'`;
+
+        if (token.type === TokenType.BRACKET)
+          return `(${token.text})`;
+
+        return token.text;
+      },
+      tokens,
+    ),
+  );
 }
 
 /**
@@ -20,12 +34,12 @@ export function mergeTokensTexts(tokens: Token[]): string {
  *
  * @export
  * @param {Token[]} tokens
- * @param {MathKeywordValueResolver} [keywordResolver]
+ * @param {MathParserConfig} [parserConfig]
  * @returns
  */
-export function rpnTokens(tokens: Token[], keywordResolver?: MathKeywordValueResolver) {
+export function rpnTokens(tokens: Token[], parserConfig?: MathParserConfig) {
   return rpn(
     mergeTokensTexts(tokens),
-    keywordResolver,
+    parserConfig,
   );
 }

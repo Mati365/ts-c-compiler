@@ -1,18 +1,17 @@
 import * as R from 'ramda';
 
-import {isOperator} from '@compiler/lexer/utils/matchCharacter';
-import {reduceTextToBitset} from '@compiler/core/utils';
+import {RegisterToken} from '@compiler/x86-assembler/parser/lexer/tokens';
+import {TokenType, TokenKind, Token} from '@compiler/lexer/tokens';
+import {Result} from '@compiler/core/monads/Result';
+
+import {MathErrorCode} from '@compiler/rpn/utils';
+import {rpnTokens} from '@compiler/x86-assembler/parser/compiler/utils';
+
 import {
   numberByteSize,
   roundToPowerOfTwo,
   signedNumberByteSize,
 } from '@compiler/core/utils/numberByteSize';
-
-import {
-  TokenType,
-  TokenKind,
-  Token,
-} from '@compiler/lexer/tokens';
 
 import {assignLabelsToTokens} from '../../../utils';
 import {asmLexer} from '../../../lexer/asmLexer';
@@ -20,18 +19,12 @@ import {asmLexer} from '../../../lexer/asmLexer';
 import {ASTLabelAddrResolver} from '../ASTResolvableArg';
 import {
   ASTExpressionParserResult,
-  ASTExpressionParserError,
   ok,
   err,
+  ASTExpressionParserError,
 } from '../../critical/ASTExpression';
 
 import {ParserError, ParserErrorCode} from '../../../../shared/ParserError';
-import {
-  RegisterToken,
-  NumberToken,
-} from '../../../lexer/tokens';
-
-import {RegisterSchema} from '../../../../shared/RegisterSchema';
 import {
   InstructionArgType,
   MemAddressDescription,
@@ -43,86 +36,28 @@ import {
 import {ASTInstructionArg} from './ASTInstructionArg';
 
 /**
- * Transforms:
- * [ax+bx*4] => [+ax+bx*4]
- * [ds:ax+bx*4] => [ds:+ax+bx*4]
- * [ds:-4] => [ds:-4]
+ * Throws error that is used to jump prediction
  *
- * @param {string} sign
- * @param {string} phrase
- * @returns {string}
+ * @param {ASTLabelAddrResolver} labelResolver
+ * @param {Token[]} tokens
+ * @returns {Result<number, ASTExpressionParserError>}
  */
-function prefixMemPhraseWithSign(sign: string, phrase: string): string {
-  const colonIndex = R.indexOf(':', <any> phrase);
-  const prefixAtOffset = colonIndex !== -1 ? colonIndex + 1 : 0;
+function safeMemRPN(labelResolver: ASTLabelAddrResolver, tokens: Token[]): Result<number, ASTExpressionParserError> {
+  try {
+    return ok(
+      rpnTokens(
+        tokens,
+        {
+          keywordResolver: labelResolver,
+        },
+      ),
+    );
+  } catch (e) {
+    if (labelResolver || ('code' in e && e.code !== MathErrorCode.UNKNOWN_KEYWORD))
+      throw e;
 
-  if (isOperator(phrase[prefixAtOffset]))
-    return phrase;
-
-  const [left, right] = R.splitAt(prefixAtOffset, phrase);
-  return `${left}${sign}${right}`;
-}
-
-/**
- * Decode si*4
- *
- * @param {Token} op1
- * @param {Token} op2
- * @param {Token} op3
- * @param {MemAddressDescription} addressDescription
- * @returns {boolean}
- */
-function resolveScale(
-  op1: Token,
-  op2: Token,
-  op3: Token,
-  addressDescription: MemAddressDescription,
-): boolean {
-  if (!op1 || !op2 || !op3 || op2.type !== TokenType.MUL)
-    return false;
-
-  if (!op3)
-    throw new ParserError(ParserErrorCode.MISSING_MUL_SECOND_ARG);
-
-  if (addressDescription.scale)
-    throw new ParserError(ParserErrorCode.SCALE_IS_ALREADY_DEFINED);
-
-  // pick args values
-  let scale: number = null;
-  let reg: RegisterSchema = null;
-
-  if (op1.kind === TokenKind.REGISTER && op3.type === TokenType.NUMBER)
-    [scale, reg] = [(<NumberToken> op3).value.number, (<RegisterToken> op1).value.schema];
-  else if (op3.kind === TokenKind.REGISTER && op1.type === TokenType.NUMBER)
-    [scale, reg] = [(<NumberToken> op1).value.number, (<RegisterToken> op3).value.schema];
-  else
-    throw new ParserError(ParserErrorCode.INCORRECT_SCALE_MEM_PARAMS);
-
-  if (!isValidScale(scale))
-    throw new ParserError(ParserErrorCode.INCORRECT_SCALE, null, {scale});
-
-  // assign value
-  addressDescription.scale = {
-    value: <MemSIBScale> scale,
-    reg,
-  };
-
-  return true;
-}
-
-/**
- * Raise error in parser in first phase - when label resolved is not defined
- *
- * @param {boolean} exception
- * @param {ParserErrorCode} code
- * @param {object} [data]
- * @returns
- */
-function raiseMemParserError(exception: boolean, code: ParserErrorCode, data?: object) {
-  if (exception)
-    throw new ParserError(code, null, data);
-  else
     return err(ASTExpressionParserError.UNRESOLVED_LABEL);
+  }
 }
 
 /**
@@ -136,100 +71,81 @@ function parseMemExpression(
   expression: string,
 ): ASTExpressionParserResult<MemAddressDescription> {
   let tokens = Array.from(
-    asmLexer(
-      prefixMemPhraseWithSign('+', expression),
-      false,
-      true,
-    ),
+    asmLexer(expression, false, true),
   );
+
+  const addressDescription: MemAddressDescription = {
+    disp: null,
+    dispByteSize: null,
+    signedByteSize: null,
+  };
 
   // assign labels if labelResolver is present
   if (labelResolver)
     tokens = assignLabelsToTokens(labelResolver, tokens);
 
-  const addressDescription: MemAddressDescription = {
-    disp: null,
-    dispByteSize: null,
-  };
+  // eat all register tokens
+  for (let i = 0; i < tokens.length;) {
+    const [arg1, operator, arg2] = [tokens[i], tokens[i + 1], tokens[i + 2]];
+    const currentReg = arg1.kind === TokenKind.REGISTER && (<RegisterToken> arg1).value.schema;
 
-  for (let i = 0; i < tokens.length; ++i) {
-    const [op1, op2] = [tokens[i], tokens[i + 1]];
+    // sreg:...
+    if (!i && currentReg && operator?.type === TokenType.COLON) {
+      addressDescription.sreg = currentReg;
 
-    switch (op1.type) {
-      // segment prefix [ds:...]
-      case TokenType.KEYWORD:
-        if (op2?.type === TokenType.COLON) {
-          const regOp1 = <RegisterToken> op1;
+      if (!addressDescription?.sreg)
+        throw new ParserError(ParserErrorCode.REGISTER_IS_NOT_SEGMENT_REG, null, {reg: arg1.text});
 
-          addressDescription.sreg = regOp1.value?.schema;
-          ++i;
+      tokens.splice(i, 2);
 
-          if (!addressDescription?.sreg)
-            throw new ParserError(ParserErrorCode.REGISTER_IS_NOT_SEGMENT_REG, null, {reg: op1.text});
-        } else {
-          return raiseMemParserError(
-            !!labelResolver,
-            ParserErrorCode.SYNTAX_ERROR,
-          );
-        }
-        break;
+    // scale, reg*num or num*reg
+    } else if (operator?.type === TokenType.MUL && (currentReg || arg2?.kind === TokenKind.REGISTER)) {
+      if (addressDescription.scale)
+        throw new ParserError(ParserErrorCode.SCALE_IS_ALREADY_DEFINED);
 
-      // [..:+ah+si*4] etc
-      case TokenType.MINUS:
-        if (op2.type === TokenType.NUMBER) {
-          addressDescription.disp -= (<NumberToken> op2).value.number;
-          ++i;
-        } else if (op2.type === TokenType.QUOTE) {
-          addressDescription.disp -= reduceTextToBitset(op2.text);
-          ++i;
-        } else {
-          return raiseMemParserError(
-            !!labelResolver,
-            ParserErrorCode.OPERAND_MUST_BE_NUMBER,
-          );
-        }
-        break;
+      // handle errors
+      const [reg, expr] = currentReg ? [arg1, arg2] : [arg2, arg1];
+      const scaleResult = safeMemRPN(labelResolver, [expr]);
+      if (scaleResult.isErr())
+        return err(scaleResult.unwrapErr());
 
-      case TokenType.PLUS:
-        if (resolveScale(op2, tokens[i + 2], tokens[i + 3], addressDescription))
-          i += 3;
-        else if (op2.kind === TokenKind.REGISTER) {
-          const reg = (<RegisterToken> op2).value.schema;
+      // calc scale
+      const scale = scaleResult.unwrap();
+      if (!isValidScale(scale))
+        throw new ParserError(ParserErrorCode.INCORRECT_SCALE, null, {scale});
 
-          if (!addressDescription.reg)
-            addressDescription.reg = reg;
-          else if (!addressDescription.scale) {
-            addressDescription.scale = {
-              value: 1,
-              reg,
-            };
-          } else
-            throw new ParserError(ParserErrorCode.INCORRECT_EXPRESSION);
+      addressDescription.scale = {
+        reg: (<RegisterToken> reg).value.schema,
+        value: <MemSIBScale> scale,
+      };
 
-          ++i;
-        } else if (op2.type === TokenType.NUMBER) {
-          addressDescription.disp += (<NumberToken> op2).value.number;
-          ++i;
-        } else if (op2.type === TokenType.QUOTE) {
-          addressDescription.disp += reduceTextToBitset(op2.text);
-          ++i;
-        } else {
-          return raiseMemParserError(
-            !!labelResolver,
-            ParserErrorCode.INCORRECT_OPERAND,
-          );
-        }
-        break;
+      tokens.splice(i, 3);
+    } else if (currentReg) {
+      // standalone offset register
+      if (!addressDescription.reg) {
+        addressDescription.reg = currentReg;
+        tokens.splice(i, 1);
 
-      default:
-        raiseMemParserError(
-          !!labelResolver,
-          ParserErrorCode.UNKNOWN_MEM_TOKEN,
-          {
-            token: op1.text,
-          },
-        );
-    }
+      // standalone scale register
+      } else if (!addressDescription.scale) {
+        addressDescription.scale = {
+          reg: currentReg,
+          value: 1,
+        };
+        tokens.splice(i, 1);
+      } else
+        throw new ParserError(ParserErrorCode.INCORRECT_MEM_EXPRESSION, null, {expression});
+    } else
+      ++i;
+  }
+
+  // calc displacement
+  if (tokens.length) {
+    const dispResult = safeMemRPN(labelResolver, tokens);
+    if (dispResult.isErr())
+      return err(dispResult.unwrapErr());
+
+    addressDescription.disp = dispResult.unwrap();
   }
 
   if (addressDescription.disp !== null) {

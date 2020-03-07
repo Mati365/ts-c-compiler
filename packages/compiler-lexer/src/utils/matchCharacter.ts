@@ -15,6 +15,21 @@ export const matchQuote = (c: string): TokenKind => {
 
 export const isBracket = (c: string): boolean => c === '[' || c === ']';
 
+export const flipBracket = (c: string): string => {
+  switch (c) {
+    case '(': return ')';
+    case '{': return '}';
+    case '[': return ']';
+
+    case ')': return '(';
+    case '}': return '{';
+    case ']': return '[';
+
+    default:
+      return null;
+  }
+};
+
 export const matchBracket = (c: string): TokenKind => {
   switch (c) {
     case '(': case ')': return TokenKind.PARENTHES_BRACKET;
