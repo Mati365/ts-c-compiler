@@ -3,9 +3,9 @@
 
 ## Status
 - [x] Basic ASM compiler with NASM Syntax
-- [ ] Add expression parsers (such as jmp .label + 2)
+- [x] Add expression parsers (such as jmp .label + 2)
 - [ ] Preprocessor for NASM
-- [ ] Improve diassembler (add jump arrows)
+- [x] Improve diassembler (add jump arrows)
 - [ ] FPU Support
 - [ ] Add VGA mode (13h)
 - [ ] App frontend
