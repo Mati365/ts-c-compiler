@@ -14,8 +14,13 @@ export function mapMapValues<Key, Value, OutputValue>(
   map: Map<Key, Value>,
 ): Map<Key, OutputValue> {
   const mapped = new Map<Key, OutputValue>();
-  for (const [key, val] of map)
-    mapped.set(key, fn(val, key));
+
+  for (const [key, val] of map) {
+    const result = fn(val, key);
+
+    if (result !== undefined)
+      mapped.set(key, result);
+  }
 
   return mapped;
 }

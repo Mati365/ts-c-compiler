@@ -1,7 +1,8 @@
 cli
  hang:
-     jmp hang
-
-     times 510-($-$$) db 0
-     db 0x55
-     db 0xAA
+    jmp hang
+    jmp abc
+    times 5 nop
+    abc:
+    times 510-($-$$) db 0
+    dw 0xAA55
