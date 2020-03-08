@@ -250,11 +250,11 @@ export class X86Compiler {
      * @see
      *  instructionIndex must be equal count of instructions in first phase!
      *
-     * @param {ASTInstruction} astInstruction
+     * @param {ASTNode} astNode
      * @param {number} instructionOffset
      * @returns {ASTLabelAddrResolver}
      */
-    function labelResolver(astInstruction: ASTInstruction, instructionOffset: number): ASTLabelAddrResolver {
+    function labelResolver(astNode: ASTNode, instructionOffset: number): ASTLabelAddrResolver {
       return (name: string): number => {
         if (sectionStartOffset !== null && name === MAGIC_LABELS.SECTION_START)
           return sectionStartOffset;
@@ -266,7 +266,7 @@ export class X86Compiler {
           name = resolveLocalTokenAbsName(
             tree,
             name,
-            R.indexOf(astInstruction, tree.astNodes),
+            R.indexOf(astNode, tree.astNodes),
           );
         }
 
@@ -324,7 +324,7 @@ export class X86Compiler {
 
         // repeats instruction nth times
         if (blob instanceof BinaryRepeatedNode) {
-          const blobResult = blob.pass(this, offset - this._origin);
+          const blobResult = blob.pass(this, offset - this._origin, labelResolver(blob.ast, offset));
           const blobSize = blobResult.getByteSize();
 
           // prevent loop, kill times

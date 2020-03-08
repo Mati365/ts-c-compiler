@@ -2,6 +2,7 @@ import * as R from 'ramda';
 
 import {ASTTimes} from '../../ast/critical/ASTTimes';
 import {ASTTree} from '../../ast/ASTParser';
+import {ASTLabelAddrResolver} from '../../ast/instruction/ASTResolvableArg';
 
 import {BinaryBlob} from '../BinaryBlob';
 import {X86Compiler} from '../X86Compiler';
@@ -17,7 +18,20 @@ import {rpnTokens} from '../utils';
  * @extends {BinaryBlob<ASTDef>}
  */
 export class BinaryRepeatedNode extends BinaryBlob<ASTTimes> {
-  pass(compiler: X86Compiler, offset: number): FirstPassResult {
+  /**
+   * Emits repeated instructions
+   *
+   * @param {X86Compiler} compiler
+   * @param {number} offset
+   * @param {ASTLabelAddrResolver} labelResolver
+   * @returns {FirstPassResult}
+   * @memberof BinaryRepeatedNode
+   */
+  pass(
+    compiler: X86Compiler,
+    offset: number,
+    labelResolver: ASTLabelAddrResolver,
+  ): FirstPassResult {
     const {
       ast: {
         timesExpression,
@@ -25,7 +39,13 @@ export class BinaryRepeatedNode extends BinaryBlob<ASTTimes> {
       },
     } = this;
 
-    const times = rpnTokens(timesExpression);
+    const times = rpnTokens(
+      timesExpression,
+      {
+        keywordResolver: labelResolver,
+      },
+    );
+
     const compiledPass = compiler.firstPass(
       new ASTTree(
         R.times(
