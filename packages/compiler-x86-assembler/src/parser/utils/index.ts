@@ -1,5 +1,6 @@
 export * from './fetchInstructionTokensArgsList';
-export * from './isJumpInstruction';
 export * from './isPossibleLabelToken';
 export * from './toStringArgsList';
 export * from './assignLabelsToTokens';
+export * from './isJumpInstruction';
+export * from './isX87Instruction';

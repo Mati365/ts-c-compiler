@@ -54,6 +54,7 @@ import {
   fetchInstructionTokensArgsList,
   assignLabelsToTokens,
   isAnyLabelInTokensList,
+  isX87Instruction,
 } from '../../utils';
 
 /**
@@ -101,6 +102,7 @@ export class ASTInstruction extends KindASTNode(ASTNodeKind.INSTRUCTION) {
   public branchAddressingType: BranchAddressingType = null;
   public jumpInstruction: boolean;
   public labeledInstruction: boolean;
+  public x87Instruction: boolean;
 
   constructor(
     public readonly opcode: string,
@@ -121,6 +123,7 @@ export class ASTInstruction extends KindASTNode(ASTNodeKind.INSTRUCTION) {
 
       // check if instruction is branch instruction
       this.jumpInstruction = isJumpInstruction(opcode);
+      this.x87Instruction = isX87Instruction(opcode);
       this.labeledInstruction = isAnyLabelInTokensList(this.originalArgsTokens);
     }
   }
@@ -570,6 +573,13 @@ export class ASTInstruction extends KindASTNode(ASTNodeKind.INSTRUCTION) {
             && acc[acc.length - 1].type !== InstructionArgType.LABEL
             && result.byteSize !== acc[acc.length - 1].byteSize
         );
+
+        // tell arg that size of argument is explicit overriden
+        // user does: mov word al, [0x1]
+        // so overriden has been [0x1]
+        if (byteSizeOverride
+            && (result.type === InstructionArgType.MEMORY || result.type === InstructionArgType.NUMBER))
+          result.sizeExplicitOverriden = !!byteSizeOverride;
 
         if (sizeMismatch) {
           // handle something like this: mov ax, 2

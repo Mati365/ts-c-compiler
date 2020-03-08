@@ -7,6 +7,8 @@
 - [ ] Preprocessor for NASM
 - [x] Improve diassembler (add jump arrows)
 - [ ] FPU Support
+  - [x] Assembler
+  - [ ] Emulator
 - [ ] Add VGA mode (13h)
 - [ ] App frontend
 

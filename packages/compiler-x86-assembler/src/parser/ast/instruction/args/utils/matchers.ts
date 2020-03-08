@@ -4,7 +4,7 @@ import {X86BitsMode} from '@emulator/x86-cpu/types';
 import {InstructionArgType} from '../../../../../types';
 import {ASTInstruction} from '../../ASTInstruction';
 import {ASTInstructionArg} from '../ASTInstructionArg';
-import {ASTInstructionRegisterArg} from '../ASTInstructionRegisterArg';
+import {ASTInstructionRegisterArg, ASTInstructionX87RegisterArg} from '../ASTInstructionRegisterArg';
 import {ASTInstructionNumberArg} from '../ASTInstructionNumberArg';
 import {ASTInstructionMemPtrArg} from '../ASTInstructionMemPtrArg';
 
@@ -14,8 +14,9 @@ import {ASTInstructionMemPtrArg} from '../ASTInstructionMemPtrArg';
  * if there is label in jmp/call instruction - return true,
  * it is used in pessimistic optimistic arg size deduce
  */
-export function mem(arg: ASTInstructionArg, maxByteSize: X86BitsMode): boolean {
-  return arg.type === InstructionArgType.MEMORY && (!maxByteSize || arg.byteSize <= maxByteSize);
+export function mem(arg: ASTInstructionArg, maxByteSize: number): boolean {
+  return arg.type === InstructionArgType.MEMORY
+  && (!maxByteSize || (arg.sizeExplicitOverriden ? arg.byteSize === maxByteSize : arg.byteSize <= maxByteSize));
 }
 
 export function moffs(arg: ASTInstructionArg, maxByteSize: X86BitsMode): boolean {
@@ -40,7 +41,8 @@ export function sreg(arg: ASTInstructionArg, byteSize: X86BitsMode): boolean {
 
 export function imm(arg: ASTInstructionArg, maxByteSize: X86BitsMode): boolean {
   return arg.type === InstructionArgType.LABEL || (
-    arg.type === InstructionArgType.NUMBER && arg.byteSize <= maxByteSize
+    arg.type === InstructionArgType.NUMBER
+      && (arg.sizeExplicitOverriden ? arg.byteSize === maxByteSize : arg.byteSize <= maxByteSize)
   );
 }
 
@@ -78,8 +80,17 @@ export function indirectFarSegPointer(arg: ASTInstructionArg, instruction: ASTIn
   return arg.type === InstructionArgType.MEMORY && instruction.branchAddressingType !== null;
 }
 
-
 /** FPU: */
-export function x87sti(arg: ASTInstructionArg): boolean {
-  return arg.type === InstructionArgType.X87_REGISTER;
+export function x87sti(arg: ASTInstructionArg, index: number = null): boolean {
+  return (
+    arg.type === InstructionArgType.X87_REGISTER
+      && (index === null || (<ASTInstructionX87RegisterArg> arg).val.index === index)
+  );
+}
+
+export function x87st(arg: ASTInstructionArg, instruction: ASTInstruction) {
+  return (
+    arg.type === InstructionArgType.X87_REGISTER
+      && (instruction.args.length === 1 || (<ASTInstructionX87RegisterArg> arg).val.index === 0)
+  );
 }

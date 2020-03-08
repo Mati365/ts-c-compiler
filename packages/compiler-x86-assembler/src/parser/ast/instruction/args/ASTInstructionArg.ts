@@ -12,6 +12,9 @@ import {ASTResolvableArg} from '../ASTResolvableArg';
  * @template V
  */
 export class ASTInstructionArg<V = any> extends ASTResolvableArg<V> {
+  // true when user do mov word al, [0x1]
+  public sizeExplicitOverriden: boolean = false;
+
   constructor(
     public type: InstructionArgType,
     value: V,

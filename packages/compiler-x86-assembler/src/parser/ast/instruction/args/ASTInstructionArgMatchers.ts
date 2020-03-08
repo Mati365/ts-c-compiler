@@ -10,7 +10,7 @@ import {
 } from '../ASTInstructionSchema';
 
 import {
-  mem, moffs, reg, sreg, imm, relLabel, x87sti,
+  mem, moffs, reg, sreg, imm, relLabel, x87sti, x87st,
   nearPointer, farSegPointer, indirectFarSegPointer,
 } from './utils/matchers';
 
@@ -73,6 +73,12 @@ export const ASTInstructionArgMatchers: {[key: string]: ASTInstructionArgMatcher
   mw: () => (arg: ASTInstructionArg) => mem(arg, 2),
   md: () => (arg: ASTInstructionArg) => mem(arg, 4),
 
+  /** REAL MEM */
+  mwr: () => (arg: ASTInstructionArg) => mem(arg, 2),
+  mdr: () => (arg: ASTInstructionArg) => mem(arg, 4),
+  mqr: () => (arg: ASTInstructionArg) => mem(arg, 8),
+  mtr: () => (arg: ASTInstructionArg) => mem(arg, 10),
+
   /** SREG */
   sr: () => (arg: ASTInstructionArg) => sreg(arg, 2),
 
@@ -111,7 +117,8 @@ export const ASTInstructionArgMatchers: {[key: string]: ASTInstructionArgMatcher
   ifptr: () => indirectFarSegPointer,
 
   /** FPU */
-  'st(i)': () => x87sti,
+  'st(i)': () => (arg: ASTInstructionArg) => x87sti(arg),
+  st: () => x87st,
 };
 
 export const isRMSchemaArg = R.contains(R.__, ['m', 'mw', 'mb', 'md', 'rmb', 'rmw', 'rmq', 'ifptr', 'moffs']);
@@ -174,8 +181,8 @@ export function findMatchingInstructionSchemas(
       if (targetCheck && schema.targetCPU > targetCPU)
         return false;
 
-      for (let i = matchers.length - 1; i >= 0; --i) {
-        if (R.isNil(args[i]) || !matchers[i].matcher(args[i], instruction, offset, schema))
+      for (let i = args.length - 1; i >= 0; --i) {
+        if (R.isNil(args[i]) || !matchers[i] || !matchers[i].matcher(args[i], instruction, offset, schema))
           return false;
       }
 

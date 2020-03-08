@@ -149,7 +149,7 @@ function parseMemExpression(
   }
 
   if (addressDescription.disp !== null) {
-    addressDescription.dispByteSize = numberByteSize(addressDescription.disp);
+    addressDescription.dispByteSize = numberByteSize(Math.abs(addressDescription.disp));
     addressDescription.signedByteSize = signedNumberByteSize(addressDescription.disp);
   }
 
@@ -198,7 +198,7 @@ export class ASTInstructionMemPtrArg extends ASTInstructionArg<MemAddressDescrip
    */
   toString(): string {
     const {phrase, byteSize, schema} = this;
-    const sizePrefix = InstructionArgSize[roundToPowerOfTwo(byteSize)];
+    const sizePrefix: string = InstructionArgSize[byteSize] ?? InstructionArgSize[roundToPowerOfTwo(byteSize)];
 
     if (!schema)
       return `[${phrase}]`;

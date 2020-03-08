@@ -22,6 +22,7 @@ export enum DefTokenNames {
   DW = InstructionArgSize.WORD,
   DD = InstructionArgSize.DWORD,
   DQ = InstructionArgSize.QWORD,
+  DT = InstructionArgSize.TWORD, // fixme
 }
 
 /**

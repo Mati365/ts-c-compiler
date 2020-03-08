@@ -28,6 +28,7 @@ export enum InstructionArgSize {
   WORD = 0x2,
   DWORD = 0x4,
   QWORD = 0x8,
+  TWORD = 0xA,
 }
 
 export enum BranchAddressingType {

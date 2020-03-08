@@ -37,7 +37,10 @@ export enum InstructionPrefix {
   // REP
   REP = 0xF3,
   REPE = 0xF3,
+  REPZ = 0xF3,
+
   REPNE = 0xF2,
+  REPNZ = 0xF2,
 
   // SEGMENT OVERRIDE
   SREG_CS = 0x2E,

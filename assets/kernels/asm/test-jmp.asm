@@ -38,3 +38,17 @@ times 0x2 jmp dupa
 dupa:
 xor ax, ax
 jmp start
+
+;finit
+finit
+fld dword [val1]
+fld qword [val1]
+fld tword [val1]
+fadd st1
+fadd st0, st1
+fadd st2, st0
+faddp st0, st0
+fcom
+
+val1: dq 0.1
+call start
