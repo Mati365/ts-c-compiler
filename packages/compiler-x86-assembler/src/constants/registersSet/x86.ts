@@ -1,7 +1,35 @@
 import * as R from 'ramda';
 
-import {RegisterSchema as Reg} from '../shared/RegisterSchema';
-import {InstructionArgSize} from '../types';
+import {X86BitsMode, ExtendedX86RegName} from '@emulator/x86-cpu/types';
+import {InstructionArgSize} from '../../types';
+
+/**
+ * X86 register schema info
+ *
+ * @export
+ * @class RegisterSchema
+ */
+export class RegisterSchema {
+  /**
+   * Creates an instance of Register.
+   *
+   * @param {X86RegName} mnemonic
+   * @param {number} index
+   * @param {X86BitsMode} byteSize
+   * @param {boolean} segment
+   * @memberof Register
+   */
+  constructor(
+    public readonly mnemonic: ExtendedX86RegName,
+    public readonly index: number,
+    public readonly byteSize: X86BitsMode,
+    public readonly segment: boolean,
+  ) {}
+
+  toString() {
+    return this.mnemonic;
+  }
+}
 
 export enum InstructionPrefix {
   LOCK = 0xF0,
@@ -24,15 +52,31 @@ export enum InstructionPrefix {
   ADDRESS_OVERRIDE = 0x67,
 }
 
+export type RegSchemaStore = {[name: string]: RegisterSchema};
+
+/**
+ * Converts array of registers into object with keys of mnemonics
+ *
+ * @export
+ * @param {Reg[]} regs
+ * @returns {RegSchemaStore}
+ */
+export function reduceRegSchemaStore<T>(regs: T[]): {[name: string]: T} {
+  return R.reduce(
+    (acc, register) => {
+      acc[(<any> register).mnemonic] = Object.freeze(register);
+      return acc;
+    },
+    {},
+    regs,
+  );
+}
+
 /**
  * Reduce registers to object with [regName]: Register
  */
-export const COMPILER_REGISTERS_SET: {[name: string]: Reg} = R.reduce(
-  (acc, register) => {
-    acc[register.mnemonic] = Object.freeze(register);
-    return acc;
-  },
-  {},
+const Reg = RegisterSchema;
+export const COMPILER_REGISTERS_SET: RegSchemaStore = reduceRegSchemaStore(
   [
     new Reg('al', 0x0, 0x1, false), new Reg('ah', 0x4, 0x1, false), new Reg('ax', 0x0, 0x2, false),
     new Reg('bl', 0x3, 0x1, false), new Reg('bh', 0x7, 0x1, false), new Reg('bx', 0x3, 0x2, false),

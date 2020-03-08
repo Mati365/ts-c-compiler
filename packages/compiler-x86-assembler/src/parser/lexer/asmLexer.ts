@@ -8,10 +8,11 @@ import {
 
 import {
   NumberToken,
-  RegisterToken,
   SizeOverrideToken,
   BranchAddressingTypeToken,
   FloatNumberToken,
+  X86RegisterToken,
+  X87StackRegisterToken,
 } from './tokens';
 
 /**
@@ -29,7 +30,8 @@ export const TOKEN_PARSERS: {
 
     /** KEYWORD */
     [TokenType.KEYWORD]: (token: string, loc?: TokenLocation): boolean|Token => (
-      RegisterToken.parse(token, loc)
+      X86RegisterToken.parse(token, loc)
+        ?? X87StackRegisterToken.parse(token, loc)
         ?? BranchAddressingTypeToken.parse(token, loc)
         ?? SizeOverrideToken.parse(token, loc)
         ?? true

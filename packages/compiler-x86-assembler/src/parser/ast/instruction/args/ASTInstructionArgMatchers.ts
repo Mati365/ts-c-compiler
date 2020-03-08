@@ -1,90 +1,18 @@
 import * as R from 'ramda';
 
-import {roundedSignedNumberByteSize} from '@compiler/core/utils/numberByteSize';
-
-import {X86BitsMode} from '@emulator/x86-cpu/types';
-import {RegisterSchema} from '../../../../shared/RegisterSchema';
-
-import {InstructionArgType, X86TargetCPU} from '../../../../types';
+import {RegisterSchema} from '../../../../constants';
+import {X86TargetCPU} from '../../../../types';
 import {ASTInstruction} from '../ASTInstruction';
 import {ASTInstructionArg} from './ASTInstructionArg';
-import {ASTInstructionRegisterArg} from './ASTInstructionRegisterArg';
-import {ASTInstructionNumberArg} from './ASTInstructionNumberArg';
-import {ASTInstructionMemPtrArg} from './ASTInstructionMemPtrArg';
 import {
   ASTInstructionSchema,
   ASTInstructionMatcherSchema,
 } from '../ASTInstructionSchema';
 
-/**
- * Args matchers used to match args to schema,
- * if there is label in jmp/call instruction - return true,
- * it is used in pessimistic optimistic arg size deduce
- */
-
-function mem(arg: ASTInstructionArg, maxByteSize: X86BitsMode): boolean {
-  return arg.type === InstructionArgType.MEMORY && (!maxByteSize || arg.byteSize <= maxByteSize);
-}
-
-function moffs(arg: ASTInstructionArg, maxByteSize: X86BitsMode): boolean {
-  if (arg.type !== InstructionArgType.MEMORY)
-    return false;
-
-  const memArg = <ASTInstructionMemPtrArg> arg;
-  return memArg.isDisplacementOnly() && memArg.addressDescription.dispByteSize <= maxByteSize;
-}
-
-function reg(arg: ASTInstructionArg, byteSize: X86BitsMode, segment: boolean = false): boolean {
-  return (
-    arg.type === InstructionArgType.REGISTER
-      && arg.byteSize === byteSize
-      && (<ASTInstructionRegisterArg> arg).val.segment === segment
-  );
-}
-
-function sreg(arg: ASTInstructionArg, byteSize: X86BitsMode): boolean {
-  return reg(arg, byteSize, true);
-}
-
-function imm(arg: ASTInstructionArg, maxByteSize: X86BitsMode): boolean {
-  return arg.type === InstructionArgType.LABEL || (
-    arg.type === InstructionArgType.NUMBER && arg.byteSize <= maxByteSize
-  );
-}
-
-function relLabel(arg: ASTInstructionArg, signedByteSize: X86BitsMode, absoluteAddress: number): boolean {
-  if (arg.type === InstructionArgType.LABEL)
-    return true;
-
-  if (arg.type === InstructionArgType.NUMBER) {
-    return roundedSignedNumberByteSize(
-      (<ASTInstructionNumberArg> arg).val - absoluteAddress - signedByteSize,
-    ) === signedByteSize;
-  }
-
-  return false;
-}
-
-function nearPointer(arg: ASTInstructionArg, maxByteSize: X86BitsMode, absoluteAddress: number): boolean {
-  if (arg.type === InstructionArgType.LABEL)
-    return true;
-
-  if (arg.type === InstructionArgType.NUMBER) {
-    return roundedSignedNumberByteSize(
-      (<ASTInstructionNumberArg> arg).val - absoluteAddress - maxByteSize,
-    ) <= maxByteSize;
-  }
-
-  return false;
-}
-
-function farSegPointer(arg: ASTInstructionArg, maxByteSize: X86BitsMode): boolean {
-  return arg.type === InstructionArgType.SEGMENTED_MEMORY && arg.byteSize <= maxByteSize;
-}
-
-function indirectFarSegPointer(arg: ASTInstructionArg, instruction: ASTInstruction): boolean {
-  return arg.type === InstructionArgType.MEMORY && instruction.branchAddressingType !== null;
-}
+import {
+  mem, moffs, reg, sreg, imm, relLabel, x87sti,
+  nearPointer, farSegPointer, indirectFarSegPointer,
+} from './utils/matchers';
 
 /**
  * Mnemonic notation:
@@ -108,6 +36,8 @@ function indirectFarSegPointer(arg: ASTInstructionArg, instruction: ASTInstructi
  * s0, s1 - segment value
  * r0 - relative short displacement to label 'sl' (-128/+127 bytes)
  * r0 r1 - relative long displacement to label 'll' (-32768/+32767 bytes)
+ *
+ * st(i) - stack register x87
  *
  * @see {@link http://www.mathemainzel.info/files/x86asmref.html}
  */
@@ -179,6 +109,9 @@ export const ASTInstructionArgMatchers: {[key: string]: ASTInstructionArgMatcher
 
   /** INDIRECT ABSOLUTE FAR POINTERS */
   ifptr: () => indirectFarSegPointer,
+
+  /** FPU */
+  'st(i)': () => x87sti,
 };
 
 export const isRMSchemaArg = R.contains(R.__, ['m', 'mw', 'mb', 'md', 'rmb', 'rmw', 'rmq', 'ifptr', 'moffs']);

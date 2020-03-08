@@ -17,7 +17,7 @@ import {
   ASTInstructionMemPtrArg,
 } from '../../ast/instruction/args';
 
-import {RegisterSchema} from '../../../shared/RegisterSchema';
+import {RegisterSchema} from '../../../constants';
 import {InstructionArgSize} from '../../../types';
 
 import {

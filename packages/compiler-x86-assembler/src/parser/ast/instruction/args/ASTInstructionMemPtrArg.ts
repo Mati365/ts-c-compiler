@@ -1,6 +1,6 @@
 import * as R from 'ramda';
 
-import {RegisterToken} from '@compiler/x86-assembler/parser/lexer/tokens';
+import {X86RegisterToken} from '@compiler/x86-assembler/parser/lexer/tokens';
 import {TokenType, TokenKind, Token} from '@compiler/lexer/tokens';
 import {Result} from '@compiler/core/monads/Result';
 
@@ -87,7 +87,7 @@ function parseMemExpression(
   // eat all register tokens
   for (let i = 0; i < tokens.length;) {
     const [arg1, operator, arg2] = [tokens[i], tokens[i + 1], tokens[i + 2]];
-    const currentReg = arg1.kind === TokenKind.REGISTER && (<RegisterToken> arg1).value.schema;
+    const currentReg = arg1.kind === TokenKind.REGISTER && (<X86RegisterToken> arg1).value.schema;
 
     // sreg:...
     if (!i && currentReg && operator?.type === TokenType.COLON) {
@@ -115,7 +115,7 @@ function parseMemExpression(
         throw new ParserError(ParserErrorCode.INCORRECT_SCALE, null, {scale});
 
       addressDescription.scale = {
-        reg: (<RegisterToken> reg).value.schema,
+        reg: (<X86RegisterToken> reg).value.schema,
         value: <MemSIBScale> scale,
       };
 

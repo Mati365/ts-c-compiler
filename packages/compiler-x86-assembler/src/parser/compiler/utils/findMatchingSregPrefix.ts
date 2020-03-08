@@ -1,7 +1,6 @@
 import * as R from 'ramda';
 
-import {InstructionPrefix} from '../../../constants';
-import {RegisterSchema} from '../../../shared/RegisterSchema';
+import {RegisterSchema, InstructionPrefix} from '../../../constants';
 
 /**
  * Lookups in InstructionPrefix and finds matching prefix

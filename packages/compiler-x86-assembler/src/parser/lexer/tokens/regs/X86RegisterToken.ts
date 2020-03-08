@@ -7,8 +7,7 @@ import {
   TokenKind,
 } from '@compiler/lexer/tokens';
 
-import {COMPILER_REGISTERS_SET} from '../../../constants';
-import {RegisterSchema} from '../../../shared/RegisterSchema';
+import {COMPILER_REGISTERS_SET, RegisterSchema} from '../../../../constants';
 
 type RegisterTokenValue = {
   byteSize: number,
@@ -16,13 +15,13 @@ type RegisterTokenValue = {
 };
 
 /**
- * Token which matches schema of register
+ * Token which matches schema of register basic X86 instruction set
  *
  * @export
- * @class RegisterToken
+ * @class X86RegisterToken
  * @extends {Token<RegisterSchema>}
  */
-export class RegisterToken extends Token<RegisterTokenValue> {
+export class X86RegisterToken extends Token<RegisterTokenValue> {
   constructor(
     text: string,
     schema: RegisterSchema,
@@ -46,13 +45,13 @@ export class RegisterToken extends Token<RegisterTokenValue> {
    * @static
    * @param {string} token
    * @param {TokenLocation} loc
-   * @returns {RegisterToken}
-   * @memberof RegisterToken
+   * @returns {X86RegisterToken}
+   * @memberof X86RegisterToken
    */
-  static parse(token: string, loc: TokenLocation): RegisterToken {
+  static parse(token: string, loc: TokenLocation): X86RegisterToken {
     const schema = COMPILER_REGISTERS_SET[R.toLower(token)];
     if (schema)
-      return new RegisterToken(token, schema, loc.clone());
+      return new X86RegisterToken(token, schema, loc.clone());
 
     return null;
   }

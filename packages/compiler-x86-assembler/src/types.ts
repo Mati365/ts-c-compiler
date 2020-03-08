@@ -1,4 +1,4 @@
-import {RegisterSchema} from './shared/RegisterSchema';
+import {RegisterSchema} from './constants';
 
 /**
  * Newer CPU = higher value
@@ -18,6 +18,7 @@ export enum InstructionArgType {
   MEMORY,
   SEGMENTED_MEMORY,
   REGISTER,
+  X87_REGISTER,
   NUMBER,
   LABEL,
 }
