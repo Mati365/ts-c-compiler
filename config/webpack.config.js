@@ -12,6 +12,10 @@ module.exports = {
   module: {
     rules: [
       {
+        test: /\.asm$/i,
+        use: 'raw-loader',
+      },
+      {
         test: /\.(bin|flp)/,
         use: 'arraybuffer-loader',
       },

@@ -28,6 +28,11 @@ type BinaryPrintConfig = {
       left: string,
       top: string,
       bottom: string,
+      loopLeft: string,
+      inline: {
+        top: string,
+        bottom: string,
+      },
     },
   },
 };
@@ -55,6 +60,11 @@ export class ConsoleBinaryView extends BinaryView<string> {
           left: '◀',
           top: '▲',
           bottom: '▼',
+          loopLeft: '⮌',
+          inline: {
+            top: '⬏',
+            bottom: '⬎',
+          },
         },
       },
     },
@@ -78,7 +88,6 @@ export class ConsoleBinaryView extends BinaryView<string> {
 
     const offsetsEntries = Array.from(serializedOffsets.entries());
     const jmpLinesEntries = Array.from(jmpLines.entries());
-
     const minLineLength = R.reduce(
       (acc, item) => Math.max(acc, (<any> item).length),
       0,
@@ -89,6 +98,7 @@ export class ConsoleBinaryView extends BinaryView<string> {
 
     const getJmpLineStr = (
       offset: number,
+      prevOffset: number,
       nextOffset: number,
       blobContentLine: number,
     ): string => {
@@ -101,7 +111,7 @@ export class ConsoleBinaryView extends BinaryView<string> {
         if (jmpSrc > offset && jmpSrc < nextOffset)
           jmpSrc = offset;
 
-        // detect bottom arrow, jump overflow
+        // detect bottom arrow jump overflow
         if (jmpDest > offset && jmpDest < nextOffset) {
           if (nextOffset === Infinity)
             infinityArrow = t.arrows.bottom;
@@ -113,10 +123,30 @@ export class ConsoleBinaryView extends BinaryView<string> {
         const nesting = i * 2;
         const inArrowBody = offset >= Math.min(jmpSrc, jmpDest) && offset <= Math.max(jmpDest, jmpSrc);
 
+        // detect top arrow jump overflow
+        if (inArrowBody && !i && prevOffset === -Infinity)
+          infinityArrow = t.arrows.top;
+
         str = str.padEnd(nesting, ' ');
 
-        if (offset === jmpSrc && !blobContentLine) {
-          str += `${t.horizontal}${toUpper ? t.corners.topLeft : t.corners.bottomLeft}`;
+        // jmp $
+        if (jmpSrc === jmpDest && offset === jmpSrc)
+          str += t.arrows.loopLeft;
+
+        // ─╯ or ─╮ or ⬏ or ⬎
+        else if (offset === jmpSrc && !blobContentLine) {
+          let arrow = null;
+
+          if (!toUpper && prevOffset === -Infinity)
+            arrow = t.arrows.inline.top;
+          else if (toUpper && nextOffset === Infinity)
+            arrow = t.arrows.inline.bottom;
+          else
+            arrow = toUpper ? t.corners.topLeft : t.corners.bottomLeft;
+
+          str += `${t.horizontal}${arrow}`;
+
+          // fix nesting line
           for (let j = 0; j < str.length - 2; ++j) {
             const c = str[j];
             if (c === ' ')
@@ -163,12 +193,15 @@ export class ConsoleBinaryView extends BinaryView<string> {
     const mapped = new Map<number, string[]>();
     for (let i = 0; i < offsetsEntries.length; ++i) {
       const [offset, lines]: [number, string[]] = offsetsEntries[i];
-      const [nextOffset] = offsetsEntries[i + 1] || [Infinity];
+      const [[prevOffset], [nextOffset]] = [
+        offsetsEntries[i - 1] ?? [-Infinity],
+        offsetsEntries[i + 1] ?? [Infinity],
+      ];
 
       mapped.set(
         offset,
         lines.map(
-          (line, index) => `${line.padEnd(minLineLength)} ${getJmpLineStr(offset, nextOffset, index)}`,
+          (line, index) => `${line.padEnd(minLineLength)} ${getJmpLineStr(offset, prevOffset, nextOffset, index)}`,
         ),
       );
     }

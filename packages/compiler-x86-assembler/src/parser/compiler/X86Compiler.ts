@@ -35,6 +35,11 @@ import {
   BinaryBlobsMap,
 } from './BinaryPassResults';
 
+export const MAGIC_LABELS = {
+  CURRENT_LINE: '$',
+  SECTION_START: '$$',
+};
+
 /**
  * Transforms AST tree into binary set of data
  *
@@ -237,6 +242,7 @@ export class X86Compiler {
     const result = new SecondPassResult(0x0, labels);
     let success = false;
     let needSort = false;
+    let sectionStartOffset = null;
 
     /**
      * Lookups into tree and resolves nested label args
@@ -245,10 +251,17 @@ export class X86Compiler {
      *  instructionIndex must be equal count of instructions in first phase!
      *
      * @param {ASTInstruction} astInstruction
+     * @param {number} instructionOffset
      * @returns {ASTLabelAddrResolver}
      */
-    function labelResolver(astInstruction: ASTInstruction): ASTLabelAddrResolver {
+    function labelResolver(astInstruction: ASTInstruction, instructionOffset: number): ASTLabelAddrResolver {
       return (name: string): number => {
+        if (sectionStartOffset !== null && name === MAGIC_LABELS.SECTION_START)
+          return sectionStartOffset;
+
+        if (name === MAGIC_LABELS.CURRENT_LINE)
+          return instructionOffset;
+
         if (isLocalLabel(name)) {
           name = resolveLocalTokenAbsName(
             tree,
@@ -302,9 +315,13 @@ export class X86Compiler {
     // proper resolve labels
     for (let pass = 0; pass < this.maxPasses; ++pass) {
       let needPass = false;
+      sectionStartOffset = null;
 
       // eslint-disable-next-line prefer-const
       for (let [offset, blob] of nodesOffsets) {
+        if (sectionStartOffset === null)
+          sectionStartOffset = offset;
+
         // repeats instruction nth times
         if (blob instanceof BinaryRepeatedNode) {
           const blobResult = blob.pass(this, offset - this._origin);
@@ -323,14 +340,14 @@ export class X86Compiler {
           const pessimisticSize = binary.length;
 
           // generally check for JMP/CALL etc instructions
-          if (!ast.labeledInstruction && !ast.unresolvedArgs)
+          if (!ast.labeledInstruction && !ast.unresolvedArgs && !ast.jumpInstruction)
             continue;
 
           // matcher must choose which instruction to match
           // based on origin it must choose between short relative
           // jump and long
           ast.tryResolveSchema(
-            labelResolver(ast),
+            labelResolver(ast, offset),
             offset,
             target,
           );

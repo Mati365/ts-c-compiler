@@ -517,6 +517,15 @@ export class ASTInstruction extends KindASTNode(ASTNodeKind.INSTRUCTION) {
 
             return new ASTInstructionMemPtrArg(<string> token.text, memSize);
           }
+
+          // expresions such as (2+2), (dupa) etc
+          if (token.kind === TokenKind.PARENTHES_BRACKET) {
+            return new ASTInstructionArg(
+              InstructionArgType.LABEL,
+              token.text,
+              byteSizeOverride ?? branchSizeOverride,
+            );
+          }
           break;
 
         default:

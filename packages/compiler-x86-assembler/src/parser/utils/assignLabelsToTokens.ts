@@ -16,10 +16,7 @@ import {isPossibleLabelToken} from './isPossibleLabelToken';
  * @param {Token<any>[]} tokens
  * @returns
  */
-export function assignLabelsToTokens(
-  labelResolver: ASTLabelAddrResolver,
-  tokens: Token<any>[],
-) {
+export function assignLabelsToTokens(labelResolver: ASTLabelAddrResolver, tokens: Token<any>[]) {
   if (!labelResolver)
     return tokens;
 

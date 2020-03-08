@@ -32,9 +32,11 @@ export enum InstructionArgSize {
 export enum BranchAddressingType {
   NEAR = 'near',
   FAR = 'far',
+  SHORT = 'short',
 }
 
 export const BRANCH_ADDRESSING_SIZE_MAPPING = {
+  [BranchAddressingType.SHORT]: InstructionArgSize.BYTE,
   [BranchAddressingType.NEAR]: InstructionArgSize.BYTE,
   [BranchAddressingType.FAR]: InstructionArgSize.WORD,
 };

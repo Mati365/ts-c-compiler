@@ -12,7 +12,7 @@ mov cl, 2
   int 3
   jmp word 0x7C00:0xFF
   jmp far word [cs:bx+0xFFF]
-  mov ax, word [es:bx+0x5+'a']
+  mov ax, word [es:bx+0x5]
   jmp .dupa2
   stuff: times 10 nop
   mov ax, bx
