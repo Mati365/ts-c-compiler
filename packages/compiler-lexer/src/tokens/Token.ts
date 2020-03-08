@@ -15,6 +15,7 @@ export enum TokenType {
   COMMA = 'COMMA',
   COLON = 'COLON',
   NUMBER = 'NUMBER',
+  FLOAT_NUMBER = 'FLOAT_NUMBER',
   KEYWORD = 'KEYWORD',
   CHARACTER = 'CHARACTER',
   STRING = 'STRING',

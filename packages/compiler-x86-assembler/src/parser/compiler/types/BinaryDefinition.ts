@@ -3,14 +3,20 @@ import * as R from 'ramda';
 import {
   extractBytesFromText,
   extractMultipleNumberBytes,
+  toIEEE754Single,
+  toIEEE754Double,
 } from '@compiler/core/utils';
 
 import {Token, TokenType} from '@compiler/lexer/tokens';
-
 import {BinaryBlob} from '../BinaryBlob';
-import {ASTDef} from '../../ast/def/ASTDef';
-import {NumberToken} from '../../lexer/tokens';
+import {ASTDef, DefTokenNames} from '../../ast/def/ASTDef';
+import {NumberToken, FloatNumberToken} from '../../lexer/tokens';
 import {ParserError, ParserErrorCode} from '../../../shared/ParserError';
+
+export const FLOAT_DEFINE_ENCODERS = {
+  [DefTokenNames.DD]: toIEEE754Single,
+  [DefTokenNames.DQ]: toIEEE754Double,
+};
 
 /**
  * Transforms token into binary array of numbers
@@ -24,6 +30,25 @@ export function encodeDefineToken(byteSize: number, token: Token): number[] {
   const buffer: number[] = [];
 
   switch (token.type) {
+    case TokenType.FLOAT_NUMBER: {
+      const encoder = FLOAT_DEFINE_ENCODERS[byteSize];
+      if (!encoder) {
+        throw new ParserError(
+          ParserErrorCode.INCORRECT_FLOAT_SIZE,
+          null,
+          {
+            number: token.text,
+          },
+        );
+      }
+
+      buffer.push(
+        ...R.reverse(
+          encoder((<FloatNumberToken> token).value.number),
+        ),
+      );
+    } break;
+
     case TokenType.NUMBER:
       buffer.push(
         ...extractMultipleNumberBytes(byteSize, (<NumberToken> token).value.number),

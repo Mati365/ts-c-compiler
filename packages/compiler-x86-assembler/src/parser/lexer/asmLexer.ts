@@ -11,6 +11,7 @@ import {
   RegisterToken,
   SizeOverrideToken,
   BranchAddressingTypeToken,
+  FloatNumberToken,
 } from './tokens';
 
 /**
@@ -22,6 +23,9 @@ export const TOKEN_PARSERS: {
   {
     /** NUMBER */
     [TokenType.NUMBER]: NumberToken.parse,
+
+    /** FLOAT NUMBER */
+    [TokenType.FLOAT_NUMBER]: FloatNumberToken.parse,
 
     /** KEYWORD */
     [TokenType.KEYWORD]: (token: string, loc?: TokenLocation): boolean|Token => (
