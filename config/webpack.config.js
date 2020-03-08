@@ -5,6 +5,7 @@ const pkgResolve = (pkgPath) => path.resolve(__dirname, path.join('../packages/'
 module.exports = {
   target: 'web',
   entry: pkgResolve('emulator-ui/src/main.ts'),
+  devtool: 'source-map',
   devServer: {
     port: 8080,
     contentBase: path.resolve(__dirname, '../assets/'),

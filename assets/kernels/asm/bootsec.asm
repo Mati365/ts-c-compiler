@@ -7,7 +7,7 @@ initialize_bios:
         xor ax, ax
         mov ds, ax                      ; reset data segments to 0x0000
         mov es, ax
-        mov [bootdrive], dl             ; store boot drive
+        mov [ds:bootdrive], dl             ; store boot drive
         mov si, welcome                 ; print welcome string
         call print
         ;jmp load_kernel_header         ; proceed to load kernel

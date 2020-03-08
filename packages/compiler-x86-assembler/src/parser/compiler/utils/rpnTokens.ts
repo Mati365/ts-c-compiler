@@ -4,6 +4,8 @@ import {Token, TokenType} from '@compiler/lexer/tokens';
 import {MathParserConfig} from '@compiler/rpn/utils/MathExpression';
 import {rpn} from '@compiler/rpn/rpn';
 
+import {NumberToken} from '../../lexer/tokens';
+
 /**
  * Concat all tokens text into one string
  *
@@ -38,6 +40,9 @@ export function mergeTokensTexts(tokens: Token[]): string {
  * @returns
  */
 export function rpnTokens(tokens: Token[], parserConfig?: MathParserConfig) {
+  if (tokens.length === 1 && tokens[0].type === TokenType.NUMBER)
+    return (<NumberToken> tokens[0]).value.number;
+
   return rpn(
     mergeTokensTexts(tokens),
     parserConfig,
