@@ -1,5 +1,6 @@
 import * as R from 'ramda';
 
+import {ParserError, ParserErrorCode} from '@compiler/x86-assembler/shared/ParserError';
 import {ASTTimes} from '../../ast/critical/ASTTimes';
 import {ASTTree} from '../../ast/ASTParser';
 import {ASTLabelAddrResolver} from '../../ast/instruction/ASTResolvableArg';
@@ -45,6 +46,16 @@ export class BinaryRepeatedNode extends BinaryBlob<ASTTimes> {
         keywordResolver: labelResolver,
       },
     );
+
+    if (times < 0) {
+      throw new ParserError(
+        ParserErrorCode.INCORRECT_TIMES_VALUE,
+        null,
+        {
+          times,
+        },
+      );
+    }
 
     const compiledPass = compiler.firstPass(
       new ASTTree(

@@ -43,6 +43,7 @@ export enum ParserErrorCode {
 
   // critical expressions
   INCORRECT_TIMES_ARGS_COUNT,
+  INCORRECT_TIMES_VALUE,
   MISSING_TIMES_REPEATED_INSTRUCTION,
   UNABLE_PARSE_REPEATED_INSTRUCTION,
 
@@ -105,6 +106,7 @@ export const ERROR_TRANSLATIONS: {[key in ParserErrorCode]: string} = {
 
   // critical expressions
   [ParserErrorCode.INCORRECT_TIMES_ARGS_COUNT]: 'Incorrect times expression args count!',
+  [ParserErrorCode.INCORRECT_TIMES_VALUE]: 'Incorrect times expression value "%{times}"!',
   [ParserErrorCode.MISSING_TIMES_REPEATED_INSTRUCTION]: 'Missing times expression instruction!',
   [ParserErrorCode.UNABLE_PARSE_REPEATED_INSTRUCTION]: 'Unable to parse repeated instruction "%{expression}"!',
 
