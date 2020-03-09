@@ -57,7 +57,7 @@ export class X86Compiler {
 
   constructor(
     public readonly tree: ASTTree,
-    public readonly maxPasses: number = 4,
+    public readonly maxPasses: number = 5,
   ) {}
 
   get origin() { return this._origin; }
@@ -406,10 +406,10 @@ export class X86Compiler {
     );
 
     for (const [offset, blob] of orderedOffsets) {
-      result.blobs.set(
-        offset,
-        blob.compile(this, offset),
-      );
+      const compiled = blob.compile(this, offset);
+
+      result.byteSize = Math.max(result.byteSize, offset + blob.binary.length - this._origin);
+      result.blobs.set(offset, compiled);
     }
 
     return result;

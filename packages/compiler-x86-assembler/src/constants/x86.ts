@@ -1,7 +1,7 @@
 import * as R from 'ramda';
 
 import {X86BitsMode, ExtendedX86RegName} from '@emulator/x86-cpu/types';
-import {InstructionArgSize} from '../../types';
+import {InstructionArgSize} from '../types';
 
 /**
  * X86 register schema info

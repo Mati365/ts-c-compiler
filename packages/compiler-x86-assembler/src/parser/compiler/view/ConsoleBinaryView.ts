@@ -272,6 +272,10 @@ export class ConsoleBinaryView extends BinaryView<string> {
         .values(),
     );
 
-    return `Total passes: ${totalPasses + 1}\nBinary mapping:\n\n${str}`;
+    return [
+      `Total passes: ${totalPasses + 1}`,
+      `Output size: ${compilerResult.output.byteSize} bytes`,
+      `Binary mapping:\n\n${str}`,
+    ].join('\n');
   }
 }

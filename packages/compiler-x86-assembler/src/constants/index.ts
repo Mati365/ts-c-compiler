@@ -1,3 +1,2 @@
 export * from './instructionSetSchema';
-export * from './registersSet/x86';
-export * from './registersSet/x87';
+export * from './x86';

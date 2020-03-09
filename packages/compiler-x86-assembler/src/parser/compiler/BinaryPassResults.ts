@@ -45,6 +45,7 @@ export class SecondPassResult {
     public labelsOffsets: BinaryLabelsOffsets = new Map,
     public blobs: BinaryBlobsMap = new Map,
     public totalPasses: number = 0,
+    public byteSize: number = 0,
   ) {}
 
   /**
