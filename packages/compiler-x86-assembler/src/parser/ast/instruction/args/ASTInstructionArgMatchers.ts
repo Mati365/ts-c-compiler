@@ -121,7 +121,15 @@ export const ASTInstructionArgMatchers: {[key: string]: ASTInstructionArgMatcher
   st: () => x87st,
 };
 
-export const isRMSchemaArg = R.contains(R.__, ['m', 'mw', 'mb', 'md', 'rmb', 'rmw', 'rmq', 'ifptr', 'moffs']);
+export const isRMSchemaArg = R.contains(
+  R.__,
+  [
+    'm', 'mw', 'mb', 'md',
+    'rmb', 'rmw', 'rmq',
+    'ifptr', 'moffs',
+    'mwr', 'mdr', 'mqr', 'mtr',
+  ],
+);
 
 export const isMoffsSchemaArg = R.contains(R.__, ['moffs']);
 

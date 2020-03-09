@@ -11,19 +11,21 @@ import {InstructionArgSize} from '../../types';
  */
 export class RegisterSchema {
   /**
-   * Creates an instance of Register.
+   * Creates an instance of RegisterSchema
    *
-   * @param {X86RegName} mnemonic
+   * @param {ExtendedX86RegName} mnemonic
    * @param {number} index
    * @param {X86BitsMode} byteSize
-   * @param {boolean} segment
-   * @memberof Register
+   * @param {boolean} [segment=false]
+   * @param {boolean} [x87=false]
+   * @memberof RegisterSchema
    */
   constructor(
     public readonly mnemonic: ExtendedX86RegName,
     public readonly index: number,
     public readonly byteSize: X86BitsMode,
-    public readonly segment: boolean,
+    public readonly segment: boolean = false,
+    public readonly x87: boolean = false,
   ) {}
 
   toString() {
@@ -81,15 +83,16 @@ export function reduceRegSchemaStore<T>(regs: T[]): {[name: string]: T} {
 const Reg = RegisterSchema;
 export const COMPILER_REGISTERS_SET: RegSchemaStore = reduceRegSchemaStore(
   [
-    new Reg('al', 0x0, 0x1, false), new Reg('ah', 0x4, 0x1, false), new Reg('ax', 0x0, 0x2, false),
-    new Reg('bl', 0x3, 0x1, false), new Reg('bh', 0x7, 0x1, false), new Reg('bx', 0x3, 0x2, false),
-    new Reg('cl', 0x1, 0x1, false), new Reg('ch', 0x5, 0x1, false), new Reg('cx', 0x1, 0x2, false),
-    new Reg('dl', 0x2, 0x1, false), new Reg('dh', 0x6, 0x1, false), new Reg('dx', 0x2, 0x2, false),
+    // X86
+    new Reg('al', 0x0, 0x1), new Reg('ah', 0x4, 0x1), new Reg('ax', 0x0, 0x2),
+    new Reg('bl', 0x3, 0x1), new Reg('bh', 0x7, 0x1), new Reg('bx', 0x3, 0x2),
+    new Reg('cl', 0x1, 0x1), new Reg('ch', 0x5, 0x1), new Reg('cx', 0x1, 0x2),
+    new Reg('dl', 0x2, 0x1), new Reg('dh', 0x6, 0x1), new Reg('dx', 0x2, 0x2),
 
-    new Reg('sp', 0x4, 0x2, false),
-    new Reg('bp', 0x5, 0x2, false),
-    new Reg('si', 0x6, 0x2, false),
-    new Reg('di', 0x7, 0x2, false),
+    new Reg('sp', 0x4, 0x2),
+    new Reg('bp', 0x5, 0x2),
+    new Reg('si', 0x6, 0x2),
+    new Reg('di', 0x7, 0x2),
 
     new Reg('es', 0x0, 0x2, true),
     new Reg('cs', 0x1, 0x2, true),
@@ -97,6 +100,16 @@ export const COMPILER_REGISTERS_SET: RegSchemaStore = reduceRegSchemaStore(
     new Reg('ds', 0x3, 0x2, true),
     new Reg('fs', 0x4, 0x2, true),
     new Reg('gs', 0x5, 0x2, true),
+
+    // X87
+    new Reg('st0', 0x0, 0xA, false, true),
+    new Reg('st1', 0x1, 0XA, false, true),
+    new Reg('st2', 0x2, 0XA, false, true),
+    new Reg('st3', 0x3, 0XA, false, true),
+    new Reg('st4', 0x4, 0XA, false, true),
+    new Reg('st5', 0x5, 0XA, false, true),
+    new Reg('st6', 0x6, 0XA, false, true),
+    new Reg('st7', 0x7, 0XA, false, true),
   ],
 );
 

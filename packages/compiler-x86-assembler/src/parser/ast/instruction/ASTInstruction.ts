@@ -31,7 +31,6 @@ import {
   ASTInstructionMemSegmentedArg,
   ASTInstructionRegisterArg,
   ASTInstructionArg,
-  ASTInstructionX87RegisterArg,
 } from './args';
 
 import {
@@ -41,10 +40,9 @@ import {
 
 import {
   NumberToken,
-  X86RegisterToken,
+  RegisterToken,
   SizeOverrideToken,
   BranchAddressingTypeToken,
-  X87StackRegisterToken,
 } from '../../lexer/tokens';
 
 import {findMatchingInstructionSchemas} from './args/ASTInstructionArgMatchers';
@@ -144,10 +142,6 @@ export class ASTInstruction extends KindASTNode(ASTNodeKind.INSTRUCTION) {
     return <ASTInstructionRegisterArg[]> this.typedArgs[InstructionArgType.REGISTER];
   }
 
-  get x87RegArgs() {
-    return <ASTInstructionX87RegisterArg[]> this.typedArgs[InstructionArgType.X87_REGISTER];
-  }
-
   get labelArgs() {
     return this.typedArgs[InstructionArgType.LABEL];
   }
@@ -219,7 +213,6 @@ export class ASTInstruction extends KindASTNode(ASTNodeKind.INSTRUCTION) {
         [InstructionArgType.SEGMENTED_MEMORY]: [],
         [InstructionArgType.NUMBER]: [],
         [InstructionArgType.REGISTER]: [],
-        [InstructionArgType.X87_REGISTER]: [],
         [InstructionArgType.LABEL]: [],
       },
       this.args,
@@ -461,14 +454,8 @@ export class ASTInstruction extends KindASTNode(ASTNodeKind.INSTRUCTION) {
 
         // Registers
         case TokenType.KEYWORD:
-          if (token.kind === TokenKind.X87_REGISTER) {
-            return new ASTInstructionX87RegisterArg(
-              (<X87StackRegisterToken> token).value.schema,
-            );
-          }
-
           if (token.kind === TokenKind.REGISTER) {
-            const {schema, byteSize} = (<X86RegisterToken> token).value;
+            const {schema, byteSize} = (<RegisterToken> token).value;
 
             return new ASTInstructionRegisterArg(schema, byteSize);
           }
@@ -515,7 +502,7 @@ export class ASTInstruction extends KindASTNode(ASTNodeKind.INSTRUCTION) {
               if (destinationArg) {
                 // if destination - next register should contain size
                 if (nextToken?.kind === TokenKind.REGISTER)
-                  memSize = (<X86RegisterToken> nextToken).value.byteSize;
+                  memSize = (<RegisterToken> nextToken).value.byteSize;
               } else if (prevArgs.length) {
                 // if not destination - there should be some registers before
                 // try to find matching

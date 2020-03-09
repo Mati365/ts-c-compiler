@@ -204,15 +204,9 @@ export class BinaryInstruction extends BinaryBlob<ASTInstruction> {
 
             if (!rmByte) {
               // see CALL instruction, FF /2 d0 d1
-              if (regByteOverride) {
-                // fixme, watch fls dword [val1]
-                // in this case it is not reg addressing
-                // it might be extension?
-                if (ast.x87Instruction)
-                  rmByte = new RMByte(0, 0, 6);
-                else
-                  rmByte = new RMByte(RMAddressingMode.REG_ADDRESSING, 0, 0);
-              } else
+              if (regByteOverride)
+                rmByte = new RMByte(RMAddressingMode.REG_ADDRESSING, 0, 0);
+              else
                 throw new ParserError(ParserErrorCode.MISSING_RM_BYTE_DEF);
             }
 
@@ -230,16 +224,16 @@ export class BinaryInstruction extends BinaryBlob<ASTInstruction> {
 
             // only in FPU instructions
             // handle +i in binary code, e.g D0+i
-            const {x87RegArgs} = ast;
-            if (ast.x87Instruction && x87RegArgs.length) {
+            const {regArgs} = ast;
+            if (ast.x87Instruction && regArgs.length) {
               const stackRegStrIndex: number = schema.indexOf('+i');
 
               if (stackRegStrIndex !== -1) {
                 // handle mov st0, st3 <- choose highest
                 const stackIndex = (
-                  x87RegArgs.length === 1
-                    ? x87RegArgs[0].val.index
-                    : R.reduce((acc, reg) => Math.max(acc, reg.val.index), 0, x87RegArgs)
+                  regArgs.length === 1
+                    ? regArgs[0].val.index
+                    : R.reduce((acc, reg) => Math.max(acc, reg.val.index), 0, regArgs)
                 );
 
                 binNumber = Number.parseInt(schema.substr(0, stackRegStrIndex), 16) + stackIndex;
@@ -283,6 +277,7 @@ export class BinaryInstruction extends BinaryBlob<ASTInstruction> {
     rmArg: ASTInstructionArg,
   ): RMByte {
     const rmByte = new RMByte(0, 0, 0);
+    const reg = (<RegisterSchema> regArg?.val);
 
     // memory
     if (rmArg instanceof ASTInstructionMemPtrArg) {
@@ -298,8 +293,8 @@ export class BinaryInstruction extends BinaryBlob<ASTInstruction> {
 
       const [mod, rm] = findMatchingMemAddressingRMByte(
         mode,
-        addressDescription.reg?.mnemonic,
-        addressDescription.scale?.reg.mnemonic,
+        addressDescription,
+        reg,
         signedDispByteSize,
       ) || [];
 
@@ -318,7 +313,7 @@ export class BinaryInstruction extends BinaryBlob<ASTInstruction> {
       if (!rmArg)
         rmByte.mod = RMAddressingMode.REG_ADDRESSING;
 
-      rmByte.reg = (<RegisterSchema> regArg.val).index;
+      rmByte.reg = reg.index;
     }
 
     return rmByte;

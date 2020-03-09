@@ -5,7 +5,9 @@ import {
   X86_FLAGS_OFFSETS,
 } from '../constants/x86';
 
-export type X86BitsMode = 0x1|0x2|0x4;
+import {X87RegName} from '../x87/X87Regs';
+
+export type X86BitsMode = 0x1 | 0x2 | 0x4 | 0x8 | 0xA;
 
 export type X86RegsSet = {[index: number]: X86RegName};
 
@@ -186,6 +188,7 @@ export type X86RegName = keyof(X86RegsStore);
  */
 export type ExtendedX86RegName = (
   X86RegName
+  | X87RegName
   | 'eax' | 'ebx' | 'ecx' | 'edx' | 'esi'
   | 'edi' | 'eip' | 'esp' | 'ebp' | 'eflags'
 );

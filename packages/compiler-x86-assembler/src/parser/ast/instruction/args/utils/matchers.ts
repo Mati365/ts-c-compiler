@@ -1,10 +1,12 @@
 import {roundedSignedNumberByteSize} from '@compiler/core/utils/numberByteSize';
 
+import {RegisterSchema} from '@compiler/x86-assembler/constants';
 import {X86BitsMode} from '@emulator/x86-cpu/types';
+
 import {InstructionArgType} from '../../../../../types';
 import {ASTInstruction} from '../../ASTInstruction';
 import {ASTInstructionArg} from '../ASTInstructionArg';
-import {ASTInstructionRegisterArg, ASTInstructionX87RegisterArg} from '../ASTInstructionRegisterArg';
+import {ASTInstructionRegisterArg} from '../ASTInstructionRegisterArg';
 import {ASTInstructionNumberArg} from '../ASTInstructionNumberArg';
 import {ASTInstructionMemPtrArg} from '../ASTInstructionMemPtrArg';
 
@@ -28,10 +30,15 @@ export function moffs(arg: ASTInstructionArg, maxByteSize: X86BitsMode): boolean
 }
 
 export function reg(arg: ASTInstructionArg, byteSize: X86BitsMode, segment: boolean = false): boolean {
+  if (arg.type !== InstructionArgType.REGISTER)
+    return false;
+
+  const _reg = (<ASTInstructionRegisterArg> arg).val;
   return (
     arg.type === InstructionArgType.REGISTER
-      && arg.byteSize === byteSize
-      && (<ASTInstructionRegisterArg> arg).val.segment === segment
+      && !_reg.x87
+      && _reg.byteSize === byteSize
+      && _reg.segment === segment
   );
 }
 
@@ -81,16 +88,25 @@ export function indirectFarSegPointer(arg: ASTInstructionArg, instruction: ASTIn
 }
 
 /** FPU: */
+function x87reg(arg: ASTInstructionArg): RegisterSchema {
+  if (arg.type !== InstructionArgType.REGISTER)
+    return null;
+
+  const _reg = (<ASTInstructionRegisterArg> arg).val;
+  if (!_reg.x87)
+    return null;
+
+  return _reg;
+}
+
 export function x87sti(arg: ASTInstructionArg, index: number = null): boolean {
-  return (
-    arg.type === InstructionArgType.X87_REGISTER
-      && (index === null || (<ASTInstructionX87RegisterArg> arg).val.index === index)
-  );
+  const _reg = x87reg(arg);
+
+  return _reg && (index === null || (_reg.index === index));
 }
 
 export function x87st(arg: ASTInstructionArg, instruction: ASTInstruction) {
-  return (
-    arg.type === InstructionArgType.X87_REGISTER
-      && (instruction.args.length === 1 || (<ASTInstructionX87RegisterArg> arg).val.index === 0)
-  );
+  const _reg = x87reg(arg);
+
+  return _reg && (instruction.args.length === 1 || _reg.index === 0);
 }

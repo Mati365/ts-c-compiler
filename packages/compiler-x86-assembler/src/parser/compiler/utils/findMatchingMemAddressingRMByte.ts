@@ -1,5 +1,6 @@
-import {ExtendedX86RegName, RMAddressingMode} from '@emulator/x86-cpu/types';
-import {InstructionArgSize} from '../../../types';
+import {RegisterSchema} from '@compiler/x86-assembler/constants';
+import {RMAddressingMode} from '@emulator/x86-cpu/types';
+import {InstructionArgSize, MemAddressDescription} from '../../../types';
 
 /**
  * Matches addressing mode
@@ -10,19 +11,30 @@ import {InstructionArgSize} from '../../../types';
  * @see
  *  Table 2-1. 16-Bit Addressing Forms with the ModR/M Byte
  *
+ *
+ * @export
  * @param {InstructionArgSize} mode
- * @param {ExtendedX86RegName} baseReg
- * @param {ExtendedX86RegName} scaleReg
+ * @param {MemAddressDescription} addressDescription
+ * @param {RegisterSchema} regSchema
  * @param {number} signedDispRoundedSize
+ * @param {boolean} [swapped=false]
  * @returns {[number, number]}
  */
 export function findMatchingMemAddressingRMByte(
   mode: InstructionArgSize,
-  baseReg: ExtendedX86RegName,
-  scaleReg: ExtendedX86RegName,
+  addressDescription: MemAddressDescription,
+  regSchema: RegisterSchema,
   signedDispRoundedSize: number,
   swapped: boolean = false,
 ): [number, number] {
+  const {
+    reg: baseRegSchema,
+    scale: scaleSchema,
+  } = addressDescription;
+
+  const baseReg = baseRegSchema?.mnemonic;
+  const scaleReg = scaleSchema?.reg?.mnemonic;
+
   let rm = null;
 
   if (mode === InstructionArgSize.WORD) {
@@ -63,7 +75,7 @@ export function findMatchingMemAddressingRMByte(
 
   // it might be mov ax, [si + bx] or mov [ax, bx + si]
   if (!swapped)
-    return findMatchingMemAddressingRMByte(mode, scaleReg, baseReg, signedDispRoundedSize, true);
+    return findMatchingMemAddressingRMByte(mode, addressDescription, regSchema, signedDispRoundedSize, true);
 
   return null;
 }
