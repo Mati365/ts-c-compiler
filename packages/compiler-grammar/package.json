@@ -1,0 +1,4 @@
+{
+  "name": "@emulator/compiler-grammar",
+  "main": "src/grammar.ts"
+}

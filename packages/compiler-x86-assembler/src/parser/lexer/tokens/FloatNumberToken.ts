@@ -5,7 +5,7 @@ import {
   Token,
 } from '@compiler/lexer/tokens';
 
-const matchFloatNumber = safeFirstMatch(/^[-+]?[0-9]*\.?[0-9]+([eE][-+]?[0-9]+)?$/i);
+const matchFloatNumber = safeFirstMatch(/^[+-]?(\d+([.]\d*)?(e[+-]?\d+)?|[.]\d+(e[+-]?\d+)?)$/i);
 
 export type FloatNumberTokenValue = {
   number: number,

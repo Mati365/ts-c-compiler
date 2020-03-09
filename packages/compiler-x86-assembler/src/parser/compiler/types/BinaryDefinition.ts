@@ -5,6 +5,7 @@ import {
   extractMultipleNumberBytes,
   toIEEE754Single,
   toIEEE754Double,
+  toIEEE754Extended,
 } from '@compiler/core/utils';
 
 import {Token, TokenType} from '@compiler/lexer/tokens';
@@ -16,6 +17,7 @@ import {ParserError, ParserErrorCode} from '../../../shared/ParserError';
 export const FLOAT_DEFINE_ENCODERS = {
   [DefTokenNames.DD]: toIEEE754Single,
   [DefTokenNames.DQ]: toIEEE754Double,
+  [DefTokenNames.DT]: toIEEE754Extended,
 };
 
 /**

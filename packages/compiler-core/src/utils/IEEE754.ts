@@ -11,6 +11,7 @@
  */
 export function toIEEE754(v: number, ebits: number, fbits: number): number[] {
   const bias = (1 << (ebits - 1)) - 1;
+  const extendedPrecision = ebits === 15 && fbits === 63;
 
   // Compute sign, exponent, fraction
   let s: number|boolean,
@@ -43,6 +44,11 @@ export function toIEEE754(v: number, ebits: number, fbits: number): number[] {
   const bits: number[] = [];
 
   for (i = fbits; i; i -= 1) { bits.push(f % 2 ? 1 : 0); f = Math.floor(f / 2); }
+
+  // integer part in extended precision
+  if (extendedPrecision)
+    bits.push(1);
+
   for (i = ebits; i; i -= 1) { bits.push(e % 2 ? 1 : 0); e = Math.floor(e / 2); }
   bits.push(s ? 1 : 0);
   bits.reverse();
@@ -68,10 +74,17 @@ export function toIEEE754(v: number, ebits: number, fbits: number): number[] {
  */
 export function fromIEEE754(bytes: number[], ebits: number, fbits: number): number {
   // Bytes to bits
+  const extendedPrecision = ebits === 15 && fbits === 63;
   const bits = [];
+
   for (let i = bytes.length; i; i -= 1) {
     let byte = bytes[i - 1];
+
     for (let j = 8; j; j -= 1) {
+      // integer part in extended precision
+      if (extendedPrecision && i === 3 && j === 8)
+        continue;
+
       bits.push(byte % 2 ? 1 : 0);
       byte >>= 1;
     }
@@ -99,6 +112,9 @@ export function fromIEEE754(bytes: number[], ebits: number, fbits: number): numb
 
   return s * 0;
 }
+
+export function fromIEEE754Extended(b: number[]): number { return fromIEEE754(b, 15, 63); }
+export function toIEEE754Extended(v: number): number[] { return toIEEE754(v, 15, 63); }
 
 export function fromIEEE754Double(b: number[]): number { return fromIEEE754(b, 11, 52); }
 export function toIEEE754Double(v: number): number[] { return toIEEE754(v, 11, 52); }
