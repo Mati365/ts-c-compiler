@@ -25,7 +25,7 @@
       "@emulator/ui/*": ["emulator-ui/src/*"],
 
       "@emulator/x86-cpu": ["emulator-x86-cpu/src/"],
-      "@emulator/x86-cpu/*": ["emulator-x86-cpu/src/*"],
+      "@emulator/x86-cpu/*": ["emulator-x86-cpu/src/*"]
     }
   },
   "exclude": [

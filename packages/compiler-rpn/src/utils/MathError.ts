@@ -5,6 +5,7 @@ export enum MathErrorCode {
   MISSING_OPERANDS,
   INCORRECT_BRACKETS,
   UNKNOWN_KEYWORD,
+  DIVISION_BY_ZERO,
 }
 
 export const MATH_ERROR_TRANSLATIONS: {[key in MathErrorCode]: string} = {
@@ -12,6 +13,7 @@ export const MATH_ERROR_TRANSLATIONS: {[key in MathErrorCode]: string} = {
   [MathErrorCode.MISSING_OPERANDS]: 'Missing operands!',
   [MathErrorCode.INCORRECT_BRACKETS]: 'Incorrect brackets!',
   [MathErrorCode.UNKNOWN_KEYWORD]: 'Unknown label "%{token}"!',
+  [MathErrorCode.DIVISION_BY_ZERO]: 'Division by zero!',
 };
 
 /**

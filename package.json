@@ -1,6 +1,12 @@
 {
   "scripts": {
-    "develop": "NODE_ENV=development node_modules/.bin/webpack-dev-server --watch --config=config/webpack.config.js"
+    "develop": "NODE_ENV=development node_modules/.bin/webpack-dev-server --watch --config=config/webpack.config.js",
+    "test": "node_modules/.bin/jest --c config/jest.config.js"
+  },
+  "husky": {
+    "hooks": {
+      "pre-commit": "yarn test"
+    }
   },
   "devDependencies": {
     "@testing-library/jest-dom": "^4.2.4",
@@ -21,13 +27,13 @@
     "eslint-plugin-react": "^7.18.0",
     "eslint-plugin-react-hooks": "^2.3.0",
     "file-loader": "^5.0.2",
-    "husky": "^3.1.0",
-    "jest": "^24.9.0",
+    "husky": "^4.2.3",
+    "jest": "^25.1.0",
     "prop-types": "^15.7.2",
     "ramda": "^0.26.1",
     "react": "^16.12.0",
     "react-dom": "^16.12.0",
-    "ts-jest": "^24.2.0",
+    "ts-jest": "^25.2.1",
     "ts-loader": "^6.2.1",
     "tslib": "^1.10.0",
     "typescript": "^3.8.3",

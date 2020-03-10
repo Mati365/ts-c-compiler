@@ -1,4 +1,5 @@
 import * as R from 'ramda';
+import {MathError, MathErrorCode} from './MathError';
 
 export type MathOperatorResolver = (args: number[]) => number;
 
@@ -14,7 +15,16 @@ export class MathOperator {
   static readonly PLUS = new MathOperator(1, '+', 2, (args) => args[0] + args[1]);
   static readonly MINUS = new MathOperator(1, '-', 2, (args) => args[0] - args[1]);
   static readonly MUL = new MathOperator(2, '*', 2, (args) => args[0] * args[1]);
-  static readonly DIV = new MathOperator(2, '/', 2, (args) => args[0] / args[1]);
+  static readonly DIV = new MathOperator(
+    2, '/', 2,
+    (args) => {
+      if (args[1] === 0)
+        throw new MathError(MathErrorCode.DIVISION_BY_ZERO);
+
+      return args[0] / args[1];
+    },
+  );
+
   static readonly MOD = new MathOperator(2, '%', 2, (args) => args[0] % args[1]);
   static readonly POW = new MathOperator(3, '^', 2, (args) => args[0] ** args[1]);
 

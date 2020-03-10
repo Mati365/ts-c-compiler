@@ -4,6 +4,7 @@
 ; dq 1.123
 ; dd 1.4
 start:
+mov ax, 'a '+2
 jmp dupa
 xor ax, ax
 lds ax, [fs:bx+0x4]

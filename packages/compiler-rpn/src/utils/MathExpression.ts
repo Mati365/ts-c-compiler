@@ -13,6 +13,33 @@ export type MathParserConfig = {
 };
 
 /**
+ * Converts array of postifx tokens into single string
+ *
+ * @export
+ * @param {MathPostfixTokens[]} tokens
+ * @returns {string}
+ */
+export function joinPostifxTokens(tokens: MathPostfixTokens): string {
+  return R.reduce(
+    (acc, token) => {
+      const char = (
+        token instanceof MathOperator
+          ? token.char
+          : token
+      );
+
+      return (
+        acc
+          ? `${acc} ${char}`
+          : char
+      );
+    },
+    '',
+    tokens,
+  );
+}
+
+/**
  * Replaces all quotes in string to ascii numbers
  *
  * @export
@@ -78,7 +105,7 @@ export class MathExpression {
       R.isEmpty,
       R.split(
         MathOperator.MATCH_OPERATOR_REGEX,
-        replaceQuotesWithNumbers(phrase.replace(/\s/g, '')),
+        replaceQuotesWithNumbers(phrase).replace(/\s/g, ''),
       ),
     );
 
@@ -89,7 +116,7 @@ export class MathExpression {
       if (operator) {
         // prefix cases with 0: (-1), +1+2
         if ((operator === MathOperator.PLUS || operator === MathOperator.MINUS) && (!i || (tokens[i - 1]
-            && MathOperator.findOperatorByCharacter(tokens[i - 1]) === MathOperator.RIGHT_BRACKET)))
+            && MathOperator.findOperatorByCharacter(tokens[i - 1]) === MathOperator.LEFT_BRACKET)))
           buffer.push('0');
 
         if (operator === MathOperator.RIGHT_BRACKET) {
