@@ -29,14 +29,18 @@ export enum DefTokenNames {
  * Checks if token is size def, if so - return size
  *
  * @export
- * @param {Token} token
+ * @param {string|Token} token
  * @returns {number}
  */
-export function tokenDefSize(token: Token): number {
-  if (token.type !== TokenType.KEYWORD)
-    return null;
+export function tokenDefSize(token: string|Token): number {
+  if (token instanceof Token) {
+    if (token.type !== TokenType.KEYWORD)
+      return null;
 
-  return DefTokenNames[token.upperText];
+    return DefTokenNames[token.upperText];
+  }
+
+  return DefTokenNames[R.toUpper(token)] ?? null;
 }
 
 /**

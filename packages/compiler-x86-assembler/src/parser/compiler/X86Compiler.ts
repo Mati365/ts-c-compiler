@@ -5,6 +5,8 @@ import {
   MAX_COMPILER_REG_LENGTH,
 } from '../../constants';
 
+import {isReservedKeyword} from '../utils/isReservedKeyword';
+
 import {ParserError, ParserErrorCode} from '../../shared/ParserError';
 import {InstructionArgSize, X86TargetCPU} from '../../types';
 import {NumberToken} from '../lexer/tokens';
@@ -223,6 +225,16 @@ export class X86Compiler {
           const equNode = (<ASTEqu> node);
           const blob = new BinaryEqu(equNode);
 
+          if (isReservedKeyword(equNode.name)) {
+            throw new ParserError(
+              ParserErrorCode.USED_RESERVED_NAME,
+              null,
+              {
+                name: equNode.name,
+              },
+            );
+          }
+
           if (isRedefinedKeyword(equNode.name)) {
             throw new ParserError(
               ParserErrorCode.EQU_ALREADY_DEFINED,
@@ -239,6 +251,16 @@ export class X86Compiler {
 
         case ASTNodeKind.LABEL: {
           const labelName = (<ASTLabel> node).name;
+
+          if (isReservedKeyword(labelName)) {
+            throw new ParserError(
+              ParserErrorCode.USED_RESERVED_NAME,
+              null,
+              {
+                name: labelName,
+              },
+            );
+          }
 
           if (isRedefinedKeyword(labelName)) {
             throw new ParserError(
@@ -495,11 +517,14 @@ export class X86Compiler {
 
     for (const [offset, blob] of orderedOffsets) {
       let compiled = blob;
-      if (blob instanceof BinaryInstruction && !blob.ast.isConstantSize())
+
+      if (blob instanceof BinaryInstruction && (!blob.ast.isConstantSize() || !blob.binary))
         compiled = blob.compile(this, offset);
 
-      result.byteSize = Math.max(result.byteSize, offset + blob.binary.length - this._origin);
-      result.blobs.set(offset, compiled);
+      if (blob.binary) {
+        result.byteSize = Math.max(result.byteSize, offset + blob.binary.length - this._origin);
+        result.blobs.set(offset, compiled);
+      }
     }
 
     return result;

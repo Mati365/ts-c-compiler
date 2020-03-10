@@ -41,6 +41,7 @@ export enum ParserErrorCode {
   UNKNOWN_LABEL,
   LABEL_ALREADY_DEFINED,
   EQU_ALREADY_DEFINED,
+  USED_RESERVED_NAME,
 
   // critical expressions
   INCORRECT_TIMES_ARGS_COUNT,
@@ -121,6 +122,7 @@ export const ERROR_TRANSLATIONS: {[key in ParserErrorCode]: string} = {
   [ParserErrorCode.UNKNOWN_LABEL]: 'Unknown label "%{label}"!',
   [ParserErrorCode.LABEL_ALREADY_DEFINED]: 'Label "%{label}" is already defined!',
   [ParserErrorCode.EQU_ALREADY_DEFINED]: 'EQU "%{name}" is already defined!',
+  [ParserErrorCode.USED_RESERVED_NAME]: 'Defined "%{name}" label name is reserved!',
 
   // compiler
   [ParserErrorCode.UNKNOWN_COMPILER_INSTRUCTION]: 'Unknown compile instruction "%{instruction}"!',

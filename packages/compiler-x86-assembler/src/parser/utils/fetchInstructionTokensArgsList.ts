@@ -30,7 +30,7 @@ export function fetchInstructionTokensArgsList(parser: ASTParser, allowSizeOverr
         new Token(
           TokenType.KEYWORD,
           null,
-          mergeTokensTexts(argTokenBuffer),
+          mergeTokensTexts(argTokenBuffer, ' '),
           argTokenBuffer[0].loc,
         ),
       );

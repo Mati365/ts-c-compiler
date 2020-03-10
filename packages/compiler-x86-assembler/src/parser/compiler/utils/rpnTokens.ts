@@ -19,11 +19,12 @@ import {
  *
  * @export
  * @param {Token[]} tokens
+ * @param {string} [joinStr='']
  * @returns {string}
  */
-export function mergeTokensTexts(tokens: Token[]): string {
+export function mergeTokensTexts(tokens: Token[], joinStr: string = ''): string {
   return R.join(
-    '',
+    joinStr,
     R.map(
       (token) => {
         if (token.type === TokenType.QUOTE)

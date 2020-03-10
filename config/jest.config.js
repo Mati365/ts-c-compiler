@@ -24,10 +24,20 @@ const SHARED_CONFIG = {
 };
 
 module.exports = {
+  globals: {
+    'ts-jest': {
+      tsConfig: 'tsconfig.json',
+    },
+  },
   projects: [
     {
       displayName: '@compiler/rpn',
       rootDir: resolve(__dirname, '../packages/compiler-rpn/'),
+      ...SHARED_CONFIG,
+    },
+    {
+      displayName: '@compiler/x86-assembler',
+      rootDir: resolve(__dirname, '../packages/compiler-x86-assembler/'),
       ...SHARED_CONFIG,
     },
   ],

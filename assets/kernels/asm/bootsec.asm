@@ -1,8 +1,10 @@
 [bits 16]
 [org 0x0]
-; dt 1.5
-; dq 1.123
-; dd 1.4
+mov ax, test332 + 2
+test332 equ 0x12FF
+dt 1.5
+dq 1.123
+dd 1.46
 start:
 mov ax, 'a '+2
 jmp dupa
@@ -46,9 +48,9 @@ jmp start
 
 ;finit
 finit
-; fld dword [val1]
-; fld qword [val1]
-; fld tword [val1]
+fld dword [val1]
+fld qword [val1]
+fld tword [val1]
 fadd st1
 fadd st0, st1
 fadd st2, st0
@@ -56,7 +58,7 @@ faddp st0, st0
 fcom
 
 test_equ equ $
-;val1: dq 0.1
+val1: dq 0.1
 call start
 nop
 test2:
@@ -66,3 +68,4 @@ dupa3 equ 4*4+5+test_equ
 test3:
 
 mov dx, test_equ
+times 512 - ($-$$) nop
