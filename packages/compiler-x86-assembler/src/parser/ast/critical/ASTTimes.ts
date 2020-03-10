@@ -1,6 +1,6 @@
 import * as R from 'ramda';
 
-import {Token, TokenType} from '@compiler/lexer/tokens';
+import {Token} from '@compiler/lexer/tokens';
 
 import {ParserError, ParserErrorCode} from '../../../shared/ParserError';
 import {ASTParser, ASTTree} from '../ASTParser';
@@ -11,6 +11,8 @@ import {
 } from '../ASTNode';
 
 import {isTokenInstructionBeginning} from '../instruction/ASTInstruction';
+import {isLineTerminatorToken} from '../../utils';
+
 import {tokenDefSize} from '../def/ASTDef';
 
 export const TIMES_TOKEN_NAME = 'times';
@@ -59,7 +61,7 @@ export class ASTTimes extends KindASTNode(ASTNodeKind.TIMES) {
 
       if (!repeatedNodeTokens && (isTokenInstructionBeginning(argToken) || tokenDefSize(argToken)))
         repeatedNodeTokens = [argToken];
-      else if (argToken.type === TokenType.EOF || argToken.type === TokenType.EOL)
+      else if (isLineTerminatorToken(argToken))
         break;
       else
         (repeatedNodeTokens || timesExpression).push(argToken);

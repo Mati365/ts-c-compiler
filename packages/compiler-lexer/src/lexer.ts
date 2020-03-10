@@ -17,11 +17,15 @@ import {
   TokenKind,
 } from './tokens';
 
+export type TokenTerminalCharactersMap = {
+  [operator: string]: TokenType,
+};
+
 export type TokenParsersMap = {
   [parser: number]: (token: string, loc?: TokenLocation) => boolean|Token,
 };
 
-const SEPARATOR_CHARACTERS: {[operator: string]: TokenType} = {
+export const TERMINAL_CHARACTERS: TokenTerminalCharactersMap = {
   ',': TokenType.COMMA,
   ':': TokenType.COLON,
   '+': TokenType.PLUS,
@@ -66,24 +70,35 @@ function parseToken(
 }
 
 /**
+ * Flags used for parsing flow control
+ */
+export type LexerConfig = {
+  tokensParsers?: TokenParsersMap,
+  appendEOF?: boolean,
+  signOperatorsAsSeparateTokens?: boolean,
+  terminalCharacters?: TokenTerminalCharactersMap,
+};
+
+/**
  * Split code into tokens
  *
  * @see
  *  It contains also lexer logic!
  *
+ *
  * @export
- * @param {TokenParsersMap} tokensParsers
+ * @param {LexerConfig} config
  * @param {string} code
- * @param {boolean} [appendEOF=true]
- * @param {boolean} [signOperatorsAsSeparateTokens=false]
  * @returns {IterableIterator<Token>}
  */
-export function* lexer(
-  tokensParsers: TokenParsersMap,
-  code: string,
-  appendEOF: boolean = true,
-  signOperatorsAsSeparateTokens: boolean = false,
-): IterableIterator<Token> {
+export function* lexer(config: LexerConfig, code: string): IterableIterator<Token> {
+  const {
+    tokensParsers,
+    terminalCharacters = TERMINAL_CHARACTERS,
+    appendEOF = true,
+    signOperatorsAsSeparateTokens = false,
+  } = config;
+
   const {length} = code;
   const location = new TokenLocation;
 
@@ -198,7 +213,7 @@ export function* lexer(
       yield* appendCharToken(TokenType.EOL, character);
     else {
       // match cahracters that divides word
-      const separator = SEPARATOR_CHARACTERS[character];
+      const separator = terminalCharacters[character];
 
       if (separator) {
         // numbers - +1, -2

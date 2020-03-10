@@ -21,6 +21,7 @@ export class BinaryBlob<ASTNodeType = any> {
   constructor(
     protected _ast: ASTNodeType = null,
     protected _binary: number[] = null,
+    public slaveBlobs: BinaryBlob[] = null, // for some 0 bytes instructions
   ) {}
 
   get ast() { return this._ast; }

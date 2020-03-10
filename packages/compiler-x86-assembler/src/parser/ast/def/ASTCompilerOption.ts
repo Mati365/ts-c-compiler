@@ -58,9 +58,9 @@ export class ASTCompilerOption extends KindASTNode(ASTNodeKind.COMPILER_OPTION) 
     // option can be [org 0x80] or org 0x80, second is instruction
     let args = null;
     if (inBrackets)
-      args = R.slice(1, -1, Array.from(asmLexer(token.text)));
+      args = R.slice(1, -1, Array.from(asmLexer(null, token.text)));
     else
-      args = fetchInstructionTokensArgsList(parser);
+      args = fetchInstructionTokensArgsList(parser, false);
 
     // create new option
     return new ASTCompilerOption(

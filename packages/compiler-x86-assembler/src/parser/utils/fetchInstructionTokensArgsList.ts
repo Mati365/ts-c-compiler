@@ -2,6 +2,7 @@ import {TokenKind, TokenType, Token} from '@compiler/lexer/tokens';
 import {ASTParser} from '../ast/ASTParser';
 
 import {mergeTokensTexts} from '../compiler/utils';
+import {isLineTerminatorToken} from './isLineTerminatorToken';
 
 /**
  * Fetches array of args such as:
@@ -41,7 +42,7 @@ export function fetchInstructionTokensArgsList(parser: ASTParser, allowSizeOverr
   do {
     // value or size operand
     let token = parser.fetchRelativeToken();
-    if (!token || token.type === TokenType.EOL || token.type === TokenType.EOF)
+    if (!token || isLineTerminatorToken(token))
       break;
 
     // single spearator characters

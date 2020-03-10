@@ -1,4 +1,4 @@
-import {lexer} from '@compiler/lexer/lexer';
+import {lexer, LexerConfig} from '@compiler/lexer/lexer';
 
 import {
   Token,
@@ -41,20 +41,16 @@ export const TOKEN_PARSERS: {
  * Lexer for assembler lang
  *
  * @export
+ * @param {LexerConfig} lexerConfig
  * @param {string} code
- * @param {boolean} [appendEOF=true]
- * @param {boolean} [signOperatorsAsSeparateTokens=false]
  * @returns {IterableIterator<Token>}
  */
-export function asmLexer(
-  code: string,
-  appendEOF: boolean = true,
-  signOperatorsAsSeparateTokens: boolean = false,
-): IterableIterator<Token> {
+export function asmLexer(lexerConfig: LexerConfig, code: string): IterableIterator<Token> {
   return lexer(
-    TOKEN_PARSERS,
+    {
+      tokensParsers: TOKEN_PARSERS,
+      ...lexerConfig,
+    },
     code,
-    appendEOF,
-    signOperatorsAsSeparateTokens,
   );
 }

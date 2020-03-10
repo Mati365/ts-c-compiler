@@ -1,11 +1,7 @@
 import * as R from 'ramda';
 
 import {RegisterToken} from '@compiler/x86-assembler/parser/lexer/tokens';
-import {TokenType, TokenKind, Token} from '@compiler/lexer/tokens';
-import {Result} from '@compiler/core/monads/Result';
-
-import {MathErrorCode} from '@compiler/rpn/utils';
-import {rpnTokens} from '@compiler/x86-assembler/parser/compiler/utils';
+import {TokenType, TokenKind} from '@compiler/lexer/tokens';
 
 import {
   numberByteSize,
@@ -15,13 +11,13 @@ import {
 
 import {assignLabelsToTokens} from '../../../utils';
 import {asmLexer} from '../../../lexer/asmLexer';
+import {safeKeywordResultRPN} from '../../../compiler/utils';
 
 import {ASTLabelAddrResolver} from '../ASTResolvableArg';
 import {
   ASTExpressionParserResult,
   ok,
   err,
-  ASTExpressionParserError,
 } from '../../critical/ASTExpression';
 
 import {ParserError, ParserErrorCode} from '../../../../shared/ParserError';
@@ -36,31 +32,6 @@ import {
 import {ASTInstructionArg} from './ASTInstructionArg';
 
 /**
- * Throws error that is used to jump prediction
- *
- * @param {ASTLabelAddrResolver} labelResolver
- * @param {Token[]} tokens
- * @returns {Result<number, ASTExpressionParserError>}
- */
-function safeMemRPN(labelResolver: ASTLabelAddrResolver, tokens: Token[]): Result<number, ASTExpressionParserError> {
-  try {
-    return ok(
-      rpnTokens(
-        tokens,
-        {
-          keywordResolver: labelResolver,
-        },
-      ),
-    );
-  } catch (e) {
-    if (labelResolver || ('code' in e && e.code !== MathErrorCode.UNKNOWN_KEYWORD))
-      throw e;
-
-    return err(ASTExpressionParserError.UNRESOLVED_LABEL);
-  }
-}
-
-/**
  * Transforms [ax:bx+si*4] into descriptor object
  *
  * @param {string} expression
@@ -71,7 +42,13 @@ function parseMemExpression(
   expression: string,
 ): ASTExpressionParserResult<MemAddressDescription> {
   let tokens = Array.from(
-    asmLexer(expression, false, true),
+    asmLexer(
+      {
+        appendEOF: false,
+        signOperatorsAsSeparateTokens: true,
+      },
+      expression,
+    ),
   );
 
   const addressDescription: MemAddressDescription = {
@@ -105,7 +82,12 @@ function parseMemExpression(
 
       // handle errors
       const [reg, expr] = currentReg ? [arg1, arg2] : [arg2, arg1];
-      const scaleResult = safeMemRPN(labelResolver, [expr]);
+      const scaleResult = safeKeywordResultRPN(
+        {
+          keywordResolver: labelResolver,
+        },
+        [expr],
+      );
       if (scaleResult.isErr())
         return err(scaleResult.unwrapErr());
 
@@ -141,7 +123,12 @@ function parseMemExpression(
 
   // calc displacement
   if (tokens.length) {
-    const dispResult = safeMemRPN(labelResolver, tokens);
+    const dispResult = safeKeywordResultRPN(
+      {
+        keywordResolver: labelResolver,
+      },
+      tokens,
+    );
     if (dispResult.isErr())
       return err(dispResult.unwrapErr());
 

@@ -46,7 +46,12 @@ export function parseSegmentedMemExpression(
   expression: string,
 ): ASTExpressionParserResult<ASTSegmentedAddressDescription> {
   let tokens = Array.from(
-    asmLexer(expression, false),
+    asmLexer(
+      {
+        appendEOF: false,
+      },
+      expression,
+    ),
   );
 
   if (tokens?.length !== 3) {

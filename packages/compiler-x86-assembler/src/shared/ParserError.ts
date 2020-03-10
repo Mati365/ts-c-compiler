@@ -40,6 +40,7 @@ export enum ParserErrorCode {
   MISSING_PARENT_LABEL,
   UNKNOWN_LABEL,
   LABEL_ALREADY_DEFINED,
+  EQU_ALREADY_DEFINED,
 
   // critical expressions
   INCORRECT_TIMES_ARGS_COUNT,
@@ -58,11 +59,15 @@ export enum ParserErrorCode {
   UNMATCHED_SCHEMA_POSTPROCESS,
   UNABLE_TO_COMPILE_FILE,
   UNPERMITTED_NODE_IN_POSTPROCESS_MODE,
+  INCORRECT_SLAVE_BLOBS,
 
   // define data
   DEFINED_DATA_EXCEEDES_BOUNDS,
   UNSUPPORTED_DEFINE_TOKEN,
   INCORRECT_FLOAT_SIZE,
+
+  // equ
+  INCORRECT_EQU_ARGS_COUNT,
 
   // options
   ORIGIN_REDEFINED,
@@ -115,6 +120,7 @@ export const ERROR_TRANSLATIONS: {[key in ParserErrorCode]: string} = {
   [ParserErrorCode.MISSING_PARENT_LABEL]: 'Unable to resolve local label "%{label}", missing parent label!',
   [ParserErrorCode.UNKNOWN_LABEL]: 'Unknown label "%{label}"!',
   [ParserErrorCode.LABEL_ALREADY_DEFINED]: 'Label "%{label}" is already defined!',
+  [ParserErrorCode.EQU_ALREADY_DEFINED]: 'EQU "%{name}" is already defined!',
 
   // compiler
   [ParserErrorCode.UNKNOWN_COMPILER_INSTRUCTION]: 'Unknown compile instruction "%{instruction}"!',
@@ -127,11 +133,15 @@ export const ERROR_TRANSLATIONS: {[key in ParserErrorCode]: string} = {
   [ParserErrorCode.UNMATCHED_SCHEMA_POSTPROCESS]: 'Cannot find instruction "%{instruction}"!',
   [ParserErrorCode.UNABLE_TO_COMPILE_FILE]: 'Unable to compile file!',
   [ParserErrorCode.UNPERMITTED_NODE_IN_POSTPROCESS_MODE]: 'Unpermitted node "%{node}" in compiler first pass mode!',
+  [ParserErrorCode.INCORRECT_SLAVE_BLOBS]: 'Incorrect slave blobs!',
 
   // defined data
   [ParserErrorCode.DEFINED_DATA_EXCEEDES_BOUNDS]: 'Defined data "%{data}" excedees bounds (%{maxSize} bytes)!',
   [ParserErrorCode.UNSUPPORTED_DEFINE_TOKEN]: 'Invalid "%{token}" define token value!',
   [ParserErrorCode.INCORRECT_FLOAT_SIZE]: 'Incorrect float "%{number}" size!',
+
+  // equ
+  [ParserErrorCode.INCORRECT_EQU_ARGS_COUNT]: 'Incorrect equ args count, provided %{count} but required is 1!',
 
   // options
   [ParserErrorCode.ORIGIN_REDEFINED]: 'Origin redefined!',

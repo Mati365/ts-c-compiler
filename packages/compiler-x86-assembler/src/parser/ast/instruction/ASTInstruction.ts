@@ -178,8 +178,29 @@ export class ASTInstruction extends KindASTNode(ASTNodeKind.INSTRUCTION) {
     return cloned;
   }
 
+  /**
+   * Get Scale SIB byte
+   *
+   * @returns
+   * @memberof ASTInstruction
+   */
   getScale() {
     return this.memArgs[0]?.addressDescription?.scale;
+  }
+
+  /**
+   * Determine if instruction needs to be recompiled
+   * in later passes
+   *
+   * @see X86Compiler
+   *
+   * @returns {boolean}
+   * @memberof ASTInstruction
+   */
+  isConstantSize(): boolean {
+    const {labeledInstruction, unresolvedArgs, jumpInstruction} = this;
+
+    return !labeledInstruction && !unresolvedArgs && !jumpInstruction;
   }
 
   /**

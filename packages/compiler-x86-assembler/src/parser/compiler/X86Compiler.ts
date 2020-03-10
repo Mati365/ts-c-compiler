@@ -16,6 +16,7 @@ import {ASTTree} from '../ast/ASTParser';
 import {ASTNodeKind} from '../ast/types';
 import {ASTInstruction} from '../ast/instruction/ASTInstruction';
 import {ASTDef} from '../ast/def/ASTDef';
+import {ASTEqu} from '../ast/critical/ASTEqu';
 
 import {ASTTimes} from '../ast/critical/ASTTimes';
 import {
@@ -27,6 +28,7 @@ import {
 import {BinaryInstruction} from './types/BinaryInstruction';
 import {BinaryDefinition} from './types/BinaryDefinition';
 import {BinaryRepeatedNode} from './types/BinaryRepeatedNode';
+import {BinaryEqu} from './types/BinaryEqu';
 import {BinaryBlob} from './BinaryBlob';
 
 import {
@@ -57,7 +59,7 @@ export class X86Compiler {
 
   constructor(
     public readonly tree: ASTTree,
-    public readonly maxPasses: number = 5,
+    public readonly maxPasses: number = 7,
   ) {}
 
   get origin() { return this._origin; }
@@ -106,22 +108,43 @@ export class X86Compiler {
 
     const {target} = this;
     const {astNodes} = tree;
-    const {labels} = result;
+    const {labels, equ, nodesOffsets} = result;
 
     let offset = initialOffset;
     let originDefined = false;
+
+    const isRedefinedKeyword = (keyword: string): boolean => (
+      equ.has(keyword) || labels.has(keyword)
+    );
 
     /**
      * Emits binary set of data for instruction
      *
      * @param {BinaryBlob} blob
+     * @param {number} size
      */
-    const emitBlob = (blob: BinaryBlob): void => {
-      result.nodesOffsets.set(
-        this._origin + offset,
-        blob,
-      );
-      offset += blob.binary?.length ?? 1;
+    const emitBlob = (blob: BinaryBlob, size?: number): void => {
+      const addr = this._origin + offset;
+      const prevBlob = nodesOffsets.get(addr);
+
+      // EQU has size = 0, it can overlap
+      if (size === 0) {
+        // some instructions has 0 bytes, chain them to existing to
+        // preserve order of execution, maybe there will be better solution?
+        if (prevBlob) {
+          prevBlob.slaveBlobs = prevBlob.slaveBlobs || [];
+          prevBlob.slaveBlobs.push(blob);
+          return;
+        }
+      }
+
+      nodesOffsets.set(addr, blob);
+      if (prevBlob) {
+        blob.slaveBlobs = blob.slaveBlobs || [];
+        blob.slaveBlobs.push(prevBlob);
+      }
+
+      offset += size ?? blob.binary?.length ?? 1;
     };
 
     /**
@@ -167,6 +190,7 @@ export class X86Compiler {
         case ASTNodeKind.TIMES:
           emitBlob(
             new BinaryRepeatedNode(<ASTTimes> node),
+            1,
           );
           break;
 
@@ -195,10 +219,28 @@ export class X86Compiler {
           );
           break;
 
+        case ASTNodeKind.EQU: {
+          const equNode = (<ASTEqu> node);
+          const blob = new BinaryEqu(equNode);
+
+          if (isRedefinedKeyword(equNode.name)) {
+            throw new ParserError(
+              ParserErrorCode.EQU_ALREADY_DEFINED,
+              null,
+              {
+                name: equNode.name,
+              },
+            );
+          }
+
+          equ.set(equNode.name, blob);
+          emitBlob(blob, 0);
+        } break;
+
         case ASTNodeKind.LABEL: {
           const labelName = (<ASTLabel> node).name;
 
-          if (labels.has(labelName)) {
+          if (isRedefinedKeyword(labelName)) {
             throw new ParserError(
               ParserErrorCode.LABEL_ALREADY_DEFINED,
               null,
@@ -237,7 +279,7 @@ export class X86Compiler {
   private secondPass(firstPassResult: FirstPassResult): SecondPassResult {
     const {target} = this;
     const {tree} = firstPassResult;
-    const {labels, nodesOffsets} = firstPassResult;
+    const {labels, nodesOffsets, equ} = firstPassResult;
 
     const result = new SecondPassResult(0x0, labels);
     let success = false;
@@ -261,6 +303,9 @@ export class X86Compiler {
 
         if (name === MAGIC_LABELS.CURRENT_LINE)
           return instructionOffset;
+
+        if (equ.has(name))
+          return equ.get(name).val ?? 0;
 
         if (isLocalLabel(name)) {
           name = resolveLocalTokenAbsName(
@@ -312,6 +357,31 @@ export class X86Compiler {
         nodesOffsets.set(offset + blobOffset, blob);
     }
 
+    /**
+     * Process EQU, returns true if value changed
+     *
+     * @param {number} offset
+     * @param {BinaryEqu} blob
+     * @returns {boolean}
+     */
+    function passEqu(offset: number, blob: BinaryEqu): boolean {
+      const {
+        ast,
+        labeled,
+        val: prevValue,
+      } = blob;
+
+      // ignore, it is propably already resolved
+      if (!labeled)
+        return false;
+
+      blob.pass(
+        labelResolver(ast, offset),
+      );
+
+      return prevValue !== blob.val || R.isNil(prevValue);
+    }
+
     // proper resolve labels
     for (let pass = 0; pass < this.maxPasses; ++pass) {
       let needPass = false;
@@ -322,8 +392,26 @@ export class X86Compiler {
         if (sectionStartOffset === null)
           sectionStartOffset = offset;
 
-        // repeats instruction nth times
-        if (blob instanceof BinaryRepeatedNode) {
+        // check for slave blobs (0 bytes instructions, EQU)
+        if (blob.slaveBlobs) {
+          // todo: handle as array?
+          const topSlave = blob.slaveBlobs[0];
+
+          if (topSlave instanceof BinaryEqu) {
+            if (passEqu(offset, topSlave))
+              needPass = true;
+          } else
+            throw new ParserError(ParserErrorCode.INCORRECT_SLAVE_BLOBS);
+        }
+
+        if (blob instanceof BinaryEqu) {
+          // ignore, it is propably already resolved
+          if (passEqu(offset, blob))
+            needPass = true;
+          else
+            continue;
+        } else if (blob instanceof BinaryRepeatedNode) {
+          // repeats instruction nth times
           const blobResult = blob.pass(this, offset - this._origin, labelResolver(blob.ast, offset));
           const blobSize = blobResult.getByteSize();
 
@@ -340,7 +428,7 @@ export class X86Compiler {
           const pessimisticSize = binary.length;
 
           // generally check for JMP/CALL etc instructions
-          if (!ast.labeledInstruction && !ast.unresolvedArgs && !ast.jumpInstruction)
+          if (ast.isConstantSize())
             continue;
 
           // matcher must choose which instruction to match
@@ -406,7 +494,9 @@ export class X86Compiler {
     );
 
     for (const [offset, blob] of orderedOffsets) {
-      const compiled = blob.compile(this, offset);
+      let compiled = blob;
+      if (blob instanceof BinaryInstruction && !blob.ast.isConstantSize())
+        compiled = blob.compile(this, offset);
 
       result.byteSize = Math.max(result.byteSize, offset + blob.binary.length - this._origin);
       result.blobs.set(offset, compiled);

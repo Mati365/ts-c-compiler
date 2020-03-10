@@ -22,9 +22,7 @@ export class ASTResolvableArg<T> {
     protected resolved = true,
   ) {}
 
-  get val() {
-    return this.value;
-  }
+  get val() { return this.value; }
 
   toString(): string {
     const {value} = this;

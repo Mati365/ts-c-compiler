@@ -11,5 +11,5 @@ import {
  * @param {String} code
  */
 export const asm = tagFunction(
-  (code: string) => compile(ast(asmLexer(code))),
+  (code: string) => compile(ast(asmLexer(null, code))),
 );
