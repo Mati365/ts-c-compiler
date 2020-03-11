@@ -1,6 +1,6 @@
 import * as R from 'ramda';
 
-import {ASTTree} from '../ast/ASTParser';
+import {ASTAsmTree} from '../ast/ASTAsmParser';
 import {BinaryLabelsOffsets} from '../ast/types';
 import {BinaryBlob} from './BinaryBlob';
 import {BinaryEqu} from './types/BinaryEqu';
@@ -15,7 +15,7 @@ export type BinaryBlobsMap = Map<number, BinaryBlob>;
  */
 export class FirstPassResult {
   constructor(
-    public readonly tree: ASTTree,
+    public readonly tree: ASTAsmTree,
     public readonly labels: BinaryLabelsOffsets = new Map<string, number>(),
     public readonly equ: Map<string, BinaryEqu> = new Map,
     public readonly nodesOffsets: BinaryBlobsMap = new Map<number, BinaryBlob>(),

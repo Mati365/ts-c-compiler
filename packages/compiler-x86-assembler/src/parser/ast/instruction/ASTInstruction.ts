@@ -1,6 +1,8 @@
 import * as R from 'ramda';
 
 import {reduceTextToBitset} from '@compiler/core/utils/extractNthByte';
+import {NodeLocation} from '@compiler/grammar/tree/NodeLocation';
+import {TokensIterator} from '@compiler/grammar/tree/TokensIterator';
 import {
   TokenType,
   TokenKind,
@@ -20,7 +22,7 @@ import {
 
 import {ParserError, ParserErrorCode} from '../../../shared/ParserError';
 
-import {ASTParser, ASTTokensIterator} from '../ASTParser';
+import {ASTAsmParser} from '../ASTAsmParser';
 import {ASTNodeKind} from '../types';
 
 import {ASTLabelAddrResolver} from './ASTResolvableArg';
@@ -33,11 +35,7 @@ import {
   ASTInstructionArg,
 } from './args';
 
-import {
-  KindASTNode,
-  ASTNodeLocation,
-} from '../ASTNode';
-
+import {KindASTNode} from '../ASTAsmNode';
 import {
   NumberToken,
   RegisterToken,
@@ -106,7 +104,7 @@ export class ASTInstruction extends KindASTNode(ASTNodeKind.INSTRUCTION) {
     public readonly opcode: string,
     public argsTokens: Token<any>[],
     public readonly prefixes: InstructionPrefix[] = [],
-    loc: ASTNodeLocation,
+    loc: NodeLocation,
   ) {
     super(loc);
 
@@ -421,13 +419,13 @@ export class ASTInstruction extends KindASTNode(ASTNodeKind.INSTRUCTION) {
      *
      * @param {ASTInstructionArg} prevArgs
      * @param {Token} token
-     * @param {ASTTokensIterator} iterator
+     * @param {TokensIterator} iterator
      * @returns {ASTInstructionArg<any>}
      */
     function parseToken(
       prevArgs: ASTInstructionArg[],
       token: Token,
-      iterator: ASTTokensIterator,
+      iterator: TokensIterator,
     ): ASTInstructionArg<any> {
       const nextToken = iterator.fetchRelativeToken(1, false);
       const destinationArg = !prevArgs.length;
@@ -566,7 +564,7 @@ export class ASTInstruction extends KindASTNode(ASTNodeKind.INSTRUCTION) {
     }
 
     // a bit faster than transduce
-    const argsTokensIterator = new ASTTokensIterator(tokens);
+    const argsTokensIterator = new TokensIterator(tokens);
     const acc: ASTInstructionArg[] = [];
 
     argsTokensIterator.iterate(
@@ -615,7 +613,7 @@ export class ASTInstruction extends KindASTNode(ASTNodeKind.INSTRUCTION) {
    * @returns ASTInstruction
    * @memberof ASTInstruction
    */
-  static parse(token: Token, parser: ASTParser): ASTInstruction {
+  static parse(token: Token, parser: ASTAsmParser): ASTInstruction {
     // if not opcode, ignore
     if (!isTokenInstructionBeginning(token))
       return null;
@@ -641,7 +639,7 @@ export class ASTInstruction extends KindASTNode(ASTNodeKind.INSTRUCTION) {
       opcode,
       argsTokens,
       prefixes,
-      ASTNodeLocation.fromTokenLoc(token.loc),
+      NodeLocation.fromTokenLoc(token.loc),
     );
 
     return instruction;

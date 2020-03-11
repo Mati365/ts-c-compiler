@@ -1,14 +1,12 @@
 import * as R from 'ramda';
 
 import {Token} from '@compiler/lexer/tokens';
+import {NodeLocation} from '@compiler/grammar/tree/NodeLocation';
 
 import {ParserError, ParserErrorCode} from '../../../shared/ParserError';
-import {ASTParser, ASTTree} from '../ASTParser';
+import {ASTAsmParser, ASTAsmTree} from '../ASTAsmParser';
 import {ASTNodeKind} from '../types';
-import {
-  ASTNodeLocation,
-  KindASTNode,
-} from '../ASTNode';
+import {KindASTNode} from '../ASTAsmNode';
 
 import {isTokenInstructionBeginning} from '../instruction/ASTInstruction';
 import {isLineTerminatorToken} from '../../utils';
@@ -27,8 +25,8 @@ export const TIMES_TOKEN_NAME = 'times';
 export class ASTTimes extends KindASTNode(ASTNodeKind.TIMES) {
   constructor(
     public readonly timesExpression: Token[],
-    public readonly repatedNodesTree: ASTTree,
-    loc: ASTNodeLocation,
+    public readonly repatedNodesTree: ASTAsmTree,
+    loc: NodeLocation,
   ) {
     super(loc);
   }
@@ -42,11 +40,11 @@ export class ASTTimes extends KindASTNode(ASTNodeKind.TIMES) {
    *
    * @static
    * @param {Token} token
-   * @param {ASTParser} parser
+   * @param {ASTAsmParser} parser
    * @returns {ASTTimes}
    * @memberof ASTTimes
    */
-  static parse(token: Token, parser: ASTParser): ASTTimes {
+  static parse(token: Token, parser: ASTAsmParser): ASTTimes {
     if (token.lowerText !== TIMES_TOKEN_NAME)
       return null;
 
@@ -100,7 +98,7 @@ export class ASTTimes extends KindASTNode(ASTNodeKind.TIMES) {
       return new ASTTimes(
         timesExpression,
         repatedNodesTree,
-        ASTNodeLocation.fromTokenLoc(token.loc),
+        NodeLocation.fromTokenLoc(token.loc),
       );
     }
 

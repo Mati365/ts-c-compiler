@@ -1,12 +1,10 @@
 import {Token, TokenType} from '@compiler/lexer/tokens';
+import {NodeLocation} from '@compiler/grammar/tree/NodeLocation';
 import {ParserError, ParserErrorCode} from '@compiler/x86-assembler/shared/ParserError';
 
-import {ASTParser} from '../ASTParser';
+import {ASTAsmParser} from '../ASTAsmParser';
 import {ASTNodeKind} from '../types';
-import {
-  ASTNodeLocation,
-  KindASTNode,
-} from '../ASTNode';
+import {KindASTNode} from '../ASTAsmNode';
 
 import {fetchInstructionTokensArgsList} from '../../utils';
 
@@ -23,7 +21,7 @@ export class ASTEqu extends KindASTNode(ASTNodeKind.EQU) {
   constructor(
     public readonly name: string,
     public readonly expression: string,
-    loc: ASTNodeLocation,
+    loc: NodeLocation,
   ) {
     super(loc);
   }
@@ -33,7 +31,7 @@ export class ASTEqu extends KindASTNode(ASTNodeKind.EQU) {
     return `${name} equ ${expression}`;
   }
 
-  static parse(token: Token, parser: ASTParser): ASTEqu {
+  static parse(token: Token, parser: ASTAsmParser): ASTEqu {
     if (token.type !== TokenType.KEYWORD)
       return null;
 
@@ -57,7 +55,7 @@ export class ASTEqu extends KindASTNode(ASTNodeKind.EQU) {
     return new ASTEqu(
       token.lowerText,
       args[0].lowerText,
-      ASTNodeLocation.fromTokenLoc(token.loc),
+      NodeLocation.fromTokenLoc(token.loc),
     );
   }
 }

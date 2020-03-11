@@ -15,6 +15,9 @@
       "@compiler/lexer": ["compiler-lexer/src/"],
       "@compiler/lexer/*": ["compiler-lexer/src/*"],
 
+      "@compiler/grammar": ["compiler-grammar/src/"],
+      "@compiler/grammar/*": ["compiler-grammar/src/*"],
+
       "@compiler/rpn": ["compiler-rpn/src/"],
       "@compiler/rpn/*": ["compiler-rpn/src/*"],
 

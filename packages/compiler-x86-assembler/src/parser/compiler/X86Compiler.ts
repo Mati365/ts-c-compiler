@@ -14,10 +14,10 @@ import {ParserError, ParserErrorCode} from '../../shared/ParserError';
 import {InstructionArgSize, X86TargetCPU} from '../../types';
 import {NumberToken} from '../lexer/tokens';
 
-import {ASTNode} from '../ast/ASTNode';
+import {ASTAsmNode} from '../ast/ASTAsmNode';
 import {ASTCompilerOption, CompilerOptions} from '../ast/def/ASTCompilerOption';
 import {ASTLabelAddrResolver} from '../ast/instruction/ASTResolvableArg';
-import {ASTTree} from '../ast/ASTParser';
+import {ASTAsmTree} from '../ast/ASTAsmParser';
 import {ASTNodeKind} from '../ast/types';
 import {ASTInstruction} from '../ast/instruction/ASTInstruction';
 import {ASTDef} from '../ast/def/ASTDef';
@@ -63,7 +63,7 @@ export class X86Compiler {
   private _target: X86TargetCPU = X86TargetCPU.I_486;
 
   constructor(
-    public readonly tree: ASTTree,
+    public readonly tree: ASTAsmTree,
     public readonly maxPasses: number = 7,
   ) {}
 
@@ -98,14 +98,14 @@ export class X86Compiler {
   /**
    * First pass compiler, omit labels and split into multiple chunks
    *
-   * @param {ASTTree} [tree=this.tree]
+   * @param {ASTAsmTree} [tree=this.tree]
    * @param {boolean} [noAbstractInstructions=false]
    * @param {number} [initialOffset=0]
    * @returns {FirstPassResult}
    * @memberof X86Compiler
    */
   firstPass(
-    tree: ASTTree = this.tree,
+    tree: ASTAsmTree = this.tree,
     noAbstractInstructions: boolean = false,
     initialOffset: number = 0,
   ): FirstPassResult {
@@ -157,9 +157,9 @@ export class X86Compiler {
      * performs initial compilation of instruction
      * with known size schemas
      *
-     * @param {ASTNode} node
+     * @param {ASTAsmNode} node
      */
-    const processNode = (node: ASTNode): void => {
+    const processNode = (node: ASTAsmNode): void => {
       const absoluteAddress = this._origin + offset;
 
       if (noAbstractInstructions && node.kind !== ASTNodeKind.INSTRUCTION && node.kind !== ASTNodeKind.DEFINE) {
@@ -296,7 +296,7 @@ export class X86Compiler {
     };
 
     R.forEach(
-      (node: ASTNode) => {
+      (node: ASTAsmNode) => {
         try {
           processNode(node);
         } catch (e) {
@@ -334,11 +334,11 @@ export class X86Compiler {
      * @see
      *  instructionIndex must be equal count of instructions in first phase!
      *
-     * @param {ASTNode} astNode
+     * @param {ASTAsmNode} astNode
      * @param {number} instructionOffset
      * @returns {ASTLabelAddrResolver}
      */
-    function labelResolver(astNode: ASTNode, instructionOffset: number): ASTLabelAddrResolver {
+    function labelResolver(astNode: ASTAsmNode, instructionOffset: number): ASTLabelAddrResolver {
       return (name: string): number => {
         if (sectionStartOffset !== null && name === MAGIC_LABELS.SECTION_START)
           return sectionStartOffset;

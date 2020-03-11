@@ -1,16 +1,14 @@
 import * as R from 'ramda';
 
 import {Token, TokenType} from '@compiler/lexer/tokens';
+import {NodeLocation} from '@compiler/grammar/tree/NodeLocation';
 
 import {ParserError, ParserErrorCode} from '../../../shared/ParserError';
-import {ASTParser} from '../ASTParser';
+import {ASTAsmParser} from '../ASTAsmParser';
 import {ASTNodeKind} from '../types';
 import {InstructionArgSize} from '../../../types';
 import {NumberToken} from '../../lexer/tokens';
-import {
-  ASTNodeLocation,
-  KindASTNode,
-} from '../ASTNode';
+import {KindASTNode} from '../ASTAsmNode';
 
 import {
   fetchInstructionTokensArgsList,
@@ -54,7 +52,7 @@ export class ASTDef extends KindASTNode(ASTNodeKind.DEFINE) {
   constructor(
     public readonly byteSize: number,
     public readonly args: Token[],
-    loc: ASTNodeLocation,
+    loc: NodeLocation,
   ) {
     super(loc);
   }
@@ -83,11 +81,11 @@ export class ASTDef extends KindASTNode(ASTNodeKind.DEFINE) {
    *
    * @static
    * @param {Token} token
-   * @param {ASTParser} parser
+   * @param {ASTAsmParser} parser
    * @returns {ASTLabel}
    * @memberof ASTLabel
    */
-  static parse(token: Token, parser: ASTParser): ASTDef {
+  static parse(token: Token, parser: ASTAsmParser): ASTDef {
     if (token.type !== TokenType.KEYWORD)
       return null;
 
@@ -124,7 +122,7 @@ export class ASTDef extends KindASTNode(ASTNodeKind.DEFINE) {
     return new ASTDef(
       tokenSize,
       argsTokens,
-      ASTNodeLocation.fromTokenLoc(token.loc),
+      NodeLocation.fromTokenLoc(token.loc),
     );
   }
 }

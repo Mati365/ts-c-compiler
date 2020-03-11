@@ -1,14 +1,12 @@
 import * as R from 'ramda';
 
 import {Token, TokenType} from '@compiler/lexer/tokens';
+import {NodeLocation} from '@compiler/grammar/tree/NodeLocation';
 
 import {ParserError, ParserErrorCode} from '../../../shared/ParserError';
-import {ASTParser, ASTTree} from '../ASTParser';
+import {ASTAsmParser, ASTAsmTree} from '../ASTAsmParser';
 import {ASTNodeKind} from '../types';
-import {
-  ASTNodeLocation,
-  KindASTNode,
-} from '../ASTNode';
+import {KindASTNode} from '../ASTAsmNode';
 
 import {tokenDefSize} from '../def/ASTDef';
 
@@ -28,13 +26,13 @@ export function isLocalLabel(name: string): boolean {
  * it does not search for address, only name
  *
  * @export
- * @param {ASTTree} tree
+ * @param {ASTAsmTree} tree
  * @param {string} localName
  * @param {number} [astNodeIndex=tree.astNodes.length]
  * @returns {string}
  */
 export function resolveLocalTokenAbsName(
-  tree: ASTTree,
+  tree: ASTAsmTree,
   localName: string,
   astNodeIndex: number = tree.astNodes.length,
 ): string {
@@ -62,7 +60,7 @@ export class ASTLabel extends KindASTNode(ASTNodeKind.LABEL) {
   constructor(
     public readonly localName: string, // .abc:
     public readonly name: string, // parent.abc:
-    loc: ASTNodeLocation,
+    loc: NodeLocation,
   ) {
     super(loc);
     this.local = localName !== name;
@@ -80,12 +78,12 @@ export class ASTLabel extends KindASTNode(ASTNodeKind.LABEL) {
    *
    * @static
    * @param {Token} token
-   * @param {ASTParser} parser
-   * @param {ASTTree} tree
+   * @param {ASTAsmParser} parser
+   * @param {ASTAsmTree} tree
    * @returns {ASTLabel}
    * @memberof ASTLabel
    */
-  static parse(token: Token, parser: ASTParser, tree: ASTTree): ASTLabel {
+  static parse(token: Token, parser: ASTAsmParser, tree: ASTAsmTree): ASTLabel {
     const nextToken = parser.fetchRelativeToken(1, false);
     if (!nextToken
         || token.type !== TokenType.KEYWORD
@@ -123,7 +121,7 @@ export class ASTLabel extends KindASTNode(ASTNodeKind.LABEL) {
     return new ASTLabel(
       localName,
       name,
-      ASTNodeLocation.fromTokenLoc(token.loc),
+      NodeLocation.fromTokenLoc(token.loc),
     );
   }
 }

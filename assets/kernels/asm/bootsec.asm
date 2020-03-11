@@ -1,2 +1,9 @@
 [bits 16]
-mov bx, [es:bx+si*4+0xF+dupa]
+jmp test_jmp
+label3:
+mov ax, test2
+xor ax, ax
+test2 equ label3
+nop
+xor bx, bx
+test_jmp:

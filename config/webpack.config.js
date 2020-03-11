@@ -57,6 +57,7 @@ module.exports = {
     alias: {
       '@compiler/core': pkgResolve('compiler-core/src/'),
       '@compiler/lexer': pkgResolve('compiler-lexer/src/'),
+      '@compiler/grammar': pkgResolve('compiler-grammar/src/'),
       '@compiler/rpn': pkgResolve('compiler-rpn/src/'),
       '@compiler/x86-assembler': pkgResolve('compiler-x86-assembler/src/'),
       '@emulator/ui': pkgResolve('emulator-ui/src/'),

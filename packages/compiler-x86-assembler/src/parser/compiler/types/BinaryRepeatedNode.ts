@@ -2,7 +2,7 @@ import * as R from 'ramda';
 
 import {ParserError, ParserErrorCode} from '@compiler/x86-assembler/shared/ParserError';
 import {ASTTimes} from '../../ast/critical/ASTTimes';
-import {ASTTree} from '../../ast/ASTParser';
+import {ASTAsmTree} from '../../ast/ASTAsmParser';
 import {ASTLabelAddrResolver} from '../../ast/instruction/ASTResolvableArg';
 
 import {BinaryBlob} from '../BinaryBlob';
@@ -59,7 +59,7 @@ export class BinaryRepeatedNode extends BinaryBlob<ASTTimes> {
     }
 
     const compiledPass = compiler.firstPass(
-      new ASTTree(
+      new ASTAsmTree(
         R.times(
           () => repatedNodesTree.astNodes[0].clone(),
           times,

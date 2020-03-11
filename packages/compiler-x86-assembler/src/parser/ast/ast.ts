@@ -3,9 +3,9 @@ import {Result} from '@compiler/core/monads/Result';
 import {CompilerError} from '@compiler/core/shared/CompilerError';
 
 import {
-  ASTParser,
-  ASTTree,
-} from './ASTParser';
+  ASTAsmParser,
+  ASTAsmTree,
+} from './ASTAsmParser';
 
 import {ASTInstruction} from './instruction/ASTInstruction';
 import {ASTLabel} from './critical/ASTLabel';
@@ -28,10 +28,10 @@ export const ASTNodesParsers = [
  *
  * @export
  * @param {Token[]|IterableIterator<Token>} tokensIterator
- * @returns {Result<ASTTree, CompilerError[]>}
+ * @returns {Result<ASTAsmTree, CompilerError[]>}
  */
-export function ast(tokensIterator: Token[]|IterableIterator<Token>): Result<ASTTree, CompilerError[]> {
-  const parser = new ASTParser(ASTNodesParsers, tokensIterator);
+export function ast(tokensIterator: Token[]|IterableIterator<Token>): Result<ASTAsmTree, CompilerError[]> {
+  const parser = new ASTAsmParser(ASTNodesParsers, tokensIterator);
 
   return parser.getTree();
 }
