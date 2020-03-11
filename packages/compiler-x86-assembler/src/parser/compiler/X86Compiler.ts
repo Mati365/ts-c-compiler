@@ -2,6 +2,7 @@ import * as R from 'ramda';
 
 import {Result, err, ok} from '@compiler/core/monads/Result';
 import {CompilerError} from '@compiler/core/shared/CompilerError';
+import {NumberToken} from '@compiler/lexer/tokens';
 
 import {
   MIN_COMPILER_REG_LENGTH,
@@ -12,7 +13,6 @@ import {isReservedKeyword} from '../utils/isReservedKeyword';
 
 import {ParserError, ParserErrorCode} from '../../shared/ParserError';
 import {InstructionArgSize, X86TargetCPU} from '../../types';
-import {NumberToken} from '../lexer/tokens';
 
 import {ASTAsmNode} from '../ast/ASTAsmNode';
 import {ASTCompilerOption, CompilerOptions} from '../ast/def/ASTCompilerOption';

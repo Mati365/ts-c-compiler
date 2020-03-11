@@ -22,7 +22,7 @@ export type TokenTerminalCharactersMap = {
 };
 
 export type TokenParsersMap = {
-  [parser: number]: (token: string, loc?: TokenLocation) => boolean|Token,
+  [parser: string]: (token?: string, loc?: TokenLocation) => boolean|Token,
 };
 
 export const TERMINAL_CHARACTERS: TokenTerminalCharactersMap = {

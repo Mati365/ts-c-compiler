@@ -4,6 +4,7 @@ import {reduceTextToBitset} from '@compiler/core/utils/extractNthByte';
 import {NodeLocation} from '@compiler/grammar/tree/NodeLocation';
 import {TokensIterator} from '@compiler/grammar/tree/TokensIterator';
 import {
+  NumberToken,
   TokenType,
   TokenKind,
   Token,
@@ -37,7 +38,6 @@ import {
 
 import {KindASTNode} from '../ASTAsmNode';
 import {
-  NumberToken,
   RegisterToken,
   SizeOverrideToken,
   BranchAddressingTypeToken,

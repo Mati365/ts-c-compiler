@@ -10,7 +10,7 @@ export type TokensList = Token[]|IterableIterator<Token>;
  */
 export class TokensIterator {
   constructor(
-    protected tokens: Token[],
+    protected tokens: Token[] = [],
     protected tokenIndex: number = 0,
   ) {}
 

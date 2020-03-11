@@ -1,6 +1,8 @@
 /// <reference path="./types.d.ts" />
 
 import {asm} from '@compiler/x86-assembler/asm';
+import '@compiler/grammar/Grammar';
+
 import {ConsoleBinaryView} from '@compiler/x86-assembler/parser/compiler/view/ConsoleBinaryView';
 
 import TEST_SOURCE from '../../../assets/kernels/asm/bootsec.asm';

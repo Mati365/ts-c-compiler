@@ -1,13 +1,12 @@
 import * as R from 'ramda';
 
-import {Token, TokenType} from '@compiler/lexer/tokens';
+import {Token, TokenType, NumberToken} from '@compiler/lexer/tokens';
 import {NodeLocation} from '@compiler/grammar/tree/NodeLocation';
 
 import {ParserError, ParserErrorCode} from '../../../shared/ParserError';
 import {ASTAsmParser} from '../ASTAsmParser';
 import {ASTNodeKind} from '../types';
 import {InstructionArgSize} from '../../../types';
-import {NumberToken} from '../../lexer/tokens';
 import {KindASTNode} from '../ASTAsmNode';
 
 import {

@@ -4,9 +4,12 @@ import {rpn} from '@compiler/rpn/rpn';
 import {MathErrorCode} from '@compiler/rpn/utils';
 
 import {Result} from '@compiler/core/monads/Result';
-import {Token, TokenType} from '@compiler/lexer/tokens';
 import {MathParserConfig} from '@compiler/rpn/utils/MathExpression';
-import {NumberToken} from '../../lexer/tokens';
+import {
+  Token,
+  TokenType,
+  NumberToken,
+} from '@compiler/lexer/tokens';
 
 import {
   ok,

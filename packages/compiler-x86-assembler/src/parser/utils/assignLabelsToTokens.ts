@@ -2,10 +2,14 @@ import * as R from 'ramda';
 
 import {rpn} from '@compiler/rpn/rpn';
 
-import {Token} from '@compiler/lexer/tokens';
+import {
+  Token,
+  NumberFormat,
+  NumberToken,
+} from '@compiler/lexer/tokens';
+
 import {ParserErrorCode, ParserError} from '../../shared/ParserError';
 import {ASTLabelAddrResolver} from '../ast/instruction/ASTResolvableArg';
-import {NumberFormat, NumberToken} from '../lexer/tokens';
 import {isPossibleLabelToken} from './isPossibleLabelToken';
 
 /**

@@ -8,10 +8,15 @@ import {
   toIEEE754Extended,
 } from '@compiler/core/utils';
 
-import {Token, TokenType} from '@compiler/lexer/tokens';
+import {
+  Token,
+  TokenType,
+  NumberToken,
+  FloatNumberToken,
+} from '@compiler/lexer/tokens';
+
 import {BinaryBlob} from '../BinaryBlob';
 import {ASTDef, DefTokenNames} from '../../ast/def/ASTDef';
-import {NumberToken, FloatNumberToken} from '../../lexer/tokens';
 import {ParserError, ParserErrorCode} from '../../../shared/ParserError';
 
 export const FLOAT_DEFINE_ENCODERS = {

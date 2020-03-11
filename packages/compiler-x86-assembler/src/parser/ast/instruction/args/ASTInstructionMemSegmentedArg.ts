@@ -1,4 +1,8 @@
-import {Token} from '@compiler/lexer/tokens';
+import {
+  Token,
+  NumberToken,
+  NumberTokenValue,
+} from '@compiler/lexer/tokens';
 
 import {ParserError, ParserErrorCode} from '../../../../shared/ParserError';
 import {
@@ -15,10 +19,6 @@ import {
 
 import {ASTInstructionArg} from './ASTInstructionArg';
 import {ASTLabelAddrResolver} from '../ASTResolvableArg';
-import {
-  NumberToken,
-  NumberTokenValue,
-} from '../../../lexer/tokens';
 
 import {asmLexer} from '../../../lexer/asmLexer';
 import {

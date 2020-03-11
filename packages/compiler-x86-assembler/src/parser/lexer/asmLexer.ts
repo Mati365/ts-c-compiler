@@ -7,13 +7,13 @@ import {
   Token,
   TokenType,
   TokenLocation,
+  NumberToken,
+  FloatNumberToken,
 } from '@compiler/lexer/tokens';
 
 import {
-  NumberToken,
   SizeOverrideToken,
   BranchAddressingTypeToken,
-  FloatNumberToken,
   RegisterToken,
 } from './tokens';
 
