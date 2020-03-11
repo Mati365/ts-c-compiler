@@ -31,7 +31,7 @@ export class FirstPassResult {
     const array = Array.from(this.nodesOffsets);
     const lastItem = R.last(array);
 
-    return lastItem[0] - array[0][0] + lastItem[1].binary.length;
+    return lastItem[0] - array[0][0] + lastItem[1].byteSize;
   }
 }
 
@@ -60,5 +60,27 @@ export class SecondPassResult {
 
     labelsOffsets.clear();
     blobs.clear();
+  }
+
+  /**
+   * Reduces blobs into single array
+   *
+   * @returns {number[]}
+   * @memberof SecondPassResult
+   */
+  getBinary(): number[] {
+    const {byteSize, blobs} = this;
+    const bin: number[] = new Array(byteSize);
+
+    let currentOffset = 0;
+    for (const [, blob] of blobs) {
+      const {binary} = blob;
+      for (let i = 0; i < binary.length; ++i)
+        bin[currentOffset + i] = binary[i];
+
+      currentOffset += blob.byteSize;
+    }
+
+    return bin;
   }
 }

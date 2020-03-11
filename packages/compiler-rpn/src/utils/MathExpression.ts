@@ -183,8 +183,21 @@ export class MathExpression {
       const token = tokens[i];
 
       if (token instanceof MathOperator) {
-        if (token.argsCount > numberStack.length)
-          throw new MathError(MathErrorCode.MISSING_OPERANDS);
+        // handle ++2 digit, it should be 2
+        // -2 should be 0-2
+        const missingArgs = token.argsCount - numberStack.length;
+
+        if (missingArgs > 0) {
+          if (token === MathOperator.PLUS || token === MathOperator.MINUS) {
+            R.times(
+              () => {
+                numberStack.unshift(0);
+              },
+              missingArgs,
+            );
+          } else
+            throw new MathError(MathErrorCode.MISSING_OPERANDS);
+        }
 
         const args = numberStack.splice(
           numberStack.length - token.argsCount,

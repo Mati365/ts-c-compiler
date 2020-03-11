@@ -85,7 +85,6 @@ export type LexerConfig = {
  * @see
  *  It contains also lexer logic!
  *
- *
  * @export
  * @param {LexerConfig} config
  * @param {string} code

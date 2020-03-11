@@ -1,4 +1,6 @@
 import {Token} from '@compiler/lexer/tokens';
+import {Result} from '@compiler/core/monads/Result';
+import {CompilerError} from '@compiler/core/shared/CompilerError';
 
 import {
   ASTParser,
@@ -25,10 +27,10 @@ export const ASTNodesParsers = [
  * Root of evil
  *
  * @export
- * @param {IterableIterator<Token>} tokensIterator
- * @returns {ASTTree}
+ * @param {Token[]|IterableIterator<Token>} tokensIterator
+ * @returns {Result<ASTTree, CompilerError[]>}
  */
-export function ast(tokensIterator: IterableIterator<Token>): ASTTree {
+export function ast(tokensIterator: Token[]|IterableIterator<Token>): Result<ASTTree, CompilerError[]> {
   const parser = new ASTParser(ASTNodesParsers, tokensIterator);
 
   return parser.getTree();

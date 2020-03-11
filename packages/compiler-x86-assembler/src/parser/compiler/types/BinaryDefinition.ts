@@ -37,7 +37,7 @@ export function encodeDefineToken(byteSize: number, token: Token): number[] {
       if (!encoder) {
         throw new ParserError(
           ParserErrorCode.INCORRECT_FLOAT_SIZE,
-          null,
+          token.loc,
           {
             number: token.text,
           },
@@ -57,16 +57,20 @@ export function encodeDefineToken(byteSize: number, token: Token): number[] {
       );
       break;
 
-    case TokenType.QUOTE:
+    case TokenType.QUOTE: {
+      const binText = extractBytesFromText(1, token.text);
+      const rounedByfferOutputSize = Math.ceil(binText.length / byteSize) * byteSize;
+
       buffer.push(
-        ...extractBytesFromText(byteSize, token.text),
+        ...binText,
+        ...(new Array(rounedByfferOutputSize - binText.length).fill(0)),
       );
-      break;
+    } break;
 
     default:
       throw new ParserError(
         ParserErrorCode.UNSUPPORTED_DEFINE_TOKEN,
-        null,
+        token.loc,
         {
           token: token.text,
         },

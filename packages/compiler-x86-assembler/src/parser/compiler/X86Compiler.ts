@@ -1,5 +1,8 @@
 import * as R from 'ramda';
 
+import {Result, err, ok} from '@compiler/core/monads/Result';
+import {CompilerError} from '@compiler/core/shared/CompilerError';
+
 import {
   MIN_COMPILER_REG_LENGTH,
   MAX_COMPILER_REG_LENGTH,
@@ -162,7 +165,7 @@ export class X86Compiler {
       if (noAbstractInstructions && node.kind !== ASTNodeKind.INSTRUCTION && node.kind !== ASTNodeKind.DEFINE) {
         throw new ParserError(
           ParserErrorCode.UNPERMITTED_NODE_IN_POSTPROCESS_MODE,
-          null,
+          node.loc.start,
           {
             node: node.toString(),
           },
@@ -170,6 +173,7 @@ export class X86Compiler {
       }
 
       switch (node.kind) {
+        /** [org 0x1] */
         case ASTNodeKind.COMPILER_OPTION: {
           const compilerOption = <ASTCompilerOption> node;
           const arg = <NumberToken> compilerOption.args[0];
@@ -177,7 +181,7 @@ export class X86Compiler {
           // origin set
           if (compilerOption.option === CompilerOptions.ORG) {
             if (originDefined)
-              throw new ParserError(ParserErrorCode.ORIGIN_REDEFINED);
+              throw new ParserError(ParserErrorCode.ORIGIN_REDEFINED, node.loc.start);
 
             this.setOrigin(arg.value.number);
 
@@ -189,6 +193,7 @@ export class X86Compiler {
             this.setMode(arg.value.number / 8);
         } break;
 
+        /** times 10 db nop */
         case ASTNodeKind.TIMES:
           emitBlob(
             new BinaryRepeatedNode(<ASTTimes> node),
@@ -196,6 +201,7 @@ export class X86Compiler {
           );
           break;
 
+        /** xor ax, ax */
         case ASTNodeKind.INSTRUCTION: {
           const astInstruction = <ASTInstruction> node;
           const resolved = astInstruction.tryResolveSchema(null, null, target);
@@ -203,7 +209,7 @@ export class X86Compiler {
           if (!resolved) {
             throw new ParserError(
               ParserErrorCode.UNKNOWN_COMPILER_INSTRUCTION,
-              null,
+              node.loc.start,
               {
                 instruction: astInstruction.toString(),
               },
@@ -215,12 +221,14 @@ export class X86Compiler {
           );
         } break;
 
+        /** db 0x0 */
         case ASTNodeKind.DEFINE:
           emitBlob(
             new BinaryDefinition(<ASTDef> node).compile(),
           );
           break;
 
+        /** test equ 0x0 */
         case ASTNodeKind.EQU: {
           const equNode = (<ASTEqu> node);
           const blob = new BinaryEqu(equNode);
@@ -228,7 +236,7 @@ export class X86Compiler {
           if (isReservedKeyword(equNode.name)) {
             throw new ParserError(
               ParserErrorCode.USED_RESERVED_NAME,
-              null,
+              node.loc.start,
               {
                 name: equNode.name,
               },
@@ -238,7 +246,7 @@ export class X86Compiler {
           if (isRedefinedKeyword(equNode.name)) {
             throw new ParserError(
               ParserErrorCode.EQU_ALREADY_DEFINED,
-              null,
+              node.loc.start,
               {
                 name: equNode.name,
               },
@@ -249,13 +257,14 @@ export class X86Compiler {
           emitBlob(blob, 0);
         } break;
 
+        /** test: */
         case ASTNodeKind.LABEL: {
           const labelName = (<ASTLabel> node).name;
 
           if (isReservedKeyword(labelName)) {
             throw new ParserError(
               ParserErrorCode.USED_RESERVED_NAME,
-              null,
+              node.loc.start,
               {
                 name: labelName,
               },
@@ -265,7 +274,7 @@ export class X86Compiler {
           if (isRedefinedKeyword(labelName)) {
             throw new ParserError(
               ParserErrorCode.LABEL_ALREADY_DEFINED,
-              null,
+              node.loc.start,
               {
                 label: labelName,
               },
@@ -278,7 +287,7 @@ export class X86Compiler {
         default:
           throw new ParserError(
             ParserErrorCode.UNKNOWN_COMPILER_INSTRUCTION,
-            null,
+            node.loc.start,
             {
               instruction: node.toString(),
             },
@@ -286,7 +295,18 @@ export class X86Compiler {
       }
     };
 
-    R.forEach(processNode, astNodes);
+    R.forEach(
+      (node: ASTNode) => {
+        try {
+          processNode(node);
+        } catch (e) {
+          e.loc = e.loc ?? node.loc.start;
+
+          throw e;
+        }
+      },
+      astNodes,
+    );
     return result;
   }
 
@@ -414,82 +434,88 @@ export class X86Compiler {
         if (sectionStartOffset === null)
           sectionStartOffset = offset;
 
-        // check for slave blobs (0 bytes instructions, EQU)
-        if (blob.slaveBlobs) {
-          // todo: handle as array?
-          const topSlave = blob.slaveBlobs[0];
+        try {
+          // check for slave blobs (0 bytes instructions, EQU)
+          if (blob.slaveBlobs) {
+            // todo: handle as array?
+            const topSlave = blob.slaveBlobs[0];
 
-          if (topSlave instanceof BinaryEqu) {
-            if (passEqu(offset, topSlave))
+            if (topSlave instanceof BinaryEqu) {
+              if (passEqu(offset, topSlave))
+                needPass = true;
+            } else
+              throw new ParserError(ParserErrorCode.INCORRECT_SLAVE_BLOBS, blob.ast.loc.start);
+          }
+
+          if (blob instanceof BinaryEqu) {
+            // ignore, it is propably already resolved
+            if (passEqu(offset, blob))
               needPass = true;
-          } else
-            throw new ParserError(ParserErrorCode.INCORRECT_SLAVE_BLOBS);
-        }
+            else
+              continue;
+          } else if (blob instanceof BinaryRepeatedNode) {
+            // repeats instruction nth times
+            const blobResult = blob.pass(this, offset - this._origin, labelResolver(blob.ast, offset));
+            const blobSize = blobResult.getByteSize();
 
-        if (blob instanceof BinaryEqu) {
-          // ignore, it is propably already resolved
-          if (passEqu(offset, blob))
+            // prevent loop, kill times
+            nodesOffsets.delete(offset);
+
+            resizeBlockAtOffset(offset, Math.max(1, blobSize - 1));
+            appendBlobsAtOffset(0, blobResult.nodesOffsets);
+
             needPass = true;
-          else
-            continue;
-        } else if (blob instanceof BinaryRepeatedNode) {
-          // repeats instruction nth times
-          const blobResult = blob.pass(this, offset - this._origin, labelResolver(blob.ast, offset));
-          const blobSize = blobResult.getByteSize();
+            break;
+          } else if (blob instanceof BinaryInstruction) {
+            const {ast, binary} = blob;
+            const pessimisticSize = binary.length;
 
-          // prevent loop, kill times
-          nodesOffsets.delete(offset);
+            // generally check for JMP/CALL etc instructions
+            if (ast.isConstantSize())
+              continue;
 
-          resizeBlockAtOffset(offset, Math.max(1, blobSize - 1));
-          appendBlobsAtOffset(0, blobResult.nodesOffsets);
-
-          needPass = true;
-          break;
-        } else if (blob instanceof BinaryInstruction) {
-          const {ast, binary} = blob;
-          const pessimisticSize = binary.length;
-
-          // generally check for JMP/CALL etc instructions
-          if (ast.isConstantSize())
-            continue;
-
-          // matcher must choose which instruction to match
-          // based on origin it must choose between short relative
-          // jump and long
-          ast.tryResolveSchema(
-            labelResolver(ast, offset),
-            offset,
-            target,
-          );
-
-          // single instruction might contain multiple schemas but never 0
-          const {schemas} = ast;
-          if (!schemas.length) {
-            throw new ParserError(
-              ParserErrorCode.UNKNOWN_COMPILER_INSTRUCTION,
-              null,
-              {
-                instruction: ast.toString(),
-              },
+            // matcher must choose which instruction to match
+            // based on origin it must choose between short relative
+            // jump and long
+            ast.tryResolveSchema(
+              labelResolver(ast, offset),
+              offset,
+              target,
             );
+
+            // single instruction might contain multiple schemas but never 0
+            const {schemas} = ast;
+            if (!schemas.length) {
+              throw new ParserError(
+                ParserErrorCode.UNKNOWN_COMPILER_INSTRUCTION,
+                ast.loc.start,
+                {
+                  instruction: ast.toString(),
+                },
+              );
+            }
+
+            // check if instruction after replacing labels has been shrinked
+            // if so - force rewrite precceding instrutions and labels
+            const recompiled = new BinaryInstruction(ast).compile(this, offset);
+            const shrinkBytes = pessimisticSize - recompiled.byteSize;
+            if (shrinkBytes) {
+              needPass = true;
+              ast.unresolvedArgs = true;
+
+              nodesOffsets.set(offset, recompiled);
+              resizeBlockAtOffset(offset, -shrinkBytes);
+            }
+
+            // select first schema, it will be discarded if next instruction have label
+            ast.schemas = [
+              ast.schemas[0],
+            ];
           }
+        } catch (e) {
+          e.loc = e.loc ?? blob.ast?.loc?.start;
 
-          // check if instruction after replacing labels has been shrinked
-          // if so - force rewrite precceding instrutions and labels
-          const recompiled = new BinaryInstruction(ast).compile(this, offset);
-          const shrinkBytes = pessimisticSize - recompiled.binary.length;
-          if (shrinkBytes) {
-            needPass = true;
-            ast.unresolvedArgs = true;
-
-            nodesOffsets.set(offset, recompiled);
-            resizeBlockAtOffset(offset, -shrinkBytes);
-          }
-
-          // select first schema, it will be discarded if next instruction have label
-          ast.schemas = [
-            ast.schemas[0],
-          ];
+          throw e;
         }
       }
 
@@ -518,11 +544,11 @@ export class X86Compiler {
     for (const [offset, blob] of orderedOffsets) {
       let compiled = blob;
 
-      if (blob instanceof BinaryInstruction && (!blob.ast.isConstantSize() || !blob.binary))
+      if (blob instanceof BinaryInstruction)
         compiled = blob.compile(this, offset);
 
       if (blob.binary) {
-        result.byteSize = Math.max(result.byteSize, offset + blob.binary.length - this._origin);
+        result.byteSize = Math.max(result.byteSize, offset + blob.byteSize - this._origin);
         result.blobs.set(offset, compiled);
       }
     }
@@ -533,15 +559,25 @@ export class X86Compiler {
   /**
    * Transform provided AST nodes array into binary blobs
    *
-   * @returns {X86Compiler}
+   * @returns {Result<SecondPassResult, CompilerError[]>}
    * @memberof X86Compiler
    */
-  compile(): SecondPassResult {
+  compile(): Result<SecondPassResult, CompilerError[]> {
     if (!this.tree)
       return null;
 
-    return this.secondPass(
-      this.firstPass(),
-    );
+    try {
+      return ok(
+        this.secondPass(
+          this.firstPass(),
+        ),
+      );
+    } catch (e) {
+      return err(
+        [
+          e,
+        ],
+      );
+    }
   }
 }

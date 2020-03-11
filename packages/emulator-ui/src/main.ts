@@ -7,7 +7,8 @@ import TEST_SOURCE from '../../../assets/kernels/asm/bootsec.asm';
 
 const start = Date.now();
 const blob = asm(TEST_SOURCE);
-console.info(`Took: ${Date.now() - start}ms!`);
 
-const str = new ConsoleBinaryView(blob).serialize();
-console.info(str);
+console.info(`Took: ${Date.now() - start}ms!`);
+console.info(
+  new ConsoleBinaryView(blob).serialize(),
+);

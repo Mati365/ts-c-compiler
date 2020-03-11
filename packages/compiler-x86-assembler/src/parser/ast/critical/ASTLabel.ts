@@ -107,8 +107,15 @@ export class ASTLabel extends KindASTNode(ASTNodeKind.LABEL) {
     if (isLocalLabel(localName)) {
       name = resolveLocalTokenAbsName(tree, localName);
 
-      if (R.isNil(name))
-        throw new ParserError(ParserErrorCode.MISSING_PARENT_LABEL, null, {label: localName});
+      if (R.isNil(name)) {
+        throw new ParserError(
+          ParserErrorCode.MISSING_PARENT_LABEL,
+          token.loc,
+          {
+            label: localName,
+          },
+        );
+      }
     } else
       name = localName;
 

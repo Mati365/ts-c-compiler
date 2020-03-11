@@ -6,10 +6,11 @@ import {
   mapMapValues,
 } from '@compiler/core/utils';
 
+import {CompilerError} from '@compiler/core/shared/CompilerError';
 import {ASTInstruction} from '../../ast/instruction/ASTInstruction';
 import {BinaryView} from './BinaryView';
 import {BinaryBlob} from '../BinaryBlob';
-import {CompilerFinalResult} from '../compile';
+import {CompilerFinalResult, CompilerOutput} from '../compile';
 
 type JMPLines = Map<number, number>;
 
@@ -210,11 +211,32 @@ export class ConsoleBinaryView extends BinaryView<string> {
   }
 
   /**
+   * Serialize errors
+   *
+   * @param {CompilerError[]} errors
    * @returns {string}
    * @memberof ConsoleBinaryView
    */
-  serialize(): string {
-    const {compilerResult} = this;
+  error(errors: CompilerError[]): string {
+    return R.compose(
+      R.join('\n'),
+      R.map(
+        (error) => (
+          error instanceof CompilerError
+            ? error.getCompilerMessage()
+            : error
+        ),
+      ),
+    )(errors);
+  }
+
+  /**
+   * Serialize success tree
+   *
+   * @returns {string}
+   * @memberof ConsoleBinaryView
+   */
+  success(compilerResult: CompilerOutput): string {
     const {labelsOffsets, blobs, totalPasses} = compilerResult.output;
 
     const labelsByOffsets = flipMap(labelsOffsets);

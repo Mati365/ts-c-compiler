@@ -9,7 +9,7 @@ import {format} from '../utils/format';
  * @template CodeType
  * @template LocType
  */
-export class CompilerError<CodeType, LocType> extends Error {
+export class CompilerError<CodeType = any, LocType = any> extends Error {
   constructor(
     public readonly translations: object,
     public readonly code: CodeType,
@@ -18,13 +18,24 @@ export class CompilerError<CodeType, LocType> extends Error {
   ) {
     super();
 
-    this.name = 'CompilerError';
+    this.name = 'Compiler';
     this.message = format(
       this.translations[<any> code],
       meta || {},
     );
+  }
 
-    if (this.loc)
-      this.message = `${this.loc.toString()}: ${this.message}`;
+  /**
+   * Returns log with location if provided
+   *
+   * @returns {string}
+   * @memberof CompilerError
+   */
+  getCompilerMessage(): string {
+    const {loc, message, name} = this;
+    if (!loc)
+      return message;
+
+    return `(${loc.toString()}): <${name}> ${message}`;
   }
 }

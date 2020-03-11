@@ -110,7 +110,7 @@ export class ASTDef extends KindASTNode(ASTNodeKind.DEFINE) {
         if (numberToken.value.byteSize > tokenSize) {
           throw new ParserError(
             ParserErrorCode.DEFINED_DATA_EXCEEDES_BOUNDS,
-            null,
+            token.loc,
             {
               data: numberToken.text,
               maxSize: tokenDefSize,

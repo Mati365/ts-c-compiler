@@ -20,6 +20,7 @@ const SHARED_CONFIG = {
   moduleFileExtensions: ['ts', 'tsx', 'js', 'jsx', 'json', 'node'],
   transform: {
     '^.+\\.tsx?$': 'ts-jest',
+    '\\.asm$': 'jest-raw-loader',
   },
 };
 

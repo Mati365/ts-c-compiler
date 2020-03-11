@@ -35,6 +35,7 @@ export class BinaryRepeatedNode extends BinaryBlob<ASTTimes> {
   ): FirstPassResult {
     const {
       ast: {
+        loc,
         timesExpression,
         repatedNodesTree,
       },
@@ -50,7 +51,7 @@ export class BinaryRepeatedNode extends BinaryBlob<ASTTimes> {
     if (times < 0) {
       throw new ParserError(
         ParserErrorCode.INCORRECT_TIMES_VALUE,
-        null,
+        loc.start,
         {
           times,
         },

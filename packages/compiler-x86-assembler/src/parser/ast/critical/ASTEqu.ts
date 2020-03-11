@@ -47,7 +47,7 @@ export class ASTEqu extends KindASTNode(ASTNodeKind.EQU) {
     if (args.length !== 1) {
       throw new ParserError(
         ParserErrorCode.INCORRECT_EQU_ARGS_COUNT,
-        null,
+        token.loc,
         {
           count: args.length,
         },

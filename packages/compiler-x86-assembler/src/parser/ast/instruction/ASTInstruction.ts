@@ -404,7 +404,7 @@ export class ASTInstruction extends KindASTNode(ASTNodeKind.INSTRUCTION) {
       if (!R.isNil(byteSizeOverride) && byteSizeOverride < byteSize) {
         throw new ParserError(
           ParserErrorCode.EXCEEDING_CASTED_NUMBER_SIZE,
-          null,
+          token.loc,
           {
             value: token.text,
             size: byteSize,
@@ -462,7 +462,7 @@ export class ASTInstruction extends KindASTNode(ASTNodeKind.INSTRUCTION) {
           if (text.length > MAX_COMPILER_REG_LENGTH) {
             throw new ParserError(
               ParserErrorCode.INCORRECT_ARG_QUOTE_TEXT_LENGTH,
-              null,
+              token.loc,
               {
                 maxSize: MAX_COMPILER_REG_LENGTH,
                 text,
@@ -488,7 +488,7 @@ export class ASTInstruction extends KindASTNode(ASTNodeKind.INSTRUCTION) {
             // is as twice as big as override so multiply by 2
             if (branchSizeOverride) {
               if (newByteSize * 2 < branchSizeOverride)
-                throw new ParserError(ParserErrorCode.OPERAND_SIZES_MISMATCH);
+                throw new ParserError(ParserErrorCode.OPERAND_SIZES_MISMATCH, token.loc);
               else
                 newByteSize *= 2;
             }
@@ -535,7 +535,7 @@ export class ASTInstruction extends KindASTNode(ASTNodeKind.INSTRUCTION) {
                 if (prevRegArg?.byteSize)
                   memSize = prevRegArg.byteSize;
                 else
-                  throw new ParserError(ParserErrorCode.MISSING_MEM_OPERAND_SIZE);
+                  throw new ParserError(ParserErrorCode.MISSING_MEM_OPERAND_SIZE, token.loc);
               }
             }
 
@@ -558,7 +558,7 @@ export class ASTInstruction extends KindASTNode(ASTNodeKind.INSTRUCTION) {
       // force throw error if not known format
       throw new ParserError(
         ParserErrorCode.INVALID_INSTRUCTION_OPERAND,
-        null,
+        token.loc,
         {
           operand: token.text,
         },
@@ -595,7 +595,7 @@ export class ASTInstruction extends KindASTNode(ASTNodeKind.INSTRUCTION) {
           // try to cast
           const prevByteSize = acc[acc.length - 1].byteSize;
           if (result.type !== InstructionArgType.NUMBER || result.byteSize > prevByteSize)
-            throw new ParserError(ParserErrorCode.OPERAND_SIZES_MISMATCH);
+            throw new ParserError(ParserErrorCode.OPERAND_SIZES_MISMATCH, token.loc);
         }
 
         acc.push(result);

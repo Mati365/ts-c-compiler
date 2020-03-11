@@ -69,35 +69,42 @@ export class ASTTimes extends KindASTNode(ASTNodeKind.TIMES) {
 
     // handle errors
     if (!timesExpression.length)
-      throw new ParserError(ParserErrorCode.INCORRECT_TIMES_ARGS_COUNT);
+      throw new ParserError(ParserErrorCode.INCORRECT_TIMES_ARGS_COUNT, token.loc);
 
     if (!repeatedNodeTokens?.length)
-      throw new ParserError(ParserErrorCode.MISSING_TIMES_REPEATED_INSTRUCTION);
+      throw new ParserError(ParserErrorCode.MISSING_TIMES_REPEATED_INSTRUCTION, token.loc);
 
     // try generate AST for repeated instruction
-    const repatedNodesTree = (
+    const repatedNodesTreeResult = (
       parser
         .fork(repeatedNodeTokens)
         .getTree()
     );
 
-    if (!repatedNodesTree?.astNodes?.[0]) {
-      throw new ParserError(
-        ParserErrorCode.UNABLE_PARSE_REPEATED_INSTRUCTION,
-        null,
-        {
-          expression: R.compose(
-            R.join(' '),
-            R.pluck('text'),
-          )(repeatedNodeTokens),
-        },
+    if (repatedNodesTreeResult.isOk()) {
+      const repatedNodesTree = repatedNodesTreeResult.unwrap();
+
+      if (!repatedNodesTree?.astNodes?.[0]) {
+        throw new ParserError(
+          ParserErrorCode.UNABLE_PARSE_REPEATED_INSTRUCTION,
+          token.loc,
+          {
+            expression: R.compose(
+              R.join(' '),
+              R.pluck('text'),
+            )(repeatedNodeTokens),
+          },
+        );
+      }
+
+      return new ASTTimes(
+        timesExpression,
+        repatedNodesTree,
+        ASTNodeLocation.fromTokenLoc(token.loc),
       );
     }
 
-    return new ASTTimes(
-      timesExpression,
-      repatedNodesTree,
-      ASTNodeLocation.fromTokenLoc(token.loc),
-    );
+    // raise error, it should be single error because single instruction
+    throw repatedNodesTreeResult.unwrapErr()[0];
   }
 }

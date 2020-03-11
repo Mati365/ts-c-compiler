@@ -1,7 +1,8 @@
-import * as R from 'ramda';
-
 import {isWhitespace} from '@compiler/lexer/utils/matchCharacter';
+
 import {Token, TokenType} from '@compiler/lexer/tokens';
+import {Result, err, ok} from '@compiler/core/monads/Result';
+import {CompilerError} from '@compiler/core/shared/CompilerError';
 
 import {ParserError, ParserErrorCode} from '../../shared/ParserError';
 import {ASTNode} from './ASTNode';
@@ -126,12 +127,13 @@ export class ASTParser extends ASTTokensIterator {
   /**
    * Fetches array of matched instructions, labels etc
    *
-   * @returns {ASTTree}
+   * @returns {Result<ASTTree, CompilerError[]>}
    * @memberof ASTParser
    */
-  getTree(): ASTTree {
+  getTree(): Result<ASTTree, CompilerError[]> {
     const {nodeParsers} = this;
     const tree = new ASTTree;
+    const errors: CompilerError[] = [];
 
     this.iterate(
       (token) => {
@@ -150,21 +152,20 @@ export class ASTParser extends ASTTokensIterator {
               break;
             }
           } catch (e) {
-            if (R.has('code', e))
-              console.error(`(${token.loc.toString()}): ${e.message}`);
-            else
-              console.error(e);
-            return null;
+            e.loc = token.loc;
+            errors.push(e);
           }
         }
 
         if (!tokenParsed && !isWhitespace(<string> token.text)) {
-          throw new ParserError(
-            ParserErrorCode.UNKNOWN_OPERATION,
-            token.loc,
-            {
-              operation: token.text,
-            },
+          errors.push(
+            new ParserError(
+              ParserErrorCode.UNKNOWN_OPERATION,
+              token.loc,
+              {
+                operation: token.text,
+              },
+            ),
           );
         }
 
@@ -172,6 +173,10 @@ export class ASTParser extends ASTTokensIterator {
       },
     );
 
-    return tree;
+    return (
+      errors.length
+        ? err(errors)
+        : ok(tree)
+    );
   }
 }

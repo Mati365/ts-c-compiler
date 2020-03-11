@@ -34,7 +34,7 @@ export function assignLabelsToTokens(labelResolver: ASTLabelAddrResolver, tokens
       if (R.isNil(labelAddress)) {
         throw new ParserError(
           ParserErrorCode.UNKNOWN_LABEL,
-          null,
+          token.loc,
           {
             label: token.text,
           },

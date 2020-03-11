@@ -1,15 +1,32 @@
 import * as R from 'ramda';
 import {X86Compiler} from './X86Compiler';
 
-const toMultilineBinaryBlockString = R.compose(
+export const arrayToHex = R.map(
+  (num: number) => `${num.toString(16).padStart(2, '0')}`,
+);
+
+export const toMultilineBinaryBlockString = R.compose(
   R.map(
     R.join(' '),
   ),
   R.splitEvery(8),
-  R.map(
-    (num: number) => `${num.toString(16).padStart(2, '0')}`,
-  ),
+  arrayToHex,
 );
+
+/**
+ * Converts array of number to hex string
+ *
+ * @export
+ * @param {number[]} numbers
+ * @param {string} [delimeter=' ']
+ * @returns {string}
+ */
+export function arrayToHexString(numbers: number[], delimeter: string = ' '): string {
+  return R.join(
+    delimeter,
+    arrayToHex(numbers),
+  );
+}
 
 /**
  * Binary portion of data
@@ -26,6 +43,7 @@ export class BinaryBlob<ASTNodeType = any> {
 
   get ast() { return this._ast; }
   get binary() { return this._binary; }
+  get byteSize() { return this._binary.length; }
 
   /**
    * Print blob like objdump

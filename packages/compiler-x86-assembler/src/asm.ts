@@ -1,15 +1,24 @@
-import {tagFunction} from '@compiler/core/utils/tagFunction';
+import {Result} from '@compiler/core/monads/Result';
+import {CompilerError} from '@compiler/core/shared/CompilerError';
+
 import {
   compile,
   ast,
-  asmLexer,
+  safeResultAsmLexer,
+  CompilerOutput,
 } from './parser';
 
 /**
- * Root of evil
+ * Compile ASM file
  *
- * @param {String} code
+ * @export
+ * @param {string} code
+ * @returns {Result<CompilerOutput, CompilerError[]>}
  */
-export const asm = tagFunction(
-  (code: string) => compile(ast(asmLexer(null, code))),
-);
+export function asm(code: string): Result<CompilerOutput, CompilerError[]> {
+  return (
+    safeResultAsmLexer(null, code)
+      .andThen(ast)
+      .andThen(compile)
+  );
+}

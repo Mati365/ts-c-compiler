@@ -69,7 +69,7 @@ export class BinaryInstruction extends BinaryBlob<ASTInstruction> {
 
     // sibByte is supported in modes > 16bits
     if (sibByte && compiler.mode <= InstructionArgSize.WORD)
-      throw new ParserError(ParserErrorCode.SCALE_INDEX_IS_UNSUPPORTED_IN_MODE);
+      throw new ParserError(ParserErrorCode.SCALE_INDEX_IS_UNSUPPORTED_IN_MODE, ast.loc.start);
 
     // output
     const binary: number[] = [];
@@ -85,7 +85,7 @@ export class BinaryInstruction extends BinaryBlob<ASTInstruction> {
       if (!memArg.schema?.moffset && addressDescription.dispByteSize > compiler.mode) {
         throw new ParserError(
           ParserErrorCode.DISPLACEMENT_EXCEEDING_BYTE_SIZE,
-          null,
+          ast.loc.start,
           {
             address: memArg.phrase,
             byteSize: addressDescription.dispByteSize,
@@ -100,7 +100,7 @@ export class BinaryInstruction extends BinaryBlob<ASTInstruction> {
         if (R.isNil(sregPrefix)) {
           throw new ParserError(
             ParserErrorCode.INCORRECT_SREG_OVERRIDE,
-            null,
+            ast.loc.start,
             {
               sreg: sreg.mnemonic,
             },
@@ -173,7 +173,7 @@ export class BinaryInstruction extends BinaryBlob<ASTInstruction> {
               if (rmByte)
                 return;
 
-              throw new ParserError(ParserErrorCode.MISSING_MEM_ARG_DEF);
+              throw new ParserError(ParserErrorCode.MISSING_MEM_ARG_DEF, ast.loc.start);
             }
 
             const {addressDescription} = memArg;
@@ -207,7 +207,7 @@ export class BinaryInstruction extends BinaryBlob<ASTInstruction> {
               if (regByteOverride)
                 rmByte = new RMByte(RMAddressingMode.REG_ADDRESSING, 0, 0);
               else
-                throw new ParserError(ParserErrorCode.MISSING_RM_BYTE_DEF);
+                throw new ParserError(ParserErrorCode.MISSING_RM_BYTE_DEF, ast.loc.start);
             }
 
             // reg byte override
@@ -243,8 +243,15 @@ export class BinaryInstruction extends BinaryBlob<ASTInstruction> {
             if (binNumber === null)
               binNumber = Number.parseInt(schema, 16);
 
-            if (Number.isNaN(binNumber))
-              throw new ParserError(ParserErrorCode.UNKNOWN_BINARY_SCHEMA_DEF, null, {schema});
+            if (Number.isNaN(binNumber)) {
+              throw new ParserError(
+                ParserErrorCode.UNKNOWN_BINARY_SCHEMA_DEF,
+                ast.loc.start,
+                {
+                  schema,
+                },
+              );
+            }
 
             binary.push(binNumber);
           }

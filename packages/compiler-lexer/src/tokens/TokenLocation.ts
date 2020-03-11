@@ -19,6 +19,6 @@ export class TokenLocation {
   toString() {
     const {row, column} = this;
 
-    return `row: ${row}, col: ${column}`;
+    return `row: ${row + 1}, col: ${column + 1}`;
   }
 }

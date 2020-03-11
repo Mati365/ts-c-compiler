@@ -52,10 +52,17 @@ export function rpnTokens(tokens: Token[], parserConfig?: MathParserConfig) {
   if (tokens.length === 1 && tokens[0].type === TokenType.NUMBER)
     return (<NumberToken> tokens[0]).value.number;
 
-  return rpn(
-    mergeTokensTexts(tokens),
-    parserConfig,
-  );
+  try {
+    return rpn(
+      mergeTokensTexts(tokens),
+      parserConfig,
+    );
+  } catch (e) {
+    if (tokens[0] instanceof Token)
+      e.loc = tokens[0].loc;
+
+    throw e;
+  }
 }
 
 /**
@@ -81,6 +88,9 @@ export function safeKeywordResultRPN(
       rpnTokens(<Token[]> tokens, config),
     );
   } catch (e) {
+    if (tokens[0] instanceof Token)
+      e.loc = tokens[0].loc;
+
     if (config?.keywordResolver || ('code' in e && e.code !== MathErrorCode.UNKNOWN_KEYWORD))
       throw e;
 

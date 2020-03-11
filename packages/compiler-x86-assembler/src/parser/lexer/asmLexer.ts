@@ -1,5 +1,8 @@
 import {lexer, LexerConfig} from '@compiler/lexer/lexer';
+import {safeResultLexer} from '@compiler/lexer/safeResultLexer';
 
+import {Result} from '@compiler/core/monads/Result';
+import {LexerError} from '@compiler/lexer/shared/LexerError';
 import {
   Token,
   TokenType,
@@ -47,6 +50,24 @@ export const TOKEN_PARSERS: {
  */
 export function asmLexer(lexerConfig: LexerConfig, code: string): IterableIterator<Token> {
   return lexer(
+    {
+      tokensParsers: TOKEN_PARSERS,
+      ...lexerConfig,
+    },
+    code,
+  );
+}
+
+/**
+ * ASM lexer that does not throw errors
+ *
+ * @export
+ * @param {LexerConfig} lexerConfig
+ * @param {string} code
+ * @returns {Result<Token[], LexerError[]>}
+ */
+export function safeResultAsmLexer(lexerConfig: LexerConfig, code: string): Result<Token[], LexerError[]> {
+  return safeResultLexer(
     {
       tokensParsers: TOKEN_PARSERS,
       ...lexerConfig,

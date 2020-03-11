@@ -24,6 +24,6 @@ export const MATH_ERROR_TRANSLATIONS: {[key in MathErrorCode]: string} = {
 export class MathError extends CompilerError<MathErrorCode, number> {
   constructor(code: MathErrorCode, meta?: object) {
     super(MATH_ERROR_TRANSLATIONS, code, null, meta);
-    this.name = 'Math expression';
+    this.name = 'Math';
   }
 }

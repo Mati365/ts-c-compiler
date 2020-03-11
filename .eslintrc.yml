@@ -29,7 +29,7 @@
 
   rules:
     max-len: ["error", 120]
-
+    class-methods-use-this: 0
     quotes: ["error", "single"]
     import/no-default-export: ["error", "always"]
     import/prefer-default-export: "off"
