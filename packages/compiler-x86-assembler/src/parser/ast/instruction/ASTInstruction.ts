@@ -36,7 +36,7 @@ import {
   ASTInstructionArg,
 } from './args';
 
-import {KindASTNode} from '../ASTAsmNode';
+import {KindASTAsmNode} from '../ASTAsmNode';
 import {
   RegisterToken,
   SizeOverrideToken,
@@ -78,9 +78,9 @@ export function isTokenInstructionBeginning(token: Token): boolean {
  *
  * @export
  * @class ASTInstruction
- * @extends {KindASTNode(ASTNodeKind.INSTRUCTION)}
+ * @extends {KindASTAsmNode(ASTNodeKind.INSTRUCTION)}
  */
-export class ASTInstruction extends KindASTNode(ASTNodeKind.INSTRUCTION) {
+export class ASTInstruction extends KindASTAsmNode(ASTNodeKind.INSTRUCTION) {
   // initial args is constant, it is
   // toggled on first pass, during AST tree analyze
   // args might change in second phase

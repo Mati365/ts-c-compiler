@@ -6,7 +6,7 @@ import {NodeLocation} from '@compiler/grammar/tree/NodeLocation';
 import {ParserError, ParserErrorCode} from '../../../shared/ParserError';
 import {ASTAsmParser, ASTAsmTree} from '../ASTAsmParser';
 import {ASTNodeKind} from '../types';
-import {KindASTNode} from '../ASTAsmNode';
+import {KindASTAsmNode} from '../ASTAsmNode';
 
 import {tokenDefSize} from '../def/ASTDef';
 
@@ -52,9 +52,9 @@ export function resolveLocalTokenAbsName(
  *
  * @export
  * @class ASTLabel
- * @extends {KindASTNode(ASTNodeKind.LABEL)}
+ * @extends {KindASTAsmNode(ASTNodeKind.LABEL)}
  */
-export class ASTLabel extends KindASTNode(ASTNodeKind.LABEL) {
+export class ASTLabel extends KindASTAsmNode(ASTNodeKind.LABEL) {
   public readonly local: boolean;
 
   constructor(

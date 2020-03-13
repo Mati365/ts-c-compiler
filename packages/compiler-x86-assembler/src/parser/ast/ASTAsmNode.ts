@@ -1,4 +1,6 @@
 import {Token} from '@compiler/lexer/tokens';
+import {TreeNode} from '@compiler/grammar/tree/TreeNode';
+
 import {NodeLocation} from '@compiler/grammar/tree/NodeLocation';
 import {ASTAsmParser, ASTAsmTree} from './ASTAsmParser';
 import {ASTNodeKind} from './types';
@@ -7,33 +9,31 @@ import {ASTNodeKind} from './types';
  * Set of multiple tokens that crates tree
  *
  * @export
- * @class ASTNode
+ * @class ASTAsmNode
+ * @extends {TreeNode}
  */
-export class ASTAsmNode {
+export class ASTAsmNode extends TreeNode {
   constructor(
     public readonly kind: ASTNodeKind,
-    public readonly loc: NodeLocation,
-    public readonly children: ASTAsmNode[] = null,
-  ) {}
+    loc: NodeLocation,
+    children: ASTAsmNode[] = null,
+  ) {
+    super(loc, children);
+  }
+
+  /* eslint-disable class-methods-use-this */
+  clone(): ASTAsmNode {
+    throw new Error('Unimplemented clone in TreeNode!');
+  }
 
   /* eslint-disable @typescript-eslint/no-unused-vars */
   static parse(token: Token, parser: ASTAsmParser, tree: ASTAsmTree): ASTAsmNode {
     return null;
   }
   /* eslint-enable @typescript-eslint/no-unused-vars */
-
-  /* eslint-disable class-methods-use-this */
-  clone(): ASTAsmNode {
-    throw new Error('Unimplemented clone in ASTNode!');
-  }
-
-  toString(): string {
-    return null;
-  }
-  /* eslint-enable class-methods-use-this */
 }
 
-export const KindASTNode = (kind: ASTNodeKind) => class extends ASTAsmNode {
+export const KindASTAsmNode = (kind: ASTNodeKind) => class extends ASTAsmNode {
   constructor(loc: NodeLocation, children: ASTAsmNode[] = null) {
     super(kind, loc, children);
   }

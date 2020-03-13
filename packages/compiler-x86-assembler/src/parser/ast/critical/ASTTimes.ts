@@ -6,7 +6,7 @@ import {NodeLocation} from '@compiler/grammar/tree/NodeLocation';
 import {ParserError, ParserErrorCode} from '../../../shared/ParserError';
 import {ASTAsmParser, ASTAsmTree} from '../ASTAsmParser';
 import {ASTNodeKind} from '../types';
-import {KindASTNode} from '../ASTAsmNode';
+import {KindASTAsmNode} from '../ASTAsmNode';
 
 import {isTokenInstructionBeginning} from '../instruction/ASTInstruction';
 import {isLineTerminatorToken} from '../../utils';
@@ -20,9 +20,9 @@ export const TIMES_TOKEN_NAME = 'times';
  *
  * @export
  * @class ASTTimes
- * @extends {KindASTNode(ASTNodeKind.TIMES)}
+ * @extends {KindASTAsmNode(ASTNodeKind.TIMES)}
  */
-export class ASTTimes extends KindASTNode(ASTNodeKind.TIMES) {
+export class ASTTimes extends KindASTAsmNode(ASTNodeKind.TIMES) {
   constructor(
     public readonly timesExpression: Token[],
     public readonly repatedNodesTree: ASTAsmTree,

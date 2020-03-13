@@ -15,14 +15,19 @@ import {
   TokenType,
   TokenLocation,
   TokenKind,
+  IdentifierToken,
 } from './tokens';
+
+export type IdentifiersMap = {
+  [key: string]: number, // identifier ID => text
+};
 
 export type TokenTerminalCharactersMap = {
   [operator: string]: TokenType,
 };
 
 export type TokenParsersMap = {
-  [parser: string]: (token?: string, loc?: TokenLocation) => boolean|Token,
+  [parser: string]: (token?: string, loc?: TokenLocation) => boolean | Token,
 };
 
 export const TERMINAL_CHARACTERS: TokenTerminalCharactersMap = {
@@ -37,18 +42,24 @@ export const TERMINAL_CHARACTERS: TokenTerminalCharactersMap = {
 /**
  * Analyze single token
  *
+ * @param {IdentifiersMap} identifiers
  * @param {TokenParsersMap} tokensParsers
  * @param {TokenLocation} location
  * @param {string} token
  * @returns {Token}
  */
 function parseToken(
+  identifiers: IdentifiersMap,
   tokensParsers: TokenParsersMap,
   location: TokenLocation,
   token: string,
 ): Token {
   if (!token || !token.length)
     return null;
+
+  const identifier = identifiers && identifiers[R.toLower(token)];
+  if (!R.isNil(identifier))
+    return new IdentifierToken(identifier, location.clone());
 
   for (const tokenType in tokensParsers) {
     const result = tokensParsers[tokenType](token, location);
@@ -77,6 +88,7 @@ export type LexerConfig = {
   appendEOF?: boolean,
   signOperatorsAsSeparateTokens?: boolean,
   terminalCharacters?: TokenTerminalCharactersMap,
+  identifiers?: IdentifiersMap,
 };
 
 /**
@@ -92,6 +104,7 @@ export type LexerConfig = {
  */
 export function* lexer(config: LexerConfig, code: string): IterableIterator<Token> {
   const {
+    identifiers,
     tokensParsers,
     terminalCharacters = TERMINAL_CHARACTERS,
     appendEOF = true,
@@ -115,7 +128,7 @@ export function* lexer(config: LexerConfig, code: string): IterableIterator<Toke
   function* appendCharToken(type: TokenType, character: string): IterableIterator<Token> {
     if (R.trim(tokenBuffer).length) {
       yield* appendToken(
-        parseToken(tokensParsers, location, tokenBuffer),
+        parseToken(identifiers, tokensParsers, location, tokenBuffer),
       );
     }
 
@@ -228,7 +241,7 @@ export function* lexer(config: LexerConfig, code: string): IterableIterator<Toke
       } else {
         // if empty character
         yield* appendToken(
-          parseToken(tokensParsers, location, tokenBuffer),
+          parseToken(identifiers, tokensParsers, location, tokenBuffer),
         );
       }
     }
@@ -236,7 +249,7 @@ export function* lexer(config: LexerConfig, code: string): IterableIterator<Toke
 
   if (tokenBuffer) {
     yield* appendToken(
-      parseToken(tokensParsers, location, tokenBuffer),
+      parseToken(identifiers, tokensParsers, location, tokenBuffer),
     );
   }
 

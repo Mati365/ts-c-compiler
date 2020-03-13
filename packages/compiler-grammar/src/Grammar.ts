@@ -1,53 +1,42 @@
-/* eslint-disable no-use-before-define, @typescript-eslint/no-use-before-define */
 import * as R from 'ramda';
 
-import {lexer} from '@compiler/lexer/lexer';
+import {lexer, IdentifiersMap} from '@compiler/lexer/lexer';
 import {
   TokenType,
   Token,
   NumberToken,
   FloatNumberToken,
+  TokenKind,
 } from '@compiler/lexer/tokens';
 
 import {TokensIterator} from './tree/TokensIterator';
 import {GrammarErrorCode, GrammarError} from './GrammarError';
+import {TreeNode} from './tree/TreeNode';
 
-function throwSyntaxError() {
-  throw new GrammarError(GrammarErrorCode.SYNTAX_ERROR);
+export class SyntaxError extends GrammarError {
+  constructor() {
+    super(GrammarErrorCode.SYNTAX_ERROR);
+  }
 }
 
 /** Basic type config */
-export type GrammarProduction = () => void;
+export type GrammarProduction = () => TreeNode;
 
 export type GrammarProductions = {
   [key: string]: GrammarProduction,
 };
 
-export type GrammarMatcher = (terminal: string, type?: TokenType) => void;
+export type GrammarMatcher<TokenIdentifier> = (terminal: string|TokenIdentifier, type?: TokenType) => Token;
 
-export type GrammarInitializer = (context: {
-  grammar: Grammar,
-  m: GrammarMatcher,
-}) => GrammarProduction;
+export type GrammarInitializer<TokenIdentifier> = (context: {
+  grammar: Grammar<TokenIdentifier>,
+  m: GrammarMatcher<TokenIdentifier>,
+}) => GrammarProductions;
 
 export type GrammarConfig = {
   ignoreCase?: boolean,
+  identifiers?: IdentifiersMap,
 };
-
-/**
- * Tree of production
- *
- * @class GrammarParseTree
- * @template T
- */
-export class GrammarParseTree<T = any> {
-  constructor(
-    public readonly parent: GrammarParseTree,
-    public readonly name: string,
-    public children: GrammarParseTree[] = [],
-    public value: T = null,
-  ) {}
-}
 
 /**
  * Creates simple parse tree based on grammar creator
@@ -58,28 +47,41 @@ export class GrammarParseTree<T = any> {
  * @export
  * @class Grammar
  * @extends {TokensIterator}
+ * @template IdentifierType
  */
-export class Grammar extends TokensIterator {
-  private rootProduction: GrammarProduction;
-  private config: GrammarConfig = {
-    ignoreCase: true,
-  };
+export class Grammar<TokenIdentifier> extends TokensIterator {
+  private _productions: GrammarProductions;
+  private _tree: TreeNode = new TreeNode(null, []);
 
-  private tree: GrammarParseTree;
-  private currentTreeNode: GrammarParseTree;
+  constructor(
+    private config: GrammarConfig,
+  ) {
+    super(null);
+
+    this.config = config ?? {};
+    this.config.ignoreCase = this.config.ignoreCase ?? true;
+  }
+
+  get productions() { return this._productions; }
+  get tree() { return this._tree; }
 
   /**
    * Creates grammar
    *
    * @static
-   * @param {GrammarInitializer} initializer
-   * @returns {Grammar}
+   * @template TokenIdentifier
+   * @param {GrammarConfig} config
+   * @param {GrammarInitializer<TokenIdentifier>} initializer
+   * @returns {Grammar<TokenIdentifier>}
    * @memberof Grammar
    */
-  static build(initializer: GrammarInitializer): Grammar {
-    const grammar = new Grammar;
+  static build<TokenIdentifier>(
+    config: GrammarConfig,
+    initializer: GrammarInitializer<TokenIdentifier>,
+  ): Grammar<TokenIdentifier> {
+    const grammar = new Grammar<TokenIdentifier>(config);
 
-    grammar.rootProduction = initializer(
+    grammar._productions = initializer(
       {
         m: grammar.match,
         grammar,
@@ -93,16 +95,17 @@ export class Grammar extends TokensIterator {
    * Produces grammar tree
    *
    * @param {string} code
-   * @returns {GrammarParseTree}
+   * @returns {TreeNode}
    * @memberof Grammar
    */
-  process(code: string): GrammarParseTree {
-    this.tree = new GrammarParseTree(null, 'root');
-    this.currentTreeNode = this.tree;
+  process(code: string): TreeNode {
+    const {productions, tree} = this;
+    const {identifiers} = this.config;
 
     this.tokens = Array.from(
       lexer(
         {
+          identifiers,
           signOperatorsAsSeparateTokens: true,
           tokensParsers: {
             [TokenType.NUMBER]: NumberToken.parse,
@@ -114,130 +117,87 @@ export class Grammar extends TokensIterator {
       ),
     );
 
-    this.rootProduction();
-    return this.tree;
+    tree.children = [];
+    while (true) {
+      const token = this.fetchRelativeToken(0, false);
+      if (!token || token.type === TokenType.EOF)
+        break;
+
+      const node = this.or(productions);
+      if (node)
+        tree.children.push(node);
+    }
+
+    return tree;
   }
 
   /**
    * Checks all production, creates tree from them
    *
    * @param {GrammarProductions} productions
+   * @returns {TreeNode}
    * @memberof Grammar
    */
-  or(productions: GrammarProductions): void {
-    const savedIndex = this.tokenIndex;
-    let anyProcessed = false;
+  private matchCallNesting: number = 0;
 
+  or(productions: GrammarProductions): TreeNode {
     for (const name in productions) {
       const production = productions[name];
-      const prevTree = this.currentTreeNode;
 
       try {
-        const newTree = new GrammarParseTree(this.currentTreeNode, name);
-        this.currentTreeNode.children.push(newTree);
-        this.currentTreeNode = newTree;
-
-        production();
-        anyProcessed = true;
-        break;
+        this.matchCallNesting = 0;
+        return production();
       } catch (e) {
-        // revert broken tree
-        if (prevTree?.parent) {
-          prevTree.parent.children = R.without(
-            [this.currentTreeNode],
-            prevTree.parent.children,
-          );
-        }
-
-        if (e.code === GrammarErrorCode.SYNTAX_ERROR)
-          this.tokenIndex = savedIndex;
-        else
+        // already consumed some of instruction
+        // but occurs parsing error
+        if (!('code' in e) || this.matchCallNesting > 1)
           throw e;
       }
-
-      this.currentTreeNode = prevTree;
     }
 
-    if (!anyProcessed)
-      throwSyntaxError();
+    throw new SyntaxError;
   }
 
   /**
    * Match single token or group of tokens
    *
    * @private
-   * @type {GrammarMatcher}
+   * @type {GrammarMatcher<TokenIdentifier>}
    * @memberof Grammar
    */
-  private match: GrammarMatcher = (terminal: string, type: TokenType = TokenType.KEYWORD): void => {
+  private match: GrammarMatcher<TokenIdentifier> = (
+    terminal: string | TokenIdentifier,
+    type: TokenType = TokenType.KEYWORD,
+  ): Token => {
+    this.matchCallNesting++;
+
     // check if exists occurs when check types
     // throws error anyway because null token mismatch type
     const {ignoreCase} = this.config;
-    let token = null;
+    let token: Token = null;
 
     do {
       token = this.fetchRelativeToken(0, false);
 
       if (token.type === TokenType.EOL)
         this.consume();
-
       else
         break;
     } while (true);
 
-    console.info(token.lowerText, terminal, token?.type);
-
     if (token?.type !== type)
-      throwSyntaxError();
+      throw new SyntaxError;
+
+    if (token.kind === TokenKind.IDENTIFIER) {
+      if (token.value !== terminal)
+        throw new SyntaxError;
 
     // kill mathcher if error occurs
     // if terminal is null - match only type
-    if (terminal !== null && (ignoreCase ? token.lowerText : token.text) !== terminal)
-      throwSyntaxError();
-
-    this.currentTreeNode.children.push(
-      new GrammarParseTree<Token>(
-        this.currentTreeNode,
-        token.text,
-        null,
-        token,
-      ),
-    );
+    } else if (terminal !== null && ((ignoreCase ? token.lowerText : token.text) !== terminal))
+      throw new SyntaxError;
 
     this.consume();
+    return token;
   };
 }
-
-
-// test
-(() => {
-  const grammar = Grammar.build(({m}) => {
-    function body() {
-      grammar.or(
-        {
-          macro,
-        },
-      );
-    }
-
-    function macro() {
-      m('%macro'); m(null, TokenType.KEYWORD); m(null, TokenType.NUMBER);
-      body();
-      m('%endmacro');
-    }
-
-    return body;
-  });
-
-  console.info(
-    grammar.process(`
-      %macro dupa 1
-        xor ax, ax
-        int 0x10
-        mov ah, 1
-        mov cx, 0x2607
-        int 0x10
-      %endmacro
-    `),
-  );
-})();

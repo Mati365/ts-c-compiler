@@ -54,6 +54,10 @@ export enum TokenKind {
   // SIZE PREFIXES
   BYTE_SIZE_OVERRIDE = 'BYTE_SIZE_OVERRIDE',
   BRANCH_ADDRESSING_TYPE = 'BRANCH_ADDRESSING_TYPE',
+
+  // OTHER
+  // todo: register etc. move here
+  IDENTIFIER = 'IDENTIFIER',
 }
 
 /**

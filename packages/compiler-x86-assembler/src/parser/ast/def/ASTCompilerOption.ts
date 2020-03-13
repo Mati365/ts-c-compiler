@@ -2,7 +2,7 @@ import * as R from 'ramda';
 
 import {Token, TokenKind} from '@compiler/lexer/tokens';
 import {NodeLocation} from '@compiler/grammar/tree/NodeLocation';
-import {KindASTNode} from '../ASTAsmNode';
+import {KindASTAsmNode} from '../ASTAsmNode';
 import {ASTNodeKind} from '../types';
 import {ASTAsmParser} from '../ASTAsmParser';
 
@@ -19,9 +19,9 @@ export enum CompilerOptions {
  *
  * @export
  * @class ASTCompilerOption
- * @extends {KindASTNode(ASTNodeKind.COMPILER_OPTION)}
+ * @extends {KindASTAsmNode(ASTNodeKind.COMPILER_OPTION)}
  */
-export class ASTCompilerOption extends KindASTNode(ASTNodeKind.COMPILER_OPTION) {
+export class ASTCompilerOption extends KindASTAsmNode(ASTNodeKind.COMPILER_OPTION) {
   constructor(
     public readonly option: string,
     public readonly args: Token<any>[],

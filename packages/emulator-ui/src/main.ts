@@ -1,7 +1,7 @@
 /// <reference path="./types.d.ts" />
 
 import {asm} from '@compiler/x86-assembler/asm';
-import '@compiler/grammar/Grammar';
+import '@compiler/x86-assembler/preprocessor/preprocessor';
 
 import {ConsoleBinaryView} from '@compiler/x86-assembler/parser/compiler/view/ConsoleBinaryView';
 

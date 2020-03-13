@@ -4,7 +4,7 @@ import {ParserError, ParserErrorCode} from '@compiler/x86-assembler/shared/Parse
 
 import {ASTAsmParser} from '../ASTAsmParser';
 import {ASTNodeKind} from '../types';
-import {KindASTNode} from '../ASTAsmNode';
+import {KindASTAsmNode} from '../ASTAsmNode';
 
 import {fetchInstructionTokensArgsList} from '../../utils';
 
@@ -15,9 +15,9 @@ export const EQU_TOKEN_NAME = 'equ';
  *
  * @export
  * @class ASTEqu
- * @extends {KindASTNode(ASTNodeKind.EQU)}
+ * @extends {KindASTAsmNode(ASTNodeKind.EQU)}
  */
-export class ASTEqu extends KindASTNode(ASTNodeKind.EQU) {
+export class ASTEqu extends KindASTAsmNode(ASTNodeKind.EQU) {
   constructor(
     public readonly name: string,
     public readonly expression: string,

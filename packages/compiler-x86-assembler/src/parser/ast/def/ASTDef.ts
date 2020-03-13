@@ -7,7 +7,7 @@ import {ParserError, ParserErrorCode} from '../../../shared/ParserError';
 import {ASTAsmParser} from '../ASTAsmParser';
 import {ASTNodeKind} from '../types';
 import {InstructionArgSize} from '../../../types';
-import {KindASTNode} from '../ASTAsmNode';
+import {KindASTAsmNode} from '../ASTAsmNode';
 
 import {
   fetchInstructionTokensArgsList,
@@ -45,9 +45,9 @@ export function tokenDefSize(token: string|Token): number {
  *
  * @export
  * @class ASTDef
- * @extends {KindASTNode(ASTNodeKind.DEFINE)}
+ * @extends {KindASTAsmNode(ASTNodeKind.DEFINE)}
  */
-export class ASTDef extends KindASTNode(ASTNodeKind.DEFINE) {
+export class ASTDef extends KindASTAsmNode(ASTNodeKind.DEFINE) {
   constructor(
     public readonly byteSize: number,
     public readonly args: Token[],
