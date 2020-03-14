@@ -39,6 +39,9 @@ export enum TokenType {
  * @enum {number}
  */
 export enum TokenKind {
+  // TEST(...)
+  BRACKET_PREFIX = 'BRACKET_PREFIX',
+
   // QUOTE
   SINGLE_QUOTE = 'SINGLE_QUOTE', // '
   DOUBLE_QUOTE = 'DOUBLE_QUOTE', // "

@@ -12,9 +12,17 @@ export class TreeNode {
     public children: TreeNode[] = null,
   ) {}
 
-  /* eslint-disable class-methods-use-this */
+  /**
+   * Used in grammars parser to exclude empty e.g. lines
+   *
+   * @returns {boolean}
+   * @memberof TreeNode
+   */
+  isEmpty(): boolean {
+    return false;
+  }
+
   toString(): string {
     return null;
   }
-  /* eslint-enable class-methods-use-this */
 }

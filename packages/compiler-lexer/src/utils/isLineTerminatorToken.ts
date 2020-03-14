@@ -1,4 +1,4 @@
-import {TokenType, Token} from '@compiler/lexer/tokens';
+import {TokenType, Token} from '../tokens';
 
 /**
  * Used for check when stop parsing

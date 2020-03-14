@@ -10,11 +10,11 @@ import {TokenLocation} from '../TokenLocation';
  * @template T
  */
 export class IdentifierToken<T = number> extends Token<T> {
-  constructor(value: T, loc: TokenLocation) {
+  constructor(value: T, text: string, loc: TokenLocation) {
     super(
       TokenType.KEYWORD,
       TokenKind.IDENTIFIER,
-      null,
+      text,
       loc,
       value,
     );

@@ -1,8 +1,9 @@
+import {isLineTerminatorToken} from '@compiler/lexer/utils';
+
 import {TokenKind, TokenType, Token} from '@compiler/lexer/tokens';
-import {ASTAsmParser} from '../ast/ASTAsmParser';
+import {TokensIterator} from '@compiler/grammar/tree/TokensIterator';
 
 import {mergeTokensTexts} from '../compiler/utils';
-import {isLineTerminatorToken} from './isLineTerminatorToken';
 
 /**
  * Fetches array of args such as:
@@ -13,7 +14,7 @@ import {isLineTerminatorToken} from './isLineTerminatorToken';
  * @param {boolean} [allowSizeOverride=true]
  * @returns {Token[]}
  */
-export function fetchInstructionTokensArgsList(parser: ASTAsmParser, allowSizeOverride: boolean = true): Token[] {
+export function fetchInstructionTokensArgsList(parser: TokensIterator, allowSizeOverride: boolean = true): Token[] {
   // parse arguments
   const argsTokens: Token[] = [];
   let argTokenBuffer: Token[] = [];

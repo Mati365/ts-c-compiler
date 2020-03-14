@@ -446,7 +446,7 @@ export class ASTInstruction extends KindASTAsmNode(ASTNodeKind.INSTRUCTION) {
         iterator.consume();
 
         return new ASTInstructionMemSegmentedArg(
-          `${token.text}:${iterator.consume()?.text}`,
+          `${token.text}:${iterator.fetchRelativeToken()?.text}`,
           byteSizeOverride ?? branchSizeOverride ?? token.value.byteSize,
         );
       }

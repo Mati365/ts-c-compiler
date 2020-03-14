@@ -11,3 +11,4 @@ export * from './mapMapValues';
 export * from './setCharAt';
 export * from './IEEE754';
 export * from './flipObject';
+export * from './safeArray';

@@ -37,12 +37,20 @@ export class TokensIterator {
   /**
    * Just increments tokenIndex
    *
+   * @see
+   *  Returns CURRENT token that was already eaten!
+   *
    * @param {number} [count=1]
    * @returns {Token}
    * @memberof TokensIterator
    */
   consume(count: number = 1): Token {
-    return this.fetchRelativeToken(count);
+    const {tokens} = this;
+
+    const prevToken = tokens[this.tokenIndex];
+    this.tokenIndex += count;
+
+    return prevToken;
   }
 
   /**

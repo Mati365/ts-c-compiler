@@ -1,5 +1,7 @@
 import * as R from 'ramda';
 
+import {isLineTerminatorToken} from '@compiler/lexer/utils';
+
 import {Token} from '@compiler/lexer/tokens';
 import {NodeLocation} from '@compiler/grammar/tree/NodeLocation';
 
@@ -9,7 +11,6 @@ import {ASTNodeKind} from '../types';
 import {KindASTAsmNode} from '../ASTAsmNode';
 
 import {isTokenInstructionBeginning} from '../instruction/ASTInstruction';
-import {isLineTerminatorToken} from '../../utils';
 
 import {tokenDefSize} from '../def/ASTDef';
 

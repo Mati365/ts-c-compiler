@@ -59,7 +59,7 @@ function parseToken(
 
   const identifier = identifiers && identifiers[R.toLower(token)];
   if (!R.isNil(identifier))
-    return new IdentifierToken(identifier, location.clone());
+    return new IdentifierToken(identifier, token, location.clone());
 
   for (const tokenType in tokensParsers) {
     const result = tokensParsers[tokenType](token, location);
@@ -89,6 +89,8 @@ export type LexerConfig = {
   signOperatorsAsSeparateTokens?: boolean,
   terminalCharacters?: TokenTerminalCharactersMap,
   identifiers?: IdentifiersMap,
+  allowBracketPrefixKeyword?: boolean, // dupa[xD]
+  consumeBracketContent?: boolean,
 };
 
 /**
@@ -106,9 +108,11 @@ export function* lexer(config: LexerConfig, code: string): IterableIterator<Toke
   const {
     identifiers,
     tokensParsers,
+    allowBracketPrefixKeyword,
     terminalCharacters = TERMINAL_CHARACTERS,
     appendEOF = true,
     signOperatorsAsSeparateTokens = false,
+    consumeBracketContent = true,
   } = config;
 
   const {length} = code;
@@ -198,25 +202,49 @@ export function* lexer(config: LexerConfig, code: string): IterableIterator<Toke
 
     const bracket = matchBracket(character);
     if (bracket) {
-      if (tokenBuffer)
-        throw new LexerError(LexerErrorCode.UNKNOWN_TOKEN, null, {token: tokenBuffer});
+      if (tokenBuffer) {
+        // handle case test[123]
+        if (allowBracketPrefixKeyword) {
+          yield* appendToken(
+            new Token(
+              TokenType.KEYWORD,
+              TokenKind.BRACKET_PREFIX,
+              tokenBuffer,
+              location.clone(),
+            ),
+          );
+        } else
+          throw new LexerError(LexerErrorCode.UNKNOWN_TOKEN, null, {token: tokenBuffer});
+      }
 
-      const flippedBracket = flipBracket(character);
-      let nesting = 1;
+      if (consumeBracketContent) {
+        const flippedBracket = flipBracket(character);
+        let nesting = 1;
 
-      offset++;
-      yield* appendTokenWithSpaces(
-        TokenType.BRACKET,
-        bracket,
-        (c) => {
-          if (c === character)
-            nesting++;
-          else if (c === flippedBracket)
-            nesting--;
+        offset++;
+        yield* appendTokenWithSpaces(
+          TokenType.BRACKET,
+          bracket,
+          (c) => {
+            if (c === character)
+              nesting++;
+            else if (c === flippedBracket)
+              nesting--;
 
-          return nesting <= 0;
-        },
-      );
+            return nesting <= 0;
+          },
+        );
+      } else {
+        yield* appendToken(
+          new Token(
+            TokenType.BRACKET,
+            bracket,
+            character,
+            location.clone(),
+          ),
+        );
+      }
+
       continue;
     }
 
