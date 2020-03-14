@@ -13,12 +13,15 @@ import {
   ASTPreprocessorMacro,
   ASTPreprocessorDefine,
   ASTPreprocessorDefineArgSchema,
+  ASTPreprocessorIF,
 } from './nodes';
 
 enum PreprocessorIdentifier {
   DEFINE,
   MACRO,
   ENDMACRO,
+  IF,
+  ENDIF,
 }
 
 const preprocessorMatcher: GrammarInitializer<PreprocessorIdentifier> = ({g}) => {
@@ -51,11 +54,29 @@ const preprocessorMatcher: GrammarInitializer<PreprocessorIdentifier> = ({g}) =>
   }
 
   /**
+   * Matches %ifdef
+   *
+   * @returns {TreeNode}
+   */
+  function ifStmt(): TreeNode {
+    const startToken = singleLineIdentifier(PreprocessorIdentifier.IF);
+
+    body();
+    g.identifier(PreprocessorIdentifier.ENDIF);
+
+    return new ASTPreprocessorIF(
+      NodeLocation.fromTokenLoc(startToken.loc),
+      null,
+      null,
+    );
+  }
+
+  /**
    * matches %macro
    *
    * @returns {TreeNode}
    */
-  function macro(): TreeNode {
+  function macroStmt(): TreeNode {
     const startToken = singleLineIdentifier(PreprocessorIdentifier.MACRO);
     const [name, argsCount, children] = [
       g.match(
@@ -90,7 +111,7 @@ const preprocessorMatcher: GrammarInitializer<PreprocessorIdentifier> = ({g}) =>
    *
    * @returns {TreeNode}
    */
-  function define(): TreeNode {
+  function defineStmt(): TreeNode {
     const startToken = singleLineIdentifier(PreprocessorIdentifier.DEFINE);
     const nameToken = g.match(
       {
@@ -185,8 +206,9 @@ const preprocessorMatcher: GrammarInitializer<PreprocessorIdentifier> = ({g}) =>
   function body(): TreeNode[] {
     return g.matchList(
       {
-        define,
-        macro,
+        ifStmt,
+        defineStmt,
+        macroStmt,
         syntaxLine,
         empty,
       },
@@ -199,6 +221,8 @@ const preprocessorMatcher: GrammarInitializer<PreprocessorIdentifier> = ({g}) =>
 const grammar = Grammar.build(
   {
     identifiers: {
+      '%if': PreprocessorIdentifier.IF,
+      '%endif': PreprocessorIdentifier.ENDIF,
       '%define': PreprocessorIdentifier.DEFINE,
       '%macro': PreprocessorIdentifier.MACRO,
       '%endmacro': PreprocessorIdentifier.ENDMACRO,
@@ -209,6 +233,10 @@ const grammar = Grammar.build(
 
 console.info(
   grammar.process(`
+    %if 2 + 4 > VAR1
+      xor bx, cx
+    %endif
+
     %define test_define(arg1,brg2,c) abc
     %define test_define2 abce
     %macro dupa 3

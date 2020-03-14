@@ -31,12 +31,26 @@ export type TokenParsersMap = {
 };
 
 export const TERMINAL_CHARACTERS: TokenTerminalCharactersMap = {
+  // single
   ',': TokenType.COMMA,
   ':': TokenType.COLON,
   '+': TokenType.PLUS,
   '-': TokenType.MINUS,
   '*': TokenType.MUL,
   '/': TokenType.DIV,
+  '!': TokenType.NOT,
+
+  // binary
+  '==': TokenType.EQUAL,
+  '!=': TokenType.DIFFERS,
+  '>': TokenType.GREATER_THAN,
+  '>=': TokenType.GREATER_EQ_THAN,
+  '<': TokenType.LESS_THAN,
+  '<=': TokenType.LESS_EQ_THAN,
+  '&&': TokenType.AND,
+  '||': TokenType.OR,
+  '++': TokenType.INCREMENT,
+  '--': TokenType.DECREMENT,
 };
 
 /**
@@ -252,25 +266,34 @@ export function* lexer(config: LexerConfig, code: string): IterableIterator<Toke
     if (newLine)
       yield* appendCharToken(TokenType.EOL, character);
     else {
-      // match cahracters that divides word
-      const separator = terminalCharacters[character];
-
-      if (separator) {
-        // numbers - +1, -2
-        if (!signOperatorsAsSeparateTokens
-            && (separator === TokenType.PLUS || separator === TokenType.MINUS)
-            && Number.isInteger(+code[offset + 1]))
-          tokenBuffer += character;
-        else
-          yield* appendCharToken(separator, character);
-      } else if (character !== ' ') {
-        // append character and find matching token
-        tokenBuffer += character;
-      } else {
-        // if empty character
-        yield* appendToken(
-          parseToken(identifiers, tokensParsers, location, tokenBuffer),
+      // handle ++, && etc. two byte terminals
+      const binarySeparator = character + code[offset + 1];
+      if (terminalCharacters[binarySeparator]) {
+        offset++;
+        yield* appendCharToken(
+          terminalCharacters[binarySeparator],
+          binarySeparator,
         );
+      } else {
+        // handle single character terminals
+        const separator = terminalCharacters[character];
+        if (separator) {
+          // numbers - +1, -2
+          if (!signOperatorsAsSeparateTokens
+              && (separator === TokenType.PLUS || separator === TokenType.MINUS)
+              && Number.isInteger(+code[offset + 1]))
+            tokenBuffer += character;
+          else
+            yield* appendCharToken(separator, character);
+        } else if (character !== ' ') {
+          // append character and find matching token
+          tokenBuffer += character;
+        } else {
+          // if empty character
+          yield* appendToken(
+            parseToken(identifiers, tokensParsers, location, tokenBuffer),
+          );
+        }
       }
     }
   }

@@ -22,11 +22,25 @@ export enum TokenType {
   EOL = 'EOL',
   EOF = 'EOF',
 
+  // Logic
+  EQUAL = 'EQUAL',
+  DIFFERS = 'DIFFERS',
+  GREATER_THAN = 'GREATER_THAN',
+  LESS_THAN = 'LESS_THAN',
+  GREATER_EQ_THAN = 'GREATER_EQ_THAN',
+  LESS_EQ_THAN = 'LESS_EQ_THAN',
+  AND = 'AND',
+  OR = 'OR',
+  NOT = 'NOT',
+
   // Math
   PLUS = 'PLUS',
   MINUS = 'MINUS',
   MUL = 'MUL',
   DIV = 'DIV',
+
+  INCREMENT = 'INCREMENT',
+  DECREMENT = 'DECREMENT',
 }
 
 /**
