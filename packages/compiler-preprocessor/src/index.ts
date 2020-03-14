@@ -6,7 +6,7 @@ import {Grammar, GrammarInitializer, SyntaxError} from '@compiler/grammar/Gramma
 import {TreeNode} from '@compiler/grammar/tree/TreeNode';
 import {NodeLocation} from '@compiler/grammar/tree/NodeLocation';
 
-import {fetchTokensUntilEOL} from '../parser/utils';
+import {fetchTokensUntilEOL} from '@compiler/grammar/utils/fetchTokensUntilEOL';
 
 import {
   ASTPreprocessorSyntaxLine,
@@ -218,7 +218,7 @@ const preprocessorMatcher: GrammarInitializer<PreprocessorIdentifier> = ({g}) =>
   return body;
 };
 
-const grammar = Grammar.build(
+export const preprocessor = Grammar.build(
   {
     identifiers: {
       '%if': PreprocessorIdentifier.IF,
@@ -232,7 +232,7 @@ const grammar = Grammar.build(
 );
 
 console.info(
-  grammar.process(`
+  preprocessor.process(`
     %if 2 + 4 > VAR1
       xor bx, cx
     %endif

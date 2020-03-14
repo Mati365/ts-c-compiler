@@ -21,6 +21,9 @@
       "@compiler/rpn": ["compiler-rpn/src/"],
       "@compiler/rpn/*": ["compiler-rpn/src/*"],
 
+      "@compiler/preprocessor": ["compiler-preprocessor/src/index"],
+      "@compiler/preprocessor/*": ["compiler-preprocessor/src/*"],
+
       "@compiler/x86-assembler": ["compiler-x86-assembler/src/"],
       "@compiler/x86-assembler/*": ["compiler-x86-assembler/src/*"],
 

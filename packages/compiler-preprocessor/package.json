@@ -1,0 +1,4 @@
+{
+  "name": "@emulator/compiler-preprocessor",
+  "main": "src/index.ts"
+}

@@ -14,8 +14,9 @@
           ['@compiler/grammar', './packages/compiler-grammar/src/'],
           ['@compiler/rpn', './packages/compiler-rpn/src/'],
           ['@compiler/x86-assembler', './packages/compiler-x86-assembler/src/'],
+          ['@compiler/preprocessor', './packages/compiler-preprocessor/src'],
           ['@emulator/ui', './packages/emulator-ui/src/'],
-          ['@emulator/x86-cpu', './packages/emulator-x86-cpu/src']
+          ['@emulator/x86-cpu', './packages/emulator-x86-cpu/src'],
         ],
         extensions: ['.js', '.ts', '.tsx', '.scss', '.json']
       }
