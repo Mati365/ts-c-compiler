@@ -24,6 +24,12 @@ class ASTPrefixOperatorNode extends BinaryNode<ASTPreprocessorKind> {
       right,
     );
   }
+
+  toString(): string {
+    const {op} = this;
+
+    return `${super.toString()} op=${op}`;
+  }
 }
 
 /**

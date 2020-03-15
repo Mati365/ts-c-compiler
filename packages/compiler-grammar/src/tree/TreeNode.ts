@@ -46,7 +46,13 @@ export class TreeNode<K = string> {
   }
 
   toString(): string {
-    return null;
+    const {kind} = this;
+
+    return (
+      R.is(String, kind)
+        ? <any> kind
+        : null
+    );
   }
 }
 
@@ -67,6 +73,12 @@ export class ValueNode<T, K = string> extends TreeNode<K> {
 
   ) {
     super(kind, loc, null);
+  }
+
+  toString(): string {
+    const {value} = this;
+
+    return `${super.toString()} value=${value}`;
   }
 }
 

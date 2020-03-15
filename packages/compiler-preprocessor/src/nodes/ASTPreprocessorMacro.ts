@@ -23,4 +23,10 @@ export class ASTPreprocessorMacro extends ASTPreprocessorNode {
   ) {
     super(ASTPreprocessorKind.MacroStmt, loc, children);
   }
+
+  toString(): string {
+    const {name, argsCount} = this;
+
+    return `${super.toString()} name=${name} args=${argsCount}`;
+  }
 }

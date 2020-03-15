@@ -34,6 +34,6 @@ export class TreeVisitor<T extends TreeNode<any>> {
  */
 export class TreePrintVisitor<T extends TreeNode<any>> extends TreeVisitor<T> {
   enter(node: T) {
-    console.info(''.padStart(this.nesting * 4, ' '), `<${node.kind} />`);
+    console.info(''.padStart((this.nesting - 1) * 3, ' '), `<${node.toString()} />`);
   }
 }

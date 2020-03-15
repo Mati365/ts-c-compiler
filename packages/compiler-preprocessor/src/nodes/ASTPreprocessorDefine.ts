@@ -29,4 +29,10 @@ export class ASTPreprocessorDefine extends ASTPreprocessorNode {
   ) {
     super(ASTPreprocessorKind.DefineStmt, loc);
   }
+
+  toString(): string {
+    const {name, argsSchema} = this;
+
+    return `${super.toString()} name=${name} args=${argsSchema.length}`;
+  }
 }
