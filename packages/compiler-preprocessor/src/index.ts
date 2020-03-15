@@ -3,11 +3,11 @@ import {isLineTerminatorToken} from '@compiler/lexer/utils';
 
 import {TokenType, NumberToken, Token, TokenKind} from '@compiler/lexer/tokens';
 import {Grammar, GrammarInitializer, SyntaxError} from '@compiler/grammar/Grammar';
-import {TreeNode} from '@compiler/grammar/tree/TreeNode';
 import {NodeLocation} from '@compiler/grammar/tree/NodeLocation';
 
+import {empty} from '@compiler/grammar/matchers';
 import {fetchTokensUntilEOL} from '@compiler/grammar/utils/fetchTokensUntilEOL';
-import {mathExpression} from './grammars/mathExpression';
+import {mathExpression} from './matchers';
 
 import {
   ASTPreprocessorSyntaxLine,
@@ -17,21 +17,19 @@ import {
   ASTPreprocessorIF,
 } from './nodes';
 
-enum PreprocessorIdentifier {
-  DEFINE,
-  MACRO,
-  ENDMACRO,
-  IF,
-  ENDIF,
-}
+import {
+  PreprocessorIdentifier,
+  ASTPreprocessorKind,
+  ASTPreprocessorNode,
+} from './constants';
 
-const preprocessorMatcher: GrammarInitializer<PreprocessorIdentifier> = ({g}) => {
+const preprocessorMatcher: GrammarInitializer<PreprocessorIdentifier, ASTPreprocessorKind> = ({g}) => {
   /**
    * Consumes all EOL characters from line begin
    *
    * @returns {TreeNode}
    */
-  function startLine(): TreeNode {
+  function startLine(): ASTPreprocessorNode {
     do {
       const token = g.fetchRelativeToken(0, false);
       if (token.type === TokenType.EOL)
@@ -59,10 +57,10 @@ const preprocessorMatcher: GrammarInitializer<PreprocessorIdentifier> = ({g}) =>
    *
    * @returns {TreeNode}
    */
-  function ifStmt(): TreeNode {
+  function ifStmt(): ASTPreprocessorNode {
     const startToken = singleLineIdentifier(PreprocessorIdentifier.IF);
 
-    mathExpression<PreprocessorIdentifier>(g);
+    mathExpression(g);
     body();
     g.identifier(PreprocessorIdentifier.ENDIF);
 
@@ -78,7 +76,7 @@ const preprocessorMatcher: GrammarInitializer<PreprocessorIdentifier> = ({g}) =>
    *
    * @returns {TreeNode}
    */
-  function macroStmt(): TreeNode {
+  function macroStmt(): ASTPreprocessorNode {
     const startToken = singleLineIdentifier(PreprocessorIdentifier.MACRO);
     const [name, argsCount, children] = [
       g.match(
@@ -113,7 +111,7 @@ const preprocessorMatcher: GrammarInitializer<PreprocessorIdentifier> = ({g}) =>
    *
    * @returns {TreeNode}
    */
-  function defineStmt(): TreeNode {
+  function defineStmt(): ASTPreprocessorNode {
     const startToken = singleLineIdentifier(PreprocessorIdentifier.DEFINE);
     const nameToken = g.match(
       {
@@ -167,7 +165,7 @@ const preprocessorMatcher: GrammarInitializer<PreprocessorIdentifier> = ({g}) =>
    *
    * @returns {TreeNode}
    */
-  function syntaxLine(): TreeNode {
+  function syntaxLine(): ASTPreprocessorNode {
     startLine();
 
     const loc = g.fetchRelativeToken(0, false)?.loc;
@@ -192,20 +190,11 @@ const preprocessorMatcher: GrammarInitializer<PreprocessorIdentifier> = ({g}) =>
   }
 
   /**
-   * Matches empty
-   *
-   * @returns {TreeNode}
-   */
-  function empty(): TreeNode {
-    return null;
-  }
-
-  /**
    * Matches body of define and main documen
    *
    * @returns {TreeNode[]}
    */
-  function body(): TreeNode[] {
+  function body(): ASTPreprocessorNode[] {
     return g.matchList(
       {
         ifStmt,

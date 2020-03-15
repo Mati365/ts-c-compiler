@@ -1,6 +1,10 @@
-import {TreeNode} from '@compiler/grammar/tree/TreeNode';
 import {NodeLocation} from '@compiler/grammar/tree/NodeLocation';
 import {Token} from '@compiler/lexer/tokens';
+
+import {
+  ASTPreprocessorKind,
+  ASTPreprocessorNode,
+} from '../constants';
 
 export class ASTPreprocessorDefineArgSchema {
   constructor(
@@ -14,15 +18,15 @@ export class ASTPreprocessorDefineArgSchema {
  *
  * @export
  * @class ASTPreprocessorDefine
- * @extends {TreeNode}
+ * @extends {ASTPreprocessorNode}
  */
-export class ASTPreprocessorDefine extends TreeNode {
+export class ASTPreprocessorDefine extends ASTPreprocessorNode {
   constructor(
     loc: NodeLocation,
     public readonly name: string,
     public readonly argsSchema: ASTPreprocessorDefineArgSchema[] = [],
     public readonly expression: Token[],
   ) {
-    super(loc);
+    super(ASTPreprocessorKind.DefineStmt, loc);
   }
 }

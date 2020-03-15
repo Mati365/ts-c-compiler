@@ -33,10 +33,11 @@ export function arrayToHexString(numbers: number[], delimeter: string = ' '): st
  *
  * @export
  * @class BinaryBlob
+ * @template T ast type
  */
-export class BinaryBlob<ASTNodeType = any> {
+export class BinaryBlob<T = any> {
   constructor(
-    protected _ast: ASTNodeType = null,
+    protected _ast: T = null,
     protected _binary: number[] = null,
     public slaveBlobs: BinaryBlob[] = null, // for some 0 bytes instructions
   ) {}
@@ -66,7 +67,7 @@ export class BinaryBlob<ASTNodeType = any> {
   }
 
   /* eslint-disable @typescript-eslint/no-unused-vars */
-  compile(compiler?: X86Compiler, offset?: number): BinaryBlob<ASTNodeType> {
+  compile(compiler?: X86Compiler, offset?: number): BinaryBlob<T> {
     if (!this._binary)
       this._binary = [];
 

@@ -6,14 +6,14 @@ import {format} from '../utils/format';
  * @export
  * @class CompilerError
  * @extends {Error}
- * @template CodeType
- * @template LocType
+ * @template C CodeType
+ * @template L LocationType
  */
-export class CompilerError<CodeType = any, LocType = any> extends Error {
+export class CompilerError<C = any, L = any> extends Error {
   constructor(
     public readonly translations: object,
-    public readonly code: CodeType,
-    public readonly loc?: LocType,
+    public readonly code: C,
+    public readonly loc?: L,
     public readonly meta?: object,
   ) {
     super();

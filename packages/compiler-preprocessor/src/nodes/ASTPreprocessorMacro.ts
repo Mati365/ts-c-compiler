@@ -1,5 +1,8 @@
-import {TreeNode} from '@compiler/grammar/tree/TreeNode';
 import {NodeLocation} from '@compiler/grammar/tree/NodeLocation';
+import {
+  ASTPreprocessorKind,
+  ASTPreprocessorNode,
+} from '../constants';
 
 /**
  * @example
@@ -9,15 +12,15 @@ import {NodeLocation} from '@compiler/grammar/tree/NodeLocation';
  *
  * @export
  * @class ASTPreprocessorMacro
- * @extends {TreeNode}
+ * @extends {ASTPreprocessorNode}
  */
-export class ASTPreprocessorMacro extends TreeNode {
+export class ASTPreprocessorMacro extends ASTPreprocessorNode {
   constructor(
     loc: NodeLocation,
     public readonly name: string,
     public readonly argsCount: number,
-    children: TreeNode[],
+    children: ASTPreprocessorNode[],
   ) {
-    super(loc, children);
+    super(ASTPreprocessorKind.MacroStmt, loc, children);
   }
 }

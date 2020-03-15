@@ -21,21 +21,25 @@ export class SyntaxError extends GrammarError {
 }
 
 /** Basic type config */
-export type GrammarProduction = () => TreeNode|TreeNode[];
+export type GrammarProduction<K> = () => TreeNode<K> | TreeNode<K>[];
 
-export type GrammarProductions = {
-  [key: string]: GrammarProduction,
+export type GrammarProductions<K> = {
+  [key: string]: GrammarProduction<K>,
 };
 
-export type GrammarInitializer<TokenIdentifier> = (context: {g: Grammar<TokenIdentifier>}) => GrammarProduction;
+export type GrammarInitializer<I, K> = (
+  context: {
+    g: Grammar<I, K>
+  }
+) => GrammarProduction<K>;
 
 export type GrammarConfig = {
   ignoreCase?: boolean,
   identifiers?: IdentifiersMap,
 };
 
-type GrammarMatcherInfo<TokenIdentifier> = {
-  terminal?: string | TokenIdentifier,
+type GrammarMatcherInfo<I> = {
+  terminal?: string | I,
   optional?: boolean,
   type?: TokenType,
 };
@@ -49,11 +53,12 @@ type GrammarMatcherInfo<TokenIdentifier> = {
  * @export
  * @class Grammar
  * @extends {TokensIterator}
- * @template IdentifierType
+ * @template I Identifier
+ * @template K NodeKind
  */
-export class Grammar<TokenIdentifier> extends TokensIterator {
-  private _rootProduction: GrammarProduction;
-  private _tree: TreeNode = new TreeNode(null, []);
+export class Grammar<I, K = string> extends TokensIterator {
+  private _rootProduction: GrammarProduction<K>;
+  private _tree: TreeNode<K> = new TreeNode<K>(null, null, []);
   private _matchCallNesting: number = 0;
 
   constructor(
@@ -72,17 +77,15 @@ export class Grammar<TokenIdentifier> extends TokensIterator {
    * Creates grammar
    *
    * @static
-   * @template TokenIdentifier
+   * @template I
+   * @template K
    * @param {GrammarConfig} config
-   * @param {GrammarInitializer<TokenIdentifier>} initializer
-   * @returns {Grammar<TokenIdentifier>}
+   * @param {GrammarInitializer<I, K>} initializer
+   * @returns {Grammar<I, K>}
    * @memberof Grammar
    */
-  static build<TokenIdentifier>(
-    config: GrammarConfig,
-    initializer: GrammarInitializer<TokenIdentifier>,
-  ): Grammar<TokenIdentifier> {
-    const grammar = new Grammar<TokenIdentifier>(config);
+  static build<I, K>(config: GrammarConfig, initializer: GrammarInitializer<I, K>): Grammar<I, K> {
+    const grammar = new Grammar<I, K>(config);
 
     grammar._rootProduction = initializer(
       {
@@ -100,7 +103,7 @@ export class Grammar<TokenIdentifier> extends TokensIterator {
    * @returns {TreeNode}
    * @memberof Grammar
    */
-  process(code: string): TreeNode {
+  process(code: string): TreeNode<K> {
     const {identifiers} = this._config;
 
     this.tokens = Array.from(
@@ -120,7 +123,8 @@ export class Grammar<TokenIdentifier> extends TokensIterator {
       ),
     );
 
-    this._tree = new TreeNode(
+    this._tree = new TreeNode<K>(
+      null,
       null,
       safeArray(
         this._rootProduction(),
@@ -132,12 +136,12 @@ export class Grammar<TokenIdentifier> extends TokensIterator {
   /**
    * Matches multiple trees
    *
-   * @param {GrammarProductions} productions
-   * @returns {TreeNode[]}
+   * @param {GrammarProductions<K>} productions
+   * @returns {TreeNode<K>[]}
    * @memberof Grammar
    */
-  matchList(productions: GrammarProductions): TreeNode[] {
-    const list: TreeNode[] = [];
+  matchList(productions: GrammarProductions<K>): TreeNode<K>[] {
+    const list: TreeNode<K>[] = [];
 
     while (true) {
       const token = this.fetchRelativeToken(0, false);
@@ -147,9 +151,9 @@ export class Grammar<TokenIdentifier> extends TokensIterator {
       let node = this.or(productions);
       if (node) {
         if (!R.is(Array, node))
-          node = [<TreeNode> node];
+          node = [<TreeNode<K>> node];
 
-        (<TreeNode[]> node).forEach((listNode) => {
+        (<TreeNode<K>[]> node).forEach((listNode) => {
           if (!listNode.isEmpty())
             list.push(listNode);
         });
@@ -167,7 +171,7 @@ export class Grammar<TokenIdentifier> extends TokensIterator {
    * @type {number}
    * @memberof Grammar
    */
-  or(productions: GrammarProductions): TreeNode|TreeNode[] {
+  or(productions: GrammarProductions<K>): TreeNode<K> | TreeNode<K>[] {
     // search for matching production
     const savedIndex = this.tokenIndex;
 
@@ -205,7 +209,7 @@ export class Grammar<TokenIdentifier> extends TokensIterator {
       terminal = null,
       type = TokenType.KEYWORD,
       optional,
-    }: GrammarMatcherInfo<TokenIdentifier> = {},
+    }: GrammarMatcherInfo<I> = {},
   ): Token {
     this._matchCallNesting++;
 
@@ -228,11 +232,11 @@ export class Grammar<TokenIdentifier> extends TokensIterator {
   /**
    * Matches token defined in identifiers list
    *
-   * @param {TokenIdentifier} identifier
+   * @param {I} identifier
    * @returns {Token}
    * @memberof Grammar
    */
-  identifier(identifier: TokenIdentifier): Token {
+  identifier(identifier: I): Token {
     this._matchCallNesting++;
 
     const token: Token = this.fetchRelativeToken(0, false);

@@ -82,10 +82,9 @@ export enum TokenKind {
  *
  * @export
  * @class Token
- * @template ValueType
- * @template KindType
+ * @template V value
  */
-export class Token<ValueType = any> {
+export class Token<V = any> {
   public readonly upperText: string;
   public readonly lowerText: string;
 
@@ -103,7 +102,7 @@ export class Token<ValueType = any> {
     public readonly kind: TokenKind,
     public readonly text: string,
     public readonly loc: TokenLocation,
-    public readonly value: ValueType = null,
+    public readonly value: V = null,
   ) {
     this.upperText = text && R.toUpper(text);
     this.lowerText = text && R.toLower(text);

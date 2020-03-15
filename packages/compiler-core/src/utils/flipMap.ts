@@ -3,11 +3,11 @@
  *
  * @template Key
  * @template Value
- * @param {Map<Key, Value>} map
- * @returns {Map<Value, Key>}
+ * @param {Map<K, V>} map
+ * @returns {Map<K, V>}
  */
-export function flipMap<Key, Value>(map: Map<Key, Value>): Map<Value, Key> {
-  const flipped = new Map<Value, Key>();
+export function flipMap<K, V>(map: Map<K, V>): Map<V, K> {
+  const flipped = new Map<V, K>();
   for (const [key, val] of map)
     flipped.set(val, key);
 

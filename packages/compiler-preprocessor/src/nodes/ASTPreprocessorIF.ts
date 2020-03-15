@@ -1,6 +1,10 @@
 import {Token} from '@compiler/lexer/tokens';
-import {TreeNode} from '@compiler/grammar/tree/TreeNode';
 import {NodeLocation} from '@compiler/grammar/tree/NodeLocation';
+
+import {
+  ASTPreprocessorKind,
+  ASTPreprocessorNode,
+} from '../constants';
 
 /**
  * @example
@@ -12,14 +16,14 @@ import {NodeLocation} from '@compiler/grammar/tree/NodeLocation';
  *
  * @export
  * @class ASTPreprocessorIF
- * @extends {TreeNode}
+ * @extends {ASTPreprocessorNode}
  */
-export class ASTPreprocessorIF extends TreeNode {
+export class ASTPreprocessorIF extends ASTPreprocessorNode {
   constructor(
     loc: NodeLocation,
     public readonly logicExpression: Token[],
-    children: TreeNode[],
+    children: ASTPreprocessorNode[],
   ) {
-    super(loc, children);
+    super(ASTPreprocessorKind.IfStmt, loc, children);
   }
 }

@@ -5,11 +5,13 @@ import {NodeLocation} from './NodeLocation';
  *
  * @export
  * @class TreeNode
+ * @template K KindType
  */
-export class TreeNode {
+export class TreeNode<K = string> {
   constructor(
+    public readonly kind: K,
     public readonly loc: NodeLocation,
-    public children: TreeNode[] = null,
+    public children: TreeNode<K>[] = null,
   ) {}
 
   /**
@@ -28,19 +30,22 @@ export class TreeNode {
 }
 
 /**
- * Node with single value
+ * Node withs ingle value
  *
  * @export
  * @class ValueNode
- * @extends {TreeNode}
+ * @extends {TreeNode<KindType>}
  * @template T
+ * @template K
  */
-export class ValueNode<T> extends TreeNode {
+export class ValueNode<T, K = string> extends TreeNode<K> {
   constructor(
-    public readonly value: T,
+    kind: K,
     loc: NodeLocation,
+    public readonly value: T,
+
   ) {
-    super(loc);
+    super(kind, loc, null);
   }
 }
 
@@ -49,14 +54,16 @@ export class ValueNode<T> extends TreeNode {
  *
  * @export
  * @class BinaryNode
- * @extends {TreeNode}
+ * @extends {TreeNode<K>}
+ * @template K
  */
-export class BinaryNode extends TreeNode {
+export class BinaryNode<K = string> extends TreeNode<K> {
   constructor(
-    public readonly left: TreeNode,
-    public readonly right: TreeNode,
+    kind: K,
+    public readonly left: TreeNode<K>,
+    public readonly right: TreeNode<K>,
   ) {
-    super(left?.loc);
+    super(kind, left?.loc);
   }
 
   /**
@@ -64,14 +71,20 @@ export class BinaryNode extends TreeNode {
    * is null beacames single TreeNode
    *
    * @static
-   * @param {TreeNode} left
-   * @param {TreeNode} right
-   * @returns {(TreeNode|BinaryNode)}
+   * @template KindType
+   * @param {K} kind
+   * @param {TreeNode<K>} left
+   * @param {TreeNode<K>} right
+   * @returns {(TreeNode<K> | BinaryNode<K>)}
    * @memberof BinaryNode
    */
-  static createOptionalBinary(left: TreeNode, right: TreeNode): TreeNode|BinaryNode {
+  static createOptionalBinary<K>(
+    kind: K,
+    left: TreeNode<K>,
+    right: TreeNode<K>,
+  ): TreeNode<K> | BinaryNode<K> {
     if (left && right)
-      return new BinaryNode(left, right);
+      return new BinaryNode<K>(kind, left, right);
 
     if (!left)
       return right;

@@ -12,13 +12,13 @@ import {ASTNodeKind} from './types';
  * @class ASTAsmNode
  * @extends {TreeNode}
  */
-export class ASTAsmNode extends TreeNode {
+export class ASTAsmNode extends TreeNode<ASTNodeKind> {
   constructor(
-    public readonly kind: ASTNodeKind,
+    kind: ASTNodeKind,
     loc: NodeLocation,
     children: ASTAsmNode[] = null,
   ) {
-    super(loc, children);
+    super(kind, loc, children);
   }
 
   /* eslint-disable class-methods-use-this */

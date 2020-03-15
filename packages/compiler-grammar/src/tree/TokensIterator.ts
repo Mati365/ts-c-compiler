@@ -1,6 +1,6 @@
 import {Token} from '@compiler/lexer/tokens';
 
-export type TokensList = Token[]|IterableIterator<Token>;
+export type TokensList = Token[] | IterableIterator<Token>;
 
 /**
  * Iterates through tokens list

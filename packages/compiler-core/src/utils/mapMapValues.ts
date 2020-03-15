@@ -2,18 +2,18 @@
  * Iterates over map values and maps them
  *
  * @export
- * @template Key
- * @template Value
- * @template OutputValue
- * @param {(v: Value, k?: Key) => OutputValue} fn
- * @param {Map<Key, Value>} map
- * @returns {Map<Key, OutputValue>}
+ * @template K key
+ * @template V value
+ * @template O output
+ * @param {(v: V, k?: K) => V} fn
+ * @param {Map<K, V>} map
+ * @returns {Map<K, O>}
  */
-export function mapMapValues<Key, Value, OutputValue>(
-  fn: (v: Value, k?: Key) => OutputValue,
-  map: Map<Key, Value>,
-): Map<Key, OutputValue> {
-  const mapped = new Map<Key, OutputValue>();
+export function mapMapValues<K, V, O>(
+  fn: (v: V, k?: K) => O,
+  map: Map<K, V>,
+): Map<K, O> {
+  const mapped = new Map<K, O>();
 
   for (const [key, val] of map) {
     const result = fn(val, key);

@@ -1,20 +1,23 @@
 import {Token} from '@compiler/lexer/tokens';
-import {TreeNode} from '@compiler/grammar/tree/TreeNode';
 import {NodeLocation} from '@compiler/grammar/tree/NodeLocation';
+import {
+  ASTPreprocessorKind,
+  ASTPreprocessorNode,
+} from '../constants';
 
 /**
  * Other lines
  *
  * @export
  * @class ASTPreprocessorSyntaxLine
- * @extends {TreeNode}
+ * @extends {ASTPreprocessorNode}
  */
-export class ASTPreprocessorSyntaxLine extends TreeNode {
+export class ASTPreprocessorSyntaxLine extends ASTPreprocessorNode {
   constructor(
     loc: NodeLocation,
     public readonly tokens: Token[],
   ) {
-    super(loc);
+    super(ASTPreprocessorKind.SyntaxStmt, loc);
   }
 
   isEmpty(): boolean {
