@@ -219,14 +219,21 @@ export function* lexer(config: LexerConfig, code: string): IterableIterator<Toke
       if (tokenBuffer) {
         // handle case test[123]
         if (allowBracketPrefixKeyword) {
-          yield* appendToken(
-            new Token(
-              TokenType.KEYWORD,
-              TokenKind.BRACKET_PREFIX,
-              tokenBuffer,
-              location.clone(),
-            ),
-          );
+          // if empty character
+          if (character === '(') {
+            yield* appendToken(
+              new Token(
+                TokenType.KEYWORD,
+                TokenKind.BRACKET_PREFIX,
+                tokenBuffer,
+                location.clone(),
+              ),
+            );
+          } else {
+            yield* appendToken(
+              parseToken(identifiers, tokensParsers, location, tokenBuffer),
+            );
+          }
         } else
           throw new LexerError(LexerErrorCode.UNKNOWN_TOKEN, null, {token: tokenBuffer});
       }

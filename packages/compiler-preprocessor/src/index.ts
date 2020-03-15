@@ -7,6 +7,7 @@ import {TreeNode} from '@compiler/grammar/tree/TreeNode';
 import {NodeLocation} from '@compiler/grammar/tree/NodeLocation';
 
 import {fetchTokensUntilEOL} from '@compiler/grammar/utils/fetchTokensUntilEOL';
+import {mathExpression} from './grammars/mathExpression';
 
 import {
   ASTPreprocessorSyntaxLine,
@@ -61,6 +62,7 @@ const preprocessorMatcher: GrammarInitializer<PreprocessorIdentifier> = ({g}) =>
   function ifStmt(): TreeNode {
     const startToken = singleLineIdentifier(PreprocessorIdentifier.IF);
 
+    mathExpression<PreprocessorIdentifier>(g);
     body();
     g.identifier(PreprocessorIdentifier.ENDIF);
 
@@ -233,7 +235,7 @@ export const preprocessor = Grammar.build(
 
 console.info(
   preprocessor.process(`
-    %if 2 + 4 > VAR1
+    %if (2+3*6+(8-9+3+1)+12)
       xor bx, cx
     %endif
 
