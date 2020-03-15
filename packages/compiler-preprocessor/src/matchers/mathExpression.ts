@@ -2,6 +2,8 @@
 import {empty} from '@compiler/grammar/matchers';
 
 import {BinaryNode, ValueNode} from '@compiler/grammar/tree/TreeNode';
+import {TreePrintVisitor} from '@compiler/grammar/tree/TreeVisitor';
+
 import {TokenType, NumberToken} from '@compiler/lexer/tokens';
 import {NodeLocation} from '@compiler/grammar/tree/NodeLocation';
 import {
@@ -200,5 +202,8 @@ function addPrim(g: PreprocessorGrammar): ASTPreprocessorNode {
  * @returns {ASTPreprocessorNode}
  */
 export function mathExpression(g: PreprocessorGrammar): ASTPreprocessorNode {
-  return add(g);
+  const node = add(g);
+
+  (new TreePrintVisitor).visit(node);
+  return node;
 }

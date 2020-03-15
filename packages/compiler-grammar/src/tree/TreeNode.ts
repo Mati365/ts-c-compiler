@@ -1,4 +1,6 @@
+import * as R from 'ramda';
 import {NodeLocation} from './NodeLocation';
+import {TreeVisitor} from './TreeVisitor';
 
 /**
  * Node used to construct AST
@@ -13,6 +15,25 @@ export class TreeNode<K = string> {
     public readonly loc: NodeLocation,
     public children: TreeNode<K>[] = null,
   ) {}
+
+  /**
+   * Iterates throught tree
+   *
+   * @param {TreeVisitor<TreeNode<K>>} visitor
+   * @memberof TreeNode
+   */
+  walk(visitor: TreeVisitor<TreeNode<K>>): void {
+    const {children} = this;
+
+    if (children) {
+      R.forEach(
+        (child) => {
+          visitor.visit(child);
+        },
+        children,
+      );
+    }
+  }
 
   /**
    * Used in grammars parser to exclude empty e.g. lines
@@ -64,6 +85,22 @@ export class BinaryNode<K = string> extends TreeNode<K> {
     public readonly right: TreeNode<K>,
   ) {
     super(kind, left?.loc);
+  }
+
+  /**
+   * Iterates throught tree
+   *
+   * @param {TreeVisitor<TreeNode<K>>} visitor
+   * @memberof BinaryNode
+   */
+  walk(visitor: TreeVisitor<TreeNode<K>>): void {
+    const {left, right} = this;
+
+    if (left)
+      visitor.visit(left);
+
+    if (right)
+      visitor.visit(right);
   }
 
   /**
