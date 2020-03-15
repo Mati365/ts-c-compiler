@@ -7,10 +7,17 @@ import {TreeNode} from './TreeNode';
  * @class TreeVisitor
  * @template T
  */
-export class TreeVisitor<T extends TreeNode<any>> {
+export abstract class TreeVisitor<T extends TreeNode<any>> {
   nesting = 0;
 
-  visit(node: T): void {
+  /**
+   * Begins iteration over tree
+   *
+   * @param {T} node
+   * @returns {TreeVisitor<T>}
+   * @memberof TreeVisitor
+   */
+  visit(node: T): this {
     this.nesting++;
     this.enter?.(node); // eslint-disable-line no-unused-expressions
 
@@ -18,6 +25,8 @@ export class TreeVisitor<T extends TreeNode<any>> {
 
     this.leave?.(node); // eslint-disable-line no-unused-expressions
     this.nesting--;
+
+    return this;
   }
 
   enter?(node: T): void;
@@ -33,7 +42,16 @@ export class TreeVisitor<T extends TreeNode<any>> {
  * @template T
  */
 export class TreePrintVisitor<T extends TreeNode<any>> extends TreeVisitor<T> {
+  private _reduced: string = '';
+
+  get reduced() { return this._reduced; }
+
   enter(node: T) {
-    console.info(''.padStart((this.nesting - 1) * 3, ' '), `<${node.toString()} />`);
+    const {nesting} = this;
+
+    if (nesting === 1)
+      this._reduced = '';
+
+    this._reduced += `${''.padStart((this.nesting - 1) * 3, ' ')}<${node.toString()} />\n`;
   }
 }

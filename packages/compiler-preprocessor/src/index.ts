@@ -3,6 +3,7 @@ import {isLineTerminatorToken} from '@compiler/lexer/utils';
 
 import {TokenType, NumberToken, Token, TokenKind} from '@compiler/lexer/tokens';
 import {Grammar, GrammarInitializer, SyntaxError} from '@compiler/grammar/Grammar';
+import {TreePrintVisitor} from '@compiler/grammar/tree/TreeVisitor';
 import {NodeLocation} from '@compiler/grammar/tree/NodeLocation';
 
 import {empty} from '@compiler/grammar/matchers';
@@ -60,13 +61,13 @@ const preprocessorMatcher: GrammarInitializer<PreprocessorIdentifier, ASTPreproc
   function ifStmt(): ASTPreprocessorNode {
     const startToken = singleLineIdentifier(PreprocessorIdentifier.IF);
 
-    mathExpression(g);
+    const expression = mathExpression(g);
     body();
     g.identifier(PreprocessorIdentifier.ENDIF);
 
     return new ASTPreprocessorIF(
       NodeLocation.fromTokenLoc(startToken.loc),
-      null,
+      expression,
       null,
     );
   }
@@ -222,22 +223,22 @@ export const preprocessor = Grammar.build(
   preprocessorMatcher,
 );
 
-console.info(
-  preprocessor.process(`
-    %if (2+3*6+(8-9+3+1)+12)
-      xor bx, cx
-    %endif
+const ast = preprocessor.process(`
+  %if 3+2*5
+    xor bx, cx
+  %endif
+
+  %define test_define(arg1,brg2,c) abc
+  %define test_define2 abce
+  %macro dupa 3
+    %macro test_abc 4
+      xor ax, bx
+      mov bx, [bx:cx+5]
+    %endmacro
 
     %define test_define(arg1,brg2,c) abc
     %define test_define2 abce
-    %macro dupa 3
-      %macro test_abc 4
-        xor ax, bx
-        mov bx, [bx:cx+5]
-      %endmacro
+  %endmacro
+`);
 
-      %define test_define(arg1,brg2,c) abc
-      %define test_define2 abce
-    %endmacro
-  `),
-);
+console.info((new TreePrintVisitor).visit(ast).reduced);

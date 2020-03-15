@@ -1,8 +1,10 @@
 /* eslint-disable no-use-before-define, @typescript-eslint/no-use-before-define */
+import * as R from 'ramda';
+
 import {empty} from '@compiler/grammar/matchers';
 
 import {BinaryNode, ValueNode} from '@compiler/grammar/tree/TreeNode';
-import {TreePrintVisitor} from '@compiler/grammar/tree/TreeVisitor';
+import {TreeVisitor} from '@compiler/grammar/tree/TreeVisitor';
 
 import {TokenType, NumberToken} from '@compiler/lexer/tokens';
 import {NodeLocation} from '@compiler/grammar/tree/NodeLocation';
@@ -12,14 +14,21 @@ import {
   ASTPreprocessorKind,
 } from '../constants';
 
-class ASTPrefixOperatorNode extends BinaryNode<ASTPreprocessorKind> {
+/**
+ * Transforms tree into for that second argument contains operator,
+ * it is due to left recursion issue
+ *
+ * @class ASTOperatorNode
+ * @extends {BinaryNode<ASTPreprocessorKind>}
+ */
+class ASTBinaryOpNode extends BinaryNode<ASTPreprocessorKind> {
   constructor(
-    public readonly op: TokenType,
+    public op: TokenType,
     left: ASTPreprocessorNode,
     right: ASTPreprocessorNode,
   ) {
     super(
-      ASTPreprocessorKind.PrefixedOperatorBinary,
+      ASTPreprocessorKind.BinaryOperator,
       left,
       right,
     );
@@ -29,6 +38,31 @@ class ASTPrefixOperatorNode extends BinaryNode<ASTPreprocessorKind> {
     const {op} = this;
 
     return `${super.toString()} op=${op}`;
+  }
+
+  /**
+   * Creates ASTBinaryOpNode if provided both left and right
+   * tree childs, if not creates left or right individually
+   *
+   * @static
+   * @param {TokenType} op
+   * @param {ASTPreprocessorNode} left
+   * @param {ASTPreprocessorNode} right
+   * @returns {(ASTBinaryOpNode | ASTPreprocessorNode)}
+   * @memberof ASTBinaryOpNode
+   */
+  static createIfBothPresent(
+    op: TokenType,
+    left: ASTPreprocessorNode,
+    right: ASTPreprocessorNode,
+  ): ASTBinaryOpNode | ASTPreprocessorNode {
+    if (left && right)
+      return new ASTBinaryOpNode(op, left, right);
+
+    if (!left)
+      return right;
+
+    return left;
   }
 }
 
@@ -73,8 +107,8 @@ function mul(g: PreprocessorGrammar): ASTPreprocessorNode {
   return <ASTPreprocessorNode> g.or(
     {
       value() {
-        return BinaryNode.createOptionalBinary(
-          ASTPreprocessorKind.BinaryExpression,
+        return ASTBinaryOpNode.createIfBothPresent(
+          null,
           term(g),
           mulPrim(g),
         );
@@ -94,7 +128,7 @@ function mulPrim(g: PreprocessorGrammar): ASTPreprocessorNode {
           },
         );
 
-        return new ASTPrefixOperatorNode(
+        return new ASTBinaryOpNode(
           TokenType.MUL,
           term(g),
           mulPrim(g),
@@ -108,7 +142,7 @@ function mulPrim(g: PreprocessorGrammar): ASTPreprocessorNode {
           },
         );
 
-        return new ASTPrefixOperatorNode(
+        return new ASTBinaryOpNode(
           TokenType.DIV,
           term(g),
           mulPrim(g),
@@ -131,8 +165,8 @@ function add(g: PreprocessorGrammar): ASTPreprocessorNode {
   return <ASTPreprocessorNode> g.or(
     {
       value() {
-        return BinaryNode.createOptionalBinary(
-          ASTPreprocessorKind.BinaryExpression,
+        return ASTBinaryOpNode.createIfBothPresent(
+          null,
           mul(g),
           addPrim(g),
         );
@@ -154,7 +188,7 @@ function addPrim(g: PreprocessorGrammar): ASTPreprocessorNode {
           },
         );
 
-        return new ASTPrefixOperatorNode(
+        return new ASTBinaryOpNode(
           TokenType.PLUS,
           mul(g),
           addPrim(g),
@@ -168,7 +202,7 @@ function addPrim(g: PreprocessorGrammar): ASTPreprocessorNode {
           },
         );
 
-        return new ASTPrefixOperatorNode(
+        return new ASTBinaryOpNode(
           TokenType.MINUS,
           mul(g),
           addPrim(g),
@@ -178,6 +212,50 @@ function addPrim(g: PreprocessorGrammar): ASTPreprocessorNode {
       empty,
     },
   );
+}
+
+/**
+ * @see
+ * transforms form where operator is in right node:
+ *
+ * <BinaryOperator op=null />
+ *     <Value value=3 />
+ *     <BinaryOperator op=PLUS />
+ *        <BinaryOperator op=null />
+ *           <Value value=2 />
+ *           <BinaryOperator op=MUL />
+ *              <Value value=5 />
+ *
+ * into proper AST:
+ *
+ * <BinaryOperator op=PLUS />
+ *     <Value value=3 />
+ *     <BinaryOperator op=MUL />
+ *        <Value value=2 />
+ *        <Value value=5 />
+ *
+ * @class ReducePostfixOperatorsVisitor
+ * @extends {TreeVisitor<ASTPreprocessorNode>}
+ */
+class ReducePostfixOperatorsVisitor extends TreeVisitor<ASTPreprocessorNode> {
+  protected self(): ReducePostfixOperatorsVisitor { return this; }
+
+  enter(node: ASTPreprocessorNode): void {
+    if (node.kind !== ASTPreprocessorKind.BinaryOperator)
+      return;
+
+    const binNode = <ASTBinaryOpNode> node;
+    const rightBinNode = <ASTBinaryOpNode> binNode.right;
+
+    if (!R.isNil(binNode.op) || rightBinNode?.kind !== ASTPreprocessorKind.BinaryOperator)
+      return;
+
+    binNode.op = rightBinNode.op;
+    rightBinNode.op = null;
+
+    if (rightBinNode.hasSingleSide())
+      binNode.right = rightBinNode.getFirstNonNullSide();
+  }
 }
 
 /**
@@ -210,6 +288,7 @@ function addPrim(g: PreprocessorGrammar): ASTPreprocessorNode {
 export function mathExpression(g: PreprocessorGrammar): ASTPreprocessorNode {
   const node = add(g);
 
-  (new TreePrintVisitor).visit(node);
+  (new ReducePostfixOperatorsVisitor).visit(node);
+
   return node;
 }

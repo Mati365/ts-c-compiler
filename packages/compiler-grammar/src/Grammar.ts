@@ -124,7 +124,7 @@ export class Grammar<I, K = string> extends TokensIterator {
     );
 
     this._tree = new TreeNode<K>(
-      null,
+      <any> 'Root',
       null,
       safeArray(
         this._rootProduction(),

@@ -1,5 +1,5 @@
-import {Token} from '@compiler/lexer/tokens';
 import {NodeLocation} from '@compiler/grammar/tree/NodeLocation';
+import {TreeVisitor} from '@compiler/grammar/tree/TreeVisitor';
 
 import {
   ASTPreprocessorKind,
@@ -21,9 +21,24 @@ import {
 export class ASTPreprocessorIF extends ASTPreprocessorNode {
   constructor(
     loc: NodeLocation,
-    public readonly logicExpression: Token[],
+    public readonly logicExpression: ASTPreprocessorNode,
     children: ASTPreprocessorNode[],
   ) {
     super(ASTPreprocessorKind.IfStmt, loc, children);
+  }
+
+  /**
+   * Iterates throught tree
+   *
+   * @param {TreeVisitor<ASTPreprocessorNode>} visitor
+   * @memberof BinaryNode
+   */
+  walk(visitor: TreeVisitor<ASTPreprocessorNode>): void {
+    const {logicExpression} = this;
+
+    super.walk(visitor);
+
+    if (logicExpression)
+      visitor.visit(logicExpression);
   }
 }

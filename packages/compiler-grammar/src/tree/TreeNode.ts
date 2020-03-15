@@ -93,10 +93,34 @@ export class ValueNode<T, K = string> extends TreeNode<K> {
 export class BinaryNode<K = string> extends TreeNode<K> {
   constructor(
     kind: K,
-    public readonly left: TreeNode<K>,
-    public readonly right: TreeNode<K>,
+    public left: TreeNode<K>,
+    public right: TreeNode<K>,
   ) {
     super(kind, left?.loc);
+  }
+
+  /**
+   * Returns true if only one side is present
+   *
+   * @returns {boolean}
+   * @memberof BinaryNode
+   */
+  hasSingleSide(): boolean {
+    const {left, right} = this;
+
+    return !left !== !right;
+  }
+
+  /**
+   * Returns non null first side from left
+   *
+   * @returns {TreeNode<K>}
+   * @memberof BinaryNode
+   */
+  getFirstNonNullSide(): TreeNode<K> {
+    const {left, right} = this;
+
+    return left ?? right;
   }
 
   /**
@@ -113,31 +137,5 @@ export class BinaryNode<K = string> extends TreeNode<K> {
 
     if (right)
       visitor.visit(right);
-  }
-
-  /**
-   * Creates node that if any of left or right
-   * is null beacames single TreeNode
-   *
-   * @static
-   * @template KindType
-   * @param {K} kind
-   * @param {TreeNode<K>} left
-   * @param {TreeNode<K>} right
-   * @returns {(TreeNode<K> | BinaryNode<K>)}
-   * @memberof BinaryNode
-   */
-  static createOptionalBinary<K>(
-    kind: K,
-    left: TreeNode<K>,
-    right: TreeNode<K>,
-  ): TreeNode<K> | BinaryNode<K> {
-    if (left && right)
-      return new BinaryNode<K>(kind, left, right);
-
-    if (!left)
-      return right;
-
-    return left;
   }
 }
