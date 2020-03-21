@@ -9,7 +9,8 @@ import {
   ASTPreprocessorKind,
 } from '../constants';
 
-import {ReducePostfixOperatorsVisitor, mathExpression} from './mathExpression';
+import {ReducePostfixOperatorsVisitor} from './utils/ReducePostifxOperatorsVisitor';
+import {mathExpression} from './mathExpression';
 
 /**
  * @see

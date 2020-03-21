@@ -1,14 +1,11 @@
 /* eslint-disable no-use-before-define, @typescript-eslint/no-use-before-define */
-import * as R from 'ramda';
-
 import {empty} from '@compiler/grammar/matchers';
 
 import {ValueNode} from '@compiler/grammar/tree/TreeNode';
-import {TreeVisitor} from '@compiler/grammar/tree/TreeVisitor';
-
 import {TokenType, NumberToken} from '@compiler/lexer/tokens';
 import {NodeLocation} from '@compiler/grammar/tree/NodeLocation';
 
+import {ReducePostfixOperatorsVisitor} from './utils/ReducePostifxOperatorsVisitor';
 import {ASTBinaryOpNode, createBinOpIfBothSidesPresent} from '../nodes/ASTBinaryOpNode';
 import {
   PreprocessorGrammar,
@@ -166,57 +163,6 @@ function addPrim(g: PreprocessorGrammar): ASTPreprocessorNode {
       empty,
     },
   );
-}
-
-/**
- * @see
- * transforms form where operator is in right node:
- *
- * <BinaryOperator op=null />
- *     <Value value=3 />
- *     <BinaryOperator op=PLUS />
- *        <BinaryOperator op=null />
- *           <Value value=2 />
- *           <BinaryOperator op=MUL />
- *              <Value value=5 />
- *
- * into proper AST:
- *
- * <BinaryOperator op=PLUS />
- *     <Value value=3 />
- *     <BinaryOperator op=MUL />
- *        <Value value=2 />
- *        <Value value=5 />
- *
- * @class ReducePostfixOperatorsVisitor
- * @extends {TreeVisitor<ASTPreprocessorNode>}
- */
-export class ReducePostfixOperatorsVisitor extends TreeVisitor<ASTPreprocessorNode> {
-  protected self(): ReducePostfixOperatorsVisitor { return this; }
-
-  constructor(
-    private readonly binOpNodeKind: ASTPreprocessorKind = ASTPreprocessorKind.BinaryOperator,
-  ) {
-    super();
-  }
-
-  enter(node: ASTPreprocessorNode): void {
-    const {binOpNodeKind} = this;
-    if (node.kind !== binOpNodeKind)
-      return;
-
-    const binNode = <ASTBinaryOpNode> node;
-    const rightBinNode = <ASTBinaryOpNode> binNode.right;
-
-    if (!R.isNil(binNode.op) || rightBinNode?.kind !== binOpNodeKind)
-      return;
-
-    binNode.op = rightBinNode.op;
-    rightBinNode.op = null;
-
-    if (rightBinNode.hasSingleSide())
-      binNode.right = rightBinNode.getFirstNonNullSide();
-  }
 }
 
 /**
