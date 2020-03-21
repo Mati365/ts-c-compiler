@@ -3,11 +3,13 @@ import * as R from 'ramda';
 
 import {empty} from '@compiler/grammar/matchers';
 
-import {BinaryNode, ValueNode} from '@compiler/grammar/tree/TreeNode';
+import {ValueNode} from '@compiler/grammar/tree/TreeNode';
 import {TreeVisitor} from '@compiler/grammar/tree/TreeVisitor';
 
 import {TokenType, NumberToken} from '@compiler/lexer/tokens';
 import {NodeLocation} from '@compiler/grammar/tree/NodeLocation';
+
+import {ASTBinaryOpNode, createBinOpIfBothSidesPresent} from '../nodes/ASTBinaryOpNode';
 import {
   PreprocessorGrammar,
   ASTPreprocessorNode,
@@ -15,65 +17,14 @@ import {
 } from '../constants';
 
 /**
- * Transforms tree into for that second argument contains operator,
- * it is due to left recursion issue
- *
- * @class ASTOperatorNode
- * @extends {BinaryNode<ASTPreprocessorKind>}
- */
-class ASTBinaryOpNode extends BinaryNode<ASTPreprocessorKind> {
-  constructor(
-    public op: TokenType,
-    left: ASTPreprocessorNode,
-    right: ASTPreprocessorNode,
-  ) {
-    super(
-      ASTPreprocessorKind.BinaryOperator,
-      left,
-      right,
-    );
-  }
-
-  toString(): string {
-    const {op} = this;
-
-    return `${super.toString()} op=${op}`;
-  }
-
-  /**
-   * Creates ASTBinaryOpNode if provided both left and right
-   * tree childs, if not creates left or right individually
-   *
-   * @static
-   * @param {TokenType} op
-   * @param {ASTPreprocessorNode} left
-   * @param {ASTPreprocessorNode} right
-   * @returns {(ASTBinaryOpNode | ASTPreprocessorNode)}
-   * @memberof ASTBinaryOpNode
-   */
-  static createIfBothPresent(
-    op: TokenType,
-    left: ASTPreprocessorNode,
-    right: ASTPreprocessorNode,
-  ): ASTBinaryOpNode | ASTPreprocessorNode {
-    if (left && right)
-      return new ASTBinaryOpNode(op, left, right);
-
-    if (!left)
-      return right;
-
-    return left;
-  }
-}
-
-/**
  * @see
  * term -> number | ( expr )
  */
 function term(g: PreprocessorGrammar): ASTPreprocessorNode {
-  const token = g.consume();
+  const {currentToken: token} = g;
 
   if (token.type === TokenType.NUMBER) {
+    g.consume();
     return new ValueNode<NumberToken, ASTPreprocessorKind>(
       ASTPreprocessorKind.Value,
       NodeLocation.fromTokenLoc(token.loc),
@@ -82,6 +33,7 @@ function term(g: PreprocessorGrammar): ASTPreprocessorNode {
   }
 
   if (token.type === TokenType.BRACKET && token.text === '(') {
+    g.consume();
     const expr = add(g);
     g.match(
       {
@@ -107,7 +59,8 @@ function mul(g: PreprocessorGrammar): ASTPreprocessorNode {
   return <ASTPreprocessorNode> g.or(
     {
       value() {
-        return ASTBinaryOpNode.createIfBothPresent(
+        return createBinOpIfBothSidesPresent(
+          ASTBinaryOpNode,
           null,
           term(g),
           mulPrim(g),
@@ -165,7 +118,8 @@ function add(g: PreprocessorGrammar): ASTPreprocessorNode {
   return <ASTPreprocessorNode> g.or(
     {
       value() {
-        return ASTBinaryOpNode.createIfBothPresent(
+        return createBinOpIfBothSidesPresent(
+          ASTBinaryOpNode,
           null,
           mul(g),
           addPrim(g),
@@ -181,7 +135,7 @@ function add(g: PreprocessorGrammar): ASTPreprocessorNode {
 function addPrim(g: PreprocessorGrammar): ASTPreprocessorNode {
   return <ASTPreprocessorNode> g.or(
     {
-      mul() {
+      add() {
         g.match(
           {
             type: TokenType.PLUS,
@@ -195,7 +149,7 @@ function addPrim(g: PreprocessorGrammar): ASTPreprocessorNode {
         );
       },
 
-      div() {
+      minus() {
         g.match(
           {
             type: TokenType.MINUS,
@@ -237,17 +191,24 @@ function addPrim(g: PreprocessorGrammar): ASTPreprocessorNode {
  * @class ReducePostfixOperatorsVisitor
  * @extends {TreeVisitor<ASTPreprocessorNode>}
  */
-class ReducePostfixOperatorsVisitor extends TreeVisitor<ASTPreprocessorNode> {
+export class ReducePostfixOperatorsVisitor extends TreeVisitor<ASTPreprocessorNode> {
   protected self(): ReducePostfixOperatorsVisitor { return this; }
 
+  constructor(
+    private readonly binOpNodeKind: ASTPreprocessorKind = ASTPreprocessorKind.BinaryOperator,
+  ) {
+    super();
+  }
+
   enter(node: ASTPreprocessorNode): void {
-    if (node.kind !== ASTPreprocessorKind.BinaryOperator)
+    const {binOpNodeKind} = this;
+    if (node.kind !== binOpNodeKind)
       return;
 
     const binNode = <ASTBinaryOpNode> node;
     const rightBinNode = <ASTBinaryOpNode> binNode.right;
 
-    if (!R.isNil(binNode.op) || rightBinNode?.kind !== ASTPreprocessorKind.BinaryOperator)
+    if (!R.isNil(binNode.op) || rightBinNode?.kind !== binOpNodeKind)
       return;
 
     binNode.op = rightBinNode.op;

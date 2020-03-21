@@ -43,6 +43,11 @@ export enum TokenType {
   DECREMENT = 'DECREMENT',
 }
 
+export type LogicTokenType = (
+  TokenType.AND
+  | TokenType.OR
+);
+
 /**
  * Token type related meta kind
  *

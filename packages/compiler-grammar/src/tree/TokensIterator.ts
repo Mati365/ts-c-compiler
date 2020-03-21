@@ -14,6 +14,8 @@ export class TokensIterator {
     protected tokenIndex: number = 0,
   ) {}
 
+  get currentToken() { return this.tokens[this.tokenIndex]; }
+
   getTokens(): Token[] { return this.tokens; }
 
   getTokenIndex(): number { return this.tokenIndex; }
@@ -45,9 +47,7 @@ export class TokensIterator {
    * @memberof TokensIterator
    */
   consume(count: number = 1): Token {
-    const {tokens} = this;
-
-    const prevToken = tokens[this.tokenIndex];
+    const prevToken = this.currentToken;
     this.tokenIndex += count;
 
     return prevToken;

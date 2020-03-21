@@ -14,11 +14,14 @@ export enum ASTPreprocessorKind {
   IfStmt = 'IfStmt',
   MacroStmt = 'MacroStmt',
   SyntaxStmt = 'SyntaxStmt',
+
+  // Expresisons
   LogicExpression = 'LogicExpression',
 
-  // Math
+  // Math operators
   Value = 'Value',
   BinaryOperator = 'BinaryOperator',
+  BinaryLogicOperator = 'BinaryLogicOperator',
 }
 
 export class PreprocessorGrammar extends Grammar<PreprocessorIdentifier, ASTPreprocessorKind> {}

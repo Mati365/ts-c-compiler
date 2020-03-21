@@ -8,7 +8,7 @@ import {NodeLocation} from '@compiler/grammar/tree/NodeLocation';
 
 import {empty} from '@compiler/grammar/matchers';
 import {fetchTokensUntilEOL} from '@compiler/grammar/utils/fetchTokensUntilEOL';
-import {mathExpression} from './matchers';
+import {logicExpression} from './matchers';
 
 import {
   ASTPreprocessorSyntaxLine,
@@ -61,7 +61,7 @@ const preprocessorMatcher: GrammarInitializer<PreprocessorIdentifier, ASTPreproc
   function ifStmt(): ASTPreprocessorNode {
     const startToken = singleLineIdentifier(PreprocessorIdentifier.IF);
 
-    const expression = mathExpression(g);
+    const expression = logicExpression(g);
     body();
     g.identifier(PreprocessorIdentifier.ENDIF);
 
@@ -224,7 +224,7 @@ export const preprocessor = Grammar.build(
 );
 
 const ast = preprocessor.process(`
-  %if 3+2*5
+  %if 3+2*5 && (2+2 || 4*5 || 2+3)
     xor bx, cx
   %endif
 
