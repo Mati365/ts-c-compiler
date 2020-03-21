@@ -1,4 +1,6 @@
+import {TreeVisitor} from '@compiler/grammar/tree/TreeVisitor';
 import {NodeLocation} from '@compiler/grammar/tree/NodeLocation';
+import {ASTPreprocessorStmt} from './ASTPreprocessorStmt';
 import {
   ASTPreprocessorKind,
   ASTPreprocessorNode,
@@ -19,14 +21,27 @@ export class ASTPreprocessorMacro extends ASTPreprocessorNode {
     loc: NodeLocation,
     public readonly name: string,
     public readonly argsCount: number,
-    children: ASTPreprocessorNode[],
+    public readonly content: ASTPreprocessorStmt,
   ) {
-    super(ASTPreprocessorKind.MacroStmt, loc, children);
+    super(ASTPreprocessorKind.MacroStmt, loc);
   }
 
   toString(): string {
     const {name, argsCount} = this;
 
     return `${super.toString()} name=${name} args=${argsCount}`;
+  }
+
+  /**
+   * Iterates throught tree
+   *
+   * @param {TreeVisitor<ASTPreprocessorNode>} visitor
+   * @memberof BinaryNode
+   */
+  walk(visitor: TreeVisitor<ASTPreprocessorNode>): void {
+    const {content} = this;
+
+    if (content)
+      visitor.visit(content);
   }
 }

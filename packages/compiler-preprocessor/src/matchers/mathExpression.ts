@@ -1,7 +1,6 @@
 /* eslint-disable no-use-before-define, @typescript-eslint/no-use-before-define */
 import {empty} from '@compiler/grammar/matchers';
 
-import {ValueNode} from '@compiler/grammar/tree/TreeNode';
 import {TokenType, NumberToken} from '@compiler/lexer/tokens';
 import {NodeLocation} from '@compiler/grammar/tree/NodeLocation';
 
@@ -15,6 +14,7 @@ import {
   PreprocessorGrammar,
   ASTPreprocessorNode,
   ASTPreprocessorKind,
+  ASTPreprocessorValueNode,
 } from '../constants';
 
 /**
@@ -26,7 +26,7 @@ function term(g: PreprocessorGrammar): ASTPreprocessorNode {
 
   if (token.type === TokenType.NUMBER) {
     g.consume();
-    return new ValueNode<NumberToken, ASTPreprocessorKind>(
+    return new ASTPreprocessorValueNode<NumberToken>(
       ASTPreprocessorKind.Value,
       NodeLocation.fromTokenLoc(token.loc),
       token,

@@ -8,12 +8,13 @@ import {TreeVisitor} from './TreeVisitor';
  * @export
  * @class TreeNode
  * @template K KindType
+ * @template C TreeNode
  */
-export class TreeNode<K = string> {
+export class TreeNode<K = string, C extends TreeNode<K, C> = any> {
   constructor(
     public readonly kind: K,
     public readonly loc: NodeLocation,
-    public children: TreeNode<K>[] = null,
+    public children: C[] = null,
   ) {}
 
   /**

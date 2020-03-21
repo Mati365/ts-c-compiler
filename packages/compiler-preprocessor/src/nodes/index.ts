@@ -4,3 +4,4 @@ export * from './ASTPreprocessorDefine';
 export * from './ASTPreprocessorExpression';
 export * from './ASTPreprocessorIF';
 export * from './ASTPreprocessorBinaryOpNode';
+export * from './ASTPreprocessorStmt';

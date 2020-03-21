@@ -5,6 +5,12 @@ import {
   ASTPreprocessorKind,
 } from '../constants';
 
+import {
+  Interpretable,
+  PreprocessorInterpreter,
+  InterpreterResult,
+} from '../interpreter/Interpreter';
+
 export function createBinOpIfBothSidesPresent<T extends ASTPreprocessorBinaryOpNode>(
   ClassType: new(op: TokenType, left: ASTPreprocessorNode, right: ASTPreprocessorNode) => T,
   op: TokenType,
@@ -27,7 +33,7 @@ export function createBinOpIfBothSidesPresent<T extends ASTPreprocessorBinaryOpN
  * @class ASTPreprocessorBinaryOpNode
  * @extends {BinaryNode<ASTPreprocessorKind>}
  */
-export class ASTPreprocessorBinaryOpNode extends BinaryNode<ASTPreprocessorKind> {
+export class ASTPreprocessorBinaryOpNode extends BinaryNode<ASTPreprocessorKind> implements Interpretable {
   constructor(
     public op: TokenType,
     left: ASTPreprocessorNode,
@@ -36,6 +42,12 @@ export class ASTPreprocessorBinaryOpNode extends BinaryNode<ASTPreprocessorKind>
   ) {
     super(kind, left, right);
   }
+
+  /* eslint-disable @typescript-eslint/no-unused-vars */
+  exec(interpreter: PreprocessorInterpreter): InterpreterResult {
+    return null;
+  }
+  /* eslint-enable @typescript-eslint/no-unused-vars */
 
   toString(): string {
     const {op} = this;

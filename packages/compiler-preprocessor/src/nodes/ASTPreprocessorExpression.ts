@@ -1,6 +1,5 @@
 import {NodeLocation} from '@compiler/grammar/tree/NodeLocation';
-import {TokenType} from '@compiler/lexer/tokens';
-
+import {TreeVisitor} from '@compiler/grammar/tree/TreeVisitor';
 import {
   ASTPreprocessorKind,
   ASTPreprocessorNode,
@@ -17,8 +16,21 @@ import {
 export class ASTPreprocessorLogicalExpression extends ASTPreprocessorNode {
   constructor(
     loc: NodeLocation,
-    public operator: TokenType,
+    public expression: ASTPreprocessorNode,
   ) {
     super(ASTPreprocessorKind.LogicExpression, loc);
+  }
+
+  /**
+   * Iterates throught tree
+   *
+   * @param {TreeVisitor<ASTPreprocessorNode>} visitor
+   * @memberof TreeNode
+   */
+  walk(visitor: TreeVisitor<ASTPreprocessorNode>): void {
+    const {expression} = this;
+
+    if (expression)
+      visitor.visit(expression);
   }
 }

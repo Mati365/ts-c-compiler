@@ -16,6 +16,8 @@ import {
   ASTPreprocessorDefine,
   ASTPreprocessorDefineArgSchema,
   ASTPreprocessorIF,
+  ASTPreprocessorLogicalExpression,
+  ASTPreprocessorStmt,
 } from './nodes';
 
 import {
@@ -60,15 +62,19 @@ const preprocessorMatcher: GrammarInitializer<PreprocessorIdentifier, ASTPreproc
    */
   function ifStmt(): ASTPreprocessorNode {
     const startToken = singleLineIdentifier(PreprocessorIdentifier.IF);
-
     const expression = logicExpression(g);
-    body();
+
+    const bodyLoc = NodeLocation.fromTokenLoc(g.currentToken.loc);
+    const consequent = body();
     g.identifier(PreprocessorIdentifier.ENDIF);
 
     return new ASTPreprocessorIF(
       NodeLocation.fromTokenLoc(startToken.loc),
-      expression,
-      null,
+      new ASTPreprocessorLogicalExpression(
+        bodyLoc,
+        expression,
+      ),
+      consequent,
     );
   }
 
@@ -195,15 +201,18 @@ const preprocessorMatcher: GrammarInitializer<PreprocessorIdentifier, ASTPreproc
    *
    * @returns {TreeNode[]}
    */
-  function body(): ASTPreprocessorNode[] {
-    return g.matchList(
-      {
-        ifStmt,
-        defineStmt,
-        macroStmt,
-        syntaxLine,
-        empty,
-      },
+  function body(): ASTPreprocessorStmt {
+    return new ASTPreprocessorStmt(
+      NodeLocation.fromTokenLoc(g.currentToken.loc),
+      <ASTPreprocessorNode[]> g.matchList(
+        {
+          ifStmt,
+          defineStmt,
+          macroStmt,
+          syntaxLine,
+          empty,
+        },
+      ),
     );
   }
 

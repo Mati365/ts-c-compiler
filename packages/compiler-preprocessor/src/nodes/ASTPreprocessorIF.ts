@@ -6,6 +6,8 @@ import {
   ASTPreprocessorNode,
 } from '../constants';
 
+import {ASTPreprocessorLogicalExpression} from './ASTPreprocessorExpression';
+
 /**
  * @example
  * %if 2 > 4
@@ -21,10 +23,11 @@ import {
 export class ASTPreprocessorIF extends ASTPreprocessorNode {
   constructor(
     loc: NodeLocation,
-    public readonly logicExpression: ASTPreprocessorNode,
-    children: ASTPreprocessorNode[],
+    public readonly test: ASTPreprocessorLogicalExpression,
+    public readonly consequent: ASTPreprocessorNode,
+    public readonly alternate: ASTPreprocessorNode = null,
   ) {
-    super(ASTPreprocessorKind.IfStmt, loc, children);
+    super(ASTPreprocessorKind.IfStmt, loc);
   }
 
   /**
@@ -34,11 +37,17 @@ export class ASTPreprocessorIF extends ASTPreprocessorNode {
    * @memberof BinaryNode
    */
   walk(visitor: TreeVisitor<ASTPreprocessorNode>): void {
-    const {logicExpression} = this;
+    const {test, consequent, alternate} = this;
 
     super.walk(visitor);
 
-    if (logicExpression)
-      visitor.visit(logicExpression);
+    if (test)
+      visitor.visit(test);
+
+    if (consequent)
+      visitor.visit(consequent);
+
+    if (alternate)
+      visitor.visit(alternate);
   }
 }
