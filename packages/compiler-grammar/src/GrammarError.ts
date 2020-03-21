@@ -6,10 +6,12 @@ export enum GrammarErrorCode {
   INCORRECT_ARGS_LIST,
   UNTERMINATED_ARGS_LIST,
   MACRO_ARGS_LIST_MISMATCH,
+  MACRO_ALREADY_EXISTS,
 }
 
 /* eslint-disable max-len */
 export const GRAMMAR_ERROR_TRANSLATIONS: {[key in GrammarErrorCode]: string} = {
+  [GrammarErrorCode.MACRO_ALREADY_EXISTS]: 'Macro %{name} already exists!',
   [GrammarErrorCode.SYNTAX_ERROR]: 'Syntax error!',
   [GrammarErrorCode.INCORRECT_ARGS_LIST]: 'Incorrect args list syntax!',
   [GrammarErrorCode.UNTERMINATED_ARGS_LIST]: 'Unterminated args list!',

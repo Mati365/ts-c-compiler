@@ -51,6 +51,10 @@ export class ASTPreprocessorBinaryOpNode extends BinaryNode<ASTPreprocessorKind>
   }
   /* eslint-enable @typescript-eslint/no-unused-vars */
 
+  toEmitterLine(): string {
+    return '\n';
+  }
+
   toString(): string {
     const {op} = this;
 

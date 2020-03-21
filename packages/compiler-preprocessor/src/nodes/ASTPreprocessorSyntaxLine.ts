@@ -1,6 +1,6 @@
 import * as R from 'ramda';
 
-import {Token, TokenType} from '@compiler/lexer/tokens';
+import {Token} from '@compiler/lexer/tokens';
 import {NodeLocation} from '@compiler/grammar/tree/NodeLocation';
 
 import {
@@ -20,24 +20,7 @@ import {
  * @returns {string}
  */
 function formatAsmStmt(tokens: Token[]): string {
-  return R.reduce(
-    (acc, token) => {
-      const lastChar = R.last(acc);
-
-      if (acc
-          && (token.type === TokenType.KEYWORD || token.text === '[')
-          && token.text !== ':'
-          && lastChar !== ' '
-          && lastChar !== ':'
-          && lastChar !== '[')
-        acc += ' ';
-
-      acc += token.text;
-      return acc;
-    },
-    '',
-    tokens,
-  );
+  return R.pluck('text', tokens).join(' ');
 }
 
 /**
@@ -48,6 +31,8 @@ function formatAsmStmt(tokens: Token[]): string {
  * @extends {ASTPreprocessorNode}
  */
 export class ASTPreprocessorSyntaxLine extends ASTPreprocessorNode {
+  private outputTokens: Token[];
+
   constructor(
     loc: NodeLocation,
     public readonly tokens: Token[],
@@ -57,6 +42,10 @@ export class ASTPreprocessorSyntaxLine extends ASTPreprocessorNode {
 
   isEmpty(): boolean {
     return !this.tokens.length;
+  }
+
+  toEmitterLine(): string {
+    return formatAsmStmt(this.outputTokens);
   }
 
   toString(): string {
@@ -73,8 +62,6 @@ export class ASTPreprocessorSyntaxLine extends ASTPreprocessorNode {
    * @memberof ASTPreprocessorMacro
    */
   exec(interpreter: PreprocessorInterpreter): InterpreterResult {
-    const {tokens} = this;
-
-    interpreter.evalTokensList(tokens);
+    [, this.outputTokens] = interpreter.evalTokensList(this.tokens);
   }
 }

@@ -8,7 +8,7 @@ import {TreeNode} from './TreeNode';
  * @template T
  */
 export abstract class TreeVisitor<T extends TreeNode<any>> {
-  nesting = 0;
+  protected nesting = 0;
 
   /**
    * Begins iteration over tree

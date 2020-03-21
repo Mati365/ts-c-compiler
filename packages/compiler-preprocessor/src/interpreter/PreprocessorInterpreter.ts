@@ -6,7 +6,13 @@ import {
   TokenType,
 } from '@compiler/lexer/tokens';
 
-import {ASTPreprocessorNode} from '../constants';
+import {
+  GrammarError,
+  GrammarErrorCode,
+} from '@compiler/grammar/GrammarError';
+
+import {TreeVisitor} from '@compiler/grammar/tree/TreeVisitor';
+import {ASTPreprocessorNode, isStatementPreprocessorNode} from '../constants';
 import {ASTPreprocessorCallable} from '../nodes';
 import {fetchRuntimeCallArgsList} from './utils/fetchRuntimeCallArgsList';
 
@@ -14,14 +20,41 @@ export type InterpreterResult = string | number | boolean | void;
 
 export interface PreprocessorInterpretable {
   exec(interpreter: PreprocessorInterpreter): InterpreterResult;
+  toEmitterLine(): string;
 }
 
 export class PreprocessorInterpreter {
   private _callable = new Map<string, ASTPreprocessorCallable>();
 
-  exec(ast: ASTPreprocessorNode): void {
+  /**
+   * Evaluates all macros, replaces them with empty lines
+   *
+   * @see
+   *  Preserves lines numbers but not columns!
+   *
+   * @param {ASTPreprocessorNode} ast
+   * @returns {string}
+   * @memberof PreprocessorInterpreter
+   */
+  exec(ast: ASTPreprocessorNode): string {
+    let acc = '';
+
     this.clear();
     ast.exec(this);
+
+    const visitor = new (class extends TreeVisitor<ASTPreprocessorNode> {
+      enter(node: ASTPreprocessorNode) {
+        if (!isStatementPreprocessorNode(node))
+          return;
+
+        if (this.nesting === 2)
+          acc += node.toEmitterLine();
+        acc += '\n';
+      }
+    });
+
+    visitor.visit(ast);
+    return acc;
   }
 
   /**
@@ -35,6 +68,16 @@ export class PreprocessorInterpreter {
    * @memberof PreprocessorInterpreter
    */
   defineRuntimeCallable(callable: ASTPreprocessorCallable): this {
+    if (this.isCallable(callable.name)) {
+      throw new GrammarError(
+        GrammarErrorCode.MACRO_ALREADY_EXISTS,
+        null,
+        {
+          name: callable.name,
+        },
+      );
+    }
+
     this._callable.set(callable.name, callable);
     return this;
   }

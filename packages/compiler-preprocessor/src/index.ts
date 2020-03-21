@@ -239,16 +239,17 @@ export const preprocessorGrammar = Grammar.build(
  * @export
  * @param {string} str
  */
-export function preprocessor(str: string): void {
+export function preprocessor(str: string): string {
   const stmt: ASTPreprocessorStmt = preprocessorGrammar.process(str).children[0];
 
   const interpreter = new PreprocessorInterpreter;
-  interpreter.exec(stmt);
+  const result = interpreter.exec(stmt);
 
   console.info((new TreePrintVisitor).visit(stmt).reduced);
+  return result;
 }
 
-preprocessor(`
+const output = preprocessor(`
   %if 3+2*5 > 5 && (5 * 5 < 9 || 5 * 5 > 1)
     xor bx, cx
   %endif
@@ -266,4 +267,7 @@ preprocessor(`
   %endmacro
 
   xor ax, test_define(2*(5-6), 3, 4)
+  times 55 db (2+2)
 `);
+
+console.info(`Output: \n${output}`);
