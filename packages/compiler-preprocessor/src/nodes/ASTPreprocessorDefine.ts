@@ -17,6 +17,14 @@ export class ASTPreprocessorDefineArgSchema {
   ) {}
 }
 
+export type ASTPreprocessorRuntimeArg = string|number;
+
+export interface ASTPreprocessorCallable {
+  readonly name: string;
+
+  runtimeCall(args: ASTPreprocessorRuntimeArg[]): string;
+}
+
 /**
  * @example
  *  %define param(a, b) ((a)+(b)*4)
@@ -25,7 +33,7 @@ export class ASTPreprocessorDefineArgSchema {
  * @class ASTPreprocessorDefine
  * @extends {ASTPreprocessorNode}
  */
-export class ASTPreprocessorDefine extends ASTPreprocessorNode {
+export class ASTPreprocessorDefine extends ASTPreprocessorNode implements ASTPreprocessorCallable {
   constructor(
     loc: NodeLocation,
     public readonly name: string,
@@ -49,6 +57,19 @@ export class ASTPreprocessorDefine extends ASTPreprocessorNode {
    * @memberof ASTPreprocessorMacro
    */
   exec(interpreter: PreprocessorInterpreter): InterpreterResult {
-    interpreter.define(this);
+    interpreter.defineRuntimeCallable(this);
   }
+
+  /* eslint-disable @typescript-eslint/no-unused-vars */
+  /**
+   * Allow to call ASTNode as callable functions
+   *
+   * @param {ASTPreprocessorRuntimeArg[]} args
+   * @returns {string}
+   * @memberof ASTPreprocessorDefine
+   */
+  runtimeCall(args: ASTPreprocessorRuntimeArg[]): string {
+    return null;
+  }
+  /* eslint-enable @typescript-eslint/no-unused-vars */
 }

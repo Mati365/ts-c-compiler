@@ -261,7 +261,9 @@ preprocessor(`
       mov bx, [bx:cx+5]
     %endmacro
 
-    %define test_define(arg1,brg2,c) abc
+    %define test_define(arg1,brg2,c) ax
     %define test_define2 abce
   %endmacro
+
+  xor ax, test_define(2*(5-6), 3, 4)
 `);

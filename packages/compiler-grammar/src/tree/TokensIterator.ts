@@ -62,8 +62,6 @@ export class TokensIterator {
   iterate(fn: (token: Token, iterator?: TokensIterator) => any): void {
     const {tokens} = this;
 
-    this.tokenIndex = 0;
-
     for (; this.tokenIndex < tokens.length; ++this.tokenIndex) {
       const result = fn(
         tokens[this.tokenIndex],

@@ -1,6 +1,7 @@
 import {TreeVisitor} from '@compiler/grammar/tree/TreeVisitor';
 import {NodeLocation} from '@compiler/grammar/tree/NodeLocation';
 
+import {ASTPreprocessorCallable, ASTPreprocessorRuntimeArg} from './ASTPreprocessorDefine';
 import {ASTPreprocessorStmt} from './ASTPreprocessorStmt';
 import {
   PreprocessorInterpreter,
@@ -22,7 +23,7 @@ import {
  * @class ASTPreprocessorMacro
  * @extends {ASTPreprocessorNode}
  */
-export class ASTPreprocessorMacro extends ASTPreprocessorNode {
+export class ASTPreprocessorMacro extends ASTPreprocessorNode implements ASTPreprocessorCallable {
   constructor(
     loc: NodeLocation,
     public readonly name: string,
@@ -46,8 +47,21 @@ export class ASTPreprocessorMacro extends ASTPreprocessorNode {
    * @memberof ASTPreprocessorMacro
    */
   exec(interpreter: PreprocessorInterpreter): InterpreterResult {
-    interpreter.defineMacro(this);
+    interpreter.defineRuntimeCallable(this);
   }
+
+  /* eslint-disable @typescript-eslint/no-unused-vars */
+  /**
+   * Allow to call ASTNode as callable functions
+   *
+   * @param {ASTPreprocessorRuntimeArg[]} args
+   * @returns {string}
+   * @memberof ASTPreprocessorDefine
+   */
+  runtimeCall(args: ASTPreprocessorRuntimeArg[]): string {
+    return null;
+  }
+  /* eslint-enable @typescript-eslint/no-unused-vars */
 
   /**
    * Iterates throught tree

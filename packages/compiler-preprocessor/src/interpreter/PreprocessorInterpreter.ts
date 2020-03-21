@@ -1,7 +1,7 @@
 import {ASTPreprocessorNode} from '../constants';
 import {
-  ASTPreprocessorMacro,
-  ASTPreprocessorDefine,
+  ASTPreprocessorCallable,
+  ASTPreprocessorRuntimeArg,
 } from '../nodes';
 
 export type InterpreterResult = string | number | boolean | void;
@@ -11,8 +11,7 @@ export interface PreprocessorInterpretable {
 }
 
 export class PreprocessorInterpreter {
-  private _macros = new Map<string, ASTPreprocessorMacro>();
-  private _defs = new Map<string, ASTPreprocessorDefine>();
+  private _callable = new Map<string, ASTPreprocessorCallable>();
 
   exec(ast: ASTPreprocessorNode): void {
     this.clear();
@@ -20,27 +19,44 @@ export class PreprocessorInterpreter {
   }
 
   /**
-   * Sets macro to defined macros list
+   * Declares function that can be executed in ASTPreprocessorSyntaxLine
    *
-   * @param {ASTPreprocessorMacro} macro
+   * @todo
+   *  Handle already defined macro
+   *
+   * @param {ASTPreprocessorCallable} callable
    * @returns {this}
    * @memberof PreprocessorInterpreter
    */
-  defineMacro(macro: ASTPreprocessorMacro): this {
-    this._macros.set(macro.name, macro);
+  defineRuntimeCallable(callable: ASTPreprocessorCallable): this {
+    this._callable.set(callable.name, callable);
     return this;
   }
 
   /**
-   * Sets %define stmt
+   * Checks if symbol is callable
    *
-   * @param {ASTPreprocessorDefine} def
-   * @returns {this}
+   * @param {string} name
+   * @returns {boolean}
    * @memberof PreprocessorInterpreter
    */
-  define(def: ASTPreprocessorDefine): this {
-    this._defs.set(def.name, def);
-    return this;
+  isCallable(name: string): boolean {
+    return this._callable.has(name);
+  }
+
+  /**
+   * Calls defined function
+   *
+   * @todo
+   *  Handle missing method
+   *
+   * @param {string} name
+   * @param {ASTPreprocessorRuntimeArg[]} [args=[]]
+   * @returns {string}
+   * @memberof PreprocessorInterpreter
+   */
+  runtimeCall(name: string, args: ASTPreprocessorRuntimeArg[] = []): string {
+    return this._callable.get(name).runtimeCall(args);
   }
 
   /**
@@ -49,9 +65,8 @@ export class PreprocessorInterpreter {
    * @memberof PreprocessorInterpreter
    */
   clear() {
-    const {_macros, _defs} = this;
+    const {_callable} = this;
 
-    _macros.clear();
-    _defs.clear();
+    _callable.clear();
   }
 }
