@@ -2,19 +2,19 @@
 import {empty} from '@compiler/grammar/matchers';
 
 import {TokenType} from '@compiler/lexer/tokens';
-import {ASTBinaryLogicOpNode, createBinOpIfBothSidesPresent} from '../nodes/ASTBinaryOpNode';
+import {createBinOpIfBothSidesPresent, ASTPreprocessorBinaryOpNode} from '../nodes/ASTPreprocessorBinaryOpNode';
+
 import {
   PreprocessorGrammar,
   ASTPreprocessorNode,
-  ASTPreprocessorKind,
 } from '../constants';
 
 import {ReducePostfixOperatorsVisitor} from './utils/ReducePostifxOperatorsVisitor';
-import {mathExpression} from './mathExpression';
+import {relationExpression} from './relationExpression';
 
 /**
  * @see
- * term -> mathExpr | ( logic )
+ * term -> relation | ( logic )
  */
 function term(g: PreprocessorGrammar): ASTPreprocessorNode {
   const {currentToken: token} = g;
@@ -32,7 +32,7 @@ function term(g: PreprocessorGrammar): ASTPreprocessorNode {
     return expr;
   }
 
-  return mathExpression(g);
+  return relationExpression(g, false);
 }
 
 /**
@@ -46,7 +46,7 @@ function andOp(g: PreprocessorGrammar): ASTPreprocessorNode {
     {
       and() {
         return createBinOpIfBothSidesPresent(
-          ASTBinaryLogicOpNode,
+          ASTPreprocessorBinaryOpNode,
           null,
           term(g),
           andOpPrim(g),
@@ -67,11 +67,10 @@ function andOpPrim(g: PreprocessorGrammar): ASTPreprocessorNode {
           },
         );
 
-        const [left, right] = [term(g), andOpPrim(g)];
-        return new ASTBinaryLogicOpNode(
+        return new ASTPreprocessorBinaryOpNode(
           TokenType.AND,
-          left,
-          right,
+          term(g),
+          andOpPrim(g),
         );
       },
       empty,
@@ -90,7 +89,7 @@ function orOp(g: PreprocessorGrammar): ASTPreprocessorNode {
     {
       value() {
         return createBinOpIfBothSidesPresent(
-          ASTBinaryLogicOpNode,
+          ASTPreprocessorBinaryOpNode,
           null,
           andOp(g),
           orOpPrim(g),
@@ -111,11 +110,10 @@ function orOpPrim(g: PreprocessorGrammar): ASTPreprocessorNode {
           },
         );
 
-        const [left, right] = [andOp(g), orOpPrim(g)];
-        return new ASTBinaryLogicOpNode(
+        return new ASTPreprocessorBinaryOpNode(
           TokenType.OR,
-          left,
-          right,
+          andOp(g),
+          orOpPrim(g),
         );
       },
       empty,
@@ -123,10 +121,19 @@ function orOpPrim(g: PreprocessorGrammar): ASTPreprocessorNode {
   );
 }
 
-export function logicExpression(g: PreprocessorGrammar): ASTPreprocessorNode {
+/**
+ * Creates tree of advanced &&, || operators
+ *
+ * @export
+ * @param {PreprocessorGrammar} g
+ * @param {boolean} [reducePostFixOps=true]
+ * @returns {ASTPreprocessorNode}
+ */
+export function logicExpression(g: PreprocessorGrammar, reducePostFixOps: boolean = true): ASTPreprocessorNode {
   const node = orOp(g);
 
-  (new ReducePostfixOperatorsVisitor(ASTPreprocessorKind.BinaryLogicOperator)).visit(node);
+  if (reducePostFixOps)
+    (new ReducePostfixOperatorsVisitor).visit(node);
 
   return node;
 }

@@ -21,7 +21,6 @@ export enum ASTPreprocessorKind {
   // Math operators
   Value = 'Value',
   BinaryOperator = 'BinaryOperator',
-  BinaryLogicOperator = 'BinaryLogicOperator',
 }
 
 export class PreprocessorGrammar extends Grammar<PreprocessorIdentifier, ASTPreprocessorKind> {}

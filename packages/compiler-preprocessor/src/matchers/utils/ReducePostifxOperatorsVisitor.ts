@@ -1,7 +1,7 @@
 import * as R from 'ramda';
 
 import {TreeVisitor} from '@compiler/grammar/tree/TreeVisitor';
-import {ASTBinaryOpNode} from '../../nodes/ASTBinaryOpNode';
+import {ASTPreprocessorBinaryOpNode} from '../../nodes/ASTPreprocessorBinaryOpNode';
 import {
   ASTPreprocessorNode,
   ASTPreprocessorKind,
@@ -44,8 +44,8 @@ export class ReducePostfixOperatorsVisitor extends TreeVisitor<ASTPreprocessorNo
     if (node.kind !== binOpNodeKind)
       return;
 
-    const binNode = <ASTBinaryOpNode> node;
-    const rightBinNode = <ASTBinaryOpNode> binNode.right;
+    const binNode = <ASTPreprocessorBinaryOpNode> node;
+    const rightBinNode = <ASTPreprocessorBinaryOpNode> binNode.right;
 
     if (!R.isNil(binNode.op) || rightBinNode?.kind !== binOpNodeKind)
       return;

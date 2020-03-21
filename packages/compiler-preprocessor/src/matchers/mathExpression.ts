@@ -6,7 +6,11 @@ import {TokenType, NumberToken} from '@compiler/lexer/tokens';
 import {NodeLocation} from '@compiler/grammar/tree/NodeLocation';
 
 import {ReducePostfixOperatorsVisitor} from './utils/ReducePostifxOperatorsVisitor';
-import {ASTBinaryOpNode, createBinOpIfBothSidesPresent} from '../nodes/ASTBinaryOpNode';
+import {
+  ASTPreprocessorBinaryOpNode,
+  createBinOpIfBothSidesPresent,
+} from '../nodes/ASTPreprocessorBinaryOpNode';
+
 import {
   PreprocessorGrammar,
   ASTPreprocessorNode,
@@ -57,7 +61,7 @@ function mul(g: PreprocessorGrammar): ASTPreprocessorNode {
     {
       value() {
         return createBinOpIfBothSidesPresent(
-          ASTBinaryOpNode,
+          ASTPreprocessorBinaryOpNode,
           null,
           term(g),
           mulPrim(g),
@@ -78,7 +82,7 @@ function mulPrim(g: PreprocessorGrammar): ASTPreprocessorNode {
           },
         );
 
-        return new ASTBinaryOpNode(
+        return new ASTPreprocessorBinaryOpNode(
           TokenType.MUL,
           term(g),
           mulPrim(g),
@@ -92,7 +96,7 @@ function mulPrim(g: PreprocessorGrammar): ASTPreprocessorNode {
           },
         );
 
-        return new ASTBinaryOpNode(
+        return new ASTPreprocessorBinaryOpNode(
           TokenType.DIV,
           term(g),
           mulPrim(g),
@@ -116,7 +120,7 @@ function add(g: PreprocessorGrammar): ASTPreprocessorNode {
     {
       value() {
         return createBinOpIfBothSidesPresent(
-          ASTBinaryOpNode,
+          ASTPreprocessorBinaryOpNode,
           null,
           mul(g),
           addPrim(g),
@@ -139,7 +143,7 @@ function addPrim(g: PreprocessorGrammar): ASTPreprocessorNode {
           },
         );
 
-        return new ASTBinaryOpNode(
+        return new ASTPreprocessorBinaryOpNode(
           TokenType.PLUS,
           mul(g),
           addPrim(g),
@@ -153,7 +157,7 @@ function addPrim(g: PreprocessorGrammar): ASTPreprocessorNode {
           },
         );
 
-        return new ASTBinaryOpNode(
+        return new ASTPreprocessorBinaryOpNode(
           TokenType.MINUS,
           mul(g),
           addPrim(g),
@@ -190,12 +194,14 @@ function addPrim(g: PreprocessorGrammar): ASTPreprocessorNode {
  *
  * @export
  * @param {PreprocessorGrammar} g
+ * @param {boolean} [reducePostFixOps=true]
  * @returns {ASTPreprocessorNode}
  */
-export function mathExpression(g: PreprocessorGrammar): ASTPreprocessorNode {
+export function mathExpression(g: PreprocessorGrammar, reducePostFixOps: boolean = true): ASTPreprocessorNode {
   const node = add(g);
 
-  (new ReducePostfixOperatorsVisitor).visit(node);
+  if (reducePostFixOps)
+    (new ReducePostfixOperatorsVisitor).visit(node);
 
   return node;
 }

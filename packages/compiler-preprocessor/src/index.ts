@@ -224,7 +224,7 @@ export const preprocessor = Grammar.build(
 );
 
 const ast = preprocessor.process(`
-  %if 3+2*5 && (2+2 || 4*5 || 2+3)
+  %if 3+2*5 > 5 && (5 * 5 < 9 || 5 * 5 > 1)
     xor bx, cx
   %endif
 
