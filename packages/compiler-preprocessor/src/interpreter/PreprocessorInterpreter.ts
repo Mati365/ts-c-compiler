@@ -126,7 +126,11 @@ export class PreprocessorInterpreter {
 
       // nested eval of macro, arguments might contain macro
       const it = new TokensIterator(newTokens, i + 1);
-      const args = fetchRuntimeCallArgsList(it).map((argTokens) => this.evalTokensList(argTokens)[1]);
+      const args = (
+        newTokens[i + 1]?.text === '('
+          ? fetchRuntimeCallArgsList(it).map((argTokens) => this.evalTokensList(argTokens)[1])
+          : []
+      );
       const callResult = this.runtimeCall(
         token.text,
         R.map(
