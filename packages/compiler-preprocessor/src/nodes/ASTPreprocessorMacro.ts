@@ -1,6 +1,12 @@
 import {TreeVisitor} from '@compiler/grammar/tree/TreeVisitor';
 import {NodeLocation} from '@compiler/grammar/tree/NodeLocation';
+
 import {ASTPreprocessorStmt} from './ASTPreprocessorStmt';
+import {
+  PreprocessorInterpreter,
+  InterpreterResult,
+} from '../interpreter/PreprocessorInterpreter';
+
 import {
   ASTPreprocessorKind,
   ASTPreprocessorNode,
@@ -30,6 +36,17 @@ export class ASTPreprocessorMacro extends ASTPreprocessorNode {
     const {name, argsCount} = this;
 
     return `${super.toString()} name=${name} args=${argsCount}`;
+  }
+
+  /**
+   * Exec interpreter on node
+   *
+   * @param {PreprocessorInterpreter} interpreter
+   * @returns {InterpreterResult}
+   * @memberof ASTPreprocessorMacro
+   */
+  exec(interpreter: PreprocessorInterpreter): InterpreterResult {
+    interpreter.defineMacro(this);
   }
 
   /**

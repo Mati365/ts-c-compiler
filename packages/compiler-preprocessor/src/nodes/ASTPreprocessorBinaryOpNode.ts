@@ -6,10 +6,10 @@ import {
 } from '../constants';
 
 import {
-  Interpretable,
+  PreprocessorInterpretable,
   PreprocessorInterpreter,
   InterpreterResult,
-} from '../interpreter/Interpreter';
+} from '../interpreter/PreprocessorInterpreter';
 
 export function createBinOpIfBothSidesPresent<T extends ASTPreprocessorBinaryOpNode>(
   ClassType: new(op: TokenType, left: ASTPreprocessorNode, right: ASTPreprocessorNode) => T,
@@ -30,10 +30,12 @@ export function createBinOpIfBothSidesPresent<T extends ASTPreprocessorBinaryOpN
  * Transforms tree into for that second argument contains operator,
  * it is due to left recursion issue
  *
+ * @export
  * @class ASTPreprocessorBinaryOpNode
  * @extends {BinaryNode<ASTPreprocessorKind>}
+ * @implements {PreprocessorInterpretable}
  */
-export class ASTPreprocessorBinaryOpNode extends BinaryNode<ASTPreprocessorKind> implements Interpretable {
+export class ASTPreprocessorBinaryOpNode extends BinaryNode<ASTPreprocessorKind> implements PreprocessorInterpretable {
   constructor(
     public op: TokenType,
     left: ASTPreprocessorNode,

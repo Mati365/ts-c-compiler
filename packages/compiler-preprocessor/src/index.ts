@@ -20,6 +20,7 @@ import {
   ASTPreprocessorStmt,
 } from './nodes';
 
+import {PreprocessorInterpreter} from './interpreter/PreprocessorInterpreter';
 import {
   PreprocessorIdentifier,
   ASTPreprocessorKind,
@@ -219,7 +220,7 @@ const preprocessorMatcher: GrammarInitializer<PreprocessorIdentifier, ASTPreproc
   return body;
 };
 
-export const preprocessor = Grammar.build(
+export const preprocessorGrammar = Grammar.build(
   {
     identifiers: {
       '%if': PreprocessorIdentifier.IF,
@@ -232,7 +233,22 @@ export const preprocessor = Grammar.build(
   preprocessorMatcher,
 );
 
-const ast = preprocessor.process(`
+/**
+ * Exec preprocessor on phrase
+ *
+ * @export
+ * @param {string} str
+ */
+export function preprocessor(str: string): void {
+  const stmt: ASTPreprocessorStmt = preprocessorGrammar.process(str).children[0];
+
+  const interpreter = new PreprocessorInterpreter;
+  interpreter.exec(stmt);
+
+  console.info((new TreePrintVisitor).visit(stmt).reduced);
+}
+
+preprocessor(`
   %if 3+2*5 > 5 && (5 * 5 < 9 || 5 * 5 > 1)
     xor bx, cx
   %endif
@@ -249,5 +265,3 @@ const ast = preprocessor.process(`
     %define test_define2 abce
   %endmacro
 `);
-
-console.info((new TreePrintVisitor).visit(ast).reduced);

@@ -2,6 +2,11 @@ import {NodeLocation} from '@compiler/grammar/tree/NodeLocation';
 import {Token} from '@compiler/lexer/tokens';
 
 import {
+  PreprocessorInterpreter,
+  InterpreterResult,
+} from '../interpreter/PreprocessorInterpreter';
+
+import {
   ASTPreprocessorKind,
   ASTPreprocessorNode,
 } from '../constants';
@@ -34,5 +39,16 @@ export class ASTPreprocessorDefine extends ASTPreprocessorNode {
     const {name, argsSchema} = this;
 
     return `${super.toString()} name=${name} args=${argsSchema.length}`;
+  }
+
+  /**
+   * Exec interpreter on node
+   *
+   * @param {PreprocessorInterpreter} interpreter
+   * @returns {InterpreterResult}
+   * @memberof ASTPreprocessorMacro
+   */
+  exec(interpreter: PreprocessorInterpreter): InterpreterResult {
+    interpreter.define(this);
   }
 }

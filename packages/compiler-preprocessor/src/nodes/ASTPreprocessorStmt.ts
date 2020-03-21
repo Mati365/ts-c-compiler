@@ -1,7 +1,7 @@
 import * as R from 'ramda';
 
 import {NodeLocation} from '@compiler/grammar/tree/NodeLocation';
-import {PreprocessorInterpreter} from '../interpreter/Interpreter';
+import {PreprocessorInterpreter} from '../interpreter/PreprocessorInterpreter';
 import {
   ASTPreprocessorKind,
   ASTPreprocessorNode,

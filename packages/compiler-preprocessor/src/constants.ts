@@ -1,10 +1,10 @@
 import {TreeNode, ValueNode} from '@compiler/grammar/tree/TreeNode';
 import {Grammar} from '@compiler/grammar/Grammar';
 import {
-  Interpretable,
+  PreprocessorInterpretable,
   InterpreterResult,
   PreprocessorInterpreter,
-} from './interpreter/Interpreter';
+} from './interpreter/PreprocessorInterpreter';
 
 export enum PreprocessorIdentifier {
   DEFINE,
@@ -31,7 +31,7 @@ export enum ASTPreprocessorKind {
 
 export class PreprocessorGrammar extends Grammar<PreprocessorIdentifier, ASTPreprocessorKind> {}
 
-export class ASTPreprocessorNode extends TreeNode<ASTPreprocessorKind> implements Interpretable {
+export class ASTPreprocessorNode extends TreeNode<ASTPreprocessorKind> implements PreprocessorInterpretable {
   /* eslint-disable @typescript-eslint/no-unused-vars */
   exec(interpreter: PreprocessorInterpreter): InterpreterResult {
     return null;
@@ -39,7 +39,9 @@ export class ASTPreprocessorNode extends TreeNode<ASTPreprocessorKind> implement
   /* eslint-enable @typescript-eslint/no-unused-vars */
 }
 
-export class ASTPreprocessorValueNode<T> extends ValueNode<T, ASTPreprocessorKind> implements Interpretable {
+export class ASTPreprocessorValueNode<T>
+  extends ValueNode<T, ASTPreprocessorKind>
+  implements PreprocessorInterpretable {
   /* eslint-disable @typescript-eslint/no-unused-vars */
   exec(interpreter: PreprocessorInterpreter): InterpreterResult {
     return null;
