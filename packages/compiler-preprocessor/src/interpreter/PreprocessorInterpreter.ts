@@ -47,9 +47,11 @@ export class PreprocessorInterpreter {
         if (!isStatementPreprocessorNode(node))
           return;
 
-        if (this.nesting === 2)
-          acc += node.toEmitterLine();
-        acc += '\n';
+        if (this.nesting === 2) {
+          const str = node.toEmitterLine().trim();
+          if (str)
+            acc += `${str}\n`;
+        }
       }
     });
 

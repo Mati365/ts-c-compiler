@@ -270,4 +270,4 @@ const output = preprocessor(`
   times 55 db (2+2)
 `);
 
-console.info(`Output: \n${output.trim()}`);
+console.info(`Output: \n${output}`);

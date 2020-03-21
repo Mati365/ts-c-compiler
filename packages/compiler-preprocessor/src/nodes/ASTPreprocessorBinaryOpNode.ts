@@ -52,7 +52,7 @@ export class ASTPreprocessorBinaryOpNode extends BinaryNode<ASTPreprocessorKind>
   /* eslint-enable @typescript-eslint/no-unused-vars */
 
   toEmitterLine(): string {
-    return '\n';
+    return '';
   }
 
   toString(): string {

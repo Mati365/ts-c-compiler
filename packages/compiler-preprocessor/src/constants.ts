@@ -54,7 +54,7 @@ export class PreprocessorGrammar extends Grammar<PreprocessorIdentifier, ASTPrep
 
 export class ASTPreprocessorNode extends TreeNode<ASTPreprocessorKind> implements PreprocessorInterpretable {
   toEmitterLine(): string {
-    return '\n';
+    return '';
   }
 
   /* eslint-disable @typescript-eslint/no-unused-vars */
@@ -68,7 +68,7 @@ export class ASTPreprocessorValueNode<T>
   extends ValueNode<T, ASTPreprocessorKind>
   implements PreprocessorInterpretable {
   toEmitterLine(): string {
-    return '\n';
+    return '';
   }
 
   /* eslint-disable @typescript-eslint/no-unused-vars */
