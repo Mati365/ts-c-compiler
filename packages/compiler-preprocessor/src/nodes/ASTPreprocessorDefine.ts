@@ -1,5 +1,11 @@
+import * as R from 'ramda';
+
 import {NodeLocation} from '@compiler/grammar/tree/NodeLocation';
-import {Token} from '@compiler/lexer/tokens';
+import {Token, TokenType} from '@compiler/lexer/tokens';
+import {
+  GrammarError,
+  GrammarErrorCode,
+} from '@compiler/grammar/GrammarError';
 
 import {
   PreprocessorInterpreter,
@@ -17,12 +23,10 @@ export class ASTPreprocessorDefineArgSchema {
   ) {}
 }
 
-export type ASTPreprocessorRuntimeArg = string|number;
-
 export interface ASTPreprocessorCallable {
   readonly name: string;
 
-  runtimeCall(args: ASTPreprocessorRuntimeArg[]): string;
+  runtimeCall(args: string[]): string;
 }
 
 /**
@@ -60,16 +64,49 @@ export class ASTPreprocessorDefine extends ASTPreprocessorNode implements ASTPre
     interpreter.defineRuntimeCallable(this);
   }
 
-  /* eslint-disable @typescript-eslint/no-unused-vars */
   /**
    * Allow to call ASTNode as callable functions
    *
-   * @param {ASTPreprocessorRuntimeArg[]} args
+   * @param {string[]} args
    * @returns {string}
    * @memberof ASTPreprocessorDefine
    */
-  runtimeCall(args: ASTPreprocessorRuntimeArg[]): string {
-    return null;
+  runtimeCall(args: string[]): string {
+    const {name, argsSchema, expression} = this;
+    if (args.length !== argsSchema.length) {
+      throw new GrammarError(
+        GrammarErrorCode.MACRO_ARGS_LIST_MISMATCH,
+        null,
+        {
+          expected: argsSchema.length,
+          provided: args.length,
+          name,
+        },
+      );
+    }
+
+    const mappedTokens = R.map(
+      (token) => {
+        if (token.type !== TokenType.KEYWORD)
+          return token;
+
+        const schemaIndex = R.findIndex(
+          (schema) => token.text === schema.name,
+          argsSchema,
+        );
+        if (schemaIndex === -1)
+          return token;
+
+        return new Token(
+          TokenType.KEYWORD,
+          null,
+          args[schemaIndex],
+          token.loc,
+        );
+      },
+      expression,
+    );
+
+    return mappedTokens.join('');
   }
-  /* eslint-enable @typescript-eslint/no-unused-vars */
 }

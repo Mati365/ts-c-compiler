@@ -2,7 +2,6 @@ import * as R from 'ramda';
 
 import {Token, TokenType} from '@compiler/lexer/tokens';
 import {NodeLocation} from '@compiler/grammar/tree/NodeLocation';
-import {TokensIterator} from '@compiler/grammar/tree/TokensIterator';
 
 import {
   PreprocessorInterpreter,
@@ -13,8 +12,6 @@ import {
   ASTPreprocessorKind,
   ASTPreprocessorNode,
 } from '../constants';
-
-import {fetchRuntimeCallArgsList} from '../interpreter/utils/fetchRuntimeCallArgsList';
 
 /**
  * Sucky asm tokens join
@@ -78,16 +75,6 @@ export class ASTPreprocessorSyntaxLine extends ASTPreprocessorNode {
   exec(interpreter: PreprocessorInterpreter): InterpreterResult {
     const {tokens} = this;
 
-    for (let i = 0; i < tokens.length; ++i) {
-      const token = tokens[i];
-      if (token.type !== TokenType.KEYWORD || !interpreter.isCallable(token.text))
-        continue;
-
-      console.info(
-        fetchRuntimeCallArgsList(
-          new TokensIterator(tokens, i + 1),
-        ),
-      );
-    }
+    interpreter.evalTokensList(tokens);
   }
 }

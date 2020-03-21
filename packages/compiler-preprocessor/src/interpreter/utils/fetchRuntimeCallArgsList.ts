@@ -13,7 +13,7 @@ import {
  *
  * @export
  * @param {TokensIterator} parser
- * @returns {Token<any>[][]}
+ * @returns {Token[][]}
  */
 export function fetchRuntimeCallArgsList(parser: TokensIterator): Token[][] {
   const args: Token[][] = [];

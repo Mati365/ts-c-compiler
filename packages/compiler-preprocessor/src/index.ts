@@ -253,7 +253,7 @@ preprocessor(`
     xor bx, cx
   %endif
 
-  %define test_define(arg1,brg2,c) abc
+  %define test_define(arg1,brg2,c) arg1
   %define test_define2 abce
   %macro dupa 3
     %macro test_abc 4

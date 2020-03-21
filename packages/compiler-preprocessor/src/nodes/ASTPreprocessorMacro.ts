@@ -1,7 +1,7 @@
 import {TreeVisitor} from '@compiler/grammar/tree/TreeVisitor';
 import {NodeLocation} from '@compiler/grammar/tree/NodeLocation';
 
-import {ASTPreprocessorCallable, ASTPreprocessorRuntimeArg} from './ASTPreprocessorDefine';
+import {ASTPreprocessorCallable} from './ASTPreprocessorDefine';
 import {ASTPreprocessorStmt} from './ASTPreprocessorStmt';
 import {
   PreprocessorInterpreter,
@@ -54,11 +54,11 @@ export class ASTPreprocessorMacro extends ASTPreprocessorNode implements ASTPrep
   /**
    * Allow to call ASTNode as callable functions
    *
-   * @param {ASTPreprocessorRuntimeArg[]} args
+   * @param {string[]} args
    * @returns {string}
    * @memberof ASTPreprocessorDefine
    */
-  runtimeCall(args: ASTPreprocessorRuntimeArg[]): string {
+  runtimeCall(args: string[]): string {
     return null;
   }
   /* eslint-enable @typescript-eslint/no-unused-vars */

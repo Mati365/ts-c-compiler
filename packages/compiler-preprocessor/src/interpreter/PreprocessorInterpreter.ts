@@ -1,8 +1,14 @@
-import {ASTPreprocessorNode} from '../constants';
+import * as R from 'ramda';
+
+import {TokensIterator} from '@compiler/grammar/tree/TokensIterator';
 import {
-  ASTPreprocessorCallable,
-  ASTPreprocessorRuntimeArg,
-} from '../nodes';
+  Token,
+  TokenType,
+} from '@compiler/lexer/tokens';
+
+import {ASTPreprocessorNode} from '../constants';
+import {ASTPreprocessorCallable} from '../nodes';
+import {fetchRuntimeCallArgsList} from './utils/fetchRuntimeCallArgsList';
 
 export type InterpreterResult = string | number | boolean | void;
 
@@ -51,12 +57,55 @@ export class PreprocessorInterpreter {
    *  Handle missing method
    *
    * @param {string} name
-   * @param {ASTPreprocessorRuntimeArg[]} [args=[]]
+   * @param {string[]} [args=[]]
    * @returns {string}
    * @memberof PreprocessorInterpreter
    */
-  runtimeCall(name: string, args: ASTPreprocessorRuntimeArg[] = []): string {
+  runtimeCall(name: string, args: string[] = []): string {
     return this._callable.get(name).runtimeCall(args);
+  }
+
+  /**
+   * Removes all macro calls from list of tokens
+   *
+   * @param {Token[]} tokens
+   * @returns {[boolean, Token[]]}
+   * @memberof PreprocessorInterpreter
+   */
+  evalTokensList(tokens: Token[]): [boolean, Token[]] {
+    let newTokens: Token[] = [...tokens];
+    let foundMacro: boolean = false;
+
+    for (let i = 0; i < newTokens.length; ++i) {
+      const token = newTokens[i];
+      if (token.type !== TokenType.KEYWORD || !this.isCallable(token.text))
+        continue;
+
+      // nested eval of macro, arguments might contain macro
+      const it = new TokensIterator(newTokens, i + 1);
+      const args = fetchRuntimeCallArgsList(it).map((argTokens) => this.evalTokensList(argTokens)[1]);
+      const callResult = this.runtimeCall(
+        token.text,
+        R.map(
+          (argTokens) => R.pluck('text', argTokens).join(''),
+          args,
+        ),
+      );
+
+      foundMacro = true;
+      newTokens = [
+        ...newTokens.slice(0, i),
+        new Token(
+          TokenType.KEYWORD,
+          null,
+          callResult,
+          tokens[i].loc,
+        ),
+        ...newTokens.slice(it.getTokenIndex() + +args.length), // +args.length, if args.length > 0 there must be ()
+      ];
+    }
+
+    return [foundMacro, newTokens];
   }
 
   /**
