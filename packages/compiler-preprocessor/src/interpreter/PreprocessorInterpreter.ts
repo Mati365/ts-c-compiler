@@ -23,8 +23,41 @@ export interface PreprocessorInterpretable {
   toEmitterLine(): string;
 }
 
+export class PreprocessorScope {
+  public readonly variables = new Map<string, InterpreterResult>();
+  public readonly callable = new Map<string, ASTPreprocessorCallable>();
+}
+
 export class PreprocessorInterpreter {
-  private _callable = new Map<string, ASTPreprocessorCallable>();
+  private _scopes: PreprocessorScope[] = [
+    new PreprocessorScope,
+  ];
+
+  get rootScope(): PreprocessorScope {
+    return this._scopes[0];
+  }
+
+  get currentScope(): PreprocessorScope {
+    return R.last(this._scopes);
+  }
+
+  /**
+   * Pushes preprocessor scope on top
+   *
+   * @param {(scope: PreprocessorScope) => void} fn
+   * @returns {this}
+   * @memberof PreprocessorInterpreter
+   */
+  enterScope(fn: (scope: PreprocessorScope) => void): this {
+    const {_scopes} = this;
+    const scope = new PreprocessorScope;
+
+    _scopes.push(scope);
+    fn(scope);
+    _scopes.pop();
+
+    return this;
+  }
 
   /**
    * Evaluates all macros, replaces them with empty lines
@@ -39,7 +72,6 @@ export class PreprocessorInterpreter {
   exec(ast: ASTPreprocessorNode): string {
     let acc = '';
 
-    this.clear();
     ast.exec(this);
 
     const visitor = new (class extends TreeVisitor<ASTPreprocessorNode> {
@@ -70,7 +102,7 @@ export class PreprocessorInterpreter {
    * @memberof PreprocessorInterpreter
    */
   defineRuntimeCallable(callable: ASTPreprocessorCallable): this {
-    if (this.isCallable(callable.name)) {
+    if (this.getCallable(callable.name)) {
       throw new GrammarError(
         GrammarErrorCode.MACRO_ALREADY_EXISTS,
         null,
@@ -80,7 +112,7 @@ export class PreprocessorInterpreter {
       );
     }
 
-    this._callable.set(callable.name, callable);
+    this.rootScope.callable.set(callable.name, callable);
     return this;
   }
 
@@ -88,26 +120,11 @@ export class PreprocessorInterpreter {
    * Checks if symbol is callable
    *
    * @param {string} name
-   * @returns {boolean}
+   * @returns {ASTPreprocessorCallable}
    * @memberof PreprocessorInterpreter
    */
-  isCallable(name: string): boolean {
-    return this._callable.has(name);
-  }
-
-  /**
-   * Calls defined function
-   *
-   * @todo
-   *  Handle missing method
-   *
-   * @param {string} name
-   * @param {string[]} [args=[]]
-   * @returns {string}
-   * @memberof PreprocessorInterpreter
-   */
-  runtimeCall(name: string, args: string[] = []): string {
-    return this._callable.get(name).runtimeCall(args);
+  getCallable(name: string): ASTPreprocessorCallable {
+    return this.rootScope.callable.get(name);
   }
 
   /**
@@ -118,43 +135,46 @@ export class PreprocessorInterpreter {
    * @memberof PreprocessorInterpreter
    */
   evalTokensList(tokens: Token[]): [boolean, Token[]] {
-    let newTokens: Token[] = [...tokens];
-    let foundMacro: boolean = false;
+    let newTokens: Token[] = tokens;
 
     for (let i = 0; i < newTokens.length; ++i) {
       const token = newTokens[i];
-      if (token.type !== TokenType.KEYWORD || !this.isCallable(token.text))
+      if (token.type !== TokenType.KEYWORD)
         continue;
 
-      // nested eval of macro, arguments might contain macro
-      const it = new TokensIterator(newTokens, i + 1);
-      const args = (
-        newTokens[i + 1]?.text === '('
-          ? fetchRuntimeCallArgsList(it).map((argTokens) => this.evalTokensList(argTokens)[1])
-          : []
-      );
-      const callResult = this.runtimeCall(
-        token.text,
-        R.map(
-          (argTokens) => R.pluck('text', argTokens).join(''),
-          args,
-        ),
-      );
+      const callable = this.getCallable(token.text);
+      if (callable) {
+        // nested eval of macro, arguments might contain macro
+        const it = new TokensIterator(newTokens, i + 1);
+        const args = (
+          newTokens[i + 1]?.text === '('
+            ? fetchRuntimeCallArgsList(it).map((argTokens) => this.evalTokensList(argTokens)[1])
+            : []
+        );
+        const callResult = callable.runtimeCall(
+          R.map(
+            (argTokens) => R.pluck('text', argTokens).join(''),
+            args,
+          ),
+        );
 
-      foundMacro = true;
-      newTokens = [
-        ...newTokens.slice(0, i),
-        new Token(
-          TokenType.KEYWORD,
-          null,
-          callResult,
-          tokens[i].loc,
-        ),
-        ...newTokens.slice(it.getTokenIndex() + +args.length), // +args.length, if args.length > 0 there must be ()
-      ];
+        newTokens = [
+          ...newTokens.slice(0, i),
+          new Token(
+            TokenType.KEYWORD,
+            null,
+            callResult,
+            tokens[i].loc,
+          ),
+          ...newTokens.slice(it.getTokenIndex() + +args.length), // +args.length, if args.length > 0 there must be ()
+        ];
+      }
     }
 
-    return [foundMacro, newTokens];
+    return [
+      newTokens !== tokens,
+      newTokens,
+    ];
   }
 
   /**
@@ -163,8 +183,8 @@ export class PreprocessorInterpreter {
    * @memberof PreprocessorInterpreter
    */
   clear() {
-    const {_callable} = this;
+    this._scopes = [
 
-    _callable.clear();
+    ];
   }
 }

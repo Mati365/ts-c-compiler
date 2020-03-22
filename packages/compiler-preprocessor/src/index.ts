@@ -31,24 +31,8 @@ export function preprocessor(str: string): PreprocessorResult {
 }
 
 const {ast, result} = preprocessor(`
-  %if 3+2*5 > 5 && (5 * 5 < 9 || 5 * 5 > 1)
-    xor bx, cx
-  %endif
-
-  %define test_define(arg1,brg2,c) arg1
-  %define test_define2 abce
-  %macro dupa 3
-    %macro test_abc 4
-      xor ax, bx
-      mov bx, [bx:cx+5]
-    %endmacro
-
-    %define test_define(arg1,brg2,c) ax
-    %define test_define2 abce
-  %endmacro
-
-  xor ax, test_define(2*(5-6), 3, 4)
-  times 55 db (2+2)
+  %define abc(a) mov a,
+  abc(ax) bx
 `);
 
 console.info((new TreePrintVisitor).visit(ast).reduced);

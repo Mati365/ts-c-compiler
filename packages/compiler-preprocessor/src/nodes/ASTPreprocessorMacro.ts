@@ -36,7 +36,7 @@ export class ASTPreprocessorMacro extends ASTPreprocessorNode implements ASTPrep
   toString(): string {
     const {name, argsCount} = this;
 
-    return `${super.toString()} name=${name} args=${argsCount}`;
+    return `${super.toString()} name="${name}" args=${argsCount}`;
   }
 
   /**

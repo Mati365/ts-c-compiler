@@ -50,7 +50,7 @@ export class ASTPreprocessorDefine extends ASTPreprocessorNode implements ASTPre
   toString(): string {
     const {name, argsSchema} = this;
 
-    return `${super.toString()} name=${name} args=${argsSchema.length}`;
+    return `${super.toString()} name="${name}" args=${argsSchema.length}`;
   }
 
   /**
@@ -107,6 +107,6 @@ export class ASTPreprocessorDefine extends ASTPreprocessorNode implements ASTPre
       expression,
     );
 
-    return mappedTokens.join('');
+    return mappedTokens.join(' ');
   }
 }
