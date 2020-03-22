@@ -6,6 +6,14 @@
 xor ax, ax
 %endif
 
+%macro beniz 2
+  xor ax, DEBUG
+  mov al, %1
+  mov ah, %2
+%endmacro
+
+dupa:
+jmp test_label2
 field_left_col:  equ 13
 field_width:     equ 14
 inner_width:     equ 12
@@ -20,3 +28,11 @@ start_row_col:   equ 0x0412
 %ifdef DEBUG
   mov al, inner_first_col
 %endif
+jmp dupa
+test_label2:
+xor bx, bx
+sub bx
+inc ax
+jmp dupa
+
+beniz 2, 3
