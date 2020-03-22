@@ -46,6 +46,24 @@ export class ASTPreprocessorIF extends ASTPreprocessorNode {
   }
 
   /**
+   * Exec interpreter on node
+   *
+   * @param {PreprocessorInterpreter} interpreter
+   * @returns {InterpreterResult}
+   * @memberof ASTPreprocessorMacro
+   */
+  exec(interpreter: PreprocessorInterpreter): InterpreterResult {
+    const {test, consequent, alternate} = this;
+    const result = <boolean> test.exec(interpreter);
+
+    this._result = result;
+    if (result)
+      return consequent.exec(interpreter);
+
+    return alternate?.exec(interpreter);
+  }
+
+  /**
    * Iterates throught tree
    *
    * @param {TreeVisitor<ASTPreprocessorNode>} visitor
@@ -64,23 +82,5 @@ export class ASTPreprocessorIF extends ASTPreprocessorNode {
 
     if (alternate)
       visitor.visit(alternate);
-  }
-
-  /**
-   * Exec interpreter on node
-   *
-   * @param {PreprocessorInterpreter} interpreter
-   * @returns {InterpreterResult}
-   * @memberof ASTPreprocessorMacro
-   */
-  exec(interpreter: PreprocessorInterpreter): InterpreterResult {
-    const {test, consequent, alternate} = this;
-    const result = <boolean> test.exec(interpreter);
-
-    this._result = result;
-    if (result)
-      return consequent.exec(interpreter);
-
-    return alternate?.exec(interpreter);
   }
 }

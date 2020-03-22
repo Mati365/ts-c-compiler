@@ -25,7 +25,7 @@ function term(g: PreprocessorGrammar): ASTPreprocessorNode {
 
   if (token.type === TokenType.BRACKET && token.text === '(') {
     g.consume();
-    const expr = relOp(g);
+    const expr = mathExpression(g, false);
     g.match(
       {
         type: TokenType.BRACKET,

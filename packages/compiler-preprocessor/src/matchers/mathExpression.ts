@@ -38,7 +38,7 @@ function term(g: PreprocessorGrammar): ASTPreprocessorNode {
 
   if (token.type === TokenType.BRACKET && token.text === '(') {
     g.consume();
-    const expr = add(g);
+    const expr = bitsOp(g);
     g.match(
       {
         type: TokenType.BRACKET,
@@ -207,6 +207,93 @@ function addPrim(g: PreprocessorGrammar): ASTPreprocessorNode {
 }
 
 /**
+ * @see
+ * bitsOp = add bitsOp'
+ * bitsOp' = ε
+ * bitsOp' = "&" add bitsOp'
+ * bitsOp' = "|" add bitsOp'
+ * bitsOp' = "<<" add bitsOp'
+ * bitsOp' = ">>" add bitsOp'
+ */
+function bitsOp(g: PreprocessorGrammar): ASTPreprocessorNode {
+  return <ASTPreprocessorNode> g.or(
+    {
+      value() {
+        return createBinOpIfBothSidesPresent(
+          ASTPreprocessorBinaryOpNode,
+          null,
+          add(g),
+          bitsOpPrim(g),
+        );
+      },
+      empty() {
+        return null;
+      },
+    },
+  );
+}
+
+function bitsOpPrim(g: PreprocessorGrammar): ASTPreprocessorNode {
+  return <ASTPreprocessorNode> g.or(
+    {
+      and() {
+        g.match(
+          {
+            type: TokenType.BIT_AND,
+          },
+        );
+
+        return new ASTPreprocessorBinaryOpNode(
+          TokenType.BIT_AND,
+          add(g),
+          bitsOpPrim(g),
+        );
+      },
+      or() {
+        g.match(
+          {
+            type: TokenType.BIT_OR,
+          },
+        );
+
+        return new ASTPreprocessorBinaryOpNode(
+          TokenType.BIT_OR,
+          add(g),
+          bitsOpPrim(g),
+        );
+      },
+      sl() {
+        g.match(
+          {
+            type: TokenType.BIT_SHIFT_LEFT,
+          },
+        );
+
+        return new ASTPreprocessorBinaryOpNode(
+          TokenType.BIT_SHIFT_LEFT,
+          add(g),
+          bitsOpPrim(g),
+        );
+      },
+      sr() {
+        g.match(
+          {
+            type: TokenType.BIT_SHIFT_RIGHT,
+          },
+        );
+
+        return new ASTPreprocessorBinaryOpNode(
+          TokenType.BIT_SHIFT_RIGHT,
+          add(g),
+          bitsOpPrim(g),
+        );
+      },
+      empty,
+    },
+  );
+}
+
+/**
  * Matches math expression into tree
  *
  * @see {@link https://en.wikipedia.org/wiki/Left_recursion}
@@ -235,7 +322,7 @@ function addPrim(g: PreprocessorGrammar): ASTPreprocessorNode {
  * @returns {ASTPreprocessorNode}
  */
 export function mathExpression(g: PreprocessorGrammar, reducePostFixOps: boolean = true): ASTPreprocessorNode {
-  const node = add(g);
+  const node = bitsOp(g);
 
   if (reducePostFixOps)
     (new ReducePostfixOperatorsVisitor).visit(node);
