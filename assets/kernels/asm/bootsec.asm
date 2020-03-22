@@ -1,5 +1,8 @@
-%define ABC(b) b*3
-%if 3 & 1 == 1 && (1 > 2 || (ABC(3) == 9 && 3 == 2))
+%define DEBUG 1
+%define CONSTM(x) x
+%define ABC(b) b*CONSTM(4)
+
+%if 3 & 1 == 1 && (1 > 2 || (ABC(3) == 9 && 3 == 3))
 xor ax, ax
 %endif
 
@@ -9,4 +12,11 @@ inner_width:     equ 12
 inner_first_col equ 14
 start_row_col:   equ 0x0412
 
-mov al, inner_first_col
+%if 2 + 2 > 3
+  xor bx, bx
+  mov bl, DEBUG
+%endif
+
+%ifdef DEBUG
+  mov al, inner_first_col
+%endif

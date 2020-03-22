@@ -17,6 +17,7 @@ import {
   ASTPreprocessorIF,
   ASTPreprocessorExpression,
   ASTPreprocessorStmt,
+  ASTPreprocessorIFDef,
 } from './nodes';
 
 import {
@@ -56,6 +57,29 @@ const preprocessorMatcher: GrammarInitializer<PreprocessorIdentifier, ASTPreproc
 
   /**
    * Matches %ifdef
+   *
+   * @returns {TreeNode}
+   */
+  function ifDefStmt(): ASTPreprocessorNode {
+    const startToken = singleLineIdentifier(PreprocessorIdentifier.IFDEF);
+    const macroName = g.match(
+      {
+        type: TokenType.KEYWORD,
+      },
+    );
+
+    const consequent = body();
+    g.identifier(PreprocessorIdentifier.ENDIF);
+
+    return new ASTPreprocessorIFDef(
+      NodeLocation.fromTokenLoc(startToken.loc),
+      macroName.text,
+      consequent,
+    );
+  }
+
+  /**
+   * Matches %if
    *
    * @returns {TreeNode}
    */
@@ -222,6 +246,7 @@ const preprocessorMatcher: GrammarInitializer<PreprocessorIdentifier, ASTPreproc
       <ASTPreprocessorNode[]> g.matchList(
         {
           ifStmt,
+          ifDefStmt,
           defineStmt,
           macroStmt,
           syntaxLine,
@@ -239,6 +264,7 @@ export function createPreprocessorGrammar() {
     {
       identifiers: {
         '%if': PreprocessorIdentifier.IF,
+        '%ifdef': PreprocessorIdentifier.IFDEF,
         '%endif': PreprocessorIdentifier.ENDIF,
         '%define': PreprocessorIdentifier.DEFINE,
         '%idefine': PreprocessorIdentifier.IDEFINE,

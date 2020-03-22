@@ -30,7 +30,7 @@ export class ASTPreprocessorStmt extends ASTPreprocessorNode {
           if (str)
             acc += `${str}\n`;
 
-          return str;
+          return acc;
         },
         '',
         children,

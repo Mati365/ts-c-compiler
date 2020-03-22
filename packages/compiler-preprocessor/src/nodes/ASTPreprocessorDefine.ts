@@ -115,6 +115,6 @@ export class ASTPreprocessorDefine extends ASTPreprocessorNode implements ASTPre
       expression,
     );
 
-    return mappedTokens.join(' ');
+    return interpreter.removeMacrosFromTokens(mappedTokens)[1].join(' ');
   }
 }

@@ -11,6 +11,7 @@ export enum PreprocessorIdentifier {
   MACRO, IMACRO,
   ENDMACRO,
   IF,
+  IFDEF,
   ENDIF,
 }
 
@@ -18,6 +19,7 @@ export enum ASTPreprocessorKind {
   Stmt = 'Stmt',
   DefineStmt = 'DefineStmt',
   IfStmt = 'IfStmt',
+  IfDefStmt = 'IfDefStmt',
   MacroStmt = 'MacroStmt',
   SyntaxStmt = 'SyntaxStmt',
 
@@ -41,6 +43,7 @@ export function isStatementPreprocessorNode(node: ASTPreprocessorNode): boolean 
     case ASTPreprocessorKind.Stmt:
     case ASTPreprocessorKind.DefineStmt:
     case ASTPreprocessorKind.IfStmt:
+    case ASTPreprocessorKind.IfDefStmt:
     case ASTPreprocessorKind.MacroStmt:
     case ASTPreprocessorKind.SyntaxStmt:
       return true;

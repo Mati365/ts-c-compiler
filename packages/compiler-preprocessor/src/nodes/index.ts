@@ -3,6 +3,7 @@ export * from './ASTPreprocessorSyntaxLine';
 export * from './ASTPreprocessorDefine';
 export * from './ASTPreprocessorExpression';
 export * from './ASTPreprocessorIF';
+export * from './ASTPreprocessorIFDef';
 export * from './ASTPreprocessorBinaryOpNode';
 export * from './ASTPreprocessorStmt';
 export * from './ASTPreprocessorValueNode';
