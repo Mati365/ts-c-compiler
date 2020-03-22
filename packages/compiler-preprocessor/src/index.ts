@@ -31,8 +31,18 @@ export function preprocessor(str: string): PreprocessorResult {
 }
 
 const {ast, result} = preprocessor(`
-%define maupA(a, b) mov a, b
-maupa(ax, bx)
+%define abc(a) mov a,
+%macro dupa 2
+mov ax, %1
+mov bx, %2
+%endmacro
+%macro dupa 1
+mov ax, %1
+%endmacro
+
+abc(ax) bx
+dupa 2, ax
+dupa ax
 `);
 
 console.info((new TreePrintVisitor).visit(ast).reduced);

@@ -62,7 +62,7 @@ export class ASTPreprocessorMacro extends ASTPreprocessorNode implements ASTPrep
   runtimeCall(interpreter: PreprocessorInterpreter, args: string[]): string {
     // creates $0, $1, $2 variables
     const variables: [string, InterpreterResult][] = args.map(
-      (arg, index) => ([`$${index}`, arg]),
+      (arg, index) => ([`%${index + 1}`, arg]),
     );
 
     // produces inner macro content

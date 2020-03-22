@@ -78,7 +78,7 @@ const preprocessorMatcher: GrammarInitializer<PreprocessorIdentifier, ASTPreproc
   }
 
   /**
-   * matches %macro
+   * matches %macro, %imacro
    *
    * @returns {TreeNode}
    */
@@ -121,7 +121,7 @@ const preprocessorMatcher: GrammarInitializer<PreprocessorIdentifier, ASTPreproc
   }
 
   /**
-   * matches %define
+   * matches %define, %idefine
    *
    * @returns {TreeNode}
    */

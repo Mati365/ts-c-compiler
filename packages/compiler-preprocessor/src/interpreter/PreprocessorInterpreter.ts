@@ -215,7 +215,7 @@ export class PreprocessorInterpreter {
         continue;
 
       // catch $0, $1 etc macro inner variables
-      if (token.text[0] === '$') {
+      if (token.text[0] === '%') {
         const result = this.getVariable(token.text);
 
         if (result === null) {
