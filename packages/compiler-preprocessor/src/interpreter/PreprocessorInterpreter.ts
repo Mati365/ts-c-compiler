@@ -24,11 +24,25 @@ export interface PreprocessorInterpretable {
   toEmitterLine(): string;
 }
 
+/**
+ * Preprocessor function context, contains variables, macros etc
+ *
+ * @export
+ * @class PreprocessorScope
+ */
 export class PreprocessorScope {
-  public readonly variables = new Map<string, InterpreterResult>();
-  public readonly callable = new Map<string, ASTPreprocessorCallable[]>();
+  constructor(
+    public readonly variables = new Map<string, InterpreterResult>(),
+    public readonly callable = new Map<string, ASTPreprocessorCallable[]>(),
+  ) {}
 }
 
+/**
+ * Main interpreter logic
+ *
+ * @export
+ * @class PreprocessorInterpreter
+ */
 export class PreprocessorInterpreter {
   private _scopes: PreprocessorScope[] = [
     new PreprocessorScope,
@@ -43,21 +57,28 @@ export class PreprocessorInterpreter {
   }
 
   /**
-   * Pushes preprocessor scope on top
+   * Pushes preprocessor scope on top, exec fn and pops
    *
-   * @param {(scope: PreprocessorScope) => void} fn
-   * @returns {this}
+   * @template R
+   * @param {[string, InterpreterResult][]} [variables=[]]
+   * @param {(scope: PreprocessorScope) => R} fn
+   * @returns {R}
    * @memberof PreprocessorInterpreter
    */
-  enterScope(fn: (scope: PreprocessorScope) => void): this {
+  enterScope<R = void>(
+    variables: [string, InterpreterResult][],
+    fn: (scope: PreprocessorScope) => R,
+  ): R {
     const {_scopes} = this;
-    const scope = new PreprocessorScope;
+    const scope = new PreprocessorScope(
+      new Map<string, InterpreterResult>(variables || []),
+    );
 
     _scopes.push(scope);
-    fn(scope);
+    const result = fn(scope);
     _scopes.pop();
 
-    return this;
+    return result;
   }
 
   /**
@@ -136,6 +157,26 @@ export class PreprocessorInterpreter {
   }
 
   /**
+   * Iterates from current scope to rootScope, if not found returns null
+   *
+   * @param {string} name
+   * @returns {InterpreterResult}
+   * @memberof PreprocessorInterpreter
+   */
+  getVariable(name: string): InterpreterResult {
+    const {_scopes} = this;
+
+    for (let i = _scopes.length - 1; i >= 0; --i) {
+      const {variables} = _scopes[i];
+
+      if (variables.has(name))
+        return variables.get(name);
+    }
+
+    return null;
+  }
+
+  /**
    * Removes all macro calls from list of tokens
    *
    * @param {Token[]} tokens
@@ -147,15 +188,47 @@ export class PreprocessorInterpreter {
 
     for (let i = 0; i < newTokens.length; ++i) {
       const token = newTokens[i];
+      const {loc} = token;
+
       if (token.type !== TokenType.KEYWORD || (token.kind !== TokenKind.BRACKET_PREFIX && token.kind !== null))
         continue;
 
+      // catch $0, $1 etc macro inner variables
+      if (token.text[0] === '$') {
+        const result = this.getVariable(token.text);
+
+        if (result === null) {
+          throw new GrammarError(
+            GrammarErrorCode.UNKNOWN_MACRO_VARIABLE,
+            loc,
+            {
+              name: token.text,
+            },
+          );
+        }
+
+        newTokens = R.update(
+          i,
+          new Token(
+            TokenType.KEYWORD,
+            null,
+            <string> result,
+            loc,
+          ),
+          newTokens,
+        );
+        continue;
+      }
+
+      // catch macros calls
       const callables = this.getCallables(token.text);
       if (callables?.length) {
         // nested eval of macro, arguments might contain macro
         const it = new TokensIterator(newTokens, i + 1);
+        const inline = i > 0; // inline macro calls are generally inside instruction
+
         const args = (
-          newTokens[i + 1]?.text === '('
+          !inline || newTokens[i + 1]?.text === '('
             ? fetchRuntimeCallArgsList(it).map((argTokens) => this.evalTokensList(argTokens)[1])
             : []
         );
@@ -163,6 +236,7 @@ export class PreprocessorInterpreter {
         const callable = callables.find((item) => item.argsCount === args.length);
         if (callable) {
           const callResult = callable.runtimeCall(
+            this,
             R.map(
               (argTokens) => R.pluck('text', argTokens).join(''),
               args,
@@ -175,7 +249,7 @@ export class PreprocessorInterpreter {
               TokenType.KEYWORD,
               null,
               callResult,
-              tokens[i].loc,
+              loc,
             ),
             ...newTokens.slice(it.getTokenIndex() + +args.length), // +args.length, if args.length > 0 there must be ()
           ];

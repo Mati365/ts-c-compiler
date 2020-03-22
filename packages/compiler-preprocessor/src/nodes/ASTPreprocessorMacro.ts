@@ -50,18 +50,26 @@ export class ASTPreprocessorMacro extends ASTPreprocessorNode implements ASTPrep
     interpreter.defineRuntimeCallable(this);
   }
 
-  /* eslint-disable @typescript-eslint/no-unused-vars */
   /**
    * Allow to call ASTNode as callable functions
    *
+   * @param {PreprocessorInterpreter} interpreter
    * @param {string[]} args
    * @returns {string}
-   * @memberof ASTPreprocessorDefine
+   * @memberof ASTPreprocessorMacro
    */
-  runtimeCall(args: string[]): string {
-    return null;
+  runtimeCall(interpreter: PreprocessorInterpreter, args: string[]): string {
+    // creates $0, $1, $2 variables
+    const variables: [string, InterpreterResult][] = args.map(
+      (arg, index) => ([`$${index}`, arg]),
+    );
+
+    // produces inner macro content
+    return interpreter.enterScope(
+      variables,
+      () => interpreter.exec(this.content),
+    );
   }
-  /* eslint-enable @typescript-eslint/no-unused-vars */
 
   /**
    * Iterates throught tree

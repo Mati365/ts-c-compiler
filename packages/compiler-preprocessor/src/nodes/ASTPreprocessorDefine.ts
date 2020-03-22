@@ -27,7 +27,7 @@ export interface ASTPreprocessorCallable {
   readonly name: string;
   readonly argsCount: number;
 
-  runtimeCall(args: string[]): string;
+  runtimeCall(interpreter: PreprocessorInterpreter, args: string[]): string;
 }
 
 /**
@@ -72,11 +72,12 @@ export class ASTPreprocessorDefine extends ASTPreprocessorNode implements ASTPre
   /**
    * Allow to call ASTNode as callable functions
    *
+   * @param {PreprocessorInterpreter} interpreter
    * @param {string[]} args
    * @returns {string}
    * @memberof ASTPreprocessorDefine
    */
-  runtimeCall(args: string[]): string {
+  runtimeCall(interpreter: PreprocessorInterpreter, args: string[]): string {
     const {name, argsSchema, expression} = this;
     if (args.length !== argsSchema.length) {
       throw new GrammarError(
