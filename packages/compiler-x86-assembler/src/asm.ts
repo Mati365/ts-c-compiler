@@ -1,6 +1,7 @@
 import {Result} from '@compiler/core/monads/Result';
 import {CompilerError} from '@compiler/core/shared/CompilerError';
 
+import {safeResultPreprocessor} from '@compiler/preprocessor';
 import {
   compile,
   ast,
@@ -17,7 +18,8 @@ import {
  */
 export function asm(code: string): Result<CompilerOutput, CompilerError[]> {
   return (
-    safeResultAsmLexer(null, code)
+    safeResultPreprocessor(code)
+      .andThen(({result}) => safeResultAsmLexer(null, result))
       .andThen(ast)
       .andThen(compile)
   );

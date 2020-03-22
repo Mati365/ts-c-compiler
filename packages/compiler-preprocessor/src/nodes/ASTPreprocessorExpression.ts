@@ -10,10 +10,10 @@ import {
  *  expr1 && expr2 && expr3 > expr2
  *
  * @export
- * @class ASTPreprocessorLogicalExpression
+ * @class ASTPreprocessorExpression
  * @extends {ASTPreprocessorNode}
  */
-export class ASTPreprocessorLogicalExpression extends ASTPreprocessorNode {
+export class ASTPreprocessorExpression extends ASTPreprocessorNode {
   constructor(
     loc: NodeLocation,
     public expression: ASTPreprocessorNode,

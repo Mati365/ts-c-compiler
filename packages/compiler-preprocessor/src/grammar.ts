@@ -15,7 +15,7 @@ import {
   ASTPreprocessorDefine,
   ASTPreprocessorDefineArgSchema,
   ASTPreprocessorIF,
-  ASTPreprocessorLogicalExpression,
+  ASTPreprocessorExpression,
   ASTPreprocessorStmt,
 } from './nodes';
 
@@ -69,7 +69,7 @@ const preprocessorMatcher: GrammarInitializer<PreprocessorIdentifier, ASTPreproc
 
     return new ASTPreprocessorIF(
       NodeLocation.fromTokenLoc(startToken.loc),
-      new ASTPreprocessorLogicalExpression(
+      new ASTPreprocessorExpression(
         bodyLoc,
         expression,
       ),
@@ -234,17 +234,19 @@ const preprocessorMatcher: GrammarInitializer<PreprocessorIdentifier, ASTPreproc
   return body;
 };
 
-export const PreprocessorGrammar = Grammar.build(
-  {
-    identifiers: {
-      '%if': PreprocessorIdentifier.IF,
-      '%endif': PreprocessorIdentifier.ENDIF,
-      '%define': PreprocessorIdentifier.DEFINE,
-      '%idefine': PreprocessorIdentifier.IDEFINE,
-      '%macro': PreprocessorIdentifier.MACRO,
-      '%imacro': PreprocessorIdentifier.IMACRO,
-      '%endmacro': PreprocessorIdentifier.ENDMACRO,
+export function createPreprocessorGrammar() {
+  return Grammar.build(
+    {
+      identifiers: {
+        '%if': PreprocessorIdentifier.IF,
+        '%endif': PreprocessorIdentifier.ENDIF,
+        '%define': PreprocessorIdentifier.DEFINE,
+        '%idefine': PreprocessorIdentifier.IDEFINE,
+        '%macro': PreprocessorIdentifier.MACRO,
+        '%imacro': PreprocessorIdentifier.IMACRO,
+        '%endmacro': PreprocessorIdentifier.ENDMACRO,
+      },
     },
-  },
-  preprocessorMatcher,
-);
+    preprocessorMatcher,
+  );
+}

@@ -291,7 +291,7 @@ export class PreprocessorInterpreter {
    */
   clear() {
     this._scopes = [
-
+      new PreprocessorScope,
     ];
   }
 }

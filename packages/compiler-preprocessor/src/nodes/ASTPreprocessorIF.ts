@@ -6,7 +6,7 @@ import {
   ASTPreprocessorNode,
 } from '../constants';
 
-import {ASTPreprocessorLogicalExpression} from './ASTPreprocessorExpression';
+import {ASTPreprocessorExpression} from './ASTPreprocessorExpression';
 
 /**
  * @example
@@ -23,7 +23,7 @@ import {ASTPreprocessorLogicalExpression} from './ASTPreprocessorExpression';
 export class ASTPreprocessorIF extends ASTPreprocessorNode {
   constructor(
     loc: NodeLocation,
-    public readonly test: ASTPreprocessorLogicalExpression,
+    public readonly test: ASTPreprocessorExpression,
     public readonly consequent: ASTPreprocessorNode,
     public readonly alternate: ASTPreprocessorNode = null,
   ) {

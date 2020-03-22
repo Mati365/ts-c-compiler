@@ -1,5 +1,3 @@
-import * as R from 'ramda';
-
 import {Token} from '@compiler/lexer/tokens';
 import {NodeLocation} from '@compiler/grammar/tree/NodeLocation';
 
@@ -20,7 +18,7 @@ import {
  * @returns {string}
  */
 function formatAsmStmt(tokens: Token[]): string {
-  return R.pluck('text', tokens).join(' ');
+  return tokens.map((t) => t.toString()).join(' ');
 }
 
 /**

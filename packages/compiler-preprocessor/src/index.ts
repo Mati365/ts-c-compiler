@@ -1,9 +1,13 @@
 /* eslint-disable no-use-before-define, @typescript-eslint/no-use-before-define */
+import {Result, err, ok} from '@compiler/core/monads/Result';
+import {CompilerError} from '@compiler/core/shared/CompilerError';
+
 import {TreePrintVisitor} from '@compiler/grammar/tree/TreeVisitor';
 import {ASTPreprocessorStmt} from './nodes';
 import {ASTPreprocessorNode} from './constants';
 import {PreprocessorInterpreter} from './interpreter/PreprocessorInterpreter';
-import {PreprocessorGrammar} from './grammar';
+
+import {createPreprocessorGrammar} from './grammar';
 
 export class PreprocessorResult {
   constructor(
@@ -19,10 +23,13 @@ export class PreprocessorResult {
  * @param {string} str
  */
 export function preprocessor(str: string): PreprocessorResult {
-  const stmt: ASTPreprocessorStmt = PreprocessorGrammar.process(str).children[0];
+  const stmt: ASTPreprocessorStmt = createPreprocessorGrammar().process(str).children[0];
 
   const interpreter = new PreprocessorInterpreter;
   const result = interpreter.exec(stmt);
+
+  console.info((new TreePrintVisitor).visit(stmt).reduced);
+  console.info(`Preprocessor Output: \n${result}`);
 
   return new PreprocessorResult(
     stmt,
@@ -30,20 +37,23 @@ export function preprocessor(str: string): PreprocessorResult {
   );
 }
 
-const {ast, result} = preprocessor(`
-%define abc(a) mov a,
-%macro dupa 2
-mov ax, %1
-mov bx, %2
-%endmacro
-%macro dupa 1
-mov ax, %1
-%endmacro
-
-abc(ax) bx
-dupa 2, ax
-dupa ax
-`);
-
-console.info((new TreePrintVisitor).visit(ast).reduced);
-console.info(`Output: \n${result}`);
+/**
+ * Preprocessor that does not throw errors
+ *
+ * @export
+ * @param {string} str
+ * @returns {Result<PreprocessorResult, CompilerError[]>}
+ */
+export function safeResultPreprocessor(str: string): Result<PreprocessorResult, CompilerError[]> {
+  try {
+    return ok(
+      preprocessor(str),
+    );
+  } catch (e) {
+    return err(
+      [
+        e,
+      ],
+    );
+  }
+}

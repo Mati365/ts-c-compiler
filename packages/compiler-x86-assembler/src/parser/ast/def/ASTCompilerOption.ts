@@ -50,7 +50,7 @@ export class ASTCompilerOption extends KindASTAsmNode(ASTNodeKind.COMPILER_OPTIO
     const inBrackets = token.kind === TokenKind.SQUARE_BRACKET;
 
     if (inBrackets)
-      [optionName] = R.split(' ', optionName);
+      [optionName] = R.split(' ', R.trim(optionName));
 
     const option = CompilerOptions[optionName];
     if (R.isNil(option))
