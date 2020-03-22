@@ -41,6 +41,7 @@ export const TERMINAL_CHARACTERS: TokenTerminalCharactersMap = {
   '!': TokenType.NOT,
   '&': TokenType.BIT_AND,
   '|': TokenType.BIT_OR,
+  '^': TokenType.POW,
 
   // binary
   '<<': TokenType.BIT_SHIFT_LEFT,

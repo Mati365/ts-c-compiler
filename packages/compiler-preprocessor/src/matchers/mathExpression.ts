@@ -10,11 +10,11 @@ import {
   createBinOpIfBothSidesPresent,
 } from '../nodes/ASTPreprocessorBinaryOpNode';
 
+import {ASTPreprocessorValueNode} from '../nodes/ASTPreprocessorValueNode';
 import {
   PreprocessorGrammar,
   ASTPreprocessorNode,
   ASTPreprocessorKind,
-  ASTPreprocessorValueNode,
 } from '../constants';
 
 /**

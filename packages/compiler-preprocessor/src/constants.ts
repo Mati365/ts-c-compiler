@@ -1,4 +1,4 @@
-import {TreeNode, ValueNode} from '@compiler/grammar/tree/TreeNode';
+import {TreeNode} from '@compiler/grammar/tree/TreeNode';
 import {Grammar} from '@compiler/grammar/Grammar';
 import {
   PreprocessorInterpretable,
@@ -53,20 +53,6 @@ export function isStatementPreprocessorNode(node: ASTPreprocessorNode): boolean 
 export class PreprocessorGrammar extends Grammar<PreprocessorIdentifier, ASTPreprocessorKind> {}
 
 export class ASTPreprocessorNode extends TreeNode<ASTPreprocessorKind> implements PreprocessorInterpretable {
-  toEmitterLine(): string {
-    return '';
-  }
-
-  /* eslint-disable @typescript-eslint/no-unused-vars */
-  exec(interpreter: PreprocessorInterpreter): InterpreterResult {
-    return null;
-  }
-  /* eslint-enable @typescript-eslint/no-unused-vars */
-}
-
-export class ASTPreprocessorValueNode<T>
-  extends ValueNode<T, ASTPreprocessorKind>
-  implements PreprocessorInterpretable {
   toEmitterLine(): string {
     return '';
   }

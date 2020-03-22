@@ -31,8 +31,6 @@ import {
  * @extends {TreeVisitor<ASTPreprocessorNode>}
  */
 export class ReducePostfixOperatorsVisitor extends TreeVisitor<ASTPreprocessorNode> {
-  protected self(): ReducePostfixOperatorsVisitor { return this; }
-
   constructor(
     private readonly binOpNodeKind: ASTPreprocessorKind = ASTPreprocessorKind.BinaryOperator,
   ) {

@@ -7,6 +7,10 @@ import {
 } from '../constants';
 
 import {ASTPreprocessorExpression} from './ASTPreprocessorExpression';
+import {
+  PreprocessorInterpreter,
+  InterpreterResult,
+} from '../interpreter/PreprocessorInterpreter';
 
 /**
  * @example
@@ -49,5 +53,19 @@ export class ASTPreprocessorIF extends ASTPreprocessorNode {
 
     if (alternate)
       visitor.visit(alternate);
+  }
+
+  /**
+   * Exec interpreter on node
+   *
+   * @param {PreprocessorInterpreter} interpreter
+   * @returns {InterpreterResult}
+   * @memberof ASTPreprocessorMacro
+   */
+  exec(interpreter: PreprocessorInterpreter): InterpreterResult {
+    const {test} = this;
+    const result = test.exec(interpreter);
+
+    console.info(result);
   }
 }

@@ -5,6 +5,11 @@ import {
   ASTPreprocessorNode,
 } from '../constants';
 
+import {
+  PreprocessorInterpreter,
+  InterpreterResult,
+} from '../interpreter/PreprocessorInterpreter';
+
 /**
  * @example
  *  expr1 && expr2 && expr3 > expr2
@@ -32,5 +37,18 @@ export class ASTPreprocessorExpression extends ASTPreprocessorNode {
 
     if (expression)
       visitor.visit(expression);
+  }
+
+  /**
+   * Exec interpreter on node
+   *
+   * @param {PreprocessorInterpreter} interpreter
+   * @returns {InterpreterResult}
+   * @memberof ASTPreprocessorMacro
+   */
+  exec(interpreter: PreprocessorInterpreter): InterpreterResult {
+    const {expression} = this;
+
+    return interpreter.evalExpression(expression);
   }
 }

@@ -66,7 +66,7 @@ function relOp(g: PreprocessorGrammar): ASTPreprocessorNode {
 
 function relOpPrim(g: PreprocessorGrammar): ASTPreprocessorNode {
   const {currentToken} = g;
-  if (!isRelationOpToken(currentToken))
+  if (!isRelationOpToken(currentToken.type))
     return null;
 
   g.consume();

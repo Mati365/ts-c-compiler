@@ -3,6 +3,8 @@ import {TokenLocation} from '@compiler/lexer/tokens';
 
 export enum GrammarErrorCode {
   SYNTAX_ERROR,
+  EXPRESSION_MISMATCH_ARGS_TYPES,
+  INCORRECT_EXPRESSION,
   INCORRECT_ARGS_LIST,
   UNTERMINATED_ARGS_LIST,
   UNKNOWN_MACRO_VARIABLE,
@@ -13,6 +15,8 @@ export enum GrammarErrorCode {
 /* eslint-disable max-len */
 export const GRAMMAR_ERROR_TRANSLATIONS: {[key in GrammarErrorCode]: string} = {
   [GrammarErrorCode.UNKNOWN_MACRO_VARIABLE]: 'Unknown macro variable %{name}!',
+  [GrammarErrorCode.EXPRESSION_MISMATCH_ARGS_TYPES]: 'Mismatch expression args types!',
+  [GrammarErrorCode.INCORRECT_EXPRESSION]: 'Incorrect expression!',
   [GrammarErrorCode.MACRO_ALREADY_EXISTS]: 'Macro %{name} already exists!',
   [GrammarErrorCode.SYNTAX_ERROR]: 'Syntax error!',
   [GrammarErrorCode.INCORRECT_ARGS_LIST]: 'Incorrect args list syntax!',

@@ -15,6 +15,8 @@ import {
 import {TreeVisitor} from '@compiler/grammar/tree/TreeVisitor';
 import {ASTPreprocessorNode, isStatementPreprocessorNode} from '../constants';
 import {ASTPreprocessorCallable} from '../nodes';
+import {ExpressionResultTreeVisitor} from './ExpressionResultTreeVisitor';
+
 import {fetchRuntimeCallArgsList} from './utils/fetchRuntimeCallArgsList';
 
 export type InterpreterResult = string | number | boolean | void;
@@ -282,6 +284,19 @@ export class PreprocessorInterpreter {
       newTokens !== tokens,
       newTokens,
     ];
+  }
+
+  /**
+   * Evaluates expression used in ifs, loops etc
+   *
+   * @param {ASTPreprocessorNode} expression
+   * @returns {InterpreterResult}
+   * @memberof PreprocessorInterpreter
+   */
+  evalExpression(expression: ASTPreprocessorNode): InterpreterResult {
+    const visitor = new ExpressionResultTreeVisitor(this);
+
+    return visitor.visit(expression).value;
   }
 
   /**
