@@ -35,11 +35,17 @@ export class ASTEqu extends KindASTAsmNode(ASTNodeKind.EQU) {
     if (token.type !== TokenType.KEYWORD)
       return null;
 
-    const nextToken = parser.fetchRelativeToken(1, false);
+    let nextToken = parser.fetchRelativeToken(1, false);
+    let eatCount = 1;
+    if (nextToken.type === TokenType.COLON) {
+      nextToken = parser.fetchRelativeToken(2, false);
+      eatCount = 2;
+    }
+
     if (nextToken.lowerText !== EQU_TOKEN_NAME)
       return null;
 
-    parser.consume();
+    parser.consume(eatCount);
     const args = fetchInstructionTokensArgsList(parser, false);
 
     if (args.length !== 1) {

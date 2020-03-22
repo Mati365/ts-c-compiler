@@ -19,8 +19,8 @@ export const ASTNodesParsers = [
   ASTTimes,
   ASTDef,
   ASTInstruction,
-  ASTLabel,
   ASTEqu,
+  ASTLabel,
 ];
 
 /**

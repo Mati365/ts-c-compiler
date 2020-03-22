@@ -18,7 +18,16 @@ import {
  * @returns {string}
  */
 function formatAsmStmt(tokens: Token[]): string {
-  return tokens.map((t) => t.toString()).join(' ');
+  return tokens.map((t) => t.toString()).reduce(
+    (acc, token) => {
+      if (acc && token !== ':')
+        acc += ' ';
+
+      acc += token;
+      return acc;
+    },
+    '',
+  );
 }
 
 /**
