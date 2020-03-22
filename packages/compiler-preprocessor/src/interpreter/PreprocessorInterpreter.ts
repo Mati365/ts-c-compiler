@@ -33,7 +33,10 @@ export interface PreprocessorInterpretable {
 export class PreprocessorScope {
   constructor(
     public readonly variables = new Map<string, InterpreterResult>(),
-    public readonly callable = new Map<string, ASTPreprocessorCallable[]>(),
+    public readonly callable = {
+      sensitive: new Map<string, ASTPreprocessorCallable[]>(),
+      nonSensitive: new Map<string, ASTPreprocessorCallable[]>(),
+    },
   ) {}
 }
 
@@ -116,16 +119,15 @@ export class PreprocessorInterpreter {
   /**
    * Declares function that can be executed in ASTPreprocessorSyntaxLine
    *
-   * @todo
-   *  Handle already defined macro
-   *
    * @param {ASTPreprocessorCallable} callable
    * @returns {this}
    * @memberof PreprocessorInterpreter
    */
   defineRuntimeCallable(callable: ASTPreprocessorCallable): this {
     const {rootScope} = this;
-    const callables = this.getCallables(callable.name);
+    const {caseSensitive} = callable;
+
+    const callables = this.getCallables(callable.name, caseSensitive);
 
     if (callables) {
       if (callables.some((item) => item.argsCount === callable.argsCount)) {
@@ -139,8 +141,13 @@ export class PreprocessorInterpreter {
       }
 
       callables.push(callable);
-    } else
-      rootScope.callable.set(callable.name, [callable]);
+    } else {
+      const {sensitive, nonSensitive} = rootScope.callable;
+      if (caseSensitive)
+        sensitive.set(callable.name, [callable]);
+      else
+        nonSensitive.set(R.toLower(callable.name), [callable]);
+    }
 
     return this;
   }
@@ -149,11 +156,25 @@ export class PreprocessorInterpreter {
    * Checks if symbol is callable
    *
    * @param {string} name
-   * @returns {ASTPreprocessorCallable}
+   * @param {boolean} [caseSensitive=true]
+   * @returns {ASTPreprocessorCallable[]}
    * @memberof PreprocessorInterpreter
    */
-  getCallables(name: string): ASTPreprocessorCallable[] {
-    return this.rootScope.callable.get(name);
+  getCallables(name: string, caseIntensive: boolean = true): ASTPreprocessorCallable[] {
+    const {sensitive, nonSensitive} = this.rootScope.callable;
+    const sensitiveResult = sensitive.get(name);
+    if (caseIntensive && sensitiveResult)
+      return sensitiveResult;
+
+    const nonSensitiveResult = nonSensitive.get(R.toLower(name));
+    if (sensitiveResult && nonSensitiveResult) {
+      return [
+        ...sensitiveResult,
+        ...sensitive.get(name),
+      ];
+    }
+
+    return sensitiveResult ?? nonSensitiveResult;
   }
 
   /**

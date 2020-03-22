@@ -27,6 +27,7 @@ export class ASTPreprocessorMacro extends ASTPreprocessorNode implements ASTPrep
   constructor(
     loc: NodeLocation,
     public readonly name: string,
+    public readonly caseSensitive: boolean,
     public readonly argsCount: number,
     public readonly content: ASTPreprocessorStmt,
   ) {

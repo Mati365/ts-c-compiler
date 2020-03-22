@@ -26,6 +26,7 @@ export class ASTPreprocessorDefineArgSchema {
 export interface ASTPreprocessorCallable {
   readonly name: string;
   readonly argsCount: number;
+  readonly caseSensitive: boolean;
 
   runtimeCall(interpreter: PreprocessorInterpreter, args: string[]): string;
 }
@@ -42,6 +43,7 @@ export class ASTPreprocessorDefine extends ASTPreprocessorNode implements ASTPre
   constructor(
     loc: NodeLocation,
     public readonly name: string,
+    public readonly caseSensitive: boolean,
     public readonly argsSchema: ASTPreprocessorDefineArgSchema[] = [],
     public readonly expression: Token[],
   ) {

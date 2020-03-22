@@ -7,8 +7,8 @@ import {
 } from './interpreter/PreprocessorInterpreter';
 
 export enum PreprocessorIdentifier {
-  DEFINE,
-  MACRO,
+  DEFINE, IDEFINE,
+  MACRO, IMACRO,
   ENDMACRO,
   IF,
   ENDIF,

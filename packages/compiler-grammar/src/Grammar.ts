@@ -232,15 +232,18 @@ export class Grammar<I, K = string> extends TokensIterator {
   /**
    * Matches token defined in identifiers list
    *
-   * @param {I} identifier
+   * @param {(I|I[])} identifier
    * @returns {Token}
    * @memberof Grammar
    */
-  identifier(identifier: I): Token {
+  identifier(identifier: I|I[]): Token {
     this._matchCallNesting++;
 
     const token: Token = this.fetchRelativeToken(0, false);
-    if (token.kind !== TokenKind.IDENTIFIER || token.value !== identifier)
+    if (token.kind !== TokenKind.IDENTIFIER)
+      throw new SyntaxError;
+
+    if ((R.is(Array, identifier) ? !R.contains(token.value, <I[]> identifier) : token.value !== identifier))
       throw new SyntaxError;
 
     this.consume();

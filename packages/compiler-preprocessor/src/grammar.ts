@@ -46,10 +46,10 @@ const preprocessorMatcher: GrammarInitializer<PreprocessorIdentifier, ASTPreproc
   /**
    * Matches identifier that must be in single line, without others
    *
-   * @param {PreprocessorIdentifier} identifier
+   * @param {(PreprocessorIdentifier|PreprocessorIdentifier[])} identifier
    * @returns {Token}
    */
-  function singleLineIdentifier(identifier: PreprocessorIdentifier): Token {
+  function singleLineIdentifier(identifier: PreprocessorIdentifier|PreprocessorIdentifier[]): Token {
     startLine();
     return g.identifier(identifier);
   }
@@ -83,7 +83,14 @@ const preprocessorMatcher: GrammarInitializer<PreprocessorIdentifier, ASTPreproc
    * @returns {TreeNode}
    */
   function macroStmt(): ASTPreprocessorNode {
-    const startToken = singleLineIdentifier(PreprocessorIdentifier.MACRO);
+    const startToken = singleLineIdentifier(
+      [
+        PreprocessorIdentifier.MACRO,
+        PreprocessorIdentifier.IMACRO,
+      ],
+    );
+
+    const caseIntensive = startToken.value === PreprocessorIdentifier.MACRO;
     const [name, argsCount, children] = [
       g.match(
         {
@@ -107,6 +114,7 @@ const preprocessorMatcher: GrammarInitializer<PreprocessorIdentifier, ASTPreproc
     return new ASTPreprocessorMacro(
       NodeLocation.fromTokenLoc(startToken.loc),
       name,
+      caseIntensive,
       argsCount,
       children,
     );
@@ -118,7 +126,14 @@ const preprocessorMatcher: GrammarInitializer<PreprocessorIdentifier, ASTPreproc
    * @returns {TreeNode}
    */
   function defineStmt(): ASTPreprocessorNode {
-    const startToken = singleLineIdentifier(PreprocessorIdentifier.DEFINE);
+    const startToken = singleLineIdentifier(
+      [
+        PreprocessorIdentifier.DEFINE,
+        PreprocessorIdentifier.IDEFINE,
+      ],
+    );
+
+    const caseIntensive = startToken.value === PreprocessorIdentifier.DEFINE;
     const nameToken = g.match(
       {
         type: TokenType.KEYWORD,
@@ -161,6 +176,7 @@ const preprocessorMatcher: GrammarInitializer<PreprocessorIdentifier, ASTPreproc
     return new ASTPreprocessorDefine(
       NodeLocation.fromTokenLoc(startToken.loc),
       nameToken.text,
+      caseIntensive,
       args,
       expression,
     );
@@ -224,7 +240,9 @@ export const PreprocessorGrammar = Grammar.build(
       '%if': PreprocessorIdentifier.IF,
       '%endif': PreprocessorIdentifier.ENDIF,
       '%define': PreprocessorIdentifier.DEFINE,
+      '%idefine': PreprocessorIdentifier.IDEFINE,
       '%macro': PreprocessorIdentifier.MACRO,
+      '%imacro': PreprocessorIdentifier.IMACRO,
       '%endmacro': PreprocessorIdentifier.ENDMACRO,
     },
   },
