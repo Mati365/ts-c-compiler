@@ -110,8 +110,17 @@ export class MathExpression {
     );
 
     for (let i = 0; i < tokens.length; ++i) {
-      const c = tokens[i];
-      const operator = MathOperator.findOperatorByCharacter(c);
+      let c = tokens[i];
+      let operator = MathOperator.findOperatorByCharacter(c);
+
+      // handle <<
+      if (!operator) {
+        operator = MathOperator.findOperatorByCharacter(c + tokens[i + 1]);
+        if (operator) {
+          ++i;
+          c += tokens[i + 1];
+        }
+      }
 
       if (operator) {
         // prefix cases with 0: (-1), +1+2

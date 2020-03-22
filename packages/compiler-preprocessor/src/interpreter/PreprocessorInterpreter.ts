@@ -204,7 +204,7 @@ export class PreprocessorInterpreter {
    * @returns {[boolean, Token[]]}
    * @memberof PreprocessorInterpreter
    */
-  evalTokensList(tokens: Token[]): [boolean, Token[]] {
+  removeMacrosFromTokens(tokens: Token[]): [boolean, Token[]] {
     let newTokens: Token[] = tokens;
 
     for (let i = 0; i < newTokens.length; ++i) {
@@ -250,7 +250,7 @@ export class PreprocessorInterpreter {
 
         const args = (
           !inline || newTokens[i + 1]?.text === '('
-            ? fetchRuntimeCallArgsList(it).map((argTokens) => this.evalTokensList(argTokens)[1])
+            ? fetchRuntimeCallArgsList(it).map((argTokens) => this.removeMacrosFromTokens(argTokens)[1])
             : []
         );
 

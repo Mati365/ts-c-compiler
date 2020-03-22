@@ -1,1 +1,1 @@
-xor ax, ax
+xor ax, 2 << 2

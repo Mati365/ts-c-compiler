@@ -60,6 +60,6 @@ export class ASTPreprocessorSyntaxLine extends ASTPreprocessorNode {
    * @memberof ASTPreprocessorMacro
    */
   exec(interpreter: PreprocessorInterpreter): InterpreterResult {
-    [, this.outputTokens] = interpreter.evalTokensList(this.tokens);
+    [, this.outputTokens] = interpreter.removeMacrosFromTokens(this.tokens);
   }
 }

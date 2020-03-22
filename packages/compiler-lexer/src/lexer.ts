@@ -39,8 +39,12 @@ export const TERMINAL_CHARACTERS: TokenTerminalCharactersMap = {
   '*': TokenType.MUL,
   '/': TokenType.DIV,
   '!': TokenType.NOT,
+  '&': TokenType.BIT_AND,
+  '|': TokenType.BIT_OR,
 
   // binary
+  '<<': TokenType.BIT_SHIFT_LEFT,
+  '>>': TokenType.BIT_SHIFT_RIGHT,
   '==': TokenType.EQUAL,
   '!=': TokenType.DIFFERS,
   '>': TokenType.GREATER_THAN,
