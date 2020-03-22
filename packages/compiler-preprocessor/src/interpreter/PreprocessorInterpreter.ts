@@ -4,6 +4,7 @@ import {TokensIterator} from '@compiler/grammar/tree/TokensIterator';
 import {
   Token,
   TokenType,
+  TokenKind,
 } from '@compiler/lexer/tokens';
 
 import {
@@ -25,7 +26,7 @@ export interface PreprocessorInterpretable {
 
 export class PreprocessorScope {
   public readonly variables = new Map<string, InterpreterResult>();
-  public readonly callable = new Map<string, ASTPreprocessorCallable>();
+  public readonly callable = new Map<string, ASTPreprocessorCallable[]>();
 }
 
 export class PreprocessorInterpreter {
@@ -102,17 +103,24 @@ export class PreprocessorInterpreter {
    * @memberof PreprocessorInterpreter
    */
   defineRuntimeCallable(callable: ASTPreprocessorCallable): this {
-    if (this.getCallable(callable.name)) {
-      throw new GrammarError(
-        GrammarErrorCode.MACRO_ALREADY_EXISTS,
-        null,
-        {
-          name: callable.name,
-        },
-      );
-    }
+    const {rootScope} = this;
+    const callables = this.getCallables(callable.name);
 
-    this.rootScope.callable.set(callable.name, callable);
+    if (callables) {
+      if (callables.some((item) => item.argsCount === callable.argsCount)) {
+        throw new GrammarError(
+          GrammarErrorCode.MACRO_ALREADY_EXISTS,
+          null,
+          {
+            name: callable.name,
+          },
+        );
+      }
+
+      callables.push(callable);
+    } else
+      rootScope.callable.set(callable.name, [callable]);
+
     return this;
   }
 
@@ -123,7 +131,7 @@ export class PreprocessorInterpreter {
    * @returns {ASTPreprocessorCallable}
    * @memberof PreprocessorInterpreter
    */
-  getCallable(name: string): ASTPreprocessorCallable {
+  getCallables(name: string): ASTPreprocessorCallable[] {
     return this.rootScope.callable.get(name);
   }
 
@@ -139,11 +147,11 @@ export class PreprocessorInterpreter {
 
     for (let i = 0; i < newTokens.length; ++i) {
       const token = newTokens[i];
-      if (token.type !== TokenType.KEYWORD)
+      if (token.type !== TokenType.KEYWORD || (token.kind !== TokenKind.BRACKET_PREFIX && token.kind !== null))
         continue;
 
-      const callable = this.getCallable(token.text);
-      if (callable) {
+      const callables = this.getCallables(token.text);
+      if (callables?.length) {
         // nested eval of macro, arguments might contain macro
         const it = new TokensIterator(newTokens, i + 1);
         const args = (
@@ -151,23 +159,27 @@ export class PreprocessorInterpreter {
             ? fetchRuntimeCallArgsList(it).map((argTokens) => this.evalTokensList(argTokens)[1])
             : []
         );
-        const callResult = callable.runtimeCall(
-          R.map(
-            (argTokens) => R.pluck('text', argTokens).join(''),
-            args,
-          ),
-        );
 
-        newTokens = [
-          ...newTokens.slice(0, i),
-          new Token(
-            TokenType.KEYWORD,
-            null,
-            callResult,
-            tokens[i].loc,
-          ),
-          ...newTokens.slice(it.getTokenIndex() + +args.length), // +args.length, if args.length > 0 there must be ()
-        ];
+        const callable = callables.find((item) => item.argsCount === args.length);
+        if (callable) {
+          const callResult = callable.runtimeCall(
+            R.map(
+              (argTokens) => R.pluck('text', argTokens).join(''),
+              args,
+            ),
+          );
+
+          newTokens = [
+            ...newTokens.slice(0, i),
+            new Token(
+              TokenType.KEYWORD,
+              null,
+              callResult,
+              tokens[i].loc,
+            ),
+            ...newTokens.slice(it.getTokenIndex() + +args.length), // +args.length, if args.length > 0 there must be ()
+          ];
+        }
       }
     }
 

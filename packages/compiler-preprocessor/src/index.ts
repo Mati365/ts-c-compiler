@@ -31,8 +31,11 @@ export function preprocessor(str: string): PreprocessorResult {
 }
 
 const {ast, result} = preprocessor(`
-  %define abc(a) mov a,
-  abc(ax) bx
+  %define AIKS dx
+  %define abc(a) mov a, 1
+  %define abc(a, b) mov a, b
+  abc(AIKS)
+  abc(cx, bx)
 `);
 
 console.info((new TreePrintVisitor).visit(ast).reduced);

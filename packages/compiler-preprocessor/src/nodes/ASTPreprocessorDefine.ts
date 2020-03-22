@@ -25,6 +25,7 @@ export class ASTPreprocessorDefineArgSchema {
 
 export interface ASTPreprocessorCallable {
   readonly name: string;
+  readonly argsCount: number;
 
   runtimeCall(args: string[]): string;
 }
@@ -45,6 +46,10 @@ export class ASTPreprocessorDefine extends ASTPreprocessorNode implements ASTPre
     public readonly expression: Token[],
   ) {
     super(ASTPreprocessorKind.DefineStmt, loc);
+  }
+
+  get argsCount(): number {
+    return this.argsSchema.length;
   }
 
   toString(): string {
