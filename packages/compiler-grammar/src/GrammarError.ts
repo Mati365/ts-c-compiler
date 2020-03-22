@@ -8,12 +8,14 @@ export enum GrammarErrorCode {
   INCORRECT_ARGS_LIST,
   UNTERMINATED_ARGS_LIST,
   UNKNOWN_MACRO_VARIABLE,
+  INCORRECT_VALUE_EXPRESSION,
   MACRO_ARGS_LIST_MISMATCH,
   MACRO_ALREADY_EXISTS,
 }
 
 /* eslint-disable max-len */
 export const GRAMMAR_ERROR_TRANSLATIONS: {[key in GrammarErrorCode]: string} = {
+  [GrammarErrorCode.INCORRECT_VALUE_EXPRESSION]: 'Incorrect value expression! Too many tokens!',
   [GrammarErrorCode.UNKNOWN_MACRO_VARIABLE]: 'Unknown macro variable %{name}!',
   [GrammarErrorCode.EXPRESSION_MISMATCH_ARGS_TYPES]: 'Mismatch expression args types!',
   [GrammarErrorCode.INCORRECT_EXPRESSION]: 'Incorrect expression!',

@@ -44,6 +44,7 @@ export class ExpressionResultTreeVisitor extends TreeVisitor<ASTPreprocessorNode
       case ASTPreprocessorKind.BinaryOperator: {
         const {op} = <ASTPreprocessorBinaryOpNode> node;
         const [left, right] = [_expressionArgs.pop(), _expressionArgs.pop()];
+
         if (typeof left !== typeof right) {
           throw new GrammarError(
             GrammarErrorCode.EXPRESSION_MISMATCH_ARGS_TYPES,
@@ -70,11 +71,13 @@ export class ExpressionResultTreeVisitor extends TreeVisitor<ASTPreprocessorNode
         }
       } break;
 
-      case ASTPreprocessorKind.Value:
+      case ASTPreprocessorKind.Value: {
+        const valNode = <ASTPreprocessorValueNode<NumberToken[]>> node;
+
         _expressionArgs.push(
-          (<ASTPreprocessorValueNode<NumberToken>> node).value.value.number,
+          valNode.exec(this._interpreter),
         );
-        break;
+      } break;
 
       default:
     }

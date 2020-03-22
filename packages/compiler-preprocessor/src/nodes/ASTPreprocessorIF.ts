@@ -25,6 +25,8 @@ import {
  * @extends {ASTPreprocessorNode}
  */
 export class ASTPreprocessorIF extends ASTPreprocessorNode {
+  private _result: boolean = false;
+
   constructor(
     loc: NodeLocation,
     public readonly test: ASTPreprocessorExpression,
@@ -32,6 +34,15 @@ export class ASTPreprocessorIF extends ASTPreprocessorNode {
     public readonly alternate: ASTPreprocessorNode = null,
   ) {
     super(ASTPreprocessorKind.IfStmt, loc);
+  }
+
+  toEmitterLine(): string {
+    const {_result, consequent, alternate} = this;
+
+    if (_result)
+      return consequent.toEmitterLine();
+
+    return alternate?.toEmitterLine() ?? '';
   }
 
   /**
@@ -63,9 +74,13 @@ export class ASTPreprocessorIF extends ASTPreprocessorNode {
    * @memberof ASTPreprocessorMacro
    */
   exec(interpreter: PreprocessorInterpreter): InterpreterResult {
-    const {test} = this;
-    const result = test.exec(interpreter);
+    const {test, consequent, alternate} = this;
+    const result = <boolean> test.exec(interpreter);
 
-    console.info(result);
+    this._result = result;
+    if (result)
+      return consequent.exec(interpreter);
+
+    return alternate?.exec(interpreter);
   }
 }

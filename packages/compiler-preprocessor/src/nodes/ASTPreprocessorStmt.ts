@@ -20,6 +20,26 @@ export class ASTPreprocessorStmt extends ASTPreprocessorNode {
     super(ASTPreprocessorKind.Stmt, loc, children);
   }
 
+  toEmitterLine(): string {
+    const {children} = this;
+
+    if (children) {
+      return R.reduce(
+        (acc, node) => {
+          const str = node.toEmitterLine();
+          if (str)
+            acc += `${str}\n`;
+
+          return str;
+        },
+        '',
+        children,
+      );
+    }
+
+    return '';
+  }
+
   /**
    * Iterates throught tree
    *

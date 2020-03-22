@@ -1,7 +1,7 @@
 /* eslint-disable no-use-before-define, @typescript-eslint/no-use-before-define */
 import {empty} from '@compiler/grammar/matchers';
 
-import {TokenType, NumberToken} from '@compiler/lexer/tokens';
+import {TokenType, NumberToken, Token} from '@compiler/lexer/tokens';
 import {NodeLocation} from '@compiler/grammar/tree/NodeLocation';
 
 import {ReducePostfixOperatorsVisitor} from './utils/ReducePostifxOperatorsVisitor';
@@ -19,17 +19,20 @@ import {
 
 /**
  * @see
- * term -> number | ( expr )
+ * term -> keyword | number | ( expr )
  */
 function term(g: PreprocessorGrammar): ASTPreprocessorNode {
   const {currentToken: token} = g;
 
+  if (token.type === TokenType.KEYWORD)
+    return keywordTerm(g);
+
   if (token.type === TokenType.NUMBER) {
     g.consume();
-    return new ASTPreprocessorValueNode<NumberToken>(
+    return new ASTPreprocessorValueNode<NumberToken[]>(
       ASTPreprocessorKind.Value,
       NodeLocation.fromTokenLoc(token.loc),
-      token,
+      [token],
     );
   }
 
@@ -47,6 +50,40 @@ function term(g: PreprocessorGrammar): ASTPreprocessorNode {
   }
 
   throw new SyntaxError;
+}
+
+/**
+ * Macro calls etc
+ *
+ * @param {PreprocessorGrammar} g
+ * @returns {ASTPreprocessorNode}
+ */
+function keywordTerm(g: PreprocessorGrammar): ASTPreprocessorNode {
+  const result: Token[] = [g.currentToken];
+  g.consume();
+
+  // macro keyword, fetch keywords list
+  if (g.currentToken.text === '(') {
+    let nesting = 0;
+
+    g.iterate((token) => {
+      result.push(token);
+
+      if (token.text === '(')
+        nesting++;
+      else if (token.text === ')')
+        nesting--;
+
+      return nesting > 0;
+    });
+    g.consume();
+  }
+
+  return new ASTPreprocessorValueNode(
+    ASTPreprocessorKind.Value,
+    NodeLocation.fromTokenLoc(result[0].loc),
+    result,
+  );
 }
 
 /**
