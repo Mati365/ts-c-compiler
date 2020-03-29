@@ -1,7 +1,7 @@
 /* eslint-disable no-use-before-define, @typescript-eslint/no-use-before-define */
 import {isLineTerminatorToken} from '@compiler/lexer/utils';
 
-import {TokenType, NumberToken, Token, TokenKind} from '@compiler/lexer/tokens';
+import {TokenType, NumberToken, Token, TokenKind, NumberFormat} from '@compiler/lexer/tokens';
 import {Grammar, GrammarInitializer, SyntaxError} from '@compiler/grammar/Grammar';
 import {NodeLocation} from '@compiler/grammar/tree/NodeLocation';
 
@@ -56,49 +56,111 @@ const preprocessorMatcher: GrammarInitializer<PreprocessorIdentifier, ASTPreproc
   }
 
   /**
-   * Matches %ifdef
+   * Matches %ifdef, %ifndef
    *
-   * @returns {TreeNode}
+   * @param {PreprocessorIdentifier} [identifier=PreprocessorIdentifier.IFDEF]
+   * @returns {ASTPreprocessorNode}
    */
-  function ifDefStmt(): ASTPreprocessorNode {
-    const startToken = singleLineIdentifier(PreprocessorIdentifier.IFDEF);
+  function ifDefStmt(identifier: PreprocessorIdentifier = PreprocessorIdentifier.IFDEF): ASTPreprocessorNode {
+    const negated = (
+      identifier === PreprocessorIdentifier.IFNDEF
+        || identifier === PreprocessorIdentifier.ELIFNDEF
+    );
+
+    const startToken = singleLineIdentifier(identifier);
     const macroName = g.match(
       {
         type: TokenType.KEYWORD,
       },
     );
 
-    const consequent = body();
-    g.identifier(PreprocessorIdentifier.ENDIF);
+    const consequent = stmt();
+    const alternate = <ASTPreprocessorStmt> g.or(
+      {
+        else() {
+          g.identifier(PreprocessorIdentifier.ELSE);
+          return stmt();
+        },
+        elifdef() {
+          g.identifier(PreprocessorIdentifier.ELIFDEF, false, false);
+          return ifDefStmt(PreprocessorIdentifier.ELIFDEF);
+        },
+        elifndef() {
+          g.identifier(PreprocessorIdentifier.ELIFNDEF, false, false);
+          return ifDefStmt(PreprocessorIdentifier.ELIFNDEF);
+        },
+        empty,
+      },
+    );
+
+    if (identifier === PreprocessorIdentifier.IFDEF || identifier === PreprocessorIdentifier.IFNDEF)
+      g.identifier(PreprocessorIdentifier.ENDIF);
 
     return new ASTPreprocessorIFDef(
       NodeLocation.fromTokenLoc(startToken.loc),
+      negated,
       macroName.text,
       consequent,
+      alternate,
     );
   }
 
+  function ifNdefStmt() {
+    return ifDefStmt(PreprocessorIdentifier.IFNDEF);
+  }
+
   /**
-   * Matches %if
+   * Matches %if, %ifn
    *
-   * @returns {TreeNode}
+   * @param {PreprocessorIdentifier} [identifier=PreprocessorIdentifier.IF]
+   * @returns {ASTPreprocessorNode}
    */
-  function ifStmt(): ASTPreprocessorNode {
-    const startToken = singleLineIdentifier(PreprocessorIdentifier.IF);
+  function ifStmt(identifier: PreprocessorIdentifier = PreprocessorIdentifier.IF): ASTPreprocessorNode {
+    const negated = (
+      identifier === PreprocessorIdentifier.IFN
+        || identifier === PreprocessorIdentifier.ELIFN
+    );
+
+    const startToken = singleLineIdentifier(identifier);
     const expression = logicExpression(g);
 
     const bodyLoc = NodeLocation.fromTokenLoc(g.currentToken.loc);
-    const consequent = body();
-    g.identifier(PreprocessorIdentifier.ENDIF);
+    const consequent = stmt();
+    const alternate = <ASTPreprocessorStmt> g.or(
+      {
+        else() {
+          g.identifier(PreprocessorIdentifier.ELSE);
+          return stmt();
+        },
+        elif() {
+          g.identifier(PreprocessorIdentifier.ELIF, false, false);
+          return ifStmt(PreprocessorIdentifier.ELIF);
+        },
+        elifn() {
+          g.identifier(PreprocessorIdentifier.ELIFN, false, false);
+          return ifStmt(PreprocessorIdentifier.ELIFN);
+        },
+        empty,
+      },
+    );
+
+    if (identifier === PreprocessorIdentifier.IF || identifier === PreprocessorIdentifier.IFN)
+      g.identifier(PreprocessorIdentifier.ENDIF);
 
     return new ASTPreprocessorIF(
       NodeLocation.fromTokenLoc(startToken.loc),
+      negated,
       new ASTPreprocessorExpression(
         bodyLoc,
         expression,
       ),
       consequent,
+      alternate,
     );
+  }
+
+  function ifnStmt() {
+    return ifStmt(PreprocessorIdentifier.IFN);
   }
 
   /**
@@ -129,7 +191,7 @@ const preprocessorMatcher: GrammarInitializer<PreprocessorIdentifier, ASTPreproc
         },
       ))?.value?.number ?? 0,
 
-      body(),
+      stmt(),
     ];
 
     startLine();
@@ -192,9 +254,12 @@ const preprocessorMatcher: GrammarInitializer<PreprocessorIdentifier, ASTPreproc
     }
 
     // definition content
-    const expression = fetchTokensUntilEOL(g);
-    if (!expression.length)
-      throw new SyntaxError;
+    let expression = fetchTokensUntilEOL(g);
+    if (!expression.length) {
+      expression = [
+        new NumberToken(nameToken.text, -Infinity, NumberFormat.DEC, nameToken.loc),
+      ];
+    }
 
     // eslint-disable-next-line
     return new ASTPreprocessorDefine(
@@ -240,13 +305,15 @@ const preprocessorMatcher: GrammarInitializer<PreprocessorIdentifier, ASTPreproc
    *
    * @returns {TreeNode[]}
    */
-  function body(): ASTPreprocessorStmt {
+  function stmt(): ASTPreprocessorStmt {
     return new ASTPreprocessorStmt(
       NodeLocation.fromTokenLoc(g.currentToken.loc),
       <ASTPreprocessorNode[]> g.matchList(
         {
           ifStmt,
           ifDefStmt,
+          ifNdefStmt,
+          ifnStmt,
           defineStmt,
           macroStmt,
           syntaxLine,
@@ -256,7 +323,7 @@ const preprocessorMatcher: GrammarInitializer<PreprocessorIdentifier, ASTPreproc
     );
   }
 
-  return body;
+  return stmt;
 };
 
 export function createPreprocessorGrammar() {
@@ -264,8 +331,15 @@ export function createPreprocessorGrammar() {
     {
       identifiers: {
         '%if': PreprocessorIdentifier.IF,
+        '%ifn': PreprocessorIdentifier.IFN,
         '%ifdef': PreprocessorIdentifier.IFDEF,
+        '%ifndef': PreprocessorIdentifier.IFNDEF,
         '%endif': PreprocessorIdentifier.ENDIF,
+        '%else': PreprocessorIdentifier.ELSE,
+        '%elif': PreprocessorIdentifier.ELIF,
+        '%elifn': PreprocessorIdentifier.ELIFN,
+        '%elifdef': PreprocessorIdentifier.ELIFDEF,
+        '%elifndef': PreprocessorIdentifier.ELIFNDEF,
         '%define': PreprocessorIdentifier.DEFINE,
         '%idefine': PreprocessorIdentifier.IDEFINE,
         '%macro': PreprocessorIdentifier.MACRO,

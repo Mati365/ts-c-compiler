@@ -42,6 +42,7 @@ type GrammarMatcherInfo<I> = {
   terminal?: string | I,
   optional?: boolean,
   type?: TokenType,
+  consume?: boolean,
 };
 
 /**
@@ -165,7 +166,7 @@ export class Grammar<I, K = string> extends TokensIterator {
   }
 
   /**
-   * Checks all production, creates tree from them
+   * Checks all production and chooses single maching
    *
    * @private
    * @type {number}
@@ -207,6 +208,7 @@ export class Grammar<I, K = string> extends TokensIterator {
   match(
     {
       terminal = null,
+      consume = true,
       type = TokenType.KEYWORD,
       optional,
     }: GrammarMatcherInfo<I> = {},
@@ -225,7 +227,9 @@ export class Grammar<I, K = string> extends TokensIterator {
       throw new SyntaxError;
     }
 
-    this.consume();
+    if (consume)
+      this.consume();
+
     return token;
   }
 
@@ -233,20 +237,28 @@ export class Grammar<I, K = string> extends TokensIterator {
    * Matches token defined in identifiers list
    *
    * @param {(I|I[])} identifier
+   * @param {boolean} [optional]
+   * @param {boolean} [consume=true]
    * @returns {Token}
    * @memberof Grammar
    */
-  identifier(identifier: I|I[]): Token {
+  identifier(identifier: I|I[], optional?: boolean, consume: boolean = true): Token {
     this._matchCallNesting++;
 
     const token: Token = this.fetchRelativeToken(0, false);
-    if (token.kind !== TokenKind.IDENTIFIER)
-      throw new SyntaxError;
+    if (
+      token.kind !== TokenKind.IDENTIFIER
+        || ((R.is(Array, identifier) ? !R.contains(token.value, <I[]> identifier) : token.value !== identifier))
+    ) {
+      if (optional)
+        return null;
 
-    if ((R.is(Array, identifier) ? !R.contains(token.value, <I[]> identifier) : token.value !== identifier))
       throw new SyntaxError;
+    }
 
-    this.consume();
+    if (consume)
+      this.consume();
+
     return token;
   }
 }

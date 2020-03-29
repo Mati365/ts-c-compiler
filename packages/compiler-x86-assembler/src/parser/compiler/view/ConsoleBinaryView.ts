@@ -297,8 +297,8 @@ export class ConsoleBinaryView extends BinaryView<string> {
     return [
       `Total passes: ${totalPasses + 1}`,
       `Output size: ${compilerResult.output.byteSize} bytes`,
-      `Binary mapping:\n\n${str}`,
-      'Binary:\n',
+      `Binary mapping:\n\n${str}\n`,
+      'Binary:',
       arrayToHexString(compilerResult.output.getBinary()),
     ].join('\n');
   }

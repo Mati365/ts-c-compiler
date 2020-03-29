@@ -107,7 +107,7 @@ export class PreprocessorInterpreter {
           return;
 
         if (this.nesting === 2) {
-          const str = node.toEmitterLine().trim();
+          const str = node.toEmitterLine();
           if (str)
             acc += `${str}\n`;
         }

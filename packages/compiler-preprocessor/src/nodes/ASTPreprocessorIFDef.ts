@@ -13,6 +13,8 @@ import {
   InterpreterResult,
 } from '../interpreter/PreprocessorInterpreter';
 
+import {ASTPreprocessorCondition} from './ASTPreprocessorIF';
+
 /**
  * @example
  * %ifdef TEST
@@ -25,25 +27,15 @@ import {
  * @class ASTPreprocessorIFDef
  * @extends {ASTPreprocessorNode}
  */
-export class ASTPreprocessorIFDef extends ASTPreprocessorNode {
-  private _result: boolean = false;
-
+export class ASTPreprocessorIFDef extends ASTPreprocessorCondition {
   constructor(
     loc: NodeLocation,
+    negated: boolean,
     public readonly itemName: string,
-    public readonly consequent: ASTPreprocessorNode,
-    public readonly alternate: ASTPreprocessorNode = null,
+    consequent: ASTPreprocessorNode,
+    alternate: ASTPreprocessorNode = null,
   ) {
-    super(ASTPreprocessorKind.IfDefStmt, loc);
-  }
-
-  toEmitterLine(): string {
-    const {_result, consequent, alternate} = this;
-
-    if (_result)
-      return consequent.toEmitterLine();
-
-    return alternate?.toEmitterLine() ?? '';
+    super(ASTPreprocessorKind.IfDefStmt, loc, negated, consequent, alternate);
   }
 
   /**
@@ -54,8 +46,10 @@ export class ASTPreprocessorIFDef extends ASTPreprocessorNode {
    * @memberof ASTPreprocessorMacro
    */
   exec(interpreter: PreprocessorInterpreter): InterpreterResult {
-    const {consequent, alternate, itemName} = this;
-    const result = !R.isNil(interpreter.getVariable(itemName)) || interpreter.getCallables(itemName)?.length > 0;
+    const {consequent, alternate, itemName, negated} = this;
+    let result = !R.isNil(interpreter.getVariable(itemName)) || interpreter.getCallables(itemName)?.length > 0;
+    if (negated)
+      result = !result;
 
     this._result = result;
     if (result)

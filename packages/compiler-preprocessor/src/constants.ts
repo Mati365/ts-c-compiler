@@ -11,8 +11,15 @@ export enum PreprocessorIdentifier {
   MACRO, IMACRO,
   ENDMACRO,
   IF,
+  IFN,
   IFDEF,
+  IFNDEF,
   ENDIF,
+  ELSE,
+  ELIF,
+  ELIFN,
+  ELIFDEF,
+  ELIFNDEF,
 }
 
 export enum ASTPreprocessorKind {

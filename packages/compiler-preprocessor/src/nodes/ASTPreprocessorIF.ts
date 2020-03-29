@@ -12,28 +12,17 @@ import {
   InterpreterResult,
 } from '../interpreter/PreprocessorInterpreter';
 
-/**
- * @example
- * %if 2 > 4
- *   mov ax, bx
- * %elif
- *   xor bx, bx
- * %endif
- *
- * @export
- * @class ASTPreprocessorIF
- * @extends {ASTPreprocessorNode}
- */
-export class ASTPreprocessorIF extends ASTPreprocessorNode {
-  private _result: boolean = false;
+export class ASTPreprocessorCondition extends ASTPreprocessorNode {
+  protected _result: boolean = false;
 
   constructor(
+    kind: ASTPreprocessorKind,
     loc: NodeLocation,
-    public readonly test: ASTPreprocessorExpression,
+    public readonly negated: boolean,
     public readonly consequent: ASTPreprocessorNode,
     public readonly alternate: ASTPreprocessorNode = null,
   ) {
-    super(ASTPreprocessorKind.IfStmt, loc);
+    super(kind, loc);
   }
 
   toEmitterLine(): string {
@@ -44,6 +33,30 @@ export class ASTPreprocessorIF extends ASTPreprocessorNode {
 
     return alternate?.toEmitterLine() ?? '';
   }
+}
+
+/**
+ * @example
+ * %if 2 > 4
+ *   mov ax, bx
+ * %elif
+ *   xor bx, bx
+ * %endif
+ *
+ * @export
+ * @class ASTPreprocessorIF
+ * @extends {ASTPreprocessorCondition}
+ */
+export class ASTPreprocessorIF extends ASTPreprocessorCondition {
+  constructor(
+    loc: NodeLocation,
+    negated: boolean,
+    public readonly test: ASTPreprocessorExpression,
+    consequent: ASTPreprocessorNode,
+    alternate: ASTPreprocessorNode = null,
+  ) {
+    super(ASTPreprocessorKind.IfStmt, loc, negated, consequent, alternate);
+  }
 
   /**
    * Exec interpreter on node
@@ -53,8 +66,10 @@ export class ASTPreprocessorIF extends ASTPreprocessorNode {
    * @memberof ASTPreprocessorMacro
    */
   exec(interpreter: PreprocessorInterpreter): InterpreterResult {
-    const {test, consequent, alternate} = this;
-    const result = <boolean> test.exec(interpreter);
+    const {test, consequent, alternate, negated} = this;
+    let result = <boolean> test.exec(interpreter);
+    if (negated)
+      result = !result;
 
     this._result = result;
     if (result)
