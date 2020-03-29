@@ -54,7 +54,14 @@ describe('mem', () => {
     expect('mov bx, [bx:0xFFFFF]').toHasCompilerError(ParserErrorCode.INVALID_ADDRESSING_MODE);
   });
 
-  it('handle scale bit error in 16bit mode', () => {
+  it('handle scale without index bit error in 16bit mode', () => {
+    expect(`
+      [bits 16]
+      mov bx, [es:si+bx]
+    `).not.toHasCompilerError(ParserErrorCode.SCALE_INDEX_IS_UNSUPPORTED_IN_MODE);
+  });
+
+  it('handle scale > 1 bit error in 16bit mode', () => {
     expect(`
       [bits 16]
       mov bx, [es:si*4+bx]
@@ -63,5 +70,15 @@ describe('mem', () => {
 
   it('handle unknown keyword in mem addr', () => {
     expect('mov bx, [es:bx+si*4+0xF+dupa]').toHasCompilerError(MathErrorCode.UNKNOWN_KEYWORD);
+  });
+});
+
+describe('instruction', () => {
+  it('handle unknown operation', () => {
+    expect('movasdasd 0x4, 0x4, 0x4').toHasCompilerError(ParserErrorCode.UNKNOWN_OPERATION);
+  });
+
+  it('handle unknown instruction format', () => {
+    expect('mov 0x4, 0x4, 0x4').toHasCompilerError(ParserErrorCode.UNKNOWN_COMPILER_INSTRUCTION);
   });
 });

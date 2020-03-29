@@ -76,22 +76,25 @@ function parseToken(
   if (!token || !token.length)
     return null;
 
+  const loc = location.clone();
+  loc.column -= token.length;
+
   const identifier = identifiers && identifiers[R.toLower(token)];
   if (!R.isNil(identifier))
-    return new IdentifierToken(identifier, token, location.clone());
+    return new IdentifierToken(identifier, token, loc);
 
   for (const tokenType in tokensParsers) {
-    const result = tokensParsers[tokenType](token, location);
+    const result = tokensParsers[tokenType](token, loc);
     if (!result)
       continue;
 
     // result might return boolean return from has() function
     if (result === true)
-      return new Token(<any> tokenType, null, token, location.clone());
+      return new Token(<any> tokenType, null, token, loc);
 
     // it might be also object without type
     if (!result?.type)
-      return new Token(<any> tokenType, null, token, location.clone(), result);
+      return new Token(<any> tokenType, null, token, loc, result);
 
     return result;
   }
@@ -148,11 +151,25 @@ export function* lexer(config: LexerConfig, code: string): IterableIterator<Toke
     yield token;
   }
 
+  /**
+   * Handles single character terminals such as a b c
+   *
+   * @param {TokenType} type
+   * @param {string} character
+   * @returns {IterableIterator<Token>}
+   */
   function* appendCharToken(type: TokenType, character: string): IterableIterator<Token> {
-    if (R.trim(tokenBuffer).length) {
-      yield* appendToken(
-        parseToken(identifiers, tokensParsers, location, tokenBuffer),
-      );
+    if (tokenBuffer.length) {
+      const trimmedTokenBuffer = R.trim(tokenBuffer);
+
+      if (trimmedTokenBuffer.length) {
+        // it clears tokenBuffer
+        yield* appendToken(
+          parseToken(identifiers, tokensParsers, location, trimmedTokenBuffer),
+        );
+      }
+
+      tokenBuffer = '';
     }
 
     yield* appendToken(
@@ -165,6 +182,14 @@ export function* lexer(config: LexerConfig, code: string): IterableIterator<Toke
     );
   }
 
+  /**
+   * Handles sequention of characters like "abc asd"
+   *
+   * @param {TokenType} type
+   * @param {TokenKind} kind
+   * @param {(str: string) => boolean} fetchUntil
+   * @returns {Iterable<Token>}
+   */
   function* appendTokenWithSpaces(
     type: TokenType,
     kind: TokenKind,
@@ -188,24 +213,21 @@ export function* lexer(config: LexerConfig, code: string): IterableIterator<Toke
     tokenBuffer = '';
   }
 
-  for (; offset < length; ++offset) {
-    const character = code[offset];
-    const newLine = isNewline(character);
-
-    // used for logger
-    if (newLine) {
-      location.column = 0;
-      location.row++;
-    } else
-      location.column++;
-
+  /**
+   * Parses single character, appends it to token buffer and conditionally flushes
+   *
+   * @param {string} character
+   * @param {boolean} eol
+   * @returns
+   */
+  function* parseCharacter(character: string, eol: boolean) {
     // ignore line, it is comment
     if (isComment(character)) {
       for (; offset < length - 1; ++offset) {
         if (isNewline(code[offset + 1]))
           break;
       }
-      continue;
+      return;
     }
 
     // special tokens that might contain spaces inside them
@@ -216,7 +238,7 @@ export function* lexer(config: LexerConfig, code: string): IterableIterator<Toke
 
       offset++;
       yield* appendTokenWithSpaces(TokenType.QUOTE, quote, isQuote);
-      continue;
+      return;
     }
 
     const bracket = matchBracket(character);
@@ -271,11 +293,11 @@ export function* lexer(config: LexerConfig, code: string): IterableIterator<Toke
         );
       }
 
-      continue;
+      return;
     }
 
     // end of line
-    if (newLine)
+    if (eol)
       yield* appendCharToken(TokenType.EOL, character);
     else {
       // handle ++, && etc. two byte terminals
@@ -300,7 +322,7 @@ export function* lexer(config: LexerConfig, code: string): IterableIterator<Toke
         } else if (character !== ' ') {
           // append character and find matching token
           tokenBuffer += character;
-        } else {
+        } else if (tokenBuffer.length) {
           // if empty character
           yield* appendToken(
             parseToken(identifiers, tokensParsers, location, tokenBuffer),
@@ -308,6 +330,22 @@ export function* lexer(config: LexerConfig, code: string): IterableIterator<Toke
         }
       }
     }
+  }
+
+  for (; offset < length;) {
+    const character = code[offset];
+    const eol = isNewline(character);
+    const preParseOffset = offset;
+
+    yield* parseCharacter(character, eol);
+
+    // used for logger
+    ++offset;
+    if (eol) {
+      location.column = 0;
+      location.row++;
+    } else
+      location.column += offset - preParseOffset;
   }
 
   if (tokenBuffer) {

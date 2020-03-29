@@ -1,6 +1,12 @@
 import * as R from 'ramda';
 
 import {TokenLocation} from './TokenLocation';
+import {
+  toStringQuoteToken,
+  toStringBracketToken,
+  flipBracket,
+  matchBracket,
+} from '../utils';
 
 /**
  * It can be shared with preprocessor pseudolanguage
@@ -114,10 +120,27 @@ export class Token<V = any> {
   }
 
   toString() {
-    const {text, type} = this;
+    const {text, type, kind} = this;
 
-    if (type === TokenType.QUOTE)
-      return `"${text}"`;
+    switch (type) {
+      case TokenType.QUOTE: {
+        const quote = toStringQuoteToken(kind);
+
+        return `${quote}${text}${quote}`;
+      }
+
+      case TokenType.BRACKET: {
+        // lexer consumeBracketContent in lexer config
+        if (text.length === 1 && matchBracket(text) !== null)
+          return text;
+
+        const bracket = toStringBracketToken(kind);
+
+        return `${bracket}${text}${flipBracket(bracket)}`;
+      }
+
+      default:
+    }
 
     return text;
   }

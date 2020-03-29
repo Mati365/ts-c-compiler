@@ -1,38 +1,75 @@
-%define DEBUG 1
-%define CONSTM(x) x
-%define ABC(b) b*CONSTM(4)
-
-%if 3 & 1 == 1 && (1 > 2 || (ABC(3) == 9 && 3 == 3))
+;= test: various long app
+;= bin: b80113b86320eb5131c064c54704b102b90200b861632effafff008a07cd03eaff00007c2effafff0f268b4705ebee9090909090909090909089d889f0bb020031d2f7f3f7f329c87f0531d3e80300f4e2e98b4604eb02eb0031c0eba69bdbe3d9068200dd068200db2e8200d8c1d8c1dcc2dec0d8d1e88aff9031c0b88b00ba760090909090909090909090909090909090909090909090909090909090909090909090909090909090909090909090909090909090909090909090909090909090909090909090909090909090909090909090909090909090909090909090909090909090909090909090909090909090909090909090909090909090909090909090909090909090909090909090909090909090909090909090909090909090909090909090909090909090909090909090909090909090909090909090909090909090909090909090909090909090909090909090909090909090909090909090909090909090909090909090909090909090909090909090909090909090909090909090909090909090909090909090909090909090909090909090909090909090909090909090909090909090909090909090909090909090909090909090909090909090909090909090909090909090909090909090909090909090909090909090909090909090909090909090909090909090909090909090
+[bits 16]
+[org 0x0]
+mov ax, test332 + 2
+test332 equ 0x12FF
+; dt 1.5
+; dq 1.123
+; dd 1.46
+start:
+mov ax, 'a '+2
+jmp dupa
 xor ax, ax
-%endif
+lds ax, [fs:bx+0x4]
+mov cl, 2
+  mov cx, 2
+  mov ax, 'ac'
+  jmp far [cs:bx+0xFF]
+  mov byte al, [bx]
+  .dupa2:
+  int 3
+  jmp word 0x7C00:0xFF
+  jmp far word [cs:bx+0xFFF]
+  mov ax, word [es:bx+0x5]
+  jmp .dupa2
+  stuff: times 10 nop
+  mov ax, bx
 
-%macro beniz 2
-  xor ax, DEBUG
-  mov al, %1
-  mov ah, %2
-%endmacro
-
+alloc_byte:
+  ; left border
+  mov ax, si
+  mov bx, 2
+  xor dx, dx
+  div bx
+  ; cmp ax, 0x0
+  div bx
+  sub ax, cx
+  jg .jesli_wieksze
+  xor bx, dx
+  call test_call
+  .jesli_wieksze:
+    hlt
+  loop alloc_byte
+test_call:
+mov ax, [bp+0x4]
+times 0x2 jmp dupa
 dupa:
-jmp test_label2
-field_left_col:  equ 13
-field_width:     equ 14
-inner_width:     equ 12
-inner_first_col equ 14
-start_row_col:   equ 0x0412
+xor ax, ax
+jmp start
 
-%if 2 + 2 > 3
-  xor bx, bx
-  mov bl, DEBUG
-%endif
+;finit
+finit
+fld dword [val1]
+fld qword [val1]
+fld tword [val1]
+fadd st1
+fadd st0, st1
+fadd st2, st0
+faddp st0, st0
+fcom
 
-%ifdef DEBUG
-  mov al, inner_first_col
-%endif
-jmp dupa
-test_label2:
-xor bx, bx
-sub bx
-inc ax
-jmp dupa
+test_equ equ $
+; val1: dq 0.1
+call start
+nop
+test2:
+xor ax, ax
+mov ax, dupa3
+dupa3 equ 4*4+5+test_equ
+test3:
 
-beniz 2, 3
+mov dx, test_equ
+val1:
+nop
+times 512 - ($-$$) nop

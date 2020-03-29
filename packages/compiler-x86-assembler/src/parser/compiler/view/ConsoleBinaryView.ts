@@ -9,7 +9,7 @@ import {
 import {CompilerError} from '@compiler/core/shared/CompilerError';
 import {ASTInstruction} from '../../ast/instruction/ASTInstruction';
 import {BinaryView} from './BinaryView';
-import {BinaryBlob} from '../BinaryBlob';
+import {BinaryBlob, arrayToHexString} from '../BinaryBlob';
 import {CompilerFinalResult, CompilerOutput} from '../compile';
 
 type JMPLines = Map<number, number>;
@@ -298,6 +298,8 @@ export class ConsoleBinaryView extends BinaryView<string> {
       `Total passes: ${totalPasses + 1}`,
       `Output size: ${compilerResult.output.byteSize} bytes`,
       `Binary mapping:\n\n${str}`,
+      'Binary:\n',
+      arrayToHexString(compilerResult.output.getBinary()),
     ].join('\n');
   }
 }

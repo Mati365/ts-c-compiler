@@ -114,6 +114,7 @@ export class NumberToken extends Token<NumberTokenValue> {
 
   static parse(token: string, loc: TokenLocation) {
     const numberInfo = parseNumberToken(token);
+
     if (numberInfo !== null)
       return new NumberToken(token, numberInfo[1], <any> numberInfo[0], loc.clone());
 

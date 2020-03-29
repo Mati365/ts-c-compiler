@@ -2,7 +2,7 @@
 import {Result, err, ok} from '@compiler/core/monads/Result';
 import {CompilerError} from '@compiler/core/shared/CompilerError';
 
-import {TreePrintVisitor} from '@compiler/grammar/tree/TreeVisitor';
+// import {TreePrintVisitor} from '@compiler/grammar/tree/TreeVisitor';
 import {ASTPreprocessorStmt} from './nodes';
 import {ASTPreprocessorNode} from './constants';
 import {PreprocessorInterpreter} from './interpreter/PreprocessorInterpreter';
@@ -28,8 +28,8 @@ export function preprocessor(str: string): PreprocessorResult {
   const interpreter = new PreprocessorInterpreter;
   const result = interpreter.exec(stmt);
 
-  console.info((new TreePrintVisitor).visit(stmt).reduced);
-  console.info(`Preprocessor Output: \n${result}`);
+  // console.info((new TreePrintVisitor).visit(stmt).reduced);
+  // console.info(`Preprocessor Output: \n${result}`);
 
   return new PreprocessorResult(
     stmt,

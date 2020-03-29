@@ -118,8 +118,10 @@ export const ASTInstructionArgMatchers: {[key: string]: ASTInstructionArgMatcher
 
   /** FPU */
   'st(i)': () => (arg: ASTInstructionArg) => x87sti(arg),
-  st: () => x87st,
+  st: () => x87st, // it is optional due st0 is optional in many instructions
 };
+
+export const isOptionalArg = (arg: string): boolean => arg === 'st';
 
 export const isRMSchemaArg = R.contains(
   R.__,
@@ -184,7 +186,13 @@ export function findMatchingInstructionSchemas(
   const targetCheck = R.isNil(targetCPU);
   const schemas = R.filter(
     (schema) => {
-      const {argsSchema: matchers} = schema;
+      const {
+        argsSchema: matchers,
+        minArgsCount,
+      } = schema;
+
+      if (minArgsCount > args.length)
+        return false;
 
       if (targetCheck && schema.targetCPU > targetCPU)
         return false;

@@ -13,7 +13,15 @@ export const matchQuote = (c: string): TokenKind => {
   }
 };
 
-export const isBracket = (c: string): boolean => c === '[' || c === ']';
+export const toStringQuoteToken = (c: TokenKind): string => {
+  switch (c) {
+    case TokenKind.SINGLE_QUOTE: return '\'';
+    case TokenKind.DOUBLE_QUOTE: return '"';
+
+    default:
+      return null;
+  }
+};
 
 export const flipBracket = (c: string): string => {
   switch (c) {
@@ -39,6 +47,25 @@ export const matchBracket = (c: string): TokenKind => {
     default:
       return null;
   }
+};
+
+export const toStringBracketToken = (c: string, flip: boolean = false): string => {
+  let character = null;
+
+  switch (c) {
+    case TokenKind.PARENTHES_BRACKET: character = '('; break;
+    case TokenKind.CURLY_BRACKET: character = '{'; break;
+    case TokenKind.SQUARE_BRACKET: character = '['; break;
+
+    default:
+      return null;
+  }
+
+  return (
+    flip
+      ? flipBracket(character)
+      : character
+  );
 };
 
 export const isNewline = R.equals('\n');

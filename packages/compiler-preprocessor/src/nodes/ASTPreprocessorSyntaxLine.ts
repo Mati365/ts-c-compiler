@@ -1,3 +1,5 @@
+import * as R from 'ramda';
+
 import {Token} from '@compiler/lexer/tokens';
 import {NodeLocation} from '@compiler/grammar/tree/NodeLocation';
 
@@ -18,16 +20,20 @@ import {
  * @returns {string}
  */
 function formatAsmStmt(tokens: Token[]): string {
-  return tokens.map((t) => t.toString()).reduce(
-    (acc, token) => {
-      if (acc && token !== ':')
-        acc += ' ';
+  let line = '';
+  let cursor = 0;
 
-      acc += token;
-      return acc;
-    },
-    '',
-  );
+  for (let i = 0; i < tokens.length; ++i) {
+    const token = tokens[i];
+    const tokenStr = token.toString();
+    if (R.isNil(tokenStr))
+      break;
+
+    line += ' '.repeat(token.loc.column - cursor) + tokenStr;
+    cursor = token.loc.column + token.text.length;
+  }
+
+  return line;
 }
 
 /**
