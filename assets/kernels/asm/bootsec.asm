@@ -1,21 +1,9 @@
-%define abc3 2
+[bits 32]
 
-%if abc3 > 11
-  nop
-  nop
-  nop
-%elif 4 > 1
-  mov ax, 0x123
-%endif
+%define dupa mov
+%define test2(a, b) xor a, b
+%define test2(a) mov bx, a
 
-%ifndef abc33
-  sub bx, ax
-%endif
-
-%ifdef abc
-  nop
-%elifndef abc2
-  xor bx, bx
-%else
-  mov bx, 2
-%endif
+test2 ax, bx
+test2 cx
+dupa ax, %[3+4]

@@ -7,6 +7,7 @@ import {
   matchQuote,
   matchBracket,
   flipBracket,
+  isWhitespace,
 } from './utils/matchCharacter';
 
 import {LexerError, LexerErrorCode} from './shared/LexerError';
@@ -319,7 +320,7 @@ export function* lexer(config: LexerConfig, code: string): IterableIterator<Toke
             tokenBuffer += character;
           else
             yield* appendCharToken(separator, character);
-        } else if (character !== ' ') {
+        } else if (!isWhitespace(character)) {
           // append character and find matching token
           tokenBuffer += character;
         } else if (tokenBuffer.length) {

@@ -6,7 +6,7 @@ import {
   toStringBracketToken,
   flipBracket,
   matchBracket,
-} from '../utils';
+} from '../utils/matchCharacter';
 
 /**
  * It can be shared with preprocessor pseudolanguage

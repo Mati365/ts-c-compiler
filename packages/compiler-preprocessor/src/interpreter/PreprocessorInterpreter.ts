@@ -1,5 +1,9 @@
 import * as R from 'ramda';
 
+import {rpn} from '@compiler/rpn/rpn';
+import {extractNestableTokensList} from '@compiler/lexer/utils/extractNestableTokensList';
+import {joinTokensTexts} from '@compiler/lexer/utils/joinTokensTexts';
+
 import {TokensIterator} from '@compiler/grammar/tree/TokensIterator';
 import {
   Token,
@@ -208,47 +212,114 @@ export class PreprocessorInterpreter {
    */
   removeMacrosFromTokens(tokens: Token[]): [boolean, Token[]] {
     let newTokens: Token[] = tokens;
+    let inInlineMacroExp = false;
 
     for (let i = 0; i < newTokens.length; ++i) {
-      const token = newTokens[i];
-      const {loc} = token;
+      const [token, nextToken] = [newTokens[i], newTokens[i + 1]];
+      const {loc, text, type, kind} = token;
 
-      if (token.type !== TokenType.KEYWORD || (token.kind !== TokenKind.BRACKET_PREFIX && token.kind !== null))
+      // handle DUPA%[asdasd]
+      // just explode token here and reset offset
+      const inlineMacroExpression = text.length > 1 && R.endsWith('%', text) && nextToken?.text === '[';
+      if (inlineMacroExpression) {
+        newTokens[i] = new Token(TokenType.KEYWORD, null, R.init(text), loc);
+        newTokens = R.insert(
+          i + 1,
+          new Token(TokenType.KEYWORD, null, '%', loc),
+          newTokens,
+        );
+
+        inInlineMacroExp = true;
+        i--; // repeat current loop step
+        continue;
+      }
+
+      // ignore keywords
+      if (type !== TokenType.KEYWORD || (kind !== TokenKind.BRACKET_PREFIX && kind !== null))
         continue;
 
-      // catch $0, $1 etc macro inner variables
-      if (token.text[0] === '%') {
-        const result = this.getVariable(token.text);
-
-        if (result === null) {
-          throw new GrammarError(
-            GrammarErrorCode.UNKNOWN_MACRO_VARIABLE,
-            loc,
+      // catch %0, %1, %[] etc macro inner variables
+      if (text[0] === '%') {
+        if (nextToken?.text[0] === '[') {
+          // expressions %[]
+          const [content, newOffset] = extractNestableTokensList(
             {
-              name: token.text,
+              up: (t) => t.text === '[',
+              down: (t) => t.text === ']',
             },
+            tokens,
+            i,
+          );
+
+          content.shift(); // drop ]
+          content.pop(); // drop [
+
+          // handle case DUPA%[asdasd], DUPA% is the same token
+          if (inInlineMacroExp) {
+            newTokens = [
+              ...newTokens.slice(0, i - 1),
+              new Token(
+                TokenType.KEYWORD,
+                null,
+                `${tokens[i - 1]}${this.evalTokensExpression(content).toString()}`,
+                loc,
+              ),
+              ...newTokens.slice(newOffset),
+            ];
+          } else {
+            newTokens = [
+              ...newTokens.slice(0, i),
+              new Token(
+                TokenType.KEYWORD,
+                null,
+                this.evalTokensExpression(content).toString(),
+                loc,
+              ),
+              ...newTokens.slice(newOffset),
+            ];
+          }
+
+          i = newOffset;
+        } else {
+          // variables, %0
+          const result = this.getVariable(text);
+
+          if (result === null) {
+            throw new GrammarError(
+              GrammarErrorCode.UNKNOWN_MACRO_VARIABLE,
+              loc,
+              {
+                name: text,
+              },
+            );
+          }
+
+          newTokens = R.update(
+            i,
+            new Token(
+              TokenType.KEYWORD,
+              null,
+              <string> result,
+              loc,
+            ),
+            newTokens,
           );
         }
 
-        newTokens = R.update(
-          i,
-          new Token(
-            TokenType.KEYWORD,
-            null,
-            <string> result,
-            loc,
-          ),
-          newTokens,
-        );
         continue;
       }
 
       // catch macros calls
-      const callables = this.getCallables(token.text);
+      const callables = this.getCallables(text);
       if (callables?.length) {
         // nested eval of macro, arguments might contain macro
         const it = new TokensIterator(newTokens, i + 1);
-        const inline = i > 0; // inline macro calls are generally inside instruction
+
+        // inline macro calls are generally inside instruction
+        // or have no args, example:
+        // %define dupa mov
+        // dupa ax, bx
+        const inline = i > 0 || !callables.some(({argsCount}) => argsCount > 0);
 
         const args = (
           !inline || newTokens[i + 1]?.text === '('
@@ -256,12 +327,14 @@ export class PreprocessorInterpreter {
             : []
         );
 
-        const callable = callables.find((item) => item.argsCount === args.length);
+        const callable = callables.find(
+          (item) => item.argsCount === args.length,
+        );
         if (callable) {
           const callResult = callable.runtimeCall(
             this,
             R.map(
-              (argTokens) => R.pluck('text', argTokens).join(''),
+              (argTokens) => joinTokensTexts('', argTokens),
               args,
             ),
           );
@@ -284,6 +357,35 @@ export class PreprocessorInterpreter {
       newTokens !== tokens,
       newTokens,
     ];
+  }
+
+  /**
+   * Evaluates inline
+   *
+   * @param {Token[]} tokens
+   * @returns {number}
+   * @memberof PreprocessorInterpreter
+   */
+  evalTokensExpression(tokens: Token[]): number {
+    const expression = joinTokensTexts('', this.removeMacrosFromTokens(tokens)[1]);
+    const value = rpn(
+      expression,
+      {
+        keywordResolver: (name) => +this.rootScope.variables.get(name),
+      },
+    );
+
+    if (Number.isNaN(value)) {
+      throw new GrammarError(
+        GrammarErrorCode.INCORRECT_MATH_EXPRESSION,
+        null,
+        {
+          expression,
+        },
+      );
+    }
+
+    return value;
   }
 
   /**

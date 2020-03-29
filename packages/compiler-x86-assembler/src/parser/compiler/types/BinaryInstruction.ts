@@ -201,12 +201,17 @@ export class BinaryInstruction extends BinaryBlob<ASTInstruction> {
           case '/0': case '/1': case '/2': case '/3':
           case '/4': case '/5': case '/6': case '/7': {
             const regByteOverride = schema[0] === '/';
+            const {regArgs} = ast;
 
             if (!rmByte) {
               // see CALL instruction, FF /2 d0 d1
               if (regByteOverride)
                 rmByte = new RMByte(RMAddressingMode.REG_ADDRESSING, 0, 0);
-              else
+              else if (regArgs.length && immArg && !memArg) {
+                // handle special case where is register and immediate only
+                // example: imul ax, 0x2
+                rmByte = new RMByte(RMAddressingMode.REG_ADDRESSING, regArgs[0].val.index, 0);
+              } else
                 throw new ParserError(ParserErrorCode.MISSING_RM_BYTE_DEF, ast.loc.start);
             }
 

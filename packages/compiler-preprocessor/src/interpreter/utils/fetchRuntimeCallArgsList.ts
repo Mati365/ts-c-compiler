@@ -11,6 +11,8 @@ import {
  * Extracts args from expressions such as:
  * abc(1, 2, 3)
  *
+ * Similar to extractNestableTokensList but handles also commas
+ *
  * @export
  * @param {TokensIterator} parser
  * @returns {Token[][]}

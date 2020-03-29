@@ -30,6 +30,8 @@ export class FirstPassResult {
   getByteSize(): number {
     const array = Array.from(this.nodesOffsets);
     const lastItem = R.last(array);
+    if (!lastItem)
+      return 0;
 
     return lastItem[0] - array[0][0] + lastItem[1].byteSize;
   }

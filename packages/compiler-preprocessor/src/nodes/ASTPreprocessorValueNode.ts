@@ -1,6 +1,5 @@
-import * as R from 'ramda';
-
 import {rpn} from '@compiler/rpn/rpn';
+import {joinTokensTexts} from '@compiler/lexer/utils/joinTokensTexts';
 
 import {GrammarError, GrammarErrorCode} from '@compiler/grammar/GrammarError';
 import {Token, NumberToken} from '@compiler/lexer/tokens';
@@ -32,7 +31,7 @@ export class ASTPreprocessorValueNode<T extends Token[] = any>
   toString(): string {
     const {value, kind} = this;
 
-    return `${kind} value=${R.pluck('text', value).join('')}`;
+    return `${kind} value=${joinTokensTexts('', value)}`;
   }
 
   exec(interpreter: PreprocessorInterpreter): InterpreterResult {
