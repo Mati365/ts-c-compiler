@@ -224,7 +224,7 @@ export function* lexer(config: LexerConfig, code: string): IterableIterator<Toke
   function* parseCharacter(character: string, eol: boolean) {
     // ignore line, it is comment
     if (isComment(character)) {
-      for (; offset < length - 1; ++offset) {
+      for (; offset < length; ++offset) {
         if (isNewline(code[offset + 1]))
           break;
       }

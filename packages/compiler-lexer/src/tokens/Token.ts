@@ -119,6 +119,18 @@ export class Token<V = any> {
     this.lowerText = text && R.toLower(text);
   }
 
+  fork(newText: string = this.text): Token<V> {
+    const {type, kind, loc, value} = this;
+
+    return new Token(
+      type,
+      kind,
+      newText,
+      loc,
+      value,
+    );
+  }
+
   toString() {
     const {text, type, kind} = this;
 

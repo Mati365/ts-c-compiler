@@ -30,18 +30,21 @@ const preprocessorMatcher: GrammarInitializer<PreprocessorIdentifier, ASTPreproc
   /**
    * Consumes all EOL characters from line begin
    *
-   * @returns {TreeNode}
+   * @returns {number} empty lines
    */
-  function startLine(): ASTPreprocessorNode {
+  function startLine(): number {
+    let emptyLines = 0;
+
     do {
       const token = g.fetchRelativeToken(0, false);
-      if (token.type === TokenType.EOL)
+      if (token.type === TokenType.EOL) {
         g.consume();
-      else
+        emptyLines++;
+      } else
         break;
     } while (true);
 
-    return null;
+    return emptyLines;
   }
 
   /**
@@ -301,6 +304,27 @@ const preprocessorMatcher: GrammarInitializer<PreprocessorIdentifier, ASTPreproc
   }
 
   /**
+   * Preserve empty line
+   *
+   * @returns {ASTPreprocessorNode}
+   */
+  function newLine(): ASTPreprocessorNode {
+    const token = g.match(
+      {
+        type: TokenType.EOL,
+        consume: true,
+      },
+    );
+
+    return new ASTPreprocessorSyntaxLine(
+      NodeLocation.fromTokenLoc(token.loc),
+      [
+        token.fork(' '), // syntax line already contains \n serializer
+      ],
+    );
+  }
+
+  /**
    * Matches body of define and main documen
    *
    * @returns {TreeNode[]}
@@ -310,6 +334,7 @@ const preprocessorMatcher: GrammarInitializer<PreprocessorIdentifier, ASTPreproc
       NodeLocation.fromTokenLoc(g.currentToken.loc),
       <ASTPreprocessorNode[]> g.matchList(
         {
+          newLine,
           ifStmt,
           ifDefStmt,
           ifNdefStmt,
