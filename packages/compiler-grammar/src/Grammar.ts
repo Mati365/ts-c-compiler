@@ -124,15 +124,21 @@ export class Grammar<I, K = string> extends TokensIterator {
       ),
     );
 
-    // this.tokenIndex = 0;
-    // this._matchCallNesting = 0;
-    this._tree = new TreeNode<K>(
-      <any> 'Root',
-      null,
-      safeArray(
-        this._rootProduction(),
-      ),
-    );
+    try {
+      // this.tokenIndex = 0;
+      // this._matchCallNesting = 0;
+      this._tree = new TreeNode<K>(
+        <any> 'Root',
+        null,
+        safeArray(
+          this._rootProduction(),
+        ),
+      );
+    } catch (e) {
+      e.loc = this.currentToken.loc;
+      throw e;
+    }
+
     return this._tree;
   }
 

@@ -35,7 +35,10 @@ export const COMPILER_INSTRUCTIONS_SET: ASTOpcodeMatchers = <any> R.mapObjIndexe
 
       return R.map(
         ([argsSchema, binarySchema, target]) => _op(mneomonic, argsSchema, binarySchema, target),
-        binarySchemas,
+        R.sort(
+          (schemaA, schemaB) => schemaA[1].length - schemaB[1].length,
+          binarySchemas,
+        ),
       );
     },
   )(instructions),

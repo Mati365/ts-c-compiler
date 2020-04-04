@@ -635,6 +635,17 @@ export class ASTInstruction extends KindASTAsmNode(ASTNodeKind.INSTRUCTION) {
 
     // parse arguments
     const argsTokens = fetchInstructionTokensArgsList(parser);
+
+    // IMUL special case for NASM/FASM
+    // two operand instructions such as imul ax, 0x2 are compiled to imul ax, ax, 0x2
+    // todo: check why? other insutructions like shld works normal
+    if (opcode === 'imul'
+        && argsTokens.length === 2
+        && argsTokens[0].kind === TokenKind.REGISTER
+        && argsTokens[1].kind !== TokenKind.REGISTER) {
+      argsTokens.unshift(argsTokens[0]);
+    }
+
     const instruction = new ASTInstruction(
       opcode,
       argsTokens,
