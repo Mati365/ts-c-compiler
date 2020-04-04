@@ -1,6 +1,7 @@
 export * from './ASTPreprocessorMacro';
 export * from './ASTPreprocessorSyntaxLine';
 export * from './ASTPreprocessorDefine';
+export * from './ASTPreprocessorUndef';
 export * from './ASTPreprocessorExpression';
 export * from './ASTPreprocessorIF';
 export * from './ASTPreprocessorIFDef';

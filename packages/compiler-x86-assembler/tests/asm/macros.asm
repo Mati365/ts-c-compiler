@@ -1,3 +1,5 @@
+;= test: defines advanced macro
+;= bin: 6bc0f1b8ff00b80200b8300031db6bc30289d8b87b0031c9
 [bits 16]
 %define DUPA2(a, b) mov a, b
 %define DUPA2(a, b, c) imul a, b, c

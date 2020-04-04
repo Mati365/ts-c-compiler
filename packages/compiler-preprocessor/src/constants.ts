@@ -20,11 +20,13 @@ export enum PreprocessorIdentifier {
   ELIFN,
   ELIFDEF,
   ELIFNDEF,
+  UNDEF,
 }
 
 export enum ASTPreprocessorKind {
   Stmt = 'Stmt',
   DefineStmt = 'DefineStmt',
+  UndefStmt = 'UndefStmt',
   IfStmt = 'IfStmt',
   IfDefStmt = 'IfDefStmt',
   MacroStmt = 'MacroStmt',
@@ -49,6 +51,7 @@ export function isStatementPreprocessorNode(node: ASTPreprocessorNode): boolean 
   switch (node.kind) {
     case ASTPreprocessorKind.Stmt:
     case ASTPreprocessorKind.DefineStmt:
+    case ASTPreprocessorKind.UndefStmt:
     case ASTPreprocessorKind.IfStmt:
     case ASTPreprocessorKind.IfDefStmt:
     case ASTPreprocessorKind.MacroStmt:

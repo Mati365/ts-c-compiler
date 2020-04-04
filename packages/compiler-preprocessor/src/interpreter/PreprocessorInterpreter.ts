@@ -1,5 +1,6 @@
 import * as R from 'ramda';
 
+import {appendToMapKeyArray} from '@compiler/core/utils/appendToMapKeyArray';
 import {rpn} from '@compiler/rpn/rpn';
 import {extractNestableTokensList} from '@compiler/lexer/utils/extractNestableTokensList';
 import {joinTokensTexts} from '@compiler/lexer/utils/joinTokensTexts';
@@ -122,6 +123,21 @@ export class PreprocessorInterpreter {
   }
 
   /**
+   * Removes macro
+   *
+   * @param {string} name
+   * @param {boolean} [caseIntensive=true]
+   * @memberof PreprocessorInterpreter
+   */
+  undefRuntimeCallable(name: string, caseIntensive: boolean = true): void {
+    const {sensitive, nonSensitive} = this.rootScope.callable;
+
+    nonSensitive.delete(name);
+    if (caseIntensive)
+      sensitive.delete(name);
+  }
+
+  /**
    * Declares function that can be executed in ASTPreprocessorSyntaxLine
    *
    * @param {ASTPreprocessorCallable} callable
@@ -132,10 +148,17 @@ export class PreprocessorInterpreter {
     const {rootScope} = this;
     const {caseSensitive} = callable;
 
+    // find duplicates
     const callables = this.getCallables(callable.name, caseSensitive);
+    const duplicatedMacro = callables && callables.some((item) => item.argsCount === callable.argsCount);
 
-    if (callables) {
-      if (callables.some((item) => item.argsCount === callable.argsCount)) {
+    // do not redefine inline macro and macro
+    if (duplicatedMacro || (callables?.length && !callable.argsCount)) {
+      if (duplicatedMacro && !callable.argsCount && callables.length === 1) {
+        // allow redefine only if one is defined (one defined = one args set)
+        this.undefRuntimeCallable(callable.name, caseSensitive);
+      } else {
+        // for inline macros allow redefine
         throw new PreprocessorError(
           PreprocessorErrorCode.MACRO_ALREADY_EXISTS,
           null,
@@ -144,14 +167,14 @@ export class PreprocessorInterpreter {
           },
         );
       }
+    }
 
-      callables.push(callable);
-    } else {
-      const {sensitive, nonSensitive} = rootScope.callable;
-      if (caseSensitive)
-        sensitive.set(callable.name, [callable]);
-      else
-        nonSensitive.set(R.toLower(callable.name), [callable]);
+    const {sensitive, nonSensitive} = rootScope.callable;
+    if (caseSensitive)
+      appendToMapKeyArray(callable.name, callable, sensitive);
+    else {
+      const lowerName = R.toLower(callable.name);
+      appendToMapKeyArray(lowerName, callable, nonSensitive);
     }
 
     return this;
@@ -219,7 +242,11 @@ export class PreprocessorInterpreter {
 
       // handle DUPA%[asdasd]
       // just explode token here and reset offset
-      const inlineMacroExpression = text.length > 1 && R.endsWith('%', text) && nextToken?.text === '[';
+      const inlineMacroExpression = (
+        text.length > 1
+          && R.endsWith('%', text)
+          && nextToken?.text === '['
+      );
       if (inlineMacroExpression) {
         newTokens[i] = new Token(TokenType.KEYWORD, null, R.init(text), loc);
         newTokens = R.insert(
@@ -319,7 +346,6 @@ export class PreprocessorInterpreter {
         // %define dupa mov
         // dupa ax, bx
         const inline = i > 0 || !callables.some(({argsCount}) => argsCount > 0);
-
         const args = (
           !inline || newTokens[i + 1]?.text === '('
             ? fetchRuntimeCallArgsList(it).map((argTokens) => this.removeMacrosFromTokens(argTokens)[1])
@@ -346,7 +372,7 @@ export class PreprocessorInterpreter {
               callResult,
               loc,
             ),
-            ...newTokens.slice(it.getTokenIndex() + +args.length), // +args.length, if args.length > 0 there must be ()
+            ...newTokens.slice(it.getTokenIndex() + Math.max(0, +args.length - 1)),
           ];
         }
       }

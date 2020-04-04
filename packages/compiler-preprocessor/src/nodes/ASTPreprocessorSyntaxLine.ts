@@ -1,4 +1,4 @@
-import * as R from 'ramda';
+import {joinTokensWithSpaces} from '@compiler/lexer/utils/joinTokensTexts';
 
 import {Token} from '@compiler/lexer/tokens';
 import {NodeLocation} from '@compiler/grammar/tree/NodeLocation';
@@ -12,29 +12,6 @@ import {
   ASTPreprocessorKind,
   ASTPreprocessorNode,
 } from '../constants';
-
-/**
- * Sucky asm tokens join
- *
- * @param {Token[]} tokens
- * @returns {string}
- */
-function formatAsmStmt(tokens: Token[]): string {
-  let line = '';
-  let cursor = 0;
-
-  for (let i = 0; i < tokens.length; ++i) {
-    const token = tokens[i];
-    const tokenStr = token.toString();
-    if (R.isNil(tokenStr))
-      break;
-
-    line += ' '.repeat(token.loc.column - cursor) + tokenStr;
-    cursor = token.loc.column + token.text.length;
-  }
-
-  return line;
-}
 
 /**
  * Other lines
@@ -58,13 +35,13 @@ export class ASTPreprocessorSyntaxLine extends ASTPreprocessorNode {
   }
 
   toEmitterLine(): string {
-    return formatAsmStmt(this.outputTokens);
+    return joinTokensWithSpaces(this.outputTokens);
   }
 
   toString(): string {
     const {kind, tokens} = this;
 
-    return `${kind} stmt="${formatAsmStmt(tokens)}"`;
+    return `${kind} stmt="${joinTokensWithSpaces(tokens)}"`;
   }
 
   /**

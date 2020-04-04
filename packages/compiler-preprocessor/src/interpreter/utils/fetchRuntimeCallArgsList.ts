@@ -33,11 +33,12 @@ export function fetchRuntimeCallArgsList(parser: TokensIterator): Token[][] {
         buffer.push(token);
     } else if (token.text === ')') {
       bracketNesting--;
-      if (bracketNesting === 0)
-        return false;
 
-      buffer.push(token);
-    } else if (token.type === TokenType.COMMA) {
+      if (bracketNesting > 0)
+        buffer.push(token);
+      else if (bracketNesting === 0)
+        return false;
+    } else if (bracketNesting === 1 && token.type === TokenType.COMMA) {
       if (!buffer.length)
         throw new PreprocessorError(PreprocessorErrorCode.INCORRECT_ARGS_LIST);
 

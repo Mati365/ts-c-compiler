@@ -1,5 +1,7 @@
 import * as R from 'ramda';
 
+import {joinTokensWithSpaces} from '@compiler/lexer/utils/joinTokensTexts';
+
 import {NodeLocation} from '@compiler/grammar/tree/NodeLocation';
 import {Token, TokenType} from '@compiler/lexer/tokens';
 
@@ -116,6 +118,9 @@ export class ASTPreprocessorDefine extends ASTPreprocessorNode implements ASTPre
       expression,
     );
 
-    return interpreter.removeMacrosFromTokens(mappedTokens)[1].join(' ');
+    return joinTokensWithSpaces(
+      interpreter.removeMacrosFromTokens(mappedTokens)[1],
+      true,
+    );
   }
 }

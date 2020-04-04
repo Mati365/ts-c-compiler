@@ -18,6 +18,7 @@ import {
   ASTPreprocessorExpression,
   ASTPreprocessorStmt,
   ASTPreprocessorIFDef,
+  ASTPreprocessorUndef,
 } from './nodes';
 
 import {
@@ -264,13 +265,31 @@ const preprocessorMatcher: GrammarInitializer<PreprocessorIdentifier, ASTPreproc
       ];
     }
 
-    // eslint-disable-next-line
     return new ASTPreprocessorDefine(
       NodeLocation.fromTokenLoc(startToken.loc),
       nameToken.text,
       caseIntensive,
       args,
       expression,
+    );
+  }
+
+  /**
+   * Matches undef node
+   *
+   * @returns {ASTPreprocessorNode}
+   */
+  function undefStmt(): ASTPreprocessorNode {
+    const startToken = singleLineIdentifier(PreprocessorIdentifier.UNDEF);
+    const macroName = g.match(
+      {
+        type: TokenType.KEYWORD,
+      },
+    );
+
+    return new ASTPreprocessorUndef(
+      NodeLocation.fromTokenLoc(startToken.loc),
+      macroName.text,
     );
   }
 
@@ -335,6 +354,7 @@ const preprocessorMatcher: GrammarInitializer<PreprocessorIdentifier, ASTPreproc
       <ASTPreprocessorNode[]> g.matchList(
         {
           newLine,
+          undefStmt,
           ifStmt,
           ifDefStmt,
           ifNdefStmt,
@@ -367,6 +387,7 @@ export function createPreprocessorGrammar() {
         '%elifndef': PreprocessorIdentifier.ELIFNDEF,
         '%define': PreprocessorIdentifier.DEFINE,
         '%idefine': PreprocessorIdentifier.IDEFINE,
+        '%undef': PreprocessorIdentifier.UNDEF,
         '%macro': PreprocessorIdentifier.MACRO,
         '%imacro': PreprocessorIdentifier.IMACRO,
         '%endmacro': PreprocessorIdentifier.ENDMACRO,
