@@ -313,7 +313,7 @@ export function* lexer(config: LexerConfig, code: string): IterableIterator<Toke
         // handle single character terminals
         const separator = terminalCharacters[character];
         if (separator) {
-          // numbers - +1, -2
+          // numbers - +1, -2, - 2, + 2
           if (!signOperatorsAsSeparateTokens
               && (separator === TokenType.PLUS || separator === TokenType.MINUS)
               && Number.isInteger(+code[offset + 1]))

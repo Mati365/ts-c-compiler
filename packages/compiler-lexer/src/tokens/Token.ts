@@ -147,7 +147,6 @@ export class Token<V = any> {
           return text;
 
         const bracket = toStringBracketToken(kind);
-
         return `${bracket}${text}${flipBracket(bracket)}`;
       }
 

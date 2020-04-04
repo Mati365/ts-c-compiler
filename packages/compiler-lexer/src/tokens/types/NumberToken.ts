@@ -1,6 +1,7 @@
 import * as R from 'ramda';
 
 import {safeFirstMatch} from '@compiler/core/utils/safeFirstMatch';
+import {isSign} from '@compiler/lexer/utils/matchCharacter';
 import {
   numberByteSize,
   roundToPowerOfTwo,
@@ -74,10 +75,23 @@ export const DIGIT_FORMATS_PARSERS: {[key: string]: (str: string) => number} = {
  * @returns {[string, number]}
  */
 export function parseNumberToken(text: string): [string, number] {
+  let unsignedText = text;
+  let sign = 1;
+  const signPrefix = isSign(text[0]);
+
+  if (signPrefix) {
+    // ignore only sign
+    if (text.length === 1)
+      return null;
+
+    sign = text[0] === '-' ? -1 : 1;
+    unsignedText = text.slice(1);
+  }
+
   for (const format in DIGIT_FORMATS_PARSERS) {
-    const number = DIGIT_FORMATS_PARSERS[format](text);
+    const number = DIGIT_FORMATS_PARSERS[format](unsignedText);
     if (number !== null)
-      return [format, number];
+      return [format, sign * number];
   }
 
   return null;

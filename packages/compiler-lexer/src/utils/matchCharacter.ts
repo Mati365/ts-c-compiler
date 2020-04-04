@@ -75,3 +75,7 @@ export const isWhitespace = R.test(/[\s]/);
 export const isOperator = R.test(/[+-/*]/);
 
 export const isComment = R.test(/[;#]/);
+
+export function isSign(c: string): boolean {
+  return c === '+' || c === '-';
+}

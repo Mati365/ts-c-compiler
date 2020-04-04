@@ -642,7 +642,8 @@ export class ASTInstruction extends KindASTAsmNode(ASTNodeKind.INSTRUCTION) {
     if (opcode === 'imul'
         && argsTokens.length === 2
         && argsTokens[0].kind === TokenKind.REGISTER
-        && argsTokens[1].kind !== TokenKind.REGISTER) {
+        && argsTokens[1].kind === null
+        && (argsTokens[1].type === TokenType.KEYWORD || argsTokens[1].type === TokenType.NUMBER)) {
       argsTokens.unshift(argsTokens[0]);
     }
 
