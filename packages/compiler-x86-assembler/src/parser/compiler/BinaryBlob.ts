@@ -2,7 +2,11 @@ import * as R from 'ramda';
 import {X86Compiler} from './X86Compiler';
 
 export const arrayToHex = R.map(
-  (num: number) => `${num.toString(16).padStart(2, '0')}`,
+  (num: number) => (
+    R.isNil(num)
+      ? ''
+      : `${num.toString(16).padStart(2, '0')}`
+  ),
 );
 
 export const toMultilineBinaryBlockString = R.compose(

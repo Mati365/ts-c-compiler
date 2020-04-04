@@ -1,9 +1,6 @@
-import * as R from 'ramda';
 import {TokenKind} from '../tokens';
 
-export const isQuote = (c: string): boolean => c === '"' || c === '\'';
-
-export const matchQuote = (c: string): TokenKind => {
+export function matchQuote(c: string): TokenKind {
   switch (c) {
     case '\'': return TokenKind.SINGLE_QUOTE;
     case '"': return TokenKind.DOUBLE_QUOTE;
@@ -11,9 +8,9 @@ export const matchQuote = (c: string): TokenKind => {
     default:
       return null;
   }
-};
+}
 
-export const toStringQuoteToken = (c: TokenKind): string => {
+export function toStringQuoteToken(c: TokenKind): string {
   switch (c) {
     case TokenKind.SINGLE_QUOTE: return '\'';
     case TokenKind.DOUBLE_QUOTE: return '"';
@@ -21,9 +18,9 @@ export const toStringQuoteToken = (c: TokenKind): string => {
     default:
       return null;
   }
-};
+}
 
-export const flipBracket = (c: string): string => {
+export function flipBracket(c: string): string {
   switch (c) {
     case '(': return ')';
     case '{': return '}';
@@ -36,9 +33,9 @@ export const flipBracket = (c: string): string => {
     default:
       return null;
   }
-};
+}
 
-export const matchBracket = (c: string): TokenKind => {
+export function matchBracket(c: string): TokenKind {
   switch (c) {
     case '(': case ')': return TokenKind.PARENTHES_BRACKET;
     case '{': case '}': return TokenKind.CURLY_BRACKET;
@@ -47,9 +44,9 @@ export const matchBracket = (c: string): TokenKind => {
     default:
       return null;
   }
-};
+}
 
-export const toStringBracketToken = (c: string, flip: boolean = false): string => {
+export function toStringBracketToken(c: string, flip: boolean = false): string {
   let character = null;
 
   switch (c) {
@@ -66,16 +63,24 @@ export const toStringBracketToken = (c: string, flip: boolean = false): string =
       ? flipBracket(character)
       : character
   );
-};
+}
 
-export const isNewline = R.equals('\n');
+export function isQuote(c: string): boolean {
+  return c === '"' || c === '\'';
+}
 
-export const isWhitespace = R.test(/[\s]/);
-
-export const isOperator = R.test(/[+-/*]/);
-
-export const isComment = R.test(/[;#]/);
+export function isWhitespace(c: string): boolean {
+  return c === ' ' || c === '\t' || c === '\n';
+}
 
 export function isSign(c: string): boolean {
   return c === '+' || c === '-';
+}
+
+export function isNewline(c: string) {
+  return c === '\n';
+}
+
+export function isComment(c: string) {
+  return c === ';' || c === '#';
 }
