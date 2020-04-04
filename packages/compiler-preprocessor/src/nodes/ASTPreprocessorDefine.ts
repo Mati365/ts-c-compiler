@@ -2,10 +2,11 @@ import * as R from 'ramda';
 
 import {NodeLocation} from '@compiler/grammar/tree/NodeLocation';
 import {Token, TokenType} from '@compiler/lexer/tokens';
+
 import {
-  GrammarError,
-  GrammarErrorCode,
-} from '@compiler/grammar/GrammarError';
+  PreprocessorError,
+  PreprocessorErrorCode,
+} from '../PreprocessorError';
 
 import {
   PreprocessorInterpreter,
@@ -82,8 +83,8 @@ export class ASTPreprocessorDefine extends ASTPreprocessorNode implements ASTPre
   runtimeCall(interpreter: PreprocessorInterpreter, args: string[]): string {
     const {name, argsSchema, expression} = this;
     if (args.length !== argsSchema.length) {
-      throw new GrammarError(
-        GrammarErrorCode.MACRO_ARGS_LIST_MISMATCH,
+      throw new PreprocessorError(
+        PreprocessorErrorCode.MACRO_ARGS_LIST_MISMATCH,
         null,
         {
           expected: argsSchema.length,

@@ -6,10 +6,11 @@ import {isLogicOpToken, evalLogicOp} from '@compiler/lexer/utils/isLogicOpToken'
 
 import {NumberToken} from '@compiler/lexer/tokens';
 import {TreeVisitor} from '@compiler/grammar/tree/TreeVisitor';
+
 import {
-  GrammarError,
-  GrammarErrorCode,
-} from '@compiler/grammar/GrammarError';
+  PreprocessorError,
+  PreprocessorErrorCode,
+} from '../PreprocessorError';
 
 import {ASTPreprocessorNode, ASTPreprocessorKind} from '../constants';
 import {ASTPreprocessorValueNode} from '../nodes/ASTPreprocessorValueNode';
@@ -46,8 +47,8 @@ export class ExpressionResultTreeVisitor extends TreeVisitor<ASTPreprocessorNode
         const [left, right] = [_expressionArgs.pop(), _expressionArgs.pop()];
 
         if (typeof left !== typeof right) {
-          throw new GrammarError(
-            GrammarErrorCode.EXPRESSION_MISMATCH_ARGS_TYPES,
+          throw new PreprocessorError(
+            PreprocessorErrorCode.EXPRESSION_MISMATCH_ARGS_TYPES,
             node.loc.start,
           );
         }
@@ -64,8 +65,8 @@ export class ExpressionResultTreeVisitor extends TreeVisitor<ASTPreprocessorNode
         if (result !== null)
           _expressionArgs.push(result);
         else {
-          throw new GrammarError(
-            GrammarErrorCode.INCORRECT_EXPRESSION,
+          throw new PreprocessorError(
+            PreprocessorErrorCode.INCORRECT_EXPRESSION,
             node.loc.start,
           );
         }

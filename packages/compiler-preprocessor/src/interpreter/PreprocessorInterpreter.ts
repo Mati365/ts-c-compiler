@@ -11,15 +11,14 @@ import {
   TokenKind,
 } from '@compiler/lexer/tokens';
 
-import {
-  GrammarError,
-  GrammarErrorCode,
-} from '@compiler/grammar/GrammarError';
-
 import {TreeVisitor} from '@compiler/grammar/tree/TreeVisitor';
 import {ASTPreprocessorNode, isStatementPreprocessorNode} from '../constants';
 import {ASTPreprocessorCallable} from '../nodes';
 import {ExpressionResultTreeVisitor} from './ExpressionResultTreeVisitor';
+import {
+  PreprocessorError,
+  PreprocessorErrorCode,
+} from '../PreprocessorError';
 
 import {fetchRuntimeCallArgsList} from './utils/fetchRuntimeCallArgsList';
 
@@ -137,8 +136,8 @@ export class PreprocessorInterpreter {
 
     if (callables) {
       if (callables.some((item) => item.argsCount === callable.argsCount)) {
-        throw new GrammarError(
-          GrammarErrorCode.MACRO_ALREADY_EXISTS,
+        throw new PreprocessorError(
+          PreprocessorErrorCode.MACRO_ALREADY_EXISTS,
           null,
           {
             name: callable.name,
@@ -285,8 +284,8 @@ export class PreprocessorInterpreter {
           const result = this.getVariable(text);
 
           if (result === null) {
-            throw new GrammarError(
-              GrammarErrorCode.UNKNOWN_MACRO_VARIABLE,
+            throw new PreprocessorError(
+              PreprocessorErrorCode.UNKNOWN_MACRO_VARIABLE,
               loc,
               {
                 name: text,
@@ -376,8 +375,8 @@ export class PreprocessorInterpreter {
     );
 
     if (Number.isNaN(value)) {
-      throw new GrammarError(
-        GrammarErrorCode.INCORRECT_MATH_EXPRESSION,
+      throw new PreprocessorError(
+        PreprocessorErrorCode.INCORRECT_MATH_EXPRESSION,
         null,
         {
           expression,

@@ -2,10 +2,11 @@ import {isLineTerminatorToken} from '@compiler/lexer/utils/isLineTerminatorToken
 
 import {Token, TokenType} from '@compiler/lexer/tokens';
 import {TokensIterator} from '@compiler/grammar/tree/TokensIterator';
+
 import {
-  GrammarError,
-  GrammarErrorCode,
-} from '@compiler/grammar/GrammarError';
+  PreprocessorError,
+  PreprocessorErrorCode,
+} from '../../PreprocessorError';
 
 /**
  * Extracts args from expressions such as:
@@ -24,7 +25,7 @@ export function fetchRuntimeCallArgsList(parser: TokensIterator): Token[][] {
 
   parser.iterate((token) => {
     if (isLineTerminatorToken(token))
-      throw new GrammarError(GrammarErrorCode.UNTERMINATED_ARGS_LIST);
+      throw new PreprocessorError(PreprocessorErrorCode.UNTERMINATED_ARGS_LIST);
 
     if (token.text === '(') {
       bracketNesting++;
@@ -38,7 +39,7 @@ export function fetchRuntimeCallArgsList(parser: TokensIterator): Token[][] {
       buffer.push(token);
     } else if (token.type === TokenType.COMMA) {
       if (!buffer.length)
-        throw new GrammarError(GrammarErrorCode.INCORRECT_ARGS_LIST);
+        throw new PreprocessorError(PreprocessorErrorCode.INCORRECT_ARGS_LIST);
 
       args.push(buffer);
       buffer = [];

@@ -3,31 +3,11 @@ import {TokenLocation} from '@compiler/lexer/tokens';
 
 export enum GrammarErrorCode {
   SYNTAX_ERROR,
-  EXPRESSION_MISMATCH_ARGS_TYPES,
-  INCORRECT_EXPRESSION,
-  INCORRECT_MATH_EXPRESSION,
-  INCORRECT_ARGS_LIST,
-  UNTERMINATED_ARGS_LIST,
-  UNKNOWN_MACRO_VARIABLE,
-  INCORRECT_VALUE_EXPRESSION,
-  MACRO_ARGS_LIST_MISMATCH,
-  MACRO_ALREADY_EXISTS,
 }
 
-/* eslint-disable max-len */
 export const GRAMMAR_ERROR_TRANSLATIONS: {[key in GrammarErrorCode]: string} = {
-  [GrammarErrorCode.INCORRECT_VALUE_EXPRESSION]: 'Incorrect value expression! Too many tokens!',
-  [GrammarErrorCode.UNKNOWN_MACRO_VARIABLE]: 'Unknown macro variable %{name}!',
-  [GrammarErrorCode.EXPRESSION_MISMATCH_ARGS_TYPES]: 'Mismatch expression args types!',
-  [GrammarErrorCode.INCORRECT_EXPRESSION]: 'Incorrect expression!',
-  [GrammarErrorCode.MACRO_ALREADY_EXISTS]: 'Macro %{name} already exists!',
-  [GrammarErrorCode.INCORRECT_MATH_EXPRESSION]: 'Incorrect math "%{expression}" expression!',
   [GrammarErrorCode.SYNTAX_ERROR]: 'Syntax error!',
-  [GrammarErrorCode.INCORRECT_ARGS_LIST]: 'Incorrect args list syntax!',
-  [GrammarErrorCode.UNTERMINATED_ARGS_LIST]: 'Unterminated args list!',
-  [GrammarErrorCode.MACRO_ARGS_LIST_MISMATCH]: 'Incorrect macro %{name} call args count! Provided %{provided} but expected %{expected}!',
 };
-/* eslint-enable max-len */
 
 /**
  * Error shown during grammar tokens analyze

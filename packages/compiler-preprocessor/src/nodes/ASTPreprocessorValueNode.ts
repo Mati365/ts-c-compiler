@@ -1,7 +1,6 @@
 import {rpn} from '@compiler/rpn/rpn';
 import {joinTokensTexts} from '@compiler/lexer/utils/joinTokensTexts';
 
-import {GrammarError, GrammarErrorCode} from '@compiler/grammar/GrammarError';
 import {Token, NumberToken} from '@compiler/lexer/tokens';
 import {ValueNode} from '@compiler/grammar/tree/TreeNode';
 import {
@@ -11,6 +10,10 @@ import {
 } from '../interpreter/PreprocessorInterpreter';
 
 import {ASTPreprocessorKind} from '../constants';
+import {
+  PreprocessorError,
+  PreprocessorErrorCode,
+} from '../PreprocessorError';
 
 /**
  * Numbers and simple macros expressions
@@ -40,8 +43,8 @@ export class ASTPreprocessorValueNode<T extends Token[] = any>
     const {loc} = resultTokens[0];
 
     if (resultTokens.length !== 1) {
-      throw new GrammarError(
-        GrammarErrorCode.INCORRECT_VALUE_EXPRESSION,
+      throw new PreprocessorError(
+        PreprocessorErrorCode.INCORRECT_VALUE_EXPRESSION,
         loc,
       );
     }
@@ -53,8 +56,8 @@ export class ASTPreprocessorValueNode<T extends Token[] = any>
     // handle string, keyword tokens usually emited from macros
     const parsed = rpn(token.text);
     if (Number.isNaN(parsed)) {
-      throw new GrammarError(
-        GrammarErrorCode.INCORRECT_VALUE_EXPRESSION,
+      throw new PreprocessorError(
+        PreprocessorErrorCode.INCORRECT_VALUE_EXPRESSION,
         loc,
       );
     }
