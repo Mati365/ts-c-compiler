@@ -16,6 +16,7 @@ import {
   X86RAM,
 } from './types';
 
+import {X87} from './x87/X87';
 import {X86Stack} from './X86Stack';
 import {X86ALU} from './X86ALU';
 import {X86IO} from './X86IO';
@@ -27,6 +28,9 @@ type X86CPUConfig = {
   silent?: boolean,
 };
 
+export type X86RegRMCallback = (reg: X86RegName, regByte: number, rmByte: RMByte, mode?: X86BitsMode) => void;
+export type X86MemRMCallback = (address: number, reg: X86RegName, rmByte: RMByte, mode?: X86BitsMode) => void;
+
 /* eslint-disable class-methods-use-this, @typescript-eslint/no-unused-vars */
 export class X86CPU extends X86AbstractCPU {
   private config: X86CPUConfig;
@@ -35,6 +39,7 @@ export class X86CPU extends X86AbstractCPU {
   public alu: X86ALU;
   public io: X86IO;
   public instructionSet: X86InstructionSet;
+  public x87: X87;
 
   public device: Buffer;
   public opcodes: ((...args: any[]) => void)[] = [];
@@ -55,6 +60,7 @@ export class X86CPU extends X86AbstractCPU {
     this.alu = new X86ALU(this);
     this.io = new X86IO(this);
     this.instructionSet = new X86InstructionSet(this);
+    this.x87 = new X87(this);
   }
 
   /**
@@ -355,15 +361,15 @@ export class X86CPU extends X86AbstractCPU {
    *  {@link https://software.intel.com/sites/default/files/managed/39/c5/325462-sdm-vol-1-2abcd-3abcd.pdf}
    *  Table 2-1. 16-Bit Addressing Forms with the ModR/M Byte
    *
-   * @param {(reg: X86RegName, regByte: number, rmByte: RMByte) => void} regCallback
-   * @param {(address: number, reg: X86RegName, rmByte: RMByte) => void} memCallback
+   * @param {X86RegRMCallback} regCallback
+   * @param {X86MemRMCallback} memCallback
    * @param {X86BitsMode} mode
    * @param {X86RegName} [segRegister=this.segmentReg]
    * @memberof X86CPU
    */
   parseRmByte(
-    regCallback: (reg: X86RegName, regByte: number, rmByte: RMByte) => void,
-    memCallback: (address: number, reg: X86RegName, rmByte: RMByte) => void,
+    regCallback: X86RegRMCallback,
+    memCallback: X86MemRMCallback,
     mode: X86BitsMode,
     segRegister: X86RegName = this.segmentReg,
   ) {
@@ -377,6 +383,7 @@ export class X86CPU extends X86AbstractCPU {
         X86_REGISTERS[mode][byte.rm],
         byte.reg,
         byte,
+        mode,
       );
 
     /** Adress */
@@ -425,6 +432,7 @@ export class X86CPU extends X86AbstractCPU {
         address,
         X86_REGISTERS[mode][byte.reg],
         byte,
+        mode,
       );
     }
   }
@@ -452,6 +460,12 @@ export class X86CPU extends X86AbstractCPU {
       num &= mask;
       status.cf = cf;
     }
+
+    status.of = (
+      times === 1
+        ? X86CPU.msbit(num, bits) ^ status.cf
+        : 0
+    );
 
     return num;
   }
@@ -517,19 +531,42 @@ export class X86CPU extends X86AbstractCPU {
    * @memberof X86CPU
    */
   rotate(num: number, times: number, bits: X86BitsMode = 0x1): number {
+    if (!times)
+      return num;
+
     const {status} = this.registers;
-    const mask = X86_BINARY_MASKS[bits];
+    const byteSize = bits * 8;
 
     if (times > 0) {
-      num = (num >> (mask - times)) | (num << times);
+      // rol
+      let tCf = 0;
+      for (let i = (times % byteSize) - 1; i >= 0; --i) {
+        tCf = X86AbstractCPU.msbit(num, bits);
+        num = (num << 1) + tCf;
+      }
+
       status.cf = num & 0x1;
+      status.of = (
+        times === 1
+          ? X86CPU.msbit(num, bits) ^ status.cf
+          : 0
+      );
     } else {
-      num = (num << (mask + times)) | (num >> -times);
+      let tCf = 0;
+      for (let i = (-times % byteSize); i >= 0; --i) {
+        tCf = num & 0x1;
+        num = (num >> 1) + (tCf << byteSize);
+      }
+
       status.cf = X86AbstractCPU.msbit(num, bits);
+      status.of = (
+        times === -1
+          ? X86CPU.msbit(num, bits) ^ X86CPU.smsbit(num, bits)
+          : 0
+      );
     }
 
     status.zf = +(num === 0);
-    status.of = 0x0;
 
     return num;
   }

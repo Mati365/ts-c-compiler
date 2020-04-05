@@ -1,4 +1,4 @@
-import {format} from '../utils/format';
+import {CodeTranslatedError} from './CodeTranslatedError';
 
 /**
  * Errors thrown during compiling
@@ -9,20 +9,15 @@ import {format} from '../utils/format';
  * @template C CodeType
  * @template L LocationType
  */
-export class CompilerError<C = any, L = any> extends Error {
+export class CompilerError<C = any, L = any> extends CodeTranslatedError<C> {
   constructor(
-    public readonly translations: object,
-    public readonly code: C,
+    translations: object,
+    code: C,
     public readonly loc?: L,
-    public readonly meta?: object,
+    meta?: object,
   ) {
-    super();
-
+    super(translations, code, meta);
     this.name = 'Compiler';
-    this.message = format(
-      this.translations[<any> code],
-      meta || {},
-    );
   }
 
   /**

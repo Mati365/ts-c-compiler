@@ -1,6 +1,9 @@
 /**
  * Parses content from {@link http://www.mathemainzel.info/files/x86asmref.html}
  * Warn! That page contains errors, do not copy paste directly!
+ *
+ * @see
+ *  Some opcodes such as DEC are broken!
  */
 (() => {
   const opcodesTables = document.querySelectorAll('table[border="1"]:not([cellspacing])');

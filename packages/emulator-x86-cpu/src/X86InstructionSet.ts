@@ -6,7 +6,7 @@ import {
 } from './constants/x86';
 
 import {X86Unit} from './X86Unit';
-import {X86CPU} from './X86CPU';
+import {X86CPU, X86RegRMCallback, X86MemRMCallback} from './X86CPU';
 import {
   X86BitsMode,
   X86Flags,
@@ -16,7 +16,7 @@ import {
 
 type X86FlagCondition = (flags: X86Flags) => boolean|number;
 
-type SwitchOpcodeOperator = (num: number, byte: RMByte) => number;
+type SwitchOpcodeOperator = (num: number, mode: X86BitsMode, byte: RMByte) => number;
 type SwitchOpcodeOperators = {[offset: number]: SwitchOpcodeOperator} & {
   default?: SwitchOpcodeOperator,
 };
@@ -44,6 +44,45 @@ export class X86InstructionSet extends X86Unit {
   /* eslint-enable class-methods-use-this */
 
   /**
+   * Switches instruction by RM reg byte
+   *
+   * @static
+   * @param {X86CPU} cpu
+   * @param {X86BitsMode} defaultMode
+   * @param {SwitchOpcodeOperators} operators
+   * @returns
+   * @memberof X86InstructionSet
+   */
+  static switchRMOpcodeInstruction(cpu: X86CPU, defaultMode: X86BitsMode, operators: SwitchOpcodeOperators) {
+    const {memIO, registers} = cpu;
+
+    const operatorExecutor: SwitchOpcodeOperator = (val, mode, byte) => {
+      const operator = operators[byte.reg] || operators.default;
+      if (operator)
+        return operator(val, mode, byte);
+
+      throw new Error(`Unsupported operator! ${byte.reg}`);
+    };
+
+    const regCallback: X86RegRMCallback = (reg: string, _, byte, mode) => {
+      registers[reg] = operatorExecutor(registers[reg], mode, byte);
+    };
+
+    const memCallback: X86MemRMCallback = (address, _, byte, mode) => {
+      memIO.write[mode](
+        operatorExecutor(memIO.read[mode](address), mode, byte),
+        address,
+      );
+    };
+
+    return (mode?: X86BitsMode) => cpu.parseRmByte(
+      regCallback,
+      memCallback,
+      mode || defaultMode,
+    );
+  }
+
+  /**
    * Adds non-branch base cpu instructions
    *
    * @static
@@ -52,30 +91,6 @@ export class X86InstructionSet extends X86Unit {
    */
   static initBaseOpcodes(cpu: X86CPU): void {
     const {alu, stack, memIO, registers, opcodes} = cpu;
-
-    /** Operators binded to the same opcode, its changed using byte.rm */
-    const switchOpcode = (bits: X86BitsMode, operators: SwitchOpcodeOperators) => {
-      const operatorExecutor: SwitchOpcodeOperator = (val, byte) => {
-        const operator = operators[byte.reg] || operators.default;
-        if (operator)
-          return operator(val, byte);
-
-        throw new Error(`Unsupported operator! ${byte.reg}`);
-      };
-
-      cpu.parseRmByte(
-        (reg: string, _, byte) => {
-          registers[reg] = operatorExecutor(registers[reg], byte);
-        },
-        (address, _, byte) => {
-          memIO.write[bits](
-            operatorExecutor(memIO.read[bits](address), byte),
-            address,
-          );
-        },
-        bits,
-      );
-    };
 
     Object.assign(opcodes, {
       /** MOV r/m8, reg8 */ 0x88: (bits: X86BitsMode = 0x1) => {
@@ -355,29 +370,26 @@ export class X86InstructionSet extends X86Unit {
       },
       /** RCL r/m16, cl */ 0xD3: () => opcodes[0xD2](0x2),
 
-      /** ROL/SHR/SHL   */ 0xD0: (bits: X86BitsMode = 0x1) => {
-        switchOpcode(bits, {
-          /** ROL */ 0x0: (val) => cpu.rotate(val, -0x1, bits),
-          /** ROR */ 0x1: (val) => cpu.rotate(val, 0x1, bits),
-          /** SHL */ 0x4: (val) => cpu.shl(val, 0x1, bits),
-          /** SHR */ 0x5: (val) => cpu.shr(val, 0x1, bits),
-        });
-      },
+      /** ROL/SHR/SHL   */ 0xD0: X86InstructionSet.switchRMOpcodeInstruction(cpu, 0x1, {
+        /** ROL */ 0x0: (val, bits) => cpu.rotate(val, 0x1, bits),
+        /** ROR */ 0x1: (val, bits) => cpu.rotate(val, -0x1, bits),
+        /** SHL */ 0x4: (val, bits) => cpu.shl(val, 0x1, bits),
+        /** SHR */ 0x5: (val, bits) => cpu.shr(val, 0x1, bits),
+      }),
 
-      /** TODO: check if works */
-      /** ROL/SHR/SHL r/m8  */ 0xC0: () => {
-        switchOpcode(0x1, {
-          /** SHL IMM8 */ 0x4: (val) => cpu.shl(val, cpu.fetchOpcode(), 0x1),
-          /** SHR IMM8 */ 0x5: (val) => cpu.shr(val, cpu.fetchOpcode(), 0x1),
-        });
-      },
+      /** ROL/SHR/SHL r/m8  */ 0xC0: X86InstructionSet.switchRMOpcodeInstruction(cpu, 0x1, {
+        /** ROL */ 0x0: (val, bits) => cpu.rotate(val, cpu.fetchOpcode(), bits),
+        /** ROR */ 0x1: (val, bits) => cpu.rotate(val, -cpu.fetchOpcode(), bits),
+        /** SHL IMM8 */ 0x4: (val) => cpu.shl(val, cpu.fetchOpcode(), 0x1),
+        /** SHR IMM8 */ 0x5: (val) => cpu.shr(val, cpu.fetchOpcode(), 0x1),
+      }),
 
-      /** ROL/SHR/SHL r/m16 */ 0xC1: () => {
-        switchOpcode(0x2, {
-          /** SHL IMM8 */ 0x4: (val) => cpu.shl(val, cpu.fetchOpcode(), 0x2),
-          /** SHR IMM8 */ 0x5: (val) => cpu.shr(val, cpu.fetchOpcode(), 0x2),
-        });
-      },
+      /** ROL/SHR/SHL r/m16 */ 0xC1: X86InstructionSet.switchRMOpcodeInstruction(cpu, 0x2, {
+        /** ROL */ 0x0: (val, bits) => cpu.rotate(val, cpu.fetchOpcode(), bits),
+        /** ROR */ 0x1: (val, bits) => cpu.rotate(val, -cpu.fetchOpcode(), bits),
+        /** SHL IMM8 */ 0x4: (val) => cpu.shl(val, cpu.fetchOpcode(), 0x2),
+        /** SHR IMM8 */ 0x5: (val) => cpu.shr(val, cpu.fetchOpcode(), 0x2),
+      }),
 
       /** ROR r/m8, 1   */ 0xD1: () => opcodes[0xD0](0x2),
 

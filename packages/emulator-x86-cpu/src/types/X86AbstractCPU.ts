@@ -337,4 +337,17 @@ export abstract class X86AbstractCPU {
   static msbit(num: number, bits: X86BitsMode = 0x1): number {
     return (num >> (bits * 0x8 - 0x1)) & 0x1;
   }
+
+  /**
+   * Get bit next to most significant bit
+   *
+   * @static
+   * @param {any} num
+   * @param {number} [bits=0x1]
+   *
+   * @memberOf CPU
+   */
+  static smsbit(num: number, bits: X86BitsMode = 0x1): number {
+    return (num >> ((bits * 0x8 - 0x1) - 1)) & 0x1;
+  }
 }
