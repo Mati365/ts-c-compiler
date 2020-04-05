@@ -351,6 +351,9 @@ export class X86CPU extends X86AbstractCPU {
    *
    * @see {@link http://www.c-jump.com/CIS77/CPU/x86/lecture.html}
    * @see {@link https://en.wikibooks.org/wiki/X86_Assembly/Machine_Language_Conversion}
+   * @see
+   *  {@link https://software.intel.com/sites/default/files/managed/39/c5/325462-sdm-vol-1-2abcd-3abcd.pdf}
+   *  Table 2-1. 16-Bit Addressing Forms with the ModR/M Byte
    *
    * @param {(reg: X86RegName, regByte: number, rmByte: RMByte) => void} regCallback
    * @param {(address: number, reg: X86RegName, rmByte: RMByte) => void} memCallback
@@ -381,16 +384,15 @@ export class X86CPU extends X86AbstractCPU {
       let address = 0,
         displacement = 0;
 
-      if (!byte.mod && byte.rm === 0x6) {
-        /** SIB Byte? */
-        // address = this.fetchOpcode(0x2);
-        throw new Error('SIB byte support is not implemented!');
-      } else {
+      // indirect
+      if (!byte.mod && byte.rm === 0x6)
+        address = this.fetchOpcode(0x2);
+      else {
         /** Eight-bit displacement, sign-extended to 16 bits */
         if (byte.mod === 0x1)
           displacement = this.fetchOpcode(0x1);
         else if (byte.mod === 0x2)
-          displacement = this.fetchOpcode(0x4);
+          displacement = this.fetchOpcode(0x2);
 
         /** Calc address */
         const {registers} = this;

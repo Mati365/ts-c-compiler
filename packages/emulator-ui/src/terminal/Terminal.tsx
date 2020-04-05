@@ -1,5 +1,4 @@
 import React from 'react';
-import ReactDOM from 'react-dom';
 
 import {X86CPU} from '@emulator/x86-cpu/X86CPU';
 import {
@@ -10,13 +9,11 @@ import {
 
 import {OutputCanvas} from './OutputCanvas';
 
-// 'kernels/build/mikeos/disk_images/mikeos.flp'
-const fetchBinaryBuffer = (path: string = 'kernels/build/mikeos/disk_images/mikeos.flp'): Promise<ArrayBuffer> => (
-  fetch(path)
-    .then((r) => r.arrayBuffer())
-);
+type TerminalProps = {
+  binary: Buffer,
+};
 
-export class Terminal extends React.Component {
+export class Terminal extends React.Component<TerminalProps> {
   private cpu = new X86CPU;
 
   /**
@@ -26,12 +23,14 @@ export class Terminal extends React.Component {
    * @memberOf Terminal
    */
   initializeCPU = async (canvas: HTMLCanvasElement) => {
+    const {binary} = this.props;
+
     this
       .cpu
       .attach(BIOS, {canvas})
       .attach(RTC)
       .attach(Speaker)
-      .boot(Buffer.from(await fetchBinaryBuffer()));
+      .boot(binary);
   };
 
   render() {
@@ -47,9 +46,3 @@ export class Terminal extends React.Component {
     );
   }
 }
-
-/** Init terminal */
-ReactDOM.render(
-  <Terminal />,
-  document.getElementById('react-root'),
-);

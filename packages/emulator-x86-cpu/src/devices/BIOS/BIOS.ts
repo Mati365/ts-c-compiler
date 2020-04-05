@@ -561,15 +561,22 @@ export class BIOS extends uuidX86Device<X86CPU, BIOSInitConfig>('bios') {
       this.canvas.ctx.imageSmoothingEnabled = false;
 
       /** Render loop */
-      const vblank = setInterval(() => {
-        try {
-          this.cpu.exec(1450000 / 30);
-          this.redraw(this.canvas.ctx);
-        } catch (e) {
-          this.cpu.logger.error(e.stack);
-          clearInterval(vblank);
-        }
-      }, 0);
+      const {cpu, canvas} = this;
+      const vblank = setInterval(
+        () => {
+          try {
+            cpu.exec(1450000 / 30);
+            this.redraw(canvas.ctx);
+
+            if (cpu.isHalted())
+              clearInterval(vblank);
+          } catch (e) {
+            cpu.logger.error(e.stack);
+            clearInterval(vblank);
+          }
+        },
+        0,
+      );
     }
   }
 

@@ -4,17 +4,19 @@
 ## Status
 - [x] Basic ASM compiler with NASM Syntax
 - [x] Add expression parsers (such as jmp .label + 2)
-- [ ] Preprocessor for NASM
+- [x] Preprocessor for NASM
 - [x] Improve diassembler (add jump arrows)
 - [ ] FPU Support
   - [x] Assembler
   - [ ] Emulator
 - [ ] Add VGA mode (13h)
+- [ ] Tiny 16bit C compiler
 - [ ] App frontend
 
 ## Screens
 ![Prototype](/doc/screen.gif)
 ![Prototype](/doc/screen-2.png)
+![Tetris](/doc/screen-5.png)
 ![ASM Preprocessor](/doc/screen-4.png)
 ![ASM Compiler](/doc/screen-3.png)
 

@@ -133,6 +133,8 @@ export abstract class X86AbstractCPU {
   abstract exec(cycles: number): void;
   abstract halt(message?: string, dump?: boolean): void;
 
+  isHalted(): boolean { return this.clock === false; }
+
   /** Last stack item address */
   get lastStackAddr() {
     return this.getMemAddress('ss', 'sp');
