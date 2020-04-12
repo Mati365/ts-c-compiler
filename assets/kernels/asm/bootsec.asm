@@ -3,7 +3,7 @@
 
 finit
 fld qword [a]
-fidiv dword [b]
+fidivr dword [b]
 ; fstp st0
 
 xchg bx, bx

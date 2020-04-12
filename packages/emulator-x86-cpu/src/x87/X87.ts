@@ -114,11 +114,18 @@ export class X87 extends X86Unit {
             return 1;
           }
 
+          /* D8 F8+i FDIVR ST(0), ST(i) */
+          if (byte >= 0xF8 && byte <= 0xFF) {
+            regs.setNthValue(0x0, this.fdiv(regs.nth(byte - 0xF8), regs.st0));
+            return 1;
+          }
+
           return 0;
         },
 
         /* FMUL mdr(32) */ 0x1: (address) => { regs.setNthValue(0x0, regs.st0 * ieee754Mem.read.single(address)); },
         /* FDIV mdr(32) */ 0x6: (address) => { regs.setNthValue(0x0, this.fdiv(regs.st0, ieee754Mem.read.single(address))); },
+        /* FDIVR mdr(32) */ 0x7: (address) => { regs.setNthValue(0x0, this.fdiv(ieee754Mem.read.single(address), regs.st0)); },
       }),
 
       0xD9: X86InstructionSet.switchRMOpcodeInstruction(cpu, null, {
@@ -152,18 +159,30 @@ export class X87 extends X86Unit {
           const intImm = X86AbstractCPU.getSignedNumber(memIO.read[0x4](address), 0x4);
           regs.setNthValue(0, this.fdiv(regs.st0, intImm));
         },
+
+        /* FIDIVR mdr(32) DA /7 */ 0x7: (address) => {
+          const intImm = X86AbstractCPU.getSignedNumber(memIO.read[0x4](address), 0x4);
+          regs.setNthValue(0, this.fdiv(intImm, regs.st0));
+        },
       }),
 
       0xDC: X86InstructionSet.switchRMOpcodeInstruction(cpu, null, {
         nonRMMatch: (byte) => {
-          /* DC C8+i FMUL ST(i), ST(0) */
+          /* FMUL ST(i), ST(0) DC C8+i */
           if (byte >= 0xC8 && byte <= 0xCF) {
             const registerIndex = byte - 0xC8;
             regs.setNthValue(registerIndex, regs.nth(registerIndex) * regs.st0);
             return 1;
           }
 
-          /* DC F8+i FMUL ST(i), ST(0) */
+          /* FDIVR ST(i), ST(0) DC F0+i */
+          if (byte >= 0xF0 && byte <= 0xF7) {
+            const registerIndex = byte - 0xF0;
+            regs.setNthValue(registerIndex, this.fdiv(regs.st0, regs.nth(registerIndex)));
+            return 1;
+          }
+
+          /* FDIV ST(i), ST(0) DC F8+i */
           if (byte >= 0xF8 && byte <= 0xFF) {
             const registerIndex = byte - 0xF8;
             regs.setNthValue(registerIndex, this.fdiv(regs.nth(registerIndex), regs.st0));
@@ -175,6 +194,7 @@ export class X87 extends X86Unit {
 
         /* FMUL mqr(64) */ 0x1: (address) => { regs.setNthValue(0x0, regs.st0 * ieee754Mem.read.double(address)); },
         /* FDIV mqr(64) */ 0x6: (address) => { regs.setNthValue(0x0, this.fdiv(regs.st0, ieee754Mem.read.double(address))); },
+        /* FDIVR mqr(64) */ 0x7: (address) => { regs.setNthValue(0x0, this.fdiv(ieee754Mem.read.double(address), regs.st0)); },
       }),
 
       0xDD: X86InstructionSet.switchRMOpcodeInstruction(cpu, null, {
@@ -202,7 +222,7 @@ export class X87 extends X86Unit {
 
       0xDE: X86InstructionSet.switchRMOpcodeInstruction(cpu, null, {
         nonRMMatch: (byte) => {
-          /* DE C8+i FMULP ST(i), ST(0) */
+          /* FMULP ST(i), ST(0) DE C8+i */
           if (byte >= 0xC8 && byte <= 0xCF) {
             const registerIndex = byte - 0xC8;
 
@@ -211,7 +231,16 @@ export class X87 extends X86Unit {
             return 1;
           }
 
-          /* DE F8+i FDIVP ST(i), ST(0) */
+          /* FDIVRP ST(i), ST(0) DE F0+i */
+          if (byte >= 0xF0 && byte <= 0xF7) {
+            const registerIndex = byte - 0xF0;
+
+            regs.setNthValue(registerIndex, this.fdiv(regs.st0, regs.nth(registerIndex)));
+            regs.safePop();
+            return 1;
+          }
+
+          /* FDIVP ST(i), ST(0) DE F8+i */
           if (byte >= 0xF8 && byte <= 0xFF) {
             const registerIndex = byte - 0xF8;
 
@@ -231,6 +260,11 @@ export class X87 extends X86Unit {
         /* FDIV mw(16) DE /6 */ 0x6: (address) => {
           const intImm = X86AbstractCPU.getSignedNumber(memIO.read[0x2](address), 0x2);
           regs.setNthValue(0, this.fdiv(regs.st0, intImm));
+        },
+
+        /* FDIVR mw(16) DE /7 */ 0x7: (address) => {
+          const intImm = X86AbstractCPU.getSignedNumber(memIO.read[0x2](address), 0x2);
+          regs.setNthValue(0, this.fdiv(intImm, regs.st0));
         },
       }),
     });
