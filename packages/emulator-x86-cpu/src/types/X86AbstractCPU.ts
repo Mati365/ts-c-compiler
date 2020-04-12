@@ -309,7 +309,7 @@ export abstract class X86AbstractCPU {
   static getSignedNumber(num: number, bits: X86BitsMode = 0x1): number {
     const sign = (num >> (0x8 * bits - 0x1)) & 0x1;
     if (sign)
-      num -= X86_BINARY_MASKS[bits];
+      num -= X86_BINARY_MASKS[bits] + 0x1;
     return num;
   }
 

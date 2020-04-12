@@ -10,7 +10,7 @@ xchg bx, bx
 hlt
 
 a: dq 124.5
-b: dd 2
+b: dd -2
 
 output: dd 0
 
