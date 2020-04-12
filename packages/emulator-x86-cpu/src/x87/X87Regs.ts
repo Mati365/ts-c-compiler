@@ -66,6 +66,7 @@ export class X87RegsStore {
   get st4() { return this.nth(4); } get st5() { return this.nth(5); }
   get st6() { return this.nth(6); } get st7() { return this.nth(7); }
 
+  get zeroDivExceptionMask(): boolean { return getBit(2, this.control) === 1; }
   get overflowExceptionMask(): boolean { return getBit(3, this.control) === 1; }
   get underflowExceptionMask(): boolean { return getBit(4, this.control) === 1; }
 
