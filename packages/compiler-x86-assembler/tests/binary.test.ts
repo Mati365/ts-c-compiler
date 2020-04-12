@@ -3,8 +3,9 @@
 import * as R from 'ramda';
 
 import {asm} from '../src/asm';
-import {arrayToHexString} from '../src/parser/compiler/BinaryBlob';
+import {arrayToHexString} from '../../compiler-core/src/utils/arrayToHexString';
 
+import TIMES_TEST_LIST from './asm/times.asm';
 import TETROS_TEST_LIST from './asm/tetros.asm';
 import MACROS_TEST_LIST from './asm/macros.asm';
 import OPERANDS_TEST_LIST from './asm/operands.asm';
@@ -18,6 +19,7 @@ import './utils/asmMatcher';
 
 const tests = parseBinaryTestList(
   [
+    TIMES_TEST_LIST,
     TETROS_TEST_LIST,
     MACROS_TEST_LIST,
     OPERANDS_TEST_LIST,

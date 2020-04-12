@@ -177,7 +177,11 @@ export class BinaryInstruction extends BinaryBlob<ASTInstruction> {
             }
 
             const {addressDescription} = memArg;
-            if (addressDescription && addressDescription.disp !== null) {
+
+            if (!memArg.isResolved()) {
+              // pessimistic stage
+              binary.push(0x0);
+            } else if (addressDescription && addressDescription.disp !== null) {
               // rm byte has several mode, if mode = 0x0 we are not able to detect
               // displacement size, it is instruction various, so limit it by schema
               // check nasm binary output anyway

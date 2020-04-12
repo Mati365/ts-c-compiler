@@ -1,4 +1,4 @@
-import {CompilerFinalResult} from '../src/parser';
+import {CompilerFinalResult} from '../src/parser/index';
 import {asm} from '../src/asm';
 
 describe('compiler options', () => {

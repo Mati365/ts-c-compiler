@@ -1,7 +1,8 @@
 ;= test: tetros
-;= bin: 31c08ed831c0cd10b401b90726cd10b603b9120051fec6b20db90e00bb7800e8b60080fe15740942b90c0031dbe8a80059e2e1c606007f64b402cd1aa0027f31d0b31ff7e340a2027f31d2bb0700f7f3c0e20392ba1204e8e50075fee8d20031c98a0e007f516031c9bab80bb486cd156150b401cd1689c1587445e8af0080fd4b741180fd48741e80fd4d7410c606007f0aeb234ae8a700741d42eb1a42e89e0074144aeb1188c34040a80775022c08e88c00740288d8e877005030e4cd165859e2a2e86700fec6e87400748afecee85f00e81600e95bffb402cd10b82009cd10c3b402cd10b408cd10c360b615fece743931dbb90c00b20ee8e6ffc0ec0474024342e2f480fb0c75e460b20eb90c0051fecee8ccfffec688e3b101e8b9ff4259e2ed61fece75e2e8c0ff61c331dbeb0988c3c0eb0343c0e3044389dfeb03bf00006031db88c38b87867d31dbb9040051b104f6c480741d5009ff740e6089fb30c0b90100e870ff61eb09e874ffc0ec0474014358d1e042e2d980ea04fec659e2ce08db61c3444400f0444400f0602200e24064008e6044002e206200e8006600660066006600c6402600c64026004e404c00e4808c006c408c006c408c0000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000055aa
+;= bin: 31c08ed831c0cd10b401b90726cd10b603b9120051fec6b20db90e00bb7800e8b60080fe15740942b90c0031dbe8a80059e2e1c606007f64b402cd1aa0027f31d0b31ff7e340a2027f31d2bb0700f7f3c0e20392ba1204e8e50075fee8d20031c98a0e007f516031c9bab80bb486cd156150b401cd1689c1587445e8af0080fd4b741180fd48741e80fd4d7410c606007f0aeb234ae8a700741d42eb1a42e89e0074144aeb1188c34040a80775022c08e88c00740288d8e877005030e4cd165859e2a2e86700fec6e87400748afecee85f00e81600e95bffb402cd10b82009cd10c3b402cd10b408cd10c360b615fece743931dbb90c00b20ee8e6ffc0ec0474024342e2f480fb0c75e460b20eb90c0051fecee8ccfffec688e3b101e8b9ff4259e2ed61fece75e2e8c0ff61c331dbeb0988c3c0eb0343c0e3044389dfeb03bf00006031db88c38b87867d31dbb9040051b104f6c480741d5009ff740e6089fb30c0b90100e870ff61eb09e874ffc0ec0474014358d1e042e2d980ea04fec659e2ce08db61c3444400f0444400f0602200e24064008e6044002e206200e8006600660066006600c6402600c64026004e404c00e4808c006c408c006c408c8000010017000200000000000200000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000055aa
 
 ; Tetris, thanks for https://github.com/daniel-e/tetros
+; Tetris
 	org 7c00h
 
 ; ==============================================================================
@@ -83,7 +84,7 @@ ib: pop cx
 delay:      equ 0x7f00
 seed_value: equ 0x7f02
 
-; section .text
+section .text
 
 start_tetris:
 	xor ax, ax
@@ -141,8 +142,7 @@ up_arrow:
 	test al, 00000111b           ; check for overflow
 	jnz nf                       ; no overflow
 	sub al, 8
-nf:
-  call check_collision
+nf: call check_collision
 	je clear_keys                ; no collision
 	mov al, bl
 clear_keys:
@@ -251,6 +251,7 @@ check_collision_main:            ; DI = 1 -> check, 0 -> print
 	xor bx, bx                   ; load the brick into AX
 	mov bl, al
 	mov ax, word [bricks + bx]
+
 	xor bx, bx                   ; BH = page number, BL = collision counter
 	mov cx, 4
 cc:
@@ -287,7 +288,7 @@ is_zero:
 	pop cx
 	loop cc
 	or bl, bl                    ; bl != 0 -> collision
-  popa
+	popa
 	ret
 
 ; ==============================================================================
@@ -312,13 +313,13 @@ bricks:
 
 %ifndef DEBUG
 ; It seems that I need a dummy partition table entry for my notebook.
-; times 446-($-$$) db 0
-; 	db 0x80                   ; bootable
-;     db 0x00, 0x01, 0x00       ; start CHS address
-;     db 0x17                   ; partition type
-;     db 0x00, 0x02, 0x00       ; end CHS address
-;     db 0x00, 0x00, 0x00, 0x00 ; LBA
-;     db 0x02, 0x00, 0x00, 0x00 ; number of sectors
+times 446-($-$$) db 0
+	db 0x80                   ; bootable
+    db 0x00, 0x01, 0x00       ; start CHS address
+    db 0x17                   ; partition type
+    db 0x00, 0x02, 0x00       ; end CHS address
+    db 0x00, 0x00, 0x00, 0x00 ; LBA
+    db 0x02, 0x00, 0x00, 0x00 ; number of sectors
 
 ; At the end we need the boot sector signature.
 times 510-($-$$) db 0

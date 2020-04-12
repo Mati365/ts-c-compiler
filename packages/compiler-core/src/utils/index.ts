@@ -13,3 +13,5 @@ export * from './IEEE754';
 export * from './flipObject';
 export * from './safeArray';
 export * from './appendToMapKeyArray';
+export * from './arrayToHexString';
+export * from './mergeNumberBytes';

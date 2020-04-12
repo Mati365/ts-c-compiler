@@ -5,7 +5,7 @@ import {
   X86_FLAGS_OFFSETS,
 } from '../constants/x86';
 
-import {X87RegName} from '../x87/X87Regs';
+import {X87StackRegName} from '../x87/X87Regs';
 
 export type X86BitsMode = 0x1 | 0x2 | 0x4 | 0x8 | 0xA;
 
@@ -27,12 +27,14 @@ export type X86Flags = {
   of?: number,
 };
 
-type RegistersDebugDump = {
-  flags: string,
-  regs: ({
-    register: string,
-    value: string,
-  })[],
+export type NumericRegisterDumpRow = {
+  register: string,
+  value: string,
+};
+
+export type RegistersDebugDump = {
+  flags?: string,
+  regs: NumericRegisterDumpRow[],
 };
 
 class X86ByteRegsStore {
@@ -137,42 +139,65 @@ export class X86RegsStore extends X86ByteRegsStore {
   }
 
   /**
+   * Transforms object of regs with number values to number table
+   *
+   * @static
+   * @param {{[key: string]: number}} regs
+   * @returns {NumericRegisterDumpRow[]}
+   * @memberof X86RegsStore
+   */
+  static toRegistersTable(regs: {[key: string]: string|number}): NumericRegisterDumpRow[] {
+    const insertDot = (str: string, pos: number) => `${str.slice(0, pos)}.${str.slice(pos)}`;
+
+    /** Registers */
+    const table: NumericRegisterDumpRow[] = [];
+    for (const key in regs) {
+      const reg = regs[key];
+
+      if (R.isNil(reg))
+        continue;
+
+      let value: string = <string> reg;
+      if (R.is(Number, value)) {
+        value = reg.toString(16).toUpperCase();
+        if (value.length < 8)
+          value = new Array(8 - value.length + 1).join('0') + value;
+
+        // add dots to easier reading value
+        value = insertDot(value, 4);
+      }
+
+      // add char character
+      if (Number.isInteger(<number> reg))
+        value += ` (${reg} ${String.fromCharCode(<number> reg & 0xFF)})`;
+
+      table.push(
+        {
+          register: key,
+          value,
+        },
+      );
+    }
+
+    return table;
+  }
+
+  /**
    * Returns human formatted dump of all registers
    *
    * @returns {RegistersDebugDump}
    * @memberof X86RegsStore
    */
   debugDump(): RegistersDebugDump {
-    const insertDot = (str: string, pos: number) => `${str.slice(0, pos)}.${str.slice(pos)}`;
-
-    /** Registers */
-    const table = [];
-    for (const key of X86_REGISTER_NAMES) {
-      const reg = this[key];
-
-      if (R.isNil(reg) || Number.isNaN(reg))
-        continue;
-
-      let val = reg.toString(16).toUpperCase();
-      if (val.length < 8)
-        val = new Array(8 - val.length + 1).join('0') + val;
-
-      /** add dots to easier reading value */
-      table.push(
-        {
-          register: key,
-          value: `${insertDot(val, 4)} (${reg} ${String.fromCharCode(reg & 0xFF)})`,
-        },
-      );
-    }
-
     /** Flags */
     let flags = '';
     for (const flag in X86_FLAGS_OFFSETS)
       flags += `${flag}: ${this.status[flag]} `;
 
     return {
-      regs: table,
+      regs: X86RegsStore.toRegistersTable(
+        R.pick(X86_REGISTER_NAMES, this) as any,
+      ),
       flags,
     };
   }
@@ -188,7 +213,7 @@ export type X86RegName = keyof(X86RegsStore);
  */
 export type ExtendedX86RegName = (
   X86RegName
-  | X87RegName
+  | X87StackRegName
   | 'eax' | 'ebx' | 'ecx' | 'edx' | 'esi'
   | 'edi' | 'eip' | 'esp' | 'ebp' | 'eflags'
 );

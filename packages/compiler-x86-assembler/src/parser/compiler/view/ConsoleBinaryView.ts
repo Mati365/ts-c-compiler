@@ -4,12 +4,13 @@ import {flipMap} from '@compiler/core/utils/flipMap';
 import {
   setCharAt,
   mapMapValues,
+  arrayToHexString,
 } from '@compiler/core/utils';
 
 import {CompilerError} from '@compiler/core/shared/CompilerError';
 import {ASTInstruction} from '../../ast/instruction/ASTInstruction';
 import {BinaryView} from './BinaryView';
-import {BinaryBlob, arrayToHexString} from '../BinaryBlob';
+import {BinaryBlob} from '../BinaryBlob';
 import {CompilerFinalResult, CompilerOutput} from '../compile';
 
 type JMPLines = Map<number, number>;

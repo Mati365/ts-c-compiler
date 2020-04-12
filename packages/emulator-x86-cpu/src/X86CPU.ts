@@ -28,10 +28,10 @@ type X86CPUConfig = {
   silent?: boolean,
 };
 
+export type X86OpcodesList = ((...args: any[]) => void)[];
 export type X86RegRMCallback = (reg: X86RegName, regByte: number, rmByte: RMByte, mode?: X86BitsMode) => void;
 export type X86MemRMCallback = (address: number, reg: X86RegName, rmByte: RMByte, mode?: X86BitsMode) => void;
 
-/* eslint-disable class-methods-use-this, @typescript-eslint/no-unused-vars */
 export class X86CPU extends X86AbstractCPU {
   private config: X86CPUConfig;
 
@@ -42,7 +42,7 @@ export class X86CPU extends X86AbstractCPU {
   public x87: X87;
 
   public device: Buffer;
-  public opcodes: ((...args: any[]) => void)[] = [];
+  public opcodes: X86OpcodesList = [];
 
   constructor(config?: X86CPUConfig) {
     super();
@@ -61,6 +61,20 @@ export class X86CPU extends X86AbstractCPU {
     this.io = new X86IO(this);
     this.instructionSet = new X86InstructionSet(this);
     this.x87 = new X87(this);
+  }
+
+  get physicalIP() {
+    return this.getMemAddress('cs', 'ip');
+  }
+
+  /**
+   * Prints all content of registers/flags into logger
+   *
+   * @memberof X86AbstractCPU
+   */
+  debugDumpRegisters(): void {
+    super.debugDumpRegisters();
+    this.x87.debugDumpRegisters();
   }
 
   /**
@@ -117,7 +131,7 @@ export class X86CPU extends X86AbstractCPU {
       );
       this.loadBuffer(
         code,
-        this.getMemAddress('cs', 'ip'),
+        this.physicalIP,
         510,
       );
     } else
@@ -176,10 +190,13 @@ export class X86CPU extends X86AbstractCPU {
         return;
 
       /** Decode prefix */
-      let opcode = null;
-      for (let i = 0x0; i < 0x4; ++i) {
-        opcode = this.fetchOpcode(0x1, true, true);
+      let opcode = this.fetchOpcode(0x1, true, true);
+      if (X87.isX87Opcode(opcode)) {
+        this.x87.tick(opcode, this.physicalIP);
+        return;
+      }
 
+      for (let i = 0x0; i < 0x4; ++i) {
         const prefix = X86_PREFIXES[opcode];
         if (typeof prefix === 'undefined')
           break;
@@ -190,6 +207,9 @@ export class X86CPU extends X86AbstractCPU {
           this.prefixes[X86_PREFIX_LABEL_MAP[0x1]] = prefix;
         else
           this.prefixes[X86_PREFIX_LABEL_MAP[<number> prefix]] = opcode;
+
+        /** Load next opcode */
+        opcode = this.fetchOpcode(0x1, true, true);
       }
 
       /** 0F prefix opcodes to 2-byte opcodes */
@@ -222,8 +242,7 @@ export class X86CPU extends X86AbstractCPU {
         operand();
 
       /** Reset opcode */
-      for (const key in this.prefixes)
-        this.prefixes[key] = null;
+      this.prefixes.clear();
     };
 
     /** Exec CPU */
@@ -233,6 +252,24 @@ export class X86CPU extends X86AbstractCPU {
     } else {
       while (this.clock)
         tick();
+    }
+  }
+
+  /**
+   * Appends constant to ip, handles segment overflow
+   *
+   * @param {number} size
+   * @memberof X86CPU
+   */
+  incrementIP(size: number): void {
+    const {registers} = this;
+
+    registers.ip += size;
+
+    // increment CS if overflows
+    if (registers.ip > 0xFFFF) {
+      registers.ip = X86AbstractCPU.toUnsignedNumber(this.registers.ip, 0x2);
+      registers.cs += 0x1000;
     }
   }
 
@@ -248,19 +285,11 @@ export class X86CPU extends X86AbstractCPU {
     if (!ignorePrefix && this.prefixes.operandSize === 0x66)
       size = 0x4;
 
-    const {registers} = this;
     const mapper = this.memIO.read[size];
     if (mapper) {
-      const opcode = mapper(this.getMemAddress('cs', 'ip'));
-      if (incrementIP) {
-        registers.ip += size;
-
-        // increment CS if overflows
-        if (registers.ip > 0xFFFF) {
-          registers.ip = X86AbstractCPU.toUnsignedNumber(this.registers.ip, 0x2);
-          registers.cs += 0x1000;
-        }
-      }
+      const opcode = mapper(this.physicalIP);
+      if (incrementIP)
+        this.incrementIP(size);
 
       return opcode;
     }
@@ -373,6 +402,7 @@ export class X86CPU extends X86AbstractCPU {
     mode: X86BitsMode,
     segRegister: X86RegName = this.segmentReg,
   ) {
+    const modeRegs = X86_REGISTERS[mode];
     const byte = X86AbstractCPU.decodeRmByte(
       this.fetchOpcode(0x1, true, true),
     );
@@ -380,7 +410,9 @@ export class X86CPU extends X86AbstractCPU {
     /** Register */
     if (byte.mod === 0x3)
       regCallback(
-        X86_REGISTERS[mode][byte.rm],
+        modeRegs
+          ? modeRegs[byte.rm]
+          : null,
         byte.reg,
         byte,
         mode,
@@ -430,7 +462,9 @@ export class X86CPU extends X86AbstractCPU {
       memCallback(
         /** Only effective address */
         address,
-        X86_REGISTERS[mode][byte.reg],
+        modeRegs
+          ? modeRegs[byte.reg]
+          : null,
         byte,
         mode,
       );

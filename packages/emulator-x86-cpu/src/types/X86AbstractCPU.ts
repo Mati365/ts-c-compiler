@@ -29,6 +29,13 @@ export class X86PrefixesStore {
   segment: X86Prefix;
   operandSize: X86Prefix;
   addressSize: X86Prefix;
+
+  clear() {
+    this.instruction = null;
+    this.segment = null;
+    this.operandSize = null;
+    this.addressSize = null;
+  }
 }
 
 export class SegmentedAddress {

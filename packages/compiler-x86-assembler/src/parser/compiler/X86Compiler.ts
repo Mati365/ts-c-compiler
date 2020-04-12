@@ -326,7 +326,7 @@ export class X86Compiler {
     const result = new SecondPassResult(0x0, labels);
     let success = false;
     let needSort = false;
-    let sectionStartOffset = null;
+    const sectionStartOffset = this._origin; // todo: add multiple sections support?
 
     /**
      * Lookups into tree and resolves nested label args
@@ -427,13 +427,9 @@ export class X86Compiler {
     // proper resolve labels
     for (let pass = 0; pass < this.maxPasses; ++pass) {
       let needPass = false;
-      sectionStartOffset = null;
 
       // eslint-disable-next-line prefer-const
       for (let [offset, blob] of nodesOffsets) {
-        if (sectionStartOffset === null)
-          sectionStartOffset = offset;
-
         try {
           // check for slave blobs (0 bytes instructions, EQU)
           if (blob.slaveBlobs) {
@@ -460,12 +456,13 @@ export class X86Compiler {
 
             // prevent loop, kill times
             nodesOffsets.delete(offset);
+            resizeBlockAtOffset(offset, blobSize - 1);
 
-            resizeBlockAtOffset(offset, Math.max(1, blobSize - 1));
-            appendBlobsAtOffset(0, blobResult.nodesOffsets);
-
-            needPass = true;
-            break;
+            if (blobSize) {
+              appendBlobsAtOffset(0, blobResult.nodesOffsets);
+              needPass = true;
+              break;
+            }
           } else if (blob instanceof BinaryInstruction) {
             const {ast, binary} = blob;
             const pessimisticSize = binary.length;

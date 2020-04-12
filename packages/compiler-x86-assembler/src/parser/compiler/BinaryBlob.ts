@@ -1,13 +1,7 @@
 import * as R from 'ramda';
-import {X86Compiler} from './X86Compiler';
 
-export const arrayToHex = R.map(
-  (num: number) => (
-    R.isNil(num)
-      ? ''
-      : `${num.toString(16).padStart(2, '0')}`
-  ),
-);
+import {arrayToHex} from '@compiler/core/utils/arrayToHexString';
+import {X86Compiler} from './X86Compiler';
 
 export const toMultilineBinaryBlockString = R.compose(
   R.map(
@@ -16,21 +10,6 @@ export const toMultilineBinaryBlockString = R.compose(
   R.splitEvery(8),
   arrayToHex,
 );
-
-/**
- * Converts array of number to hex string
- *
- * @export
- * @param {number[]} numbers
- * @param {string} [delimeter=' ']
- * @returns {string}
- */
-export function arrayToHexString(numbers: number[], delimeter: string = ' '): string {
-  return R.join(
-    delimeter,
-    arrayToHex(numbers),
-  );
-}
 
 /**
  * Binary portion of data

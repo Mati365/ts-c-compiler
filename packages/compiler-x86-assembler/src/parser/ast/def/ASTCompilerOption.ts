@@ -12,6 +12,7 @@ import {asmLexer} from '../../lexer/asmLexer';
 export enum CompilerOptions {
   ORG = 'ORG',
   BITS = 'BITS',
+  SECTION = 'SECTION',
 }
 
 /**

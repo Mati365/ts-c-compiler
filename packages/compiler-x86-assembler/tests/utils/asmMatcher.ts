@@ -1,7 +1,7 @@
 import * as R from 'ramda';
 
 import {asm} from '@compiler/x86-assembler/asm';
-import {arrayToHexString} from '@compiler/x86-assembler/parser/compiler/BinaryBlob';
+import {arrayToHexString} from '@compiler/core/utils/arrayToHexString';
 
 export type BinaryOutputObject = {
   [key: number]: number[],

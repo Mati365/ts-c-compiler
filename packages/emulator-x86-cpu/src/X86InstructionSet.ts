@@ -16,9 +16,10 @@ import {
 
 type X86FlagCondition = (flags: X86Flags) => boolean|number;
 
-type SwitchOpcodeOperator = (num: number, mode: X86BitsMode, byte: RMByte) => number;
+type SwitchOpcodeOperator = (num: number, mode: X86BitsMode, byte: RMByte, register: boolean) => any;
 type SwitchOpcodeOperators = {[offset: number]: SwitchOpcodeOperator} & {
   default?: SwitchOpcodeOperator,
+  nonRMMatch?(byte: number): number,
 };
 
 /**
@@ -46,6 +47,11 @@ export class X86InstructionSet extends X86Unit {
   /**
    * Switches instruction by RM reg byte
    *
+   * @see
+   *   If provided mode is null it will:
+   *   - provide address in memCallback
+   *   - provide register as null in regCallback
+   *
    * @static
    * @param {X86CPU} cpu
    * @param {X86BitsMode} defaultMode
@@ -56,30 +62,64 @@ export class X86InstructionSet extends X86Unit {
   static switchRMOpcodeInstruction(cpu: X86CPU, defaultMode: X86BitsMode, operators: SwitchOpcodeOperators) {
     const {memIO, registers} = cpu;
 
-    const operatorExecutor: SwitchOpcodeOperator = (val, mode, byte) => {
+    const operatorExecutor: SwitchOpcodeOperator = (val, mode, byte, register) => {
       const operator = operators[byte.reg] || operators.default;
       if (operator)
-        return operator(val, mode, byte);
+        return operator(val, mode, byte, register);
 
       throw new Error(`Unsupported operator! ${byte.reg}`);
     };
 
     const regCallback: X86RegRMCallback = (reg: string, _, byte, mode) => {
-      registers[reg] = operatorExecutor(registers[reg], mode, byte);
+      const result = operatorExecutor(
+        reg === null
+          ? null
+          : registers[reg],
+        mode,
+        byte,
+        true,
+      );
+
+      if (result !== undefined)
+        registers[reg] = result;
     };
 
     const memCallback: X86MemRMCallback = (address, _, byte, mode) => {
-      memIO.write[mode](
-        operatorExecutor(memIO.read[mode](address), mode, byte),
-        address,
+      // read only address
+      if (mode === null) {
+        operatorExecutor(address, null, byte, false);
+        return;
+      }
+
+      const result = operatorExecutor(
+        memIO.read[mode](address),
+        mode,
+        byte,
+        false,
       );
+
+      if (result !== undefined)
+        memIO.write[mode](result, address);
     };
 
-    return (mode?: X86BitsMode) => cpu.parseRmByte(
-      regCallback,
-      memCallback,
-      mode || defaultMode,
-    );
+    const {nonRMMatch} = operators;
+    return (mode?: X86BitsMode) => {
+      if (nonRMMatch) {
+        const byte = cpu.fetchOpcode(0x1, false, true);
+        const matchBytes = nonRMMatch(byte);
+
+        if (matchBytes !== 0) {
+          cpu.incrementIP(matchBytes);
+          return true;
+        }
+      }
+
+      return cpu.parseRmByte(
+        regCallback,
+        memCallback,
+        mode || defaultMode,
+      );
+    };
   }
 
   /**
@@ -408,14 +448,14 @@ export class X86InstructionSet extends X86Unit {
         const arg = cpu.fetchOpcode(0x1, false, true);
 
         switch (arg) {
-          case 0xDB:
-          case 0xD2:
+          case 0xDB: // xchg bx, bx
+          case 0xD2: // xchg dx, dx
             registers.ip++;
 
             cpu.raiseException(X86_EXCEPTION.MEM_DUMP);
             cpu.debugDumpRegisters();
 
-            if (arg === 0xDB)
+            if (arg === 0xD2) // xchg dx, dx
               debugger; // eslint-disable-line no-debugger
             break;
 
