@@ -43,6 +43,7 @@ export type X87StackRegName = typeof X87_STACK_REGISTERS[number];
 /**
  * @see {@link https://xem.github.io/minix86/manual/intel-x86-and-64-manual-vol1/o_7281d5ea06a5b67a-194.html}
  * @see {@link https://johnloomis.org/ece314/notes/fpu/fpu.pdf}
+ * @see {@link https://www.felixcloutier.com/x86/index.html}
  *
  * @export
  * @class X87RegsStore
@@ -151,8 +152,26 @@ export class X87RegsStore {
    */
   nth(nth: number): number {
     return this.stack[
-      (this.stackPointer - nth) % X87_STACK_REGS_COUNT
+      (this.stackPointer + nth) % X87_STACK_REGS_COUNT
     ];
+  }
+
+  /**
+   * Sets nth origin value value
+   *
+   * @see
+   *  NTH is related to stack origin, 0 is top, 1 is second etc
+   *  its not directly mapped to stack array!
+   *
+   * @param {number} nth
+   * @param {number} value
+   * @memberof X87RegsStore
+   */
+  setNthValue(nth: number, value: number): void {
+    const {stack} = this;
+    const registerIndex = (this.stackPointer + nth) % X87_STACK_REGS_COUNT;
+
+    stack[registerIndex] = value;
   }
 
   /**
@@ -177,19 +196,6 @@ export class X87RegsStore {
     const offset = nth * 2;
 
     this.tags = (this.tags & ((0b11 << offset) ^ 0xFFFF)) | ((tag << offset) & 0xFFFF);
-  }
-
-  /**
-   * Sets nth stack value
-   *
-   * @param {number} nth
-   * @param {number} value
-   * @memberof X87RegsStore
-   */
-  setNth(nth: number, value: number): void {
-    const {stack} = this;
-
-    stack[nth] = value;
   }
 
   /**

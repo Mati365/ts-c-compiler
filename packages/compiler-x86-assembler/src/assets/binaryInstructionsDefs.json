@@ -115,7 +115,7 @@
   "fcompp": ["","DE D9",""],
   "fdivp": [["","DE F9",""],["st(i) st","DE F8+i",""]],
   "fdivrp": [["","DE F1",""],["st(i) st","DE F0+i",""]],
-  "fmulp": ["st(i) st","DE C8+i",""],
+  "fmulp": [["st(i) st","DE C8+i",""], ["", "DE C9", ""]],
   "fsubp": [["","DE E9",""],["st(i) st","DE E8+i",""]],
   "fsubrp": ["st(i) st","DE E0+i",""],
   "fbld": ["mtr","DF /4 d0 d1",""],

@@ -343,7 +343,7 @@ export class X86CPU extends X86AbstractCPU {
 
     /** 1B call instruction size */
     relative = X86AbstractCPU.getSignedNumber(relative, bits);
-    registers.ip += relative - (relative < 0 ? 0x1 : 0);
+    registers.ip += relative;
 
     /**
      * If overflows its absolute, truncate value

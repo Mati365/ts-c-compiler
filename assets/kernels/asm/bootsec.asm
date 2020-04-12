@@ -2,18 +2,19 @@
 [org 7c00h]
 
 finit
-fld dword [val_dd]
-fld dword [val_dd_2]
-;fld st0
-fstp st0
+xor ax, ax
+lea ax, [a]
+fld qword [a]
+fimul word [b]
+; fstp st0
 
 xchg bx, bx
 hlt
 
-val_dd: dd 124.5
-val_dd_zero: dd 0
-val_dd_2: dd 321.5
-val_dd_out: dd 0
+a: dq 124.5
+b: dw -4
+
+output: dd 0
 
 ; At the end we need the boot sector signature.
 times 510-($-$$) db 0
