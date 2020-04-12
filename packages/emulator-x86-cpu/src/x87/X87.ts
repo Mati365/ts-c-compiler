@@ -12,7 +12,6 @@ import {X86OpcodesList} from '../X86CPU';
  */
 export class X87 extends X86Unit {
   private registers: X87RegsStore;
-  private initialized: boolean;
   private opcodes: X86OpcodesList;
 
   static isX87Opcode(opcode: number): boolean {
@@ -35,18 +34,18 @@ export class X87 extends X86Unit {
   /**
    * Handles opcode
    *
-   * @param {number} opcode
-   * @param {number} address
-   *
+   * @param {number} opcode   *
    * @memberof X87
    */
-  tick(opcode: number, address: number) {
+  tick(opcode: number) {
     const {opcodes, cpu, registers} = this;
     const operand = opcodes[opcode];
 
     if (operand) {
       registers.lastInstructionOpcode = opcode;
-      registers.fip = address - 0x1; // remove already fetched opcode
+
+      registers.fcs = cpu.registers.cs;
+      registers.fip = cpu.registers.ip - 0x1; // remove already fetched opcode
 
       operand();
     } else
@@ -72,8 +71,6 @@ export class X87 extends X86Unit {
         const bits = cpu.fetchOpcode(0x2, false);
         switch (bits) {
           /* FINIT */ case 0xE3DB:
-            this.initialized = true;
-
             registers.reset();
             cpu.incrementIP(0x2);
             break;
@@ -83,14 +80,12 @@ export class X87 extends X86Unit {
       },
 
       0xD9: X86InstructionSet.switchRMOpcodeInstruction(cpu, null, {
-        nonRMMatch(byte) {
+        nonRMMatch: (byte) => {
           /* FLD st(i), C0+i */
           if (byte >= 0xC0 && byte <= 0xC7) {
-            if (this.initialized) {
-              registers.safePush(
-                registers[byte - 0xC0],
-              );
-            }
+            registers.safePush(
+              registers[byte - 0xC0],
+            );
 
             return 1;
           }
@@ -98,61 +93,37 @@ export class X87 extends X86Unit {
           return 0;
         },
 
-        /* FLD mdr(32) D9 /0 d0 d1  */ 0x0: (address) => {
-          if (!this.initialized) return;
-
-          registers.safePush(
-            ieee754Mem.read.single(address),
-          );
-        },
-
-        /* FST mdr(32) D9 /2 d0 d1 */ 0x2: (address) => {
-          ieee754Mem.write.single(
-            registers.st0,
-            address,
-          );
-        },
+        /* FLD mdr(32) D9 /0 d0 d1  */ 0x0: (address) => { registers.safePush(ieee754Mem.read.single(address)); },
+        /* FST mdr(32) D9 /2 d0 d1 */ 0x2: (address) => { ieee754Mem.write.single(registers.st0, address); },
+        /* FSTP mdr(32) D9 /3 d0 d1 */ 0x3: (address) => { ieee754Mem.write.single(registers.safePop(), address); },
       }),
 
       0xDD: X86InstructionSet.switchRMOpcodeInstruction(cpu, null, {
-        nonRMMatch(byte) {
+        nonRMMatch: (byte) => {
           /* FST st(i) DD D0+i */
           if (byte >= 0xD0 && byte <= 0xD7) {
-            if (this.initialized)
-              registers.setNth(byte - 0xD0, registers.st0);
+            registers.setNth(byte - 0xD0, registers.st0);
+            return 1;
+          }
 
+          /* FSTP st(i) DD D8+i */
+          if (byte >= 0xD8 && byte <= 0xDF) {
+            registers.setNth(byte - 0xD8, registers.st0);
+            registers.safePop();
             return 1;
           }
 
           return 0;
         },
 
-        /* [FLD mqr(64) DD /0 d0 d1] */ 0x0: (address) => {
-          if (!this.initialized) return;
-
-          registers.safePush(
-            ieee754Mem.read.double(address),
-          );
-        },
-
-        /* [FST mqr(64) DD /2 d0 d1] */ 0x2: (address) => {
-          if (!this.initialized) return;
-
-          ieee754Mem.write.double(
-            registers.st0,
-            address,
-          );
-        },
+        /* FLD mqr(64) DD /0 d0 d1 */ 0x0: (address) => { registers.safePush(ieee754Mem.read.double(address)); },
+        /* FST mqr(64) DD /2 d0 d1 */ 0x2: (address) => { ieee754Mem.write.double(registers.st0, address); },
+        /* FSTP mqr(64) DD /3 d0 d1 */ 0x3: (address) => { ieee754Mem.write.double(registers.safePop(), address); },
       }),
 
       0xDB: X86InstructionSet.switchRMOpcodeInstruction(cpu, null, {
-        /* FLD mqr(80) DD /0 d0 d1 */ 0x5: (address) => {
-          if (!this.initialized) return;
-
-          registers.safePush(
-            ieee754Mem.read.extended(address),
-          );
-        },
+        /* FLD mtr(80) DD /0 d0 d1 */ 0x5: (address) => { registers.safePush(ieee754Mem.read.extended(address)); },
+        /* FSTP mqr(64) DD /3 d0 d1 */ 0x7: (address) => { ieee754Mem.write.extended(registers.safePop(), address); },
       }),
     });
   }

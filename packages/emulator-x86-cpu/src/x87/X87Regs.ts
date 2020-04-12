@@ -1,10 +1,17 @@
 import * as R from 'ramda';
 
+import {getBit} from '@compiler/core/utils/bits';
+
 import {X86CPU} from '../X86CPU';
 import {
   RegistersDebugDump,
   X86RegsStore,
 } from '../types';
+
+import {
+  X87Error,
+  X87ErrorCode,
+} from './X87Error';
 
 export enum X87Tag {
   VALID = 0b00,
@@ -35,27 +42,31 @@ export type X87StackRegName = typeof X87_STACK_REGISTERS[number];
 
 /**
  * @see {@link https://xem.github.io/minix86/manual/intel-x86-and-64-manual-vol1/o_7281d5ea06a5b67a-194.html}
+ * @see {@link https://johnloomis.org/ece314/notes/fpu/fpu.pdf}
  *
  * @export
  * @class X87RegsStore
  */
 export class X87RegsStore {
-  stack: number[] = []; // see: it contains normal JS floats
-  totalPushed = 0; // used in overflow checking
+  stack: number[] = null;
+  stackPointer: number = null;
 
-  flags: number = 0x0;
-  control: number = 0x0;
-  status: number = 0x0;
-  tags: number = 0x0;
-  fdp: number = 0x0; // todo: data pointer
-  fip: number = 0x0; // todo: instruction pointer
+  flags: number = null;
+  control: number = null;
+  status: number = null;
+  tags: number = null;
+  fdp: number = null;
+  fip: number = null;
+  fcs: number = null;
   lastInstructionOpcode: number = 0x0;
 
-  get wrappedSize() { return this.totalPushed % X87_STACK_REGS_COUNT; }
-  get st0() { return this.stack[0]; } get st1() { return this.stack[1]; }
-  get st2() { return this.stack[2]; } get st3() { return this.stack[3]; }
-  get st4() { return this.stack[4]; } get st5() { return this.stack[5]; }
-  get st6() { return this.stack[6]; } get st7() { return this.stack[7]; }
+  get st0() { return this.nth(0); } get st1() { return this.nth(1); }
+  get st2() { return this.nth(2); } get st3() { return this.nth(3); }
+  get st4() { return this.nth(4); } get st5() { return this.nth(5); }
+  get st6() { return this.nth(6); } get st7() { return this.nth(7); }
+
+  get overflowExceptionMask(): boolean { return getBit(3, this.control) === 1; }
+  get underflowExceptionMask(): boolean { return getBit(4, this.control) === 1; }
 
   /**
    * Prints all registers
@@ -64,20 +75,21 @@ export class X87RegsStore {
    * @memberof X87RegsStore
    */
   debugDump(): RegistersDebugDump {
-    const {stack, tags, fip} = this;
+    const {stack, tags, fip, fcs} = this;
     const regs = {
       tags: X86CPU.toUnsignedNumber(tags, 0x2),
       fip,
+      fcs,
     };
 
-    const originTopOffset = X87_STACK_REGS_COUNT - this.wrappedSize;
     R.forEach(
       (index: number) => {
-        let stIndex = index - originTopOffset;
+        let stIndex = (index - this.stackPointer) % X87_STACK_REGS_COUNT;
         if (stIndex < 0)
           stIndex += X87_STACK_REGS_COUNT;
 
-        regs[`fp${index} st${stIndex}(${X87Tag[this.getNthTag(stIndex)]})`] = (stack[stIndex] ?? 0x0).toString();
+        const name = `fp${index} st${stIndex}(${X87Tag[this.getNthTag(index)]})`;
+        regs[`${name}${stIndex === 0 ? ' <--' : ''}`] = stack[index].toString();
       },
       R.times(R.identity, 8),
     );
@@ -96,12 +108,14 @@ export class X87RegsStore {
     Object.assign(
       this,
       {
-        stack: [],
+        stack: R.repeat(0x0, X87_STACK_REGS_COUNT),
+        stackPointer: X87_STACK_REGS_COUNT,
         tags: 0xFFFF,
         control: 0x037F,
         status: 0x0,
         fdp: 0x0,
         fip: 0x0,
+        fcs: 0x0,
         lastInstructionOpcode: 0x0,
       },
     );
@@ -129,6 +143,19 @@ export class X87RegsStore {
   }
 
   /**
+   * Access nth from TOP of stack
+   *
+   * @param {number} nth
+   * @returns {number}
+   * @memberof X87RegsStore
+   */
+  nth(nth: number): number {
+    return this.stack[
+      (this.stackPointer - nth) % X87_STACK_REGS_COUNT
+    ];
+  }
+
+  /**
    * Returns nth stack register tag
    *
    * @param {number} nth
@@ -136,7 +163,20 @@ export class X87RegsStore {
    * @memberof X87RegsStore
    */
   getNthTag(nth: number): X87Tag {
-    return (this.tags >> (14 - 2 * nth)) & 0b11;
+    return (this.tags >> (nth * 2)) & 0b11;
+  }
+
+  /**
+   * Sets nth tag register value flags
+   *
+   * @param {number} nth
+   * @param {X87Tag} tag
+   * @memberof X87RegsStore
+   */
+  setNthTag(nth: number, tag: X87Tag) {
+    const offset = nth * 2;
+
+    this.tags = (this.tags & ((0b11 << offset) ^ 0xFFFF)) | ((tag << offset) & 0xFFFF);
   }
 
   /**
@@ -161,11 +201,13 @@ export class X87RegsStore {
   safePop(): number {
     const {stack} = this;
 
-    if (this.totalPushed < X87_STACK_REGS_COUNT)
-      this.tags = (this.tags << 0x2) & 0xFFFF;
+    if (this.getNthTag(this.stackPointer) === X87Tag.EMPTY && !this.underflowExceptionMask)
+      throw new X87Error(X87ErrorCode.NUMERIC_UNDERFLOW);
 
-    this.totalPushed = Math.max(0, this.totalPushed - 1); // todo: check
-    return stack.shift();
+    this.setNthTag(this.stackPointer, X87Tag.EMPTY);
+    this.stackPointer = (this.stackPointer + 1) & (X87_STACK_REGS_COUNT - 1);
+
+    return stack[this.stackPointer];
   }
 
   /**
@@ -175,19 +217,18 @@ export class X87RegsStore {
    * @memberof X87RegsStore
    */
   safePush(num: number): void {
-    const {stack, tags} = this;
-    const parsedNum = (
-      this.totalPushed >= 8
-        ? -Infinity
-        : num
-    );
+    const {stack} = this;
+    this.stackPointer = (this.stackPointer - 1) & (X87_STACK_REGS_COUNT - 1);
 
-    stack[this.wrappedSize] = parsedNum;
+    if (this.getNthTag(this.stackPointer) !== X87Tag.EMPTY) {
+      if (!this.overflowExceptionMask)
+        throw new X87Error(X87ErrorCode.NUMERIC_OVERFLOW);
 
-    // bochs ignores tags update if wraps around
-    if (this.totalPushed < X87_STACK_REGS_COUNT)
-      this.tags = ((tags >> 0x2) | (X87RegsStore.checkFloatingNumberTag(parsedNum) << 14)) & 0xFFFF;
+      num = -Infinity;
+      this.setNthTag(this.stackPointer, X87Tag.VALID);
+    } else
+      this.setNthTag(this.stackPointer, X87RegsStore.checkFloatingNumberTag(num));
 
-    this.totalPushed++;
+    stack[this.stackPointer] = num;
   }
 }

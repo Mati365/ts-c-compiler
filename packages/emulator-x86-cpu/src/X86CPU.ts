@@ -192,7 +192,7 @@ export class X86CPU extends X86AbstractCPU {
       /** Decode prefix */
       let opcode = this.fetchOpcode(0x1, true, true);
       if (X87.isX87Opcode(opcode)) {
-        this.x87.tick(opcode, this.physicalIP);
+        this.x87.tick(opcode);
         return;
       }
 
