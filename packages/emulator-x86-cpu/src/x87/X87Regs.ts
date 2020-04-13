@@ -90,8 +90,19 @@ export class X87RegsStore {
         if (stIndex < 0)
           stIndex += X87_STACK_REGS_COUNT;
 
-        const name = `fp${index} st${stIndex}(${X87Tag[this.getNthTag(index)]})`;
-        regs[`${name}${stIndex === 0 ? ' <--' : ''}`] = stack[index].toString();
+        const tag = this.getNthTag(index);
+        const name = `fp${index} st${stIndex}(${X87Tag[tag]})`;
+        const value = stack[index];
+        let parsedValue: string = null;
+
+        if (tag === X87Tag.VALID || (tag === X87Tag.EMPTY && Number.isFinite(value)))
+          parsedValue = value.toString();
+        else if (tag === X87Tag.EMPTY)
+          parsedValue = '0';
+        else
+          parsedValue = '-INF';
+
+        regs[`${name}${stIndex === 0 ? ' <--' : ''}`] = parsedValue;
       },
       R.times(R.identity, 8),
     );
@@ -110,7 +121,7 @@ export class X87RegsStore {
     Object.assign(
       this,
       {
-        stack: R.repeat(0x0, X87_STACK_REGS_COUNT),
+        stack: R.repeat(-Infinity, X87_STACK_REGS_COUNT),
         stackPointer: X87_STACK_REGS_COUNT,
         tags: 0xFFFF,
         control: 0x037F,
@@ -173,6 +184,7 @@ export class X87RegsStore {
     const registerIndex = (this.stackPointer + nth) % X87_STACK_REGS_COUNT;
 
     stack[registerIndex] = value;
+    this.setNthTag(registerIndex, X87RegsStore.checkFloatingNumberTag(value));
   }
 
   /**

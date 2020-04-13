@@ -3,14 +3,15 @@
 
 finit
 fld qword [a]
-fidivr dword [b]
+fisub word [b]
+; fsubp
 ; fstp st0
 
 xchg bx, bx
 hlt
 
 a: dq 124.5
-b: dd -2
+b: dw 3
 
 output: dd 0
 
