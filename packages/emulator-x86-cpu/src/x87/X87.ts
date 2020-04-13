@@ -151,6 +151,11 @@ export class X87 extends X86Unit {
 
       0xD9: X86InstructionSet.switchRMOpcodeInstruction(cpu, null, {
         nonRMMatch: (byte) => {
+          /* FABS D9, E1 */ if (byte === 0xE1) {
+            regs.setNthValue(0x0, Math.abs(regs.st0));
+            return 1;
+          }
+
           /* FLD st(i), C0+i */
           if (byte >= 0xC0 && byte <= 0xC7) {
             regs.safePush(regs[byte - 0xC0]);
