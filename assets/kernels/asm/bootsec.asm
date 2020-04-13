@@ -5,7 +5,7 @@ finit
 fild qword [b]
 fild dword [c]
 fild word [d]
-
+fpatan
 xchg bx, bx
 hlt
 

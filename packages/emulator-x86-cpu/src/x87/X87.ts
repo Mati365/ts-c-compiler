@@ -264,12 +264,24 @@ export class X87 extends X86Unit {
       0xD9: X86InstructionSet.switchRMOpcodeInstruction(cpu, null, {
         nonRMMatch: (byte) => {
           switch (byte) {
+            /* FNOP */ case 0xD0: return 1;
+
             /* FSINCOS */ case 0xFB: {
               const rad = regs.st0;
 
               regs.setNthValue(0x0, Math.sin(rad));
               regs.safePush(Math.cos(rad));
             } return 1;
+
+            /* FPTAN */ case 0xF2:
+              regs.setNthValue(0x0, Math.tan(regs.st0));
+              regs.safePush(1.0);
+              return 1;
+
+            /* FPATAN */ case 0xF3:
+              regs.setNthValue(0x1, Math.atan(this.fdiv(regs.st1, regs.st0)));
+              regs.safePop();
+              return 1;
 
             /* FSIN */ case 0xFE: regs.setNthValue(0x0, Math.sin(regs.st0)); return 1;
             /* FCOS */ case 0xFF: regs.setNthValue(0x0, Math.cos(regs.st0)); return 1;
