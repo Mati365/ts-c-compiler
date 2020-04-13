@@ -21,16 +21,17 @@
 ![ASM Compiler](/doc/screen-3.png)
 
 ## Docs
-https://gist.github.com/nikAizuddin/0e307cac142792dcdeba
-http://www.plantation-productions.com/Webster/www.artofasm.com/Windows/HTML/RealArithmetica3.html
-https://gist.github.com/mikesmullin/6259449
-http://teaching.idallen.com/dat2343/10f/notes/040_overflow.txt
-http://ece425web.groups.et.byu.net/stable/labs/8086Assembly.html
-http://dsearls.org/courses/C391OrgSys/IntelAL/8086_instruction_set.html
-https://pdos.csail.mit.edu/6.828/2008/readings/i386/s17_02.htm
-https://xem.github.io/minix86/manual/intel-x86-and-64-manual-vol1/o_7281d5ea06a5b67a-194.html
-https://johnloomis.org/ece314/notes/fpu/fpu.pdf
-https://www.felixcloutier.com/x86/index.html
+https://gist.github.com/nikAizuddin/0e307cac142792dcdeba<br />
+http://www.plantation-productions.com/Webster/www.artofasm.com/Windows/HTML/RealArithmetica3.html<br />
+https://gist.github.com/mikesmullin/6259449<br />
+http://teaching.idallen.com/dat2343/10f/notes/040_overflow.txt<br />
+http://ece425web.groups.et.byu.net/stable/labs/8086Assembly.html<br />
+http://dsearls.org/courses/C391OrgSys/IntelAL/8086_instruction_set.html<br />
+https://pdos.csail.mit.edu/6.828/2008/readings/i386/s17_02.htm<br />
+https://xem.github.io/minix86/manual/intel-x86-and-64-manual-vol1/o_7281d5ea06a5b67a-194.html<br />
+https://johnloomis.org/ece314/notes/fpu/fpu.pdf<br />
+https://www.felixcloutier.com/x86/index.html<br />
+https://c9x.me/x86/html/file_module_x86_id_87.html
 
 ## License
 The MIT License (MIT)

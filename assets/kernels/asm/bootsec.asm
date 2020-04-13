@@ -2,17 +2,17 @@
 [org 7c00h]
 
 finit
-fld qword [a]
 fld qword [b]
-faddp st1, st0
-; fsubp
-; fstp st0
+fld qword [a]
+fcompp
 
 xchg bx, bx
 hlt
 
-a: dq 124.5
-b: dq 3.0
+a: dq 0.0
+b: dq 124.5
+c: dq 1.0
+d: dq 1.0
 
 output: dd 0
 

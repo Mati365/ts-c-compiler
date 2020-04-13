@@ -1,6 +1,6 @@
 import * as R from 'ramda';
 
-import {getBit} from '@compiler/core/utils/bits';
+import {getBit, setBit} from '@compiler/core/utils/bits';
 
 import {X86CPU} from '../X86CPU';
 import {
@@ -53,7 +53,7 @@ export class X87RegsStore {
   stackPointer: number = null;
 
   flags: number = null;
-  control: number = null;
+  control: number = null; // masks
   status: number = null;
   tags: number = null;
   fdp: number = null;
@@ -61,14 +61,37 @@ export class X87RegsStore {
   fcs: number = null;
   lastInstructionOpcode: number = 0x0;
 
+  /* eslint-disable no-multi-spaces */
   get st0() { return this.nth(0); } get st1() { return this.nth(1); }
   get st2() { return this.nth(2); } get st3() { return this.nth(3); }
   get st4() { return this.nth(4); } get st5() { return this.nth(5); }
   get st6() { return this.nth(6); } get st7() { return this.nth(7); }
 
-  get zeroDivExceptionMask(): boolean { return getBit(2, this.control) === 1; }
-  get overflowExceptionMask(): boolean { return getBit(3, this.control) === 1; }
-  get underflowExceptionMask(): boolean { return getBit(4, this.control) === 1; }
+  get invalidOpExceptionMask(): boolean    { return getBit(0, this.control) === 1; }
+  get denormalizedExceptionMask(): boolean { return getBit(1, this.control) === 1; }
+  get zeroDivExceptionMask(): boolean      { return getBit(2, this.control) === 1; }
+  get overflowExceptionMask(): boolean     { return getBit(3, this.control) === 1; }
+  get underflowExceptionMask(): boolean    { return getBit(4, this.control) === 1; }
+
+  get c0() { return this.getStatusBit(8); }
+  get c1() { return this.getStatusBit(9); }
+  get c2() { return this.getStatusBit(10); }
+  get c3() { return this.getStatusBit(14); }
+
+  set invalidOperation(val: boolean)    { this.setStatusBit(0, val); }
+  set denormalizedOperand(val: boolean) { this.setStatusBit(1, val); }
+  set zeroDivide(val: boolean)          { this.setStatusBit(2, val); }
+  set overflow(val: boolean)            { this.setStatusBit(3, val); }
+  set underflow(val: boolean)           { this.setStatusBit(4, val); }
+  set precision(val: boolean)           { this.setStatusBit(5, val); }
+  set stackFault(val: boolean)          { this.setStatusBit(6, val); }
+  set errorSummary(val: boolean)        { this.setStatusBit(7, val); }
+
+  set c0(val: boolean) { this.setStatusBit(8, val); }
+  set c1(val: boolean) { this.setStatusBit(9, val); }
+  set c2(val: boolean) { this.setStatusBit(10, val); }
+  set c3(val: boolean) { this.setStatusBit(14, val); }
+  /* eslint-enable no-multi-spaces */
 
   /**
    * Prints all registers
@@ -77,9 +100,11 @@ export class X87RegsStore {
    * @memberof X87RegsStore
    */
   debugDump(): RegistersDebugDump {
-    const {stack, tags, fip, fcs} = this;
+    const {stack, tags, control, status, fip, fcs} = this;
     const regs = {
       tags: X86CPU.toUnsignedNumber(tags, 0x2),
+      control,
+      status,
       fip,
       fcs,
     };
@@ -122,7 +147,7 @@ export class X87RegsStore {
       this,
       {
         stack: R.repeat(-Infinity, X87_STACK_REGS_COUNT),
-        stackPointer: X87_STACK_REGS_COUNT,
+        stackPointer: 0,
         tags: 0xFFFF,
         control: 0x037F,
         status: 0x0,
@@ -159,13 +184,18 @@ export class X87RegsStore {
    * Access nth from TOP of stack
    *
    * @param {number} nth
+   * @param {boolean} withoutFlagCheck
+   *
    * @returns {number}
    * @memberof X87RegsStore
    */
-  nth(nth: number): number {
-    return this.stack[
-      (this.stackPointer + nth) % X87_STACK_REGS_COUNT
-    ];
+  nth(nth: number, withoutFlagCheck?: boolean): number {
+    const reg = (this.stackPointer + nth) % X87_STACK_REGS_COUNT;
+
+    if (!withoutFlagCheck && this.getNthTag(reg) === X87Tag.EMPTY)
+      this.stackFault = true;
+
+    return this.stack[(this.stackPointer + nth) % X87_STACK_REGS_COUNT];
   }
 
   /**
@@ -185,6 +215,28 @@ export class X87RegsStore {
 
     stack[registerIndex] = value;
     this.setNthTag(registerIndex, X87RegsStore.checkFloatingNumberTag(value));
+  }
+
+  /**
+   * Sets nth bit of status
+   *
+   * @param {number} nth
+   * @param {number|boolean} bit
+   * @memberof X87RegsStore
+   */
+  setStatusBit(nth: number, bit: number|boolean): void {
+    this.status = setBit(nth, bit, this.status);
+  }
+
+  /**
+   * Reads nth bit from status
+   *
+   * @param {number} nth
+   * @returns {boolean}
+   * @memberof X87RegsStore
+   */
+  getStatusBit(nth: number): boolean {
+    return getBit(nth, this.status) === 1;
   }
 
   /**
@@ -212,6 +264,19 @@ export class X87RegsStore {
   }
 
   /**
+   * Sets value to stack pointer and modifies status
+   *
+   * @param {number} num
+   * @memberof X87RegsStore
+   */
+  setStackPointer(num: number): void {
+    const newValue = num & (X87_STACK_REGS_COUNT - 1);
+
+    this.stackPointer = newValue;
+    this.status = (this.status & ((0b111 << 11) ^ 0xFFFF)) | ((newValue << 11) & 0xFFFF);
+  }
+
+  /**
    * Throws exception if stack is empty
    *
    * @returns {number}
@@ -219,12 +284,19 @@ export class X87RegsStore {
    */
   safePop(): number {
     const {stack} = this;
-
-    if (this.getNthTag(this.stackPointer) === X87Tag.EMPTY && !this.underflowExceptionMask)
-      throw new X87Error(X87ErrorCode.NUMERIC_UNDERFLOW);
+    const prevTag = this.getNthTag(this.stackPointer);
 
     this.setNthTag(this.stackPointer, X87Tag.EMPTY);
-    this.stackPointer = (this.stackPointer + 1) & (X87_STACK_REGS_COUNT - 1);
+    this.setStackPointer(this.stackPointer + 1);
+
+    if (prevTag === X87Tag.EMPTY) {
+      this.c1 = false;
+      this.stackFault = true;
+      this.invalidOperation = true;
+
+      if (!this.underflowExceptionMask)
+        throw new X87Error(X87ErrorCode.STACK_OVERFLOW_OR_UNDERFLOW);
+    }
 
     return stack[this.stackPointer];
   }
@@ -237,17 +309,23 @@ export class X87RegsStore {
    */
   safePush(num: number): void {
     const {stack} = this;
-    this.stackPointer = (this.stackPointer - 1) & (X87_STACK_REGS_COUNT - 1);
+    this.setStackPointer(this.stackPointer - 1);
 
     if (this.getNthTag(this.stackPointer) !== X87Tag.EMPTY) {
-      if (!this.overflowExceptionMask)
-        throw new X87Error(X87ErrorCode.NUMERIC_OVERFLOW);
+      this.c1 = true;
+      this.stackFault = true;
+      this.invalidOperation = true;
 
-      num = -Infinity;
       this.setNthTag(this.stackPointer, X87Tag.VALID);
-    } else
-      this.setNthTag(this.stackPointer, X87RegsStore.checkFloatingNumberTag(num));
+      stack[this.stackPointer] = -Infinity;
 
-    stack[this.stackPointer] = num;
+      if (!this.overflowExceptionMask)
+        throw new X87Error(X87ErrorCode.STACK_OVERFLOW_OR_UNDERFLOW);
+    } else {
+      this.c1 = false;
+
+      this.setNthTag(this.stackPointer, X87RegsStore.checkFloatingNumberTag(num));
+      stack[this.stackPointer] = num;
+    }
   }
 }
