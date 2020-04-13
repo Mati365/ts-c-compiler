@@ -102,6 +102,12 @@ export class X87 extends X86Unit {
 
       0xD8: X86InstructionSet.switchRMOpcodeInstruction(cpu, null, {
         nonRMMatch: (byte) => {
+          /* D8 C0+i FADD ST(0), ST(i) */
+          if (byte >= 0xC0 && byte <= 0xC7) {
+            regs.setNthValue(0x0, regs.st0 + regs.nth(byte - 0xC0));
+            return 1;
+          }
+
           /* D8 C8+i FMUL ST(0), ST(i) */
           if (byte >= 0xC8 && byte <= 0xCF) {
             regs.setNthValue(0x0, regs.st0 * regs.nth(byte - 0xC8));
@@ -135,6 +141,7 @@ export class X87 extends X86Unit {
           return 0;
         },
 
+        /* FADD mdr(32) */ 0x0: (address) => { regs.setNthValue(0x0, regs.st0 + ieee754Mem.read.single(address)); },
         /* FMUL mdr(32) */ 0x1: (address) => { regs.setNthValue(0x0, regs.st0 * ieee754Mem.read.single(address)); },
         /* FSUB mdr(32) */ 0x4: (address) => { regs.setNthValue(0x0, regs.st0 - ieee754Mem.read.single(address)); },
         /* FSUBR mdr(32) */ 0x5: (address) => { regs.setNthValue(0x0, ieee754Mem.read.single(address) - regs.st0); },
@@ -164,6 +171,11 @@ export class X87 extends X86Unit {
       }),
 
       0xDA: X86InstructionSet.switchRMOpcodeInstruction(cpu, null, {
+        /* FIADD mdr(32) DA /0 */ 0x0: (address) => {
+          const intImm = X86AbstractCPU.getSignedNumber(memIO.read[0x4](address), 0x4);
+          regs.setNthValue(0, intImm + regs.st0);
+        },
+
         /* FIMUL mdr(32) DA /1 */ 0x1: (address) => {
           const intImm = X86AbstractCPU.getSignedNumber(memIO.read[0x4](address), 0x4);
           regs.setNthValue(0, intImm * regs.st0);
@@ -192,6 +204,13 @@ export class X87 extends X86Unit {
 
       0xDC: X86InstructionSet.switchRMOpcodeInstruction(cpu, null, {
         nonRMMatch: (byte) => {
+          /* FADD ST(i), ST(0) DC C0+i */
+          if (byte >= 0xC0 && byte <= 0xC7) {
+            const registerIndex = byte - 0xC0;
+            regs.setNthValue(registerIndex, regs.nth(registerIndex) + regs.st0);
+            return 1;
+          }
+
           /* FMUL ST(i), ST(0) DC C8+i */
           if (byte >= 0xC8 && byte <= 0xCF) {
             const registerIndex = byte - 0xC8;
@@ -230,6 +249,7 @@ export class X87 extends X86Unit {
           return 0;
         },
 
+        /* FADD mqr(64) */ 0x0: (address) => { regs.setNthValue(0x0, regs.st0 + ieee754Mem.read.double(address)); },
         /* FMUL mqr(64) */ 0x1: (address) => { regs.setNthValue(0x0, regs.st0 * ieee754Mem.read.double(address)); },
         /* FSUB mqr(64) */ 0x4: (address) => { regs.setNthValue(0x0, regs.st0 - ieee754Mem.read.double(address)); },
         /* FSUB mqr(64) */ 0x5: (address) => { regs.setNthValue(0x0, ieee754Mem.read.double(address) - regs.st0); },
@@ -262,6 +282,15 @@ export class X87 extends X86Unit {
 
       0xDE: X86InstructionSet.switchRMOpcodeInstruction(cpu, null, {
         nonRMMatch: (byte) => {
+          /* FADDP ST(i), ST(0) DE C8+i */
+          if (byte >= 0xC0 && byte <= 0xC7) {
+            const registerIndex = byte - 0xC0;
+
+            regs.setNthValue(registerIndex, regs.nth(registerIndex) + regs.st0);
+            regs.safePop();
+            return 1;
+          }
+
           /* FMULP ST(i), ST(0) DE C8+i */
           if (byte >= 0xC8 && byte <= 0xCF) {
             const registerIndex = byte - 0xC8;
@@ -308,6 +337,11 @@ export class X87 extends X86Unit {
           }
 
           return 0;
+        },
+
+        /* FIADD mw(16) DE /0 */ 0x0: (address) => {
+          const intImm = X86AbstractCPU.getSignedNumber(memIO.read[0x2](address), 0x2);
+          regs.setNthValue(0, regs.st0 + intImm);
         },
 
         /* FIMUL mw(16) DE /1 */ 0x1: (address) => {

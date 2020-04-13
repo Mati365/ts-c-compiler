@@ -3,7 +3,8 @@
 
 finit
 fld qword [a]
-fisubr word [b]
+fld qword [b]
+faddp st1, st0
 ; fsubp
 ; fstp st0
 
@@ -11,7 +12,7 @@ xchg bx, bx
 hlt
 
 a: dq 124.5
-b: dw 3
+b: dq 3.0
 
 output: dd 0
 
