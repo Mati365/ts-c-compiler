@@ -72,6 +72,7 @@ export const ASTInstructionArgMatchers: {[key: string]: ASTInstructionArgMatcher
   mb: () => (arg: ASTInstructionArg) => mem(arg, 1),
   mw: () => (arg: ASTInstructionArg) => mem(arg, 2),
   md: () => (arg: ASTInstructionArg) => mem(arg, 4),
+  mq: () => (arg: ASTInstructionArg) => mem(arg, 8),
 
   /** REAL MEM */
   mwr: () => (arg: ASTInstructionArg) => mem(arg, 2),
@@ -126,7 +127,7 @@ export const isOptionalArg = (arg: string): boolean => arg === 'st';
 export const isRMSchemaArg = R.contains(
   R.__,
   [
-    'm', 'mw', 'mb', 'md',
+    'm', 'mw', 'mb', 'md', 'mq',
     'rmb', 'rmw', 'rmq',
     'ifptr', 'moffs',
     'mwr', 'mdr', 'mqr', 'mtr',

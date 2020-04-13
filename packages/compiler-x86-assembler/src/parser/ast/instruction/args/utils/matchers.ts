@@ -15,10 +15,15 @@ import {ASTInstructionMemPtrArg} from '../ASTInstructionMemPtrArg';
  * Args matchers used to match args to schema,
  * if there is label in jmp/call instruction - return true,
  * it is used in pessimistic optimistic arg size deduce
+ *
+ * @see
+ *  maxByteSize can be also size of data pointed by address!
  */
 export function mem(arg: ASTInstructionArg, maxByteSize: number): boolean {
-  return arg.type === InstructionArgType.MEMORY
-  && (!maxByteSize || (arg.sizeExplicitOverriden ? arg.byteSize === maxByteSize : arg.byteSize <= maxByteSize));
+  return (
+    arg.type === InstructionArgType.MEMORY
+      && (!maxByteSize || (arg.sizeExplicitOverriden ? arg.byteSize === maxByteSize : arg.byteSize <= maxByteSize))
+  );
 }
 
 export function moffs(arg: ASTInstructionArg, maxByteSize: X86BitsMode): boolean {

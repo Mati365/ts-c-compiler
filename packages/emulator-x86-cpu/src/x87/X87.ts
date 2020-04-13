@@ -263,11 +263,18 @@ export class X87 extends X86Unit {
 
       0xD9: X86InstructionSet.switchRMOpcodeInstruction(cpu, null, {
         nonRMMatch: (byte) => {
-          /* FCOS */
           switch (byte) {
+            /* FSINCOS */ case 0xFB: {
+              const rad = regs.st0;
+
+              regs.setNthValue(0x0, Math.sin(rad));
+              regs.safePush(Math.cos(rad));
+            } return 1;
+
             /* FSIN */ case 0xFE: regs.setNthValue(0x0, Math.sin(regs.st0)); return 1;
             /* FCOS */ case 0xFF: regs.setNthValue(0x0, Math.cos(regs.st0)); return 1;
             /* FABS */ case 0xE1: regs.setNthValue(0x0, Math.abs(regs.st0)); return 1;
+            /* FSQRT */ case 0xFA: regs.setNthValue(0x0, Math.sqrt(regs.st0)); return 1;
 
             default:
           }
@@ -287,7 +294,13 @@ export class X87 extends X86Unit {
       }),
 
       0xDB: X86InstructionSet.switchRMOpcodeInstruction(cpu, null, {
-        /* FLD mtr(80) DD /0 d0 d1 */ 0x5: (address) => { regs.safePush(ieee754Mem.read.extended(address)); },
+        /* FILD mdr(32) DB /0 d0 d1 */ 0x0: (address) => {
+          regs.safePush(
+            X86AbstractCPU.getSignedNumber(memIO.read[0x4](address), 0x4),
+          );
+        },
+
+        /* FLD mtr(80) DB /5 d0 d1 */ 0x5: (address) => { regs.safePush(ieee754Mem.read.extended(address)); },
         /* FSTP mtr(80) DB /7 d0 d1 */ 0x7: (address) => { ieee754Mem.write.extended(regs.safePop(), address); },
       }),
 
@@ -502,6 +515,20 @@ export class X87 extends X86Unit {
         /* FDIVR mw(16) DE /7 */ 0x7: (address) => {
           const intImm = X86AbstractCPU.getSignedNumber(memIO.read[0x2](address), 0x2);
           regs.setNthValue(0, this.fdiv(intImm, regs.st0));
+        },
+      }),
+
+      0xDF: X86InstructionSet.switchRMOpcodeInstruction(cpu, null, {
+        /* FILD m16int */ 0x0: (address) => {
+          regs.safePush(
+            X86AbstractCPU.getSignedNumber(memIO.read[0x2](address), 0x2),
+          );
+        },
+
+        /* FILD m64int */ 0x5: (address) => {
+          regs.safePush(
+            X86AbstractCPU.getSignedNumber(memIO.read[0x8](address), 0x8),
+          );
         },
       }),
     });

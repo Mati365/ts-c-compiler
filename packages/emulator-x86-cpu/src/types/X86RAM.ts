@@ -14,12 +14,14 @@ type RAMBufferReaders = {
   0x1: RAMReader,
   0x2: RAMReader,
   0x4: RAMReader,
+  0x8: RAMReader,
 };
 
 type RAMBufferWriters = {
   0x1: RAMWriter,
   0x2: RAMWriter,
   0x4: RAMWriter,
+  0x8: RAMWriter,
 };
 
 type IEEE754RamIO = {
@@ -60,12 +62,20 @@ export class X86RAM<T> {
       /** 8bit  */ 0x1: device.readUInt8.bind(device),
       /** 16bit */ 0x2: device.readUInt16LE.bind(device),
       /** 32bit */ 0x4: device.readUInt32LE.bind(device),
+      /** 64bit */ 0x8: (address: number) => (
+        device.readUInt32LE(address) | (device.readUInt32LE(address + 4) << 32)
+      ),
     };
 
     this.write = {
       /** 8bit  */ 0x1: device.writeUInt8.bind(device),
       /** 16bit */ 0x2: device.writeUInt16LE.bind(device),
       /** 32bit */ 0x4: device.writeUInt32LE.bind(device),
+      /** 64bit */ 0x8: (value, address) => {
+        device.writeUInt32LE(value, address);
+        device.writeUInt32LE(value >> 32, address + 0x4);
+        return value;
+      },
     };
 
     /** FLOATING POINT */
