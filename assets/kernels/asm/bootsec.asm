@@ -3,7 +3,7 @@
 
 finit
 fld qword [a]
-fisub word [b]
+fisubr word [b]
 ; fsubp
 ; fstp st0
 

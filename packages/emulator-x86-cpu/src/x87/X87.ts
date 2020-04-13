@@ -114,6 +114,12 @@ export class X87 extends X86Unit {
             return 1;
           }
 
+          /* D8 E8+i FSUBR ST(0), ST(i) */
+          if (byte >= 0xE8 && byte <= 0xEF) {
+            regs.setNthValue(0x0, regs.nth(byte - 0xE8) - regs.st0);
+            return 1;
+          }
+
           /* D8 F0+i FDIV ST(0), ST(i) */
           if (byte >= 0xF0 && byte <= 0xF7) {
             regs.setNthValue(0x0, this.fdiv(regs.st0, regs.nth(byte - 0xF0)));
@@ -131,6 +137,7 @@ export class X87 extends X86Unit {
 
         /* FMUL mdr(32) */ 0x1: (address) => { regs.setNthValue(0x0, regs.st0 * ieee754Mem.read.single(address)); },
         /* FSUB mdr(32) */ 0x4: (address) => { regs.setNthValue(0x0, regs.st0 - ieee754Mem.read.single(address)); },
+        /* FSUBR mdr(32) */ 0x5: (address) => { regs.setNthValue(0x0, ieee754Mem.read.single(address) - regs.st0); },
         /* FDIV mdr(32) */ 0x6: (address) => { regs.setNthValue(0x0, this.fdiv(regs.st0, ieee754Mem.read.single(address))); },
         /* FDIVR mdr(32) */ 0x7: (address) => { regs.setNthValue(0x0, this.fdiv(ieee754Mem.read.single(address), regs.st0)); },
       }),
@@ -167,6 +174,11 @@ export class X87 extends X86Unit {
           regs.setNthValue(0, regs.st0 - intImm);
         },
 
+        /* FISUBR mdr(32) DA /5 */ 0x5: (address) => {
+          const intImm = X86AbstractCPU.getSignedNumber(memIO.read[0x4](address), 0x4);
+          regs.setNthValue(0, intImm - regs.st0);
+        },
+
         /* FIDIV mdr(32) DA /6 */ 0x6: (address) => {
           const intImm = X86AbstractCPU.getSignedNumber(memIO.read[0x4](address), 0x4);
           regs.setNthValue(0, this.fdiv(regs.st0, intImm));
@@ -184,6 +196,13 @@ export class X87 extends X86Unit {
           if (byte >= 0xC8 && byte <= 0xCF) {
             const registerIndex = byte - 0xC8;
             regs.setNthValue(registerIndex, regs.nth(registerIndex) * regs.st0);
+            return 1;
+          }
+
+          /* FSUBR ST(i), ST(0) DC E8+i */
+          if (byte >= 0xE0 && byte <= 0xE7) {
+            const registerIndex = byte - 0xE0;
+            regs.setNthValue(registerIndex, regs.st0 - regs.nth(registerIndex));
             return 1;
           }
 
@@ -213,6 +232,7 @@ export class X87 extends X86Unit {
 
         /* FMUL mqr(64) */ 0x1: (address) => { regs.setNthValue(0x0, regs.st0 * ieee754Mem.read.double(address)); },
         /* FSUB mqr(64) */ 0x4: (address) => { regs.setNthValue(0x0, regs.st0 - ieee754Mem.read.double(address)); },
+        /* FSUB mqr(64) */ 0x5: (address) => { regs.setNthValue(0x0, ieee754Mem.read.double(address) - regs.st0); },
         /* FDIV mqr(64) */ 0x6: (address) => { regs.setNthValue(0x0, this.fdiv(regs.st0, ieee754Mem.read.double(address))); },
         /* FDIVR mqr(64) */ 0x7: (address) => { regs.setNthValue(0x0, this.fdiv(ieee754Mem.read.double(address), regs.st0)); },
       }),
@@ -247,6 +267,15 @@ export class X87 extends X86Unit {
             const registerIndex = byte - 0xC8;
 
             regs.setNthValue(registerIndex, regs.nth(registerIndex) * regs.st0);
+            regs.safePop();
+            return 1;
+          }
+
+          /* FSUBRP ST(i), ST(0) DE E0+i */
+          if (byte >= 0xE0 && byte <= 0xE7) {
+            const registerIndex = byte - 0xE0;
+
+            regs.setNthValue(registerIndex, regs.st0 - regs.nth(registerIndex));
             regs.safePop();
             return 1;
           }
@@ -289,6 +318,11 @@ export class X87 extends X86Unit {
         /* FISUB mw(16) DE /4 */ 0x4: (address) => {
           const intImm = X86AbstractCPU.getSignedNumber(memIO.read[0x2](address), 0x2);
           regs.setNthValue(0, regs.st0 - intImm);
+        },
+
+        /* FISUBR mw(16) DE /5 */ 0x5: (address) => {
+          const intImm = X86AbstractCPU.getSignedNumber(memIO.read[0x2](address), 0x2);
+          regs.setNthValue(0, intImm - regs.st0);
         },
 
         /* FDIV mw(16) DE /6 */ 0x6: (address) => {
