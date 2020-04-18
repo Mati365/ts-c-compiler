@@ -283,9 +283,10 @@ export class X87 extends X86Unit {
    *  Not sure if it is correct for real mode
    *
    * @param {number} destAddress
+   * @returns write bytes count
    * @memberof X87
    */
-  fstenv(destAddress: number): void {
+  fstenv(destAddress: number): number {
     const {cpu: {memIO}, registers: regs} = this;
 
     let offset = 0;
@@ -295,7 +296,8 @@ export class X87 extends X86Unit {
     memIO.write[0x2](regs.fip, destAddress + offset); offset += 2;
     memIO.write[0x2](regs.fcs, destAddress + offset); offset += 2;
     memIO.write[0x2](regs.fdp, destAddress + offset); offset += 2;
-    memIO.write[0x2](regs.fds, destAddress + offset);
+    memIO.write[0x2](regs.fds, destAddress + offset); offset += 2;
+    return offset;
   }
 
   /**
@@ -305,19 +307,55 @@ export class X87 extends X86Unit {
    *  Not sure if it is correct for real mode
    *
    * @param {number} srcAddress
+   * @returns read bytes
    * @memberof X87
    */
-  fldenv(srcAddress: number): void {
+  fldenv(srcAddress: number): number {
     const {cpu: {memIO}, registers: regs} = this;
 
     let offset = 0;
     regs.control = memIO.read[0x2](srcAddress); offset += 2;
-    regs.status = memIO.read[0x2](srcAddress + offset); offset += 2;
+    regs.setStatus(memIO.read[0x2](srcAddress + offset)); offset += 2;
     regs.tags = memIO.read[0x2](srcAddress + offset); offset += 2;
     regs.fip = memIO.read[0x2](srcAddress + offset); offset += 2;
     regs.fcs = memIO.read[0x2](srcAddress + offset); offset += 2;
     regs.fdp = memIO.read[0x2](srcAddress + offset); offset += 2;
-    regs.fds = memIO.read[0x2](srcAddress + offset);
+    regs.fds = memIO.read[0x2](srcAddress + offset); offset += 2;
+    return offset;
+  }
+
+  /**
+   * Saves whole FPU state into mem addr
+   *
+   * @param {number} destAddress
+   * @memberof X87
+   */
+  fsave(destAddress: number): void {
+    const {cpu: {memIO}, registers: regs} = this;
+    let offset = this.fstenv(destAddress);
+
+    for (let i = 0; i < 8; ++i) {
+      memIO.ieee754.write.extended(regs.nth(i), destAddress + offset);
+      offset += 10;
+    }
+
+    regs.reset();
+  }
+
+  /**
+   * Loads whole FPU state from mem addr
+   *
+   * @param {number} srcAddress
+   * @memberof X87
+   */
+  frstor(srcAddress: number): void {
+    const {cpu: {memIO}, registers: regs} = this;
+    let offset = this.fldenv(srcAddress);
+
+    for (let i = 0; i < 8; ++i) {
+      regs.setNthValue(i, memIO.ieee754.read.extended(srcAddress + offset), true);
+      offset += 10;
+    }
   }
 
   /**
@@ -710,6 +748,8 @@ export class X87 extends X86Unit {
         /* FLD mqr(64) DD /0 d0 d1 */ 0x0: (address) => { regs.safePush(ieee754Mem.read.double(address)); },
         /* FST mqr(64) DD /2 d0 d1 */ 0x2: (address) => { ieee754Mem.write.double(regs.st0, address); },
         /* FSTP mqr(64) DD /3 d0 d1 */ 0x3: (address) => { ieee754Mem.write.double(regs.safePop(), address); },
+        /* FRSTR m94 */ 0x4: (address) => { this.frstor(address); },
+        /* FSAVE m94 */ 0x6: (address) => { this.fsave(address); },
         /* FNSTSW m2byte */ 0x7: (address) => { memIO.write[0x2](regs.status, address); },
       }),
 

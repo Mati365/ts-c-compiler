@@ -220,14 +220,17 @@ export class X87RegsStore {
    *
    * @param {number} nth
    * @param {number} value
+   * @param {boolean} withoutTagUpdate
    * @memberof X87RegsStore
    */
-  setNthValue(nth: number, value: number): void {
+  setNthValue(nth: number, value: number, withoutTagUpdate?: boolean): void {
     const {stack} = this;
     const registerIndex = (this.stackPointer + nth) % X87_STACK_REGS_COUNT;
 
     stack[registerIndex] = value;
-    this.setNthTag(registerIndex, X87RegsStore.checkFloatingNumberTag(value));
+
+    if (!withoutTagUpdate)
+      this.setNthTag(registerIndex, X87RegsStore.checkFloatingNumberTag(value));
   }
 
   /**
@@ -241,6 +244,16 @@ export class X87RegsStore {
     this.status = setBit(nth, bit, this.status);
   }
 
+  /**
+   * Sets status register and updates stackPointer
+   *
+   * @param {number} status
+   * @memberof X87RegsStore
+   */
+  setStatus(status: number): void {
+    this.status = status;
+    this.stackPointer = (status >> 11) & 0b111;
+  }
   /**
    * Reads nth bit from status
    *

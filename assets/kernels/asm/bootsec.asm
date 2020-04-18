@@ -6,7 +6,10 @@ fild word [b]
 fild word [d]
 ficom word [fi_int]
 fnstsw ax
-fnclex
+; fsave [env]
+xor ax, bx
+; fild word [c]
+; frstor [env]
 ; ; fstenv [env]
 ; fild word [d]
 ; fadd st0, st1
@@ -25,7 +28,7 @@ b: dq 0xFEFE
 d: dq 0x123
 fi_int: dw 0x151
 output: dw 0
-env: dq 0xF
+env: times 94 db 0
 
 ; At the end we need the boot sector signature.
 times 510-($-$$) db 0
