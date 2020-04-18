@@ -216,6 +216,33 @@ export class X87 extends X86Unit {
   }
 
   /**
+   * Returns number parts of digit
+   *
+   * @static
+   * @param {number} num
+   * @returns
+   * @memberof X87
+   */
+  static numberParts(num: number) {
+    const float = new Float64Array(1);
+    const bytes = new Uint8Array(float.buffer);
+
+    float[0] = num;
+
+    const sign = bytes[7] >> 7;
+    const exponent = (((bytes[7] & 0x7f) << 4) | (bytes[6] >> 4)) - 0x3ff;
+
+    bytes[7] = 0x3f;
+    bytes[6] |= 0xf0;
+
+    return {
+      sign,
+      exponent,
+      mantissa: float[0],
+    };
+  }
+
+  /**
    * Stores ST0 at address
    *
    * @param {number} byteSize
@@ -341,6 +368,7 @@ export class X87 extends X86Unit {
             /* FNOP */ case 0xD0: return 1;
 
             /* FCHS */ case 0xE0: regs.setNthValue(0x0, -regs.st0); return 1;
+            /* FABS */ case 0xE1: regs.setNthValue(0x0, Math.abs(regs.st0)); return 1;
             /* FTST */ case 0xE4: this.fcom(regs.st0, 0.0); return 1;
             /* FXAM */ case 0xE5: this.fxam(); return 1;
             /* FLD1 */ case 0xE8: regs.safePush(X87.PREDEFINED_CONSTANTS.ONE); return 1;
@@ -367,6 +395,13 @@ export class X87 extends X86Unit {
               regs.safePop();
               return 1;
 
+            /* FXTRACT */ case 0xF4: {
+              const {exponent, mantissa} = X87.numberParts(regs.st0);
+
+              regs.setNthValue(0x0, exponent);
+              regs.safePush(mantissa);
+            } return 1;
+
             /* FDECSTP */ case 0xF6: regs.setStackPointer(regs.stackPointer - 0x1); return 1;
             /* FYL2XP1 */ case 0xF9:
               regs.setNthValue(0x1, regs.st1 * Math.log2(regs.st0 + 1));
@@ -380,11 +415,10 @@ export class X87 extends X86Unit {
               regs.safePush(Math.cos(rad));
             } return 1;
 
+            /* FSQRT */ case 0xFA: regs.setNthValue(0x0, Math.sqrt(regs.st0)); return 1;
             /* FSCALE */ case 0xFD: regs.setNthValue(0x0, regs.st0 * (0x2 ** X87.truncate(regs.st1))); return 1;
             /* FSIN */ case 0xFE: regs.setNthValue(0x0, Math.sin(regs.st0)); return 1;
             /* FCOS */ case 0xFF: regs.setNthValue(0x0, Math.cos(regs.st0)); return 1;
-            /* FABS */ case 0xE1: regs.setNthValue(0x0, Math.abs(regs.st0)); return 1;
-            /* FSQRT */ case 0xFA: regs.setNthValue(0x0, Math.sqrt(regs.st0)); return 1;
 
             default:
           }

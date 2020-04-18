@@ -29,4 +29,3 @@ FUCOM               [387]	DD E1	 	2	-----z-p
 FUCOM   st(i)       [387]	DD E0+i	 	2	-----z-p
 FUCOMP  st(i)       [387]	DD E8+i	 	2	-----z-p
 FUCOMPP             [387]	DA E9	 	2	-----z-p
-FXTRACT	D9 F4	 	2	--------

@@ -4,8 +4,9 @@
 finit
 fild word [b]
 fild word [d]
+FXTRACT
 ; fscale
-mov ax, [output]
+; mov ax, [output]
 ; fxch
 ; FYL2XP1
 ; fistp dword [output]
