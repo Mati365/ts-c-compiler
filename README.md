@@ -1,5 +1,11 @@
 # i8086.js
 
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+![GitHub code size in bytes](https://img.shields.io/github/languages/code-size/mati365/i8086.js)
+![GitHub issues](https://img.shields.io/github/issues/mati365/i8086.js)
+[![HitCount](http://hits.dwyl.com/mati365/i8086js.svg)](http://hits.dwyl.com/mati365/i8086js)
+![GitHub commit activity](https://img.shields.io/github/commit-activity/y/mati365/i8086.js)
+
 16bit x86 virtual machine written in modern JS ES6.
 
 ## Status
