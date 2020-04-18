@@ -1,19 +1,22 @@
 # i8086.js
+
 16bit x86 virtual machine written in modern JS ES6.
 
 ## Status
+
 - [x] Basic ASM compiler with NASM Syntax
 - [x] Add expression parsers (such as jmp .label + 2)
 - [x] Preprocessor for NASM
 - [x] Improve diassembler (add jump arrows)
-- [ ] FPU Support
+- [x] FPU Support
   - [x] Assembler
-  - [ ] Emulator
+  - [x] Emulator
 - [ ] Add VGA mode (13h)
 - [ ] Tiny 16bit C compiler
 - [ ] App frontend
 
 ## Screens
+
 ![Prototype](/doc/screen.gif)
 ![Prototype](/doc/screen-2.png)
 ![Tetris](/doc/screen-5.png)
@@ -21,6 +24,7 @@
 ![ASM Compiler](/doc/screen-3.png)
 
 ## Docs
+
 https://gist.github.com/nikAizuddin/0e307cac142792dcdeba<br />
 http://www.plantation-productions.com/Webster/www.artofasm.com/Windows/HTML/RealArithmetica3.html<br />
 https://gist.github.com/mikesmullin/6259449<br />
@@ -34,6 +38,7 @@ https://www.felixcloutier.com/x86/index.html<br />
 https://c9x.me/x86/html/file_module_x86_id_87.html
 
 ## License
+
 The MIT License (MIT)
 Copyright (c) 2020 Mateusz Bagiński
 

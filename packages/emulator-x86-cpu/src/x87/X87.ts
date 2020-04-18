@@ -105,12 +105,12 @@ export class X87 extends X86Unit {
       registers.stackFault = false;
       registers.invalidOperation = false;
 
-      registers.lastInstructionOpcode = opcode;
-
       registers.fip = cpu.registers.ip - 0x1; // remove already fetched opcode
       registers.fdp = 0x0; // todo
 
       operand();
+
+      registers.lastInstructionOpcode = opcode;
     } else
       cpu.halt(`Unknown FPU opcode 0x${opcode.toString(16).toUpperCase()}`);
   }
