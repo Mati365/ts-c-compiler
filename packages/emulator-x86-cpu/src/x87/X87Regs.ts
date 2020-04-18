@@ -49,6 +49,13 @@ export type X87StackRegName = typeof X87_STACK_REGISTERS[number];
  * @class X87RegsStore
  */
 export class X87RegsStore {
+  static CONTROL_BITS = {
+    C0: 0x100,
+    C1: 0x200,
+    C2: 0x400,
+    C3: 0x4000,
+  };
+
   stack: number[] = null;
   stackPointer: number = null;
 
@@ -59,6 +66,7 @@ export class X87RegsStore {
   fdp: number = null;
   fip: number = null;
   fcs: number = null;
+  fds: number = null;
   lastInstructionOpcode: number = 0x0;
 
   /* eslint-disable no-multi-spaces */
@@ -154,9 +162,14 @@ export class X87RegsStore {
         fdp: 0x0,
         fip: 0x0,
         fcs: 0x0,
+        fds: 0x0,
         lastInstructionOpcode: 0x0,
       },
     );
+  }
+
+  isStackInitialized(): boolean {
+    return this.stack !== null;
   }
 
   /**

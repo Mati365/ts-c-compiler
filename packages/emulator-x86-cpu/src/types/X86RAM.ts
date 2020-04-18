@@ -7,6 +7,9 @@ import {
   toIEEE754Extended,
 } from '@compiler/core/utils/IEEE754';
 
+import {X86BitsMode} from './X86Regs';
+import {X86AbstractCPU} from './X86AbstractCPU';
+
 type RAMReader = (offset: number) => number;
 type RAMWriter = (value: number, offset: number) => number;
 
@@ -115,7 +118,7 @@ export class X86RAM<T> {
   }
 
   /**
-   * Writes nth bytes into memory
+   * Writes nth bytes into memory reversed, little endian
    *
    * @param {number} address
    * @param {number[]} bytes
@@ -131,5 +134,35 @@ export class X86RAM<T> {
       device.writeUInt8(bytes[i], endOffset - i);
 
     return address;
+  }
+
+  /**
+   * Writes nth bytes into memory, big endian
+   *
+   * @param {number} address
+   * @param {number[]} bytes
+   * @returns {number} address
+   * @memberof X86RAM
+   */
+  writeBytesBE(address: number, bytes: number[]): number {
+    const {device} = this;
+    const {length: count} = bytes;
+
+    for (let i = 0; i < count; ++i)
+      device.writeUInt8(bytes[i], i);
+
+    return address;
+  }
+
+  /**
+   * Loads int from mem address
+   *
+   * @param {number} address
+   * @param {X86BitsMode} mode
+   * @returns {number}
+   * @memberof X86RAM
+   */
+  readSignedInt(address: number, mode: X86BitsMode): number {
+    return X86AbstractCPU.getSignedNumber(this.read[mode](address), mode);
   }
 }

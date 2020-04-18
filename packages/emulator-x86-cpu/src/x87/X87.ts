@@ -37,6 +37,45 @@ export class X87 extends X86Unit {
   }
 
   /**
+   * Round value
+   *
+   * @static
+   * @param {number} num
+   * @returns {number}
+   * @memberof X87
+   */
+  static truncate(num: number): number {
+    return num > 0 ? Math.floor(num) : Math.ceil(num);
+  }
+
+  /**
+   * Returns number parts of digit
+   *
+   * @static
+   * @param {number} num
+   * @returns
+   * @memberof X87
+   */
+  static numberParts(num: number) {
+    const float = new Float64Array(1);
+    const bytes = new Uint8Array(float.buffer);
+
+    float[0] = num;
+
+    const sign = bytes[7] >> 7;
+    const exponent = (((bytes[7] & 0x7f) << 4) | (bytes[6] >> 4)) - 0x3ff;
+
+    bytes[7] = 0x3f;
+    bytes[6] |= 0xf0;
+
+    return {
+      mantissa: float[0],
+      sign,
+      exponent,
+    };
+  }
+
+  /**
    * Prints to console all registers
    *
    * @memberof X87
@@ -44,9 +83,12 @@ export class X87 extends X86Unit {
   debugDumpRegisters() {
     const {cpu, registers} = this;
 
-    cpu.logger.table(
-      registers.debugDump().regs,
-    );
+    if (registers.isStackInitialized()) {
+      cpu.logger.table(
+        registers.debugDump().regs,
+      );
+    } else
+      console.warn('FPU is not initialized!');
   }
 
   /**
@@ -65,8 +107,8 @@ export class X87 extends X86Unit {
 
       registers.lastInstructionOpcode = opcode;
 
-      registers.fcs = cpu.registers.cs;
       registers.fip = cpu.registers.ip - 0x1; // remove already fetched opcode
+      registers.fdp = 0x0; // todo
 
       operand();
     } else
@@ -179,6 +221,18 @@ export class X87 extends X86Unit {
   }
 
   /**
+   * @todo
+   *  Add unordered compare
+   *
+   * @param {number} a
+   * @param {number} b
+   * @memberof X87
+   */
+  fucom(a: number, b: number): void {
+    this.fcom(a, b);
+  }
+
+  /**
    * Checks number and sets flags
    *
    * @param {number} a
@@ -200,46 +254,7 @@ export class X87 extends X86Unit {
       regs.c3 = false; regs.c2 = true; regs.c0 = false;
     }
 
-    // unsupported: unsupported, denormal
-  }
-
-  /**
-   * Round value
-   *
-   * @static
-   * @param {number} num
-   * @returns {number}
-   * @memberof X87
-   */
-  static truncate(num: number): number {
-    return num > 0 ? Math.floor(num) : Math.ceil(num);
-  }
-
-  /**
-   * Returns number parts of digit
-   *
-   * @static
-   * @param {number} num
-   * @returns
-   * @memberof X87
-   */
-  static numberParts(num: number) {
-    const float = new Float64Array(1);
-    const bytes = new Uint8Array(float.buffer);
-
-    float[0] = num;
-
-    const sign = bytes[7] >> 7;
-    const exponent = (((bytes[7] & 0x7f) << 4) | (bytes[6] >> 4)) - 0x3ff;
-
-    bytes[7] = 0x3f;
-    bytes[6] |= 0xf0;
-
-    return {
-      sign,
-      exponent,
-      mantissa: float[0],
-    };
+    // todo: add unsupported, denormal
   }
 
   /**
@@ -255,6 +270,54 @@ export class X87 extends X86Unit {
 
     long.splice(0, long.length - byteSize);
     cpu.memIO.writeBytesLE(destAddress, long);
+  }
+
+  /**
+   * Store FPU env
+   *
+   * @see {@link https://www.felixcloutier.com/x86/fstenv:fnstenv}
+   * @see {@link https://www.intel.com/content/dam/www/public/us/en/documents/manuals/64-ia-32-architectures-software-developer-vol-1-manual.pdf}
+   * Figure 8-10. Real Mode x87 FPU State Image in Memory, 32-Bit Format
+   *
+   * @see
+   *  Not sure if it is correct for real mode
+   *
+   * @param {number} destAddress
+   * @memberof X87
+   */
+  fstenv(destAddress: number): void {
+    const {cpu: {memIO}, registers: regs} = this;
+
+    let offset = 0;
+    memIO.write[0x2](regs.control, destAddress); offset += 2;
+    memIO.write[0x2](regs.status, destAddress + offset); offset += 2;
+    memIO.write[0x2](regs.tags, destAddress + offset); offset += 2;
+    memIO.write[0x2](regs.fip, destAddress + offset); offset += 2;
+    memIO.write[0x2](regs.fcs, destAddress + offset); offset += 2;
+    memIO.write[0x2](regs.fdp, destAddress + offset); offset += 2;
+    memIO.write[0x2](regs.fds, destAddress + offset);
+  }
+
+  /**
+   * Load env
+   *
+   * @see
+   *  Not sure if it is correct for real mode
+   *
+   * @param {number} srcAddress
+   * @memberof X87
+   */
+  fldenv(srcAddress: number): void {
+    const {cpu: {memIO}, registers: regs} = this;
+
+    let offset = 0;
+    regs.control = memIO.read[0x2](srcAddress); offset += 2;
+    regs.status = memIO.read[0x2](srcAddress + offset); offset += 2;
+    regs.tags = memIO.read[0x2](srcAddress + offset); offset += 2;
+    regs.fip = memIO.read[0x2](srcAddress + offset); offset += 2;
+    regs.fcs = memIO.read[0x2](srcAddress + offset); offset += 2;
+    regs.fdp = memIO.read[0x2](srcAddress + offset); offset += 2;
+    regs.fds = memIO.read[0x2](srcAddress + offset);
   }
 
   /**
@@ -291,6 +354,7 @@ export class X87 extends X86Unit {
             break;
 
           default:
+            /* FWAIT */
         }
       },
 
@@ -402,7 +466,24 @@ export class X87 extends X86Unit {
               regs.safePush(mantissa);
             } return 1;
 
+            /* FPREM1 */ case 0xF5: regs.setNthValue(0x0, regs.st1 % regs.st1); return 1;
             /* FDECSTP */ case 0xF6: regs.setStackPointer(regs.stackPointer - 0x1); return 1;
+            /* FINCSTP */ case 0xF7: regs.setStackPointer(regs.stackPointer + 0x1); return 1;
+            /* FPREM */ case 0xF8: {
+              const [st0, st1] = [regs.st0, regs.st1];
+              const quotient = Math.trunc(st0 / st1);
+
+              regs.setNthValue(0x0, st0 % st1);
+              regs.c2 = false;
+
+              if (quotient & 1)
+                regs.c1 = true;
+              if (quotient & (1 << 1))
+                regs.c3 = true;
+              if (quotient & (1 << 2))
+                regs.c0 = true;
+            } return 1;
+
             /* FYL2XP1 */ case 0xF9:
               regs.setNthValue(0x1, regs.st1 * Math.log2(regs.st0 + 1));
               regs.safePop();
@@ -416,6 +497,7 @@ export class X87 extends X86Unit {
             } return 1;
 
             /* FSQRT */ case 0xFA: regs.setNthValue(0x0, Math.sqrt(regs.st0)); return 1;
+            /* FRND */ case 0xFC: regs.setNthValue(0x0, Math.round(regs.st0)); return 1;
             /* FSCALE */ case 0xFD: regs.setNthValue(0x0, regs.st0 * (0x2 ** X87.truncate(regs.st1))); return 1;
             /* FSIN */ case 0xFE: regs.setNthValue(0x0, Math.sin(regs.st0)); return 1;
             /* FCOS */ case 0xFF: regs.setNthValue(0x0, Math.cos(regs.st0)); return 1;
@@ -445,9 +527,30 @@ export class X87 extends X86Unit {
         /* FLD mdr(32) D9 /0 d0 d1  */ 0x0: (address) => { regs.safePush(ieee754Mem.read.single(address)); },
         /* FST mdr(32) D9 /2 d0 d1 */ 0x2: (address) => { ieee754Mem.write.single(regs.st0, address); },
         /* FSTP mdr(32) D9 /3 d0 d1 */ 0x3: (address) => { ieee754Mem.write.single(regs.safePop(), address); },
+        /* FLDENV m14/28byte */ 0x4: (address) => { this.fldenv(address); },
+        /* FLDCW mw */ 0x5: (address) => { regs.control = memIO.read[0x2](address); },
+        /* FSTENV m14/28byte */ 0x6: (address) => { this.fstenv(address); },
+        /* FNSTCW m2byte */ 0x7: (address) => { memIO.write[0x2](regs.control, address); },
       }),
 
       0xDB: X86InstructionSet.switchRMOpcodeInstruction(cpu, null, {
+        nonRMMatch(byte) {
+          switch (byte) {
+            /* FNCLEX */ case 0xE2:
+              regs.status &= 0b0111111100000000;
+              return 1;
+
+            /* FNENI */ case 0xE0:
+            /* FDISI */ case 0xE1:
+            /* FNINIT */ case 0xE3:
+            /* FSETPM */ case 0xE4:
+              return 1;
+
+            default:
+              return 0;
+          }
+        },
+
         /* FILD mdr(32) DB /0 d0 d1 */ 0x0: (address) => {
           regs.safePush(
             X86AbstractCPU.getSignedNumber(memIO.read[0x4](address), 0x4),
@@ -464,34 +567,47 @@ export class X87 extends X86Unit {
       }),
 
       0xDA: X86InstructionSet.switchRMOpcodeInstruction(cpu, null, {
+        nonRMMatch(byte) {
+          /* FUCOMPP */ if (byte === 0xE9) {
+            this.fucom(regs.st0, regs.st1);
+            regs.safePop(); // pops twice
+            regs.safePop();
+          }
+
+          return 0;
+        },
+
         /* FIADD mdr(32) DA /0 */ 0x0: (address) => {
-          const intImm = X86AbstractCPU.getSignedNumber(memIO.read[0x4](address), 0x4);
-          regs.setNthValue(0, this.fadd(intImm, regs.st0));
+          regs.setNthValue(0, this.fadd(memIO.readSignedInt(address, 0x4), regs.st0));
         },
 
         /* FIMUL mdr(32) DA /1 */ 0x1: (address) => {
-          const intImm = X86AbstractCPU.getSignedNumber(memIO.read[0x4](address), 0x4);
-          regs.setNthValue(0, this.fmul(intImm, regs.st0));
+          regs.setNthValue(0, this.fmul(memIO.readSignedInt(address, 0x4), regs.st0));
+        },
+
+        /* FICOM DA /2 m32int */ 0x2: (address) => {
+          this.fcom(regs.st0, memIO.readSignedInt(address, 0x4));
+        },
+
+        /* FICOMP DA /3 m32int */ 0x3: (address) => {
+          this.fcom(regs.st0, memIO.readSignedInt(address, 0x4));
+          regs.safePop();
         },
 
         /* FISUB mdr(32) DA /4 */ 0x4: (address) => {
-          const intImm = X86AbstractCPU.getSignedNumber(memIO.read[0x4](address), 0x4);
-          regs.setNthValue(0, this.fsub(regs.st0, intImm));
+          regs.setNthValue(0, this.fsub(regs.st0, memIO.readSignedInt(address, 0x4)));
         },
 
         /* FISUBR mdr(32) DA /5 */ 0x5: (address) => {
-          const intImm = X86AbstractCPU.getSignedNumber(memIO.read[0x4](address), 0x4);
-          regs.setNthValue(0, this.fsub(intImm, regs.st0));
+          regs.setNthValue(0, this.fsub(memIO.readSignedInt(address, 0x4), regs.st0));
         },
 
         /* FIDIV mdr(32) DA /6 */ 0x6: (address) => {
-          const intImm = X86AbstractCPU.getSignedNumber(memIO.read[0x4](address), 0x4);
-          regs.setNthValue(0, this.fdiv(regs.st0, intImm));
+          regs.setNthValue(0, this.fdiv(regs.st0, memIO.readSignedInt(address, 0x4)));
         },
 
         /* FIDIVR mdr(32) DA /7 */ 0x7: (address) => {
-          const intImm = X86AbstractCPU.getSignedNumber(memIO.read[0x4](address), 0x4);
-          regs.setNthValue(0, this.fdiv(intImm, regs.st0));
+          regs.setNthValue(0, this.fdiv(memIO.readSignedInt(address, 0x4), regs.st0));
         },
       }),
 
@@ -558,6 +674,23 @@ export class X87 extends X86Unit {
 
       0xDD: X86InstructionSet.switchRMOpcodeInstruction(cpu, null, {
         nonRMMatch: (byte) => {
+          /* FUCOM ST(i) */ if (byte >= 0xE0 && byte <= 0xE7) {
+            this.fucom(regs.st0, regs.nth(byte - 0xE0));
+            return 1;
+          }
+
+          /* FUCOMP ST(i) */ if (byte >= 0xE8 && byte <= 0xEF) {
+            this.fucom(regs.st0, regs.nth(byte - 0xE8));
+            regs.safePop();
+            return 1;
+          }
+
+          /* FFREE st(i) DD C0+i */
+          if (byte >= 0xC0 && byte <= 0xC7) {
+            regs.setNthTag(byte - 0xC0, X87Tag.EMPTY);
+            return 1;
+          }
+
           /* FST st(i) DD D0+i */
           if (byte >= 0xD0 && byte <= 0xD7) {
             regs.setNthValue(byte - 0xD0, regs.st0);
@@ -577,6 +710,7 @@ export class X87 extends X86Unit {
         /* FLD mqr(64) DD /0 d0 d1 */ 0x0: (address) => { regs.safePush(ieee754Mem.read.double(address)); },
         /* FST mqr(64) DD /2 d0 d1 */ 0x2: (address) => { ieee754Mem.write.double(regs.st0, address); },
         /* FSTP mqr(64) DD /3 d0 d1 */ 0x3: (address) => { ieee754Mem.write.double(regs.safePop(), address); },
+        /* FNSTSW m2byte */ 0x7: (address) => { memIO.write[0x2](regs.status, address); },
       }),
 
       0xDE: X86InstructionSet.switchRMOpcodeInstruction(cpu, null, {
@@ -647,37 +781,49 @@ export class X87 extends X86Unit {
         },
 
         /* FIADD mw(16) DE /0 */ 0x0: (address) => {
-          const intImm = X86AbstractCPU.getSignedNumber(memIO.read[0x2](address), 0x2);
-          regs.setNthValue(0, this.fadd(regs.st0, intImm));
+          regs.setNthValue(0, this.fadd(regs.st0, memIO.readSignedInt(address, 0x2)));
         },
 
         /* FIMUL mw(16) DE /1 */ 0x1: (address) => {
-          const intImm = X86AbstractCPU.getSignedNumber(memIO.read[0x2](address), 0x2);
-          regs.setNthValue(0, this.fmul(regs.st0, intImm));
+          regs.setNthValue(0, this.fmul(regs.st0, memIO.readSignedInt(address, 0x2)));
+        },
+
+        /* FICOM m16int DE /2 */ 0x2: (address) => {
+          this.fcom(regs.st0, memIO.readSignedInt(address, 0x2));
+        },
+
+        /* FICOMP m16int DE /3 */ 0x3: (address) => {
+          this.fcom(regs.st0, memIO.readSignedInt(address, 0x2));
+          regs.safePop();
         },
 
         /* FISUB mw(16) DE /4 */ 0x4: (address) => {
-          const intImm = X86AbstractCPU.getSignedNumber(memIO.read[0x2](address), 0x2);
-          regs.setNthValue(0, this.fsub(regs.st0, intImm));
+          regs.setNthValue(0, this.fsub(regs.st0, memIO.readSignedInt(address, 0x2)));
         },
 
         /* FISUBR mw(16) DE /5 */ 0x5: (address) => {
-          const intImm = X86AbstractCPU.getSignedNumber(memIO.read[0x2](address), 0x2);
-          regs.setNthValue(0, this.fsub(intImm, regs.st0));
+          regs.setNthValue(0, this.fsub(memIO.readSignedInt(address, 0x2), regs.st0));
         },
 
         /* FDIV mw(16) DE /6 */ 0x6: (address) => {
-          const intImm = X86AbstractCPU.getSignedNumber(memIO.read[0x2](address), 0x2);
-          regs.setNthValue(0, this.fdiv(regs.st0, intImm));
+          regs.setNthValue(0, this.fdiv(regs.st0, memIO.readSignedInt(address, 0x2)));
         },
 
         /* FDIVR mw(16) DE /7 */ 0x7: (address) => {
-          const intImm = X86AbstractCPU.getSignedNumber(memIO.read[0x2](address), 0x2);
-          regs.setNthValue(0, this.fdiv(intImm, regs.st0));
+          regs.setNthValue(0, this.fdiv(memIO.readSignedInt(address, 0x2), regs.st0));
         },
       }),
 
       0xDF: X86InstructionSet.switchRMOpcodeInstruction(cpu, null, {
+        nonRMMatch(byte) {
+          /* FNSTSW ax */ if (byte === 0xE0) {
+            cpu.registers.ax = regs.status;
+            return 1;
+          }
+
+          return 0;
+        },
+
         /* FILD m16int */ 0x0: (address) => {
           regs.safePush(
             X86AbstractCPU.getSignedNumber(memIO.read[0x2](address), 0x2),
