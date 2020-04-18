@@ -340,6 +340,10 @@ export class X86Compiler {
      */
     function labelResolver(astNode: ASTAsmNode, instructionOffset: number): ASTLabelAddrResolver {
       return (name: string): number => {
+        // handle case mov ax, [b] where [b] is unknown during compile time
+        if (astNode instanceof ASTInstruction)
+          astNode.labeledInstruction = true;
+
         if (sectionStartOffset !== null && name === MAGIC_LABELS.SECTION_START)
           return sectionStartOffset;
 

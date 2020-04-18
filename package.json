@@ -41,7 +41,9 @@
     "webpack-cli": "^3.3.10",
     "webpack-dev-server": "^3.10.1",
     "raw-loader": "^4.0.0",
-    "jest-raw-loader": "^1.0.1"
+    "jest-raw-loader": "^1.0.1",
+    "long": "^4.0.0",
+    "@types/long": "^4.0.0"
   },
   "name": "i8086.js",
   "private": true

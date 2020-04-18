@@ -120,6 +120,10 @@ export class ASTInstruction extends KindASTAsmNode(ASTNodeKind.INSTRUCTION) {
       // check if instruction is branch instruction
       this.jumpInstruction = isJumpInstruction(opcode);
       this.x87Instruction = isX87Instruction(opcode);
+
+      // it is false for mov ax, [b] due to [b] is resolved later
+      // inside tryResolveSchema, labeledInstruction will be overriden
+      // inside labelResolver() anyway during first pass
       this.labeledInstruction = isAnyLabelInTokensList(this.originalArgsTokens);
     }
   }

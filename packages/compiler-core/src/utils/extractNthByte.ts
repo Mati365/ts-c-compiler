@@ -1,4 +1,20 @@
-export const extractNthByte = (nth: number, num: number): number => (num >> (nth * 0x8)) & 0xFF;
+/**
+ * Extract nth byte from number
+ *
+ * @see
+ *  Numbers in javascript are 32bits! Overflow does not fill from left!
+ *
+ * @export
+ * @param {number} nth
+ * @param {number} num
+ * @returns {number}
+ */
+export function extractNthByte(nth: number, num: number): number {
+  if (nth >= 4)
+    return 0;
+
+  return (num >>> (nth * 0x8)) & 0xFF;
+}
 
 /**
  * Extends digit to byteSize number of bytes

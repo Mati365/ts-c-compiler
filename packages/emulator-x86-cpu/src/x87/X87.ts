@@ -1,6 +1,8 @@
 /* eslint-disable max-len */
+import Long from 'long';
+
 import {X86Unit} from '../X86Unit';
-import {X87RegsStore} from './X87Regs';
+import {X87RegsStore, X87Tag} from './X87Regs';
 import {X86InstructionSet} from '../X86InstructionSet';
 import {X86OpcodesList} from '../X86CPU';
 import {X86AbstractCPU} from '../types';
@@ -17,6 +19,16 @@ import {
  * @extends {X86Unit}
  */
 export class X87 extends X86Unit {
+  static PREDEFINED_CONSTANTS = {
+    ZERO: +0.0,
+    ONE: +1.0,
+    L2T: Math.LOG10E,
+    L2E: Math.LOG2E,
+    PI: Math.PI,
+    LG2: Math.log10(2),
+    LN2: Math.log(Math.E),
+  };
+
   private registers: X87RegsStore;
   private opcodes: X86OpcodesList;
 
@@ -167,6 +179,58 @@ export class X87 extends X86Unit {
   }
 
   /**
+   * Checks number and sets flags
+   *
+   * @param {number} a
+   * @memberof X87
+   */
+  fxam(): void {
+    const {registers: regs} = this;
+    const num = regs.st0;
+
+    if (Number.isNaN(num)) {
+      regs.c3 = false; regs.c2 = false; regs.c0 = false;
+    } else if (!Number.isFinite(num)) {
+      regs.c3 = false; regs.c2 = true; regs.c0 = true;
+    } else if (!num) {
+      regs.c3 = true; regs.c2 = false; regs.c0 = false;
+    } else if (regs.getNthTag(0) === X87Tag.EMPTY) {
+      regs.c3 = true; regs.c2 = false; regs.c0 = true;
+    } else {
+      regs.c3 = false; regs.c2 = true; regs.c0 = false;
+    }
+
+    // unsupported: unsupported, denormal
+  }
+
+  /**
+   * Round value
+   *
+   * @static
+   * @param {number} num
+   * @returns {number}
+   * @memberof X87
+   */
+  static truncate(num: number): number {
+    return num > 0 ? Math.floor(num) : Math.ceil(num);
+  }
+
+  /**
+   * Stores ST0 at address
+   *
+   * @param {number} byteSize
+   * @param {number} destAddress
+   * @memberof X87
+   */
+  fist(byteSize: number, destAddress: number): void {
+    const {cpu, registers} = this;
+    const long = Long.fromNumber(registers.st0).toBytesBE();
+
+    long.splice(0, long.length - byteSize);
+    cpu.memIO.writeBytesLE(destAddress, long);
+  }
+
+  /**
    * Loads FPU
    *
    * @returns
@@ -186,6 +250,16 @@ export class X87 extends X86Unit {
         switch (bits) {
           /* FINIT */ case 0xE3DB:
             regs.reset();
+            cpu.incrementIP(0x2);
+            break;
+
+          /* FCLEX */ case 0xE2DB:
+            regs.status = 0x0;
+            cpu.incrementIP(0x2);
+            break;
+
+          /* FENI */ case 0xE0DB:
+          /* FDISI */ case 0xE1DB:
             cpu.incrementIP(0x2);
             break;
 
@@ -266,12 +340,22 @@ export class X87 extends X86Unit {
           switch (byte) {
             /* FNOP */ case 0xD0: return 1;
 
-            /* FSINCOS */ case 0xFB: {
-              const rad = regs.st0;
+            /* FCHS */ case 0xE0: regs.setNthValue(0x0, -regs.st0); return 1;
+            /* FTST */ case 0xE4: this.fcom(regs.st0, 0.0); return 1;
+            /* FXAM */ case 0xE5: this.fxam(); return 1;
+            /* FLD1 */ case 0xE8: regs.safePush(X87.PREDEFINED_CONSTANTS.ONE); return 1;
+            /* FLDL2T */ case 0xE9: regs.safePush(X87.PREDEFINED_CONSTANTS.L2T); return 1;
+            /* FLDL2E */ case 0xEA: regs.safePush(X87.PREDEFINED_CONSTANTS.L2E); return 1;
+            /* FLDPI */ case 0xEB: regs.safePush(X87.PREDEFINED_CONSTANTS.PI); return 1;
+            /* FLDLG2 */ case 0xEC: regs.safePush(X87.PREDEFINED_CONSTANTS.LG2); return 1;
+            /* FLDLN2 */ case 0xED: regs.safePush(X87.PREDEFINED_CONSTANTS.LN2); return 1;
+            /* FLDZ */ case 0xEE: regs.safePush(X87.PREDEFINED_CONSTANTS.ZERO); return 1;
 
-              regs.setNthValue(0x0, Math.sin(rad));
-              regs.safePush(Math.cos(rad));
-            } return 1;
+            /* F2XM1 */ case 0xF0: regs.setNthValue(0x0, (2 ** regs.st0) - 1); return 1;
+            /* FYL2X */ case 0xF1:
+              regs.setNthValue(0x1, regs.st1 * Math.log2(regs.st0));
+              regs.safePop();
+              return 1;
 
             /* FPTAN */ case 0xF2:
               regs.setNthValue(0x0, Math.tan(regs.st0));
@@ -283,6 +367,20 @@ export class X87 extends X86Unit {
               regs.safePop();
               return 1;
 
+            /* FDECSTP */ case 0xF6: regs.setStackPointer(regs.stackPointer - 0x1); return 1;
+            /* FYL2XP1 */ case 0xF9:
+              regs.setNthValue(0x1, regs.st1 * Math.log2(regs.st0 + 1));
+              regs.safePop();
+              return 1;
+
+            /* FSINCOS */ case 0xFB: {
+              const rad = regs.st0;
+
+              regs.setNthValue(0x0, Math.sin(rad));
+              regs.safePush(Math.cos(rad));
+            } return 1;
+
+            /* FSCALE */ case 0xFD: regs.setNthValue(0x0, regs.st0 * (0x2 ** X87.truncate(regs.st1))); return 1;
             /* FSIN */ case 0xFE: regs.setNthValue(0x0, Math.sin(regs.st0)); return 1;
             /* FCOS */ case 0xFF: regs.setNthValue(0x0, Math.cos(regs.st0)); return 1;
             /* FABS */ case 0xE1: regs.setNthValue(0x0, Math.abs(regs.st0)); return 1;
@@ -294,6 +392,16 @@ export class X87 extends X86Unit {
           /* FLD st(i), C0+i */
           if (byte >= 0xC0 && byte <= 0xC7) {
             regs.safePush(regs[byte - 0xC0]);
+            return 1;
+          }
+
+          /* FXCH st(i), C8+i */
+          if (byte >= 0xC8 && byte <= 0xCF) {
+            const cached = regs.st0;
+            const destIndex = byte - 0xC8;
+
+            regs.setNthValue(0, regs.nth(destIndex));
+            regs.setNthValue(destIndex, cached);
             return 1;
           }
 
@@ -312,6 +420,11 @@ export class X87 extends X86Unit {
           );
         },
 
+        /* FIST m32int */ 0x2: (address) => this.fist(0x4, address),
+        /* FIST m32int */ 0x3: (address) => {
+          this.fist(0x4, address);
+          regs.safePop();
+        },
         /* FLD mtr(80) DB /5 d0 d1 */ 0x5: (address) => { regs.safePush(ieee754Mem.read.extended(address)); },
         /* FSTP mtr(80) DB /7 d0 d1 */ 0x7: (address) => { ieee754Mem.write.extended(regs.safePop(), address); },
       }),
@@ -537,10 +650,22 @@ export class X87 extends X86Unit {
           );
         },
 
+        /* FIST m16int */ 0x2: (address) => this.fist(0x2, address),
+        /* FISTP m16int */ 0x3: (address) => {
+          this.fist(0x2, address);
+          regs.safePop();
+        },
+
         /* FILD m64int */ 0x5: (address) => {
+          const [low, high] = memIO.read[0x8](address);
           regs.safePush(
-            X86AbstractCPU.getSignedNumber(memIO.read[0x8](address), 0x8),
+            new Long(low, high).toNumber(),
           );
+        },
+
+        /* FISTP m64int */ 0x7: (address) => {
+          this.fist(0x8, address);
+          regs.safePop();
         },
       }),
     });

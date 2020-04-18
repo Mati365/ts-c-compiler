@@ -184,15 +184,19 @@ export class ASTInstructionMemPtrArg extends ASTInstructionArg<MemAddressDescrip
    * @memberof ASTInstructionMemPtrArg
    */
   toString(): string {
-    const {byteSize, schema, phrase} = this;
+    const {byteSize, schema, phrase, value} = this;
     const parsedPhrase = phrase.replace(/\s/g, '');
     const sizePrefix: string = InstructionArgSize[byteSize] ?? InstructionArgSize[roundToPowerOfTwo(byteSize)];
 
     if (!schema)
       return `[${parsedPhrase}]`;
 
-    if (schema.moffset)
+    if (schema.moffset) {
+      if (!value?.sreg)
+        return `ds:${parsedPhrase}`;
+
       return parsedPhrase;
+    }
 
     return `${sizePrefix} ptr [${parsedPhrase}]`;
   }

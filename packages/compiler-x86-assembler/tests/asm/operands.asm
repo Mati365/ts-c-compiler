@@ -12,3 +12,18 @@ imul ax, -0xF
 imul ax, - 0xF
 imul ax, + 0xF
 shld ax, bx, 0x6
+
+;= test: handle shrink size in byte address of previous instruction
+;= bin: 9bdbe3df2e137cdf161b7ca11b7c87dbf4fe00feff0000000000000000
+; Tetris
+[org 7c00h]
+finit
+fild qword [b]
+fist word [output]
+mov ax, word [output]
+xchg bx, bx
+hlt
+
+c: dw 0xFE
+b: dq 0xFFFE
+output: dw 0
