@@ -1,36 +1,44 @@
-; Tetris
-[org 7c00h]
+%macro mount_interrupt 2
+  ; %1 - code
+  ; %2 - handler
+  mov ax, %1
+  mov bx, 4
+  imul bx
+  mov bx, ax
 
-finit
-fild word [b]
-fild word [d]
-ficom word [fi_int]
-fnstsw ax
-; fsave [env]
-xor ax, bx
-; fild word [c]
-; frstor [env]
-; ; fstenv [env]
-; fild word [d]
-; fadd st0, st1
-; fscale
-; fldenv [env]
-; mov ax, [output]
-; fxch
-; FYL2XP1
-; fistp dword [output]
-; mov ax, word [output]
+  xor cx, cx
+  mov es, cx
+
+  mov word [es:bx], %2
+  mov word [es:bx + 0x2], cs
+%endmacro
+
+; MAIN
 xchg bx, bx
-hlt
+jmp 0x7C0:main
+main:
+  sti
+  ; mount_interrupt 0x0, div_by_zero_handler
+  ; mount_interrupt 0x1, debugger_hit
+  mount_interrupt 0x6, invalid_opcode
+  nop
+  nop
+  dw 0xFF0F
+  hlt
 
-c: dw 0xFE
-b: dq 0xFEFE
-d: dq 0x123
-fi_int: dw 0x151
-output: dw 0
-env: times 94 db 0
+; div_by_zero_handler:
+;   xchg bx, bx
+;   iret
+
+; debugger_hit:
+;   xchg dx, dx
+;   iret
+
+invalid_opcode:
+  xchg dx, dx
+  iret
 
 ; At the end we need the boot sector signature.
 times 510-($-$$) db 0
-	db 0x55
-	db 0xaa
+  db 0x55
+  db 0xaa

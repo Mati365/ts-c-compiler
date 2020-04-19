@@ -1,7 +1,6 @@
 import {setBit} from '@compiler/core/utils/bits';
 
 import {
-  X86_EXCEPTION,
   X86_REGISTERS,
   X86_FLAGS_OFFSETS,
   X86_BINARY_MASKS,
@@ -13,6 +12,7 @@ import {
   X86AbstractCPU,
   X86BitsMode,
   RMByte,
+  X86Interrupt,
 } from './types';
 
 type ALUOperatorSchema = {
@@ -58,8 +58,8 @@ export class X86ALU extends X86Unit {
    * @type {{[offset: number]: ALUFlagChecker}}
    * @memberof X86ALU
    */
-  protected static flagsCheckers: {[offset: number]: ALUFlagChecker} = {
-    /** Carry flag */ [X86_FLAGS_OFFSETS.cf]: (signed, bits, l, r, val) => val !== signed,
+  protected static flagsCheckers: [number, ALUFlagChecker][] = [
+    /** Carry flag */ [X86_FLAGS_OFFSETS.cf, (signed, bits, l, r, val) => val !== signed],
     /**
      * Overflow occurs when the result of adding two positive numbers
      * is negative or the result of adding two negative numbers is positive.
@@ -68,7 +68,7 @@ export class X86ALU extends X86Unit {
      * @todo Not sure if it works correctly
      * @see http://www.righto.com/2012/12/the-6502-overflow-flag-explained.html
      */
-    [X86_FLAGS_OFFSETS.of]: (signed, bits, l, r, val, operator) => {
+    [X86_FLAGS_OFFSETS.of, (signed, bits, l, r, val, operator) => {
       const lBit = X86AbstractCPU.msbit(l, bits);
       let rBit = X86AbstractCPU.msbit(r, bits);
 
@@ -78,8 +78,8 @@ export class X86ALU extends X86Unit {
         rBit ^= 1;
 
       return lBit === rBit && lBit !== X86AbstractCPU.msbit(signed, bits);
-    },
-    /** Parity flag */ [X86_FLAGS_OFFSETS.pf]: (signed) => {
+    }],
+    /** Parity flag */ [X86_FLAGS_OFFSETS.pf, (signed) => {
       /**
        * Use SWAR algorithm
        * @see http://stackoverflow.com/a/109025/6635215
@@ -88,10 +88,10 @@ export class X86ALU extends X86Unit {
       signed = (signed & 0x33333333) + ((signed >> 2) & 0x33333333);
       signed = (((signed + (signed >> 4)) & 0x0F0F0F0F) * 0x01010101) >> 24;
       return !(signed % 2);
-    },
-    /** Zero flag */ [X86_FLAGS_OFFSETS.zf]: (signed) => signed === 0x0,
-    /** Sign flag */ [X86_FLAGS_OFFSETS.sf]: (signed, bits) => X86AbstractCPU.msbit(signed, bits) === 0x1,
-  };
+    }],
+    /** Zero flag */ [X86_FLAGS_OFFSETS.zf, (signed) => signed === 0x0],
+    /** Sign flag */ [X86_FLAGS_OFFSETS.sf, (signed, bits) => X86AbstractCPU.msbit(signed, bits) === 0x1],
+  ];
 
   /**
    * Performs ALU operation, sets flags and other stuff
@@ -112,7 +112,7 @@ export class X86ALU extends X86Unit {
 
     /** Clear flags */
     if (operator.clear)
-      registers.flags &= operator.clear ^ 0x1;
+      registers.flags &= ~operator.clear;
 
     /** Set default flags value for operator */
     const val = operator._c(l, r),
@@ -121,20 +121,23 @@ export class X86ALU extends X86Unit {
     if (typeof operator.set === 'undefined')
       operator.set = 0xFF;
 
-    /** Value returned after flags */
-    for (const _key in flagsCheckers) {
-      const key = +_key;
+    /**
+     * Value returned after flags
+     * @todo Unroll, remove loop
+     */
+    for (let i = 0; i < flagsCheckers.length; ++i) {
+      const [offset, checker] = flagsCheckers[i];
 
-      if ((operator.set & key) === key) {
-        const _val = flagsCheckers[key](signed, bits, l, r, val, operator);
-
-        registers.flags = setBit(key, _val, registers.flags);
+      if ((operator.set & offset) === offset) {
+        const _val = checker(signed, bits, l, r, val, operator);
+        registers.flags = setBit(offset, _val, registers.flags);
       }
     }
 
     /** temp - for cmp and temporary operations */
     return operator._flagOnly ? l : signed;
   }
+
   /**
    * Init ALU, append instructions to CPU
    *
@@ -408,8 +411,12 @@ export class X86ALU extends X86Unit {
         const {status} = registers;
 
         if ((byte.reg & 0x6) === 0x6) {
-          if (!val)
-            cpu.raiseException(X86_EXCEPTION.DIV_BY_ZERO);
+          if (!val) {
+            cpu.interrupt(
+              X86Interrupt.raise.divideByZero(),
+            );
+            return;
+          }
 
           if (byte.reg === 0x7) {
             /** IDIV */
@@ -443,8 +450,12 @@ export class X86ALU extends X86Unit {
       }),
       /** MULTIPLIER ax, r/m16 */ 0xF7: () => this.rmByteMultiplierParse(0x2, (val, byte) => {
         if ((byte.reg & 0x6) === 0x6) {
-          if (!val)
-            cpu.raiseException(X86_EXCEPTION.DIV_BY_ZERO);
+          if (!val) {
+            cpu.interrupt(
+              X86Interrupt.raise.divideByZero(),
+            );
+            return;
+          }
 
           /** DIV / IDIV */
           if (byte.reg === 0x7) {
@@ -464,7 +475,7 @@ export class X86ALU extends X86Unit {
           /** MUL / IMUL */
           const output = X86AbstractCPU.toUnsignedNumber(
             byte.reg === 0x5
-              ? X86AbstractCPU.getSignedNumber(registers.ax) * X86AbstractCPU.getSignedNumber(val)
+              ? X86AbstractCPU.getSignedNumber(registers.ax, 0x2) * X86AbstractCPU.getSignedNumber(val, 0x2)
               : (registers.ax * val),
             0x4,
           );

@@ -8,11 +8,6 @@ import {
 
 export const X86_MAPPED_VM_MEM = Object.freeze(new MemRange(0xC8000, 0xEFFFF));
 
-export const X86_EXCEPTION = {
-  MEM_DUMP: 0x0,
-  DIV_BY_ZERO: 0x1,
-};
-
 export const X86_BINARY_MASKS = {
   0x1: (0x2 << 0x7) - 0x1,
   0x2: (0x2 << 0xF) - 0x1,
@@ -70,6 +65,7 @@ export const X86_REGISTERS: {[number: string]: X86RegsSet} = {
 };
 
 export const X86_REGISTER_NAMES = R.compose(
+  R.concat(['ip']),
   R.unnest,
   R.map(
     ([, regs]) => R.values(regs),

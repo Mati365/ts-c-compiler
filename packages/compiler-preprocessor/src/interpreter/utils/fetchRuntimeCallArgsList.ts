@@ -16,15 +16,19 @@ import {
  *
  * @export
  * @param {TokensIterator} parser
+ * @param {number} minBracketNestingArgsSeparator 0 if args call no need (), example: abc 2, 3
  * @returns {Token[][]}
  */
-export function fetchRuntimeCallArgsList(parser: TokensIterator): Token[][] {
+export function fetchRuntimeCallArgsList(
+  parser: TokensIterator,
+  minBracketNestingArgsSeparator: number = 1,
+): Token[][] {
   const args: Token[][] = [];
   let buffer: Token[] = [];
   let bracketNesting: number = 0;
 
   parser.iterate((token) => {
-    if (isLineTerminatorToken(token))
+    if (bracketNesting > 0 && isLineTerminatorToken(token))
       throw new PreprocessorError(PreprocessorErrorCode.UNTERMINATED_ARGS_LIST);
 
     if (token.text === '(') {
@@ -38,7 +42,7 @@ export function fetchRuntimeCallArgsList(parser: TokensIterator): Token[][] {
         buffer.push(token);
       else if (bracketNesting === 0)
         return false;
-    } else if (bracketNesting === 1 && token.type === TokenType.COMMA) {
+    } else if (bracketNesting === minBracketNestingArgsSeparator && token.type === TokenType.COMMA) {
       if (!buffer.length)
         throw new PreprocessorError(PreprocessorErrorCode.INCORRECT_ARGS_LIST);
 

@@ -1,53 +1,34 @@
-org 0x7c00
+%macro mount_interrupt 2
+  ; %1 - code
+  ; %2 - handler
+  mov ax, %1
+  mov bx, 4
+  imul bx
+  mov bx, ax
 
+  xor cx, cx
+  mov es, cx
 
-define arg1 [bp + 4h]
-define arg2 [bp + 6h]
-define arg3 [bp + 8h]
-define arg4 [bp + 10h]
+  mov word [es:bx], %2
+  mov word [es:bx + 0x2], cs
 
-macro stdcall proc, [arg] {
-  reverse push arg
-  common call proc
-}
+%endmacro
 
-; ładuje funkcję przesłaniającą przerwanie
-;
-; interrupt_index - indeks przerwania
-; fn_address - adres funkcji, która obsługiwać przerwanie będzie
-; backup_fn_address - adres fukcji zapisującej poprzednie przerwanie
-macro load_interrupt_handler interrupt_index, fn_address {
-  pusha
-  cli
-  xor ax,ax
-  mov es,ax
-  les bx,[es:(interrupt_index shl 2)]
-
-  ; wczytanie segmentu wskazującego na 0 adres
-  mov es, ax
-  mov word [es:(interrupt_index shl 2)], fn_address
-  mov word [es:(interrupt_index shl 2) + 2], cs
+; MAIN
+jmp 0x7C0:main
+main:
   sti
-  popa
-}
-
-load_interrupt_handler 9h, fuk_interrupt_handler
-int 9h
-mov ah, [ds:ax + bx * 4]
-xchg bx, bx
-
-sysSuspend:
-  cli
+  mount_interrupt 0x0, div_by_zero_handler
+  mov ax, 6
+  mov bx, 0
+  idiv bx
   hlt
-  jmp sysSuspend
 
-; przerwanie 9h PIC
-fuk_interrupt_handler:
-  pusha
-  popa
+div_by_zero_handler:
+  xchg bx, bx
   iret
 
-backup_fuk_int dd ?
-
+; At the end we need the boot sector signature.
 times 510-($-$$) db 0
-dw 0xaa55
+  db 0x55
+  db 0xaa

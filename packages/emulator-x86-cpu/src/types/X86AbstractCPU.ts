@@ -6,7 +6,7 @@ import {mutableOmitChildKeys} from '@compiler/core/utils/mutableOmitChildKeys';
 import {X86_BINARY_MASKS} from '../constants/x86';
 
 import {Logger} from '../Logger';
-import {X86InterruptsSet} from './X86Interrupt';
+import {X86InterruptsSet, X86Interrupt} from './X86Interrupt';
 import {X86PortsSet} from './X86Port';
 import {X86RAM} from './X86RAM';
 import {X86AbstractDevice} from './X86AbstractDevice';
@@ -139,6 +139,7 @@ export abstract class X86AbstractCPU {
   abstract boot(device: Buffer|string, id?: number): void;
   abstract exec(cycles: number): void;
   abstract halt(message?: string, dump?: boolean): void;
+  abstract interrupt(interrupt: X86Interrupt): boolean;
 
   isHalted(): boolean { return this.clock === false; }
 

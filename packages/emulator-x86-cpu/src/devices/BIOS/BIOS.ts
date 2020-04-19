@@ -387,7 +387,7 @@ export class BIOS extends uuidX86Device<X86CPU, BIOSInitConfig>('bios') {
           mode.write(
             cpu.memIO,
             character,
-            color && (typeof attribute === 'undefined' ? regs.bl : attribute),
+            (color && (typeof attribute === 'undefined' ? regs.bl : attribute)) || 0b111,
             cursor.x,
             cursor.y,
             page,

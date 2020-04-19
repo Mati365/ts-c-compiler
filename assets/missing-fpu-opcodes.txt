@@ -1,2 +1,0 @@
-FNSAVE  m94	DD /6 d0 d1	 	2~4	--------
-FRSTOR  m94	DD /4 d0 d1	 	2~4	--------

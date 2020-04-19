@@ -1,5 +1,3 @@
-import * as R from 'ramda';
-
 import {
   X86_BINARY_MASKS,
   X86_REGISTERS,
@@ -14,6 +12,9 @@ import {
   X86SegmentPrefix,
   X86BitsMode,
   X86RAM,
+  X86Interrupt,
+  SegmentedAddress,
+  X86InterruptType,
 } from './types';
 
 import {X87} from './x87/X87';
@@ -35,12 +36,12 @@ export type X86MemRMCallback = (address: number, reg: X86RegName, rmByte: RMByte
 export class X86CPU extends X86AbstractCPU {
   private config: X86CPUConfig;
 
+  public instructionStartAddress: SegmentedAddress = new SegmentedAddress(null, null);
   public stack: X86Stack;
   public alu: X86ALU;
   public io: X86IO;
   public instructionSet: X86InstructionSet;
   public x87: X87;
-
   public device: Buffer;
   public opcodes: X86OpcodesList = [];
 
@@ -127,8 +128,10 @@ export class X86CPU extends X86AbstractCPU {
           ss: 0x0,
           ip: 0x7c00,
           sp: 0xffd6, // same as bochs
+          flags: 0x82,
         },
       );
+
       this.loadBuffer(
         code,
         this.physicalIP,
@@ -175,6 +178,56 @@ export class X86CPU extends X86AbstractCPU {
   }
 
   /**
+   * Calls interrupt which can be JS callback or IVT entry
+   *
+   * @todo
+   *  Implement triple fault!
+   *
+   * @see
+   *  {@link https://stackoverflow.com/questions/3149175/what-is-the-difference-between-trap-and-interrupt}
+   *
+   * @param {X86Interrupt} interrupt
+   * @returns {boolean} Returns true if interrupt handled
+   * @memberof X86CPU
+   */
+  interrupt(interrupt: X86Interrupt): boolean {
+    const {code, maskable, type} = interrupt;
+    const {registers, stack, memIO, instructionStartAddress} = this;
+
+    if (maskable && !registers.status.if)
+      return false;
+
+    const handler = this.interrupts[code];
+    if (!handler) {
+      stack.push(registers.flags);
+
+      // repeat instruction if fault
+      if (type === X86InterruptType.FAULT) {
+        stack
+          .push(instructionStartAddress.segment)
+          .push(instructionStartAddress.offset);
+      } else {
+        stack
+          .push(registers.cs)
+          .push(registers.ip);
+      }
+
+      registers.status.if = 0x0;
+      registers.status.tf = 0x0;
+      registers.status.af = 0x0;
+
+      const interruptOffset = code << 2;
+      this.absoluteJump(
+        memIO.read[0x2](interruptOffset), // offset
+        memIO.read[0x2](interruptOffset + 0x2), // segment
+      );
+    } else
+      handler.fn();
+
+    return true;
+  }
+
+  /**
    * Exec CPU
    *
    * @param {Number}  cycles  Instructions counter
@@ -184,10 +237,15 @@ export class X86CPU extends X86AbstractCPU {
     if (!this.clock)
       return;
 
+    const {registers, prefixes, instructionStartAddress} = this;
     const tick = () => {
       /** Tick */
       if (this.pause)
         return;
+
+      /** Used for exception repeat instruction */
+      instructionStartAddress.segment = registers.cs;
+      instructionStartAddress.offset = registers.ip;
 
       /** Decode prefix */
       let opcode = this.fetchOpcode(0x1, true, true);
@@ -198,15 +256,15 @@ export class X86CPU extends X86AbstractCPU {
 
       for (let i = 0x0; i < 0x4; ++i) {
         const prefix = X86_PREFIXES[opcode];
-        if (typeof prefix === 'undefined')
+        if (!prefix && typeof prefix === 'undefined')
           break;
 
         /** Segment registers have object instead of opcode */
         const segmentOverride = (<X86SegmentPrefix> prefix)._sr;
         if (segmentOverride)
-          this.prefixes[X86_PREFIX_LABEL_MAP[0x1]] = prefix;
+          prefixes[X86_PREFIX_LABEL_MAP[0x1]] = prefix;
         else
-          this.prefixes[X86_PREFIX_LABEL_MAP[<number> prefix]] = opcode;
+          prefixes[X86_PREFIX_LABEL_MAP[<number> prefix]] = opcode;
 
         /** Load next opcode */
         opcode = this.fetchOpcode(0x1, true, true);
@@ -219,30 +277,36 @@ export class X86CPU extends X86AbstractCPU {
       /** Decode opcode */
       const operand = this.opcodes[opcode];
       if (!operand) {
-        this.halt(`Unknown opcode 0x${opcode.toString(16).toUpperCase()}`);
+        this.logger.error(`Unknown opcode 0x${opcode.toString(16).toUpperCase()}! Excuting fault!`);
+        this.interrupt(
+          X86Interrupt.raise.invalidOpcode(),
+        );
         return;
       }
 
       /** REP - Do something with operand, reset opcode prefix */
-      if (this.prefixes.instruction === 0xF3) {
-        const {ip} = this.registers;
+      if (prefixes.instruction === 0xF3) {
+        const {ip: cachedIP} = registers;
         do {
           /** Revert IP, */
-          this.registers.ip = ip;
+          registers.ip = cachedIP;
 
           /** Decrement CX */
           operand();
-          this.registers.cx = X86AbstractCPU.toUnsignedNumber(this.registers.cx - 0x1, 0x2);
+          registers.cx = X86AbstractCPU.toUnsignedNumber(registers.cx - 0x1, 0x2);
 
           /** Stop loop if zf, check compare flags for SCAS, CMPS  */
-          if (!this.registers.status.zf && !!~[0xAF, 0xAE, 0xA6, 0xA7].indexOf(opcode))
+          if (opcode === 0xAF || opcode === 0xAE || opcode === 0xA6 || opcode === 0xA7)
             break;
-        } while (this.registers.cx);
+
+          if (!registers.status.zf)
+            break;
+        } while (registers.cx);
       } else
         operand();
 
       /** Reset opcode */
-      this.prefixes.clear();
+      prefixes.clear();
     };
 
     /** Exec CPU */
@@ -296,18 +360,6 @@ export class X86CPU extends X86AbstractCPU {
 
     this.halt('Unknown opcode size!');
     return null;
-  }
-
-  /**
-   * Raise exception to all devices
-   *
-   * @param {Number} code Raise exception
-   */
-  raiseException(code: number): void {
-    R.forEachObjIndexed(
-      (device) => device.exception(code),
-      this.devices,
-    );
   }
 
   /**

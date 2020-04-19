@@ -1,9 +1,6 @@
 import * as R from 'ramda';
 
-import {
-  X86_REGISTERS,
-  X86_EXCEPTION,
-} from './constants/x86';
+import {X86_REGISTERS} from './constants/x86';
 
 import {X86Unit} from './X86Unit';
 import {X86CPU, X86RegRMCallback, X86MemRMCallback} from './X86CPU';
@@ -12,6 +9,8 @@ import {
   X86Flags,
   RMByte,
   X86AbstractCPU,
+  X86Interrupt,
+  X86InterruptType,
 } from './types';
 
 type X86FlagCondition = (flags: X86Flags) => boolean|number;
@@ -374,24 +373,18 @@ export class X86InstructionSet extends X86Unit {
         );
       },
 
+      /** INT3 debug trap */ 0xCC: () => {
+        cpu.interrupt(
+          X86Interrupt.raise.debug(X86InterruptType.TRAP),
+        );
+      },
+
       /** INT imm8    */ 0xCD: () => {
-        const code = cpu.fetchOpcode(),
-          interrupt = cpu.interrupts[code];
+        const code = cpu.fetchOpcode();
 
-        if (!interrupt) {
-          const interruptOffset = code << 2;
-
-          stack
-            .push(registers.flags)
-            .push(registers.cs)
-            .push(registers.ip);
-
-          cpu.absoluteJump(
-            memIO.read[0x2](interruptOffset), // offset
-            memIO.read[0x2](interruptOffset + 0x4), // segment
-          );
-        } else
-          interrupt.fn();
+        cpu.interrupt(
+          X86Interrupt.raise.software(code),
+        );
       },
 
       /** RCL r/m8,  cl */ 0xD2: (bits: X86BitsMode = 0x1, dir = 0x1) => {
@@ -450,9 +443,7 @@ export class X86InstructionSet extends X86Unit {
         switch (arg) {
           case 0xDB: // xchg bx, bx
           case 0xD2: // xchg dx, dx
-            registers.ip++;
-
-            cpu.raiseException(X86_EXCEPTION.MEM_DUMP);
+            cpu.incrementIP(0x1);
             cpu.debugDumpRegisters();
 
             if (arg === 0xD2) // xchg dx, dx

@@ -346,9 +346,12 @@ export class PreprocessorInterpreter {
         // %define dupa mov
         // dupa ax, bx
         const inline = i > 0 || !callables.some(({argsCount}) => argsCount > 0);
+        const bracketCall = newTokens[i + 1]?.text === '('; // handle; abc(2, 3)
         const args = (
-          !inline || newTokens[i + 1]?.text === '('
-            ? fetchRuntimeCallArgsList(it).map((argTokens) => this.removeMacrosFromTokens(argTokens)[1])
+          !inline || bracketCall
+            ? fetchRuntimeCallArgsList(it, bracketCall ? 1 : 0).map(
+              (argTokens) => this.removeMacrosFromTokens(argTokens)[1],
+            )
             : []
         );
 
