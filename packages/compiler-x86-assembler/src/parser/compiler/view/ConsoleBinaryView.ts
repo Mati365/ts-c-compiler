@@ -219,6 +219,13 @@ export class ConsoleBinaryView extends BinaryView<string> {
    * @memberof ConsoleBinaryView
    */
   error(errors: CompilerError[]): string {
+    R.forEach(
+      (error) => {
+        console.error(error);
+      },
+      errors,
+    );
+
     return R.compose(
       R.join('\n'),
       R.map(

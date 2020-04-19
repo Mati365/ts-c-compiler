@@ -596,7 +596,7 @@ export class ASTInstruction extends KindASTAsmNode(ASTNodeKind.INSTRUCTION) {
           // second argument has byteSize equal to 1, but ax is 2
           // try to cast
           const prevByteSize = acc[acc.length - 1].byteSize;
-          if (result.type !== InstructionArgType.NUMBER || result.byteSize > prevByteSize)
+          if (result.type === InstructionArgType.NUMBER && result.byteSize > prevByteSize)
             throw new ParserError(ParserErrorCode.OPERAND_SIZES_MISMATCH, token.loc);
         }
 
@@ -622,23 +622,49 @@ export class ASTInstruction extends KindASTAsmNode(ASTNodeKind.INSTRUCTION) {
     if (!isTokenInstructionBeginning(token))
       return null;
 
+    const savedParserTokenIndex = parser.getTokenIndex();
     let opcode = token.lowerText;
 
     // match prefixes
-    const prefixes: InstructionPrefix[] = [];
+    let prefixes: InstructionPrefix[] = [];
+    let prefixToken = token;
     do {
-      const prefix = InstructionPrefix[token.upperText];
+      const prefix = InstructionPrefix[prefixToken.upperText];
       if (!prefix) {
-        opcode = token.lowerText;
-        break;
-      }
+        // eat more empty lines
+        if (prefixToken.type === TokenType.EOF) {
+          opcode = null;
+          break;
+        } else if (prefixToken.type !== TokenType.EOL) {
+          opcode = prefixToken.lowerText;
+          break;
+        }
+      } else
+        prefixes.push(prefix);
 
-      prefixes.push(prefix);
-      token = parser.fetchRelativeToken();
+      prefixToken = parser.fetchRelativeToken();
     } while (true);
 
-    // parse arguments
-    const argsTokens = fetchInstructionTokensArgsList(parser);
+    // special case in parser when only prefixes are in line
+    // ignore fetching args tokens for them
+    // example:
+    // repz lock EOF
+    let argsTokens = null;
+    if (opcode === null) {
+      if (!prefixes.length)
+        return null;
+
+      // revert token index to start of prefixes
+      parser.setTokenIndex(savedParserTokenIndex);
+
+      // just treat as separate instruction
+      opcode = token.lowerText;
+      prefixes = [];
+      argsTokens = [];
+    } else {
+      // parse arguments
+      argsTokens = fetchInstructionTokensArgsList(parser);
+    }
 
     // IMUL special case for NASM/FASM
     // two operand instructions such as imul ax, 0x2 are compiled to imul ax, ax, 0x2

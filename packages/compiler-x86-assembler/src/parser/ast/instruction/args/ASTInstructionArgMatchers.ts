@@ -182,7 +182,7 @@ export function findMatchingInstructionSchemas(
   const opcodeSchemas = matchersSet[opcode];
 
   if (!opcodeSchemas)
-    return null;
+    return [];
 
   const targetCheck = R.isNil(targetCPU);
   const schemas = R.filter(

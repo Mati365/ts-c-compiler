@@ -27,3 +27,12 @@ hlt
 c: dw 0xFE
 b: dq 0xFFFE
 output: dw 0
+
+;= test: handle prefixes as opcode
+;= bin: f3f0
+repz lock
+
+;= test: handle prefixes and instruction i new lines
+;= bin: f3f0a5
+repz lock
+movsw

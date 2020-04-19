@@ -20,6 +20,10 @@ export class TokensIterator {
 
   getTokenIndex(): number { return this.tokenIndex; }
 
+  setTokenIndex(tokenIndex: number): void {
+    this.tokenIndex = tokenIndex;
+  }
+
   /**
    * Fetches precceing token related to current tokenIndex
    *
