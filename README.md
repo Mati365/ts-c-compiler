@@ -1,5 +1,6 @@
 # i8086.js
 
+[![Codacy Badge](https://api.codacy.com/project/badge/Grade/be3d3814d7ba44cab8adce2acfd485b4)](https://app.codacy.com/manual/Mati365/i8086.js?utm_source=github.com&utm_medium=referral&utm_content=Mati365/i8086.js&utm_campaign=Badge_Grade_Settings)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg?style=flat-square)](https://opensource.org/licenses/MIT)
 ![GitHub code size in bytes](https://img.shields.io/github/languages/code-size/mati365/i8086.js?style=flat-square)
 ![GitHub issues](https://img.shields.io/github/issues/mati365/i8086.js?style=flat-square)
