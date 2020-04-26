@@ -1,5 +1,6 @@
 export * from './BIOS/BIOS';
-export * from './Speaker/Speaker';
+export * from './PIT/PIT';
 
+export * from './Keyboard';
 export * from './Cursor';
 export * from './RTC';

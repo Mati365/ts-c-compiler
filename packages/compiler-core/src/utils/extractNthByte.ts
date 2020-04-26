@@ -1,4 +1,18 @@
 /**
+ * Changes nth byte in number
+ *
+ * @param {number} nth
+ * @param {number} number
+ * @param {number} byte
+ * @returns {number}
+ */
+export function replaceNthByte(nth: number, number: number, byte: number): number {
+  const nthBit = nth << 3;
+
+  return (number & ~(0xFF << nthBit)) | (byte << nthBit);
+}
+
+/**
  * Extract nth byte from number
  *
  * @see

@@ -22,6 +22,11 @@ import {X86Stack} from './X86Stack';
 import {X86ALU} from './X86ALU';
 import {X86IO} from './X86IO';
 import {X86InstructionSet} from './X86InstructionSet';
+import {
+  RTC,
+  PIT,
+  Keyboard,
+} from './devices';
 
 type X86CPUConfig = {
   ignoreMagic?: boolean,
@@ -62,6 +67,11 @@ export class X86CPU extends X86AbstractCPU {
     this.io = new X86IO(this);
     this.instructionSet = new X86InstructionSet(this);
     this.x87 = new X87(this);
+
+    this
+      .attach(PIT)
+      .attach(RTC)
+      .attach(Keyboard);
   }
 
   get physicalIP() {
@@ -310,6 +320,9 @@ export class X86CPU extends X86AbstractCPU {
     };
 
     /** Exec CPU */
+    const {devices} = this;
+    (<PIT> devices.pit).tick();
+
     if (cycles) {
       for (let i = 0; i < cycles && this.clock; ++i)
         tick();

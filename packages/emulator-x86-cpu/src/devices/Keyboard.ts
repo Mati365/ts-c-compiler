@@ -1,0 +1,60 @@
+import {UnionStruct, bits} from '@compiler/core/shared/UnionStruct';
+import {X86CPU} from '../X86CPU';
+import {PIT} from './PIT/PIT';
+
+import {uuidX86Device} from '../types/X86AbstractDevice';
+
+export class KeyboardControlReg extends UnionStruct {
+  @bits(0) timer2Gate: number;
+  @bits(1) speakerGate: number;
+  @bits(5) timer2Out: number;
+}
+
+/**
+ * 8042
+ *
+ * @see {@link https://github.com/awesomekling/computron/blob/master/hw/keyboard.cpp}
+ *
+ * @export
+ * @class Keyboard
+ * @extends {uuidX86Device<X86CPU>('keyboard')}
+ */
+export class Keyboard extends uuidX86Device<X86CPU>('keyboard') {
+  public controlReg: KeyboardControlReg = new KeyboardControlReg;
+
+  /** Add 0x60 speaker etc flags support */
+  init() {
+    const {controlReg, cpu} = this;
+    const {speakerTimer} = <PIT> cpu.devices.pit;
+
+    this.ports = {
+      0x61: {
+        get: () => controlReg.number,
+        set: (bitset) => {
+          const prevEnabledSpeaker = this.isSpeakerEnabled();
+          controlReg.number = bitset;
+          const enabledSpeaker = this.isSpeakerEnabled();
+
+          if (prevEnabledSpeaker !== enabledSpeaker) {
+            if (enabledSpeaker)
+              speakerTimer.initAudio();
+            else
+              speakerTimer.disableAudio();
+          }
+        },
+      },
+    };
+  }
+
+  /**
+   * Speaker flags are stored in keyboard
+   *
+   * @returns {boolean}
+   * @memberof Keyboard
+   */
+  isSpeakerEnabled(): boolean {
+    const {controlReg} = this;
+
+    return controlReg.timer2Gate === 1 && controlReg.speakerGate === 1;
+  }
+}

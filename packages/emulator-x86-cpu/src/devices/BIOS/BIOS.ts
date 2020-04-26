@@ -67,6 +67,7 @@ export class BIOS extends uuidX86Device<X86CPU, BIOSInitConfig>('bios') {
 
   static VideoMode = {
     0x0: new VideoMode(0x0, 40, 25, 0x8),
+    0x2: new VideoMode(0x2, 80, 25, 0x8),
     0x3: new VideoMode(0x3, 80, 25, 0x8),
   };
 

@@ -446,7 +446,7 @@ export class X86InstructionSet extends X86Unit {
             cpu.incrementIP(0x1);
             cpu.debugDumpRegisters();
 
-            if (arg === 0xD2) // xchg dx, dx
+            if (arg === 0xDB) // xchg dx, dx
               debugger; // eslint-disable-line no-debugger
             break;
 

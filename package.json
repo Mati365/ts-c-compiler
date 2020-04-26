@@ -43,6 +43,7 @@
     "raw-loader": "^4.0.0",
     "jest-raw-loader": "^1.0.1",
     "long": "^4.0.0",
+    "reflect-metadata": "^0.1.13",
     "@types/long": "^4.0.0"
   },
   "name": "i8086.js",

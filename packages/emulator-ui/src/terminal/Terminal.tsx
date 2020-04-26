@@ -1,11 +1,7 @@
 import React from 'react';
 
 import {X86CPU} from '@emulator/x86-cpu/X86CPU';
-import {
-  BIOS,
-  RTC,
-  Speaker,
-} from '@emulator/x86-cpu/devices';
+import {BIOS} from '@emulator/x86-cpu/devices';
 
 import {OutputCanvas} from './OutputCanvas';
 
@@ -28,8 +24,6 @@ export class Terminal extends React.Component<TerminalProps> {
     this
       .cpu
       .attach(BIOS, {canvas})
-      .attach(RTC)
-      .attach(Speaker)
       .boot(binary);
   };
 
