@@ -61,14 +61,14 @@ export class CountdownTimer {
 
   constructor(
     public controlByte: TimerControlByte = new TimerControlByte(0x0),
-    public countdown: number = null,
+    public countdown: number = 0xFFFF,
     public startValue: number = 0xFFFF,
   ) {
     this.reset();
   }
 
   reset() {
-    this.latchValue = 0x0;
+    this.latchValue = this.countdown;
     this.accessByteOffset = 0x0;
     this.rolledOver = false;
   }
@@ -87,7 +87,7 @@ export class CountdownTimer {
     return CountdownTimer.SYSTEM_OSCILLATOR / this.countdown;
   }
 
-  /*
+  /**
    * Get timer value for current time
    *
    * @returns

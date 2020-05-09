@@ -13,6 +13,8 @@ import {
   X86InterruptType,
 } from './types';
 
+import {BIOS} from './devices';
+
 type X86FlagCondition = (flags: X86Flags) => boolean|number;
 
 type SwitchOpcodeOperator = (num: number, mode: X86BitsMode, byte: RMByte, register: boolean) => any;
@@ -446,8 +448,10 @@ export class X86InstructionSet extends X86Unit {
             cpu.incrementIP(0x1);
             cpu.debugDumpRegisters();
 
-            if (arg === 0xDB) // xchg dx, dx
+            if (arg === 0xDB) { // xchg bx, bx
+              (<BIOS> cpu.devices.bios).redraw();
               debugger; // eslint-disable-line no-debugger
+            }
             break;
 
           default:

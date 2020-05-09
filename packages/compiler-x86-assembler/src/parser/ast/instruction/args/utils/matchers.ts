@@ -1,7 +1,7 @@
 import {roundedSignedNumberByteSize} from '@compiler/core/utils/numberByteSize';
 
 import {RegisterSchema} from '@compiler/x86-assembler/constants';
-import {X86BitsMode} from '@emulator/x86-cpu/types';
+import {X86BitsMode, X86AbstractCPU} from '@emulator/x86-cpu/types';
 
 import {InstructionArgType} from '../../../../../types';
 import {ASTInstruction} from '../../ASTInstruction';
@@ -51,6 +51,7 @@ export function sreg(arg: ASTInstructionArg, byteSize: X86BitsMode): boolean {
   return reg(arg, byteSize, true);
 }
 
+/** Numbers */
 export function imm(arg: ASTInstructionArg, maxByteSize: X86BitsMode): boolean {
   return arg.type === InstructionArgType.LABEL || (
     arg.type === InstructionArgType.NUMBER
@@ -58,6 +59,46 @@ export function imm(arg: ASTInstructionArg, maxByteSize: X86BitsMode): boolean {
   );
 }
 
+/**
+ * Makes a trick in 0x83 instructions that requires signed extended number,
+ * they are generally smaller than normal instructions around 1 byte
+ * sub di, 0x1 can be encoded using less bytes because it can be expanded
+ * implicity and behaves same as sub di, 0x0001
+ *
+ * @example
+ *  add di, 0xFFFE
+ *  is transformed to add di, 0xFE with 0x83 signe extend instruction
+ *
+ * @todo Slow as fuck! Refactor!
+ *
+ * @export
+ * @param {ASTInstructionArg} arg
+ * @param {X86BitsMode} maxByteSize
+ * @param {X86BitsMode} targetSize
+ * @returns {boolean}
+ */
+export function immCanBeImplicitSignExtendedToByte(
+  arg: ASTInstructionArg,
+  srcByteSize: X86BitsMode,
+  targetSize: X86BitsMode,
+): boolean {
+  if (arg.type !== InstructionArgType.NUMBER)
+    return false;
+
+  const numArg = <ASTInstructionNumberArg> arg;
+  const extended = X86AbstractCPU.signExtend(numArg.signedNumber, srcByteSize, targetSize);
+
+  // todo: find better way
+  if (Math.sign(numArg.val) === 1) {
+    if (extended !== numArg.val)
+      return false;
+  } else if (X86AbstractCPU.getSignedNumber(extended, targetSize) !== numArg.val)
+    return false;
+
+  return X86AbstractCPU.msbit(extended, targetSize) === X86AbstractCPU.msbit(numArg.signedNumber, srcByteSize);
+}
+
+/** Pointers */
 export function relLabel(arg: ASTInstructionArg, signedByteSize: X86BitsMode, absoluteAddress: number): boolean {
   if (arg.type === InstructionArgType.LABEL)
     return true;
@@ -92,7 +133,7 @@ export function indirectFarSegPointer(arg: ASTInstructionArg, instruction: ASTIn
   return arg.type === InstructionArgType.MEMORY && instruction.branchAddressingType !== null;
 }
 
-/** FPU: */
+/** FPU */
 function x87reg(arg: ASTInstructionArg): RegisterSchema {
   if (arg.type !== InstructionArgType.REGISTER)
     return null;

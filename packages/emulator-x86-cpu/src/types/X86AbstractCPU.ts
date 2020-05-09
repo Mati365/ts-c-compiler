@@ -358,4 +358,27 @@ export abstract class X86AbstractCPU {
   static smsbit(num: number, bits: X86BitsMode = 0x1): number {
     return (num >> ((bits * 0x8 - 0x1) - 1)) & 0x1;
   }
+
+  /**
+   * Repeats most significant bit
+   *
+   * @static
+   * @param {number} num
+   * @param {X86BitsMode} bits
+   * @param {X86BitsMode} targetBits
+   * @returns {number}
+   * @memberof X86AbstractCPU
+   */
+  static signExtend(num: number, bits: X86BitsMode, targetBits: X86BitsMode): number {
+    if (targetBits <= bits)
+      return num;
+
+    const msbit = X86AbstractCPU.msbit(num, bits);
+    const mask = msbit ? 0xFF : 0x0;
+
+    for (let i = bits; i < targetBits; ++i)
+      num |= mask << (i * 8);
+
+    return num;
+  }
 }

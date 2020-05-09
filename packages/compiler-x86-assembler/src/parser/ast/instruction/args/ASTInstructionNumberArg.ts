@@ -31,6 +31,7 @@ export class ASTInstructionNumberArg extends ASTInstructionArg<number> {
       byteSize ?? roundToPowerOfTwo(numberByteSize(number)),
     );
 
+    // size of number that is encoded as signed U2, it multiplies * 2 size of unsigned
     this.signedByteSize = signedByteSize ?? roundedSignedNumberByteSize(number);
     this.signedNumber = X86AbstractCPU.toUnsignedNumber(
       number,

@@ -54,3 +54,17 @@ export function roundToPowerOfTwo(num: number): number {
 export function roundedSignedNumberByteSize(num: number): number {
   return roundToPowerOfTwo(signedNumberByteSize(num));
 }
+
+/**
+ * Fast count bits in number
+ *
+ * @export
+ * @param {number} num
+ * @returns
+ */
+export function bitsCount(num: number) {
+  if (!num)
+    return 1;
+
+  return Math.floor(Math.log2(num)) + 1;
+}

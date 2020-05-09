@@ -562,12 +562,12 @@ export class BIOS extends uuidX86Device<X86CPU, BIOSInitConfig>('bios') {
       this.canvas.ctx.imageSmoothingEnabled = false;
 
       /** Render loop */
-      const {cpu, canvas} = this;
+      const {cpu} = this;
       const vblank = setInterval(
         () => {
           try {
             cpu.exec(1450000 / 30);
-            this.redraw(canvas.ctx);
+            this.redraw();
 
             if (cpu.isHalted())
               clearInterval(vblank);
@@ -606,14 +606,13 @@ export class BIOS extends uuidX86Device<X86CPU, BIOSInitConfig>('bios') {
 
   /**
    * Redraw whole screen
-   *
-   * @param {Context} ctx Screen context
    */
-  redraw(ctx: CanvasRenderingContext2D): void {
+  redraw(): void {
     const {cursor, blink, cpu, screen, canvas} = this;
     const {registers} = cpu;
 
     const {page, mode} = screen;
+    const {ctx} = canvas;
 
     /** Update blinking */
     if (Date.now() - blink.last >= 300) {

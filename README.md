@@ -33,7 +33,7 @@
 
 ## Docs
 
-https://gist.github.com/nikAizuddin/0e307cac142792dcdeba<br />
+https://gist.github.com/nikAizuddin/0e307cac142792dcdeba\n
 http://www.plantation-productions.com/Webster/www.artofasm.com/Windows/HTML/RealArithmetica3.html<br />
 https://gist.github.com/mikesmullin/6259449<br />
 http://teaching.idallen.com/dat2343/10f/notes/040_overflow.txt<br />
@@ -44,6 +44,11 @@ https://xem.github.io/minix86/manual/intel-x86-and-64-manual-vol1/o_7281d5ea06a5
 https://johnloomis.org/ece314/notes/fpu/fpu.pdf<br />
 https://www.felixcloutier.com/x86/index.html<br />
 https://c9x.me/x86/html/file_module_x86_id_87.html
+
+**VGA:**
+
+http://www.osdever.net/FreeVGA/vga/graphreg.htm#06
+http://www.osdever.net/FreeVGA/vga/vgamem.htm
 
 ## License
 

@@ -385,19 +385,28 @@ export class X86ALU extends X86Unit {
       },
       /** TEST r/m16, r16 */ 0x85: () => opcodes[0x84](0x2),
 
-      /** OPERATOR r/m8, imm8 */ 0x80: (bits: X86BitsMode = 0x1, src = bits) => {
+      /** OPERATOR r/m8, imm8 */ 0x80: (bits: X86BitsMode = 0x1, src: X86BitsMode = bits) => {
         cpu.parseRmByte(
           (reg, modeReg) => {
+            const imm = X86AbstractCPU.signExtend(cpu.fetchOpcode(src), src, bits);
+
             registers[<string> reg] = this.exec(
               this.operators[modeReg],
               registers[<string> reg],
-              cpu.fetchOpcode(src),
+              imm,
               bits,
             );
           },
           (address, reg, mode) => {
+            const imm = X86AbstractCPU.signExtend(cpu.fetchOpcode(src), src, bits);
+
             memIO.write[bits](
-              this.exec(operators[mode.reg], memIO.read[bits](address), cpu.fetchOpcode(src), bits),
+              this.exec(
+                operators[mode.reg],
+                memIO.read[bits](address),
+                imm,
+                bits,
+              ),
               address,
             );
           },

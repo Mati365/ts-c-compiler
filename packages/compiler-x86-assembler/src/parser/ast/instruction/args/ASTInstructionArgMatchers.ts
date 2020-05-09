@@ -12,6 +12,7 @@ import {
 import {
   mem, moffs, reg, sreg, imm, relLabel, x87sti, x87st,
   nearPointer, farSegPointer, indirectFarSegPointer,
+  immCanBeImplicitSignExtendedToByte,
 } from './utils/matchers';
 
 /**
@@ -96,6 +97,9 @@ export const ASTInstructionArgMatchers: {[key: string]: ASTInstructionArgMatcher
   /** IMM */
   ib: () => (arg: ASTInstructionArg) => imm(arg, 1),
   iw: () => (arg: ASTInstructionArg) => imm(arg, 2),
+
+  /** Trick for 0x83 instructions, detect if number is sign extended and save bytes */
+  sign_extended_ib_to_iw: () => (arg: ASTInstructionArg) => immCanBeImplicitSignExtendedToByte(arg, 1, 2),
 
   /** LABEL - size of label will be matched in second phrase */
   sl: () => (arg: ASTInstructionArg, _: ASTInstruction, addr: number) => (
