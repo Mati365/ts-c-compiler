@@ -11,17 +11,17 @@
 
 ## Status
 
-- [x] Basic ASM compiler with NASM Syntax
-- [x] Add expression parsers (such as jmp .label + 2)
-- [x] Preprocessor for NASM
-- [x] Improve diassembler (add jump arrows)
-- [x] FPU Support
-  - [x] Assembler
-  - [x] Emulator
-- [ ] Basic PIT/PIC support
-- [ ] Add VGA mode (13h)
-- [ ] Tiny 16bit C compiler
-- [ ] App frontend
+- [x]   Basic ASM compiler with NASM Syntax
+- [x]   Add expression parsers (such as jmp .label + 2)
+- [x]   Preprocessor for NASM
+- [x]   Improve diassembler (add jump arrows)
+- [x]   FPU Support
+  - [x]   Assembler
+  - [x]   Emulator
+- [ ]   Basic PIT/PIC support
+- [ ]   Add VGA mode (13h)
+- [ ]   Tiny 16bit C compiler
+- [ ]   App frontend
 
 ## Screens
 
@@ -33,22 +33,31 @@
 
 ## Docs
 
-https://gist.github.com/nikAizuddin/0e307cac142792dcdeba\n
-http://www.plantation-productions.com/Webster/www.artofasm.com/Windows/HTML/RealArithmetica3.html<br />
-https://gist.github.com/mikesmullin/6259449<br />
-http://teaching.idallen.com/dat2343/10f/notes/040_overflow.txt<br />
-http://ece425web.groups.et.byu.net/stable/labs/8086Assembly.html<br />
-http://dsearls.org/courses/C391OrgSys/IntelAL/8086_instruction_set.html<br />
-https://pdos.csail.mit.edu/6.828/2008/readings/i386/s17_02.htm<br />
-https://xem.github.io/minix86/manual/intel-x86-and-64-manual-vol1/o_7281d5ea06a5b67a-194.html<br />
-https://johnloomis.org/ece314/notes/fpu/fpu.pdf<br />
-https://www.felixcloutier.com/x86/index.html<br />
-https://c9x.me/x86/html/file_module_x86_id_87.html
+<https://gist.github.com/nikAizuddin/0e307cac142792dcdeba>
 
-**VGA:**
+<http://www.plantation-productions.com/Webster/www.artofasm.com/Windows/HTML/RealArithmetica3.html>
 
-http://www.osdever.net/FreeVGA/vga/graphreg.htm#06
-http://www.osdever.net/FreeVGA/vga/vgamem.htm
+<https://gist.github.com/mikesmullin/6259449>
+
+<http://teaching.idallen.com/dat2343/10f/notes/040_overflow.txt>
+
+<http://ece425web.groups.et.byu.net/stable/labs/8086Assembly.html>
+
+<http://dsearls.org/courses/C391OrgSys/IntelAL/8086_instruction_set.html>
+
+<https://pdos.csail.mit.edu/6.828/2008/readings/i386/s17_02.htm>
+
+<https://xem.github.io/minix86/manual/intel-x86-and-64-manual-vol1/o_7281d5ea06a5b67a-194.html>
+
+<https://johnloomis.org/ece314/notes/fpu/fpu.pdf>
+
+<https://www.felixcloutier.com/x86/index.html>
+
+<https://c9x.me/x86/html/file_module_x86_id_87.html>
+
+<http://www.osdever.net/FreeVGA/vga/graphreg.htm#06>
+
+<http://www.osdever.net/FreeVGA/vga/vgamem.htm>
 
 ## License
 
