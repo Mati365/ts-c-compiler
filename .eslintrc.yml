@@ -28,6 +28,7 @@
   plugins:
     - '@typescript-eslint'
     - react-hooks
+    - xss
 
   rules:
     max-len: ["error", 120]
