@@ -34,7 +34,7 @@
     max-len: ["error", 120]
     class-methods-use-this: 0
     quotes: ["error", "single"]
-    import/no-default-export: ["error", "always"]
+    import/no-default-export: [2]
     import/prefer-default-export: "off"
     react/static-property-placement: ["warn", "static public field", {
       childContextTypes: "static getter",
