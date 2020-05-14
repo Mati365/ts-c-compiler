@@ -1,8 +1,9 @@
 import * as R from 'ramda';
 
-import {UnmountCallback} from '@compiler/core/types';
 import {mutableOmitChildKeys} from '@compiler/core/utils/mutableOmitChildKeys';
+import {getMSbit} from '@compiler/core/utils/bits';
 
+import {UnmountCallback} from '@compiler/core/types';
 import {X86_BINARY_MASKS} from '../constants/x86';
 
 import {Logger} from '../Logger';
@@ -334,32 +335,6 @@ export abstract class X86AbstractCPU {
   }
 
   /**
-   * Get most significant bit
-   *
-   * @static
-   * @param {any} num
-   * @param {number} [bits=0x1]
-   *
-   * @memberOf CPU
-   */
-  static msbit(num: number, bits: X86BitsMode = 0x1): number {
-    return (num >> (bits * 0x8 - 0x1)) & 0x1;
-  }
-
-  /**
-   * Get bit next to most significant bit
-   *
-   * @static
-   * @param {any} num
-   * @param {number} [bits=0x1]
-   *
-   * @memberOf CPU
-   */
-  static smsbit(num: number, bits: X86BitsMode = 0x1): number {
-    return (num >> ((bits * 0x8 - 0x1) - 1)) & 0x1;
-  }
-
-  /**
    * Repeats most significant bit
    *
    * @static
@@ -373,7 +348,7 @@ export abstract class X86AbstractCPU {
     if (targetBits <= bits)
       return num;
 
-    const msbit = X86AbstractCPU.msbit(num, bits);
+    const msbit = getMSbit(num, bits);
     const mask = msbit ? 0xFF : 0x0;
 
     for (let i = bits; i < targetBits; ++i)

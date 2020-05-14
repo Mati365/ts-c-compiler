@@ -99,7 +99,7 @@ export class ASTLabel extends KindASTAsmNode(ASTNodeKind.LABEL) {
       parser.fetchRelativeToken();
 
     // detect if resolving label starting with .
-    const localName: string = token.lowerText;
+    const localName: string = token.text;
     let name = null;
 
     if (isLocalLabel(localName)) {

@@ -14,8 +14,9 @@ import {
 
 import {TreeVisitor} from '@compiler/grammar/tree/TreeVisitor';
 import {ASTPreprocessorNode, isStatementPreprocessorNode} from '../constants';
-import {ASTPreprocessorCallable} from '../nodes';
+import {ASTPreprocessorCallable, ASTPreprocessorStmt} from '../nodes';
 import {ExpressionResultTreeVisitor} from './ExpressionResultTreeVisitor';
+import {PreprocessorGrammarConfig, createPreprocessorGrammar} from '../grammar';
 import {
   PreprocessorError,
   PreprocessorErrorCode,
@@ -47,12 +48,24 @@ export class PreprocessorScope {
 }
 
 /**
+ * Store grammar and whole interpreter config
+ */
+export type PreprocessorInterpreterConfig = {
+  grammarConfig: PreprocessorGrammarConfig,
+  preExec?: string,
+};
+
+/**
  * Main interpreter logic
  *
  * @export
  * @class PreprocessorInterpreter
  */
 export class PreprocessorInterpreter {
+  constructor(
+    private config: PreprocessorInterpreterConfig,
+  ) {}
+
   private _scopes: PreprocessorScope[] = [
     new PreprocessorScope,
   ];
@@ -91,6 +104,23 @@ export class PreprocessorInterpreter {
   }
 
   /**
+   * Removes all macros from code
+   *
+   * @param {string} code
+   * @returns {[string, ASTPreprocessorStmt]}
+   * @memberof PreprocessorInterpreter
+   */
+  exec(code: string): [string, ASTPreprocessorStmt] {
+    const {config} = this;
+    const stmt: ASTPreprocessorStmt = createPreprocessorGrammar(config.grammarConfig).process(code).children[0];
+
+    return [
+      this.execTree(stmt),
+      stmt,
+    ];
+  }
+
+  /**
    * Evaluates all macros, replaces them with empty lines
    *
    * @see
@@ -100,7 +130,7 @@ export class PreprocessorInterpreter {
    * @returns {string}
    * @memberof PreprocessorInterpreter
    */
-  exec(ast: ASTPreprocessorNode): string {
+  execTree(ast: ASTPreprocessorNode): string {
     let acc = '';
 
     ast.exec(this);
@@ -233,6 +263,7 @@ export class PreprocessorInterpreter {
    * @memberof PreprocessorInterpreter
    */
   removeMacrosFromTokens(tokens: Token[]): [boolean, Token[]] {
+    const {grammarConfig: {prefixChar}} = this.config;
     let newTokens: Token[] = tokens;
     let inInlineMacroExp = false;
 
@@ -244,17 +275,16 @@ export class PreprocessorInterpreter {
       // just explode token here and reset offset
       const inlineMacroExpression = (
         text.length > 1
-          && R.endsWith('%', text)
+          && R.endsWith(prefixChar, text)
           && nextToken?.text === '['
       );
       if (inlineMacroExpression) {
         newTokens[i] = new Token(TokenType.KEYWORD, null, R.init(text), loc);
         newTokens = R.insert(
           i + 1,
-          new Token(TokenType.KEYWORD, null, '%', loc),
+          new Token(TokenType.KEYWORD, null, prefixChar, loc),
           newTokens,
         );
-
         inInlineMacroExp = true;
         i--; // repeat current loop step
         continue;
@@ -265,7 +295,7 @@ export class PreprocessorInterpreter {
         continue;
 
       // catch %0, %1, %[] etc macro inner variables
-      if (text[0] === '%') {
+      if (text[0] === prefixChar) {
         if (nextToken?.text[0] === '[') {
           // expressions %[]
           const [content, newOffset] = extractNestableTokensList(

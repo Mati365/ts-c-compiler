@@ -5,9 +5,9 @@ export function joinTokensTexts(separator: string, tokens: Token[]): string {
   return R.pluck('text', tokens).join(separator);
 }
 
-/**vv
+/**v
  * Sucky asm tokens join
- *
+
  * @param {Token[]} tokens
  * @param {boolean} trim
  * @returns {string}

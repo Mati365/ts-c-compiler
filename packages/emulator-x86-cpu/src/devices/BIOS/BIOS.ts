@@ -408,13 +408,14 @@ export class BIOS extends uuidX86Device<X86CPU, BIOSInitConfig>('bios') {
       color: number|boolean = true,
       moveCursor: boolean = false,
     ): void => {
-      const {cursor} = this;
+      const {cursor, regs} = this;
+      const {al, cx} = regs;
 
       if (!moveCursor)
         cursor.save();
 
-      for (let i = 0; i < this.regs.cx; ++i)
-        writeCharacter(this.regs.al, attribute, color);
+      for (let i = 0; i < cx; ++i)
+        writeCharacter(al, attribute, color);
 
       if (!moveCursor)
         cursor.restore();

@@ -1,9 +1,11 @@
 /* eslint-disable no-use-before-define, @typescript-eslint/no-use-before-define */
-import {isLineTerminatorToken} from '@compiler/lexer/utils';
+import {isLineTerminatorToken} from '@compiler/lexer/utils/isLineTerminatorToken';
+import {mapObjectKeys} from '@compiler/core/utils/mapObjectKeys';
 
 import {TokenType, NumberToken, Token, TokenKind, NumberFormat} from '@compiler/lexer/tokens';
 import {Grammar, GrammarInitializer, SyntaxError} from '@compiler/grammar/Grammar';
 import {NodeLocation} from '@compiler/grammar/tree/NodeLocation';
+import {IdentifiersMap} from '@compiler/lexer/lexer';
 
 import {empty} from '@compiler/grammar/matchers';
 import {fetchTokensUntilEOL} from '@compiler/grammar/utils/fetchTokensUntilEOL';
@@ -371,27 +373,36 @@ const preprocessorMatcher: GrammarInitializer<PreprocessorIdentifier, ASTPreproc
   return stmt;
 };
 
-export function createPreprocessorGrammar() {
+export type PreprocessorGrammarConfig = {
+  prefixChar?: string,
+};
+
+export function createPreprocessorGrammar({prefixChar = '%'}: PreprocessorGrammarConfig = {}) {
+  const identifiers = mapObjectKeys<IdentifiersMap>(
+    (key) => `${prefixChar}${key}`,
+    {
+      if: PreprocessorIdentifier.IF,
+      ifn: PreprocessorIdentifier.IFN,
+      ifdef: PreprocessorIdentifier.IFDEF,
+      ifndef: PreprocessorIdentifier.IFNDEF,
+      endif: PreprocessorIdentifier.ENDIF,
+      else: PreprocessorIdentifier.ELSE,
+      elif: PreprocessorIdentifier.ELIF,
+      elifn: PreprocessorIdentifier.ELIFN,
+      elifdef: PreprocessorIdentifier.ELIFDEF,
+      elifndef: PreprocessorIdentifier.ELIFNDEF,
+      define: PreprocessorIdentifier.DEFINE,
+      idefine: PreprocessorIdentifier.IDEFINE,
+      undef: PreprocessorIdentifier.UNDEF,
+      macro: PreprocessorIdentifier.MACRO,
+      imacro: PreprocessorIdentifier.IMACRO,
+      endmacro: PreprocessorIdentifier.ENDMACRO,
+    },
+  );
+
   return Grammar.build(
     {
-      identifiers: {
-        '%if': PreprocessorIdentifier.IF,
-        '%ifn': PreprocessorIdentifier.IFN,
-        '%ifdef': PreprocessorIdentifier.IFDEF,
-        '%ifndef': PreprocessorIdentifier.IFNDEF,
-        '%endif': PreprocessorIdentifier.ENDIF,
-        '%else': PreprocessorIdentifier.ELSE,
-        '%elif': PreprocessorIdentifier.ELIF,
-        '%elifn': PreprocessorIdentifier.ELIFN,
-        '%elifdef': PreprocessorIdentifier.ELIFDEF,
-        '%elifndef': PreprocessorIdentifier.ELIFNDEF,
-        '%define': PreprocessorIdentifier.DEFINE,
-        '%idefine': PreprocessorIdentifier.IDEFINE,
-        '%undef': PreprocessorIdentifier.UNDEF,
-        '%macro': PreprocessorIdentifier.MACRO,
-        '%imacro': PreprocessorIdentifier.IMACRO,
-        '%endmacro': PreprocessorIdentifier.ENDMACRO,
-      },
+      identifiers,
     },
     preprocessorMatcher,
   );

@@ -8,6 +8,7 @@ export * from './truncateText';
 export * from './bits';
 export * from './mutableOmitChildKeys';
 export * from './mapMapValues';
+export * from './mapObjectKeys';
 export * from './setCharAt';
 export * from './IEEE754';
 export * from './flipObject';

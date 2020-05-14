@@ -1,3 +1,5 @@
+import {getMSbit} from '@compiler/core/utils/bits';
+
 import {
   X86_BINARY_MASKS,
   X86_REGISTERS,
@@ -294,7 +296,13 @@ export class X86CPU extends X86AbstractCPU {
         return;
       }
 
-      /** REP - Do something with operand, reset opcode prefix */
+      /**
+       * REP - Do something with operand, reset opcode prefix
+       *
+       * @todo
+       *  Set ALU flags every tick? It should stop if ZF = 0
+       *  Add REPNE support?
+       */
       if (prefixes.instruction === 0xF3) {
         const {ip: cachedIP} = registers;
         do {
@@ -308,10 +316,10 @@ export class X86CPU extends X86AbstractCPU {
           /** Stop loop if zf, check compare flags for SCAS, CMPS  */
           if (opcode === 0xAF || opcode === 0xAE || opcode === 0xA6 || opcode === 0xA7)
             break;
-
-          if (!registers.status.zf)
-            break;
         } while (registers.cx);
+
+        // ALU is setting zf=1 due to subscription
+        registers.status.zf = 1;
       } else
         operand();
 
@@ -562,7 +570,7 @@ export class X86CPU extends X86AbstractCPU {
 
     status.of = (
       times === 1
-        ? X86CPU.msbit(num, bits) ^ status.cf
+        ? getMSbit(num, bits) ^ status.cf
         : 0
     );
 
@@ -590,7 +598,7 @@ export class X86CPU extends X86AbstractCPU {
     }
 
     status.zf = +(num === 0);
-    status.of = X86AbstractCPU.msbit(num) ^ status.cf;
+    status.of = getMSbit(num) ^ status.cf;
 
     return num;
   }
@@ -609,13 +617,13 @@ export class X86CPU extends X86AbstractCPU {
     const mask = X86_BINARY_MASKS[bits];
 
     for (; times > 0; --times) {
-      status.cf = X86AbstractCPU.msbit(num, bits);
+      status.cf = getMSbit(num, bits);
       num <<= 0x1;
       num &= mask;
     }
 
     status.zf = +(num === 0);
-    status.of = X86AbstractCPU.msbit(num) ^ status.cf;
+    status.of = getMSbit(num) ^ status.cf;
 
     return num;
   }
@@ -640,14 +648,14 @@ export class X86CPU extends X86AbstractCPU {
       // rol
       let tCf = 0;
       for (let i = (times % byteSize) - 1; i >= 0; --i) {
-        tCf = X86AbstractCPU.msbit(num, bits);
+        tCf = getMSbit(num, bits);
         num = (num << 1) + tCf;
       }
 
       status.cf = num & 0x1;
       status.of = (
         times === 1
-          ? X86CPU.msbit(num, bits) ^ status.cf
+          ? getMSbit(num, bits) ^ status.cf
           : 0
       );
     } else {
@@ -657,10 +665,10 @@ export class X86CPU extends X86AbstractCPU {
         num = (num >> 1) + (tCf << byteSize);
       }
 
-      status.cf = X86AbstractCPU.msbit(num, bits);
+      status.cf = getMSbit(num, bits);
       status.of = (
         times === -1
-          ? X86CPU.msbit(num, bits) ^ X86CPU.smsbit(num, bits)
+          ? getMSbit(num, bits) ^ getMSbit(num, bits)
           : 0
       );
     }

@@ -2,52 +2,68 @@
 import {Result, err, ok} from '@compiler/core/monads/Result';
 import {CompilerError} from '@compiler/core/shared/CompilerError';
 
-// import {TreePrintVisitor} from '@compiler/grammar/tree/TreeVisitor';
-import {ASTPreprocessorStmt} from './nodes';
+import {TreePrintVisitor} from '@compiler/grammar/tree/TreeVisitor';
 import {ASTPreprocessorNode} from './constants';
-import {PreprocessorInterpreter} from './interpreter/PreprocessorInterpreter';
+import {
+  PreprocessorInterpreter,
+  PreprocessorInterpreterConfig,
+} from './interpreter/PreprocessorInterpreter';
 
-import {createPreprocessorGrammar} from './grammar';
+export const DEFAULT_PREPROCESSOR_CONFIG: PreprocessorInterpreterConfig = {
+  grammarConfig: {
+    prefixChar: '#',
+  },
+};
 
 export class PreprocessorResult {
   constructor(
     public readonly ast: ASTPreprocessorNode,
     public readonly result: string,
   ) {}
+
+  dump() {
+    const {result, ast} = this;
+
+    console.info((new TreePrintVisitor).visit(ast).reduced);
+    console.info(`Preprocessor Output: \n${result}`);
+  }
 }
 
 /**
  * Exec preprocessor on phrase
  *
  * @export
- * @param {string} str
+ * @param {string} code
+ * @param {PreprocessorInterpreterConfig} [config=DEFAULT_PREPROCESSOR_CONFIG]
+ * @returns {PreprocessorResult}
  */
-export function preprocessor(str: string): PreprocessorResult {
-  const stmt: ASTPreprocessorStmt = createPreprocessorGrammar().process(str).children[0];
+export function preprocessor(
+  code: string,
+  config: PreprocessorInterpreterConfig = DEFAULT_PREPROCESSOR_CONFIG,
+): PreprocessorResult {
+  const interpreter = new PreprocessorInterpreter(config);
+  if (config.preExec)
+    interpreter.exec(config.preExec);
 
-  const interpreter = new PreprocessorInterpreter;
-  const result = interpreter.exec(stmt);
-
-  // console.info((new TreePrintVisitor).visit(stmt).reduced);
-  // console.info(`Preprocessor Output: \n${result}`);
-
-  return new PreprocessorResult(
-    stmt,
-    result,
-  );
+  const [resultCode, stmt] = interpreter.exec(code);
+  return new PreprocessorResult(stmt, resultCode);
 }
 
 /**
  * Preprocessor that does not throw errors
  *
  * @export
- * @param {string} str
+ * @param {string} code
+ * @param {PreprocessorInterpreterConfig} [config=DEFAULT_PREPROCESSOR_CONFIG]
  * @returns {Result<PreprocessorResult, CompilerError[]>}
  */
-export function safeResultPreprocessor(str: string): Result<PreprocessorResult, CompilerError[]> {
+export function safeResultPreprocessor(
+  code: string,
+  config: PreprocessorInterpreterConfig = DEFAULT_PREPROCESSOR_CONFIG,
+): Result<PreprocessorResult, CompilerError[]> {
   try {
     return ok(
-      preprocessor(str),
+      preprocessor(code, config),
     );
   } catch (e) {
     return err(

@@ -1,0 +1,4 @@
+{
+  "name": "@emulator/x86-nano-c",
+  "main": "src/index.ts"
+}

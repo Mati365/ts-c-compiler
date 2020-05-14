@@ -26,3 +26,59 @@ export function format(str: string, params: object|Array<any>): string {
     },
   );
 }
+
+/**
+ * Formats date to string YYYY-MM-DD
+ *
+ * @export
+ * @param {Date} date
+ * @param {boolean} [withDay=true]
+ * @param {string} [separator='-']
+ * @returns {string}
+ */
+export function formatDate(
+  date: Date,
+  withDay: boolean = true,
+  separator: string = '-',
+): string {
+  if (!date)
+    return null;
+
+  const month = (date.getMonth() + 1).toString().padStart(2, '0');
+  const day = (date.getDate() + 1).toString().padStart(2, '0');
+
+  let formatted = `${date.getFullYear()}${separator}${month}`;
+  if (withDay)
+    formatted = `${formatted}${separator}${day}`;
+
+  return formatted;
+}
+
+/**
+ * Formats date to time string HH:MM:SS
+ *
+ * @export
+ * @param {Date} date
+ * @param {boolean} [withSeconds=true]
+ * @param {string} [separator=':']
+ * @returns {string}
+ */
+export function formatTime(
+  date: Date,
+  withSeconds: boolean = true,
+  separator: string = ':',
+): string {
+  if (!date)
+    return null;
+
+  const hours = date.getHours().toString().padStart(2, '0');
+  const minutes = date.getMinutes().toString().padStart(2, '0');
+
+  let formatted = `${hours}${separator}${minutes}`;
+  if (withSeconds) {
+    const seconds = date.getSeconds().toString().padStart(2, '0');
+    formatted = `${formatted}${separator}${seconds}`;
+  }
+
+  return formatted;
+}

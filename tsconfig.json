@@ -27,6 +27,9 @@
       "@compiler/x86-assembler": ["compiler-x86-assembler/src/"],
       "@compiler/x86-assembler/*": ["compiler-x86-assembler/src/*"],
 
+      "@compiler/x86-nano-c": ["compiler-x86-nano-c/src/"],
+      "@compiler/x86-nano-c/*": ["compiler-x86-nano-c/src/*"],
+
       "@emulator/ui": ["emulator-ui/src/"],
       "@emulator/ui/*": ["emulator-ui/src/*"],
 

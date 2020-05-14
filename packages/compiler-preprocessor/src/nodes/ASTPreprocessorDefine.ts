@@ -96,27 +96,36 @@ export class ASTPreprocessorDefine extends ASTPreprocessorNode implements ASTPre
       );
     }
 
-    const mappedTokens = R.map(
-      (token) => {
-        if (token.type !== TokenType.KEYWORD)
-          return token;
+    const mappedTokens: Token[] = [...expression];
+    for (let i = 0; i < mappedTokens.length; ++i) {
+      const token = mappedTokens[i];
+      if (token.type !== TokenType.KEYWORD)
+        continue;
 
-        const schemaIndex = R.findIndex(
-          (schema) => token.text === schema.name,
-          argsSchema,
-        );
-        if (schemaIndex === -1)
-          return token;
+      const schemaIndex = R.findIndex(
+        (schema) => token.text === schema.name,
+        argsSchema,
+      );
 
-        return new Token(
-          TokenType.KEYWORD,
-          null,
-          args[schemaIndex],
-          token.loc,
-        );
-      },
-      expression,
-    );
+      if (schemaIndex === -1)
+        continue;
+
+      const newToken = new Token(TokenType.KEYWORD, null, args[schemaIndex], token.loc);
+      const resize = mappedTokens[i].text.length - newToken.text.length;
+
+      // prevent something like it:
+      // %define section(section_name) [section section_name]
+      // section(a) it will produce some space after section [section a    ]
+      // because section_name length is bigger than a and ] location column stays the same
+      for (let j = i + 1; j < mappedTokens.length; ++j) {
+        if (mappedTokens[j].loc.row !== newToken.loc.row)
+          break;
+
+        mappedTokens[j].loc.column -= resize;
+      }
+
+      mappedTokens[i] = newToken;
+    }
 
     return joinTokensWithSpaces(
       interpreter.removeMacrosFromTokens(mappedTokens)[1],

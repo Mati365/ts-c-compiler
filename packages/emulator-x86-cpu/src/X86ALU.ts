@@ -1,4 +1,4 @@
-import {setBit} from '@compiler/core/utils/bits';
+import {setBit, getMSbit} from '@compiler/core/utils/bits';
 
 import {
   X86_REGISTERS,
@@ -69,15 +69,15 @@ export class X86ALU extends X86Unit {
      * @see http://www.righto.com/2012/12/the-6502-overflow-flag-explained.html
      */
     [X86_FLAGS_OFFSETS.of, (signed, bits, l, r, val, operator) => {
-      const lBit = X86AbstractCPU.msbit(l, bits);
-      let rBit = X86AbstractCPU.msbit(r, bits);
+      const lBit = getMSbit(l, bits);
+      let rBit = getMSbit(r, bits);
 
       // overflows in substract mode is really adding with
       // second argument containing negative sign
       if (operator.negativeRightOperand)
         rBit ^= 1;
 
-      return lBit === rBit && lBit !== X86AbstractCPU.msbit(signed, bits);
+      return lBit === rBit && lBit !== getMSbit(signed, bits);
     }],
     /** Parity flag */ [X86_FLAGS_OFFSETS.pf, (signed) => {
       /**
@@ -90,7 +90,7 @@ export class X86ALU extends X86Unit {
       return !(signed % 2);
     }],
     /** Zero flag */ [X86_FLAGS_OFFSETS.zf, (signed) => signed === 0x0],
-    /** Sign flag */ [X86_FLAGS_OFFSETS.sf, (signed, bits) => X86AbstractCPU.msbit(signed, bits) === 0x1],
+    /** Sign flag */ [X86_FLAGS_OFFSETS.sf, (signed, bits) => getMSbit(signed, bits) === 0x1],
   ];
 
   /**

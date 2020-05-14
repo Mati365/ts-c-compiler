@@ -14,14 +14,28 @@
 - [x] Basic ASM compiler with NASM Syntax
 - [x] Add expression parsers (such as jmp .label + 2)
 - [x] Preprocessor for NASM
+  - [ ] Add basic predefined macros
 - [x] Improve diassembler (add jump arrows)
 - [x] FPU Support
   - [x] Assembler
   - [x] Emulator
 - [ ] Basic PIT/PIC support
-- [ ] Add VGA mode (13h)
-- [ ] Tiny 16bit C compiler
+  - [x] PIT
+  - [ ] PIC
+- [ ] Graphics mode
+  - [ ] CGA
+  - [ ] VGA?
+- [ ] Nano 16bit C compiler
+  - [ ] Frontend
+  - [ ] Backend
 - [ ] App frontend
+  - [ ] Debugger
+
+## Running
+
+```bash
+yarn run develop
+```
 
 ## Screens
 
@@ -58,6 +72,8 @@
 <http://www.osdever.net/FreeVGA/vga/graphreg.htm#06>
 
 <http://www.osdever.net/FreeVGA/vga/vgamem.htm>
+
+<http://www.osdever.net/FreeVGA/home.htm>
 
 ## License
 

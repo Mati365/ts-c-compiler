@@ -61,6 +61,7 @@ module.exports = {
       '@compiler/rpn': pkgResolve('compiler-rpn/src/'),
       '@compiler/preprocessor': pkgResolve('compiler-preprocessor/src/'),
       '@compiler/x86-assembler': pkgResolve('compiler-x86-assembler/src/'),
+      '@compiler/x86-nano-c': pkgResolve('compiler-x86-nano-c/src'),
       '@emulator/ui': pkgResolve('emulator-ui/src/'),
       '@emulator/x86-cpu': pkgResolve('emulator-x86-cpu/src'),
     },

@@ -74,3 +74,27 @@ export function isSetBit(nth: number, value: number): boolean {
 export function hasFlag(flag: number, value: number): boolean {
   return (value & flag) === flag;
 }
+
+/**
+ * Get most significant bit
+ *
+ * @export
+ * @param {number} num
+ * @param {number} [byte=0x1]
+ * @returns {number}
+ */
+export function getMSbit(num: number, byte: number = 0x1): number {
+  return (num >> (byte * 0x8 - 0x1)) & 0x1;
+}
+
+/**
+ * Get bit next to most significant bit
+ *
+ * @export
+ * @param {number} num
+ * @param {number} [byte=0x1]
+ * @returns {number}
+ */
+export function getSMSbit(num: number, byte: number = 0x1): number {
+  return (num >> ((byte * 0x8 - 0x1) - 1)) & 0x1;
+}

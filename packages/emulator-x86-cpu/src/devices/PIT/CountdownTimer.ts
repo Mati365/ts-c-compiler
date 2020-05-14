@@ -90,6 +90,9 @@ export class CountdownTimer {
   /**
    * Get timer value for current time
    *
+   * @fixme
+   *  Propably incorrect result
+   *
    * @returns
    * @memberof CountdownTimer
    */

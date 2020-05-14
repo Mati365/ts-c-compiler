@@ -1,4 +1,5 @@
 import {roundedSignedNumberByteSize} from '@compiler/core/utils/numberByteSize';
+import {getMSbit} from '@compiler/core/utils/bits';
 
 import {RegisterSchema} from '@compiler/x86-assembler/constants';
 import {X86BitsMode, X86AbstractCPU} from '@emulator/x86-cpu/types';
@@ -95,7 +96,7 @@ export function immCanBeImplicitSignExtendedToByte(
   } else if (X86AbstractCPU.getSignedNumber(extended, targetSize) !== numArg.val)
     return false;
 
-  return X86AbstractCPU.msbit(extended, targetSize) === X86AbstractCPU.msbit(numArg.signedNumber, srcByteSize);
+  return getMSbit(extended, targetSize) === getMSbit(numArg.signedNumber, srcByteSize);
 }
 
 /** Pointers */

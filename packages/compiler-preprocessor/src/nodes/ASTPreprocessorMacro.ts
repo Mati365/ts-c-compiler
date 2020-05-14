@@ -68,7 +68,7 @@ export class ASTPreprocessorMacro extends ASTPreprocessorNode implements ASTPrep
     // produces inner macro content
     return interpreter.enterScope(
       variables,
-      () => interpreter.exec(this.content),
+      () => interpreter.execTree(this.content),
     );
   }
 
