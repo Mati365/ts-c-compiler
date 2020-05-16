@@ -25,8 +25,8 @@ export function asm(code: string): Result<CompilerOutput, CompilerError[]> {
       prefixChar: '%',
     },
     preExec: `
-      %define __DATE__ "${formatDate(today, true)}"
-      %define __TIME__ "${formatTime(today, true)}"
+      %define __DATE__ '${formatDate(today, true)}'
+      %define __TIME__ '${formatTime(today, true)}'
       %define __DATE_NUM__ ${formatDate(today, true, '')}
       %define __TIME_NUM__ ${formatTime(today, true, '')}
       %define __POSIX_TIME__ ${(+today / 1000) | 0}

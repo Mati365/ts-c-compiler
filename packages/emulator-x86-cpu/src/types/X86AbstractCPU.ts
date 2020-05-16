@@ -226,6 +226,17 @@ export abstract class X86AbstractCPU {
   }
 
   /**
+   * Return value in microseconds
+   *
+   * @static
+   * @returns {number}
+   * @memberof X86AbstractCPU
+   */
+  static microtick(): number {
+    return performance.now();
+  }
+
+  /**
    * Decodes MOD RM byte
    *
    * @see {@link http://www.c-jump.com/CIS77/CPU/x86/X77_0060_mod_reg_r_m_byte.htm}

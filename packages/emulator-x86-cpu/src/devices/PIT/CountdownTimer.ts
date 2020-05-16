@@ -1,4 +1,5 @@
 import {UnionStruct, bits} from '@compiler/core/shared/UnionStruct';
+import {X86AbstractCPU} from '@emulator/x86-cpu/types/X86AbstractCPU';
 import {PIT} from './PIT';
 
 /**
@@ -58,6 +59,7 @@ export class CountdownTimer {
   rolledOver: boolean = false;
   accessByteOffset: number = 0x0;
   latchValue: number = 0x0;
+  resetTimerTime: number = X86AbstractCPU.microtick();
 
   constructor(
     public controlByte: TimerControlByte = new TimerControlByte(0x0),
@@ -74,17 +76,26 @@ export class CountdownTimer {
   }
 
   check(pit: PIT) {
-    const {controlByte} = this;
+    const {controlByte, rolledOver} = this;
 
     this.getValue();
-    if (controlByte.channel === 0x0
-      && controlByte.operatingMode === TimerOperatingMode.INTERRUPT_ON_TERMINAL_COUNT) {
+    if (rolledOver
+        && controlByte.channel === 0x0
+        && controlByte.operatingMode === TimerOperatingMode.INTERRUPT_ON_TERMINAL_COUNT) {
       pit.raiseIRQ();
+      this.rolledOver = false;
     }
   }
 
+  /**
+   * @todo
+   *  Check if it is correct?
+   *
+   * @returns
+   * @memberof CountdownTimer
+   */
   getFrequency() {
-    return CountdownTimer.SYSTEM_OSCILLATOR / this.countdown;
+    return (this.countdown / 0xFFFF) * CountdownTimer.SYSTEM_OSCILLATOR;
   }
 
   /**
@@ -98,10 +109,13 @@ export class CountdownTimer {
    */
   getValue() {
     const {startValue, countdown} = this;
-    const diff = Date.now() - startValue;
+    const now = X86AbstractCPU.microtick();
+
+    const diff = now - this.resetTimerTime;
     const diffInTicks = Math.floor(diff * CountdownTimer.SYSTEM_OSCILLATOR);
 
     let value = startValue - diffInTicks;
+
     if (value >= countdown) {
       value %= countdown;
       this.rolledOver = true;
