@@ -4,6 +4,9 @@ import {VirtualMemBlockDriver} from '../../memory/VirtualMemBlockDriver';
 import {ByteMemRegionAccessor} from '../../memory/MemoryRegion';
 import {X86CPU} from '../../X86CPU';
 
+import {VGAExternalRegs} from './VGAExternalRegs';
+import {VGAGraphicsRegs} from './VGAGraphicsRegs';
+
 type VGA256State = {
   palette: Int32Array,
 };
@@ -20,12 +23,19 @@ export class VGA extends uuidX86Device<X86CPU>('vga') implements ByteMemRegionAc
   private vga256: VGA256State;
   private vram: VirtualMemBlockDriver;
 
+  /* regs */
+  private externalRegs: VGAExternalRegs;
+  private graphicsRegs: VGAGraphicsRegs;
+
   /**
    * Allocates memory
    *
    * @memberof VideoAdapter
    */
   init() {
+    this.externalRegs = new VGAExternalRegs;
+    this.graphicsRegs = new VGAGraphicsRegs;
+
     this.vram = VirtualMemBlockDriver.alloc(0x40000); // 256 KB
     this.vga256 = {
       palette: new Int32Array(256),
@@ -43,6 +53,10 @@ export class VGA extends uuidX86Device<X86CPU>('vga') implements ByteMemRegionAc
    * @memberof VGA
    */
   writeUInt(address: number, value: number, bits: X86BitsMode): number {
+    const {miscellaneousReg} = this.externalRegs;
+    if (!miscellaneousReg.ramEnable)
+      return null;
+
     return null;
   }
 
