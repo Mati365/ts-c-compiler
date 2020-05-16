@@ -14,7 +14,7 @@
 - [x] Basic ASM compiler with NASM Syntax
 - [x] Add expression parsers (such as jmp .label + 2)
 - [x] Preprocessor for NASM
-  - [ ] Add basic predefined macros
+  - [x] Add basic predefined macros
 - [x] Improve diassembler (add jump arrows)
 - [x] FPU Support
   - [x] Assembler
