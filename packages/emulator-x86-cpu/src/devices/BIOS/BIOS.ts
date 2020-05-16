@@ -12,7 +12,7 @@ import {
 import {uuidX86Device} from '../../types/X86AbstractDevice';
 import {X86CPU} from '../../X86CPU';
 
-import {CursorCharacter, Cursor} from '../Cursor';
+import {CursorCharacter, Cursor} from './Cursor';
 import {VideoMode} from './VideoMode';
 
 type KeymapTable = {
@@ -610,7 +610,6 @@ export class BIOS extends uuidX86Device<X86CPU, BIOSInitConfig>('bios') {
    */
   redraw(): void {
     const {cursor, blink, cpu, screen, canvas} = this;
-    const {registers} = cpu;
 
     const {page, mode} = screen;
     const {ctx} = canvas;
@@ -671,24 +670,5 @@ export class BIOS extends uuidX86Device<X86CPU, BIOSInitConfig>('bios') {
         );
       }
     }
-
-    /** Draw debugger toolkit */
-    ctx.clearRect(0, canvas.handle.height - 80, canvas.handle.width, 80);
-
-    ctx.fillStyle = BIOS.colorTable[0xF]; // eslint-disable-line prefer-destructuring
-    ctx.fillText(
-      `Virtual Machine Logs, Memory usage: ${cpu.memIO.device.length / 1024} KB`,
-      0,
-      canvas.handle.height - 26,
-    );
-
-    /* eslint-disable max-len */
-    ctx.fillStyle = BIOS.colorTable[0xA]; // eslint-disable-line prefer-destructuring
-    ctx.fillText(
-      `AX: ${registers.ax.toString(16)}h,  BX: ${registers.bx.toString(16)}h,  CX: ${registers.cx.toString(16)}h,  DX: ${registers.dx.toString(16)}h,  IP: ${registers.ip.toString(16)}h,  CS: ${registers.ip.toString(16)}h`,
-      0,
-      canvas.handle.height - 6,
-    );
-    /* eslint-enable max-len */
   }
 }

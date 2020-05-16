@@ -9,6 +9,7 @@ import {
 
 import {X86BitsMode} from '../types/X86Regs';
 import {X86AbstractCPU} from '../types/X86AbstractCPU';
+import {ByteMemRegionAccessor} from './MemoryRegion';
 
 type MemReader = (offset: number) => number;
 type MemWriter = (value: number, offset: number) => number;
@@ -46,7 +47,7 @@ type IEEE754MemIO = {
  * @export
  * @class VirtualMemBlockDriver
  */
-export class VirtualMemBlockDriver {
+export class VirtualMemBlockDriver implements ByteMemRegionAccessor {
   public device: Buffer;
   public read: MemBufferReaders;
   public write: MemBufferWriters;
@@ -90,6 +91,21 @@ export class VirtualMemBlockDriver {
         extended: (value, address) => this.writeBytesLE(address, toIEEE754Extended(value)),
       },
     };
+  }
+
+  /**
+   * Allocates empty mem block
+   *
+   * @static
+   * @param {number} bytes
+   * @param {number} [fill=0x0]
+   * @returns {VirtualMemBlockDriver}
+   * @memberof VirtualMemBlockDriver
+   */
+  static alloc(bytes: number, fill: number = 0x0): VirtualMemBlockDriver {
+    return new VirtualMemBlockDriver(
+      Buffer.alloc(bytes, fill),
+    );
   }
 
   /**

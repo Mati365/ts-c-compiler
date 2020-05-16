@@ -25,7 +25,8 @@ import {X86ALU} from './X86ALU';
 import {X86IO} from './X86IO';
 import {X86InstructionSet} from './X86InstructionSet';
 import {
-  RTC,
+  VGA,
+  CMOS,
   PIT,
   Keyboard,
 } from './devices';
@@ -61,7 +62,13 @@ export class X86CPU extends X86AbstractCPU {
       silent: false,
     };
 
-    this.mem = Buffer.alloc(1114112);
+    this
+      .attach(PIT)
+      .attach(CMOS)
+      .attach(VGA)
+      .attach(Keyboard);
+
+    this.mem = Buffer.alloc(1048576);
     this.memIO = new X86RAM<X86CPU>(this, this.mem);
 
     this.stack = new X86Stack(this);
@@ -69,11 +76,6 @@ export class X86CPU extends X86AbstractCPU {
     this.io = new X86IO(this);
     this.instructionSet = new X86InstructionSet(this);
     this.x87 = new X87(this);
-
-    this
-      .attach(PIT)
-      .attach(RTC)
-      .attach(Keyboard);
   }
 
   get physicalIP() {

@@ -7,19 +7,17 @@ type ClockTimerConfig = {
 };
 
 /**
- * Real-Time Clock
+ * CMOS
  *
  * @see {@link http://students.mimuw.edu.pl/SO/Projekt03-04/temat3-g4/cmos.html}
  *
  * @export
- * @class RTC
- * @extends {uuidX86Device('rtc')}
+ * @class CMOS
+ * @extends {uuidX86Device('cmos')}
  */
-export class RTC extends uuidX86Device<X86CPU>('rtc') {
+export class CMOS extends uuidX86Device<X86CPU>('cmos') {
   private index: number = 0;
-
   private offsets: {[key: number]: () => number} = null;
-
   private timer: ClockTimerConfig;
 
   /**
@@ -53,7 +51,7 @@ export class RTC extends uuidX86Device<X86CPU>('rtc') {
         },
       },
       0x71: {
-        get: () => RTC.toBCD(this.offsets[this.index].call(date)),
+        get: () => CMOS.toBCD(this.offsets[this.index].call(date)),
       },
     };
 
@@ -74,12 +72,15 @@ export class RTC extends uuidX86Device<X86CPU>('rtc') {
       0x2: () => {
         const now = new Date();
 
-        Object.assign(this.regs, {
-          ch: RTC.toBCD(now.getHours()),
-          cl: RTC.toBCD(now.getMinutes()),
-          dh: RTC.toBCD(now.getSeconds()),
-          dl: 0x0,
-        });
+        Object.assign(
+          this.regs,
+          {
+            ch: CMOS.toBCD(now.getHours()),
+            cl: CMOS.toBCD(now.getMinutes()),
+            dh: CMOS.toBCD(now.getSeconds()),
+            dl: 0x0,
+          },
+        );
         this.regs.status.cf = 0;
       },
     });
