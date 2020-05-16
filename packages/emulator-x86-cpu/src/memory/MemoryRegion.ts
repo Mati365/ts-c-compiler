@@ -28,4 +28,17 @@ export class MemoryRegionRange {
   ) {
     this.size = high - low;
   }
+
+  /**
+   * Check if address is in region
+   *
+   * @param {number} address
+   * @returns {boolean}
+   * @memberof MemoryRegionRange
+   */
+  contains(address: number): boolean {
+    const {low, high} = this;
+
+    return address >= low && address <= high;
+  }
 }

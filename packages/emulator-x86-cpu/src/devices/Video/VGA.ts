@@ -5,7 +5,11 @@ import {ByteMemRegionAccessor} from '../../memory/MemoryRegion';
 import {X86CPU} from '../../X86CPU';
 
 import {VGAExternalRegs} from './VGAExternalRegs';
-import {VGAGraphicsRegs} from './VGAGraphicsRegs';
+import {
+  GRAPHICS_MEMORY_MAPS,
+  VGAGraphicsRegs,
+  MemoryMapSelectType,
+} from './VGAGraphicsRegs';
 
 type VGA256State = {
   palette: Int32Array,
@@ -42,6 +46,10 @@ export class VGA extends uuidX86Device<X86CPU>('vga') implements ByteMemRegionAc
     };
   }
 
+  get memoryMapSelect(): MemoryMapSelectType {
+    return this.graphicsRegs.miscellaneousGraphicsReg.memoryMapSelect;
+  }
+
   /* eslint-disable @typescript-eslint/no-unused-vars */
   /**
    * @todo Add write to VRAM
@@ -57,6 +65,14 @@ export class VGA extends uuidX86Device<X86CPU>('vga') implements ByteMemRegionAc
     if (!miscellaneousReg.ramEnable)
       return null;
 
+    const {memoryMapSelect} = this;
+    const mode = GRAPHICS_MEMORY_MAPS[memoryMapSelect];
+    if (!mode.contains(address))
+      return null;
+
+    const offset = address - mode.low;
+
+    // todo: Write
     return null;
   }
 
@@ -70,6 +86,12 @@ export class VGA extends uuidX86Device<X86CPU>('vga') implements ByteMemRegionAc
    * @memberof VGA
    */
   readUInt(address: number, bits: X86BitsMode): number {
+    const {memoryMapSelect} = this;
+    const mode = GRAPHICS_MEMORY_MAPS[memoryMapSelect];
+    if (!mode.contains(address))
+      return null;
+
+    // todo: Read
     return null;
   }
   /* eslint-enable @typescript-eslint/no-unused-vars */

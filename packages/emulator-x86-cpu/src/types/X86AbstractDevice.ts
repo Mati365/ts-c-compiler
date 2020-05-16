@@ -85,7 +85,7 @@ export abstract class X86AbstractDevice<
     interruptCode: string|number,
     reg: X86RegName,
     list: {[address: number]: X86InterruptHandlerCallback},
-    physicalAddress: number = (this.memRegion?.low ?? X86_MAPPED_VM_MEM.low) + +interruptCode,
+    physicalAddress: number = ((this.memRegion && this.memRegion.low) || X86_MAPPED_VM_MEM.low) + +interruptCode,
   ) {
     this.interrupts[interruptCode] = {
       physicalAddress,

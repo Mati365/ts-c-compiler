@@ -107,17 +107,19 @@ export class GraphicsModeReg extends UnionStruct {
  * @class MiscellaneousGraphicsReg
  * @extends {UnionStruct}
  */
-export const GRAPHICS_MEMORY_MAPS: {[key: number]: MemoryRegionRange} = {
+export const GRAPHICS_MEMORY_MAPS: {[key: number]: MemoryRegionRange} = Object.freeze({
   0b00: new MemoryRegionRange(0xA0000, 0xBFFFF), // 128K region
   0b01: new MemoryRegionRange(0xA0000, 0xAFFFF), // 64K region
   0b10: new MemoryRegionRange(0xB0000, 0xB7FFF), // 32K region
   0b11: new MemoryRegionRange(0xB8000, 0xBFFFF), // 32K region
-};
+});
+
+export type MemoryMapSelectType = keyof typeof GRAPHICS_MEMORY_MAPS;
 
 export class MiscellaneousGraphicsReg extends UnionStruct {
   @bits(0) alphanumericModeDisable: number;
   @bits(1) chainOddEvenEnable: number;
-  @bits(2, 3) memoryMapSelect: keyof typeof GRAPHICS_MEMORY_MAPS;
+  @bits(2, 3) memoryMapSelect: MemoryMapSelectType;
 }
 
 /**
