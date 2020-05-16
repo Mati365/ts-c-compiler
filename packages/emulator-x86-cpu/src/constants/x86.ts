@@ -1,12 +1,12 @@
 import * as R from 'ramda';
 
-import {MemRange} from '@compiler/core/types';
+import {MemoryRegionRange} from '../memory/MemoryRegion';
 import {
   X86Prefix,
   X86RegsSet,
 } from '../types/X86Regs';
 
-export const X86_MAPPED_VM_MEM = Object.freeze(new MemRange(0xC8000, 0xEFFFF));
+export const X86_MAPPED_VM_MEM = Object.freeze(new MemoryRegionRange(0xC8000, 0xEFFFF));
 
 export const X86_BINARY_MASKS = {
   0x1: (0x2 << 0x7) - 0x1,

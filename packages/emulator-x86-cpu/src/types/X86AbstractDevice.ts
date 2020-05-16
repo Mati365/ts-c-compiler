@@ -1,7 +1,5 @@
-import {
-  MemRange,
-  UnmountCallback,
-} from '@compiler/core/types';
+import {UnmountCallback} from '@compiler/core/types';
+import {MemoryRegionRange} from '../memory/MemoryRegion';
 
 import {X86_MAPPED_VM_MEM} from '../constants/x86';
 
@@ -27,7 +25,7 @@ export abstract class X86AbstractDevice<
   TInitConfig = {},
 > {
   protected cpu: TCPU = null;
-  protected mem: MemRange = null;
+  protected memRegion: MemoryRegionRange = null;
   protected interrupts: X86InterruptsSet = {};
   protected ports: X86PortsSet = {};
   protected irq: number = null;
@@ -39,11 +37,11 @@ export abstract class X86AbstractDevice<
   /**
    * Creates an instance of AbstractDevice.
    *
-   * @param {MemRange} [mem]
+   * @param {MemoryRegionRange} [memRegion]
    * @memberof AbstractDevice
    */
-  constructor(mem?: MemRange) {
-    this.mem = mem;
+  constructor(memRegion?: MemoryRegionRange) {
+    this.memRegion = memRegion;
   }
 
   abstract init(initConfig?: TInitConfig): void;
@@ -87,7 +85,7 @@ export abstract class X86AbstractDevice<
     interruptCode: string|number,
     reg: X86RegName,
     list: {[address: number]: X86InterruptHandlerCallback},
-    physicalAddress: number = ((this.mem && this.mem.low) || X86_MAPPED_VM_MEM.low) + +interruptCode,
+    physicalAddress: number = (this.memRegion?.low ?? X86_MAPPED_VM_MEM.low) + +interruptCode,
   ) {
     this.interrupts[interruptCode] = {
       physicalAddress,

@@ -23,13 +23,29 @@ export class Rectangle implements RectangleDimensions {
   }
 }
 
-/** Debugger types */
-export class MemRange {
-  low: number;
-  high: number;
+/**
+ * Struct that holds color data
+ *
+ * @export
+ * @class RGBColor
+ */
+export class RGBColor {
+  constructor(
+    public readonly r: number,
+    public readonly g: number,
+    public readonly b: number,
+  ) {}
+}
 
-  constructor(low: number = 0, high: number = 0) {
-    this.low = low;
-    this.high = high;
-  }
+/**
+ * Holds width and height of object
+ *
+ * @export
+ * @class Size
+ */
+export class Size {
+  constructor(
+    public readonly w: number,
+    public readonly h: number,
+  ) {}
 }
