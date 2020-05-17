@@ -11,24 +11,37 @@
 
 ## Status
 
-- [x] Basic ASM compiler with NASM Syntax
-- [x] Add expression parsers (such as jmp .label + 2)
-- [x] Preprocessor for NASM
-  - [x] Add basic predefined macros
-- [x] Improve diassembler (add jump arrows)
-- [x] FPU Support
-  - [x] Assembler
-  - [x] Emulator
-- [ ] Basic PIT/PIC support
-  - [x] PIT
-  - [ ] PIC
-- [ ] Graphics mode
-  - [ ] CGA
-  - [ ] VGA?
+- [x] ASM Compiler
+  - [x] NASM syntax instruction compiler matcher
+  - [x] Labels support
+  - [x] Data define support
+  - [x] EQU, times support
+  - [x] Floating point numbers support
+  - [x] Preprocessor
+    - [x] Basic lang keywords support: `%if`, `%ifn`, `%ifdef`, `%ifndef`, `%else`, `%elif`, `%elifndef`, `%elifdef`, `%elifn`, `%define`, `%undef`
+    - [x] Macros support: `%macro`, `%define`, `%imacro`
+    - [x] Predefined macros like `__TIMES__`
+    - [x] Inline expressions calls `%[__TIMES__]`
+  - [x] Output logger
+    - [x] Diassembler binary view
+    - [x] Branch arrows (for JMP, CALL etc.)
+- [ ] CPU Emulator
+  - [x] FPU Support
+    - [x] Assembler
+    - [x] Emulator
+  - [ ] Basic PIT/PIC support
+    - [x] PIT
+    - [ ] PIC
+  - [ ] Graphics mode
+    - [x] Basic canvas graphics driver
+    - [ ] Text/Graphics VGA
 - [ ] Nano 16bit C compiler
   - [ ] Frontend
+    - [ ] Syntax parser
   - [ ] Backend
+    - [ ] ASM emitter
 - [ ] App frontend
+  - [ ] Basic front CSS UI
   - [ ] Debugger
 
 ## Running
