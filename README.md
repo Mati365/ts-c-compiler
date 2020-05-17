@@ -6,6 +6,7 @@
 ![GitHub issues](https://img.shields.io/github/issues/mati365/i8086.js?style=flat-square)
 [![HitCount](http://hits.dwyl.com/mati365/i8086js.svg)](http://hits.dwyl.com/mati365/i8086js)
 [![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg?style=flat-square)](http://makeapullrequest.com)
+[![Known Vulnerabilities](https://snyk.io/test/github/Mati365/i8086.js/badge.svg?targetFile=package.json)](https://snyk.io/test/github/Mati365/i8086.js?targetFile=package.json)
 
 16bit x86 virtual machine written in modern JS ES6.
 
