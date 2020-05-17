@@ -5,6 +5,7 @@ import {ByteMemRegionAccessor} from '../../memory/MemoryRegion';
 import {X86CPU} from '../../X86CPU';
 
 import {VGAExternalRegs} from './VGAExternalRegs';
+import {VGACrtcRegs} from './VGACrtcRegs';
 import {
   GRAPHICS_MEMORY_MAPS,
   VGAGraphicsRegs,
@@ -30,6 +31,7 @@ export class VGA extends uuidX86Device<X86CPU>('vga') implements ByteMemRegionAc
   /* regs */
   private externalRegs: VGAExternalRegs;
   private graphicsRegs: VGAGraphicsRegs;
+  private crtcRegs: VGACrtcRegs;
 
   /**
    * Allocates memory
@@ -39,6 +41,7 @@ export class VGA extends uuidX86Device<X86CPU>('vga') implements ByteMemRegionAc
   init() {
     this.externalRegs = new VGAExternalRegs;
     this.graphicsRegs = new VGAGraphicsRegs;
+    this.crtcRegs = new VGACrtcRegs;
 
     this.vram = VirtualMemBlockDriver.alloc(0x40000); // 256 KB
     this.vga256 = {
