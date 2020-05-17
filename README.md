@@ -12,10 +12,10 @@
 ## Status
 
 - [x] ASM Compiler
-  - [x] NASM syntax instruction compiler matcher
-  - [x] Labels support
-  - [x] Data define support
-  - [x] EQU, times support
+  - [x] NASM syntax instruction compiler matcher with expression eval `mov ax, byte [ds:label+bx+12+(1/3)]`
+  - [x] Labels support `jmp_label:`
+  - [x] Data define support `db`, `dw`, `dd`, `dq`, `dt`
+  - [x] `EQU`, `times` support
   - [x] Floating point numbers support
   - [x] Preprocessor
     - [x] Basic lang keywords support: `%if`, `%ifn`, `%ifdef`, `%ifndef`, `%else`, `%elif`, `%elifndef`, `%elifdef`, `%elifn`, `%define`, `%undef`
