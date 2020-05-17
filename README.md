@@ -29,6 +29,10 @@
     - [x] Diassembler binary view
     - [x] Branch arrows (for `jmp`, `call`, `jz` etc.)
 - [ ] CPU Emulator
+  - [x] Magic breakpoint support `xchg bx, bx`
+  - [x] Interrupts handlers support
+  - [x] Basic Intel ~80186 instructions set
+  - [x] ALU instructions support
   - [x] FPU Support
     - [x] Assembler
     - [x] Emulator
@@ -38,6 +42,8 @@
   - [ ] Graphics mode
     - [x] Basic canvas graphics driver
     - [ ] Text/Graphics VGA
+  - [ ] BIOS
+    - [x] Basic bios interrupts handlers
 - [ ] Nano 16bit C compiler
   - [ ] Frontend
     - [ ] Syntax parser
