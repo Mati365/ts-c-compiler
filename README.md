@@ -13,6 +13,8 @@
 
 - [x] ASM Compiler
   - [x] NASM syntax instruction compiler matcher with expression eval `mov ax, byte [ds:label+bx+12+(1/3)]`
+  - [x] Instruction prefix support `rep movsw`
+  - [x] Compiler bits/org config `[bits 16]`, `[org 0x7C00]`
   - [x] Labels support `jmp_label:`
   - [x] Data define support `db`, `dw`, `dd`, `dq`, `dt`
   - [x] `EQU`, `times` support
@@ -23,8 +25,9 @@
     - [x] Predefined macros like `__TIMES__`
     - [x] Inline expressions calls `%[__TIMES__]`
   - [x] Output logger
+    - [x] Basic logger binary blob serializer helpers
     - [x] Diassembler binary view
-    - [x] Branch arrows (for JMP, CALL etc.)
+    - [x] Branch arrows (for `jmp`, `call`, `jz` etc.)
 - [ ] CPU Emulator
   - [x] FPU Support
     - [x] Assembler
