@@ -22,6 +22,32 @@ export const GRAPHICS_MEMORY_MAPS: MemoryRegionsMap = Object.freeze(
 );
 
 /**
+ * Graphics ALU processing mode
+ *
+ * @export
+ * @enum {number}
+ */
+export enum GraphicsWriteMode {
+  MODE_0 = 0b00,
+  MODE_1 = 0b01,
+  MODE_2 = 0b10,
+  MODE_3 = 0b11,
+}
+
+/**
+ * 00b - Result is input from previous stage unmodified.
+ * 01b - Result is input from previous stage logical ANDed with latch register.
+ * 10b - Result is input from previous stage logical ORed with latch register.
+ * 11b - Result is input from previous stage logical XORed with latch register.
+ */
+export const GRAPHICS_ALU_OPS: {[key in GraphicsWriteMode]: (a: number, b?: number) => number} = {
+  [GraphicsWriteMode.MODE_0]: (a: number) => a,
+  [GraphicsWriteMode.MODE_1]: (a: number, b: number) => a & b,
+  [GraphicsWriteMode.MODE_2]: (a: number, b: number) => a | b,
+  [GraphicsWriteMode.MODE_3]: (a: number, b: number) => a ^ b,
+};
+
+/**
  * Field used to faster matching if address is in VGA mem map,
  * it is generally faster than accessing getters and doing some
  * logic operaitons

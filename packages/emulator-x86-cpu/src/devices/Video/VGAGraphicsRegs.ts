@@ -1,5 +1,5 @@
 import {UnionStruct, bits} from '@compiler/core/shared/UnionStruct';
-import {GRAPHICS_MEMORY_MAPS} from './VGAConstants';
+import {GRAPHICS_MEMORY_MAPS, GraphicsWriteMode} from './VGAConstants';
 
 /**
  * @see {@link http://www.osdever.net/FreeVGA/vga/graphreg.htm#06}
@@ -10,7 +10,7 @@ import {GRAPHICS_MEMORY_MAPS} from './VGAConstants';
  * Index 03h -- Data Rotate Register
  * Index 04h -- Read Map Select Register
  * Index 05h -- Graphics Mode Register
- * Index 06h -- Miscellaneous Graphics Register
+ * Index 06h -- Misc Graphics Register
  * Index 07h -- Color Don't Care Register
  * Index 08h -- Bit Mask Register
  */
@@ -85,13 +85,6 @@ export class ReadMapSelectReg extends UnionStruct {
  * @class GraphicsModeReg
  * @extends {UnionStruct}
  */
-export enum GraphicsWriteMode {
-  MODE_0 = 0b00,
-  MODE_1 = 0b01,
-  MODE_2 = 0b10,
-  MODE_3 = 0b11,
-}
-
 export class GraphicsModeReg extends UnionStruct {
   @bits(0, 1) writeMode: GraphicsWriteMode;
   @bits(3) readMode: number;
@@ -101,15 +94,15 @@ export class GraphicsModeReg extends UnionStruct {
 }
 
 /**
- * Miscellaneous Graphics Register (Index 06h)
+ * Misc Graphics Register (Index 06h)
  *
  * @export
- * @class MiscellaneousGraphicsReg
+ * @class MiscGraphicsReg
  * @extends {UnionStruct}
  */
 export type MemoryMapSelectType = keyof typeof GRAPHICS_MEMORY_MAPS;
 
-export class MiscellaneousGraphicsReg extends UnionStruct {
+export class MiscGraphicsReg extends UnionStruct {
   @bits(0) alphanumericModeDisable: number;
   @bits(1) chainOddEvenEnable: number;
   @bits(2, 3) memoryMapSelect: MemoryMapSelectType;
@@ -150,7 +143,7 @@ export class VGAGraphicsRegs {
   dataRotateReg = new DataRotateReg;
   readMapSelectReg = new ReadMapSelectReg;
   graphicsModeReg = new GraphicsModeReg;
-  miscellaneousGraphicsReg = new MiscellaneousGraphicsReg;
+  miscGraphicsReg = new MiscGraphicsReg;
   colorDontCareReg = new ColorDontCareReg;
   colorBitmaskReg = new ColorBitmaskReg;
 }

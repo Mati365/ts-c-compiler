@@ -1,15 +1,15 @@
 import {UnionStruct, bits} from '@compiler/core/shared/UnionStruct';
 
 /**
- * Miscellaneous Output Register (Read at 3CCh, Write at 3C2h)
+ * Misc Output Register (Read at 3CCh, Write at 3C2h)
  *
  * @see {@link http://www.osdever.net/FreeVGA/vga/extreg.htm#3CCR3C2W}
  * *
  * @export
- * @class MiscellaneousReg
+ * @class MiscReg
  * @extends {UnionStruct}
  */
-export class MiscellaneousReg extends UnionStruct {
+export class MiscReg extends UnionStruct {
   @bits(0) inOutAddressSelect: number;
   @bits(1) ramEnable: number;
   @bits(2, 3) clockSelect: number;
@@ -60,7 +60,7 @@ export class InputStatus1 extends UnionStruct {
  * @class VGAExternalRegs
  */
 export class VGAExternalRegs {
-  miscellaneousReg = new MiscellaneousReg;
+  miscReg = new MiscReg;
   featureControlReg = new FeatureControlReg;
   inputStatus0 = new InputStatus0;
   inputStatus1 = new InputStatus1;

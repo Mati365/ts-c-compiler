@@ -6,7 +6,7 @@ import {VirtualMemBlockDriver} from '../../memory/VirtualMemBlockDriver';
 import {ByteMemRegionAccessor} from '../../memory/MemoryRegion';
 import {X86CPU} from '../../X86CPU';
 
-import {VGAExternalRegs, MiscellaneousReg} from './VGAExternalRegs';
+import {VGAExternalRegs, MiscReg} from './VGAExternalRegs';
 import {VGACrtcRegs} from './VGACrtcRegs';
 import {VGADacRegs} from './VGADacRegs';
 import {VGASequencerRegs} from './VGASequencerRegs';
@@ -24,9 +24,14 @@ import {
   VGA_PIXEL_MEM_MAP,
 } from './VGAConstants';
 
-type VGA256State = {
-  palette: Int32Array,
-};
+import {
+  VGAPixBufRenderer,
+  VGATextModePixBufRenderer,
+} from './Renderers';
+
+class VGA256State {
+  palette: Int32Array = null;
+}
 
 /**
  * Basic graphics device
@@ -40,14 +45,15 @@ type VGA256State = {
  */
 export class VGA extends uuidX86Device<X86CPU>('vga') implements ByteMemRegionAccessor {
   private vga256: VGA256State;
+  private latch: number;
+
+  private currentPixBufRenderer: VGAPixBufRenderer;
+  private pixBufRenderers: VGAPixBufRenderer[];
 
   /* graphics buffers */
   private vgaBuffer: VirtualMemBlockDriver;
   private planes: Uint8Array[];
   private pixelBuffer: Uint8Array;
-
-  private textMode: boolean;
-  private latchDword: number;
 
   /* regs */
   private externalRegs: VGAExternalRegs;
@@ -63,6 +69,26 @@ export class VGA extends uuidX86Device<X86CPU>('vga') implements ByteMemRegionAc
    */
   init() {
     this.reset();
+    this.matchPixBufRenderer();
+  }
+
+  /**
+   * Iterates over pix buf renderers and takes first which matches
+   *
+   * @memberof VGA
+   */
+  matchPixBufRenderer() {
+    // initialize pixel buffers on first call
+    if (!this.pixBufRenderers) {
+      this.pixBufRenderers = [
+        new VGATextModePixBufRenderer(this),
+      ];
+    }
+
+    // search in list
+    this.currentPixBufRenderer = this.pixBufRenderers.find(
+      (renderer) => renderer.isSuitable(),
+    );
   }
 
   /**
@@ -85,18 +111,13 @@ export class VGA extends uuidX86Device<X86CPU>('vga') implements ByteMemRegionAc
       VGA_TOTAL_PLANES,
     );
 
-    /* Colors */
-    this.vga256 = {
-      palette: new Int32Array(256),
-    };
-
     /* Setting regs */
-    const {dacRegs, sequencerRegs} = this;
-    const {miscellaneousReg} = this.externalRegs;
+    const {dacRegs, sequencerRegs, graphicsRegs} = this;
+    const {miscReg} = this.externalRegs;
 
     Object.assign(
-      miscellaneousReg,
-      <MiscellaneousReg> {
+      miscReg,
+      <MiscReg> {
         ramEnable: 1,
         inOutAddressSelect: 1,
         oddEvenPageSelect: 0,
@@ -104,6 +125,9 @@ export class VGA extends uuidX86Device<X86CPU>('vga') implements ByteMemRegionAc
         vsyncPolarity: 1,
       },
     );
+
+    /* Graphics */
+    graphicsRegs.miscGraphicsReg.alphanumericModeDisable = 0x0;
 
     /* DAC */
     dacRegs.writeAddressReg = 0x0;
@@ -116,8 +140,19 @@ export class VGA extends uuidX86Device<X86CPU>('vga') implements ByteMemRegionAc
     sequencerRegs.sequencerMemModeReg.number = 0;
 
     /* OTHER */
-    this.textMode = true;
-    this.latchDword = 0x0;
+    this.vga256 = new VGA256State;
+    this.latch = 0x0;
+  }
+
+  /**
+   * Get flag if VGA is in text mode
+   *
+   * @readonly
+   * @type {boolean}
+   * @memberof VGA
+   */
+  get textMode(): boolean {
+    return this.graphicsRegs.miscGraphicsReg.alphanumericModeDisable === 0x0;
   }
 
   /**
@@ -128,7 +163,7 @@ export class VGA extends uuidX86Device<X86CPU>('vga') implements ByteMemRegionAc
    * @memberof VGA
    */
   get memoryMapSelect(): MemoryMapSelectType {
-    return this.graphicsRegs.miscellaneousGraphicsReg.memoryMapSelect;
+    return this.graphicsRegs.miscGraphicsReg.memoryMapSelect;
   }
 
   /**
@@ -144,26 +179,31 @@ export class VGA extends uuidX86Device<X86CPU>('vga') implements ByteMemRegionAc
     if (!GRAPHICS_RESERVED_MEM_MAP.contains(address, bits))
       return null;
 
-    const {miscellaneousReg} = this.externalRegs;
-    if (!miscellaneousReg.ramEnable)
+    const {miscReg} = this.externalRegs;
+    if (!miscReg.ramEnable)
       return null;
 
-    const {memoryMapSelect, textMode} = this;
+    const {memoryMapSelect} = this;
     const mode = GRAPHICS_MEMORY_MAPS[memoryMapSelect];
     if (!mode.contains(address))
       return null;
 
     const offset = address - mode.low;
-    if (textMode) {
+
+    /** TEXT MODE */
+    if (this.textMode) {
       this.writeTextMode(offset, value);
       return 1;
     }
 
+    /** GRAPHICS MODE */
     return null;
   }
 
   /**
    * Writes single character to text memory
+   *
+   * @see {@link http://www.scs.stanford.edu/09wi-cs140/pintos/specs/freevga/vga/vgatext.htm}
    *
    * @param {number} address
    * @param {number} byte
@@ -185,16 +225,20 @@ export class VGA extends uuidX86Device<X86CPU>('vga') implements ByteMemRegionAc
     if (!GRAPHICS_RESERVED_MEM_MAP.contains(address, bits))
       return null;
 
-    const {memoryMapSelect, textMode} = this;
+    const {memoryMapSelect, planes} = this;
     const mode = GRAPHICS_MEMORY_MAPS[memoryMapSelect];
     if (!mode.contains(address))
       return null;
 
     const offset = address - mode.low;
-    if (textMode)
+
+    /** TEXT MODE */
+    if (this.textMode)
       return this.readTextMode(offset);
 
-    return null;
+    /** GRAPHICS MODE */
+    this.latch = planes[0][offset] | (planes[1][offset] << 8) | (planes[2][offset] << 16) | (planes[3][offset] << 24);
+    return planes[memoryMapSelect][offset];
   }
 
   /**
