@@ -1,5 +1,8 @@
 import {UnionStruct, bits} from '@compiler/core/shared/UnionStruct';
-import {MemoryRegionRange} from '@emulator/x86-cpu/memory/MemoryRegion';
+import {
+  MemoryRegionRange,
+  MemoryRegionsMap,
+} from '@emulator/x86-cpu/memory/MemoryRegion';
 
 /**
  * @see {@link http://www.osdever.net/FreeVGA/vga/graphreg.htm#06}
@@ -107,12 +110,23 @@ export class GraphicsModeReg extends UnionStruct {
  * @class MiscellaneousGraphicsReg
  * @extends {UnionStruct}
  */
-export const GRAPHICS_MEMORY_MAPS: {[key: number]: MemoryRegionRange} = Object.freeze({
-  0b00: new MemoryRegionRange(0xA0000, 0xBFFFF), // 128K region
-  0b01: new MemoryRegionRange(0xA0000, 0xAFFFF), // 64K region
-  0b10: new MemoryRegionRange(0xB0000, 0xB7FFF), // 32K region
-  0b11: new MemoryRegionRange(0xB8000, 0xBFFFF), // 32K region
-});
+export const GRAPHICS_MEMORY_MAPS: MemoryRegionsMap = Object.freeze(
+  {
+    0b00: new MemoryRegionRange(0xA0000, 0xBFFFF), // 128K region
+    0b01: new MemoryRegionRange(0xA0000, 0xAFFFF), // 64K region
+    0b10: new MemoryRegionRange(0xB0000, 0xB7FFF), // 32K region
+    0b11: new MemoryRegionRange(0xB8000, 0xBFFFF), // 32K region
+  },
+);
+
+/**
+ * Field used to faster matching if address is in VGA mem map,
+ * it is generally faster than accessing getters and doing some
+ * logic operaitons
+ */
+export const GRAPHICS_RESERVED_MEM_MAP = Object.freeze(
+  new MemoryRegionRange(0xA0000, 0xBFFFF),
+);
 
 export type MemoryMapSelectType = keyof typeof GRAPHICS_MEMORY_MAPS;
 

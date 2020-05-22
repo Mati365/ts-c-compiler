@@ -33,12 +33,15 @@ export class MemoryRegionRange {
    * Check if address is in region
    *
    * @param {number} address
+   * @param {number} [bits=0]
    * @returns {boolean}
    * @memberof MemoryRegionRange
    */
-  contains(address: number): boolean {
+  contains(address: number, margin: number = 0): boolean {
     const {low, high} = this;
 
-    return address >= low && address <= high;
+    return address + margin >= low && address <= high;
   }
 }
+
+export type MemoryRegionsMap = Readonly<{[key: number]: MemoryRegionRange}>;

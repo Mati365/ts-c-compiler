@@ -6,10 +6,13 @@ import {X86CPU} from '../../X86CPU';
 
 import {VGAExternalRegs} from './VGAExternalRegs';
 import {VGACrtcRegs} from './VGACrtcRegs';
+import {VGADacRegs} from './VGADacRegs';
+import {VGASequencerRegs} from './VGASequencerRegs';
 import {
   GRAPHICS_MEMORY_MAPS,
   VGAGraphicsRegs,
   MemoryMapSelectType,
+  GRAPHICS_RESERVED_MEM_MAP,
 } from './VGAGraphicsRegs';
 
 type VGA256State = {
@@ -32,6 +35,8 @@ export class VGA extends uuidX86Device<X86CPU>('vga') implements ByteMemRegionAc
   private externalRegs: VGAExternalRegs;
   private graphicsRegs: VGAGraphicsRegs;
   private crtcRegs: VGACrtcRegs;
+  private dacRegs: VGADacRegs;
+  private sequencerRegs: VGASequencerRegs;
 
   /**
    * Allocates memory
@@ -42,6 +47,8 @@ export class VGA extends uuidX86Device<X86CPU>('vga') implements ByteMemRegionAc
     this.externalRegs = new VGAExternalRegs;
     this.graphicsRegs = new VGAGraphicsRegs;
     this.crtcRegs = new VGACrtcRegs;
+    this.dacRegs = new VGADacRegs;
+    this.sequencerRegs = new VGASequencerRegs;
 
     this.vram = VirtualMemBlockDriver.alloc(0x40000); // 256 KB
     this.vga256 = {
@@ -64,6 +71,9 @@ export class VGA extends uuidX86Device<X86CPU>('vga') implements ByteMemRegionAc
    * @memberof VGA
    */
   writeUInt(address: number, value: number, bits: X86BitsMode): number {
+    if (!GRAPHICS_RESERVED_MEM_MAP.contains(address, bits))
+      return null;
+
     const {miscellaneousReg} = this.externalRegs;
     if (!miscellaneousReg.ramEnable)
       return null;
@@ -89,6 +99,9 @@ export class VGA extends uuidX86Device<X86CPU>('vga') implements ByteMemRegionAc
    * @memberof VGA
    */
   readUInt(address: number, bits: X86BitsMode): number {
+    if (!GRAPHICS_RESERVED_MEM_MAP.contains(address, bits))
+      return null;
+
     const {memoryMapSelect} = this;
     const mode = GRAPHICS_MEMORY_MAPS[memoryMapSelect];
     if (!mode.contains(address))
