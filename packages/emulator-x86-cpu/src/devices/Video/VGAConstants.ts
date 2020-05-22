@@ -1,8 +1,58 @@
 import * as R from 'ramda';
-import {RGBColor} from '@compiler/core/types';
+import {UnionStruct, bits} from '@compiler/core/shared';
+import {MemoryRegionRange, MemoryRegionsMap} from '@emulator/x86-cpu/memory/MemoryRegion';
 
-export const VGA256Palette: RGBColor[] = R.map(
-  ([r, g, b]) => new RGBColor(r, g, b),
+export const VGA_BANK_SIZE = 0x10000;
+export const VGA_TOTAL_PLANES = 0x4;
+export const VGA_PIXEL_MEM_MAP = Object.freeze(
+  new MemoryRegionRange(
+    VGA_BANK_SIZE * VGA_TOTAL_PLANES,
+    VGA_BANK_SIZE * (VGA_TOTAL_PLANES + 0x8),
+  ),
+);
+export const VGA_BUFFER_SIZE = VGA_PIXEL_MEM_MAP.high;
+
+export const GRAPHICS_MEMORY_MAPS: MemoryRegionsMap = Object.freeze(
+  {
+    0b00: new MemoryRegionRange(0xA0000, 0xBFFFF), // 128K region
+    0b01: new MemoryRegionRange(0xA0000, 0xAFFFF), // 64K region
+    0b10: new MemoryRegionRange(0xB0000, 0xB7FFF), // 32K region
+    0b11: new MemoryRegionRange(0xB8000, 0xBFFFF), // 32K region
+  },
+);
+
+/**
+ * Field used to faster matching if address is in VGA mem map,
+ * it is generally faster than accessing getters and doing some
+ * logic operaitons
+ */
+export const GRAPHICS_RESERVED_MEM_MAP = Object.freeze(
+  new MemoryRegionRange(0xA0000, 0xBFFFF),
+);
+
+/**
+ * Color palette holder
+ *
+ * @export
+ * @class RGB32Color
+ * @extends {UnionStruct}
+ */
+export class RGB32Color extends UnionStruct {
+  constructor(r: number, g: number, b: number) {
+    super();
+
+    this.r = r;
+    this.g = g;
+    this.b = b;
+  }
+
+  @bits(16, 23) r: number;
+  @bits(8, 15) g: number;
+  @bits(0, 7) b: number;
+}
+
+export const VGA256Palette: RGB32Color[] = R.map(
+  ([r, g, b]) => new RGB32Color(r, g, b),
   [
     /* eslint-disable max-len */
     [0x00, 0x00, 0x00], [0x00, 0x00, 0x2a], [0x00, 0x2a, 0x00], [0x00, 0x2a, 0x2a], [0x2a, 0x00, 0x00], [0x2a, 0x00, 0x2a], [0x2a, 0x15, 0x00], [0x2a, 0x2a, 0x2a],

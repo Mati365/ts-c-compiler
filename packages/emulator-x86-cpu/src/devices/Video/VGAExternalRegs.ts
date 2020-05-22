@@ -13,8 +13,8 @@ export class MiscellaneousReg extends UnionStruct {
   @bits(0) inOutAddressSelect: number;
   @bits(1) ramEnable: number;
   @bits(2, 3) clockSelect: number;
-  @bits(5) oddEventPageSelect: number; // 4th bit is not used, it is correct
-  @bits(6) horizontalSyncPolarity: number;
+  @bits(5) oddEvenPageSelect: number; // 4th bit is not used, it is correct
+  @bits(6) hsyncPolarity: number;
   @bits(7) vsyncPolarity: number;
 }
 
