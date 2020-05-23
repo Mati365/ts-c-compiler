@@ -1,7 +1,6 @@
 import {VirtualMemBlockDriver} from '../memory/VirtualMemBlockDriver';
 import {VGA} from '../devices/Video/VGA';
 import {X86AbstractCPU} from './X86AbstractCPU';
-import {X86BitsMode} from './X86Regs';
 
 /**
  * Simple RAM manager
@@ -18,7 +17,7 @@ export class X86RAM<T extends X86AbstractCPU> extends VirtualMemBlockDriver {
   protected cpu: T;
   protected vga: VGA;
 
-  constructor(cpu: T, device: Buffer) {
+  constructor(cpu: T, device: Uint8Array) {
     super(device);
 
     this.cpu = cpu;
@@ -33,13 +32,13 @@ export class X86RAM<T extends X86AbstractCPU> extends VirtualMemBlockDriver {
    * @returns {number}
    * @memberof VirtualMemBlockDriver
    */
-  writeUInt(address: number, value: number, bits: X86BitsMode = 0x1): number {
+  writeByte(address: number, value: number): number {
     const {vga} = this;
-    const result: number = vga.writeUInt(address, value, bits);
+    const result: number = vga.writeByte(address, value);
     if (result !== null)
       return result;
 
-    return super.writeUInt(address, value, bits);
+    return super.writeByte(address, value);
   }
 
   /**
@@ -50,12 +49,12 @@ export class X86RAM<T extends X86AbstractCPU> extends VirtualMemBlockDriver {
    * @returns {number}
    * @memberof VirtualMemBlockDriver
    */
-  readUInt(address: number, bits: X86BitsMode = 0x1): number {
+  readByte(address: number): number {
     const {vga} = this;
-    const result: number = vga.readUInt(address, bits);
+    const result: number = vga.readByte(address);
     if (result !== null)
       return result;
 
-    return super.readUInt(address, bits);
+    return super.readByte(address);
   }
 }

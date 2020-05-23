@@ -48,31 +48,30 @@ type IEEE754MemIO = {
  * @class VirtualMemBlockDriver
  */
 export class VirtualMemBlockDriver implements ByteMemRegionAccessor {
-  public device: Buffer;
+  public device: Uint8Array;
   public read: MemBufferReaders;
   public write: MemBufferWriters;
   public ieee754: IEEE754MemIO;
 
-  constructor(device: Buffer) {
+  constructor(device: Uint8Array) {
     this.device = device;
-
     this.read = {
-      /** 8bit  */ 0x1: (address) => this.readUInt(address, 0x1),
-      /** 16bit */ 0x2: (address) => this.readUInt(address, 0x2),
-      /** 32bit */ 0x4: (address) => this.readUInt(address, 0x4),
+      /** 8bit  */ 0x1: (address) => this.readNumber(address, 0x1),
+      /** 16bit */ 0x2: (address) => this.readNumber(address, 0x2),
+      /** 32bit */ 0x4: (address) => this.readNumber(address, 0x4),
       /** 64bit */ 0x8: (address: number) => [
-        this.readUInt(address, 0x4),
-        this.readUInt(address + 0x4, 0x4) << 32,
+        this.readNumber(address, 0x4),
+        this.readNumber(address + 0x4, 0x4) << 32,
       ],
     };
 
     this.write = {
-      /** 8bit  */ 0x1: (value, address) => this.writeUInt(address, value, 0x1),
-      /** 16bit */ 0x2: (value, address) => this.writeUInt(address, value, 0x2),
-      /** 32bit */ 0x4: (value, address) => this.writeUInt(address, value, 0x4),
+      /** 8bit  */ 0x1: (value, address) => this.writeNumber(address, value, 0x1),
+      /** 16bit */ 0x2: (value, address) => this.writeNumber(address, value, 0x2),
+      /** 32bit */ 0x4: (value, address) => this.writeNumber(address, value, 0x4),
       /** 64bit */ 0x8: (value: number[], address: number) => {
-        device.writeUInt32LE(value[0], address);
-        device.writeUInt32LE(value[1] >> 32, address + 0x4);
+        this.writeNumber(value[0], address, 0x4);
+        this.writeNumber(value[1] >> 32, address + 0x4, 0x4);
         return address;
       },
     };
@@ -109,6 +108,31 @@ export class VirtualMemBlockDriver implements ByteMemRegionAccessor {
   }
 
   /**
+   * Saves single byte in memory
+   *
+   * @param {number} address
+   * @param {number} value
+   * @returns {number}
+   * @memberof VirtualMemBlockDriver
+   */
+  writeByte(address: number, value: number): number {
+    this.device[address] = value;
+    return 1;
+  }
+
+  /**
+   * Reads single byte in memory
+   *
+   * @param {number} address
+   * @param {number} value
+   * @returns {number}
+   * @memberof VirtualMemBlockDriver
+   */
+  readByte(address: number): number {
+    return this.device[address];
+  }
+
+  /**
    * Writes single byte to memory
    *
    * @see
@@ -119,16 +143,14 @@ export class VirtualMemBlockDriver implements ByteMemRegionAccessor {
    * @returns {number}
    * @memberof VirtualMemBlockDriver
    */
-  writeUInt(address: number, value: number, bits: X86BitsMode = 0x1): number {
-    const {device} = this;
-
-    switch (bits) {
-      case 0x1: return device.writeUInt8(value, address);
-      case 0x2: return device.writeUInt16LE(value, address);
-      case 0x4: return device.writeUInt32LE(value, address);
-      default:
-        throw new Error('Invalid mem access!');
+  writeNumber(address: number, value: number, bits: X86BitsMode = 0x1): number {
+    let shift = 0;
+    for (let i = 0; i < bits; ++i) {
+      this.writeByte(address + i, (value >>> shift) & 0xFF);
+      shift += 8;
     }
+
+    return bits;
   }
 
   /**
@@ -142,16 +164,16 @@ export class VirtualMemBlockDriver implements ByteMemRegionAccessor {
    * @returns {number}
    * @memberof VirtualMemBlockDriver
    */
-  readUInt(address: number, bits: X86BitsMode = 0x1): number {
-    const {device} = this;
+  readNumber(address: number, bits: X86BitsMode = 0x1): number {
+    let number = 0;
+    let shift = 0;
 
-    switch (bits) {
-      case 0x1: return device.readUInt8(address);
-      case 0x2: return device.readUInt16LE(address);
-      case 0x4: return device.readUInt32LE(address);
-      default:
-        throw new Error('Invalid mem access!');
+    for (let i = 0; i < bits; ++i) {
+      number |= this.readByte(address + i) << shift;
+      shift += 8;
     }
+
+    return number;
   }
 
   /**
@@ -167,7 +189,7 @@ export class VirtualMemBlockDriver implements ByteMemRegionAccessor {
     const endOffset = address + count - 1;
 
     for (let i = 0; i < count; ++i)
-      bytes[i] = this.readUInt(endOffset - i, 0x1);
+      bytes[i] = this.readNumber(endOffset - i, 0x1);
 
     return bytes;
   }
@@ -185,7 +207,7 @@ export class VirtualMemBlockDriver implements ByteMemRegionAccessor {
     const endOffset = address + count - 1;
 
     for (let i = 0; i < count; ++i)
-      this.writeUInt(bytes[i], endOffset - i, 0x1);
+      this.writeNumber(bytes[i], endOffset - i, 0x1);
 
     return address;
   }
@@ -202,7 +224,7 @@ export class VirtualMemBlockDriver implements ByteMemRegionAccessor {
     const {length: count} = bytes;
 
     for (let i = 0; i < count; ++i)
-      this.writeUInt(bytes[i], i, 0x1);
+      this.writeNumber(bytes[i], i, 0x1);
 
     return address;
   }
@@ -217,7 +239,7 @@ export class VirtualMemBlockDriver implements ByteMemRegionAccessor {
    */
   readSignedInt(address: number, mode: X86BitsMode): number {
     return X86AbstractCPU.getSignedNumber(
-      this.readUInt(address, mode),
+      this.readNumber(address, mode),
       mode,
     );
   }

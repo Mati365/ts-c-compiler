@@ -1,5 +1,3 @@
-import {X86BitsMode} from '../types/X86Regs';
-
 /**
  * Simple interface that allows VirtualMemBlockDriver
  * to define driver, mem regions check and mappings.
@@ -9,8 +7,8 @@ import {X86BitsMode} from '../types/X86Regs';
  * @interface ByteMemAccessor
  */
 export interface ByteMemRegionAccessor {
-  writeUInt(address: number, value: number, bits: X86BitsMode): number;
-  readUInt(address: number, bits: X86BitsMode): number;
+  writeByte(address: number, value: number): number;
+  readByte(address: number): number;
 }
 
 /**

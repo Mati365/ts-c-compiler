@@ -123,7 +123,7 @@ export abstract class X86AbstractCPU {
   pause: boolean = false;
   clock: boolean = true;
 
-  mem: Buffer;
+  mem: Uint8Array;
   memIO: X86RAM<X86AbstractCPU>;
 
   registers = new X86RegsStore;

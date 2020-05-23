@@ -68,7 +68,7 @@ export class X86CPU extends X86AbstractCPU {
       .attach(VGA)
       .attach(Keyboard);
 
-    this.mem = Buffer.alloc(1048576);
+    this.mem = new Uint8Array(1048576);
     this.memIO = new X86RAM<X86CPU>(this, this.mem);
 
     this.stack = new X86Stack(this);
@@ -186,7 +186,7 @@ export class X86CPU extends X86AbstractCPU {
    * @returns {Buffer}
    * @memberof X86CPU
    */
-  loadBuffer(buffer: Buffer, address: number, size: number = buffer.length): Buffer {
+  loadBuffer(buffer: Buffer, address: number, size: number = buffer.length): Uint8Array {
     buffer.copy(this.mem, address, 0, size);
     return this.mem;
   }

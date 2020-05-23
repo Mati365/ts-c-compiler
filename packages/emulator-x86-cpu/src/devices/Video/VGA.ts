@@ -1,6 +1,6 @@
 import * as R from 'ramda';
 
-import {uuidX86Device, X86BitsMode} from '../../types';
+import {uuidX86Device} from '../../types';
 
 import {VirtualMemBlockDriver} from '../../memory/VirtualMemBlockDriver';
 import {ByteMemRegionAccessor} from '../../memory/MemoryRegion';
@@ -171,12 +171,11 @@ export class VGA extends uuidX86Device<X86CPU>('vga') implements ByteMemRegionAc
    *
    * @param {number} address
    * @param {number} value
-   * @param {X86BitsMode} bits
    * @returns {number}
    * @memberof VGA
    */
-  writeUInt(address: number, value: number, bits: X86BitsMode): number {
-    if (!GRAPHICS_RESERVED_MEM_MAP.contains(address, bits))
+  writeByte(address: number, value: number): number {
+    if (!GRAPHICS_RESERVED_MEM_MAP.contains(address))
       return null;
 
     const {miscReg} = this.externalRegs;
@@ -210,19 +209,23 @@ export class VGA extends uuidX86Device<X86CPU>('vga') implements ByteMemRegionAc
    * @memberof VGA
    */
   writeTextMode(address: number, byte: number): void {
-    this.vgaBuffer[address] = byte;
+    const {planes} = this;
+
+    if (address % 2 === 0)
+      planes[0][address] = byte;
+    else
+      planes[1][address] = byte;
   }
 
   /**
    * Read value from vram
    *
    * @param {number} address
-   * @param {X86BitsMode} bits
    * @returns {number}
    * @memberof VGA
    */
-  readUInt(address: number, bits: X86BitsMode): number {
-    if (!GRAPHICS_RESERVED_MEM_MAP.contains(address, bits))
+  readByte(address: number): number {
+    if (!GRAPHICS_RESERVED_MEM_MAP.contains(address))
       return null;
 
     const {memoryMapSelect, planes} = this;
@@ -249,6 +252,11 @@ export class VGA extends uuidX86Device<X86CPU>('vga') implements ByteMemRegionAc
    * @memberof VGA
    */
   readTextMode(address: number): number {
-    return this.vgaBuffer[address];
+    const {planes} = this;
+
+    if (address % 2 === 0)
+      return planes[0][address];
+
+    return planes[1][address];
   }
 }
