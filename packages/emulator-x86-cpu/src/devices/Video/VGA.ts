@@ -174,10 +174,16 @@ export class VGA extends uuidX86Device<X86CPU>('vga') implements ByteMemRegionAc
       crtcRegs, attrRegs,
     } = this;
 
-    const horizontalCharacters = Math.min(1 + crtcRegs.endHorizontalDisplayReg, crtcRegs.startHorizontalBlankingReg);
-    let verticalScans = Math.min(1 + crtcRegs.verticalDisplayEndReg, crtcRegs.startVerticalBlankingReg);
+    const horizontalCharacters = Math.min(
+      1 + crtcRegs.endHorizontalDisplayReg,
+      crtcRegs.startHorizontalBlankingReg,
+    );
 
-    console.info(verticalScans, crtcRegs.verticalDisplayEndReg, crtcRegs.startVerticalBlankingReg);
+    let verticalScans = Math.min(
+      1 + crtcRegs.getVerticalDisplayEnd(),
+      crtcRegs.getVerticalBlankingStart(),
+    );
+
     if (!horizontalCharacters || !verticalScans)
       return;
 
@@ -189,8 +195,7 @@ export class VGA extends uuidX86Device<X86CPU>('vga') implements ByteMemRegionAc
 
       // sets size
       textModeState.size.w = horizontalCharacters;
-      textModeState.size.h = verticalScans / (1 + (crtcRegs.maxScanLineReg.maxScanLine)) | 0;
-      console.info(textModeState.size);
+      textModeState.size.h = verticalScans / (1 + (crtcRegs.maxScanLineReg.maxScanLine & 0x1F)) | 0;
     } else {
       // graphics mode
       const screenSize = new Size(

@@ -67,7 +67,7 @@ export class OverflowReg extends UnionStruct {
   @bits(0) vt8: number;
   @bits(1) vde8: number;
   @bits(2) vrs8: number;
-  @bits(3) svg8: number;
+  @bits(3) svb8: number;
   @bits(4) lc8: number;
   @bits(5) vt9: number;
   @bits(6) vde9: number;
@@ -204,4 +204,35 @@ export class VGACrtcRegs {
   endVerticalBlankingReg = 0x0; /* Index 16h */
   crtcModeControlReg = new CRTCModeControlReg; /* Index 17h */
   lineCompareReg = 0x0; /* Index 18h */
+
+  /**
+   * Reads vertical regs that might contain overflow
+   *
+   * @see {@link http://www.osdever.net/FreeVGA/vga/crtcreg.htm#07}
+   */
+  getVerticalRetraceStart() {
+    const {overflowReg: {vrs9, vrs8}, verticalRetraceStartReg} = this;
+
+    return verticalRetraceStartReg | (vrs9 << 9) | (vrs8 << 8);
+  }
+
+  getVerticalDisplayEnd() {
+    const {overflowReg: {vde9, vde8}, verticalDisplayEndReg} = this;
+
+    return verticalDisplayEndReg | (vde9 << 9) | (vde8 << 8);
+  }
+
+  getVerticalTotal() {
+    const {overflowReg: {vt9, vt8}, verticalTotalReg} = this;
+
+    return verticalTotalReg | (vt9 << 9) | (vt8 << 8);
+  }
+
+  getVerticalBlankingStart() {
+    return this.startVerticalBlankingReg | (this.overflowReg.svb8 << 8);
+  }
+
+  getLineCompare() {
+    return this.lineCompareReg | (this.overflowReg.lc8 << 8);
+  }
 }
