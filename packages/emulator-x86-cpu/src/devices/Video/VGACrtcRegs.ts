@@ -182,7 +182,7 @@ export class CRTCModeControlReg extends UnionStruct {
 
 export class VGACrtcRegs {
   horizontalTotalReg = 0x0; /* Index 00h */
-  endHorizontalDIsplayReg = 0x0; /* Index 01h */
+  endHorizontalDisplayReg = 0x0; /* Index 01h */
   startHorizontalBlankingReg = 0x0; /* Index 02h */
   endHorizontalBlankingReg = new EndHorizontalBlankingReg; /* Index 03h */
   startHorizontalRetraceReg = 0x0; /* Index 04h */

@@ -21,6 +21,19 @@ export const GRAPHICS_MEMORY_MAPS: MemoryRegionsMap = Object.freeze(
   },
 );
 
+export const CHARSET_MEMORY_MAPS: MemoryRegionsMap = Object.freeze(
+  {
+    0b000: new MemoryRegionRange(0x0000, 0x1FFF),
+    0b001: new MemoryRegionRange(0x4000, 0x5FFF),
+    0b010: new MemoryRegionRange(0x8000, 0x9FFF),
+    0b011: new MemoryRegionRange(0xC000, 0xDFFF),
+    0b100: new MemoryRegionRange(0x2000, 0x3FFF),
+    0b101: new MemoryRegionRange(0x6000, 0x7FFF),
+    0b110: new MemoryRegionRange(0xA000, 0xBFFF),
+    0b111: new MemoryRegionRange(0xE000, 0xFFFF),
+  },
+);
+
 /**
  * Graphics ALU processing mode
  *

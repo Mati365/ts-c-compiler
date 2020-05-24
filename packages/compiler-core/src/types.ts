@@ -45,7 +45,7 @@ export class RGBColor {
  */
 export class Size {
   constructor(
-    public readonly w: number,
-    public readonly h: number,
+    public w: number,
+    public h: number,
   ) {}
 }

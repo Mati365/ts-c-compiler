@@ -34,10 +34,8 @@ export class VGAPixBufCanvasRenderer {
    * @memberof VGAPixBufCanvasRenderer
    */
   redraw(): void {
-    const {ctx} = this;
-    const {width, height} = ctx.canvas;
+    const {vga} = this;
 
-    ctx.fillStyle = '#000';
-    ctx.fillRect(0, 0, width, height);
+    vga.refreshPixelBuffer();
   }
 }

@@ -1,15 +1,17 @@
 import * as R from 'ramda';
 
+import {Size} from '@compiler/core/types';
 import {uuidX86Device} from '../../types';
 
 import {VirtualMemBlockDriver} from '../../memory/VirtualMemBlockDriver';
 import {ByteMemRegionAccessor} from '../../memory/MemoryRegion';
 import {X86CPU} from '../../X86CPU';
 
-import {VGAExternalRegs, MiscReg} from './VGAExternalRegs';
+import {VGAExternalRegs} from './VGAExternalRegs';
 import {VGACrtcRegs} from './VGACrtcRegs';
 import {VGADacRegs} from './VGADacRegs';
 import {VGASequencerRegs} from './VGASequencerRegs';
+import {VGAAttrRegs} from './VGAAttrRegs';
 import {
   VGAGraphicsRegs,
   MemoryMapSelectType,
@@ -28,6 +30,12 @@ import {
   VGAPixBufRenderer,
   VGATextModePixBufRenderer,
 } from './Renderers';
+
+import {VGA_TEXT_MODES_PRESET, assignPresetToVGA} from './VGAModesPresets';
+
+type VGAMeasuredState = {
+  size: Size;
+};
 
 class VGA256State {
   palette: Int32Array = null;
@@ -50,17 +58,24 @@ export class VGA extends uuidX86Device<X86CPU>('vga') implements ByteMemRegionAc
   private currentPixBufRenderer: VGAPixBufRenderer;
   private pixBufRenderers: VGAPixBufRenderer[];
 
+  /* size */
+  private textModeState: VGAMeasuredState;
+  private graphicsModeState: VGAMeasuredState & {
+    virtualSize: Size,
+  };
+
   /* graphics buffers */
   private vgaBuffer: VirtualMemBlockDriver;
   private planes: Uint8Array[];
   private pixelBuffer: Uint8Array;
 
   /* regs */
-  private externalRegs: VGAExternalRegs;
-  private graphicsRegs: VGAGraphicsRegs;
-  private crtcRegs: VGACrtcRegs;
-  private dacRegs: VGADacRegs;
-  private sequencerRegs: VGASequencerRegs;
+  public externalRegs: VGAExternalRegs;
+  public graphicsRegs: VGAGraphicsRegs;
+  public crtcRegs: VGACrtcRegs;
+  public dacRegs: VGADacRegs;
+  public sequencerRegs: VGASequencerRegs;
+  public attrRegs: VGAAttrRegs;
 
   /**
    * Allocates memory, creates regsiters
@@ -69,7 +84,6 @@ export class VGA extends uuidX86Device<X86CPU>('vga') implements ByteMemRegionAc
    */
   init() {
     this.reset();
-    this.matchPixBufRenderer();
   }
 
   /**
@@ -102,6 +116,7 @@ export class VGA extends uuidX86Device<X86CPU>('vga') implements ByteMemRegionAc
     this.crtcRegs = new VGACrtcRegs;
     this.dacRegs = new VGADacRegs;
     this.sequencerRegs = new VGASequencerRegs;
+    this.attrRegs = new VGAAttrRegs;
 
     /* Buffers */
     this.vgaBuffer = VirtualMemBlockDriver.alloc(VGA_BUFFER_SIZE);
@@ -111,38 +126,119 @@ export class VGA extends uuidX86Device<X86CPU>('vga') implements ByteMemRegionAc
       VGA_TOTAL_PLANES,
     );
 
-    /* Setting regs */
-    const {dacRegs, sequencerRegs, graphicsRegs} = this;
-    const {miscReg} = this.externalRegs;
-
-    Object.assign(
-      miscReg,
-      <MiscReg> {
-        ramEnable: 1,
-        inOutAddressSelect: 1,
-        oddEvenPageSelect: 0,
-        hsyncPolarity: 1,
-        vsyncPolarity: 1,
-      },
-    );
-
-    /* Graphics */
-    graphicsRegs.miscGraphicsReg.alphanumericModeDisable = 0x0;
-
-    /* DAC */
-    dacRegs.writeAddressReg = 0x0;
-    dacRegs.readAddressReg = 0x0;
-    dacRegs.stateReg.number = 0x0;
-    dacRegs.dataReg.number = 0x0;
-
-    /* SEQUENCER */
-    sequencerRegs.clockingModeReg.number = 0;
-    sequencerRegs.sequencerMemModeReg.number = 0;
-
-    /* OTHER */
+    /* Other */
     this.vga256 = new VGA256State;
-    this.latch = 0x0;
+    this.latch = 0;
+
+    this.textModeState = {
+      size: new Size(0, 0),
+    };
+
+    this.graphicsModeState = {
+      size: new Size(0, 0),
+      virtualSize: new Size(0, 0),
+    };
+
+    /* Load post boot mode preset */
+    this.loadModePreset(VGA_TEXT_MODES_PRESET['80x25']);
+
+    /* Post reset callbacks */
+    this.matchPixBufRenderer();
+    this.measureMode();
   }
+
+  /**
+   * Loads preset stores in VGA_TEXT_MODES_PRESET / VGA_GRAPHICS_MODES_PRESET
+   *
+   * @param {number[]} preset
+   * @memberof VGA
+   */
+  loadModePreset(preset: number[]): void {
+    assignPresetToVGA(this, preset);
+  }
+
+  /**
+   * Calculates mode size:
+   * - text mode in cols / rows
+   * - graphical mode in width / height (px)
+   *
+   * @see {@link https://github.com/copy/v86/blob/master/src/vga.js#L1164}
+   *
+   * @private
+   * @memberof VGA
+   */
+  private measureMode() {
+    const {
+      textMode, textModeState,
+      graphicsModeState,
+      crtcRegs, attrRegs,
+    } = this;
+
+    const horizontalCharacters = Math.min(1 + crtcRegs.endHorizontalDisplayReg, crtcRegs.startHorizontalBlankingReg);
+    let verticalScans = Math.min(1 + crtcRegs.verticalDisplayEndReg, crtcRegs.startVerticalBlankingReg);
+
+    console.info(verticalScans, crtcRegs.verticalDisplayEndReg, crtcRegs.startVerticalBlankingReg);
+    if (!horizontalCharacters || !verticalScans)
+      return;
+
+    // text mode
+    if (textMode) {
+      // doubling
+      if (crtcRegs.maxScanLineReg.sd)
+        verticalScans >>>= 1;
+
+      // sets size
+      textModeState.size.w = horizontalCharacters;
+      textModeState.size.h = verticalScans / (1 + (crtcRegs.maxScanLineReg.maxScanLine)) | 0;
+      console.info(textModeState.size);
+    } else {
+      // graphics mode
+      const screenSize = new Size(
+        horizontalCharacters << 3,
+        this.scanLineToRow(verticalScans),
+      );
+
+      if (attrRegs.attrModeControlReg.bit8)
+        screenSize.w >>= 1;
+
+      graphicsModeState.size = screenSize;
+    }
+  }
+
+  /**
+   * Converts scan line to row number
+   *
+   * @private
+   * @param {number} scanLine
+   * @returns {number}
+   * @memberof VGA
+   */
+  private scanLineToRow(scanLine: number): number {
+    const {crtcRegs: {maxScanLineReg, crtcModeControlReg}} = this;
+
+    // double scanning
+    if (maxScanLineReg.sd)
+      scanLine >>>= 1;
+
+    scanLine = Math.ceil(scanLine / (1 + (maxScanLineReg.maxScanLine)));
+
+    if (!crtcModeControlReg.map13)
+      scanLine <<= 1;
+
+    if (!crtcModeControlReg.map14)
+      scanLine <<= 1;
+
+    return scanLine;
+  }
+
+  /**
+   * Called in render loop
+   *
+   * @see {@link https://github.com/copy/v86/blob/master/src/vga.js#L2144}
+   *
+   * @memberof VGA
+   */
+  refreshPixelBuffer(): void {}
 
   /**
    * Get flag if VGA is in text mode
@@ -200,24 +296,6 @@ export class VGA extends uuidX86Device<X86CPU>('vga') implements ByteMemRegionAc
   }
 
   /**
-   * Writes single character to text memory
-   *
-   * @see {@link http://www.scs.stanford.edu/09wi-cs140/pintos/specs/freevga/vga/vgatext.htm}
-   *
-   * @param {number} address
-   * @param {number} byte
-   * @memberof VGA
-   */
-  writeTextMode(address: number, byte: number): void {
-    const {planes} = this;
-
-    if (address % 2 === 0)
-      planes[0][address] = byte;
-    else
-      planes[1][address] = byte;
-  }
-
-  /**
    * Read value from vram
    *
    * @param {number} address
@@ -242,6 +320,24 @@ export class VGA extends uuidX86Device<X86CPU>('vga') implements ByteMemRegionAc
     /** GRAPHICS MODE */
     this.latch = planes[0][offset] | (planes[1][offset] << 8) | (planes[2][offset] << 16) | (planes[3][offset] << 24);
     return planes[memoryMapSelect][offset];
+  }
+
+  /**
+   * Writes single character to text memory
+   *
+   * @see {@link http://www.scs.stanford.edu/09wi-cs140/pintos/specs/freevga/vga/vgatext.htm}
+   *
+   * @param {number} address
+   * @param {number} byte
+   * @memberof VGA
+   */
+  writeTextMode(address: number, byte: number): void {
+    const {planes} = this;
+
+    if (address % 2 === 0)
+      planes[0][address] = byte;
+    else
+      planes[1][address] = byte;
   }
 
   /**

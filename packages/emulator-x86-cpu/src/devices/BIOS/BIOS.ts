@@ -14,6 +14,8 @@ import {X86CPU} from '../../X86CPU';
 
 import {CursorCharacter, Cursor} from './Cursor';
 import {VideoMode} from './VideoMode';
+import {VGAPixBufCanvasRenderer} from '../Video/DOM/VGAPixBufCanvasRenderer';
+import {VGA} from '../Video/VGA';
 
 type KeymapTable = {
   [keycode: number]: number[],
@@ -558,17 +560,19 @@ export class BIOS extends uuidX86Device<X86CPU, BIOSInitConfig>('bios') {
     });
 
     /** Monitor render loop */
-    if (this.canvas) {
-      /** Font config */
-      this.canvas.ctx.imageSmoothingEnabled = false;
-
+    const {canvas, cpu} = this;
+    if (canvas) {
       /** Render loop */
-      const {cpu} = this;
+      const vgaPixBufRenderer = new VGAPixBufCanvasRenderer(
+        canvas.handle,
+        <VGA> cpu.devices.vga,
+      );
+
       const vblank = setInterval(
         () => {
           try {
             cpu.exec(1450000 / 30);
-            this.redraw();
+            vgaPixBufRenderer.redraw();
 
             if (cpu.isHalted())
               clearInterval(vblank);
