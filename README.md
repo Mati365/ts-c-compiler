@@ -8,7 +8,7 @@
 [![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg?style=flat-square)](http://makeapullrequest.com)
 [![Known Vulnerabilities](https://snyk.io/test/github/Mati365/i8086.js/badge.svg?targetFile=package.json&style=flat-square)](https://snyk.io/test/github/Mati365/i8086.js?targetFile=package.json)
 
-16bit x86 virtual machine written in modern JS ES6.
+16bit x86 virtual machine written in modern JS ES6. It is designed to help with prototyping small bootsector(or bigger) real mode games 🎮 and apps 💻.  
 
 ## Status
 
