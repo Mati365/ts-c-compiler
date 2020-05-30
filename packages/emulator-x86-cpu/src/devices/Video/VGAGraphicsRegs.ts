@@ -55,16 +55,9 @@ export class ColorCompareReg extends UnionStruct {
  * @class DataRotateReg
  * @extends {UnionStruct}
  */
-export enum RotateRegLogicalOp {
-  UNMODIFIED = 0b00,
-  AND_LATCH = 0b01,
-  OR_LATCH = 0b10,
-  XOR_LATCH = 0b11,
-}
-
 export class DataRotateReg extends UnionStruct {
   @bits(0, 2) rotateCount: number;
-  @bits(3, 4) logicalOperation: RotateRegLogicalOp;
+  @bits(3, 4) logicalOperation: GraphicsWriteMode;
 }
 
 /**
@@ -88,7 +81,7 @@ export class ReadMapSelectReg extends UnionStruct {
 export class GraphicsModeReg extends UnionStruct {
   @bits(0, 1) writeMode: GraphicsWriteMode;
   @bits(3) readMode: number;
-  @bits(4) hostOddEventMemoryReadAddrEnable: number;
+  @bits(4) hostOddEvenMemoryReadAddrEnable: number;
   @bits(5) shiftRegInterleaveMode: number;
   @bits(6) shift256ColorMode: number;
 }
@@ -127,7 +120,7 @@ export class ColorDontCareReg extends UnionStruct {
  * @extends {UnionStruct}
  */
 export class ColorBitmaskReg extends UnionStruct {
-  @bits(0, 7) bitMask: number;
+  @bits(0, 7) bitmask: number;
 }
 
 /**

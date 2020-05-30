@@ -80,4 +80,8 @@ export class VGAAttrRegs {
   colorPlaneEnableReg = new ColorPlaneEnableReg;
   horizontalPixelPanningReg = new HorizontalPixelPanningReg;
   colorSelectReg = new ColorSelectReg;
+
+  isBlinkEnabled() {
+    return this.attrModeControlReg.blink === 1;
+  }
 }

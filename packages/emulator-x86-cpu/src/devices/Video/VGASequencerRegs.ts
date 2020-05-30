@@ -86,5 +86,5 @@ export class VGASequencerRegs {
   clockingModeReg = new ClockingModeReg;
   mapMaskReg = new MapMaskReg;
   charMapSelectReg = new CharMapSelectReg;
-  sequencerMemModeReg = new SequencerMemModeReg;
+  memModeReg = new SequencerMemModeReg;
 }

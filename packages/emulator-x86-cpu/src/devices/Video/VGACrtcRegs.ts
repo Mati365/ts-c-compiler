@@ -205,6 +205,10 @@ export class VGACrtcRegs {
   crtcModeControlReg = new CRTCModeControlReg; /* Index 17h */
   lineCompareReg = 0x0; /* Index 18h */
 
+  isTextCursorDisabled(): boolean {
+    return this.cursorStartReg.cd === 1;
+  }
+
   /**
    * Reads vertical regs that might contain overflow
    *

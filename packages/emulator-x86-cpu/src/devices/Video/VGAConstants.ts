@@ -1,5 +1,6 @@
 import {UnionStruct, bits} from '@compiler/core/shared';
 import {MemoryRegionRange, MemoryRegionsMap} from '@emulator/x86-cpu/memory/MemoryRegion';
+import {Size} from '@compiler/core/types';
 
 export const VGA_BANK_SIZE = 0x10000;
 export const VGA_TOTAL_PLANES = 0x4;
@@ -10,6 +11,8 @@ export const VGA_PIXEL_MEM_MAP = Object.freeze(
   ),
 );
 export const VGA_BUFFER_SIZE = VGA_PIXEL_MEM_MAP.high;
+export const VGA_CHARSET_SIZE = 256;
+export const VGA_CHAR_BYTE_SIZE = 32;
 
 export const GRAPHICS_MEMORY_MAPS: MemoryRegionsMap = Object.freeze(
   {
@@ -87,4 +90,17 @@ export class RGB32Color extends UnionStruct {
   @bits(16, 23) r: number;
   @bits(8, 15) g: number;
   @bits(0, 7) b: number;
+}
+
+/**
+ * Holds binary represenation of font
+ *
+ * @export
+ * @class VGAFontPack
+ */
+export class VGAFontPack {
+  constructor(
+    public readonly charSize: Size,
+    public readonly data: number[],
+  ) {}
 }
