@@ -50,7 +50,7 @@ export class MathOperator {
     MathOperator.POW,
   ];
 
-  static readonly OPERATORS_MAP: {[key: string]: MathOperator} = R.reduce(
+  static readonly OPERATORS_MAP: Record<string, MathOperator> = R.reduce(
     (acc, op) => {
       acc[op.char] = op;
       return acc;

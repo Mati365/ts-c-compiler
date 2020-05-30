@@ -14,7 +14,7 @@ export const X86_BINARY_MASKS = {
   0x4: ((0x2 << 0x1F) - 0x1) >>> 0,
 };
 
-export const X86_PREFIXES: {[key: number]: X86Prefix} = {
+export const X86_PREFIXES: Record<number, X86Prefix> = {
   0xF0: 0x0, /** LOCK */
   0xF3: 0x0, /** REP  */
   0xF2: 0x1, /** REPNE */
@@ -39,7 +39,7 @@ export const X86_PREFIX_LABEL_MAP = {
   0x3: 'addressSize',
 };
 
-export const X86_REGISTERS: {[number: string]: X86RegsSet} = {
+export const X86_REGISTERS: Record<string, X86RegsSet> = {
   /** 8bit registers indexes */
   0x1: {
     0x0: 'al', 0x1: 'cl',

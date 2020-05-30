@@ -55,7 +55,7 @@ export type ASTOpcodeMatchers = {
   [key: string]: ASTInstructionSchema[],
 };
 
-export const ASTInstructionArgMatchers: {[key: string]: ASTInstructionArgMatcherFactory} = {
+export const ASTInstructionArgMatchers: Record<string, ASTInstructionArgMatcherFactory> = {
   eq: (str: string) => (arg: ASTInstructionArg<any>) => {
     const {val} = arg;
 

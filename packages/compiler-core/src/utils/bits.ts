@@ -98,3 +98,25 @@ export function getMSbit(num: number, byte: number = 0x1): number {
 export function getSMSbit(num: number, byte: number = 0x1): number {
   return (num >> ((byte * 0x8 - 0x1) - 1)) & 0x1;
 }
+
+/**
+ * Flips bytes horizontally in byte, much faster than reverseBits
+ *
+ * @export
+ * @param {number} byte
+ * @returns {number}
+ */
+export function reverseByte(byte: number): number {
+  let retVal: number = 0x0;
+
+  if (byte & 0x01) retVal |= 0x80;
+  if (byte & 0x02) retVal |= 0x40;
+  if (byte & 0x04) retVal |= 0x20;
+  if (byte & 0x08) retVal |= 0x10;
+  if (byte & 0x10) retVal |= 0x08;
+  if (byte & 0x20) retVal |= 0x04;
+  if (byte & 0x40) retVal |= 0x02;
+  if (byte & 0x80) retVal |= 0x01;
+
+  return retVal;
+}

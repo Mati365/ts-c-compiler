@@ -14,7 +14,7 @@ export enum PreprocessorErrorCode {
 }
 
 /* eslint-disable max-len */
-export const PREPROCESSOR_ERROR_TRANSLATIONS: {[key in PreprocessorErrorCode]: string} = {
+export const PREPROCESSOR_ERROR_TRANSLATIONS: Record<PreprocessorErrorCode, string> = {
   [PreprocessorErrorCode.INCORRECT_VALUE_EXPRESSION]: 'Incorrect value expression! Too many tokens!',
   [PreprocessorErrorCode.UNKNOWN_MACRO_VARIABLE]: 'Unknown macro variable %{name}!',
   [PreprocessorErrorCode.EXPRESSION_MISMATCH_ARGS_TYPES]: 'Mismatch expression args types!',

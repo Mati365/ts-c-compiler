@@ -5,7 +5,7 @@ export enum GrammarErrorCode {
   SYNTAX_ERROR,
 }
 
-export const GRAMMAR_ERROR_TRANSLATIONS: {[key in GrammarErrorCode]: string} = {
+export const GRAMMAR_ERROR_TRANSLATIONS: Record<GrammarErrorCode, string> = {
   [GrammarErrorCode.SYNTAX_ERROR]: 'Syntax error!',
 };
 

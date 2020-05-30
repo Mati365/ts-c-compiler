@@ -37,7 +37,7 @@ const safeNumberMatch = (regex: RegExp, radix: number) => R.compose(
 /**
  * List with digit matchers
  */
-export const DIGIT_FORMATS_PARSERS: {[key: string]: (str: string) => number} = {
+export const DIGIT_FORMATS_PARSERS: Record<string, (str: string) => number> = {
   /**
    * Allowed HEX format:
    *  - 0c8h

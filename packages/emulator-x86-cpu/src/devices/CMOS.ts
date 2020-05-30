@@ -17,7 +17,7 @@ type ClockTimerConfig = {
  */
 export class CMOS extends uuidX86Device<X86CPU>('cmos') {
   private index: number = 0;
-  private offsets: {[key: number]: () => number} = null;
+  private offsets: Record<number, () => number> = null;
   private timer: ClockTimerConfig;
 
   /**

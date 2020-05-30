@@ -1,6 +1,8 @@
 import * as R from 'ramda';
 
 import {Size} from '@compiler/core/types';
+import {reverseByte} from '@compiler/core/utils/bits';
+
 import {uuidX86Device} from '../../types';
 
 import {VirtualMemBlockDriver} from '../../memory/VirtualMemBlockDriver';
@@ -27,8 +29,10 @@ import {
   VGA_CHARSET_SIZE,
   VGA_CHAR_BYTE_SIZE,
   GRAPHICS_ALU_OPS,
+  VGA_CHARSET_BANK_SIZE,
   VGAFontPack,
   GraphicsWriteMode,
+  RGB32Color,
 } from './VGAConstants';
 
 import {
@@ -40,14 +44,25 @@ import {
   VGA_TEXT_MODES_PRESET,
   VGA_8X16_FONT,
   assignPresetToVGA,
+  VGA256Palette,
 } from './VGAModesPresets';
 
 type VGAMeasuredState = {
   size: Size;
 };
 
+type VGATextModeState = VGAMeasuredState & {
+  charSize: Size,
+};
+
+type VGAGraphicsModeState = VGAMeasuredState & {
+  virtualSize: Size,
+};
+
 class VGA256State {
-  palette: Int32Array = null;
+  constructor(
+    public palette: RGB32Color[] = VGA256Palette,
+  ) {}
 }
 
 /**
@@ -68,10 +83,9 @@ export class VGA extends uuidX86Device<X86CPU>('vga') implements ByteMemRegionAc
   private pixBufRenderers: VGAPixBufRenderer[];
 
   /* size */
-  private textModeState: VGAMeasuredState;
-  private graphicsModeState: VGAMeasuredState & {
-    virtualSize: Size,
-  };
+  private pixelScreenSize: Size = new Size(0, 0);
+  private textModeState: VGATextModeState;
+  private graphicsModeState: VGAGraphicsModeState;
 
   /* graphics buffers */
   private vgaBuffer: VirtualMemBlockDriver;
@@ -94,6 +108,33 @@ export class VGA extends uuidX86Device<X86CPU>('vga') implements ByteMemRegionAc
   init() {
     this.reset();
   }
+
+  getPlanes(): Uint8Array[] {
+    return this.planes;
+  }
+
+  getPixelScreenSize(): Readonly<Size> {
+    return this.pixelScreenSize;
+  }
+
+  getTextModeState(): Readonly<VGATextModeState> {
+    return this.textModeState;
+  }
+
+  getGraphicsModeState(): Readonly<VGAGraphicsModeState> {
+    return this.graphicsModeState;
+  }
+
+  getVGA256State(): Readonly<VGA256State> {
+    return this.vga256;
+  }
+
+  /**
+   * Getters used only in text mode
+   */
+  get textMem() { return this.planes[0]; }
+  get textAttrsMem() { return this.planes[1]; }
+  get textFontMem() { return this.planes[2]; }
 
   /**
    * Iterates over pix buf renderers and takes first which matches
@@ -141,6 +182,7 @@ export class VGA extends uuidX86Device<X86CPU>('vga') implements ByteMemRegionAc
 
     this.textModeState = {
       size: new Size(0, 0),
+      charSize: new Size(0, 0),
     };
 
     this.graphicsModeState = {
@@ -181,14 +223,14 @@ export class VGA extends uuidX86Device<X86CPU>('vga') implements ByteMemRegionAc
   writeFontPack(font: VGAFontPack, fontIndex: number = 0): void {
     const {charSize: {h: charH}, data} = font;
     const plane = this.planes[2];
-    const fontOffset = fontIndex * 16384; // check if 16384 is correct
+    const fontOffset = fontIndex * VGA_CHARSET_BANK_SIZE;
 
     for (let charIndex = 0; charIndex < VGA_CHARSET_SIZE; ++charIndex) {
       for (let row = 0; row < charH; ++row) {
         const charDestOffset = fontOffset + VGA_CHAR_BYTE_SIZE * charIndex + row;
         const charTemplateOffset = charH * charIndex + row;
 
-        plane[charDestOffset] = data[charTemplateOffset];
+        plane[charDestOffset] = reverseByte(data[charTemplateOffset]);
       }
     }
   }
@@ -206,8 +248,8 @@ export class VGA extends uuidX86Device<X86CPU>('vga') implements ByteMemRegionAc
   private measureMode() {
     const {
       textMode, textModeState,
-      graphicsModeState,
-      crtcRegs, attrRegs,
+      graphicsModeState, pixelScreenSize,
+      crtcRegs, attrRegs, sequencerRegs,
     } = this;
 
     const horizontalCharacters = Math.min(
@@ -225,13 +267,25 @@ export class VGA extends uuidX86Device<X86CPU>('vga') implements ByteMemRegionAc
 
     // text mode
     if (textMode) {
+      const {maxScanLineReg} = crtcRegs;
+      const {sd, maxScanLine} = maxScanLineReg;
+
       // doubling
-      if (crtcRegs.maxScanLineReg.sd)
+      if (sd)
         verticalScans >>>= 1;
 
       // sets size
       textModeState.size.w = horizontalCharacters;
-      textModeState.size.h = verticalScans / (1 + (crtcRegs.maxScanLineReg.maxScanLine & 0x1F)) | 0;
+      textModeState.size.h = verticalScans / (1 + maxScanLine) | 0;
+
+      // sets single character size
+      // 1 if 8 dots mode
+      textModeState.charSize.w = 9 - sequencerRegs.clockingModeReg.dotMode8or9;
+      textModeState.charSize.h = maxScanLine + 1;
+
+      // calculates total canvas size
+      pixelScreenSize.w = textModeState.charSize.w * textModeState.size.w;
+      pixelScreenSize.h = textModeState.charSize.h * textModeState.size.h;
     } else {
       // graphics mode
       const screenSize = new Size(
@@ -242,7 +296,8 @@ export class VGA extends uuidX86Device<X86CPU>('vga') implements ByteMemRegionAc
       if (attrRegs.attrModeControlReg.bit8)
         screenSize.w >>= 1;
 
-      graphicsModeState.size = screenSize;
+      graphicsModeState.size.assign(screenSize);
+      pixelScreenSize.assign(screenSize);
     }
   }
 
@@ -273,13 +328,19 @@ export class VGA extends uuidX86Device<X86CPU>('vga') implements ByteMemRegionAc
   }
 
   /**
-   * Called in render loop
+   * Render pixel buffer into canvas
    *
    * @see {@link https://github.com/copy/v86/blob/master/src/vga.js#L2144}
    *
+   * @param {Uint8ClampedArray} buffer
    * @memberof VGA
    */
-  refreshPixelBuffer(): void {}
+  renderToImageBuffer(buffer: Uint8ClampedArray): void {
+    const {currentPixBufRenderer, pixelBuffer} = this;
+
+    currentPixBufRenderer.renderToPixelBuffer(pixelBuffer);
+    currentPixBufRenderer.renderToImageBuffer(buffer);
+  }
 
   /**
    * Get flag if VGA is in text mode
@@ -413,9 +474,9 @@ export class VGA extends uuidX86Device<X86CPU>('vga') implements ByteMemRegionAc
     const {planes} = this;
 
     if (address % 2 === 0)
-      planes[0][address] = byte;
+      planes[0][address >> 1] = byte;
     else
-      planes[1][address] = byte;
+      planes[1][(address - 1) >> 1] = byte;
   }
 
   /**

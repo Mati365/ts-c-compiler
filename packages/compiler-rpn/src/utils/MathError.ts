@@ -8,7 +8,7 @@ export enum MathErrorCode {
   DIVISION_BY_ZERO,
 }
 
-export const MATH_ERROR_TRANSLATIONS: {[key in MathErrorCode]: string} = {
+export const MATH_ERROR_TRANSLATIONS: Record<MathErrorCode, string> = {
   [MathErrorCode.MISSING_LEFT_BRACKET]: 'Missing left bracket!',
   [MathErrorCode.MISSING_OPERANDS]: 'Missing operands!',
   [MathErrorCode.INCORRECT_BRACKETS]: 'Incorrect brackets!',

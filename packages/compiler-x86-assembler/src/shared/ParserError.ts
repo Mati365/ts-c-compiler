@@ -75,7 +75,7 @@ export enum ParserErrorCode {
 }
 
 /* eslint-disable max-len */
-export const ERROR_TRANSLATIONS: {[key in ParserErrorCode]: string} = {
+export const ERROR_TRANSLATIONS: Record<ParserErrorCode, string> = {
   [ParserErrorCode.SYNTAX_ERROR]: 'Syntax error!',
   [ParserErrorCode.INCORRECT_EXPRESSION]: 'Incorrect expression!',
 

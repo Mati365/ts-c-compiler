@@ -8,7 +8,7 @@ export enum X87ErrorCode {
   INEXACT_RESULT,
 }
 
-export const X87_ERROR_TRANSLATIONS: {[key in X87ErrorCode]: string} = {
+export const X87_ERROR_TRANSLATIONS: Record<X87ErrorCode, string> = {
   [X87ErrorCode.STACK_OVERFLOW_OR_UNDERFLOW]: 'Stack overflow or underflow',
   [X87ErrorCode.INVALID_ARITHMETIC_OPERATION]: 'Invalid arithmetic operation',
   [X87ErrorCode.DENORMALIZED_OPERAND]: 'Denormalized operand',

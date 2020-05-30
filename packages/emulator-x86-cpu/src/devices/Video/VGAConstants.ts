@@ -11,6 +11,7 @@ export const VGA_PIXEL_MEM_MAP = Object.freeze(
   ),
 );
 export const VGA_BUFFER_SIZE = VGA_PIXEL_MEM_MAP.high;
+export const VGA_CHARSET_BANK_SIZE = 0x4000;
 export const VGA_CHARSET_SIZE = 256;
 export const VGA_CHAR_BYTE_SIZE = 32;
 
@@ -55,7 +56,7 @@ export enum GraphicsWriteMode {
  * 10b - Result is input from previous stage logical ORed with latch register.
  * 11b - Result is input from previous stage logical XORed with latch register.
  */
-export const GRAPHICS_ALU_OPS: {[key in GraphicsWriteMode]: (a: number, b?: number) => number} = {
+export const GRAPHICS_ALU_OPS: Record<GraphicsWriteMode, (a: number, b?: number) => number> = {
   [GraphicsWriteMode.MODE_0]: (a: number) => a,
   [GraphicsWriteMode.MODE_1]: (a: number, b: number) => a & b,
   [GraphicsWriteMode.MODE_2]: (a: number, b: number) => a | b,
@@ -79,14 +80,6 @@ export const GRAPHICS_RESERVED_MEM_MAP = Object.freeze(
  * @extends {UnionStruct}
  */
 export class RGB32Color extends UnionStruct {
-  constructor(r: number, g: number, b: number) {
-    super();
-
-    this.r = r;
-    this.g = g;
-    this.b = b;
-  }
-
   @bits(16, 23) r: number;
   @bits(8, 15) g: number;
   @bits(0, 7) b: number;

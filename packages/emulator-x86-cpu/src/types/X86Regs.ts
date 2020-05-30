@@ -142,11 +142,11 @@ export class X86RegsStore extends X86ByteRegsStore {
    * Transforms object of regs with number values to number table
    *
    * @static
-   * @param {{[key: string]: number}} regs
+   * @param {Record<string, string|number>} regs
    * @returns {NumericRegisterDumpRow[]}
    * @memberof X86RegsStore
    */
-  static toRegistersTable(regs: {[key: string]: string|number}): NumericRegisterDumpRow[] {
+  static toRegistersTable(regs: Record<string, string|number>): NumericRegisterDumpRow[] {
     const insertDot = (str: string, pos: number) => `${str.slice(0, pos)}.${str.slice(pos)}`;
 
     /** Registers */

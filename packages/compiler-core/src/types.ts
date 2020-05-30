@@ -48,4 +48,15 @@ export class Size {
     public w: number,
     public h: number,
   ) {}
+
+  assign({w, h}: Size): void {
+    this.w = w;
+    this.h = h;
+  }
+
+  clone() {
+    const {w, h} = this;
+
+    return new Size(w, h);
+  }
 }

@@ -1,4 +1,6 @@
 import {UnionStruct, bits} from '@compiler/core/shared/UnionStruct';
+import {MemoryRegionRange} from '@emulator/x86-cpu/memory/MemoryRegion';
+import {CHARSET_MEMORY_MAPS} from './VGAConstants';
 
 /**
  * @see {@link http://www.osdever.net/FreeVGA/vga/seqreg.htm}
@@ -30,7 +32,7 @@ export class ResetReg extends UnionStruct {
  * @extends {UnionStruct}
  */
 export class ClockingModeReg extends UnionStruct {
-  @bits(0) dotMode9or8: number;
+  @bits(0) dotMode8or9: number;
   @bits(2) slr: number;
   @bits(3) dcr: number;
   @bits(4) s4: number;
@@ -87,4 +89,22 @@ export class VGASequencerRegs {
   mapMaskReg = new MapMaskReg;
   charMapSelectReg = new CharMapSelectReg;
   memModeReg = new SequencerMemModeReg;
+
+  /**
+   * Returns two fonts charsets
+   *
+   * @returns {[MemoryRegionRange, MemoryRegionRange]}
+   * @memberof VGASequencerRegs
+   */
+  getCharsetMemRegions(): [MemoryRegionRange, MemoryRegionRange] {
+    const {
+      charSetBSelect, csbs2,
+      charSetASelect, csas2,
+    } = this.charMapSelectReg;
+
+    return [
+      CHARSET_MEMORY_MAPS[(csas2 << 2) | charSetASelect],
+      CHARSET_MEMORY_MAPS[(csbs2 << 2) | charSetBSelect],
+    ];
+  }
 }

@@ -42,4 +42,4 @@ export class MemoryRegionRange {
   }
 }
 
-export type MemoryRegionsMap = Readonly<{[key: number]: MemoryRegionRange}>;
+export type MemoryRegionsMap = Readonly<Record<number, MemoryRegionRange>>;
