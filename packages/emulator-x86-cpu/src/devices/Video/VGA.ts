@@ -1,6 +1,6 @@
 import * as R from 'ramda';
 
-import {Size} from '@compiler/core/types';
+import {Size, RGBColor} from '@compiler/core/types';
 import {reverseByte} from '@compiler/core/utils/bits';
 
 import {uuidX86Device} from '../../types';
@@ -32,13 +32,7 @@ import {
   VGA_CHARSET_BANK_SIZE,
   VGAFontPack,
   GraphicsWriteMode,
-  RGB32Color,
 } from './VGAConstants';
-
-import {
-  VGAPixBufRenderer,
-  VGATextModePixBufRenderer,
-} from './Renderers';
 
 import {
   VGA_TEXT_MODES_PRESET,
@@ -46,6 +40,11 @@ import {
   assignPresetToVGA,
   VGA256Palette,
 } from './VGAModesPresets';
+
+import {
+  VGACanvasRenderer,
+  VGATextModeCanvasRenderer,
+} from './Renderers';
 
 type VGAMeasuredState = {
   size: Size;
@@ -61,7 +60,7 @@ type VGAGraphicsModeState = VGAMeasuredState & {
 
 class VGA256State {
   constructor(
-    public palette: RGB32Color[] = VGA256Palette,
+    public palette: RGBColor[] = VGA256Palette,
   ) {}
 }
 
@@ -76,11 +75,15 @@ class VGA256State {
  * @extends {uuidX86Device<X86CPU>('vga')}
  */
 export class VGA extends uuidX86Device<X86CPU>('vga') implements ByteMemRegionAccessor {
+  /* DOM */
+  private screenElement: HTMLElement;
+
+  /* VGA buffers */
   private vga256: VGA256State;
   private latch: number;
 
-  private currentPixBufRenderer: VGAPixBufRenderer;
-  private pixBufRenderers: VGAPixBufRenderer[];
+  private renderer: VGACanvasRenderer;
+  private renderers: VGACanvasRenderer[];
 
   /* size */
   private pixelScreenSize: Size = new Size(0, 0);
@@ -93,12 +96,12 @@ export class VGA extends uuidX86Device<X86CPU>('vga') implements ByteMemRegionAc
   private pixelBuffer: Uint8Array;
 
   /* regs */
-  public externalRegs: VGAExternalRegs;
-  public graphicsRegs: VGAGraphicsRegs;
-  public crtcRegs: VGACrtcRegs;
-  public dacRegs: VGADacRegs;
-  public sequencerRegs: VGASequencerRegs;
-  public attrRegs: VGAAttrRegs;
+  externalRegs: VGAExternalRegs;
+  graphicsRegs: VGAGraphicsRegs;
+  crtcRegs: VGACrtcRegs;
+  dacRegs: VGADacRegs;
+  sequencerRegs: VGASequencerRegs;
+  attrRegs: VGAAttrRegs;
 
   /**
    * Allocates memory, creates regsiters
@@ -109,24 +112,17 @@ export class VGA extends uuidX86Device<X86CPU>('vga') implements ByteMemRegionAc
     this.reset();
   }
 
-  getPlanes(): Uint8Array[] {
-    return this.planes;
-  }
+  getPlanes(): Uint8Array[] { return this.planes; }
+  getPixelScreenSize(): Readonly<Size> { return this.pixelScreenSize; }
+  getTextModeState(): Readonly<VGATextModeState> { return this.textModeState; }
+  getGraphicsModeState(): Readonly<VGAGraphicsModeState> { return this.graphicsModeState; }
+  getVGA256State(): Readonly<VGA256State> { return this.vga256; }
+  getCurrentRenderer(): VGACanvasRenderer { return this.renderer; }
 
-  getPixelScreenSize(): Readonly<Size> {
-    return this.pixelScreenSize;
-  }
-
-  getTextModeState(): Readonly<VGATextModeState> {
-    return this.textModeState;
-  }
-
-  getGraphicsModeState(): Readonly<VGAGraphicsModeState> {
-    return this.graphicsModeState;
-  }
-
-  getVGA256State(): Readonly<VGA256State> {
-    return this.vga256;
+  getScreenElement(): HTMLElement { return this.screenElement; }
+  setScreenElement(screenElement: HTMLElement): void {
+    this.screenElement = screenElement;
+    this.matchPixBufRenderer();
   }
 
   /**
@@ -142,17 +138,29 @@ export class VGA extends uuidX86Device<X86CPU>('vga') implements ByteMemRegionAc
    * @memberof VGA
    */
   matchPixBufRenderer() {
+    if (!this.screenElement)
+      return;
+
     // initialize pixel buffers on first call
-    if (!this.pixBufRenderers) {
-      this.pixBufRenderers = [
-        new VGATextModePixBufRenderer(this),
+    if (!this.renderers) {
+      this.renderers = [
+        new VGATextModeCanvasRenderer(this),
       ];
     }
 
     // search in list
-    this.currentPixBufRenderer = this.pixBufRenderers.find(
+    const newRenderer = this.renderers.find(
       (renderer) => renderer.isSuitable(),
     );
+
+    /* eslint-disable no-unused-expressions */
+    if (newRenderer !== this.renderer) {
+      this.renderer?.release();
+
+      this.renderer = newRenderer;
+      this.renderer.alloc();
+    }
+    /* eslint-enable no-unused-expressions */
   }
 
   /**
@@ -202,13 +210,12 @@ export class VGA extends uuidX86Device<X86CPU>('vga') implements ByteMemRegionAc
    */
   loadModePreset(preset: number[]): void {
     assignPresetToVGA(this, preset);
-
-    /* Post reset callbacks */
-    this.matchPixBufRenderer();
-    this.measureMode();
-
     if (this.textMode)
       this.writeFontPack(VGA_8X16_FONT);
+
+    /* Post reset callbacks */
+    this.measureMode();
+    this.matchPixBufRenderer();
   }
 
   /**
@@ -325,21 +332,6 @@ export class VGA extends uuidX86Device<X86CPU>('vga') implements ByteMemRegionAc
       scanLine <<= 1;
 
     return scanLine;
-  }
-
-  /**
-   * Render pixel buffer into canvas
-   *
-   * @see {@link https://github.com/copy/v86/blob/master/src/vga.js#L2144}
-   *
-   * @param {Uint8ClampedArray} buffer
-   * @memberof VGA
-   */
-  renderToImageBuffer(buffer: Uint8ClampedArray): void {
-    const {currentPixBufRenderer, pixelBuffer} = this;
-
-    currentPixBufRenderer.renderToPixelBuffer(pixelBuffer);
-    currentPixBufRenderer.renderToImageBuffer(buffer);
   }
 
   /**
@@ -490,9 +482,9 @@ export class VGA extends uuidX86Device<X86CPU>('vga') implements ByteMemRegionAc
     const {planes} = this;
 
     if (address % 2 === 0)
-      return planes[0][address];
+      return planes[0][address >> 1];
 
-    return planes[1][address];
+    return planes[1][(address - 1) >> 1];
   }
 
   /**

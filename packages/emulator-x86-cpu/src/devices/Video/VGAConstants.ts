@@ -1,4 +1,3 @@
-import {UnionStruct, bits} from '@compiler/core/shared';
 import {MemoryRegionRange, MemoryRegionsMap} from '@emulator/x86-cpu/memory/MemoryRegion';
 import {Size} from '@compiler/core/types';
 
@@ -71,19 +70,6 @@ export const GRAPHICS_ALU_OPS: Record<GraphicsWriteMode, (a: number, b?: number)
 export const GRAPHICS_RESERVED_MEM_MAP = Object.freeze(
   new MemoryRegionRange(0xA0000, 0xBFFFF),
 );
-
-/**
- * Color palette holder
- *
- * @export
- * @class RGB32Color
- * @extends {UnionStruct}
- */
-export class RGB32Color extends UnionStruct {
-  @bits(16, 23) r: number;
-  @bits(8, 15) g: number;
-  @bits(0, 7) b: number;
-}
 
 /**
  * Holds binary represenation of font

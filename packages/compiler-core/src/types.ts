@@ -30,11 +30,32 @@ export class Rectangle implements RectangleDimensions {
  * @class RGBColor
  */
 export class RGBColor {
+  public readonly hex: string;
+
   constructor(
     public readonly r: number,
     public readonly g: number,
     public readonly b: number,
-  ) {}
+  ) {
+    // cache for canvas
+    this.hex = `#${[r, g, b].map((str) => str.toString(16).padStart(2, '0')).join('')}`;
+  }
+
+  /**
+   * Creates color from HEX
+   *
+   * @static
+   * @param {number} hex
+   * @returns {RGBColor}
+   * @memberof RGBColor
+   */
+  static fromHex(hex: number): RGBColor {
+    return new RGBColor(
+      (hex >> 16) & 0xFF,
+      (hex >> 8) & 0xFF,
+      hex & 0xFF,
+    );
+  }
 }
 
 /**

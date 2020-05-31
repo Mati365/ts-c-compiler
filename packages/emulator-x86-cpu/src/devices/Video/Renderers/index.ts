@@ -1,2 +1,3 @@
-export * from './VGAPixBufRenderer';
-export * from './VGATextModePixBufRenderer';
+export * from './utils/VGACanvasRenderer';
+export * from './utils/VGAPixBufCanvasRenderer';
+export * from './VGATextModeCanvasRenderer';

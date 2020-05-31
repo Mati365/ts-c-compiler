@@ -138,7 +138,7 @@ export abstract class X86AbstractCPU {
   /** logic methods */
   abstract fetchOpcode(size?: number, incrementIP?: boolean, ignorePrefix?: boolean): number;
   abstract boot(device: Buffer|string, id?: number): void;
-  abstract exec(cycles: number): void;
+  abstract exec(time: number): void;
   abstract halt(message?: string, dump?: boolean): void;
   abstract interrupt(interrupt: X86Interrupt): boolean;
 

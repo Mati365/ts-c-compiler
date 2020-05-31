@@ -244,10 +244,10 @@ export class X86CPU extends X86AbstractCPU {
   /**
    * Exec CPU
    *
-   * @param {Number}  cycles  Instructions counter
+   * @param {Number} maxTime  Maximum execution time in microseconds
    * @returns Cycles count
    */
-  exec(cycles: number): void {
+  exec(maxTime: number): void {
     if (!this.clock)
       return;
 
@@ -333,8 +333,9 @@ export class X86CPU extends X86AbstractCPU {
     const {devices} = this;
     (<PIT> devices.pit).tick();
 
-    if (cycles) {
-      for (let i = 0; i < cycles && this.clock; ++i)
+    if (maxTime) {
+      const maxEndTime = X86AbstractCPU.microtick() + maxTime;
+      for (;X86AbstractCPU.microtick() < maxEndTime;)
         tick();
     } else {
       while (this.clock)

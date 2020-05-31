@@ -15,15 +15,15 @@ export class Terminal extends React.Component<TerminalProps> {
   /**
    * Initialize CPU with screen
    *
-   * @param {Context} canvas Screen context
+   * @param {Context} screenElement Screen context
    * @memberOf Terminal
    */
-  initializeCPU = async (canvas: HTMLCanvasElement) => {
+  initializeCPU = async (screenElement: HTMLDivElement) => {
     const {binary} = this.props;
 
     this
       .cpu
-      .attach(BIOS, {canvas})
+      .attach(BIOS, {screenElement})
       .boot(binary);
   };
 

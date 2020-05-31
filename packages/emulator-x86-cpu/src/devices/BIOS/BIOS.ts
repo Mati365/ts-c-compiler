@@ -14,7 +14,6 @@ import {X86CPU} from '../../X86CPU';
 
 import {CursorCharacter, Cursor} from './Cursor';
 import {VideoMode} from './VideoMode';
-import {VGAPixBufCanvasRenderer} from '../Video/DOM/VGAPixBufCanvasRenderer';
 import {VGA} from '../Video/VGA';
 
 type KeymapTable = {
@@ -32,13 +31,8 @@ type ScreenState = {
   mode: VideoMode,
 };
 
-type BIOSCanvas = {
-  ctx: CanvasRenderingContext2D,
-  handle: HTMLCanvasElement,
-};
-
 type BIOSInitConfig = {
-  canvas: HTMLCanvasElement
+  screenElement: HTMLElement,
 };
 
 type BIOSFloppyDrive = {
@@ -86,7 +80,7 @@ export class BIOS extends uuidX86Device<X86CPU, BIOSInitConfig>('bios') {
     mode: null,
   };
 
-  private canvas: BIOSCanvas;
+  private screenElement: HTMLElement;
 
   private drives: {[drive: number]: BIOSFloppyDrive} = null;
 
@@ -104,15 +98,11 @@ export class BIOS extends uuidX86Device<X86CPU, BIOSInitConfig>('bios') {
    *
    * @param {Canvas} canvas Canvas context
    */
-  init({canvas}: BIOSInitConfig): void {
+  init({screenElement}: BIOSInitConfig): void {
     /** Canvas config */
-    if (canvas) {
-      this.canvas = {
-        ctx: canvas.getContext('2d'),
-        handle: canvas,
-      };
-
+    if (screenElement) {
       /** 0x3 text mode is used in the most BIOS implementations */
+      this.screenElement = screenElement;
       this.setVideoMode(0x3);
     }
 
@@ -560,19 +550,17 @@ export class BIOS extends uuidX86Device<X86CPU, BIOSInitConfig>('bios') {
     });
 
     /** Monitor render loop */
-    const {canvas, cpu} = this;
-    if (canvas) {
+    const {screenElement, cpu} = this;
+    if (screenElement) {
       /** Render loop */
-      const vgaPixBufRenderer = new VGAPixBufCanvasRenderer(
-        canvas.handle,
-        <VGA> cpu.devices.vga,
-      );
+      const vga = <VGA> cpu.devices.vga;
+      vga.setScreenElement(screenElement);
 
       const vblank = setInterval(
         () => {
           try {
-            cpu.exec(1450000 / 30);
-            vgaPixBufRenderer.redraw();
+            cpu.exec(8);
+            this.redraw();
 
             if (cpu.isHalted())
               clearInterval(vblank);
@@ -586,93 +574,23 @@ export class BIOS extends uuidX86Device<X86CPU, BIOSInitConfig>('bios') {
     }
   }
 
+  redraw(): void {
+    const vga = <VGA> this.cpu.devices.vga;
+
+    vga
+      .getCurrentRenderer()
+      .redraw();
+  }
+
   /**
-   * Set video mode and resize canvas
+   * Set video mode
    *
    * @param {Number|Object} code  Mode
    */
   setVideoMode(code: number|VideoMode): void {
-    const {screen, canvas, cursor, cpu} = this;
+    const {screen, cpu} = this;
 
     screen.mode = Number.isNaN(<number> code) ? code : BIOS.VideoMode[<number> code];
     screen.mode.clear(cpu.memIO);
-
-    /** Add toolbar 20px space */
-    const size = {
-      width: screen.mode.w * cursor.w,
-      height: screen.mode.h * cursor.h + 80,
-    };
-    Object.assign(canvas.handle, size);
-    Object.assign(canvas, {
-      w: size.width,
-      h: size.height,
-    });
-  }
-
-  /**
-   * Redraw whole screen
-   */
-  redraw(): void {
-    const {cursor, blink, cpu, screen, canvas} = this;
-
-    const {page, mode} = screen;
-    const {ctx} = canvas;
-
-    /** Update blinking */
-    if (Date.now() - blink.last >= 300) {
-      Object.assign(
-        blink,
-        {
-          visible: !blink.visible,
-          last: Date.now(),
-        },
-      );
-    }
-
-    /** Rendering from offset */
-    ctx.font = `${cursor.h}px Terminal`;
-    mode.iterate(true, cpu, page, (offset, x, y, num) => {
-      const attribute = (num >> 0x8) & 0xFF;
-
-      /** Foreground */
-      ctx.fillStyle = BIOS.colorTable[(attribute >> 4) & 0xF];
-      ctx.fillRect(x * cursor.w, y * cursor.h, cursor.w, cursor.h);
-
-      /** Text */
-      const mapping = BIOS.fontMapping[num & 0xFF];
-      if (mapping && (!blink.enabled || blink.visible)) {
-        /** Todo: add support for custom palette fonts */
-        ctx.fillStyle = BIOS.colorTable[attribute & 0xF];
-        ctx.fillText(
-          String.fromCharCode(mapping),
-          x * cursor.w,
-          (y + 0x1) * cursor.h - 0x4,
-        );
-      }
-    });
-
-    // todo: move it outside loop?
-    if (cursor.info.visible && (!cursor.info.blink || blink.visible)) {
-      const pageOffset = mode.getPageOffset(page);
-
-      ctx.fillStyle = BIOS.colorTable[
-        (cpu.memIO.read[0x2](pageOffset + 0x2 * cursor.x * cursor.y) >> 0x8) & 0xF
-      ];
-
-      if (cursor.info.character === CursorCharacter.UNDERLINE) {
-        ctx.fillRect(
-          cursor.x * cursor.w,
-          (cursor.y + 0.9) * cursor.h,
-          cursor.w,
-          2,
-        );
-      } else {
-        ctx.fillText(
-          String.fromCharCode(cursor.info.character),
-          cursor.x * cursor.w,
-          (cursor.y + 0x1) * cursor.h - 0x4,
-        );
-      }
-    }
   }
 }

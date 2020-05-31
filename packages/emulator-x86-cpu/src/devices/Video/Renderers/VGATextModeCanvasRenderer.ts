@@ -1,28 +1,32 @@
-import {VGAPixBufRenderer} from './VGAPixBufRenderer';
+import {VGAPixBufCanvasRenderer} from './utils/VGAPixBufCanvasRenderer';
 
 /**
- * Renders text characters into pix buf
+ * Text mode pixel perfect renderer
  *
  * @export
- * @class VGATextModePixBufRenderer
- * @extends {VGAPixBufRenderer}
+ * @class VGATextModeCanvasRenderer
+ * @extends {VGAPixBufCanvasRenderer}
  */
-export class VGATextModePixBufRenderer extends VGAPixBufRenderer {
+export class VGATextModeCanvasRenderer extends VGAPixBufCanvasRenderer {
+  private renderCharsCache: number[];
+
   isSuitable(): boolean {
     return this.vga.textMode;
   }
 
-  /**
-   * Render text mode
-   *
-   * @see CharMapSelectReg
-   * @see {@link https://github.com/h0MER247/jPC/blob/master/src/Hardware/Video/VGA/VGAAdapter.java}
-   *
-   * @param {Uint8ClampedArray} buffer
-   * @memberof VGATextModePixBufRenderer
-   */
-  renderToImageBuffer(buffer: Uint8ClampedArray): void {
-    const {vga} = this;
+  alloc(): void {
+    super.alloc();
+
+    const {size} = this.vga.getTextModeState();
+    this.renderCharsCache = new Array(size.w * size.h);
+  }
+
+  release(): void {
+    this.renderCharsCache = null;
+  }
+
+  drawToImageData(buffer: Uint8ClampedArray): void {
+    const {vga, renderCharsCache} = this;
     const {textMem, textAttrsMem, textFontMem} = vga;
     const {paletteRegs} = vga.attrRegs;
 
@@ -33,7 +37,7 @@ export class VGATextModePixBufRenderer extends VGAPixBufRenderer {
 
     // todo: add cursor, blinking, partial dirty rendering
     // iterate over all characters
-    for (let screenRow = 0; screenRow < size.w; ++screenRow) {
+    for (let screenRow = 0; screenRow < size.h; ++screenRow) {
       for (let screenCol = 0; screenCol < size.w; ++screenCol) {
         const charMemOffset = screenCol + screenRow * size.w;
         const char = textMem[charMemOffset];
@@ -47,6 +51,13 @@ export class VGATextModePixBufRenderer extends VGAPixBufRenderer {
 
         const fgColor = (attr & 0xF) & 0xFF;
         const bgColor = (attr >> 4) & 0xFF;
+
+        // if character is already rendered - ignore
+        const cacheKey = (fgColor << 8) | bgColor;
+        if (renderCharsCache[charMemOffset] === cacheKey)
+          continue;
+
+        renderCharsCache[charMemOffset] = cacheKey;
 
         // print single character
         for (let row = 0; row < charSize.h; ++row) {

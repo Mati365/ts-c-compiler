@@ -5,6 +5,7 @@ use16
 section .text
 MOV SI, HelloString ;Store string pointer to SI
 CALL PrintString ;Call print string procedure
+jmp $
 HLT
 
 PrintCharacter: ;Procedure to print character on screen

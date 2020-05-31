@@ -62,13 +62,13 @@ export type PreprocessorInterpreterConfig = {
  * @class PreprocessorInterpreter
  */
 export class PreprocessorInterpreter {
-  constructor(
-    private config: PreprocessorInterpreterConfig,
-  ) {}
-
   private _scopes: PreprocessorScope[] = [
     new PreprocessorScope,
   ];
+
+  constructor(
+    private config: PreprocessorInterpreterConfig,
+  ) {}
 
   get rootScope(): PreprocessorScope {
     return this._scopes[0];

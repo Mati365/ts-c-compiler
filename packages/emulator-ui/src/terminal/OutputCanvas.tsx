@@ -1,30 +1,31 @@
 import React from 'react';
 
 type OutputCanvasProps = {
-  onContextInit: (node?: HTMLCanvasElement) => void;
+  onContextInit: (node?: HTMLDivElement) => void;
 };
 
 export class OutputCanvas extends React.Component<OutputCanvasProps> {
-  private canvasRef = React.createRef<HTMLCanvasElement>();
+  private screenRef = React.createRef<HTMLDivElement>();
 
   componentDidMount() {
-    const {canvasRef, props} = this;
+    const {screenRef, props} = this;
 
     /** Load terminal */
-    props.onContextInit(canvasRef.current);
+    props.onContextInit(screenRef.current);
   }
 
   render() {
-    const {canvasRef} = this;
+    const {screenRef} = this;
 
     return (
-      <canvas
-        ref={canvasRef}
+      <div
+        ref={screenRef}
         style={{
           display: 'block',
           margin: '0 auto',
           paddingTop: '40px',
           imageRendering: 'pixelated',
+          textAlign: 'center',
         }}
       />
     );
