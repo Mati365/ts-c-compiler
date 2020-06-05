@@ -50,18 +50,21 @@ export abstract class VGAPixBufCanvasRenderer extends VGACanvasRenderer {
    * @protected
    * @abstract
    * @param {Uint8ClampedArray} buffer
+   * @param {number} frameNumber
    * @memberof VGAPixBufCanvasRenderer
    */
-  protected abstract drawToImageData(buffer: Uint8ClampedArray): void;
+  protected abstract drawToImageData(buffer: Uint8ClampedArray, frameNumber: number): void;
 
   /**
    * Prints whole pixel buffer into canvas
    *
+   * @param {number} frameNumber
    * @memberof VGAPixBufCanvasRenderer
    */
-  redraw(): void {
-    super.redraw();
-    this.drawToImageData(this.imageData.data);
+  redraw(frameNumber: number): void {
+    super.redraw(frameNumber);
+
+    this.drawToImageData(this.imageData.data, frameNumber);
     this.drawImgDataToCanvas();
   }
 }

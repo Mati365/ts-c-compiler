@@ -69,12 +69,15 @@ export abstract class VGACanvasRenderer {
       .removeChild(canvas);
   }
 
+  /* eslint-disable @typescript-eslint/no-unused-vars */
   /**
    * Flushes content to canvas
    *
+   * @param {number} frameNumber
    * @memberof VGACanvasRenderer
    */
-  redraw(): void {
+  redraw(frameNumber: number): void {
     this.updateCanvasSize();
   }
+  /* eslint-enable @typescript-eslint/no-unused-vars */
 }

@@ -1,4 +1,5 @@
 import {getBit} from '@compiler/core/utils/bits';
+import {Vec2D} from '@compiler/core/types';
 
 import {
   BIOS_COLOR_TABLE,
@@ -12,7 +13,6 @@ import {
 import {uuidX86Device} from '../../types/X86AbstractDevice';
 import {X86CPU} from '../../X86CPU';
 
-import {CursorCharacter, Cursor} from './Cursor';
 import {VideoMode} from './VideoMode';
 import {VGA} from '../Video/VGA';
 
@@ -67,8 +67,6 @@ export class BIOS extends uuidX86Device<X86CPU, BIOSInitConfig>('bios') {
     0x3: new VideoMode(0x3, 80, 25, 0x8),
   };
 
-  private cursor = new Cursor;
-
   private blink: CursorBlinkState = {
     last: Date.now(),
     visible: false,
@@ -91,6 +89,10 @@ export class BIOS extends uuidX86Device<X86CPU, BIOSInitConfig>('bios') {
    */
   constructor() {
     super(X86_MAPPED_VM_MEM);
+  }
+
+  get vga(): VGA {
+    return <VGA> this.cpu.devices.vga;
   }
 
   /**
@@ -349,9 +351,11 @@ export class BIOS extends uuidX86Device<X86CPU, BIOSInitConfig>('bios') {
       character: number,
       attribute?: number,
       color: number|boolean = true,
+      moveCursor: boolean = true,
     ): void => {
-      const {cpu, regs, cursor} = this;
+      const {cpu, regs, vga} = this;
       const {page, mode} = this.screen;
+      const cursor = vga.getTextCursorLocation();
 
       switch (character) {
         /** Backspace */
@@ -393,6 +397,9 @@ export class BIOS extends uuidX86Device<X86CPU, BIOSInitConfig>('bios') {
             cursor.y++;
           }
       }
+
+      if (moveCursor)
+        vga.setCursorLocation(cursor);
     };
 
     const writeCharacters = (
@@ -400,17 +407,11 @@ export class BIOS extends uuidX86Device<X86CPU, BIOSInitConfig>('bios') {
       color: number|boolean = true,
       moveCursor: boolean = false,
     ): void => {
-      const {cursor, regs} = this;
+      const {regs} = this;
       const {al, cx} = regs;
 
-      if (!moveCursor)
-        cursor.save();
-
       for (let i = 0; i < cx; ++i)
-        writeCharacter(al, attribute, color);
-
-      if (!moveCursor)
-        cursor.restore();
+        writeCharacter(al, attribute, color, moveCursor);
     };
 
     /** Graphics interrupts */
@@ -428,38 +429,40 @@ export class BIOS extends uuidX86Device<X86CPU, BIOSInitConfig>('bios') {
          * CX=2607h is an invisible cursor
          * If bit 5 of CH is set, that often means "Hide cursor"
          */
-        const {info} = this.cursor;
-        const {cx, ch} = this.regs;
+        const {vga} = this;
+        const {ch} = this.regs;
 
-        Object.assign(
-          info,
-          {
-            visible: !getBit(5, ch),
-            character: (
-              cx === 0x0607
-                ? CursorCharacter.UNDERLINE
-                : CursorCharacter.FULL_BLOCK
-            ),
-          },
-        );
+        vga.crtcRegs.setTextCursorDisabled(getBit(5, ch));
+        // todo:
+        // vga.setTextCursorShape(
+        //   cx === 0x0607
+        //     ? CursorCharacter.UNDERLINE
+        //     : CursorCharacter.FULL_BLOCK
+        // );
       },
 
       /** Cursor pos */
       0x2: () => {
         // todo: add ONLY active page
-        Object.assign(this.cursor, {
-          x: this.regs.dl,
-          y: this.regs.dh,
-        });
+        const {dl, dh} = this.regs;
+
+        this.vga.setCursorLocation(
+          new Vec2D(dl, dh),
+        );
       },
 
       /** Get cursor position and shape */
       0x3: () => {
-        Object.assign(this.regs, {
-          dl: this.cursor.x,
-          dh: this.cursor.y,
-          ax: 0,
-        });
+        const cursor = this.vga.getTextCursorLocation();
+
+        Object.assign(
+          this.regs,
+          {
+            dl: cursor.x,
+            dh: cursor.y,
+            ax: 0,
+          },
+        );
       },
 
       /** Change active screen */
@@ -492,9 +495,10 @@ export class BIOS extends uuidX86Device<X86CPU, BIOSInitConfig>('bios') {
 
       /** Read character at cursor */
       0x8: () => {
-        const {cpu, cursor, screen: {mode}} = this;
+        const {cpu, regs, vga, screen: {mode}} = this;
+        const cursor = vga.getTextCursorLocation();
 
-        this.regs.ax = mode.read(cpu.memIO, cursor.x, cursor.y, this.regs.bh);
+        regs.ax = mode.read(cpu.memIO, cursor.x, cursor.y, regs.bh);
       },
 
       /** Write character at address, do not move cursor! */
@@ -574,12 +578,16 @@ export class BIOS extends uuidX86Device<X86CPU, BIOSInitConfig>('bios') {
     }
   }
 
+  private frameNumber: number = 0;
+
   redraw(): void {
-    const vga = <VGA> this.cpu.devices.vga;
+    const {vga} = this;
 
     vga
       .getCurrentRenderer()
-      .redraw();
+      .redraw(this.frameNumber);
+
+    this.frameNumber = (this.frameNumber + 1) % 0x30;
   }
 
   /**

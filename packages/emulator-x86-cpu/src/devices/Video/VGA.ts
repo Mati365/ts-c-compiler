@@ -1,6 +1,6 @@
 import * as R from 'ramda';
 
-import {Size, RGBColor} from '@compiler/core/types';
+import {Size, RGBColor, Vec2D} from '@compiler/core/types';
 import {reverseByte} from '@compiler/core/utils/bits';
 
 import {uuidX86Device} from '../../types';
@@ -114,7 +114,6 @@ export class VGA extends uuidX86Device<X86CPU>('vga') implements ByteMemRegionAc
 
   getPlanes(): Uint8Array[] { return this.planes; }
   getPixelScreenSize(): Readonly<Size> { return this.pixelScreenSize; }
-  getTextModeState(): Readonly<VGATextModeState> { return this.textModeState; }
   getGraphicsModeState(): Readonly<VGAGraphicsModeState> { return this.graphicsModeState; }
   getVGA256State(): Readonly<VGA256State> { return this.vga256; }
   getCurrentRenderer(): VGACanvasRenderer { return this.renderer; }
@@ -123,6 +122,27 @@ export class VGA extends uuidX86Device<X86CPU>('vga') implements ByteMemRegionAc
   setScreenElement(screenElement: HTMLElement): void {
     this.screenElement = screenElement;
     this.matchPixBufRenderer();
+  }
+
+  /**
+   * Text mode attributes
+   */
+  getTextModeState(): Readonly<VGATextModeState> { return this.textModeState; }
+
+  setCursorLocation(vec: Vec2D): void {
+    const {textModeState, crtcRegs} = this;
+
+    crtcRegs.cursorLocation.number = (vec.y + 1) * textModeState.size.w + vec.x;
+  }
+
+  getTextCursorLocation(): Vec2D {
+    const {textModeState, crtcRegs} = this;
+    const cursorAddress = crtcRegs.cursorLocation.number;
+
+    return new Vec2D(
+      cursorAddress % textModeState.size.w,
+      Math.floor(cursorAddress / textModeState.size.w) - 1,
+    );
   }
 
   /**
@@ -210,12 +230,30 @@ export class VGA extends uuidX86Device<X86CPU>('vga') implements ByteMemRegionAc
    */
   loadModePreset(preset: number[]): void {
     assignPresetToVGA(this, preset);
-    if (this.textMode)
-      this.writeFontPack(VGA_8X16_FONT);
 
-    /* Post reset callbacks */
+    // Post reset callbacks
     this.measureMode();
     this.matchPixBufRenderer();
+
+    // load predefined data for VGA Text mode
+    if (this.textMode)
+      this.loadTextModeDefaults();
+  }
+
+  /**
+   * Loads some default binaries into text mode mem
+   *
+   * @private
+   * @memberof VGA
+   */
+  private loadTextModeDefaults(): void {
+    const {textModeState: {size}, textAttrsMem} = this;
+
+    this.writeFontPack(VGA_8X16_FONT);
+
+    // set default foreground color
+    for (let i = 0; i < size.w * size.h; ++i)
+      textAttrsMem[i] = 0x7;
   }
 
   /**

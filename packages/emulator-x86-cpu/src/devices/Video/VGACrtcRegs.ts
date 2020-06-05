@@ -209,6 +209,18 @@ export class VGACrtcRegs {
     return this.cursorStartReg.cd === 1;
   }
 
+  setTextCursorDisabled(disabled: number|boolean) {
+    this.cursorStartReg.cd = +disabled;
+  }
+
+  getCursorScanLineStart() {
+    return this.cursorStartReg.cursorScanLineStart;
+  }
+
+  getCursorScanLineEnd() {
+    return this.cursorEndReg.cursorScanLineEnd;
+  }
+
   /**
    * Reads vertical regs that might contain overflow
    *

@@ -83,3 +83,15 @@ export class VGAFontPack {
     public readonly data: number[],
   ) {}
 }
+
+/**
+ * @todo
+ *   Change it to predefined regs values
+ *
+ * @export
+ * @enum {number}
+ */
+export enum VGACursorCharacter {
+  FULL_BLOCK = 219,
+  UNDERLINE = 95,
+}
