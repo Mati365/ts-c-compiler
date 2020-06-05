@@ -30,6 +30,7 @@ export class VGATextModeCanvasRenderer extends VGAPixBufCanvasRenderer {
     const {crtcRegs, attrRegs} = vga;
     const {textMem, textAttrsMem, textFontMem} = vga;
     const {paletteRegs} = vga.attrRegs;
+    const {pixelMask} = vga.dacRegs;
 
     const vga256 = vga.getVGA256State();
     const screenSize = vga.getPixelScreenSize();
@@ -87,7 +88,9 @@ export class VGATextModeCanvasRenderer extends VGAPixBufCanvasRenderer {
           // draw cursor
           for (let row = 0; row < cursorEnd; ++row) {
             const destRowOffset = screenSize.w * (row + screenRow * charSize.h) * 4;
-            const color = vga256.palette[paletteRegs[row >= cursorStart ? fgColor : bgColor]];
+            const color = vga256.palette[
+              pixelMask & paletteRegs[row >= cursorStart ? fgColor : bgColor]
+            ];
 
             for (let col = 0; col < charSize.w; ++col) {
               const destColOffset = (col + screenCol * charSize.w) << 2;
@@ -106,7 +109,9 @@ export class VGATextModeCanvasRenderer extends VGAPixBufCanvasRenderer {
             for (let col = 0; col < charSize.w; ++col) {
               const bit = (charBitsetRow >> col) & 0x1;
               const destColOffset = (col + screenCol * charSize.w) << 2;
-              const color = vga256.palette[paletteRegs[bit === 1 ? fgColor : bgColor]];
+              const color = vga256.palette[
+                pixelMask & paletteRegs[bit === 1 ? fgColor : bgColor]
+              ];
 
               buffer[destRowOffset + destColOffset] = color.r;
               buffer[destRowOffset + destColOffset + 1] = color.g;

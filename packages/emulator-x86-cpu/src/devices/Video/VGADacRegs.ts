@@ -42,4 +42,8 @@ export class VGADacRegs {
   readAddressReg = 0x0; /* Port 3C7h */
   dataReg = new DACDataReg; /* Port 3C9h */
   stateReg = new DACStateReg; /* Port 3C7h */
+
+  colorIndexWrite = 0;
+  colorIndexRead = 0;
+  pixelMask = 0xF;
 }
