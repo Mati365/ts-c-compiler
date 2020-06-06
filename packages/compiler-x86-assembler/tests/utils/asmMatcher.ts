@@ -21,7 +21,6 @@ declare global {
   }
 }
 
-
 /**
  * Tests if second pass compilation results matches binary
  *
