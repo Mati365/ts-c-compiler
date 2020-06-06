@@ -1,6 +1,7 @@
 import {getBit} from '@compiler/core/utils/bits';
 import {Vec2D} from '@compiler/core/types';
 
+import {VGA_CURSOR_SHAPES} from '../Video/VGAConstants';
 import {
   BIOS_COLOR_TABLE,
   CP437_UNICODE_FONT_MAPPING,
@@ -351,11 +352,11 @@ export class BIOS extends uuidX86Device<X86CPU, BIOSInitConfig>('bios') {
       character: number,
       attribute?: number,
       color: number|boolean = true,
-      moveCursor: boolean = true,
+      moveCursor?: boolean,
+      cursor: Vec2D = this.vga.getTextCursorLocation(),
     ): void => {
       const {cpu, regs, vga} = this;
       const {page, mode} = this.screen;
-      const cursor = vga.getTextCursorLocation();
 
       switch (character) {
         /** Backspace */
@@ -407,11 +408,12 @@ export class BIOS extends uuidX86Device<X86CPU, BIOSInitConfig>('bios') {
       color: number|boolean = true,
       moveCursor: boolean = false,
     ): void => {
-      const {regs} = this;
+      const {regs, vga} = this;
       const {al, cx} = regs;
 
+      const cachedCursor = vga.getTextCursorLocation();
       for (let i = 0; i < cx; ++i)
-        writeCharacter(al, attribute, color, moveCursor);
+        writeCharacter(al, attribute, color, moveCursor, cachedCursor);
     };
 
     /** Graphics interrupts */
@@ -430,15 +432,14 @@ export class BIOS extends uuidX86Device<X86CPU, BIOSInitConfig>('bios') {
          * If bit 5 of CH is set, that often means "Hide cursor"
          */
         const {vga} = this;
-        const {ch} = this.regs;
+        const {ch, cx} = this.regs;
 
         vga.crtcRegs.setTextCursorDisabled(getBit(5, ch));
-        // todo:
-        // vga.setTextCursorShape(
-        //   cx === 0x0607
-        //     ? CursorCharacter.UNDERLINE
-        //     : CursorCharacter.FULL_BLOCK
-        // );
+        vga.crtcRegs.setTextCursorShape(
+          cx === 0x0607
+            ? VGA_CURSOR_SHAPES.UNDERLINE
+            : VGA_CURSOR_SHAPES.FULL_BLOCK,
+        );
       },
 
       /** Cursor pos */
@@ -560,21 +561,19 @@ export class BIOS extends uuidX86Device<X86CPU, BIOSInitConfig>('bios') {
       const vga = <VGA> cpu.devices.vga;
       vga.setScreenElement(screenElement);
 
-      const vblank = setInterval(
-        () => {
-          try {
-            cpu.exec(8);
-            this.redraw();
+      const frame = () => {
+        try {
+          cpu.exec(8);
+          this.redraw();
 
-            if (cpu.isHalted())
-              clearInterval(vblank);
-          } catch (e) {
-            cpu.logger.error(e.stack);
-            clearInterval(vblank);
-          }
-        },
-        0,
-      );
+          if (!cpu.isHalted())
+            requestAnimationFrame(frame);
+        } catch (e) {
+          cpu.logger.error(e.stack);
+        }
+      };
+
+      requestAnimationFrame(frame);
     }
   }
 

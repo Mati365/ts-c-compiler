@@ -270,7 +270,7 @@ export class X86CPU extends X86AbstractCPU {
 
       for (let i = 0x0; i < 0x4; ++i) {
         const prefix = X86_PREFIXES[opcode];
-        if (!prefix && typeof prefix === 'undefined')
+        if (prefix === undefined)
           break;
 
         /** Segment registers have object instead of opcode */
@@ -282,6 +282,7 @@ export class X86CPU extends X86AbstractCPU {
 
         /** Load next opcode */
         opcode = this.fetchOpcode(0x1, true, true);
+        prefixes.empty = false;
       }
 
       /** 0F prefix opcodes to 2-byte opcodes */
@@ -326,7 +327,8 @@ export class X86CPU extends X86AbstractCPU {
         operand();
 
       /** Reset opcode */
-      prefixes.clear();
+      if (!prefixes.empty)
+        prefixes.clear();
     };
 
     /** Exec CPU */

@@ -30,8 +30,10 @@ export class X86PrefixesStore {
   segment: X86Prefix;
   operandSize: X86Prefix;
   addressSize: X86Prefix;
+  empty: boolean = true;
 
   clear() {
+    this.empty = true;
     this.instruction = null;
     this.segment = null;
     this.operandSize = null;

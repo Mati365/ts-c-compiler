@@ -85,13 +85,12 @@ export class VGAFontPack {
 }
 
 /**
- * @todo
- *   Change it to predefined regs values
+ * [scanline start, scanline end]
  *
  * @export
  * @enum {number}
  */
-export enum VGACursorCharacter {
-  FULL_BLOCK = 219,
-  UNDERLINE = 95,
-}
+export const VGA_CURSOR_SHAPES: Record<'FULL_BLOCK'|'UNDERLINE', [number, number]> = {
+  FULL_BLOCK: [0x0, 0xE],
+  UNDERLINE: [0xD, 0xE],
+};

@@ -213,6 +213,11 @@ export class VGACrtcRegs {
     this.cursorStartReg.cd = +disabled;
   }
 
+  setTextCursorShape([scanLineStart, scanLineEnd]: [number, number]): void {
+    this.cursorStartReg.cursorScanLineStart = scanLineStart;
+    this.cursorEndReg.cursorScanLineEnd = scanLineEnd;
+  }
+
   getCursorScanLineStart() {
     return this.cursorStartReg.cursorScanLineStart;
   }
