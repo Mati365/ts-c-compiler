@@ -1,3 +1,5 @@
+;= test: explicit / implicit near / short jmp range test
+;= bin: e9ee83e9f993e9f9ffeb06eb04e901009090
 [bits 16]
 [org 0x7C00]
 

@@ -102,17 +102,17 @@ export const ASTInstructionArgMatchers: Record<string, ASTInstructionArgMatcherF
   sign_extended_ib_to_iw: () => (arg: ASTInstructionArg) => immCanBeImplicitSignExtendedToByte(arg, 1, 2),
 
   /** LABEL - size of label will be matched in second phrase */
-  sl: () => (arg: ASTInstructionArg, _: ASTInstruction, addr: number) => (
-    relLabel(arg, 1, addr)
+  sl: () => (arg: ASTInstructionArg, instruction: ASTInstruction, addr: number) => (
+    relLabel(instruction, arg, 1, addr)
   ),
 
-  ll: () => (arg: ASTInstructionArg, _: ASTInstruction, addr: number) => (
-    relLabel(arg, 2, addr)
+  ll: () => (arg: ASTInstructionArg, instruction: ASTInstruction, addr: number) => (
+    relLabel(instruction, arg, 2, addr)
   ),
 
   /** NEAR POINTER */
-  np: () => (arg: ASTInstructionArg, _: ASTInstruction, addr: number) => (
-    nearPointer(arg, 2, addr)
+  np: () => (arg: ASTInstructionArg, instruction: ASTInstruction, addr: number) => (
+    nearPointer(instruction, arg, 2, addr)
   ),
 
   /** ABSOLUTE FAR POINTERS */

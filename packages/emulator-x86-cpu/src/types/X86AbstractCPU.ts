@@ -363,10 +363,11 @@ export abstract class X86AbstractCPU {
 
     const msbit = getMSbit(num, bits);
     const mask = msbit ? 0xFF : 0x0;
+    let output = num & X86_BINARY_MASKS[bits];
 
     for (let i = bits; i < targetBits; ++i)
-      num |= mask << (i * 8);
+      output |= mask << (i * 8);
 
-    return num;
+    return output;
   }
 }

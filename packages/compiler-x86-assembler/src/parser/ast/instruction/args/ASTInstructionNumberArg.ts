@@ -54,4 +54,15 @@ export class ASTInstructionNumberArg extends ASTInstructionArg<number> {
       <any> byteSize,
     );
   }
+
+  /**
+   * Check if unsigned number size is different than signed,
+   * if so - signed number overflows byteSize and can be wrapped or expanded
+   *
+   * @readonly
+   * @memberof ASTInstructionNumberArg
+   */
+  get signOverflow() {
+    return this.signedByteSize !== this.byteSize;
+  }
 }

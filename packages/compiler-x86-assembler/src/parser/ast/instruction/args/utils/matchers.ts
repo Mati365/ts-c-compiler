@@ -1,10 +1,9 @@
 import {roundedSignedNumberByteSize} from '@compiler/core/utils/numberByteSize';
-import {getMSbit} from '@compiler/core/utils/bits';
 
 import {RegisterSchema} from '@compiler/x86-assembler/constants';
 import {X86BitsMode, X86AbstractCPU} from '@emulator/x86-cpu/types';
 
-import {InstructionArgType} from '../../../../../types';
+import {InstructionArgType, BranchAddressingType} from '../../../../../types';
 import {ASTInstruction} from '../../ASTInstruction';
 import {ASTInstructionArg} from '../ASTInstructionArg';
 import {ASTInstructionRegisterArg} from '../ASTInstructionRegisterArg';
@@ -75,52 +74,67 @@ export function imm(arg: ASTInstructionArg, maxByteSize: X86BitsMode): boolean {
  * @export
  * @param {ASTInstructionArg} arg
  * @param {X86BitsMode} maxByteSize
- * @param {X86BitsMode} targetSize
+ * @param {X86BitsMode} minTargetByteSize
  * @returns {boolean}
  */
 export function immCanBeImplicitSignExtendedToByte(
   arg: ASTInstructionArg,
   srcByteSize: X86BitsMode,
-  targetSize: X86BitsMode,
+  minTargetByteSize: X86BitsMode,
 ): boolean {
   if (arg.type !== InstructionArgType.NUMBER)
     return false;
 
   const numArg = <ASTInstructionNumberArg> arg;
-  const extended = X86AbstractCPU.signExtend(numArg.signedNumber, srcByteSize, targetSize);
+  const targetSize = <X86BitsMode> Math.max(<X86BitsMode> numArg.byteSize, minTargetByteSize);
 
-  // todo: find better way
-  if (Math.sign(numArg.val) === 1) {
-    if (extended !== numArg.val)
-      return false;
-  } else if (X86AbstractCPU.getSignedNumber(extended, targetSize) !== numArg.val)
-    return false;
+  const originalValue = X86AbstractCPU.toUnsignedNumber(numArg.val, targetSize);
+  const extended = X86AbstractCPU.signExtend(originalValue, srcByteSize, <X86BitsMode> numArg.signedByteSize);
 
-  return getMSbit(extended, targetSize) === getMSbit(numArg.signedNumber, srcByteSize);
+  return X86AbstractCPU.toUnsignedNumber(extended, targetSize) === originalValue;
 }
 
 /** Pointers */
-export function relLabel(arg: ASTInstructionArg, signedByteSize: X86BitsMode, absoluteAddress: number): boolean {
+export function relLabel(
+  instruction: ASTInstruction,
+  arg: ASTInstructionArg,
+  signedByteSize: X86BitsMode,
+  absoluteAddress: number,
+): boolean {
   if (arg.type === InstructionArgType.LABEL)
     return true;
 
   if (arg.type === InstructionArgType.NUMBER) {
-    return roundedSignedNumberByteSize(
-      (<ASTInstructionNumberArg> arg).val - absoluteAddress - signedByteSize,
-    ) === signedByteSize;
+    // default addressing in jmp instruction is short
+    if (instruction.branchAddressingType && instruction.branchAddressingType !== BranchAddressingType.SHORT)
+      return false;
+
+    const relativeToInstruction = (<ASTInstructionNumberArg> arg).val - absoluteAddress - signedByteSize;
+    return roundedSignedNumberByteSize(relativeToInstruction) === signedByteSize;
   }
 
   return false;
 }
 
-export function nearPointer(arg: ASTInstructionArg, maxByteSize: X86BitsMode, absoluteAddress: number): boolean {
+export function nearPointer(
+  instruction: ASTInstruction,
+  arg: ASTInstructionArg,
+  maxByteSize: X86BitsMode,
+  absoluteAddress: number,
+): boolean {
   if (arg.type === InstructionArgType.LABEL)
     return true;
 
   if (arg.type === InstructionArgType.NUMBER) {
-    return roundedSignedNumberByteSize(
-      (<ASTInstructionNumberArg> arg).val - absoluteAddress - maxByteSize,
-    ) <= maxByteSize;
+    if (instruction.branchAddressingType && instruction.branchAddressingType !== BranchAddressingType.NEAR)
+      return false;
+
+    const numArg = <ASTInstructionNumberArg> arg;
+    if (absoluteAddress === null && numArg.byteSize <= maxByteSize)
+      return true;
+
+    const relativeToSegment = numArg.val - absoluteAddress - maxByteSize;
+    return roundedSignedNumberByteSize(relativeToSegment) <= maxByteSize;
   }
 
   return false;
