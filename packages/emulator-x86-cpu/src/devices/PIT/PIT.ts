@@ -45,27 +45,33 @@ export class PIT extends uuidX86Device<X86CPU>('pit') {
   readChannelCounterByte(index: number): number {
     const timer = this.timers[index];
     const {accessMode} = timer.controlByte;
+    const value = (
+      timer.latched
+        ? timer.latchValue
+        : timer.getValue()
+    );
 
     let byte = 0;
     switch (accessMode) {
       case TimerAccessMode.ACCESS_LO_BYTE_ONLY:
-        byte = extractNthByte(0x0, timer.getValue());
+        byte = extractNthByte(0x0, value);
+        timer.latched = 0;
         break;
 
       case TimerAccessMode.ACCESS_HI_BYTE_ONLY:
-        byte = extractNthByte(0x1, timer.getValue());
+        byte = extractNthByte(0x1, value);
+        timer.latched = 0;
         break;
 
-      case TimerAccessMode.ACCESS_LATCHED_LI_HI_BYTE:
+      case TimerAccessMode.LATCH_COUNT_VALUE:
       case TimerAccessMode.ACCESS_LO_HI_BYTE:
-        if (accessMode === TimerAccessMode.ACCESS_LATCHED_LI_HI_BYTE)
-          byte = extractNthByte(timer.accessByteOffset, timer.latchValue);
-        else
-          byte = extractNthByte(timer.accessByteOffset, timer.getValue());
+        byte = extractNthByte(timer.accessByteOffset, value);
 
         timer.accessByteOffset--;
-        if (timer.accessByteOffset < 0)
+        if (timer.accessByteOffset < 0) {
           timer.accessByteOffset += 2;
+          timer.latched = 0;
+        }
         break;
 
       default:
@@ -105,7 +111,7 @@ export class PIT extends uuidX86Device<X86CPU>('pit') {
         console.warn('PIT: unknown timer accessMode!');
     }
 
-    if (accessMode !== TimerAccessMode.ACCESS_LATCHED_LI_HI_BYTE)
+    if (accessMode !== TimerAccessMode.LATCH_COUNT_VALUE)
       timer.countdown = replaceNthByte(byteOffset, timer.countdown, byte);
   }
 
@@ -141,8 +147,9 @@ export class PIT extends uuidX86Device<X86CPU>('pit') {
           timer.reset();
           timer.controlByte = controlByte;
 
-          if (controlByte.accessMode === TimerAccessMode.ACCESS_LATCHED_LI_HI_BYTE) {
+          if (controlByte.accessMode === TimerAccessMode.LATCH_COUNT_VALUE) {
             timer.latchValue = timer.getValue();
+            timer.latched = 2;
             timer.accessByteOffset = 0x1;
           }
         },

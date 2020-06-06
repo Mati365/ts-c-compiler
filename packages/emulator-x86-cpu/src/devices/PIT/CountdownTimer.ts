@@ -22,9 +22,9 @@ export enum TimerDecrementMode {
 }
 
 export enum TimerAccessMode {
-  ACCESS_LATCHED_LI_HI_BYTE = 0x0,
-  ACCESS_LO_BYTE_ONLY = 0x1,
-  ACCESS_HI_BYTE_ONLY = 0x2,
+  LATCH_COUNT_VALUE = 0x0,
+  ACCESS_HI_BYTE_ONLY = 0x1,
+  ACCESS_LO_BYTE_ONLY = 0x2,
   ACCESS_LO_HI_BYTE = 0x3,
 }
 
@@ -59,6 +59,7 @@ export class CountdownTimer {
   rolledOver: boolean = false;
   accessByteOffset: number = 0x0;
   latchValue: number = 0x0;
+  latched: number = 0x0;
   resetTimerTime: number = X86AbstractCPU.microtick();
 
   constructor(
