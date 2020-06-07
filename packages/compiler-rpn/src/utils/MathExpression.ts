@@ -1,5 +1,6 @@
 import * as R from 'ramda';
 
+import {parseNumberToken} from '@compiler/lexer/utils/parseNumberToken';
 import {isQuote} from '@compiler/lexer/utils/matchCharacter';
 import {reduceTextToBitset} from '@compiler/core/utils';
 
@@ -220,9 +221,16 @@ export class MathExpression {
         let number = +token;
 
         if (Number.isNaN(number)) {
-          number = parserConfig?.keywordResolver?.(token);
-          if (R.isNil(number))
-            throw new MathError(MathErrorCode.UNKNOWN_KEYWORD, {token});
+          // parsing using custom parser is slower than just `+${digit}`
+          // so it is second parse method
+          const parsedNumber = parseNumberToken(token);
+          if (parsedNumber)
+            [, number] = parsedNumber;
+          else {
+            number = parserConfig?.keywordResolver?.(token);
+            if (R.isNil(number))
+              throw new MathError(MathErrorCode.UNKNOWN_KEYWORD, {token});
+          }
         }
 
         numberStack.push(number);
