@@ -24,7 +24,7 @@ export class MemoryRegionRange {
     public readonly low: number,
     public readonly high: number,
   ) {
-    this.size = high - low;
+    this.size = high - low + 1;
   }
 
   /**

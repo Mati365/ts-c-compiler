@@ -35,7 +35,8 @@ import {
 } from './VGAConstants';
 
 import {
-  VGA_TEXT_MODES_PRESET,
+  // VGA_TEXT_MODES_PRESET,
+  VGA_GRAPHICS_MODES_PRESET,
   VGA_8X16_FONT,
   assignPresetToVGA,
   VGA256Palette,
@@ -44,6 +45,7 @@ import {
 import {
   VGACanvasRenderer,
   VGATextModeCanvasRenderer,
+  VGAGraphicsModeCanvasRenderer,
 } from './Renderers';
 
 type VGAMeasuredState = {
@@ -67,6 +69,7 @@ class VGA256State {
 /**
  * Basic graphics device
  *
+ * @see {@link https://github.com/awesomekling/computron/blob/master/hw/vga.cpp}
  * @see {@link https://github.com/copy/v86/blob/master/src/vga.js}
  *
  * @export
@@ -104,6 +107,13 @@ export class VGA extends uuidX86Device<X86CPU>('vga') implements ByteMemRegionAc
   attrRegs: VGAAttrRegs;
 
   /**
+   * Getters used only in text mode
+   */
+  get textMem() { return this.planes[0]; }
+  get textAttrsMem() { return this.planes[1]; }
+  get textFontMem() { return this.planes[2]; }
+
+  /**
    * Allocates memory, creates regsiters
    *
    * @memberof VideoAdapter
@@ -113,6 +123,8 @@ export class VGA extends uuidX86Device<X86CPU>('vga') implements ByteMemRegionAc
   }
 
   getPlanes(): Uint8Array[] { return this.planes; }
+  getPixelBuffer(): Uint8Array { return this.pixelBuffer; }
+
   getPixelScreenSize(): Readonly<Size> { return this.pixelScreenSize; }
   getGraphicsModeState(): Readonly<VGAGraphicsModeState> { return this.graphicsModeState; }
   getVGA256State(): Readonly<VGA256State> { return this.vga256; }
@@ -146,11 +158,50 @@ export class VGA extends uuidX86Device<X86CPU>('vga') implements ByteMemRegionAc
   }
 
   /**
-   * Getters used only in text mode
+   * Graphics mode attributes
    */
-  get textMem() { return this.planes[0]; }
-  get textAttrsMem() { return this.planes[1]; }
-  get textFontMem() { return this.planes[2]; }
+  getAddressShiftCount(): number {
+    const {
+      attrRegs,
+      crtcRegs: {
+        underlineLocation,
+        crtcModeControlReg,
+      },
+    } = this;
+
+    let shift = 0x80;
+
+    shift += ~underlineLocation.number & crtcModeControlReg.number & 0x40;
+    shift -= underlineLocation.number & 0x40;
+    shift -= attrRegs.attrModeControlReg.number & 0x40;
+
+    return shift >>> 6;
+  }
+
+  getBytesPerLine(): number {
+    const {
+      crtcRegs: {
+        offsetReg,
+        underlineLocation,
+        crtcModeControlReg,
+      },
+    } = this;
+
+    let bytes = offsetReg << 2;
+
+    if (underlineLocation.dw)
+      bytes <<= 1;
+    else if (crtcModeControlReg.wordByte)
+      bytes >>>= 1;
+
+    return bytes;
+  }
+
+  getStartAddress(): number {
+    const {crtcRegs} = this;
+
+    return crtcRegs.startAddress.number;
+  }
 
   /**
    * Iterates over pix buf renderers and takes first which matches
@@ -165,6 +216,7 @@ export class VGA extends uuidX86Device<X86CPU>('vga') implements ByteMemRegionAc
     if (!this.renderers) {
       this.renderers = [
         new VGATextModeCanvasRenderer(this),
+        new VGAGraphicsModeCanvasRenderer(this),
       ];
     }
 
@@ -196,14 +248,6 @@ export class VGA extends uuidX86Device<X86CPU>('vga') implements ByteMemRegionAc
     this.sequencerRegs = new VGASequencerRegs;
     this.attrRegs = new VGAAttrRegs;
 
-    /* Buffers */
-    this.vgaBuffer = VirtualMemBlockDriver.alloc(VGA_BUFFER_SIZE);
-    this.pixelBuffer = new Uint8Array(this.vgaBuffer.device, VGA_PIXEL_MEM_MAP.low, VGA_PIXEL_MEM_MAP.size);
-    this.planes = R.times(
-      (index) => new Uint8Array(this.vgaBuffer.device, index * VGA_BANK_SIZE, VGA_BANK_SIZE),
-      VGA_TOTAL_PLANES,
-    );
-
     /* Other */
     this.vga256 = new VGA256State;
     this.latch = 0;
@@ -219,7 +263,8 @@ export class VGA extends uuidX86Device<X86CPU>('vga') implements ByteMemRegionAc
     };
 
     /* Load post boot mode preset */
-    this.loadModePreset(VGA_TEXT_MODES_PRESET['80x25']);
+    // this.loadModePreset(VGA_TEXT_MODES_PRESET['80x25']);
+    this.loadModePreset(VGA_GRAPHICS_MODES_PRESET['320x200x256']);
   }
 
   /**
@@ -232,6 +277,7 @@ export class VGA extends uuidX86Device<X86CPU>('vga') implements ByteMemRegionAc
     assignPresetToVGA(this, preset);
 
     // Post reset callbacks
+    this.allocPlanesBuffers();
     this.measureMode();
     this.matchPixBufRenderer();
 
@@ -278,6 +324,21 @@ export class VGA extends uuidX86Device<X86CPU>('vga') implements ByteMemRegionAc
         plane[charDestOffset] = reverseByte(data[charTemplateOffset]);
       }
     }
+  }
+
+  /**
+   * Creates VRAM buffers / planes
+   *
+   * @private
+   * @memberof VGA
+   */
+  private allocPlanesBuffers() {
+    this.vgaBuffer = VirtualMemBlockDriver.alloc(VGA_BUFFER_SIZE);
+    this.pixelBuffer = new Uint8Array(this.vgaBuffer.device, VGA_PIXEL_MEM_MAP.low, VGA_PIXEL_MEM_MAP.size);
+    this.planes = R.times(
+      (index) => new Uint8Array(this.vgaBuffer.device, index * VGA_BANK_SIZE, VGA_BANK_SIZE),
+      VGA_TOTAL_PLANES,
+    );
   }
 
   /**
@@ -338,10 +399,18 @@ export class VGA extends uuidX86Device<X86CPU>('vga') implements ByteMemRegionAc
         this.scanLineToRow(verticalScans),
       );
 
-      if (attrRegs.attrModeControlReg.bit8)
-        screenSize.w >>= 1;
+      const virtualSize = new Size(
+        crtcRegs.offsetReg << 4,
+        Math.ceil(GRAPHICS_MEMORY_MAPS[0b00].size / this.getBytesPerLine()),
+      );
+
+      if (attrRegs.attrModeControlReg.bit8) {
+        screenSize.w >>>= 1;
+        virtualSize.w >>>= 1;
+      }
 
       graphicsModeState.size.assign(screenSize);
+      graphicsModeState.virtualSize.assign(virtualSize);
       pixelScreenSize.assign(screenSize);
     }
   }

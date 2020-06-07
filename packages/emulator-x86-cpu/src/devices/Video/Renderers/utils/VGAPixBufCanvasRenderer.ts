@@ -1,3 +1,4 @@
+import {Rectangle} from '@compiler/core/types';
 import {VGACanvasRenderer} from './VGACanvasRenderer';
 
 /**
@@ -8,6 +9,7 @@ import {VGACanvasRenderer} from './VGACanvasRenderer';
  */
 export abstract class VGAPixBufCanvasRenderer extends VGACanvasRenderer {
   protected imageData: ImageData;
+  protected diff: Rectangle; // used for repaint only of region of canvas if changed
 
   /**
    * Detects if VGA mode has been changed and resize canvas to match it

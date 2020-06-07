@@ -595,9 +595,8 @@ export class BIOS extends uuidX86Device<X86CPU, BIOSInitConfig>('bios') {
    * @param {Number|Object} code  Mode
    */
   setVideoMode(code: number|VideoMode): void {
-    const {screen, cpu} = this;
+    const {screen} = this;
 
     screen.mode = Number.isNaN(<number> code) ? code : BIOS.VideoMode[<number> code];
-    screen.mode.clear(cpu.memIO);
   }
 }
