@@ -27,3 +27,24 @@ add dx, 0xc30
 sub dx, 0xc30
 add dx, -0x1
 add di, 0xFFFF
+
+;= test: proper handle digits encoding
+;= bin: b4c8b4c7b4c8b4c8b41ab4e6b4c8b4c8b4c8b4c8b4c8b4ffb405b081cd0a
+[bits 16]
+[org 0x7C00]
+
+mov ah, 0c8h
+mov ah, $0c7
+mov ah, 0xc8
+mov ah, 0hc8
+mov ah, 01ah
+mov Ah, -01ah
+mov ah, 200
+mov ah, 0200
+mov ah, 0200d
+mov ah, 0d200
+mov ah, 11001000b
+mov ah, 11111111y
+mov ah, 0b000101
+mov al, -11_11111b
+int 0ah
