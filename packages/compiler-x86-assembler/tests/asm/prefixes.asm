@@ -1,5 +1,5 @@
 ;= test: segment prefixes
-;= bin: 2ea464a426a43ea4
+;= bin: 2ea464a426a43ea464c54704
 use16
 org 0x7C00
 

@@ -81,4 +81,8 @@ describe('instruction', () => {
   it('handle unknown instruction format', () => {
     expect('mov 0x4, 0x4, 0x4').toHasCompilerError(ParserErrorCode.UNKNOWN_COMPILER_INSTRUCTION);
   });
+
+  it('handle doubled sreg prefix conflict', () => {
+    expect('ds lds ax, [fs:bx+0x4]').toHasCompilerError(ParserErrorCode.CONFLICT_SREG_OVERRIDE);
+  });
 });

@@ -14,6 +14,7 @@ import DB_BIN_TESTS_LIST from './asm/db.asm';
 import VARIOUS_BIN_TESTS_LIST from './asm/various.asm';
 import ARITHMETIC_BIN_TEST from './asm/arithmetic.asm';
 import JUMPS_BIN_TEST from './asm/jumps.asm';
+import PREFIXES_BIN_TEST from './asm/prefixes.asm';
 
 import {parseBinaryTestList} from './utils/parseBinaryTestList';
 
@@ -30,6 +31,7 @@ const tests = parseBinaryTestList(
     VARIOUS_BIN_TESTS_LIST,
     ARITHMETIC_BIN_TEST,
     JUMPS_BIN_TEST,
+    PREFIXES_BIN_TEST,
   ].join('\n'),
 );
 

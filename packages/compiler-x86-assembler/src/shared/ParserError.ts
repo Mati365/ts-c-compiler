@@ -35,6 +35,7 @@ export enum ParserErrorCode {
 
   // prefixes
   INCORRECT_SREG_OVERRIDE,
+  CONFLICT_SREG_OVERRIDE,
 
   // labels
   MISSING_PARENT_LABEL,
@@ -110,6 +111,7 @@ export const ERROR_TRANSLATIONS: Record<ParserErrorCode, string> = {
 
   // prefixes
   [ParserErrorCode.INCORRECT_SREG_OVERRIDE]: 'Incorrect segment register override "%{sreg}"!',
+  [ParserErrorCode.CONFLICT_SREG_OVERRIDE]: 'Conflict sreg override!',
 
   // critical expressions
   [ParserErrorCode.INCORRECT_TIMES_ARGS_COUNT]: 'Incorrect times expression args count!',

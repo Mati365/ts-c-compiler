@@ -31,6 +31,7 @@ import {BinaryBlob} from '../BinaryBlob';
 import {
   findMatchingMemAddressingRMByte,
   findMatchingSregPrefix,
+  containsSregPrefixes,
 } from '../utils';
 
 /**
@@ -105,8 +106,16 @@ export class BinaryInstruction extends BinaryBlob<ASTInstruction> {
               sreg: sreg.mnemonic,
             },
           );
-        } else
+        } else {
+          if (containsSregPrefixes(binaryPrefixes)) {
+            throw new ParserError(
+              ParserErrorCode.CONFLICT_SREG_OVERRIDE,
+              ast.loc.start,
+            );
+          }
+
           binaryPrefixes.push(sregPrefix);
+        }
       }
     }
 

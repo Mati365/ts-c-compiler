@@ -45,12 +45,12 @@ export enum InstructionPrefix {
   REPNZ = 0xF2,
 
   // SEGMENT OVERRIDE
-  SREG_CS = 0x2E,
-  SREG_SS = 0x36,
-  SREG_DS = 0x3E,
-  SREG_ES = 0x26,
-  SREG_FS = 0x64,
-  SREG_GS = 0x65,
+  CS = 0x2E,
+  SS = 0x36,
+  DS = 0x3E,
+  ES = 0x26,
+  FS = 0x64,
+  GS = 0x65,
 
   // OPERAND OVERRIDE
   OPERAND_OVERRIDE = 0x66,
