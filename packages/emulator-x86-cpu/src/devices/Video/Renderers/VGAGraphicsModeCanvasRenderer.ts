@@ -5,6 +5,7 @@ import {VGAPixBufCanvasRenderer} from './utils/VGAPixBufCanvasRenderer';
  *
  * @todo
  *  Add diff cache!
+ *  Limit pixelAddr to viewport boundary!
  *
  * @export
  * @class VGAGraphicsModeCanvasRenderer
@@ -19,9 +20,6 @@ export class VGAGraphicsModeCanvasRenderer extends VGAPixBufCanvasRenderer {
 
   /**
    * Moves VGA planes data into pixel buffer
-   *
-   * @todo
-   *  Add dirty mode diffing
    *
    * @private
    * @memberof VGAGraphicsModeCanvasRenderer
@@ -39,7 +37,7 @@ export class VGAGraphicsModeCanvasRenderer extends VGAPixBufCanvasRenderer {
     const shiftMode = graphicsRegs.graphicsModeReg.number & 0x60;
     const pelWidth = attrRegs.attrModeControlReg.bit8;
 
-    for (let pixelAddr = 0; pixelAddr < pixelBuffer.length; ++pixelAddr) {
+    for (let pixelAddr = 0; pixelAddr < pixelBuffer.length;) {
       let address = pixelAddr >>> addressShift;
 
       if (addressSubstitution) {
@@ -134,9 +132,6 @@ export class VGAGraphicsModeCanvasRenderer extends VGAPixBufCanvasRenderer {
   /**
    * Renders pixel buffer content into canvas image
    *
-   * @todo
-   *  Add dirty mode diffing
-   *
    * @private
    * @param {Uint8ClampedArray} buffer
    * @memberof VGAGraphicsModeCanvasRenderer
@@ -166,10 +161,10 @@ export class VGAGraphicsModeCanvasRenderer extends VGAPixBufCanvasRenderer {
 
     if (attrModeControlReg.bit8) {
       // bit 8 mode
-      for (let pixelAddr = 0; pixelAddr < pixelBuffer.length; ++pixelAddr) {
-        const imgBufferAddr = pixelAddr << 2;
+      for (let pixelAddr = 0; pixelAddr < pixelBuffer.length; pixelAddr++) {
         const bufferColor = (pixelBuffer[pixelAddr] & mask) | colorset;
         const color = vga256.palette[bufferColor];
+        const imgBufferAddr = pixelAddr << 2;
 
         buffer[imgBufferAddr] = color.r;
         buffer[imgBufferAddr + 1] = color.g;
@@ -183,10 +178,10 @@ export class VGAGraphicsModeCanvasRenderer extends VGAPixBufCanvasRenderer {
 
       const colorPlane = colorPlaneEnableReg.colorPlaneEnable;
       for (let pixelAddr = 0; pixelAddr < pixelBuffer.length; ++pixelAddr) {
-        const imgBufferAddr = pixelAddr << 2;
         const color16 = pixelBuffer[pixelAddr] & colorPlane;
         const bufferColor = (paletteRegs[color16] & mask) | colorset;
         const color = vga256.palette[bufferColor];
+        const imgBufferAddr = pixelAddr << 2;
 
         buffer[imgBufferAddr] = color.r;
         buffer[imgBufferAddr + 1] = color.g;

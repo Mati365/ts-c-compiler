@@ -73,6 +73,8 @@ yarn run develop
 
 ## Docs
 
+<https://books.google.pl/books?id=Lq4yDwAAQBAJ&pg=PA120&lpg=PA120&dq=chain4+mode&source=bl&ots=Eun_wNFE7b&sig=ACfU3U37tSXE7qOZn0AKGeFwaaNLS4nrKg&hl=pl&sa=X&ved=2ahUKEwjlupT5-u_pAhVNxhoKHVfRA7YQ6AEwAnoECAoQAQ#v=onepage&q=chain4%20mode&f=false>
+
 <https://bellard.org/otcc/otccn.c>
 
 <https://bellard.org/otcc/>

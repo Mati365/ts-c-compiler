@@ -71,6 +71,7 @@ class VGA256State {
  *
  * @see {@link https://github.com/awesomekling/computron/blob/master/hw/vga.cpp}
  * @see {@link https://github.com/copy/v86/blob/master/src/vga.js}
+ * @see {@link https://github.com/asmblah/jemul8/blob/feature/acceptance/js/core/classes/iodev/vga.js}
  *
  * @export
  * @abstract
@@ -334,9 +335,9 @@ export class VGA extends uuidX86Device<X86CPU>('vga') implements ByteMemRegionAc
    */
   private allocPlanesBuffers() {
     this.vgaBuffer = VirtualMemBlockDriver.alloc(VGA_BUFFER_SIZE);
-    this.pixelBuffer = new Uint8Array(this.vgaBuffer.device, VGA_PIXEL_MEM_MAP.low, VGA_PIXEL_MEM_MAP.size);
+    this.pixelBuffer = new Uint8Array(this.vgaBuffer.device.buffer, VGA_PIXEL_MEM_MAP.low, VGA_PIXEL_MEM_MAP.size - 1);
     this.planes = R.times(
-      (index) => new Uint8Array(this.vgaBuffer.device, index * VGA_BANK_SIZE, VGA_BANK_SIZE),
+      (index) => new Uint8Array(this.vgaBuffer.device.buffer, index * VGA_BANK_SIZE, VGA_BANK_SIZE),
       VGA_TOTAL_PLANES,
     );
   }
