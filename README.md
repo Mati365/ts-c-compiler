@@ -45,7 +45,8 @@
   - [ ] Graphics mode
     - [x] Basic canvas graphics driver
     - [x] Text Mode
-    - [ ] Graphics VGA
+    - [x] Graphics VGA
+    - [ ] VGA IO ports bindings
   - [ ] BIOS
     - [x] Basic bios interrupt handlers
 - [ ] Nano C compiler
