@@ -28,9 +28,10 @@ export type NumberTokenValue = {
  *
  * @export
  * @class NumberToken
- * @extends {Token<NumberTokenValue>}
+ * @extends {Token<NumberTokenValue, O>}
+ * @template O Original token
  */
-export class NumberToken extends Token<NumberTokenValue> {
+export class NumberToken<O = any> extends Token<NumberTokenValue, O> {
   constructor(
     text: string,
     number: number,

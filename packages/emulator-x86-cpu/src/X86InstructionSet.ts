@@ -313,7 +313,7 @@ export class X86InstructionSet extends X86Unit {
       },
 
       /** JMP rel 8bit  */ 0xEB: () => cpu.relativeJump(0x1),
-      /** JMP rel 16bit */ 0xE9: () => cpu.relativeJump(0x2),
+      /** JMP rel 16bit */ 0xE9: () => cpu.relativeJump(0x2), // todo: check me
       /** FAR JMP 32bit */ 0xEA: () => {
         cpu.absoluteJump(
           cpu.fetchOpcode(0x2),

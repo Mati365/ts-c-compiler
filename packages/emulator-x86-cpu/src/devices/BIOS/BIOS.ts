@@ -563,7 +563,7 @@ export class BIOS extends uuidX86Device<X86CPU, BIOSInitConfig>('bios') {
 
       const frame = () => {
         try {
-          cpu.exec(8);
+          cpu.exec(15);
           this.redraw();
 
           if (!cpu.isHalted())

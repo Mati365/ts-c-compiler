@@ -415,7 +415,22 @@ export class ASTInstruction extends KindASTAsmNode(ASTNodeKind.INSTRUCTION) {
         );
       }
 
-      return new ASTInstructionNumberArg(number, byteSizeOverride ?? byteSize);
+      // detect if number token was really just replaced number
+      // used in jmp test_label
+      // it is translated into jmp 0x4
+      // 0x4 has originalToken test_label
+      const {originalToken} = token;
+      let assignedLabel: string = null;
+      if (originalToken?.type === TokenType.KEYWORD)
+        assignedLabel = originalToken.text;
+
+      return new ASTInstructionNumberArg(
+        number,
+        byteSizeOverride ?? byteSize,
+        null,
+        InstructionArgType.NUMBER,
+        assignedLabel,
+      );
     }
 
     /**

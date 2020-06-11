@@ -24,6 +24,7 @@ export class ASTInstructionNumberArg extends ASTInstructionArg<number> {
     byteSize?: number,
     signedByteSize?: number,
     type: InstructionArgType = InstructionArgType.NUMBER,
+    public readonly assignedLabel: string = null,
   ) {
     super(
       type,
@@ -31,7 +32,13 @@ export class ASTInstructionNumberArg extends ASTInstructionArg<number> {
       byteSize ?? roundToPowerOfTwo(numberByteSize(number)),
     );
 
-    // size of number that is encoded as signed U2, it multiplies * 2 size of unsigned
+    /**
+     * size of number that is encoded as signed U2, it multiplies * 2 size of unsigned
+     *
+     * check this:
+     * mov ax, -0xFFFF
+     * byte size of second argument should be 2 because NASM ignores sign
+     */
     this.signedByteSize = signedByteSize ?? roundedSignedNumberByteSize(number);
     this.signedNumber = X86AbstractCPU.toUnsignedNumber(
       number,

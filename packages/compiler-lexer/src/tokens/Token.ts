@@ -95,9 +95,17 @@ export enum TokenKind {
  * @class Token
  * @template V value
  */
-export class Token<V = any> {
+export class Token<V = any, O = any> {
   public readonly upperText: string;
   public readonly lowerText: string;
+
+  /**
+   * sometimes token should be replaced in parse phase
+   * see assignLabelsToTokens, labels are replaced by numbers
+   * but some instructions like relative jmps can be specified
+   * by user using digit or label (label is localized relative to origin)
+   */
+  public originalToken: Token<O> = null;
 
   /**
    * Creates an instance of Token.
@@ -117,6 +125,10 @@ export class Token<V = any> {
   ) {
     this.upperText = text && R.toUpper(text);
     this.lowerText = text && R.toLower(text);
+  }
+
+  isReplaced(): boolean {
+    return !!this.originalToken;
   }
 
   fork(newText: string = this.text): Token<V> {

@@ -45,7 +45,9 @@ export function assignLabelsToTokens(labelResolver: ASTLabelAddrResolver, tokens
         );
       }
 
-      return new NumberToken(token.text, labelAddress, NumberFormat.DEC, token.loc);
+      const newToken = new NumberToken(token.text, labelAddress, NumberFormat.DEC, token.loc);
+      newToken.originalToken = token;
+      return newToken;
     },
     tokens,
   );
