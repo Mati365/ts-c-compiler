@@ -46,6 +46,7 @@ import {
   VGACanvasRenderer,
   VGATextModeCanvasRenderer,
   VGAGraphicsModeCanvasRenderer,
+  VGAPixBufCanvasRenderer,
 } from './Renderers';
 
 type VGAMeasuredState = {
@@ -708,6 +709,49 @@ export class VGA extends uuidX86Device<X86CPU>('vga') implements ByteMemRegionAc
   }
 
   /**
+   * Converts vga address to offset in pixel buffer
+   *
+   * @private
+   * @param {number} address
+   * @returns {number}
+   * @memberof VGA
+   */
+  private vgaAddressToPixAddress(address: number): number {
+    const shiftCount = this.getAddressShiftCount();
+    const {
+      crtcRegs: {
+        crtcModeControlReg,
+      },
+    } = this;
+
+    if (~crtcModeControlReg.number & 0x3) {
+      const {graphicsModeState: {virtualSize}} = this;
+      const startAddress = this.getStartAddress();
+
+      let pixelAddr = address - startAddress;
+
+      pixelAddr &= (crtcModeControlReg.number << 13) | ~0x6000;
+      pixelAddr <<= shiftCount;
+
+      // Decompose address
+      let row = pixelAddr / virtualSize.w | 0;
+      const col = pixelAddr % virtualSize.w;
+
+      switch (crtcModeControlReg.number & 0x3) {
+        case 0x2: row = (row << 1) | ((address >> 13) & 0x1); break;
+        case 0x1: row = (row << 1) | ((address >> 14) & 0x1); break;
+        case 0x0: row = (row << 2) | ((address >> 13) & 0x3); break;
+
+        default:
+      }
+
+      return row * virtualSize.w + col + (startAddress << shiftCount);
+    }
+
+    return address << shiftCount;
+  }
+
+  /**
    * Write to memory in graphical mode
    *
    * @see {@link https://github.com/copy/v86/blob/master/src/vga.js#L681}
@@ -719,6 +763,7 @@ export class VGA extends uuidX86Device<X86CPU>('vga') implements ByteMemRegionAc
    */
   writeGraphicsMode(address: number, byte: number): void {
     const {
+      renderer,
       planes,
       latch,
       sequencerRegs: {
@@ -786,5 +831,9 @@ export class VGA extends uuidX86Device<X86CPU>('vga') implements ByteMemRegionAc
     if (planeSelect & 0x2) planes[1][address] = (outputDword >> 8) & 0xFF;
     if (planeSelect & 0x4) planes[2][address] = (outputDword >> 16) & 0xFF;
     if (planeSelect & 0x8) planes[3][address] = (outputDword >> 24) & 0xFF;
+
+    // mark renderer region as dirty
+    const pixelAddress = this.vgaAddressToPixAddress(address);
+    (<VGAPixBufCanvasRenderer> renderer).markRegionAsDirty(pixelAddress, pixelAddress + 0x8);
   }
 }

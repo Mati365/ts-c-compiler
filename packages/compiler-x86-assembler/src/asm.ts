@@ -33,7 +33,7 @@ export function asm(code: string): Result<CompilerOutput, CompilerError[]> {
 
       %define use16 [bits 16]
       %define use32 [bits 32]
-
+      %define cpu(cpu_id) [target cpu_id]
       %define section(section_name) [section section_name]
     `,
   };

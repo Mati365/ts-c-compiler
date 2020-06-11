@@ -60,7 +60,7 @@ export class ASTEqu extends KindASTAsmNode(ASTNodeKind.EQU) {
 
     return new ASTEqu(
       token.text,
-      args[0].lowerText,
+      args[0].text,
       NodeLocation.fromTokenLoc(token.loc),
     );
   }

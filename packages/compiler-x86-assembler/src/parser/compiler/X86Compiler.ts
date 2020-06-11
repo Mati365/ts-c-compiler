@@ -96,6 +96,19 @@ export class X86Compiler {
   }
 
   /**
+   * Set cpu target
+   *
+   * @param {X86TargetCPU} target
+   * @memberof X86Compiler
+   */
+  setTarget(target: X86TargetCPU): void {
+    if (R.isNil(target))
+      throw new ParserError(ParserErrorCode.UNSUPPORTED_COMPILER_TARGET);
+
+    this._target = target;
+  }
+
+  /**
    * First pass compiler, omit labels and split into multiple chunks
    *
    * @param {ASTAsmTree} [tree=this.tree]
@@ -146,6 +159,13 @@ export class X86Compiler {
       nodesOffsets.set(addr, blob);
       if (prevBlob) {
         blob.slaveBlobs = blob.slaveBlobs || [];
+
+        // prevent nesting slaves
+        if (prevBlob.slaveBlobs) {
+          blob.slaveBlobs.push(...prevBlob.slaveBlobs);
+          prevBlob.slaveBlobs = null;
+        }
+
         blob.slaveBlobs.push(prevBlob);
       }
 
@@ -189,8 +209,14 @@ export class X86Compiler {
             originDefined = true;
 
           // mode set
-          } else if (compilerOption.option === CompilerOptions.BITS)
+          } else if (compilerOption.option === CompilerOptions.BITS) {
             this.setMode(arg.value.number / 8);
+          // target set
+          } else if (compilerOption.option === CompilerOptions.TARGET) {
+            this.setTarget(
+              X86TargetCPU[`I_${arg.upperText}`],
+            );
+          }
         } break;
 
         /** times 10 db nop */
@@ -428,6 +454,19 @@ export class X86Compiler {
       return prevValue !== blob.val || R.isNil(prevValue);
     }
 
+    /**
+     * Definition might contain something like it:
+     * db 0xFF, (label+2), 0xFE
+     * its tries to resolve second arg
+     *
+     * @param {number} offset
+     * @param {BinaryDefinition} blob
+     * @returns {boolean} True if need to repeat pass
+     */
+    function passDefinition(offset: number, blob: BinaryDefinition): boolean {
+      return blob.hasUnresolvedDefinitions() && !blob.tryResolveOffsets(labelResolver(blob.ast, offset));
+    }
+
     // proper resolve labels
     for (let pass = 0; pass < this.maxPasses; ++pass) {
       let needPass = false;
@@ -437,17 +476,25 @@ export class X86Compiler {
         try {
           // check for slave blobs (0 bytes instructions, EQU)
           if (blob.slaveBlobs) {
-            // todo: handle as array?
-            const topSlave = blob.slaveBlobs[0];
+            const {slaveBlobs: slaves} = blob;
 
-            if (topSlave instanceof BinaryEqu) {
-              if (passEqu(offset, topSlave))
-                needPass = true;
-            } else
-              throw new ParserError(ParserErrorCode.INCORRECT_SLAVE_BLOBS, blob.ast.loc.start);
+            for (let slaveIndex = 0; slaveIndex < slaves.length; ++slaveIndex) {
+              const slave = slaves[slaveIndex];
+
+              if (slave instanceof BinaryEqu) {
+                if (passEqu(offset, slave))
+                  needPass = true;
+              } else
+                throw new ParserError(ParserErrorCode.INCORRECT_SLAVE_BLOBS, blob.ast.loc.start);
+            }
           }
 
-          if (blob instanceof BinaryEqu) {
+          if (blob instanceof BinaryDefinition) {
+            if (passDefinition(offset, blob))
+              needPass = true;
+            else
+              continue;
+          } else if (blob instanceof BinaryEqu) {
             // ignore, it is propably already resolved
             if (passEqu(offset, blob))
               needPass = true;
@@ -472,6 +519,7 @@ export class X86Compiler {
             const pessimisticSize = binary.length;
 
             // generally check for JMP/CALL etc instructions
+            // and all args have defined values
             if (ast.isConstantSize())
               continue;
 

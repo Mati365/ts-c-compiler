@@ -9,6 +9,9 @@ export function numberByteSize(num: number): number {
   if (!num)
     return 1;
 
+  if (num < 0)
+    num = (-num) * 2;
+
   return Math.floor(Math.log2(num) / 8) + 1;
 }
 

@@ -13,6 +13,7 @@ export enum CompilerOptions {
   ORG = 'ORG',
   BITS = 'BITS',
   SECTION = 'SECTION',
+  TARGET = 'TARGET',
 }
 
 /**

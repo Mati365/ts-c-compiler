@@ -13,3 +13,14 @@ dq 0x0, 'abc def'
 jmp abc
 times 200 dw 0x0, 66, 0b101
 abc:
+
+;= test: eval values in db
+;= bin: 2001040001020360
+[bits 16]
+[org 0x0]
+X_OFFSET: equ 1
+BASE_MAZE: equ 16*X_OFFSET+32
+pos1: equ BASE_MAZE+21*8*X_OFFSET
+dw BASE_MAZE+0x78*X_OFFSET+0x78
+dw (2+ 2)
+db 1, 2, 3, (BASE_MAZE*2)

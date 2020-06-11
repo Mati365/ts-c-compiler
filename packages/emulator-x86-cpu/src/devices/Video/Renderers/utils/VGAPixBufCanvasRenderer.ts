@@ -1,4 +1,4 @@
-import {Rectangle} from '@compiler/core/types';
+import {MemoryRegionRange} from '@emulator/x86-cpu/memory/MemoryRegion';
 import {VGACanvasRenderer} from './VGACanvasRenderer';
 
 /**
@@ -9,7 +9,62 @@ import {VGACanvasRenderer} from './VGACanvasRenderer';
  */
 export abstract class VGAPixBufCanvasRenderer extends VGACanvasRenderer {
   protected imageData: ImageData;
-  protected diff: Rectangle; // used for repaint only of region of canvas if changed
+  protected dirty = new MemoryRegionRange(0, 0);
+
+  /**
+   * Marks whole pix buf as dirty
+   *
+   * @memberof VGAPixBufCanvasRenderer
+   */
+  markWholeRegionAsDirty(): void {
+    const {dirty} = this;
+
+    dirty.low = -1;
+    dirty.high = -1;
+  }
+
+  /**
+   * Marks memory in region to be rerendered.
+   * It is used generally in graphics modes, in text mode
+   * there is ascii buffer cache
+   *
+   * @param {number} low
+   * @param {number} high
+   * @returns {MemoryRegionRange}
+   * @memberof VGAPixBufCanvasRenderer
+   */
+  markRegionAsDirty(low: number, high: number): MemoryRegionRange {
+    const {dirty} = this;
+
+    dirty.low = dirty.low === null ? low : Math.min(low, dirty.low);
+    dirty.high = dirty.high === null ? high : Math.max(high, dirty.high);
+
+    return dirty;
+  }
+
+  /**
+   * Assigns the same values to dirty so isDirtyBuffer will return false
+   *
+   * @memberof VGAPixBufCanvasRenderer
+   */
+  resetDirtyFlags() {
+    const {dirty} = this;
+
+    dirty.low = null;
+    dirty.high = null;
+  }
+
+  /**
+   * Returns true if pixel buffer needs to be rerendered
+   *
+   * @returns {boolean}
+   * @memberof VGAPixBufCanvasRenderer
+   */
+  isDirtyBuffer(): boolean {
+    const {dirty: {low, high}} = this;
+
+    return low === -1 || low !== high;
+  }
 
   /**
    * Detects if VGA mode has been changed and resize canvas to match it

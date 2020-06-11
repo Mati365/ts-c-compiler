@@ -25,7 +25,7 @@ export class VGAGraphicsModeCanvasRenderer extends VGAPixBufCanvasRenderer {
    * @memberof VGAGraphicsModeCanvasRenderer
    */
   private transferToVGAPixelBuffer() {
-    const {vga, cachedShiftLoads} = this;
+    const {vga, cachedShiftLoads, dirty} = this;
     const {crtcRegs, graphicsRegs, attrRegs} = vga;
 
     const {virtualSize} = vga.getGraphicsModeState();
@@ -37,7 +37,10 @@ export class VGAGraphicsModeCanvasRenderer extends VGAPixBufCanvasRenderer {
     const shiftMode = graphicsRegs.graphicsModeReg.number & 0x60;
     const pelWidth = attrRegs.attrModeControlReg.bit8;
 
-    for (let pixelAddr = 0; pixelAddr < pixelBuffer.length;) {
+    const start = dirty.low & ~0xF;
+    const end = Math.min((dirty.high | 0xF), pixelBuffer.length - 1);
+
+    for (let pixelAddr = start; pixelAddr <= end;) {
       let address = pixelAddr >>> addressShift;
 
       if (addressSubstitution) {
@@ -137,7 +140,7 @@ export class VGAGraphicsModeCanvasRenderer extends VGAPixBufCanvasRenderer {
    * @memberof VGAGraphicsModeCanvasRenderer
    */
   private transferToCanvasBuffer(buffer: Uint8ClampedArray): void {
-    const {vga} = this;
+    const {vga, dirty} = this;
     const {
       attrRegs: {
         attrModeControlReg,
@@ -150,6 +153,9 @@ export class VGAGraphicsModeCanvasRenderer extends VGAPixBufCanvasRenderer {
     const pixelBuffer = vga.getPixelBuffer();
     const vga256 = vga.getVGA256State();
 
+    const start = dirty.low;
+    const end = Math.min(dirty.high, pixelBuffer.length - 1);
+
     let mask = 0xFF;
     let colorset = 0x0;
 
@@ -161,10 +167,13 @@ export class VGAGraphicsModeCanvasRenderer extends VGAPixBufCanvasRenderer {
 
     if (attrModeControlReg.bit8) {
       // bit 8 mode
-      for (let pixelAddr = 0; pixelAddr < pixelBuffer.length; pixelAddr++) {
+      for (let pixelAddr = start; pixelAddr <= end; pixelAddr++) {
         const bufferColor = (pixelBuffer[pixelAddr] & mask) | colorset;
         const color = vga256.palette[bufferColor];
         const imgBufferAddr = pixelAddr << 2;
+
+        if (imgBufferAddr >= buffer.length)
+          break;
 
         buffer[imgBufferAddr] = color.r;
         buffer[imgBufferAddr + 1] = color.g;
@@ -177,11 +186,14 @@ export class VGAGraphicsModeCanvasRenderer extends VGAPixBufCanvasRenderer {
       colorset |= (colorSelectReg.number << 4) & 0xC0;
 
       const colorPlane = colorPlaneEnableReg.colorPlaneEnable;
-      for (let pixelAddr = 0; pixelAddr < pixelBuffer.length; ++pixelAddr) {
+      for (let pixelAddr = start; pixelAddr <= end; ++pixelAddr) {
         const color16 = pixelBuffer[pixelAddr] & colorPlane;
         const bufferColor = (paletteRegs[color16] & mask) | colorset;
         const color = vga256.palette[bufferColor];
         const imgBufferAddr = pixelAddr << 2;
+
+        if (imgBufferAddr >= buffer.length)
+          break;
 
         buffer[imgBufferAddr] = color.r;
         buffer[imgBufferAddr + 1] = color.g;
@@ -198,7 +210,11 @@ export class VGAGraphicsModeCanvasRenderer extends VGAPixBufCanvasRenderer {
    * @memberof VGAGraphicsModeCanvasRenderer
    */
   drawToImageData(buffer: Uint8ClampedArray) {
+    if (!this.isDirtyBuffer())
+      return;
+
     this.transferToVGAPixelBuffer();
     this.transferToCanvasBuffer(buffer);
+    this.resetDirtyFlags();
   }
 }

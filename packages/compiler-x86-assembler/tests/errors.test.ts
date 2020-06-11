@@ -45,13 +45,13 @@ describe('times', () => {
   });
 
   it('handle unknown keyword value', () => {
-    expect('times 2 db nop').toHasCompilerError(ParserErrorCode.UNSUPPORTED_DEFINE_TOKEN);
+    expect('times 2 db nop').toHasCompilerError(MathErrorCode.UNKNOWN_KEYWORD);
   });
 });
 
 describe('mem', () => {
   it('handle overflow displacement', () => {
-    expect('mov bx, [bx:0xFFFFF]').toHasCompilerError(ParserErrorCode.INVALID_ADDRESSING_MODE);
+    expect('mov bx, [bx:0xFFFFF]').toHasCompilerError(ParserErrorCode.DISPLACEMENT_EXCEEDING_BYTE_SIZE);
   });
 
   it('handle scale without index bit error in 16bit mode', () => {

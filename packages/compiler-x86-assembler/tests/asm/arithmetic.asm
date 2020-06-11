@@ -48,3 +48,13 @@ mov ah, 11111111y
 mov ah, 0b000101
 mov al, -11_11111b
 int 0ah
+
+;= test: handle separator in digits
+;= bin: 00ffb00f
+[bits 16]
+[org 0x7C00]
+
+test_equ equ 0b11_11
+test_equ2: dw 0xFF_00
+
+mov al, 0b11_11

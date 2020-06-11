@@ -310,10 +310,14 @@ export class BinaryInstruction extends BinaryBlob<ASTInstruction> {
       if (!addressDescription)
         return rmByte;
 
+      // todo: check if Math.min(2, ...) is correct
+      // it is used: cmp ax, [bx-64004]
+      // mov ax, [cs:0xFFFFF]
+      // in NASM value is wrapped around
       const signedDispByteSize = (
         R.isNil(addressDescription.disp)
           ? null
-          : roundToPowerOfTwo(addressDescription.signedByteSize)
+          : roundToPowerOfTwo(Math.min(2, addressDescription.signedByteSize))
       );
 
       const [mod, rm] = findMatchingMemAddressingRMByte(

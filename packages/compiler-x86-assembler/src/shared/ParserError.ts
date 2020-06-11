@@ -53,6 +53,7 @@ export enum ParserErrorCode {
   // compiler
   UNKNOWN_COMPILER_INSTRUCTION,
   UNSUPPORTED_COMPILER_MODE,
+  UNSUPPORTED_COMPILER_TARGET,
   UNKNOWN_BINARY_SCHEMA_DEF,
   MISSING_RM_BYTE_DEF,
   MISSING_MEM_ARG_DEF,
@@ -129,13 +130,14 @@ export const ERROR_TRANSLATIONS: Record<ParserErrorCode, string> = {
   // compiler
   [ParserErrorCode.UNKNOWN_COMPILER_INSTRUCTION]: 'Unknown compile instruction "%{instruction}"!',
   [ParserErrorCode.UNSUPPORTED_COMPILER_MODE]: 'Unsupported compiler mode!',
+  [ParserErrorCode.UNSUPPORTED_COMPILER_TARGET]: 'Unsupported compiler target!',
   [ParserErrorCode.MISSING_RM_BYTE_DEF]: 'Missing RM byte arg definition but in binary schema is present!',
   [ParserErrorCode.MISSING_MEM_ARG_DEF]: 'Missing mem arg definition but in binary schema is present!',
   [ParserErrorCode.MISSING_IMM_ARG_DEF]: 'Missing imm arg definition but in binary schema is present!',
   [ParserErrorCode.UNKNOWN_BINARY_SCHEMA_DEF]: 'Unknown binary schema token %{schema}',
   [ParserErrorCode.INVALID_ADDRESSING_MODE]: 'Invalid address!',
   [ParserErrorCode.UNMATCHED_SCHEMA_POSTPROCESS]: 'Cannot find instruction "%{instruction}"!',
-  [ParserErrorCode.UNABLE_TO_COMPILE_FILE]: 'Unable to compile file!',
+  [ParserErrorCode.UNABLE_TO_COMPILE_FILE]: 'Unable to compile file! Too many passes!',
   [ParserErrorCode.UNPERMITTED_NODE_IN_POSTPROCESS_MODE]: 'Unpermitted node "%{node}" in compiler first pass mode!',
   [ParserErrorCode.INCORRECT_SLAVE_BLOBS]: 'Incorrect slave blobs!',
 

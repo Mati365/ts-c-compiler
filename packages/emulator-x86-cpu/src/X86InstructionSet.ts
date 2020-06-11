@@ -439,6 +439,13 @@ export class X86InstructionSet extends X86Unit {
         registers.al = registers.status.cf ? 0xFF : 0x0;
       },
 
+      /** XLAT */ 0xD7: () => {
+        registers.al = memIO.read[0x1](
+          (X86AbstractCPU.toUnsignedNumber(registers[<string> cpu.segmentReg], 0x2) << 4)
+            + X86AbstractCPU.toUnsignedNumber(registers.bx + registers.al, 0x2),
+        );
+      },
+
       /** XCHG bx, bx */ 0x87: () => {
         const arg = cpu.fetchOpcode(0x1, false, true);
 

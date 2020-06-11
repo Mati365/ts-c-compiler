@@ -7,6 +7,7 @@ import {RegisterSchema} from './constants';
  * @enum {number}
  */
 export enum X86TargetCPU {
+  I_8086 = 0,
   I_186 = 1,
   I_286 = 2,
   I_386 = 3,
