@@ -15,7 +15,7 @@
   "btc": [["rmw ib","0F BA /7 d0 d1 i0","386"],["rmw rw","0F BB mr d0 d1","386"]],
   "btr": [["rmw rw","0F B3 mr d0 d1","386"],["rmw ib","0F BA /6 d0 d1 i0","386"]],
   "bts": [["rmw rw","0F AB mr d0 d1","386"],["rmw ib","0F BA /5 d0 d1 i0","386"]],
-  "call": [["fptr","9A o0 o1 sl sh",""],["np","E8 o0 o1",""],["rw","FF /2 d0 d1",""],["ifptr[rw]","FF /3 d0 d1",""]],
+  "call": [["fptr","9A o0 o1 sl sh",""],["np","E8 o0 o1",""],["rw","FF /2 d0 d1",""],["ifptr","FF /3 d0 d1",""]],
   "cbw": ["","98",""],
   "cdq": ["","66| 99","32bit"],
   "clc": ["","F8",""],

@@ -218,9 +218,13 @@ export class BinaryInstruction extends BinaryBlob<ASTInstruction> {
 
             if (!rmByte) {
               // see CALL instruction, FF /2 d0 d1
-              if (regByteOverride)
-                rmByte = new RMByte(RMAddressingMode.REG_ADDRESSING, 0, 0);
-              else if (regArgs.length && immArg && !memArg) {
+              if (regArgs && regArgs.length && !rmArg && !memArg && !immArg) {
+                rmByte = BinaryInstruction.encodeRMByte(
+                  compiler.mode,
+                  null,
+                  regArgs[0],
+                );
+              } else if (regArgs.length && immArg && !memArg) {
                 // handle special case where is register and immediate only
                 // example: imul ax, 0x2
                 rmByte = new RMByte(RMAddressingMode.REG_ADDRESSING, regArgs[0].val.index, 0);

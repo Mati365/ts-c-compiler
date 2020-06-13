@@ -33,3 +33,11 @@ jmp short -0xFFFFFE
 jmp short 0x2
 
 jmp abc
+
+;= test: problematic CALL reg instructions
+;= bin: ffd5ffd4ffd0ffd6
+[bits 16]
+call bp
+call sp
+call ax
+call si

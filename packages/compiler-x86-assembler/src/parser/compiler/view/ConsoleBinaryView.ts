@@ -307,7 +307,7 @@ export class ConsoleBinaryView extends BinaryView<string> {
       `Output size: ${compilerResult.output.byteSize} bytes`,
       `Binary mapping:\n\n${str}\n`,
       'Binary:',
-      arrayToHexString(compilerResult.output.getBinary()),
+      arrayToHexString(compilerResult.output.getBinary(), ''),
     ].join('\n');
   }
 }
