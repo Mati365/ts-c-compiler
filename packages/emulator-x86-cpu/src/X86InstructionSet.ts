@@ -429,7 +429,7 @@ export class X86InstructionSet extends X86Unit {
 
       /** MOVSB */ 0xA4: (bits: X86BitsMode = 0x1) => {
         memIO.write[bits](
-          memIO.read[bits](cpu.getMemAddress('ds', 'si')),
+          memIO.read[bits](cpu.getMemAddress(cpu.segmentReg, 'si')),
           cpu.getMemAddress('es', 'di'),
         );
 
@@ -439,7 +439,9 @@ export class X86InstructionSet extends X86Unit {
       /** MOVSW */ 0xA5: () => opcodes[0xA4](0x2),
 
       /** LODSB */ 0xAC: (bits: X86BitsMode = 0x1) => {
-        registers[<string> X86_REGISTERS[bits][0x0]] = memIO.read[bits](cpu.getMemAddress('ds', 'si'));
+        registers[<string> X86_REGISTERS[bits][0x0]] = memIO.read[bits](
+          cpu.getMemAddress(cpu.segmentReg, 'si'),
+        );
         cpu.dfIncrement(bits, 'si');
       },
       /** LODSW */ 0xAD: () => opcodes[0xAC](0x2),
