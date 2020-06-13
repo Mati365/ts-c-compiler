@@ -21,9 +21,14 @@ import {ASTInstructionMemPtrArg} from '../ASTInstructionMemPtrArg';
  * @see
  *  maxByteSize can be also size of data pointed by address!
  */
-export function mem(arg: ASTInstructionArg, maxByteSize: number): boolean {
+export function mem(
+  arg: ASTInstructionArg,
+  instruction: ASTInstruction,
+  maxByteSize: number,
+): boolean {
   return (
     arg.type === InstructionArgType.MEMORY
+      && instruction.branchAddressingType === null
       && (!maxByteSize || (arg.sizeExplicitOverriden ? arg.byteSize === maxByteSize : arg.byteSize <= maxByteSize))
   );
 }
@@ -56,8 +61,7 @@ export function sreg(arg: ASTInstructionArg, byteSize: X86BitsMode): boolean {
 /** Numbers */
 export function imm(arg: ASTInstructionArg, maxByteSize: X86BitsMode): boolean {
   return arg.type === InstructionArgType.LABEL || (
-    arg.type === InstructionArgType.NUMBER
-      && (arg.sizeExplicitOverriden ? arg.byteSize === maxByteSize : arg.byteSize <= maxByteSize)
+    arg.type === InstructionArgType.NUMBER && arg.byteSize <= maxByteSize
   );
 }
 
@@ -160,7 +164,11 @@ export function farSegPointer(arg: ASTInstructionArg, maxByteSize: X86BitsMode):
 }
 
 export function indirectFarSegPointer(arg: ASTInstructionArg, instruction: ASTInstruction): boolean {
-  return arg.type === InstructionArgType.MEMORY && instruction.branchAddressingType !== null;
+  const {branchAddressingType} = instruction;
+
+  return arg.type === InstructionArgType.MEMORY && (
+    branchAddressingType === BranchAddressingType.FAR || branchAddressingType === null
+  );
 }
 
 /** FPU */

@@ -17,8 +17,8 @@ import {
   BRANCH_ADDRESSING_SIZE_MAPPING,
   InstructionArgType,
   BranchAddressingType,
-  InstructionArgSize,
   X86TargetCPU,
+  InstructionArgSize,
 } from '../../../types';
 
 import {ParserError, ParserErrorCode} from '../../../shared/ParserError';
@@ -387,6 +387,7 @@ export class ASTInstruction extends KindASTAsmNode(ASTNodeKind.INSTRUCTION) {
     defaultMemArgByteSize: number = null,
   ): [BranchAddressingType, ASTInstructionArg<any>[]] {
     let byteSizeOverride: number = null;
+    let maxArgSize: number = null;
     let branchSizeOverride: number = (
       branchAddressingType
         ? BRANCH_ADDRESSING_SIZE_MAPPING[branchAddressingType] * 2
@@ -592,11 +593,19 @@ export class ASTInstruction extends KindASTAsmNode(ASTNodeKind.INSTRUCTION) {
         if (!result)
           return;
 
+        // used for mem operands size deduce
+        // numbers are ignored by nasm
+        // case: mov [0x0], 0x7C
+        if (result.byteSize
+            && (result.type === InstructionArgType.MEMORY || result.type === InstructionArgType.REGISTER))
+          maxArgSize = Math.max(maxArgSize, result.byteSize);
+
+        const prevArg = acc[acc.length - 1];
         const sizeMismatch = (
-          acc.length
+          prevArg
             && result.type !== InstructionArgType.LABEL
-            && acc[acc.length - 1].type !== InstructionArgType.LABEL
-            && result.byteSize !== acc[acc.length - 1].byteSize
+            && (prevArg.type === InstructionArgType.REGISTER || prevArg.type === InstructionArgType.NUMBER)
+            && result.byteSize !== prevArg.byteSize
         );
 
         // tell arg that size of argument is explicit overriden
@@ -610,13 +619,39 @@ export class ASTInstruction extends KindASTAsmNode(ASTNodeKind.INSTRUCTION) {
           // handle something like this: mov ax, 2
           // second argument has byteSize equal to 1, but ax is 2
           // try to cast
-          const prevByteSize = acc[acc.length - 1].byteSize;
+          const prevByteSize = prevArg.byteSize;
           if (result.type === InstructionArgType.NUMBER && result.byteSize > prevByteSize)
             throw new ParserError(ParserErrorCode.OPERAND_SIZES_MISMATCH, token.loc);
         }
 
         acc.push(result);
       },
+    );
+
+    // add missing branch sizes for memory args
+    // mov [0x0], word 0x7C
+    // argument [0x0] initially has 1B of target size
+    // but after word override should be 2 byte
+    R.forEach(
+      (arg) => {
+        if (arg.type !== InstructionArgType.MEMORY)
+          return;
+
+        if (byteSizeOverride)
+          arg.byteSize = byteSizeOverride;
+        else if (maxArgSize)
+          arg.byteSize = maxArgSize;
+        else {
+          throw new ParserError(
+            ParserErrorCode.MEM_OPERAND_SIZE_NOT_SPECIFIED,
+            tokens[0].loc,
+            {
+              operand: arg.toString(),
+            },
+          );
+        }
+      },
+      acc,
     );
 
     return [branchAddressingType, acc];

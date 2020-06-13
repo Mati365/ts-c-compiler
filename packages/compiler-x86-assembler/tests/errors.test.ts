@@ -71,6 +71,10 @@ describe('mem', () => {
   it('handle unknown keyword in mem addr', () => {
     expect('mov bx, [es:bx+si*4+0xF+dupa]').toHasCompilerError(MathErrorCode.UNKNOWN_KEYWORD);
   });
+
+  it('handle unspecified mem arg size', () => {
+    expect('mov [0x0], 0x1').toHasCompilerError(ParserErrorCode.MEM_OPERAND_SIZE_NOT_SPECIFIED);
+  });
 });
 
 describe('instruction', () => {

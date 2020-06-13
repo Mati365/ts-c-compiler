@@ -41,3 +41,18 @@ call bp
 call sp
 call ax
 call si
+
+;= test: long jumps / calls
+;= bin: b8007c8ed83ec606527c7c3ec706807c87db3ec706507c807c3ec706527c007cff1e507cea00ff000f9a2301f00fff160000
+[bits 16]
+[org 0x7C00]
+mov ax, 0x7C00
+mov ds, ax
+mov [ds:0x7C50+2], byte 0x7C
+mov word [ds:0x7C80], 0xDB87
+mov word [ds:0x7C50], 0x7C80
+mov word [ds:0x7C50+2], 0x7C00
+call far [0x7C50]
+jmp 0xF00:0xFF00
+call 0xFF0:0x123
+call [0x0]

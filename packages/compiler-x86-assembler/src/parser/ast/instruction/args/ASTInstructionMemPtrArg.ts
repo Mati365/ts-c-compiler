@@ -210,16 +210,13 @@ export class ASTInstructionMemPtrArg extends ASTInstructionArg<MemAddressDescrip
    * @memberof ASTInstructionMemPtrArg
    */
   tryResolve(labelResolver?: ASTLabelAddrResolver): boolean {
-    const {phrase, resolved, byteSize} = this;
+    const {phrase, resolved} = this;
     if (resolved)
       return resolved;
 
     const parsedMemResult = parseMemExpression(labelResolver, phrase);
     if (parsedMemResult.isOk()) {
       const parsedMem = parsedMemResult.unwrap();
-
-      if (R.isNil(byteSize))
-        this.byteSize = R.defaultTo(0, parsedMem.dispByteSize);
 
       this.value = parsedMem;
       this.resolved = true;

@@ -212,7 +212,7 @@ export class X86InstructionSet extends X86Unit {
           (_, modeReg, mode) => {
             const reg: string = X86_REGISTERS[bits][mode.rm];
             if (mode.reg === 0x6)
-              stack.push(cpu.registers[reg]);
+              stack.push(registers[reg]);
             else {
               registers[reg] = alu.exec(
                 alu.operators.extra[mode.reg === 0x1 ? 'decrement' : 'increment'],
@@ -239,7 +239,95 @@ export class X86InstructionSet extends X86Unit {
           bits,
         );
       },
-      /** INC/DEC reg16 */ 0xFF: () => opcodes[0xFE](0x2),
+
+      /** INC/DEC/CALL/CALLF/JMP/JMPF/PUSH   */ 0xFF: () => {
+        cpu.parseRmByte(
+          (reg, modeReg) => {
+            const regValue = <number> registers[reg];
+
+            switch (modeReg) {
+              /** INC r16 */ case 0x0:
+                registers[<string> reg] = alu.exec(alu.operators.extra.increment, regValue, null, 0x2);
+                break;
+
+              /** DEC r16 */ case 0x1:
+                registers[<string> reg] = alu.exec(alu.operators.extra.decrement, regValue, null, 0x2);
+                break;
+
+              /** CALL r16 */ case 0x2:
+                stack.push(registers.ip);
+                registers.ip = regValue;
+                break;
+
+              /** JMP r16 */ case 0x4:
+                registers.ip = regValue;
+                break;
+
+              /** PUSH r16 */ case 0x6:
+                stack.push(regValue);
+                break;
+
+              default:
+                throw new Error('Unimplemented 0xFF reg rm instruction!');
+            }
+          },
+          (address, reg, byte) => {
+            const memVal = cpu.memIO.read[0x2](address);
+
+            // call 0x3
+            switch (byte.reg) {
+              /** INC m16 */ case 0x0:
+                memIO.write[0x2](
+                  alu.exec(alu.operators.extra.increment, memVal, null, 0x2),
+                  address,
+                );
+                break;
+
+              /** DEC m16 */ case 0x1:
+                memIO.write[0x2](
+                  alu.exec(alu.operators.extra.decrement, memVal, null, 0x2),
+                  address,
+                );
+                break;
+
+              /** CALL m16 */ case 0x2:
+                stack.push(registers.ip);
+                registers.ip = memVal;
+                break;
+
+              /** CALL FAR  */ case 0x3:
+                stack
+                  .push(registers.cs)
+                  .push(registers.ip);
+
+                cpu.absoluteJump(
+                  memVal,
+                  cpu.memIO.read[0x2](address + 0x2),
+                );
+                break;
+
+              /** JMP m16 */ case 0x4:
+                registers.ip = memVal;
+                break;
+
+              /** JMP FAR  */ case 0x5:
+                cpu.absoluteJump(
+                  memVal,
+                  cpu.memIO.read[0x2](address + 0x2),
+                );
+                break;
+
+              /** PUSH m16 */ case 0x6:
+                stack.push(memVal);
+                break;
+
+              default:
+                throw new Error('Unimplemented 0xFF mem rm instruction!');
+            }
+          },
+          0x2,
+        );
+      },
 
       /** PUSHA */ 0x60: () => {
         const temp = registers.sp;

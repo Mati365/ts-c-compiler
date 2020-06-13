@@ -7,6 +7,7 @@ export enum ParserErrorCode {
 
   OPERAND_MUST_BE_NUMBER,
   OPERAND_SIZES_MISMATCH,
+  MEM_OPERAND_SIZE_NOT_SPECIFIED,
 
   MISSING_MEM_OPERAND_SIZE,
   INVALID_INSTRUCTION_OPERAND,
@@ -83,6 +84,7 @@ export const ERROR_TRANSLATIONS: Record<ParserErrorCode, string> = {
 
   [ParserErrorCode.OPERAND_MUST_BE_NUMBER]: 'Operand must be number!',
   [ParserErrorCode.OPERAND_SIZES_MISMATCH]: 'Operand sizes mismatch!',
+  [ParserErrorCode.MEM_OPERAND_SIZE_NOT_SPECIFIED]: 'Mem "%{operand}" operand size is not specified!',
 
   [ParserErrorCode.MISSING_MEM_OPERAND_SIZE]: 'Missing mem operand size!',
   [ParserErrorCode.INVALID_INSTRUCTION_OPERAND]: 'Invalid operand "%{operand}"!',

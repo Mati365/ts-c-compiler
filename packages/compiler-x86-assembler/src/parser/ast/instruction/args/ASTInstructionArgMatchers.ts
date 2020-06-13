@@ -69,17 +69,17 @@ export const ASTInstructionArgMatchers: Record<string, ASTInstructionArgMatcherF
   moffs: () => (arg: ASTInstructionArg) => moffs(arg, 2),
 
   /** MEM */
-  m: () => (arg: ASTInstructionArg) => mem(arg, null),
-  mb: () => (arg: ASTInstructionArg) => mem(arg, 1),
-  mw: () => (arg: ASTInstructionArg) => mem(arg, 2),
-  md: () => (arg: ASTInstructionArg) => mem(arg, 4),
-  mq: () => (arg: ASTInstructionArg) => mem(arg, 8),
+  m: () => (arg: ASTInstructionArg, instruction: ASTInstruction) => mem(arg, instruction, null),
+  mb: () => (arg: ASTInstructionArg, instruction: ASTInstruction) => mem(arg, instruction, 1),
+  mw: () => (arg: ASTInstructionArg, instruction: ASTInstruction) => mem(arg, instruction, 2),
+  md: () => (arg: ASTInstructionArg, instruction: ASTInstruction) => mem(arg, instruction, 4),
+  mq: () => (arg: ASTInstructionArg, instruction: ASTInstruction) => mem(arg, instruction, 8),
 
   /** REAL MEM */
-  mwr: () => (arg: ASTInstructionArg) => mem(arg, 2),
-  mdr: () => (arg: ASTInstructionArg) => mem(arg, 4),
-  mqr: () => (arg: ASTInstructionArg) => mem(arg, 8),
-  mtr: () => (arg: ASTInstructionArg) => mem(arg, 10),
+  mwr: () => (arg: ASTInstructionArg, instruction: ASTInstruction) => mem(arg, instruction, 2),
+  mdr: () => (arg: ASTInstructionArg, instruction: ASTInstruction) => mem(arg, instruction, 4),
+  mqr: () => (arg: ASTInstructionArg, instruction: ASTInstruction) => mem(arg, instruction, 8),
+  mtr: () => (arg: ASTInstructionArg, instruction: ASTInstruction) => mem(arg, instruction, 10),
 
   /** SREG */
   sr: () => (arg: ASTInstructionArg) => sreg(arg, 2),
@@ -90,9 +90,9 @@ export const ASTInstructionArgMatchers: Record<string, ASTInstructionArgMatcherF
   rq: () => (arg: ASTInstructionArg) => reg(arg, 4),
 
   /** REG/MEM */
-  rmb: () => (arg: ASTInstructionArg) => reg(arg, 1) || mem(arg, 1),
-  rmw: () => (arg: ASTInstructionArg) => reg(arg, 2) || mem(arg, 2),
-  rmq: () => (arg: ASTInstructionArg) => reg(arg, 4) || mem(arg, 4),
+  rmb: () => (arg: ASTInstructionArg, instruction: ASTInstruction) => reg(arg, 1) || mem(arg, instruction, 1),
+  rmw: () => (arg: ASTInstructionArg, instruction: ASTInstruction) => reg(arg, 2) || mem(arg, instruction, 2),
+  rmq: () => (arg: ASTInstructionArg, instruction: ASTInstruction) => reg(arg, 4) || mem(arg, instruction, 4),
 
   /** IMM */
   ib: () => (arg: ASTInstructionArg) => imm(arg, 1),
