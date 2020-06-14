@@ -58,14 +58,18 @@ export class CMOS extends uuidX86Device<X86CPU>('cmos') {
     /* INTERRUPTS */
     this.attachInterrupts(0x1A, 'ah', {
       0x0: () => {
+        const {lastReset} = this.timer;
         const now = Date.now(),
-          ticks = (this.timer.lastReset - now) / this.timer.speed;
+          ticks = (now - lastReset) / this.timer.speed;
 
-        Object.assign(this.regs, {
-          al: this.timer.lastReset - now >= 86400000 ? 0x1 : 0x0,
-          dx: ticks & 0xFFFF,
-          cx: (ticks >> 0x10) & 0xFFFF,
-        });
+        Object.assign(
+          this.regs,
+          {
+            al: (now - lastReset) >= 86400000 ? 0x1 : 0x0,
+            dx: ticks & 0xFFFF,
+            cx: (ticks >>> 0x10) & 0xFFFF,
+          },
+        );
       },
 
       /** Read Time From Real Time Clock */
