@@ -628,6 +628,14 @@ export class ASTInstruction extends KindASTAsmNode(ASTNodeKind.INSTRUCTION) {
       },
     );
 
+    // handle mov ax, byte [ds:0xe620]
+    if (maxArgSize && byteSizeOverride && byteSizeOverride !== maxArgSize) {
+      throw new ParserError(
+        ParserErrorCode.OPERAND_SIZES_MISMATCH,
+        tokens[0].loc,
+      );
+    }
+
     // add missing branch sizes for memory args
     // mov [0x0], word 0x7C
     // argument [0x0] initially has 1B of target size

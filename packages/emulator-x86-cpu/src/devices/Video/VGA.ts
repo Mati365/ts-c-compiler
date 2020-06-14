@@ -559,7 +559,7 @@ export class VGA extends uuidX86Device<X86CPU>('vga') implements ByteMemRegionAc
       offset &= ~0x1;
     }
 
-    return vgaBuffer[(plane << 16) | offset];
+    return vgaBuffer.device[(plane << 16) | offset];
   }
 
   /**

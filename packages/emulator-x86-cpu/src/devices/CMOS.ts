@@ -2,9 +2,22 @@ import {uuidX86Device} from '../types/X86AbstractDevice';
 import {X86CPU} from '../X86CPU';
 
 type ClockTimerConfig = {
-  lastReset: number, // time from CPU reset
+  currentMidnight: number,
   speed: number,
 };
+
+function getTodayMidnight(): Date {
+  const now = new Date;
+
+  return new Date(
+    now.getFullYear(),
+    now.getMonth(),
+    now.getDate(),
+    0,
+    0,
+    0,
+  );
+}
 
 /**
  * CMOS
@@ -29,7 +42,7 @@ export class CMOS extends uuidX86Device<X86CPU>('cmos') {
     const date = new Date;
 
     this.timer = {
-      lastReset: Date.now(),
+      currentMidnight: +getTodayMidnight(),
       speed: 55, /** 55MS tick */
     };
 
@@ -58,16 +71,16 @@ export class CMOS extends uuidX86Device<X86CPU>('cmos') {
     /* INTERRUPTS */
     this.attachInterrupts(0x1A, 'ah', {
       0x0: () => {
-        const {lastReset} = this.timer;
-        const now = Date.now(),
-          ticks = (now - lastReset) / this.timer.speed;
+        const {currentMidnight} = this.timer;
+        const now = Date.now();
+        const ticksFromMidnight = (now - currentMidnight) / this.timer.speed;
 
         Object.assign(
           this.regs,
           {
-            al: (now - lastReset) >= 86400000 ? 0x1 : 0x0,
-            dx: ticks & 0xFFFF,
-            cx: (ticks >>> 0x10) & 0xFFFF,
+            al: (now - currentMidnight) >= 86400000 ? 0x1 : 0x0,
+            dx: ticksFromMidnight & 0xFFFF,
+            cx: (ticksFromMidnight >>> 0x10) & 0xFFFF,
           },
         );
       },
