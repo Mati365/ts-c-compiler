@@ -54,11 +54,11 @@ describe('mem', () => {
     expect('mov bx, [bx:0xFFFFF]').toHasCompilerError(ParserErrorCode.DISPLACEMENT_EXCEEDING_BYTE_SIZE);
   });
 
-  it('handle scale without index bit error in 16bit mode', () => {
+  it('handle impossible register in mem address', () => {
     expect(`
       [bits 16]
-      mov bx, [es:si+bx]
-    `).not.toHasCompilerError(ParserErrorCode.SCALE_INDEX_IS_UNSUPPORTED_IN_MODE);
+      mov bx, [es:si+bx+di]
+    `).toHasCompilerError(ParserErrorCode.IMPOSSIBLE_MEM_REG);
   });
 
   it('handle scale > 1 bit error in 16bit mode', () => {

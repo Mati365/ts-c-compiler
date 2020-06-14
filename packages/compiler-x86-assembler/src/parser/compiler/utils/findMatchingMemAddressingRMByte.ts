@@ -17,7 +17,7 @@ import {InstructionArgSize, MemAddressDescription} from '../../../types';
  * @param {MemAddressDescription} addressDescription
  * @param {RegisterSchema} regSchema
  * @param {number} signedDispRoundedSize
- * @param {boolean} [swapped=false]
+ * @param {boolean} [swappedRegs=false]
  * @returns {[number, number]}
  */
 export function findMatchingMemAddressingRMByte(
@@ -25,26 +25,32 @@ export function findMatchingMemAddressingRMByte(
   addressDescription: MemAddressDescription,
   regSchema: RegisterSchema,
   signedDispRoundedSize: number,
-  swapped: boolean = false,
+  swappedRegs: boolean = false,
 ): [number, number] {
   const {
     reg: baseRegSchema,
-    scale: scaleSchema,
+    reg2: secondRegSchema,
   } = addressDescription;
 
-  const baseReg = baseRegSchema?.mnemonic;
-  const scaleReg = scaleSchema?.reg?.mnemonic;
-
+  let baseReg = baseRegSchema?.mnemonic;
+  let secondReg = secondRegSchema?.mnemonic;
   let rm = null;
+
+  if (swappedRegs) {
+    const temp = secondReg;
+
+    secondReg = baseReg;
+    baseReg = temp;
+  }
 
   if (mode === InstructionArgSize.WORD) {
     // MOD = 00
     if (signedDispRoundedSize === null) {
-      if (baseReg === 'bx' && scaleReg === 'si') rm = 0b000;
-      else if (baseReg === 'bx' && scaleReg === 'di') rm = 0b001;
-      else if (baseReg === 'bp' && scaleReg === 'si') rm = 0b010;
-      else if (baseReg === 'bp' && scaleReg === 'di') rm = 0b011;
-      else if (!scaleReg) {
+      if (baseReg === 'bx' && secondReg === 'si') rm = 0b000;
+      else if (baseReg === 'bx' && secondReg === 'di') rm = 0b001;
+      else if (baseReg === 'bp' && secondReg === 'si') rm = 0b010;
+      else if (baseReg === 'bp' && secondReg === 'di') rm = 0b011;
+      else if (!secondReg) {
         if (baseReg === 'si') rm = 0b100;
         else if (baseReg === 'di') rm = 0b101;
         else if (baseReg === 'bx') rm = 0b111;
@@ -52,16 +58,16 @@ export function findMatchingMemAddressingRMByte(
 
       if (rm !== null)
         return [RMAddressingMode.INDIRECT_ADDRESSING, rm];
-    } else if (!baseReg && !scaleReg && signedDispRoundedSize <= InstructionArgSize.WORD)
+    } else if (!baseReg && !secondReg && signedDispRoundedSize <= InstructionArgSize.WORD)
       return [RMAddressingMode.INDIRECT_ADDRESSING, 0b110];
 
     // MOD = 01 / MOD = 10
     if (signedDispRoundedSize === 0x1 || signedDispRoundedSize === 0x2) {
-      if (baseReg === 'bx' && scaleReg === 'si') rm = 0b000;
-      else if (baseReg === 'bx' && scaleReg === 'di') rm = 0b001;
-      else if (baseReg === 'bp' && scaleReg === 'si') rm = 0b010;
-      else if (baseReg === 'bp' && scaleReg === 'di') rm = 0b011;
-      else if (!scaleReg) {
+      if (baseReg === 'bx' && secondReg === 'si') rm = 0b000;
+      else if (baseReg === 'bx' && secondReg === 'di') rm = 0b001;
+      else if (baseReg === 'bp' && secondReg === 'si') rm = 0b010;
+      else if (baseReg === 'bp' && secondReg === 'di') rm = 0b011;
+      else if (!secondReg) {
         if (baseReg === 'si') rm = 0b100;
         else if (baseReg === 'di') rm = 0b101;
         else if (baseReg === 'bp') rm = 0b110;
@@ -73,9 +79,17 @@ export function findMatchingMemAddressingRMByte(
     }
   }
 
-  // it might be mov ax, [si + bx] or mov [ax, bx + si]
-  if (!swapped)
-    return findMatchingMemAddressingRMByte(mode, addressDescription, regSchema, signedDispRoundedSize, true);
+  // handle case mov byte [di+bx], 0xF
+  // if swap, it will be correct
+  if (!swappedRegs && secondReg && baseReg) {
+    return findMatchingMemAddressingRMByte(
+      mode,
+      addressDescription,
+      regSchema,
+      signedDispRoundedSize,
+      true,
+    );
+  }
 
   return null;
 }

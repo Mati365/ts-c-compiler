@@ -20,6 +20,7 @@ export enum ParserErrorCode {
 
   // mem
   SCALE_IS_ALREADY_DEFINED,
+  IMPOSSIBLE_MEM_REG,
   INCORRECT_SCALE,
   INCORRECT_MODRM,
   INCORRECT_MEM_EXPRESSION,
@@ -98,6 +99,7 @@ export const ERROR_TRANSLATIONS: Record<ParserErrorCode, string> = {
 
   // mem
   [ParserErrorCode.SCALE_IS_ALREADY_DEFINED]: 'Scale is already defined!',
+  [ParserErrorCode.IMPOSSIBLE_MEM_REG]: 'Impossible in mem address register!',
   [ParserErrorCode.INCORRECT_MEM_EXPRESSION]: 'Incorrect mem expression "%{expression}"!',
   [ParserErrorCode.INCORRECT_SCALE]: 'Incorrect scale! It must be 1, 2, 4 or 8 instead of "%{scale}"!',
   [ParserErrorCode.INCORRECT_MODRM]: 'Error during "%{phrase}" ModRM instruction byte parsing!',

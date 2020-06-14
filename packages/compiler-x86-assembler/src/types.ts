@@ -52,6 +52,7 @@ export type MemSIBScale = 1|2|4|8;
 export type MemAddressDescription = {
   sreg?: RegisterSchema,
   reg?: RegisterSchema,
+  reg2?: RegisterSchema,
   scale?: {
     reg: RegisterSchema,
     value: MemSIBScale,

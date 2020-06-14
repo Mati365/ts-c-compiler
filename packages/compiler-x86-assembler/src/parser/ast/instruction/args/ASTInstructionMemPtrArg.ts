@@ -108,12 +108,12 @@ function parseMemExpression(
         addressDescription.reg = currentReg;
         tokens.splice(i, 1);
 
-      // standalone scale register
+      // standalone second register
       } else if (!addressDescription.scale) {
-        addressDescription.scale = {
-          reg: currentReg,
-          value: 1,
-        };
+        if (addressDescription.reg2)
+          throw new ParserError(ParserErrorCode.IMPOSSIBLE_MEM_REG);
+
+        addressDescription.reg2 = currentReg;
         tokens.splice(i, 1);
       } else
         throw new ParserError(ParserErrorCode.INCORRECT_MEM_EXPRESSION, null, {expression});
@@ -121,8 +121,9 @@ function parseMemExpression(
       ++i;
   }
 
-  // calc displacement
-  if (tokens.length) {
+  // calc displacement if there is any remain number or label
+  if (tokens.length
+      && R.any((token) => token.type === TokenType.NUMBER || token.type === TokenType.KEYWORD, tokens)) {
     const dispResult = safeKeywordResultRPN(
       {
         keywordResolver: labelResolver,
@@ -138,6 +139,9 @@ function parseMemExpression(
   if (addressDescription.disp !== null) {
     addressDescription.dispByteSize = numberByteSize(Math.abs(addressDescription.disp));
     addressDescription.signedByteSize = signedNumberByteSize(addressDescription.disp);
+  } else {
+    addressDescription.dispByteSize = 0;
+    addressDescription.signedByteSize = 0;
   }
 
   return ok(addressDescription);
