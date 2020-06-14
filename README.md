@@ -66,7 +66,7 @@ yarn run develop
 
 ## Screens
 
-![Pillman](/doc/screen-5.png)
+![Pillman](/doc/screen-6.png)
 ![Prototype](/doc/screen.gif)
 ![Prototype](/doc/screen-2.png)
 ![Tetris](/doc/screen-5.png)

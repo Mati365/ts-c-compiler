@@ -218,12 +218,18 @@ export class MathExpression {
           token.resolver(args),
         );
       } else {
-        let number = +token;
+        const nestedLabel = token && token[0] === '.';
+        let number = (
+          nestedLabel
+            ? NaN
+            : +token
+        );
 
         if (Number.isNaN(number)) {
           // parsing using custom parser is slower than just `+${digit}`
           // so it is second parse method
-          const parsedNumber = parseNumberToken(token);
+          const parsedNumber = !nestedLabel && parseNumberToken(token);
+
           if (parsedNumber)
             [, number] = parsedNumber;
           else {

@@ -56,3 +56,11 @@ call far [0x7C50]
 jmp 0xF00:0xFF00
 call 0xFF0:0x123
 call [0x0]
+
+;= test: handle digit nested labels
+;= bin: eb0090f4
+root:
+    jmp .1
+    .1:
+    nop
+    hlt
