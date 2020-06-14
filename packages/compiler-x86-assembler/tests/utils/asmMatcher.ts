@@ -71,7 +71,17 @@ function toOutputsBinary(received: string, binary: BinaryOutputObject): MatcherR
  * @returns {MatcherResult}
  */
 function toHasCompilerError(received: string, code: number): MatcherResult {
-  const err = asm(received).unwrapErr();
+  const parseResult = asm(received);
+  if (parseResult.isOk()) {
+    return {
+      pass: false,
+      message: () => (
+        `expected err code to be equal ${this.utils.printExpected(code)} but result is ok!`
+      ),
+    };
+  }
+
+  const err = parseResult.unwrapErr();
   const pass = this.equals(
     err,
     expect.arrayContaining(

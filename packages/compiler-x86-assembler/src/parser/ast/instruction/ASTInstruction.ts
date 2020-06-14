@@ -628,8 +628,9 @@ export class ASTInstruction extends KindASTAsmNode(ASTNodeKind.INSTRUCTION) {
       },
     );
 
-    // handle mov ax, byte [ds:0xe620]
-    if (maxArgSize && byteSizeOverride && byteSizeOverride !== maxArgSize) {
+    // handle case:
+    // add di,dword 16
+    if (maxArgSize && byteSizeOverride && byteSizeOverride > maxArgSize) {
       throw new ParserError(
         ParserErrorCode.OPERAND_SIZES_MISMATCH,
         tokens[0].loc,
@@ -644,6 +645,15 @@ export class ASTInstruction extends KindASTAsmNode(ASTNodeKind.INSTRUCTION) {
       (arg) => {
         if (arg.type !== InstructionArgType.MEMORY)
           return;
+
+        // handle mov ax, byte [ds:0xe620]
+        // size must be equal for mem param
+        if (maxArgSize && byteSizeOverride && byteSizeOverride !== maxArgSize) {
+          throw new ParserError(
+            ParserErrorCode.OPERAND_SIZES_MISMATCH,
+            tokens[0].loc,
+          );
+        }
 
         if (byteSizeOverride)
           arg.byteSize = byteSizeOverride;

@@ -78,6 +78,15 @@ describe('mem', () => {
 });
 
 describe('instruction', () => {
+  it('handle mismatch size', () => {
+    expect('mov ax, byte [ds:0xe620]').toHasCompilerError(ParserErrorCode.OPERAND_SIZES_MISMATCH);
+    expect('add di, dword 16').toHasCompilerError(ParserErrorCode.OPERAND_SIZES_MISMATCH);
+
+    expect('mov word ax, [ds:0xe620]').not.toHasCompilerError(ParserErrorCode.OPERAND_SIZES_MISMATCH);
+    expect('add word di, 16').not.toHasCompilerError(ParserErrorCode.OPERAND_SIZES_MISMATCH);
+    expect('add di, 16').not.toHasCompilerError(ParserErrorCode.OPERAND_SIZES_MISMATCH);
+  });
+
   it('handle unknown operation', () => {
     expect('movasdasd 0x4, 0x4, 0x4').toHasCompilerError(ParserErrorCode.UNKNOWN_OPERATION);
   });
