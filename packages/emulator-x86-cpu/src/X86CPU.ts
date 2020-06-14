@@ -507,9 +507,9 @@ export class X86CPU extends X86AbstractCPU {
       else {
         /** Eight-bit displacement, sign-extended to 16 bits */
         if (byte.mod === 0x1)
-          displacement = this.fetchOpcode(0x1);
+          displacement = X86AbstractCPU.getSignedNumber(this.fetchOpcode(0x1), 0x1);
         else if (byte.mod === 0x2)
-          displacement = this.fetchOpcode(0x2);
+          displacement = X86AbstractCPU.getSignedNumber(this.fetchOpcode(0x2), 0x2);
 
         /** Calc address */
         const {registers} = this;
@@ -560,17 +560,15 @@ export class X86CPU extends X86AbstractCPU {
    * @returns {number}
    * @memberof X86CPU
    */
-  rotl(num: number, times: number, bits: X86BitsMode = 0x1): number {
+  rcl(num: number, times: number, bits: X86BitsMode = 0x1): number {
     const mask = X86_BINARY_MASKS[bits];
     const {registers: {status}} = this;
 
-    for (; times >= 0; --times) {
-      const cf = 0;
-
+    for (; times > 0; --times) {
       num <<= 0x1;
-      num |= cf;
+      num |= status.cf;
+      status.cf = (num >> 8) & 0x1;
       num &= mask;
-      status.cf = cf;
     }
 
     status.of = (
@@ -642,7 +640,7 @@ export class X86CPU extends X86AbstractCPU {
    * @returns {number}
    * @memberof X86CPU
    */
-  rotate(num: number, times: number, bits: X86BitsMode = 0x1): number {
+  rol(num: number, times: number, bits: X86BitsMode = 0x1): number {
     if (!times)
       return num;
 
