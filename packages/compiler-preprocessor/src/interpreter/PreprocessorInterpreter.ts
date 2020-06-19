@@ -1,5 +1,6 @@
 import * as R from 'ramda';
 
+import {genUUID} from '@compiler/core/utils/genUUID';
 import {appendToMapKeyArray} from '@compiler/core/utils/appendToMapKeyArray';
 import {rpn} from '@compiler/rpn/rpn';
 import {extractNestableTokensList} from '@compiler/lexer/utils/extractNestableTokensList';
@@ -44,6 +45,7 @@ export class PreprocessorScope {
       sensitive: new Map<string, ASTPreprocessorCallable[]>(),
       nonSensitive: new Map<string, ASTPreprocessorCallable[]>(),
     },
+    public readonly id = genUUID(),
   ) {}
 }
 
@@ -296,7 +298,15 @@ export class PreprocessorInterpreter {
 
       // catch %0, %1, %[] etc macro inner variables
       if (text[0] === prefixChar) {
-        if (nextToken?.text[0] === '[') {
+        // handle %% which is replaced by scope id
+        if (text[1] === prefixChar) {
+          newTokens[i] = new Token(
+            TokenType.KEYWORD,
+            null,
+            text.replace(`${prefixChar}${prefixChar}`, `${this.currentScope.id}_`),
+            loc,
+          );
+        } else if (nextToken?.text[0] === '[') {
           // expressions %[]
           const [content, newOffset] = extractNestableTokensList(
             {

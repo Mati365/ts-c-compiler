@@ -10,6 +10,18 @@
 
 16bit x86 virtual machine and assembler simulator written in TypeScript. It is designed to help with prototyping small bootsector (or bigger) real mode games 🎮 and apps 💻.
 
+## Running
+
+```bash
+yarn run develop
+```
+
+## Testing
+
+```bash
+yarn run test
+```
+
 ## Status
 
 - [x] ASM Compiler
@@ -57,12 +69,6 @@
 - [ ] App frontend
   - [ ] Basic front CSS UI
   - [ ] Debugger
-
-## Running
-
-```bash
-yarn run develop
-```
 
 ## Screens
 
