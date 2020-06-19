@@ -2,7 +2,7 @@ import * as R from 'ramda';
 
 import {Result, err, ok} from '@compiler/core/monads/Result';
 import {CompilerError} from '@compiler/core/shared/CompilerError';
-import {NumberToken} from '@compiler/lexer/tokens';
+import {NumberToken, Token} from '@compiler/lexer/tokens';
 
 import {
   MIN_COMPILER_REG_LENGTH,
@@ -10,6 +10,7 @@ import {
 } from '../../constants';
 
 import {isReservedKeyword} from '../utils/isReservedKeyword';
+import {rpnTokens} from './utils/rpnTokens';
 
 import {ParserError, ParserErrorCode} from '../../shared/ParserError';
 import {InstructionArgSize, X86TargetCPU} from '../../types';
@@ -131,6 +132,35 @@ export class X86Compiler {
     let offset = initialOffset;
     let originDefined = false;
 
+    /**
+     * Simplified version of keywordResolver but returns only
+     * first phase labels values or
+     *
+     * @param {string} name
+     * @returns {number}
+     */
+    function criticalKeywordResolver(name: string): number {
+      if (equ.has(name))
+        return equ.get(name).val ?? 0;
+
+      return undefined;
+    }
+
+    /**
+     * Resolves token value
+     *
+     * @param {Token[]} tokens
+     * @returns {number}
+     */
+    function criticalMathTokensEvaluate(tokens: Token[]): number {
+      return rpnTokens(
+        tokens,
+        {
+          keywordResolver: criticalKeywordResolver,
+        },
+      );
+    }
+
     const isRedefinedKeyword = (keyword: string): boolean => (
       equ.has(keyword) || labels.has(keyword)
     );
@@ -196,23 +226,29 @@ export class X86Compiler {
         /** [org 0x1] */
         case ASTNodeKind.COMPILER_OPTION: {
           const compilerOption = <ASTCompilerOption> node;
-          const arg = <NumberToken> compilerOption.args[0];
 
           // origin set
           if (compilerOption.option === CompilerOptions.ORG) {
             if (originDefined)
               throw new ParserError(ParserErrorCode.ORIGIN_REDEFINED, node.loc.start);
 
-            this.setOrigin(arg.value.number);
+            this.setOrigin(
+              criticalMathTokensEvaluate(compilerOption.args),
+            );
 
             offset = 0;
             originDefined = true;
 
           // mode set
           } else if (compilerOption.option === CompilerOptions.BITS) {
-            this.setMode(arg.value.number / 8);
+            this.setMode(
+              criticalMathTokensEvaluate(compilerOption.args) / 8,
+            );
+
           // target set
           } else if (compilerOption.option === CompilerOptions.TARGET) {
+            const arg = <NumberToken> compilerOption.args[0];
+
             this.setTarget(
               X86TargetCPU[`I_${arg.upperText}`],
             );
