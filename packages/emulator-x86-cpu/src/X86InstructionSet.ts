@@ -4,6 +4,7 @@ import {X86_REGISTERS} from './constants/x86';
 
 import {X86Unit} from './X86Unit';
 import {X86CPU, X86RegRMCallback, X86MemRMCallback} from './X86CPU';
+import {X86ALUOperator} from './X86ALU';
 import {
   X86BitsMode,
   X86Flags,
@@ -417,6 +418,19 @@ export class X86InstructionSet extends X86Unit {
         cpu.dfIncrement(bits, 'di');
       },
       /** STOSW */ 0xAB: () => opcodes[0xAA](0x2),
+
+      /* SCAS 8bit */ 0xAE: (bits: X86BitsMode = 0x1) => {
+        alu.exec(
+          alu.operators[X86ALUOperator.SUB],
+          registers[<string> X86_REGISTERS[bits][0x0]],
+          memIO.read[bits](cpu.getMemAddress('es', 'di')),
+          bits,
+        );
+
+        cpu.dfIncrement(bits, 'di');
+      },
+
+      /* SCAS 16bit */ 0xAF: () => opcodes[0xAE](0x2),
 
       /** CLI   */ 0xFA: () => { registers.status.if = 0x0; },
       /** STI   */ 0xFB: () => { registers.status.if = 0x1; },

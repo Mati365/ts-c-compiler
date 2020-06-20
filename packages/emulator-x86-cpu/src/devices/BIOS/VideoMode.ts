@@ -16,6 +16,7 @@ export class VideoMode {
     public code: number,
     public w: number,
     public h: number,
+    public readonly vgaPreset: number[],
     public pages: number = 0x1,
     public offset: number = X86_REALMODE_MAPPED_ADDRESSES.text,
   ) {}

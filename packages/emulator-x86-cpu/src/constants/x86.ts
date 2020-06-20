@@ -85,6 +85,11 @@ export const X86_FLAGS_OFFSETS = {
   of: 0xB, /** Overflow flag */
 };
 
+export const X86_FLAGS_MASKS = R.mapObjIndexed(
+  (offset) => 1 << offset,
+  X86_FLAGS_OFFSETS,
+);
+
 /** CP437 to Unicode conversion table */
 export const CP437_UNICODE_FONT_MAPPING = [
   0x0000, 0x0001, 0x0002, 0x0003, 0x0004, 0x0005, 0x0006, 0x0007,

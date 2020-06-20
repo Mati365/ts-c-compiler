@@ -4,6 +4,7 @@ import {
   X86_REGISTERS,
   X86_FLAGS_OFFSETS,
   X86_BINARY_MASKS,
+  X86_FLAGS_MASKS,
 } from './constants/x86';
 
 import {X86CPU} from './X86CPU';
@@ -39,6 +40,23 @@ type ALUFlagChecker = (
   val: number,
   operator: ALUOperatorSchema,
 ) => number|boolean;
+
+/**
+ * Codes of ALU operators
+ *
+ * @export
+ * @enum {number}
+ */
+export enum X86ALUOperator {
+  SBB = 0b011,
+  ADC = 0b010,
+  ADD = 0b000,
+  SUB = 0b101,
+  AND = 0b100,
+  OR = 0b001,
+  XOR = 0b110,
+  COMPARE = 0b111,
+}
 
 /**
  * Arithmetic logic unit
@@ -128,7 +146,7 @@ export class X86ALU extends X86Unit {
     for (let i = 0; i < flagsCheckers.length; ++i) {
       const [offset, checker] = flagsCheckers[i];
 
-      if ((operator.set & offset) === offset) {
+      if (((operator.set >> offset) & 0x1) === 1) {
         const _val = checker(signed, bits, l, r, val, operator);
         registers.flags = setBit(offset, _val, registers.flags);
       }
@@ -154,6 +172,9 @@ export class X86ALU extends X86Unit {
   /**
    * Creates list of operators that can be used in ALU
    *
+   * @todo
+   *  Store it as array, not object. It should be faster!
+   *
    * @private
    * @param {X86CPU} cpu
    * @memberof X86ALU
@@ -164,49 +185,63 @@ export class X86ALU extends X86Unit {
       extra: {
         increment: {
           _c: (s) => s + 1,
+          set: (
+            X86_FLAGS_MASKS.of
+              | X86_FLAGS_MASKS.sf
+              | X86_FLAGS_MASKS.zf
+              | X86_FLAGS_MASKS.af
+              | X86_FLAGS_MASKS.pf
+          ),
         },
         decrement: {
           _c: (s) => s - 1,
           negativeRightOperand: true,
+          set: (
+            X86_FLAGS_MASKS.of
+              | X86_FLAGS_MASKS.sf
+              | X86_FLAGS_MASKS.zf
+              | X86_FLAGS_MASKS.af
+              | X86_FLAGS_MASKS.pf
+          ),
         },
       },
-      /** SBB */ 0b011: {
+      /** SBB */ [X86ALUOperator.SBB]: {
         offset: 0x18,
         _c: (s, d) => s - d - cpu.registers.status.cf,
       },
-      /** ADC */ 0b010: {
+      /** ADC */ [X86ALUOperator.ADC]: {
         offset: 0x10,
         _c: (s, d) => s + d + cpu.registers.status.cf,
       },
 
-      /** + */ 0b000: {
+      /** + */ [X86ALUOperator.ADD]: {
         offset: 0x00,
         _c: (s, d) => s + d,
       },
-      /** - */ 0b101: {
+      /** - */ [X86ALUOperator.SUB]: {
         offset: 0x28,
         negativeRightOperand: true,
         _c: (s, d) => s - d,
       },
-      /** & */ 0b100: {
+      /** & */ [X86ALUOperator.AND]: {
         offset: 0x20,
-        clear: X86_FLAGS_OFFSETS.cf | X86_FLAGS_OFFSETS.of,
-        set: X86_FLAGS_OFFSETS.sf | X86_FLAGS_OFFSETS.pf | X86_FLAGS_OFFSETS.zf,
+        clear: X86_FLAGS_MASKS.cf | X86_FLAGS_MASKS.of,
+        set: X86_FLAGS_MASKS.sf | X86_FLAGS_MASKS.pf | X86_FLAGS_MASKS.zf,
         _c: (s, d) => s & d,
       },
-      /** | */ 0b001: {
+      /** | */ [X86ALUOperator.OR]: {
         offset: 0x08,
-        clear: X86_FLAGS_OFFSETS.cf | X86_FLAGS_OFFSETS.of,
-        set: X86_FLAGS_OFFSETS.sf | X86_FLAGS_OFFSETS.pf | X86_FLAGS_OFFSETS.zf,
+        clear: X86_FLAGS_MASKS.cf | X86_FLAGS_MASKS.of,
+        set: X86_FLAGS_MASKS.sf | X86_FLAGS_MASKS.pf | X86_FLAGS_MASKS.zf,
         _c: (s, d) => s | d,
       },
-      /** ^ */ 0b110: {
+      /** ^ */ [X86ALUOperator.XOR]: {
         offset: 0x30,
-        clear: X86_FLAGS_OFFSETS.cf | X86_FLAGS_OFFSETS.of,
-        set: X86_FLAGS_OFFSETS.sf | X86_FLAGS_OFFSETS.pf | X86_FLAGS_OFFSETS.zf,
+        clear: X86_FLAGS_MASKS.cf | X86_FLAGS_MASKS.of,
+        set: X86_FLAGS_MASKS.sf | X86_FLAGS_MASKS.pf | X86_FLAGS_MASKS.zf,
         _c: (s, d) => s ^ d,
       },
-      /** = */ 0b111: {
+      /** = */ [X86ALUOperator.COMPARE]: {
         offset: 0x38,
         negativeRightOperand: true,
         _flagOnly: true,

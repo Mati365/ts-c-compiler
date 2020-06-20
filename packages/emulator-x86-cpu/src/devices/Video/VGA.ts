@@ -35,8 +35,7 @@ import {
 } from './VGAConstants';
 
 import {
-  // VGA_TEXT_MODES_PRESET,
-  VGA_GRAPHICS_MODES_PRESET,
+  VGA_TEXT_MODES_PRESET,
   VGA_8X16_FONT,
   assignPresetToVGA,
   VGA256Palette,
@@ -265,8 +264,7 @@ export class VGA extends uuidX86Device<X86CPU>('vga') implements ByteMemRegionAc
     };
 
     /* Load post boot mode preset */
-    // this.loadModePreset(VGA_TEXT_MODES_PRESET['80x25']);
-    this.loadModePreset(VGA_GRAPHICS_MODES_PRESET['320x200x256']);
+    this.loadModePreset(VGA_TEXT_MODES_PRESET['80x25']);
   }
 
   /**

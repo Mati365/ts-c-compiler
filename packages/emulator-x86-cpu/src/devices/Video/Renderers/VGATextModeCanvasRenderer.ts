@@ -22,6 +22,8 @@ export class VGATextModeCanvasRenderer extends VGAPixBufCanvasRenderer {
   }
 
   release(): void {
+    super.release();
+
     this.renderCharsCache = null;
   }
 

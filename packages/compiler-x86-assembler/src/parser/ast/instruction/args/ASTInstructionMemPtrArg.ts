@@ -1,7 +1,7 @@
 import * as R from 'ramda';
 
 import {RegisterToken} from '@compiler/x86-assembler/parser/lexer/tokens';
-import {TokenType, TokenKind} from '@compiler/lexer/tokens';
+import {TokenType, TokenKind, Token} from '@compiler/lexer/tokens';
 
 import {
   numberByteSize,
@@ -30,6 +30,26 @@ import {
 } from '../../../../types';
 
 import {ASTInstructionArg} from './ASTInstructionArg';
+
+/**
+ * Returns true if rest of tokens from RM should be calculated
+ *
+ * @param {Token[]} tokens
+ * @returns {boolean}
+ */
+function shouldCalcRestMathTokens(tokens: Token[]): boolean {
+  return (
+    tokens.length
+      && R.any(
+        (token) => (
+          token.type === TokenType.NUMBER
+            || token.type === TokenType.KEYWORD
+            || token.type === TokenType.BRACKET
+        ),
+        tokens,
+      )
+  );
+}
 
 /**
  * Transforms [ax:bx+si*4] into descriptor object
@@ -122,8 +142,7 @@ function parseMemExpression(
   }
 
   // calc displacement if there is any remain number or label
-  if (tokens.length
-      && R.any((token) => token.type === TokenType.NUMBER || token.type === TokenType.KEYWORD, tokens)) {
+  if (shouldCalcRestMathTokens(tokens)) {
     const dispResult = safeKeywordResultRPN(
       {
         keywordResolver: labelResolver,

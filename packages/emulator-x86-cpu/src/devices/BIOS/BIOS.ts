@@ -1,5 +1,6 @@
 import {getBit} from '@compiler/core/utils/bits';
 import {Vec2D} from '@compiler/core/types';
+import {UnionStruct, bits} from '@compiler/core/shared/UnionStruct';
 
 import {VGA_CURSOR_SHAPES} from '../Video/VGAConstants';
 import {
@@ -16,6 +17,10 @@ import {X86CPU} from '../../X86CPU';
 
 import {VideoMode} from './VideoMode';
 import {VGA} from '../Video/VGA';
+import {
+  VGA_TEXT_MODES_PRESET,
+  VGA_GRAPHICS_MODES_PRESET,
+} from '../Video/VGAModesPresets';
 
 type KeymapTable = {
   [keycode: number]: number[],
@@ -46,6 +51,17 @@ type BIOSFloppyDrive = {
   },
 };
 
+class BIOSKeyboardFlags extends UnionStruct {
+  @bits(0) rightShiftDepressed: number;
+  @bits(1) leftShiftDepressed: number;
+  @bits(2) ctrlDepressed: number;
+  @bits(3) altDepressed: number;
+  @bits(4) scrollLockActive: number;
+  @bits(5) numLockActive: number;
+  @bits(6) capsLockActive: number;
+  @bits(7) insertActive: number;
+}
+
 /**
  * Basic Input Output System
  *
@@ -63,9 +79,13 @@ export class BIOS extends uuidX86Device<X86CPU, BIOSInitConfig>('bios') {
   static fontMapping = CP437_UNICODE_FONT_MAPPING;
 
   static VideoMode = {
-    0x0: new VideoMode(0x0, 40, 25, 0x8),
-    0x2: new VideoMode(0x2, 80, 25, 0x8),
-    0x3: new VideoMode(0x3, 80, 25, 0x8),
+    0x0: new VideoMode(0x0, 40, 25, VGA_TEXT_MODES_PRESET['40x25'], 0x8),
+    0x2: new VideoMode(0x2, 80, 25, VGA_TEXT_MODES_PRESET['80x25'], 0x8),
+    0x3: new VideoMode(0x3, 80, 25, VGA_TEXT_MODES_PRESET['80x25'], 0x8),
+    0x4: new VideoMode(0x4, 320, 200, VGA_GRAPHICS_MODES_PRESET['320x200x4'], 0x1),
+    0x11: new VideoMode(0x11, 640, 480, VGA_GRAPHICS_MODES_PRESET['640x200x2'], 0x1),
+    0x12: new VideoMode(0x12, 640, 480, VGA_GRAPHICS_MODES_PRESET['640x200x16'], 0x1),
+    0x13: new VideoMode(0x13, 320, 200, VGA_GRAPHICS_MODES_PRESET['320x200x256'], 0x1),
   };
 
   private blink: CursorBlinkState = {
@@ -179,6 +199,9 @@ export class BIOS extends uuidX86Device<X86CPU, BIOSInitConfig>('bios') {
    */
   initKeyboard() {
     const keymap = {
+      caps: false,
+      ctrl: false,
+      alt: false,
       shift: false,
       key: null,
       callback: null,
@@ -188,6 +211,9 @@ export class BIOS extends uuidX86Device<X86CPU, BIOSInitConfig>('bios') {
       Object.assign(
         keymap,
         {
+          caps: false,
+          alt: false,
+          ctrl: false,
           shift: false,
           key: null,
           callback: clearCallback ? null : keymap.callback,
@@ -199,6 +225,9 @@ export class BIOS extends uuidX86Device<X86CPU, BIOSInitConfig>('bios') {
       Object.assign(
         keymap,
         {
+          caps: e.getModifierState('CapsLock'),
+          alt: e.altKey,
+          ctrl: e.ctrlKey,
           shift: e.shiftKey,
           key: e.keyCode,
         },
@@ -258,6 +287,20 @@ export class BIOS extends uuidX86Device<X86CPU, BIOSInitConfig>('bios') {
         keyListener(
           (code: number) => readKeyState(null, code),
         );
+      },
+
+      /* Get keyboard flags */
+      0x2: () => {
+        const {regs} = this;
+        const flags = new BIOSKeyboardFlags;
+
+        flags.capsLockActive = +keymap.caps;
+        flags.ctrlDepressed = +keymap.ctrl;
+        flags.altDepressed = +keymap.alt;
+        flags.leftShiftDepressed = +keymap.shift;
+        flags.rightShiftDepressed = +keymap.shift;
+
+        regs.al = flags.number;
       },
 
       /* Get Keyboard Status */
@@ -526,7 +569,7 @@ export class BIOS extends uuidX86Device<X86CPU, BIOSInitConfig>('bios') {
       0x11: () => {
         /** Extend to 80x50 */
         if (this.regs.al === 0x12)
-          this.setVideoMode(new VideoMode(80, 50, 0x1));
+          this.setVideoMode(new VideoMode(0x12, 80, 50, VGA_TEXT_MODES_PRESET['80x50'], 0x1));
       },
 
       /** Write string */
@@ -595,8 +638,9 @@ export class BIOS extends uuidX86Device<X86CPU, BIOSInitConfig>('bios') {
    * @param {Number|Object} code  Mode
    */
   setVideoMode(code: number|VideoMode): void {
-    const {screen} = this;
+    const {screen, vga} = this;
 
     screen.mode = Number.isNaN(<number> code) ? code : BIOS.VideoMode[<number> code];
+    vga.loadModePreset(screen.mode.vgaPreset);
   }
 }
