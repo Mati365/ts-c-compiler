@@ -242,6 +242,55 @@ export class X86CPU extends X86AbstractCPU {
   }
 
   /**
+   * Repeat without additional checks
+   *
+   * @todo
+   *  Add service interrupts!
+   *
+   * @private
+   * @param {VoidFunction} operand
+   * @memberof X86CPU
+   */
+  private rep(operand: VoidFunction): void {
+    const {registers} = this;
+    const {ip: cachedIP} = registers;
+    let counter = registers.cx;
+
+    while (counter !== 0) {
+      registers.ip = cachedIP;
+      operand();
+      --counter;
+    }
+
+    registers.cx = 0x0;
+  }
+
+  /**
+   *Repeat with ZF check
+   *
+   * @private
+   * @param {VoidFunction} operand
+   * @param {number} zfVal
+   * @memberof X86CPU
+   */
+  private repZF(operand: VoidFunction, zfVal: number): void {
+    const {registers} = this;
+    const {ip: cachedIP} = registers;
+    let counter = registers.cx;
+
+    while (counter !== 0) {
+      registers.ip = cachedIP;
+      operand();
+      --counter;
+
+      if (registers.status.zf === zfVal)
+        break;
+    }
+
+    registers.cx = counter;
+  }
+
+  /**
    * Exec CPU
    *
    * @param {Number} maxTime  Maximum execution time in microseconds
@@ -302,27 +351,27 @@ export class X86CPU extends X86AbstractCPU {
       /**
        * REP - Do something with operand, reset opcode prefix
        *
-       * @todo
-       *  Set ALU flags every tick? It should stop if ZF = 0
-       *  Add REPNE support?
+       * @see {@link https://c9x.me/x86/html/file_module_x86_id_279.html}
        */
-      if (prefixes.instruction === 0xF3) {
-        const {ip: cachedIP} = registers;
-        do {
-          /** Revert IP, */
-          registers.ip = cachedIP;
+      const repz = prefixes.instruction === 0xF3;
+      const repnz = prefixes.instruction === 0xF2;
 
-          /** Decrement CX */
-          operand();
-          registers.cx = X86AbstractCPU.toUnsignedNumber(registers.cx - 0x1, 0x2);
-
-          /** Stop loop if zf, check compare flags for SCAS, CMPS  */
-          if (opcode === 0xAF || opcode === 0xAE || opcode === 0xA6 || opcode === 0xA7)
+      if (repz || repnz) {
+        switch (opcode) {
+          /** INS, MOVS, OUTS, LODS, STOS */
+          case 0x6C: case 0x6D: case 0xA4: case 0xA5: case 0x6E:
+          case 0x6F: case 0xAC: case 0xAD: case 0xAA: case 0xAB:
+            this.rep(operand);
             break;
-        } while (registers.cx);
 
-        // ALU is setting zf=1 due to subscription
-        registers.status.zf = 1;
+          /** CMPS, SCAS */
+          case 0xA6: case 0xA7: case 0xAE: case 0xAF:
+            this.repZF(operand, repnz ? 1 : 0);
+            break;
+
+          default:
+            throw new Error('Unknown REP instruction!');
+        }
       } else
         operand();
 

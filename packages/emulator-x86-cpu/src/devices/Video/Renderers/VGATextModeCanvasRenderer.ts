@@ -84,8 +84,6 @@ export class VGATextModeCanvasRenderer extends VGAPixBufCanvasRenderer {
         if (renderCharsCache[charMemOffset] === cacheKey)
           continue;
 
-        renderCharsCache[charMemOffset] = cacheKey;
-
         if (currentCursor) {
           // draw cursor
           for (let row = 0; row < cursorEnd; ++row) {
@@ -102,6 +100,8 @@ export class VGATextModeCanvasRenderer extends VGAPixBufCanvasRenderer {
               buffer[destRowOffset + destColOffset + 2] = color.b;
             }
           }
+
+          renderCharsCache[charMemOffset] = null;
         } else {
           // draw character
           for (let row = 0; row < charSize.h; ++row) {
@@ -120,6 +120,8 @@ export class VGATextModeCanvasRenderer extends VGAPixBufCanvasRenderer {
               buffer[destRowOffset + destColOffset + 2] = color.b;
             }
           }
+
+          renderCharsCache[charMemOffset] = cacheKey;
         }
       }
     }

@@ -536,7 +536,7 @@ export class X86InstructionSet extends X86Unit {
         registers.ah = (registers.al & 0x80) === 0x80 ? 0xFF : 0x0;
       },
       /** CWD */ 0x99: () => {
-        registers.ax = (registers.ax & 0x8000) === 0x8000 ? 0xFFFF : 0x0;
+        registers.dx = (registers.ax & 0x8000) === 0x8000 ? 0xFFFF : 0x0;
       },
 
       /** SALC */ 0xD6: () => {

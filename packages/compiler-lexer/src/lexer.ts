@@ -2,7 +2,6 @@ import * as R from 'ramda';
 
 import {
   isComment,
-  isQuote,
   isNewline,
   matchQuote,
   matchBracket,
@@ -238,7 +237,7 @@ export function* lexer(config: LexerConfig, code: string): IterableIterator<Toke
         throw new LexerError(LexerErrorCode.UNKNOWN_TOKEN, null, {token: tokenBuffer});
 
       offset++;
-      yield* appendTokenWithSpaces(TokenType.QUOTE, quote, isQuote);
+      yield* appendTokenWithSpaces(TokenType.QUOTE, quote, R.equals(character));
       return;
     }
 

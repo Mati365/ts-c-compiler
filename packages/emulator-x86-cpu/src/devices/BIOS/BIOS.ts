@@ -240,21 +240,29 @@ export class BIOS extends uuidX86Device<X86CPU, BIOSInitConfig>('bios') {
     document.addEventListener('keyup', () => clearKeyBuffer(false));
 
     /**
+     * Returns false if user pressed shift
+     */
+    const isCaseModifyKeycode = (code: number): boolean => code > 18 || code < 16;
+
+    /**
      * Pause execution until press a button
      * but if user already is pressing button - do not pause
      */
     const keyListener = (callback: (key: any) => void) => {
+      const {cpu} = this;
+
       if (keymap.key === null) {
-        this.cpu.pause = true;
+        cpu.pause = true;
         keymap.callback = (e: KeyboardEvent): void => {
           e.preventDefault();
 
-          callback(keymap.key);
-          clearKeyBuffer();
-
-          this.cpu.pause = false;
+          if (isCaseModifyKeycode(keymap.key)) {
+            callback(keymap.key);
+            clearKeyBuffer();
+            cpu.pause = false;
+          }
         };
-      } else {
+      } else if (isCaseModifyKeycode(keymap.key)) {
         callback(keymap.key);
         clearKeyBuffer();
       }
@@ -267,7 +275,9 @@ export class BIOS extends uuidX86Device<X86CPU, BIOSInitConfig>('bios') {
      *  Add better support for extened keyboards (see broken arrows)
      */
     const readKeyState = (keymapTable?: KeymapTable, code: number = keymap.key) => {
-      this.regs.ax = 0x0;
+      const {regs} = this;
+
+      regs.ax = 0x0;
 
       if (!code)
         return false;
@@ -276,7 +286,7 @@ export class BIOS extends uuidX86Device<X86CPU, BIOSInitConfig>('bios') {
       if (!mapping)
         return false;
 
-      this.regs.ax = mapping[Math.min(mapping.length - 1, keymap.shift ? 1 : 0)];
+      regs.ax = mapping[Math.min(mapping.length - 1, keymap.shift ? 1 : 0)];
       return true;
     };
 
@@ -554,7 +564,7 @@ export class BIOS extends uuidX86Device<X86CPU, BIOSInitConfig>('bios') {
         writeCharacters(null, false);
       },
 
-      0xE: () => writeCharacter(this.regs.al, null, false),
+      0xE: () => writeCharacter(this.regs.al, null, false, true),
 
       /** Blinking */
       0x10: () => {
