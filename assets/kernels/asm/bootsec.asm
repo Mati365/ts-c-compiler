@@ -1,6 +1,8 @@
-stack:  equ 0x7700
-line:   equ 0x778
-sector: equ 0x7800
-osbase: equ sector + line + stack * 2
-org osbase
-mov ax, osbase & 0xFFFF
+dupa:
+jmp abc
+xor ax, ax
+mov ax, 2
+mul ax
+abc:
+jmp dupa
+mov ax, abc2

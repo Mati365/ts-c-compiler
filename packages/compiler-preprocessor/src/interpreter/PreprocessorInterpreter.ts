@@ -35,6 +35,13 @@ export interface PreprocessorInterpretable {
 /**
  * Preprocessor function context, contains variables, macros etc
  *
+ * @see
+ *  nonDefineVariables are defined by EQU and other critical instructions
+ *  it is fallback, if defined is later other variable using define overlap it!
+ *  it helps with:
+ *  abc2: equ 2
+ *  %if abc2 > 0
+ *
  * @export
  * @class PreprocessorScope
  */
@@ -55,6 +62,7 @@ export class PreprocessorScope {
 export type PreprocessorInterpreterConfig = {
   grammarConfig: PreprocessorGrammarConfig,
   preExec?: string,
+  rootScope?: PreprocessorScope,
 };
 
 /**
@@ -64,13 +72,15 @@ export type PreprocessorInterpreterConfig = {
  * @class PreprocessorInterpreter
  */
 export class PreprocessorInterpreter {
-  private _scopes: PreprocessorScope[] = [
-    new PreprocessorScope,
-  ];
+  private _scopes: PreprocessorScope[];
 
   constructor(
     private config: PreprocessorInterpreterConfig,
-  ) {}
+  ) {
+    this._scopes = [
+      config.rootScope ?? new PreprocessorScope,
+    ];
+  }
 
   get rootScope(): PreprocessorScope {
     return this._scopes[0];
@@ -296,6 +306,23 @@ export class PreprocessorInterpreter {
       if (type !== TokenType.KEYWORD || (kind !== TokenKind.BRACKET_PREFIX && kind !== null))
         continue;
 
+      // variables, %0
+      const variable = this.getVariable(text);
+      if (variable !== null) {
+        newTokens = R.update(
+          i,
+          new Token(
+            TokenType.KEYWORD,
+            null,
+            (<any> variable).toString(),
+            loc,
+          ),
+          newTokens,
+        );
+
+        continue;
+      }
+
       // catch %0, %1, %[] etc macro inner variables
       if (text[0] === prefixChar) {
         // handle %% which is replaced by scope id
@@ -347,28 +374,12 @@ export class PreprocessorInterpreter {
 
           i = newOffset;
         } else {
-          // variables, %0
-          const result = this.getVariable(text);
-
-          if (result === null) {
-            throw new PreprocessorError(
-              PreprocessorErrorCode.UNKNOWN_MACRO_VARIABLE,
-              loc,
-              {
-                name: text,
-              },
-            );
-          }
-
-          newTokens = R.update(
-            i,
-            new Token(
-              TokenType.KEYWORD,
-              null,
-              <string> result,
-              loc,
-            ),
-            newTokens,
+          throw new PreprocessorError(
+            PreprocessorErrorCode.UNKNOWN_MACRO_VARIABLE,
+            loc,
+            {
+              name: text,
+            },
           );
         }
 
@@ -439,7 +450,7 @@ export class PreprocessorInterpreter {
     const value = rpn(
       expression,
       {
-        keywordResolver: (name) => +this.rootScope.variables.get(name),
+        keywordResolver: (name) => +this.getVariable(name),
       },
     );
 

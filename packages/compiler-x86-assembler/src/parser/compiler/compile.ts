@@ -22,10 +22,13 @@ export type CompilerFinalResult = Result<CompilerOutput, CompilerError[]>;
 export function compile(tree: ASTAsmTree): CompilerFinalResult {
   const compiler = new X86Compiler(tree);
 
-  return compiler.compile().andThen(
-    (output) => ok({
-      compiler,
-      output,
-    }),
+  return (
+    compiler
+      .compile()
+      .andThen(
+        (output) => ok({
+          compiler,
+          output,
+        }))
   );
 }

@@ -21,7 +21,7 @@ import {
 } from './PreprocessorInterpreter';
 
 /**
- * Iterates over ree and calcs expression
+ * Iterates over tree and calcs expression
  *
  * @export
  * @class ExpressionResultTreeVisitor
