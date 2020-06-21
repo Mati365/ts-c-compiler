@@ -59,7 +59,6 @@ module.exports = {
       '@compiler/lexer': pkgResolve('compiler-lexer/src/'),
       '@compiler/grammar': pkgResolve('compiler-grammar/src/'),
       '@compiler/rpn': pkgResolve('compiler-rpn/src/'),
-      '@compiler/preprocessor': pkgResolve('compiler-preprocessor/src/'),
       '@compiler/x86-assembler': pkgResolve('compiler-x86-assembler/src/'),
       '@compiler/x86-nano-c': pkgResolve('compiler-x86-nano-c/src'),
       '@emulator/ui': pkgResolve('emulator-ui/src/'),

@@ -3,8 +3,7 @@
 import React from 'react';
 import ReactDOM from 'react-dom';
 
-import {asm} from '@compiler/x86-assembler/asm';
-import '@compiler/preprocessor';
+import {asm} from '@compiler/x86-assembler';
 
 import {ConsoleBinaryView} from '@compiler/x86-assembler/parser/compiler/view/ConsoleBinaryView';
 

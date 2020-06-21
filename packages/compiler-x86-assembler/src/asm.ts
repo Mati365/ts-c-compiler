@@ -1,9 +1,9 @@
 import {Result, ok} from '@compiler/core/monads/Result';
 import {CompilerError} from '@compiler/core/shared/CompilerError';
-import {PreprocessorInterpreterConfig} from '@compiler/preprocessor/interpreter/PreprocessorInterpreter';
 
 import {formatDate, formatTime} from '@compiler/core/utils/format';
-import {safeResultPreprocessor, PreprocessorResult} from '@compiler/preprocessor';
+import {safeResultPreprocessor, PreprocessorResult} from './preprocessor';
+import {PreprocessorInterpreterConfig} from './preprocessor/interpreter/PreprocessorInterpreter';
 import {
   compile,
   ast,
