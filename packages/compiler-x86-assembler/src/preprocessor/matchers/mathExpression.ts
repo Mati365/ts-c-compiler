@@ -18,10 +18,50 @@ import {
 } from '../constants';
 
 /**
- * @see
- * term -> keyword | number | ( expr )
+ * Prevents right recursion on same level operaotrs such as 2-2-2-2.
+ * Those operators creates tree that is bigger on right
+ *
+ * @see {@link https://en.wikipedia.org/wiki/Left_recursion}
+ *
+ * @export
+ * @param {PreprocessorGrammar} g
+ * @param {ASTPreprocessorBinaryOpNode} root
+ * @param {TokenType[]} sameLevelTokensTypes
+ * @param {(g: PreprocessorGrammar) => ASTPreprocessorNode} highProduction
+ * @param {(g: PreprocessorGrammar) => ASTPreprocessorNode} primProduction
+ * @returns
  */
-function term(g: PreprocessorGrammar): ASTPreprocessorNode {
+export function eatLeftRecursiveOperators(
+  g: PreprocessorGrammar,
+  root: ASTPreprocessorBinaryOpNode,
+  sameLevelTokensTypes: TokenType[],
+  highProduction: (g: PreprocessorGrammar) => ASTPreprocessorNode,
+  primProduction: (g: PreprocessorGrammar) => ASTPreprocessorNode,
+) {
+  // kill right recursion and make it left
+  for (;;) {
+    const nextTokenType = g.fetchRelativeToken(0x0, false)?.type;
+    if (sameLevelTokensTypes.indexOf(nextTokenType) === -1)
+      break;
+
+    const token = g.consume();
+    root.left = new ASTPreprocessorBinaryOpNode(root.op, root.left, root.right).getSingleSideIfOnlyOne();
+    root.op = token.type;
+    root.right = highProduction(g);
+  }
+
+  if (root.right)
+    root.left = root.clone();
+
+  root.right = primProduction(g);
+  return root.getSingleSideIfOnlyOne();
+}
+
+/**
+ * @see
+ * num -> keyword | number | ( expr )
+ */
+function num(g: PreprocessorGrammar): ASTPreprocessorNode {
   const {currentToken: token} = g;
 
   if (token.type === TokenType.KEYWORD)
@@ -50,6 +90,41 @@ function term(g: PreprocessorGrammar): ASTPreprocessorNode {
   }
 
   throw new SyntaxError;
+}
+
+/**
+ * Handles sign first
+ *
+ * @see
+ *  term -> num | +num | -num
+ *
+ * @param {PreprocessorGrammar} g
+ * @returns {ASTPreprocessorNode}
+ */
+function term(g: PreprocessorGrammar): ASTPreprocessorNode {
+  const {currentToken: token} = g;
+
+  switch (token.type) {
+    case TokenType.PLUS:
+    case TokenType.MINUS:
+      g.consume();
+
+      return new ASTPreprocessorBinaryOpNode(
+        token.type,
+        new ASTPreprocessorValueNode<NumberToken[]>(
+          ASTPreprocessorKind.Value,
+          NodeLocation.fromTokenLoc(token.loc),
+          [
+            new NumberToken('0', 0, null, token.loc),
+          ],
+        ),
+        term(g),
+      );
+
+    default:
+  }
+
+  return num(g);
 }
 
 /**
@@ -97,11 +172,18 @@ function mul(g: PreprocessorGrammar): ASTPreprocessorNode {
   return <ASTPreprocessorNode> g.or(
     {
       value() {
-        return createBinOpIfBothSidesPresent(
-          ASTPreprocessorBinaryOpNode,
+        const root = new ASTPreprocessorBinaryOpNode(
           null,
           term(g),
-          mulPrim(g),
+          null,
+        );
+
+        return eatLeftRecursiveOperators(
+          g,
+          root,
+          [TokenType.MUL, TokenType.DIV],
+          term,
+          mulPrim,
         );
       },
       empty,
@@ -156,11 +238,18 @@ function add(g: PreprocessorGrammar): ASTPreprocessorNode {
   return <ASTPreprocessorNode> g.or(
     {
       value() {
-        return createBinOpIfBothSidesPresent(
-          ASTPreprocessorBinaryOpNode,
+        const root = new ASTPreprocessorBinaryOpNode(
           null,
           mul(g),
-          addPrim(g),
+          null,
+        );
+
+        return eatLeftRecursiveOperators(
+          g,
+          root,
+          [TokenType.PLUS, TokenType.MINUS],
+          mul,
+          addPrim,
         );
       },
       empty() {

@@ -18,6 +18,18 @@ export class TreeNode<K = string, C extends TreeNode<K, C> = any> {
   ) {}
 
   /**
+   * Create shallow copy of object
+   *
+   * @returns {TreeNode<K, C>}
+   * @memberof TreeNode
+   */
+  clone(): TreeNode<K, C> {
+    const {kind, loc, children} = this;
+
+    return new TreeNode(kind, loc, children);
+  }
+
+  /**
    * Iterates throught tree
    *
    * @param {TreeVisitor<TreeNode<K>>} visitor
@@ -90,14 +102,27 @@ export class ValueNode<T, K = string> extends TreeNode<K> {
  * @class BinaryNode
  * @extends {TreeNode<K>}
  * @template K
+ * @template T
  */
-export class BinaryNode<K = string> extends TreeNode<K> {
+export class BinaryNode<K = string, T extends TreeNode<K> = TreeNode<K>> extends TreeNode<K> {
   constructor(
     kind: K,
-    public left: TreeNode<K>,
-    public right: TreeNode<K>,
+    public left: T,
+    public right: T,
   ) {
     super(kind, left?.loc);
+  }
+
+  /**
+   * Clone of tree
+   *
+   * @returns {BinaryNode<K>}
+   * @memberof BinaryNode
+   */
+  clone(): BinaryNode<K> {
+    const {kind, left, right} = this;
+
+    return new BinaryNode<K>(kind, left, right);
   }
 
   /**
@@ -118,10 +143,24 @@ export class BinaryNode<K = string> extends TreeNode<K> {
    * @returns {TreeNode<K>}
    * @memberof BinaryNode
    */
-  getFirstNonNullSide(): TreeNode<K> {
+  getFirstNonNullSide(): T {
     const {left, right} = this;
 
     return left ?? right;
+  }
+
+  /**
+   * Returns first non null side of tree if has only one side
+   *
+   * @returns {(T|this)}
+   * @memberof BinaryNode
+   */
+  getSingleSideIfOnlyOne(): T|this {
+    return (
+      this.hasSingleSide()
+        ? this.getFirstNonNullSide()
+        : this
+    );
   }
 
   /**

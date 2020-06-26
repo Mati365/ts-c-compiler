@@ -25,13 +25,13 @@ export class ASTPreprocessorCondition extends ASTPreprocessorNode {
     super(kind, loc);
   }
 
-  toEmitterLine(): string {
+  toEmitterLine(interpreter: PreprocessorInterpreter): string {
     const {_result, consequent, alternate} = this;
 
     if (_result)
-      return consequent.toEmitterLine();
+      return consequent.toEmitterLine(interpreter);
 
-    return alternate?.toEmitterLine() ?? '';
+    return alternate?.toEmitterLine(interpreter) ?? '';
   }
 }
 

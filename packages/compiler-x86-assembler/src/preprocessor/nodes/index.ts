@@ -8,3 +8,4 @@ export * from './ASTPreprocessorIFDef';
 export * from './ASTPreprocessorBinaryOpNode';
 export * from './ASTPreprocessorStmt';
 export * from './ASTPreprocessorValueNode';
+export * from './ASTPreprocessorCriticalEQU';

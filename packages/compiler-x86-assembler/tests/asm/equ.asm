@@ -42,3 +42,13 @@ sector: equ 0x7800
 osbase: equ sector + line + stack * 2
 org osbase
 mov ax, osbase & 0xFFFF
+
+;= test: critical equ expressions in preprocessor
+;= bin: b8de0090b403
+abc: equ 123+abc2
+abc2: equ 99
+
+mov ax, abc
+abc3: equ $
+nop
+mov ah, abc3

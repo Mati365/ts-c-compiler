@@ -53,3 +53,24 @@ mov ax, DUPS
 %endmacro
 
 writefile 0xFE, 0x12
+
+;= test: critical equ
+;= bin: b80200b80c00bb1100b81f00bb0e00
+%define abc 2
+%define kupsztal iksde
+%define putas equ
+%define putas2 labelik
+mov ax, abc
+%ifdef abc3
+ mov bx, 0x2
+%endif
+kupsztal: equ 12
+kupsztal2: putas 17
+mov ax, iksde
+mov bx, kupsztal2
+
+var1: equ 5+5+var2*5/1-1+12
+var2: equ 2
+mov ax, var1
+abcdefe: equ 11*3+3-4-5-6-7
+mov bx, abcdefe

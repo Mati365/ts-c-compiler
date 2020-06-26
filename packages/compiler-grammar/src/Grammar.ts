@@ -43,6 +43,7 @@ type GrammarMatcherInfo<I> = {
   optional?: boolean,
   type?: TokenType,
   consume?: boolean,
+  ignoreMatchNesting?: boolean,
 };
 
 /**
@@ -174,6 +175,30 @@ export class Grammar<I, K = string> extends TokensIterator {
   }
 
   /**
+   * Saves token index and tries to exec grammar
+   *
+   * @param {GrammarProduction<K>} production
+   * @returns {(TreeNode<K> | TreeNode<K>[])}
+   * @memberof Grammar
+   */
+  try(production: GrammarProduction<K>): TreeNode<K> | TreeNode<K>[] {
+    const savedIndex = this.tokenIndex;
+
+    try {
+      return production();
+    } catch (e) {
+      // already consumed some of instruction
+      // but occurs parsing error
+      if (!('code' in e))
+        throw e;
+      else
+        this.tokenIndex = savedIndex;
+    }
+
+    return null;
+  }
+
+  /**
    * Checks all production and chooses single maching
    *
    * @private
@@ -204,6 +229,17 @@ export class Grammar<I, K = string> extends TokensIterator {
   }
 
   /**
+   * Raises error for preprocessor that kills grammar matcher
+   * and moves to next without crashing app
+   *
+   * @memberof Grammar
+   */
+  raiseNonCriticalMatchError(): void {
+    this._matchCallNesting = null;
+    throw new SyntaxError;
+  }
+
+  /**
    * Match single token or group of tokens
    *
    * @param {GrammarMatcherInfo<TokenIdentifier>} {
@@ -219,9 +255,11 @@ export class Grammar<I, K = string> extends TokensIterator {
       consume = true,
       type = TokenType.KEYWORD,
       optional,
+      ignoreMatchNesting,
     }: GrammarMatcherInfo<I> = {},
   ): Token {
-    this._matchCallNesting++;
+    if (!ignoreMatchNesting)
+      this._matchCallNesting++;
 
     // check if exists occurs when check types
     // throws error anyway because null token mismatch type

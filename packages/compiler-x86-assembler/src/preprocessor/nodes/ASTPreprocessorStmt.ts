@@ -20,13 +20,13 @@ export class ASTPreprocessorStmt extends ASTPreprocessorNode {
     super(ASTPreprocessorKind.Stmt, loc, children);
   }
 
-  toEmitterLine(): string {
+  toEmitterLine(interpreter: PreprocessorInterpreter): string {
     const {children} = this;
 
     if (children) {
       return R.reduce(
         (acc, node) => {
-          const str = node.toEmitterLine();
+          const str = node.toEmitterLine(interpreter);
           if (str)
             acc += `${str}\n`;
 

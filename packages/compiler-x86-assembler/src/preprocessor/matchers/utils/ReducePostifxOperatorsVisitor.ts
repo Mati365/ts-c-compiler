@@ -48,6 +48,7 @@ export class ReducePostfixOperatorsVisitor extends TreeVisitor<ASTPreprocessorNo
     if (!R.isNil(binNode.op) || rightBinNode?.kind !== binOpNodeKind)
       return;
 
+    // move operand to parent
     binNode.op = rightBinNode.op;
     rightBinNode.op = null;
 

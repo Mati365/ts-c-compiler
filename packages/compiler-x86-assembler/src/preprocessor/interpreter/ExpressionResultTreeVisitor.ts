@@ -44,7 +44,15 @@ export class ExpressionResultTreeVisitor extends TreeVisitor<ASTPreprocessorNode
     switch (node.kind) {
       case ASTPreprocessorKind.BinaryOperator: {
         const {op} = <ASTPreprocessorBinaryOpNode> node;
+        if (R.isNil(op))
+          return;
+
         const [left, right] = [_expressionArgs.pop(), _expressionArgs.pop()];
+
+        if (R.isNil(right)) {
+          _expressionArgs.push(left);
+          return;
+        }
 
         if (typeof left !== typeof right) {
           throw new PreprocessorError(

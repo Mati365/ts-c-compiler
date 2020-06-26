@@ -128,7 +128,7 @@ export const ERROR_TRANSLATIONS: Record<ParserErrorCode, string> = {
   [ParserErrorCode.MISSING_PARENT_LABEL]: 'Unable to resolve local label "%{label}", missing parent label!',
   [ParserErrorCode.UNKNOWN_LABEL]: 'Unknown label "%{label}"!',
   [ParserErrorCode.LABEL_ALREADY_DEFINED]: 'Label "%{label}" is already defined!',
-  [ParserErrorCode.EQU_ALREADY_DEFINED]: 'EQU "%{name}" is already defined!',
+  [ParserErrorCode.EQU_ALREADY_DEFINED]: 'Non-critical EQU "%{name}" is already defined!',
   [ParserErrorCode.USED_RESERVED_NAME]: 'Defined "%{name}" label name is reserved!',
 
   // compiler

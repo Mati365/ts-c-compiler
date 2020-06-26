@@ -15,7 +15,7 @@ import {
 
 import {TreeVisitor} from '@compiler/grammar/tree/TreeVisitor';
 import {ASTPreprocessorNode, isStatementPreprocessorNode} from '../constants';
-import {ASTPreprocessorCallable, ASTPreprocessorStmt} from '../nodes';
+import {ASTPreprocessorCallable, ASTPreprocessorStmt, ASTPreprocessorSyntaxLine} from '../nodes';
 import {ExpressionResultTreeVisitor} from './ExpressionResultTreeVisitor';
 import {PreprocessorGrammarConfig, createPreprocessorGrammar} from '../grammar';
 import {
@@ -29,7 +29,7 @@ export type InterpreterResult = string | number | boolean | void;
 
 export interface PreprocessorInterpretable {
   exec(interpreter: PreprocessorInterpreter): InterpreterResult;
-  toEmitterLine(): string;
+  toEmitterLine(interpreter?: PreprocessorInterpreter): string;
 }
 
 /**
@@ -74,6 +74,9 @@ export type PreprocessorInterpreterConfig = {
 export class PreprocessorInterpreter {
   private _scopes: PreprocessorScope[];
 
+  private _secondPassExec: boolean = false;
+  private _secondExecPassNodes: ASTPreprocessorNode[] = [];
+
   constructor(
     private config: PreprocessorInterpreterConfig,
   ) {
@@ -82,12 +85,26 @@ export class PreprocessorInterpreter {
     ];
   }
 
+  get secondPassExec(): boolean {
+    return this._secondPassExec;
+  }
+
   get rootScope(): PreprocessorScope {
     return this._scopes[0];
   }
 
   get currentScope(): PreprocessorScope {
     return R.last(this._scopes);
+  }
+
+  /**
+   * Pushes node that require precedding nodes
+   *
+   * @param {ASTPreprocessorNode} node
+   * @memberof PreprocessorInterpreter
+   */
+  appendToSecondPassExec(node: ASTPreprocessorNode): void {
+    this._secondExecPassNodes.push(node);
   }
 
   /**
@@ -145,15 +162,34 @@ export class PreprocessorInterpreter {
   execTree(ast: ASTPreprocessorNode): string {
     let acc = '';
 
+    // first phase
+    this._secondPassExec = false;
+    this._secondExecPassNodes = [];
     ast.exec(this);
 
+    // second phase
+    if (this._secondExecPassNodes.length) {
+      this._secondPassExec = true;
+      R.forEach(
+        (node) => {
+          node.exec(this);
+        },
+        this._secondExecPassNodes,
+      );
+      this._secondExecPassNodes = [];
+    }
+
+    const interpreter = this;
     const visitor = new (class extends TreeVisitor<ASTPreprocessorNode> {
       enter(node: ASTPreprocessorNode) {
         if (!isStatementPreprocessorNode(node))
           return;
 
+        if (node instanceof ASTPreprocessorSyntaxLine)
+          node.exec(interpreter);
+
         if (this.nesting === 2) {
-          const str = node.toEmitterLine();
+          const str = node.toEmitterLine(interpreter);
           if (str)
             acc += `${str}\n`;
         }
@@ -251,10 +287,11 @@ export class PreprocessorInterpreter {
    * Iterates from current scope to rootScope, if not found returns null
    *
    * @param {string} name
+   * @param {boolean} [currentScopeOnly=false]
    * @returns {InterpreterResult}
    * @memberof PreprocessorInterpreter
    */
-  getVariable(name: string): InterpreterResult {
+  getVariable(name: string, currentScopeOnly: boolean = false): InterpreterResult {
     const {_scopes} = this;
 
     for (let i = _scopes.length - 1; i >= 0; --i) {
@@ -262,9 +299,35 @@ export class PreprocessorInterpreter {
 
       if (variables.has(name))
         return variables.get(name);
+
+      if (currentScopeOnly)
+        return null;
     }
 
     return null;
+  }
+
+  /**
+   * Sets variable with provided name and value in current scope
+   *
+   * @param {string} name
+   * @param {InterpreterResult} value
+   * @memberof PreprocessorInterpreter
+   */
+  setVariable(name: string, value: InterpreterResult): void {
+    const {currentScope} = this;
+
+    if (currentScope.variables.has(name)) {
+      throw new PreprocessorError(
+        PreprocessorErrorCode.VARIABLE_ALREADY_EXISTS_IN_CURRENT_SCOPE,
+        null,
+        {
+          name,
+        },
+      );
+    }
+
+    currentScope.variables.set(name, value);
   }
 
   /**
@@ -373,14 +436,6 @@ export class PreprocessorInterpreter {
           }
 
           i = newOffset;
-        } else {
-          throw new PreprocessorError(
-            PreprocessorErrorCode.UNKNOWN_MACRO_VARIABLE,
-            loc,
-            {
-              name: text,
-            },
-          );
         }
 
         continue;

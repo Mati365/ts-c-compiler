@@ -2,6 +2,7 @@ import {CompilerError} from '@compiler/core/shared/CompilerError';
 import {TokenLocation} from '@compiler/lexer/tokens';
 
 export enum PreprocessorErrorCode {
+  GRAMMAR_SYNTAX_ERROR,
   EXPRESSION_MISMATCH_ARGS_TYPES,
   INCORRECT_EXPRESSION,
   INCORRECT_MATH_EXPRESSION,
@@ -11,15 +12,18 @@ export enum PreprocessorErrorCode {
   INCORRECT_VALUE_EXPRESSION,
   MACRO_ARGS_LIST_MISMATCH,
   MACRO_ALREADY_EXISTS,
+  VARIABLE_ALREADY_EXISTS_IN_CURRENT_SCOPE,
 }
 
 /* eslint-disable max-len */
 export const PREPROCESSOR_ERROR_TRANSLATIONS: Record<PreprocessorErrorCode, string> = {
+  [PreprocessorErrorCode.GRAMMAR_SYNTAX_ERROR]: 'Grammar syntax error!',
   [PreprocessorErrorCode.INCORRECT_VALUE_EXPRESSION]: 'Incorrect value expression! Too many tokens!',
   [PreprocessorErrorCode.UNKNOWN_MACRO_VARIABLE]: 'Unknown macro variable %{name}!',
   [PreprocessorErrorCode.EXPRESSION_MISMATCH_ARGS_TYPES]: 'Mismatch expression args types!',
   [PreprocessorErrorCode.INCORRECT_EXPRESSION]: 'Incorrect expression!',
   [PreprocessorErrorCode.MACRO_ALREADY_EXISTS]: 'Macro %{name} already exists!',
+  [PreprocessorErrorCode.VARIABLE_ALREADY_EXISTS_IN_CURRENT_SCOPE]: 'Variable %{name} already exists in current scope!',
   [PreprocessorErrorCode.INCORRECT_MATH_EXPRESSION]: 'Incorrect math "%{expression}" expression!',
   [PreprocessorErrorCode.INCORRECT_ARGS_LIST]: 'Incorrect args list syntax!',
   [PreprocessorErrorCode.UNTERMINATED_ARGS_LIST]: 'Unterminated args list!',

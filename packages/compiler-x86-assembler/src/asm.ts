@@ -11,7 +11,7 @@ import {
   CompilerOutput,
 } from './parser';
 
-type AssemblerConfig = {
+export type AssemblerConfig = {
   preprocessor?: boolean,
 };
 
@@ -44,11 +44,11 @@ export function asm(
         %define __TIME_NUM__ ${formatTime(today, true, '')}
         %define __POSIX_TIME__ ${(+today / 1000) | 0}
 
-        %define use16 [bits 16]
-        %define use32 [bits 32]
+        %idefine use16 [bits 16]
+        %idefine use32 [bits 32]
 
-        %define cpu(cpu_id) [target cpu_id]
-        %define section(section_name) [section section_name]
+        %idefine cpu(cpu_id) [target cpu_id]
+        %idefine section(section_name) [section section_name]
       `,
     };
 

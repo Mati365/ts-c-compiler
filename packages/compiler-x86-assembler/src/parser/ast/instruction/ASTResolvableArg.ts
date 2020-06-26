@@ -27,7 +27,7 @@ export class ASTResolvableArg<T> {
   toString(): string {
     const {value} = this;
 
-    if (typeof value === 'number')
+    if (typeof value === 'number' && Number.isInteger(value))
       return `${value < 0 ? '-' : ''}0x${Math.abs(value).toString(16)}`;
 
     return value.toString();

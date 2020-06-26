@@ -25,6 +25,23 @@ export class TokensIterator {
   }
 
   /**
+   * Gets list of tokens consumed by function
+   *
+   * @param {VoidFunction} fn
+   * @returns {Token[]}
+   * @memberof TokensIterator
+   */
+  getConsumedTokensList(fn: VoidFunction): Token[] {
+    const {
+      tokenIndex: startIndex,
+      tokens,
+    } = this;
+
+    fn();
+    return tokens.slice(startIndex, this.tokenIndex);
+  }
+
+  /**
    * Fetches precceing token related to current tokenIndex
    *
    * @param {number} [offset=1]

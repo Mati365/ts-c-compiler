@@ -8,7 +8,11 @@ import {TreeNode} from './TreeNode';
  * @template T
  */
 export abstract class TreeVisitor<T extends TreeNode<any>> {
-  protected nesting = 0;
+  protected history: T[] = [];
+
+  get nesting() {
+    return this.history.length;
+  }
 
   /**
    * Begins iteration over tree
@@ -18,19 +22,21 @@ export abstract class TreeVisitor<T extends TreeNode<any>> {
    * @memberof TreeVisitor
    */
   visit(node: T): this {
-    this.nesting++;
-    this.enter?.(node); // eslint-disable-line no-unused-expressions
+    const {history} = this;
+
+    history.push(node);
+    this.enter?.(node, history); // eslint-disable-line no-unused-expressions
 
     node.walk(this);
 
-    this.leave?.(node); // eslint-disable-line no-unused-expressions
-    this.nesting--;
+    this.leave?.(node, history); // eslint-disable-line no-unused-expressions
+    history.pop();
 
     return this;
   }
 
-  enter?(node: T): void;
-  leave?(node: T): void;
+  enter?(node: T, history: T[]): void;
+  leave?(node: T, history: T[]): void;
 }
 
 /**

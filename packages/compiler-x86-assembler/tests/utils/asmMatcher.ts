@@ -1,6 +1,6 @@
 import * as R from 'ramda';
 
-import {asm} from '@compiler/x86-assembler/asm';
+import {asm, AssemblerConfig} from '@compiler/x86-assembler/asm';
 import {arrayToHexString} from '@compiler/core/utils/arrayToHexString';
 
 export type BinaryOutputObject = {
@@ -66,12 +66,16 @@ function toOutputsBinary(received: string, binary: BinaryOutputObject): MatcherR
 /**
  * Compiles asm file and check if status code is correct
  *
- * @param {string} received
+ * @param {(string|[string, AssemblerConfig])} received
  * @param {number} code
  * @returns {MatcherResult}
  */
-function toHasCompilerError(received: string, code: number): MatcherResult {
-  const parseResult = asm(received);
+function toHasCompilerError(received: string|[string, AssemblerConfig], code: number): MatcherResult {
+  const parseResult = (
+    R.is(Array, received)
+      ? asm(received[0], <AssemblerConfig> received[1])
+      : asm(<string> received)
+  );
   if (parseResult.isOk()) {
     return {
       pass: false,

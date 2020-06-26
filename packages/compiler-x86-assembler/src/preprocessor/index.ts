@@ -4,6 +4,7 @@ import {CompilerError} from '@compiler/core/shared/CompilerError';
 
 import {TreePrintVisitor} from '@compiler/grammar/tree/TreeVisitor';
 import {ASTPreprocessorNode} from './constants';
+import {PreprocessorErrorCode} from './PreprocessorError';
 import {
   PreprocessorInterpreter,
   PreprocessorInterpreterConfig,
@@ -66,6 +67,8 @@ export function safeResultPreprocessor(
       preprocessor(code, config),
     );
   } catch (e) {
+    e.code = e.code ?? PreprocessorErrorCode.GRAMMAR_SYNTAX_ERROR;
+
     return err(
       [
         e,

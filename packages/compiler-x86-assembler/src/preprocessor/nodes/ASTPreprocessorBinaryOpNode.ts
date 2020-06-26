@@ -35,7 +35,9 @@ export function createBinOpIfBothSidesPresent<T extends ASTPreprocessorBinaryOpN
  * @extends {BinaryNode<ASTPreprocessorKind>}
  * @implements {PreprocessorInterpretable}
  */
-export class ASTPreprocessorBinaryOpNode extends BinaryNode<ASTPreprocessorKind> implements PreprocessorInterpretable {
+export class ASTPreprocessorBinaryOpNode
+  extends BinaryNode<ASTPreprocessorKind, ASTPreprocessorNode>
+  implements PreprocessorInterpretable {
   constructor(
     public op: TokenType,
     left: ASTPreprocessorNode,
@@ -43,6 +45,12 @@ export class ASTPreprocessorBinaryOpNode extends BinaryNode<ASTPreprocessorKind>
     kind: ASTPreprocessorKind = ASTPreprocessorKind.BinaryOperator,
   ) {
     super(kind, left, right);
+  }
+
+  clone(): ASTPreprocessorBinaryOpNode {
+    const {op, left, right, kind} = this;
+
+    return new ASTPreprocessorBinaryOpNode(op, left, right, kind);
   }
 
   /* eslint-disable @typescript-eslint/no-unused-vars */

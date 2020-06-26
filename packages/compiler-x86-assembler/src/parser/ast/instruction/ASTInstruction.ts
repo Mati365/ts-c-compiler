@@ -523,6 +523,7 @@ export class ASTInstruction extends KindASTAsmNode(ASTNodeKind.INSTRUCTION) {
           );
 
         // Numeric or address segmented address
+        case TokenType.FLOAT_NUMBER:
         case TokenType.NUMBER: {
           const {number, byteSize} = (<NumberToken> token).value;
 

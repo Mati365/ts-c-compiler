@@ -9,7 +9,11 @@ import {IdentifiersMap} from '@compiler/lexer/lexer';
 
 import {empty} from '@compiler/grammar/matchers';
 import {fetchTokensUntilEOL} from '@compiler/grammar/utils/fetchTokensUntilEOL';
-import {logicExpression} from './matchers/logicExpression';
+import {isReservedKeyword} from '../parser/utils';
+import {
+  logicExpression,
+  mathExpression,
+} from './matchers';
 
 import {
   ASTPreprocessorSyntaxLine,
@@ -21,6 +25,7 @@ import {
   ASTPreprocessorStmt,
   ASTPreprocessorIFDef,
   ASTPreprocessorUndef,
+  ASTPreprocessorCriticalEQU,
 } from './nodes';
 
 import {
@@ -298,7 +303,7 @@ const preprocessorMatcher: GrammarInitializer<PreprocessorIdentifier, ASTPreproc
   /**
    * Match res of line
    *
-   * @returns {TreeNode}
+   * @returns {ASTPreprocessorNode}
    */
   function syntaxLine(): ASTPreprocessorNode {
     startLine();
@@ -322,6 +327,66 @@ const preprocessorMatcher: GrammarInitializer<PreprocessorIdentifier, ASTPreproc
       NodeLocation.fromTokenLoc(loc),
       tokens,
     );
+  }
+
+  /**
+   * Preprocessor time EQU, it should be constant
+   *
+   * @returns {ASTPreprocessorNode}
+   */
+  function equStmt(): ASTPreprocessorNode {
+    try {
+      let nameToken: Token;
+      let expression: ASTPreprocessorNode;
+
+      const consumedTokens = g.getConsumedTokensList(
+        () => {
+          nameToken = g.match(
+            {
+              type: TokenType.KEYWORD,
+            },
+          );
+
+          if (isReservedKeyword(nameToken.text))
+            throw new SyntaxError;
+
+          g.match(
+            {
+              type: TokenType.COLON,
+              optional: true,
+              ignoreMatchNesting: true,
+            },
+          );
+
+          g.match(
+            {
+              type: TokenType.KEYWORD,
+              terminal: 'equ',
+              ignoreMatchNesting: true,
+            },
+          );
+
+          expression = mathExpression(g);
+
+          g.match(
+            {
+              type: TokenType.EOL,
+            },
+          );
+        },
+      );
+
+      return new ASTPreprocessorCriticalEQU(
+        NodeLocation.fromTokenLoc(nameToken.loc),
+        nameToken.text,
+        expression,
+        consumedTokens,
+      );
+    } catch (e) {
+      g.raiseNonCriticalMatchError();
+    }
+
+    return null;
   }
 
   /**
@@ -363,6 +428,7 @@ const preprocessorMatcher: GrammarInitializer<PreprocessorIdentifier, ASTPreproc
           ifnStmt,
           defineStmt,
           macroStmt,
+          equStmt,
           syntaxLine,
           empty,
         },

@@ -25,6 +25,7 @@ export enum PreprocessorIdentifier {
 
 export enum ASTPreprocessorKind {
   Stmt = 'Stmt',
+  EquStmt = 'EquStmt',
   DefineStmt = 'DefineStmt',
   UndefStmt = 'UndefStmt',
   IfStmt = 'IfStmt',
@@ -52,6 +53,7 @@ export function isStatementPreprocessorNode(node: ASTPreprocessorNode): boolean 
     case ASTPreprocessorKind.Stmt:
     case ASTPreprocessorKind.DefineStmt:
     case ASTPreprocessorKind.UndefStmt:
+    case ASTPreprocessorKind.EquStmt:
     case ASTPreprocessorKind.IfStmt:
     case ASTPreprocessorKind.IfDefStmt:
     case ASTPreprocessorKind.MacroStmt:
@@ -66,11 +68,11 @@ export function isStatementPreprocessorNode(node: ASTPreprocessorNode): boolean 
 export class PreprocessorGrammar extends Grammar<PreprocessorIdentifier, ASTPreprocessorKind> {}
 
 export class ASTPreprocessorNode extends TreeNode<ASTPreprocessorKind> implements PreprocessorInterpretable {
-  toEmitterLine(): string {
+  /* eslint-disable @typescript-eslint/no-unused-vars */
+  toEmitterLine(interpreter?: PreprocessorInterpreter): string {
     return '';
   }
 
-  /* eslint-disable @typescript-eslint/no-unused-vars */
   exec(interpreter: PreprocessorInterpreter): InterpreterResult {
     return null;
   }
