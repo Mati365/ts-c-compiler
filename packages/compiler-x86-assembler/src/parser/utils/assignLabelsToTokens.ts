@@ -1,6 +1,7 @@
 import * as R from 'ramda';
 
 import {rpn} from '@compiler/rpn/rpn';
+import {MathErrorCode} from '@compiler/rpn/utils';
 
 import {
   Token,
@@ -20,8 +21,15 @@ import {isPossibleLabelToken} from './isPossibleLabelToken';
  * @param {Token<any>[]} tokens
  * @returns
  */
-export function assignLabelsToTokens(labelResolver: ASTLabelAddrResolver, tokens: Token<any>[]) {
-  if (!labelResolver)
+export function assignLabelsToTokens(
+  labelResolver: ASTLabelAddrResolver,
+  tokens: Token<any>[],
+  config?: {
+    preserveOriginalText?: boolean,
+    preserveIfError?: boolean,
+  },
+) {
+  if (!labelResolver && !config?.preserveOriginalText)
     return tokens;
 
   return R.map(
@@ -29,13 +37,26 @@ export function assignLabelsToTokens(labelResolver: ASTLabelAddrResolver, tokens
       if (!isPossibleLabelToken(token))
         return token;
 
-      const labelAddress = rpn(
-        token.text,
-        {
-          keywordResolver: labelResolver,
-        },
-      );
+      let labelAddress: number = null;
+
+      try {
+        labelAddress = rpn(
+          token.text,
+          {
+            keywordResolver: labelResolver,
+          },
+        );
+      } catch (e) {
+        if (config?.preserveIfError && e.code === MathErrorCode.UNKNOWN_KEYWORD)
+          return token;
+
+        throw e;
+      }
+
       if (R.isNil(labelAddress)) {
+        if (!labelResolver)
+          return token;
+
         throw new ParserError(
           ParserErrorCode.UNKNOWN_LABEL,
           token.loc,
@@ -45,7 +66,15 @@ export function assignLabelsToTokens(labelResolver: ASTLabelAddrResolver, tokens
         );
       }
 
-      const newToken = new NumberToken(token.text, labelAddress, NumberFormat.DEC, token.loc);
+      const newToken = new NumberToken(
+        config?.preserveOriginalText
+          ? token.text
+          : labelAddress.toString(),
+        labelAddress,
+        NumberFormat.DEC,
+        token.loc,
+      );
+
       newToken.originalToken = token;
       return newToken;
     },

@@ -1,9 +1,9 @@
 import {setBit, getMSbit} from '@compiler/core/utils/bits';
+import {BINARY_MASKS} from '@compiler/core/constants';
 
 import {
   X86_REGISTERS,
   X86_FLAGS_OFFSETS,
-  X86_BINARY_MASKS,
   X86_FLAGS_MASKS,
 } from './constants/x86';
 
@@ -278,7 +278,7 @@ export class X86ALU extends X86Unit {
           );
         } else if (byte.reg === 0x2) {
           /** NOT */
-          registers[reg] = ~registers[reg] & X86_BINARY_MASKS[bits];
+          registers[reg] = ~registers[reg] & BINARY_MASKS[bits];
         } else if (byte.reg === 0x3) {
           /** NEG */
           registers[reg] = this.exec(operators[0b101], 0, registers[reg], bits);
@@ -298,7 +298,7 @@ export class X86ALU extends X86Unit {
           );
         } else if (byte.reg === 0x2) {
           /** NOT */
-          memIO.write[bits](~val & X86_BINARY_MASKS[bits], address);
+          memIO.write[bits](~val & BINARY_MASKS[bits], address);
         } else if (byte.reg === 0x3) {
           /** NEG */
           memIO.write[bits](

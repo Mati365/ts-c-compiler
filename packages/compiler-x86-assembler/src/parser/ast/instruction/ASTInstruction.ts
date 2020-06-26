@@ -124,6 +124,15 @@ export class ASTInstruction extends KindASTAsmNode(ASTNodeKind.INSTRUCTION) {
       // it is false for mov ax, [b] due to [b] is resolved later
       // inside tryResolveSchema, labeledInstruction will be overriden
       // inside labelResolver() anyway during first pass
+      this.originalArgsTokens = assignLabelsToTokens(
+        null,
+        this.originalArgsTokens,
+        {
+          preserveIfError: true,
+          preserveOriginalText: true,
+        },
+      );
+
       this.labeledInstruction = isAnyLabelInTokensList(this.originalArgsTokens);
     }
   }

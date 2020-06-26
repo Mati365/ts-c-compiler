@@ -1,5 +1,6 @@
 import * as R from 'ramda';
 
+import {BINARY_MASKS} from '@compiler/core/constants';
 import {roundedSignedNumberByteSize} from '@compiler/core/utils/numberByteSize';
 
 import {RegisterSchema} from '@compiler/x86-assembler/constants';
@@ -112,8 +113,8 @@ export function relLabel(
 
   if (arg.type === InstructionArgType.NUMBER) {
     // default addressing in jmp instruction is short
-    if (instruction.branchAddressingType && instruction.branchAddressingType !== BranchAddressingType.SHORT)
-      return false;
+    if (instruction.branchAddressingType)
+      return instruction.branchAddressingType === BranchAddressingType.SHORT;
 
     const numArg = <ASTInstructionNumberArg> arg;
 
@@ -141,18 +142,19 @@ export function nearPointer(
     return true;
 
   if (arg.type === InstructionArgType.NUMBER) {
-    if (instruction.branchAddressingType && instruction.branchAddressingType !== BranchAddressingType.NEAR)
-      return false;
-
     const numArg = <ASTInstructionNumberArg> arg;
+    const {byteSize} = numArg;
+
+    if (instruction.branchAddressingType)
+      return instruction.branchAddressingType === BranchAddressingType.NEAR;
 
     if (R.isNil(numArg.assignedLabel))
       return true;
 
-    if (absoluteAddress === null && numArg.byteSize <= maxByteSize)
+    if (absoluteAddress === null && byteSize <= 0x1)
       return true;
 
-    const relativeToSegment = numArg.val - absoluteAddress - maxByteSize;
+    const relativeToSegment = (numArg.val & BINARY_MASKS[maxByteSize]) - absoluteAddress - maxByteSize;
     return roundedSignedNumberByteSize(relativeToSegment) <= maxByteSize;
   }
 

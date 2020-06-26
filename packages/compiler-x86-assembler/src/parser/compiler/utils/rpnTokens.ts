@@ -26,21 +26,29 @@ import {
  * @returns {string}
  */
 export function mergeTokensTexts(tokens: Token[], joinStr: string = ''): string {
-  return R.join(
-    joinStr,
-    R.map(
-      (token) => {
-        if (token.type === TokenType.QUOTE)
-          return `'${token.text}'`;
+  let acc = '';
 
-        if (token.type === TokenType.BRACKET)
-          return `(${token.text})`;
+  for (let i = 0; i < tokens.length; ++i) {
+    const token = tokens[i];
 
-        return token.text;
-      },
-      tokens,
-    ),
-  );
+    // prevent something like it: 2--2
+    if (token.type === TokenType.NUMBER
+        && token instanceof NumberToken
+        && token.value.number < 0
+        && !Number.isInteger(+acc[i - 1]))
+      acc += `(0${token.value.number})`;
+    else if (token.type === TokenType.QUOTE)
+      acc += `'${token.text}'`;
+    else if (token.type === TokenType.BRACKET)
+      acc += `(${token.text})`;
+    else
+      acc += token.text;
+
+    if (joinStr)
+      acc += joinStr;
+  }
+
+  return acc;
 }
 
 /**

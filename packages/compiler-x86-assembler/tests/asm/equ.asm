@@ -12,6 +12,11 @@ mov ax, test2
 xor ax, ax
 test2 equ -0x2
 
+;= test: handles negative implicit expressions
+;= bin: 8d450e
+entry_size: equ 16
+lea ax,[di-(2-entry_size)]
+
 ;= test: calculates value with label after equ
 ;= bin: b8060031c09031db
 [bits 16]

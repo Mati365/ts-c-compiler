@@ -149,6 +149,7 @@ function parseMemExpression(
       },
       tokens,
     );
+
     if (dispResult.isErr())
       return err(dispResult.unwrapErr());
 

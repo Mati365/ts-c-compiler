@@ -312,12 +312,13 @@ export class PreprocessorInterpreter {
    *
    * @param {string} name
    * @param {InterpreterResult} value
+   * @param {boolean} allowRedefine
    * @memberof PreprocessorInterpreter
    */
-  setVariable(name: string, value: InterpreterResult): void {
+  setVariable(name: string, value: InterpreterResult, allowRedefine: boolean = false): void {
     const {currentScope} = this;
 
-    if (currentScope.variables.has(name)) {
+    if (!allowRedefine && currentScope.variables.has(name)) {
       throw new PreprocessorError(
         PreprocessorErrorCode.VARIABLE_ALREADY_EXISTS_IN_CURRENT_SCOPE,
         null,

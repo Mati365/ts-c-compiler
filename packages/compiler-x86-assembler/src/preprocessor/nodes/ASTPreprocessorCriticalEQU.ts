@@ -76,7 +76,7 @@ export class ASTPreprocessorCriticalEQU extends ASTPreprocessorNode {
     const {name, expression} = this;
 
     try {
-      if (interpreter.getCallables(name).length) {
+      if (interpreter.getCallables(name)?.length) {
         [, this.originalTokens] = interpreter.removeMacrosFromTokens(this.originalTokens);
         return;
       }
@@ -84,13 +84,15 @@ export class ASTPreprocessorCriticalEQU extends ASTPreprocessorNode {
       interpreter.setVariable(
         name,
         interpreter.evalExpression(expression),
+        interpreter.secondPassExec,
       );
 
       this._constant = true;
     } catch (e) {
-      if (!interpreter.secondPassExec)
+      if (!interpreter.secondPassExec) {
+        interpreter.setVariable(name, null);
         interpreter.appendToSecondPassExec(this);
-      else
+      } else
         this._constant = false;
     }
   }

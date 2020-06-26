@@ -4,7 +4,7 @@ import {mutableOmitChildKeys} from '@compiler/core/utils/mutableOmitChildKeys';
 import {getMSbit} from '@compiler/core/utils/bits';
 
 import {UnmountCallback} from '@compiler/core/types';
-import {X86_BINARY_MASKS} from '../constants/x86';
+import {BINARY_MASKS} from '@compiler/core/constants';
 
 import {Logger} from '../Logger';
 import {X86InterruptsSet, X86Interrupt} from './X86Interrupt';
@@ -324,7 +324,7 @@ export abstract class X86AbstractCPU {
   static getSignedNumber(num: number, bits: X86BitsMode = 0x1): number {
     const sign = (num >> (0x8 * bits - 0x1)) & 0x1;
     if (sign)
-      num -= X86_BINARY_MASKS[bits] + 0x1;
+      num -= BINARY_MASKS[bits] + 0x1;
     return num;
   }
 
@@ -337,7 +337,7 @@ export abstract class X86AbstractCPU {
    * @returns {number} Unsigned number
    */
   static toUnsignedNumber(num: number, bits: X86BitsMode = 0x1): number {
-    const up = X86_BINARY_MASKS[bits];
+    const up = BINARY_MASKS[bits];
     if (num > up)
       return num - up - 0x1;
 
@@ -363,7 +363,7 @@ export abstract class X86AbstractCPU {
 
     const msbit = getMSbit(num, bits);
     const mask = msbit ? 0xFF : 0x0;
-    let output = num & X86_BINARY_MASKS[bits];
+    let output = num & BINARY_MASKS[bits];
 
     for (let i = bits; i < targetBits; ++i)
       output |= mask << (i * 8);

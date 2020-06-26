@@ -264,6 +264,7 @@
   "wbinvd": ["","0F 09","486"],
   "xchg": [["rb rmb","86 mr d0 d1",""],["rmb rb","86 mr d0 d1",""],["rmw rw","87 mr d0 d1",""],["rw rmw","87 mr d0 d1",""],["ax cx","91",""],["ax dx","92",""],["ax bx","93",""],["ax sp","94",""],["ax bp","95",""],["ax si","96",""],["ax di","97",""]],
   "xlat": ["","D7",""],
+  "xlatb": ["","D7",""],
   "xor": [["rmb rb","30 mr d0 d1",""],["rmw rw","31 mr d0 d1",""],["rb rmb","32 mr d0 d1",""],["rw rmw","33 mr d0 d1",""],["al ib","34 i0",""],["ax iw","35 i0 i1",""],["rmb ib","80 /6 d0 d1 i0",""],["rmw iw","81 /6 d0 d1 i0 i1",""],["rmw sign_extended_ib_to_iw","83 /6 d0 d1 i0",""]],
   "int3": [["","CC",""]]
 }

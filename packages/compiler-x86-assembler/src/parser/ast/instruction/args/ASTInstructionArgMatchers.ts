@@ -112,7 +112,7 @@ export const ASTInstructionArgMatchers: Record<string, ASTInstructionArgMatcherF
 
   /** NEAR POINTER */
   np: () => (arg: ASTInstructionArg, instruction: ASTInstruction, addr: number) => (
-    nearPointer(instruction, arg, 2, addr)
+    nearPointer(instruction, arg, 4, addr)
   ),
 
   /** ABSOLUTE FAR POINTERS */

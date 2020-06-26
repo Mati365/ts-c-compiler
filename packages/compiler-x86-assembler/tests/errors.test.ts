@@ -1,5 +1,6 @@
 import {MathErrorCode} from '../../compiler-rpn/src/utils/MathError';
 import {ParserErrorCode} from '../src/shared/ParserError';
+import {PreprocessorErrorCode} from '../src/preprocessor/PreprocessorError';
 
 import './utils/asmMatcher';
 
@@ -13,13 +14,18 @@ describe('equ', () => {
   });
 
   it('name already defined', () => {
-    expect(`
+    const code = `
       xor ax, ax
       mov bx, test3
       test3 equ 0xFF
       test4 equ 0xFE
       test3 equ 2+2
-    `).toHasCompilerError(ParserErrorCode.EQU_ALREADY_DEFINED);
+    `;
+
+    expect([code, {preprocessor: false}]).toHasCompilerError(ParserErrorCode.EQU_ALREADY_DEFINED);
+    expect([code, {preprocessor: true}]).toHasCompilerError(
+      PreprocessorErrorCode.VARIABLE_ALREADY_EXISTS_IN_CURRENT_SCOPE,
+    );
   });
 
   it('name already reserved', () => {

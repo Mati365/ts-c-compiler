@@ -1,7 +1,7 @@
 import {getMSbit} from '@compiler/core/utils/bits';
+import {BINARY_MASKS} from '@compiler/core/constants';
 
 import {
-  X86_BINARY_MASKS,
   X86_REGISTERS,
   X86_PREFIXES,
   X86_PREFIX_LABEL_MAP,
@@ -476,7 +476,7 @@ export class X86CPU extends X86AbstractCPU {
      * If overflows its absolute, truncate value
      * dont know why, its undocummented
      */
-    if (registers.ip > X86_BINARY_MASKS[0x2] + 1)
+    if (registers.ip > BINARY_MASKS[0x2] + 1)
       registers.ip &= 0xFF;
   }
 
@@ -610,7 +610,7 @@ export class X86CPU extends X86AbstractCPU {
    * @memberof X86CPU
    */
   rcl(num: number, times: number, bits: X86BitsMode = 0x1): number {
-    const mask = X86_BINARY_MASKS[bits];
+    const mask = BINARY_MASKS[bits];
     const {registers: {status}} = this;
 
     for (; times > 0; --times) {
@@ -641,7 +641,7 @@ export class X86CPU extends X86AbstractCPU {
    */
   shr(num: number, times: number, bits: X86BitsMode = 0x1): number {
     const {status} = this.registers;
-    const mask = X86_BINARY_MASKS[bits];
+    const mask = BINARY_MASKS[bits];
 
     for (; times > 0; --times) {
       status.cf = num & 0x1;
@@ -666,7 +666,7 @@ export class X86CPU extends X86AbstractCPU {
    */
   shl(num: number, times: number, bits: X86BitsMode = 0x1): number {
     const {status} = this.registers;
-    const mask = X86_BINARY_MASKS[bits];
+    const mask = BINARY_MASKS[bits];
 
     for (; times > 0; --times) {
       status.cf = getMSbit(num, bits);
