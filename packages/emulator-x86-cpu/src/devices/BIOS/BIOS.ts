@@ -411,6 +411,10 @@ export class BIOS extends uuidX86Device<X86CPU, BIOSInitConfig>('bios') {
       const {cpu, regs, vga} = this;
       const {page, mode} = this.screen;
 
+      /** todo: check bahaviour */
+      if (!vga.textMode)
+        return;
+
       switch (character) {
         /** Backspace */
         case 0x8:
@@ -427,7 +431,7 @@ export class BIOS extends uuidX86Device<X86CPU, BIOSInitConfig>('bios') {
 
           /** Scroll up page, simply copy memory */
           if (cursor.y >= mode.h) {
-            mode.scrollUp(cpu.memIO);
+            vga.scrollTextUp();
             cursor.y = mode.h - 1;
           }
           break;
@@ -529,7 +533,7 @@ export class BIOS extends uuidX86Device<X86CPU, BIOSInitConfig>('bios') {
        * todo: Handle cx, dx registers params
        */
       0x6: () => {
-        const {cpu, regs} = this;
+        const {cpu, regs, vga} = this;
         const {page, mode} = this.screen;
 
         if (!regs.al) {
@@ -539,11 +543,7 @@ export class BIOS extends uuidX86Device<X86CPU, BIOSInitConfig>('bios') {
           });
         } else {
           /** Just scroll window */
-          mode.scrollUp(
-            cpu.memIO,
-            regs.al,
-            page,
-          );
+          vga.scrollTextUp(regs.al, page);
         }
       },
 

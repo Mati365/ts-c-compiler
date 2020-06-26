@@ -327,6 +327,41 @@ export class VGA extends uuidX86Device<X86CPU>('vga') implements ByteMemRegionAc
   }
 
   /**
+   * Scroll text in plane 0 to UP
+   *
+   * @param {number} [lines=0x1]
+   * @param {number} [page=0x0]
+   * @memberof VGA
+   */
+  scrollTextUp(lines: number = 0x1, page: number = 0x0): void {
+    const {textModeState, planes} = this;
+    const {w, h} = textModeState.size;
+    const offset = this.getStartAddress();
+
+    const pageSize = w * h;
+    const startOffset = offset + pageSize * page;
+    const [textMem, attrMem] = planes;
+
+    /** Copy previous lines memory */
+    for (let y = 0; y < h; ++y) {
+      const last = y + 1 === h;
+
+      for (let x = 0; x < w; ++x) {
+        const dest = startOffset + y * w + x;
+        const src = startOffset + (y + lines) * w + x;
+
+        if (last) {
+          textMem[dest] = 0;
+          attrMem[dest] = 0x7;
+        } else {
+          textMem[dest] = textMem[src];
+          attrMem[dest] = attrMem[src];
+        }
+      }
+    }
+  }
+
+  /**
    * Creates VRAM buffers / planes
    *
    * @private

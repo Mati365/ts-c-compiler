@@ -16,15 +16,19 @@ export class VGATextModeCanvasRenderer extends VGAPixBufCanvasRenderer {
 
   alloc(): void {
     super.alloc();
-
-    const {size} = this.vga.getTextModeState();
-    this.renderCharsCache = new Array(size.w * size.h);
+    this.markWholeRegionAsDirty();
   }
 
   release(): void {
     super.release();
 
     this.renderCharsCache = null;
+  }
+
+  markWholeRegionAsDirty() {
+    const {size} = this.vga.getTextModeState();
+
+    this.renderCharsCache = new Array(size.w * size.h);
   }
 
   drawToImageData(buffer: Uint8ClampedArray, frameNumber: number): void {
@@ -34,6 +38,7 @@ export class VGATextModeCanvasRenderer extends VGAPixBufCanvasRenderer {
     const {paletteRegs} = vga.attrRegs;
     const {pixelMask} = vga.dacRegs;
 
+    const startAddress = vga.getStartAddress();
     const vga256 = vga.getVGA256State();
     const screenSize = vga.getPixelScreenSize();
     const {size, charSize} = vga.getTextModeState();
@@ -47,11 +52,9 @@ export class VGATextModeCanvasRenderer extends VGAPixBufCanvasRenderer {
 
     const blink = attrRegs.isBlinkEnabled() && frameNumber >= 0x18;
 
-    // todo: add cursor, blinking, partial dirty rendering
-    // iterate over all characters
     for (let screenRow = 0; screenRow < size.h; ++screenRow) {
       for (let screenCol = 0; screenCol < size.w; ++screenCol) {
-        const charMemOffset = screenCol + screenRow * size.w;
+        const charMemOffset = startAddress + screenCol + screenRow * size.w;
         const currentCursor = cursorEnabled && cursorAddress - size.w === charMemOffset;
 
         const char = textMem[charMemOffset];

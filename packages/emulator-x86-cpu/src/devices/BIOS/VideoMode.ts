@@ -79,35 +79,6 @@ export class VideoMode {
     return mem.read[0x2](address);
   }
 
-  /* eslint-disable */
-  /**
-   * Scroll window to up
-   *
-   * @param {X86RAM<X86AbstractCPU>} mem
-   * @param {number} [lines=0x1]
-   * @param {number} [page=0x0]
-   * @memberof VideoMode
-   */
-  scrollUp(mem: X86RAM<X86AbstractCPU>, lines: number = 0x1, page: number = 0x0): void {
-    throw new Error('Todo: unimplemented!');
-    // const {pageSize} = this;
-    // const lineSize = this.w * 0x2,
-    //   startOffset = this.offset + pageSize * page;
-
-    // /** Copy previous lines memory */
-    // mem.device.copy(
-    //   mem.device,
-    //   startOffset,
-    //   startOffset + lineSize * lines,
-    //   this.offset + pageSize * (page + 1),
-    // );
-
-    // /** Fill with zeros new line, preserve attributes! */
-    // for (let i = 0; i < this.w; ++i)
-    //   this.write(mem, 0, false, i, this.h - 1, page);
-  }
-  /* eslint-enable */
-
   /**
    * Iterate every pixel
    *
