@@ -43,6 +43,16 @@ export class RGBColor {
     this.hex = `#${[r, g, b].map((str) => str.toString(16).padStart(2, '0')).join('')}`;
   }
 
+  toNumber(): number {
+    const {r, g, b} = this;
+
+    return (
+      ((r & 0xFF) << 16)
+        | ((g & 0xFF) << 8)
+        | (b & 0xFF)
+    );
+  }
+
   /**
    * Creates color from HEX
    *

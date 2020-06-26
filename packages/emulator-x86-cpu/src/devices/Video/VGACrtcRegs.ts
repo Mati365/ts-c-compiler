@@ -1,4 +1,5 @@
 import {UnionStruct, bits} from '@compiler/core/shared/UnionStruct';
+import {VGAIndexedReg} from './VGAConstants';
 
 /**
  * @see {@link http://www.osdever.net/FreeVGA/vga/crtcreg.htm}
@@ -180,7 +181,14 @@ export class CRTCModeControlReg extends UnionStruct {
   @bits(7) se: number;
 }
 
-export class VGACrtcRegs {
+/**
+ * Group of CRTC regs
+ *
+ * @export
+ * @class VGACrtcRegs
+ * @extends {VGAIndexedReg}
+ */
+export class VGACrtcRegs extends VGAIndexedReg {
   horizontalTotalReg = 0x0; /* Index 00h */
   endHorizontalDisplayReg = 0x0; /* Index 01h */
   startHorizontalBlankingReg = 0x0; /* Index 02h */
@@ -204,6 +212,40 @@ export class VGACrtcRegs {
   endVerticalBlankingReg = 0x0; /* Index 16h */
   crtcModeControlReg = new CRTCModeControlReg; /* Index 17h */
   lineCompareReg = 0x0; /* Index 18h */
+
+  getRegByIndex(index: number = this.indexReg): number {
+    switch (index) {
+      case 0x0: return this.horizontalTotalReg;
+      case 0x1: return this.endHorizontalDisplayReg;
+      case 0x2: return this.startHorizontalBlankingReg;
+      case 0x3: return this.endHorizontalBlankingReg.number;
+      case 0x4: return this.startHorizontalRetraceReg;
+      case 0x5: return this.endHorizontalRetraceReg.number;
+      case 0x6: return this.verticalTotalReg;
+      case 0x7: return this.overflowReg.number;
+      case 0x8: return this.presetRowScanReg.number;
+      case 0x9: return this.maxScanLineReg.number;
+      case 0xA: return this.cursorStartReg.number;
+      case 0xB: return this.cursorEndReg.number;
+      case 0xC: return this.startAddress.high;
+      case 0xD: return this.startAddress.low;
+      case 0xE: return this.cursorLocation.high;
+      case 0xF: return this.cursorLocation.low;
+      case 0x10: return this.verticalRetraceStartReg;
+      case 0x11: return this.verticalRetraceEndReg;
+      case 0x12: return this.verticalDisplayEndReg;
+      case 0x13: return this.offsetReg;
+      case 0x14: return this.underlineLocation.number;
+      case 0x15: return this.startVerticalBlankingReg;
+      case 0x16: return this.endVerticalBlankingReg;
+      case 0x17: return this.crtcModeControlReg.number;
+      case 0x18: return this.lineCompareReg;
+
+      default:
+        console.warn(`Unknown port ${index} in VGA CRTC!`);
+        return null;
+    }
+  }
 
   isTextCursorDisabled(): boolean {
     return this.cursorStartReg.cd === 1;

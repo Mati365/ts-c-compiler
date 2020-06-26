@@ -1,5 +1,7 @@
 import * as R from 'ramda';
+
 import {UnionStruct, bits} from '@compiler/core/shared/UnionStruct';
+import {VGAIndexedReg} from './VGAConstants';
 
 /** @see {@link http://www.osdever.net/FreeVGA/vga/attrreg.htm} */
 
@@ -71,15 +73,32 @@ export class ColorSelectReg extends UnionStruct {
  *
  * @export
  * @class VGAAttrRegs
+ * @extends {VGAIndexedReg}
  */
-export class VGAAttrRegs {
+export class VGAAttrRegs extends VGAIndexedReg {
   attrAddressReg = new AttributeAddressReg;
   paletteRegs: number[] = R.repeat(0, 16); /* Palette Registers (Index 00-0Fh) */
   attrModeControlReg = new AttributeModeControlReg;
-  overscanColorReg: number = 0;
+  overscanColorReg = 0;
   colorPlaneEnableReg = new ColorPlaneEnableReg;
   horizontalPixelPanningReg = new HorizontalPixelPanningReg;
   colorSelectReg = new ColorSelectReg;
+
+  getRegByIndex(index: number = this.indexReg): number {
+    if (index >= 0x0 && index <= 0xF)
+      return this.paletteRegs[index];
+
+    switch (index) {
+      case 0x10: return this.attrModeControlReg.number;
+      case 0x11: return this.overscanColorReg;
+      case 0x12: return this.colorPlaneEnableReg.number;
+      case 0x13: return this.horizontalPixelPanningReg.number;
+      case 0x14: return this.colorSelectReg.number;
+
+      default:
+        return null;
+    }
+  }
 
   isBlinkEnabled() {
     return this.attrModeControlReg.blink === 1;

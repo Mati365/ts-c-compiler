@@ -1,6 +1,6 @@
 import {UnionStruct, bits} from '@compiler/core/shared/UnionStruct';
 import {MemoryRegionRange} from '@emulator/x86-cpu/memory/MemoryRegion';
-import {CHARSET_MEMORY_MAPS} from './VGAConstants';
+import {CHARSET_MEMORY_MAPS, VGAIndexedReg} from './VGAConstants';
 
 /**
  * @see {@link http://www.osdever.net/FreeVGA/vga/seqreg.htm}
@@ -82,13 +82,27 @@ export class SequencerMemModeReg extends UnionStruct {
  *
  * @export
  * @class VGASequencerRegs
+ * @extends {VGAIndexedReg}
  */
-export class VGASequencerRegs {
+export class VGASequencerRegs extends VGAIndexedReg {
   resetReg = new ResetReg;
   clockingModeReg = new ClockingModeReg;
   mapMaskReg = new MapMaskReg;
   charMapSelectReg = new CharMapSelectReg;
   memModeReg = new SequencerMemModeReg;
+
+  getRegByIndex(index: number = this.indexReg): number {
+    switch (index) {
+      case 0x0: return this.resetReg.number;
+      case 0x1: return this.clockingModeReg.number;
+      case 0x2: return this.mapMaskReg.number;
+      case 0x3: return this.charMapSelectReg.number;
+      case 0x4: return this.memModeReg.number;
+
+      default:
+        return null;
+    }
+  }
 
   /**
    * Returns two fonts charsets

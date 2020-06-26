@@ -60,6 +60,7 @@ export class InputStatus1 extends UnionStruct {
  * @class VGAExternalRegs
  */
 export class VGAExternalRegs {
+  next3c0IsIndex = false; /* check 0x3DA port behaviour */
   miscReg = new MiscReg;
   featureControlReg = new FeatureControlReg;
   inputStatus0 = new InputStatus0;

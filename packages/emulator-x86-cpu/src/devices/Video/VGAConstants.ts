@@ -85,6 +85,18 @@ export class VGAFontPack {
 }
 
 /**
+ * Group of registers that can be accessed via index
+ *
+ * @export
+ * @abstract
+ * @class VGAIndexedReg
+ */
+export abstract class VGAIndexedReg {
+  indexReg = 0x0;
+
+  abstract getRegByIndex(index: number): number;
+}
+/**
  * [scanline start, scanline end]
  *
  * @export

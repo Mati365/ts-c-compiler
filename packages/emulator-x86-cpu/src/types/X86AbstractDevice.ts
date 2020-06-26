@@ -1,10 +1,12 @@
+import * as R from 'ramda';
+
 import {UnmountCallback} from '@compiler/core/types';
 import {MemoryRegionRange} from '../memory/MemoryRegion';
 
 import {X86_MAPPED_VM_MEM} from '../constants/x86';
 
 import {X86InterruptsSet, X86InterruptHandlerCallback} from './X86Interrupt';
-import {X86PortsSet} from './X86Port';
+import {X86PortsSet, X86Port} from './X86Port';
 import {X86RegName} from './X86Regs';
 import {X86AbstractCPU} from './X86AbstractCPU';
 
@@ -51,6 +53,26 @@ export abstract class X86AbstractDevice<
   /** Return CPU registers */
   get regs() {
     return this.cpu.registers;
+  }
+
+  /**
+   * Allow to connect multiple ports to the same handler
+   *
+   * @protected
+   * @param {(number|number[])} ports
+   * @param {X86Port} handler
+   * @memberof X86AbstractDevice
+   */
+  protected mountPortsHandler(ports: number|number[], handler: X86Port): void {
+    if (ports instanceof Array) {
+      R.forEach(
+        (port) => {
+          this.ports[port] = handler;
+        },
+        ports,
+      );
+    } else
+      this.ports[ports] = handler;
   }
 
   /**

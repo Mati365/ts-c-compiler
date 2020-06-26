@@ -1,5 +1,9 @@
 import {UnionStruct, bits} from '@compiler/core/shared/UnionStruct';
-import {GRAPHICS_MEMORY_MAPS, GraphicsWriteMode} from './VGAConstants';
+import {
+  GRAPHICS_MEMORY_MAPS,
+  GraphicsWriteMode,
+  VGAIndexedReg,
+} from './VGAConstants';
 
 /**
  * @see {@link http://www.osdever.net/FreeVGA/vga/graphreg.htm#06}
@@ -129,7 +133,7 @@ export class ColorBitmaskReg extends UnionStruct {
  * @export
  * @class VGAGraphicsRegs
  */
-export class VGAGraphicsRegs {
+export class VGAGraphicsRegs extends VGAIndexedReg {
   setResetReg = new SetResetReg;
   enableSetResetReg = new EnableSetResetReg;
   colorCompareReg = new ColorCompareReg;
@@ -139,4 +143,21 @@ export class VGAGraphicsRegs {
   miscGraphicsReg = new MiscGraphicsReg;
   colorDontCareReg = new ColorDontCareReg;
   colorBitmaskReg = new ColorBitmaskReg;
+
+  getRegByIndex(index: number = this.indexReg): number {
+    switch (index) {
+      case 0x0: return this.setResetReg.number;
+      case 0x1: return this.enableSetResetReg.number;
+      case 0x2: return this.colorCompareReg.number;
+      case 0x3: return this.dataRotateReg.number;
+      case 0x4: return this.readMapSelectReg.number;
+      case 0x5: return this.graphicsModeReg.number;
+      case 0x6: return this.miscGraphicsReg.number;
+      case 0x7: return this.colorDontCareReg.number;
+      case 0x8: return this.colorBitmaskReg.number;
+
+      default:
+        return null;
+    }
+  }
 }

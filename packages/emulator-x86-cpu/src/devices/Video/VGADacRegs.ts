@@ -31,6 +31,17 @@ export class DACStateReg extends UnionStruct {
   @bits(0, 1) state: number;
 }
 
+export enum VGADacState {
+  WRITE = 0x0,
+  READ = 0x3,
+}
+
+export enum VGADacEntry {
+  REG = 0x0,
+  GREEN = 0x1,
+  BLUE = 0x2,
+}
+
 /**
  * Group of DAC regs
  *
