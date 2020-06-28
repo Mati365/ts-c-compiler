@@ -221,6 +221,18 @@ export function* lexer(config: LexerConfig, code: string): IterableIterator<Toke
    * @returns
    */
   function* parseCharacter(character: string, eol: boolean) {
+    // break line character
+    if (character === '\\') {
+      offset++;
+      for (; offset < code.length; ++offset) {
+        if (isNewline(code[offset])) {
+          ++offset;
+          break;
+        }
+      }
+      return;
+    }
+
     // ignore line, it is comment
     if (isComment(character)) {
       for (; offset < length; ++offset) {

@@ -1,10 +1,11 @@
-import {setBit, getMSbit} from '@compiler/core/utils/bits';
+import {getMSbit} from '@compiler/core/utils/bits';
 import {BINARY_MASKS} from '@compiler/core/constants';
 
 import {
   X86_REGISTERS,
   X86_FLAGS_OFFSETS,
   X86_FLAGS_MASKS,
+  X86_BINARY_MASKS,
 } from './constants/x86';
 
 import {X86CPU} from './X86CPU';
@@ -35,10 +36,10 @@ type ALUOperatorsSchemaSet = {[offset: number]: ALUOperatorSchema} & {
 type ALUFlagChecker = (
   signed: number,
   bits: X86BitsMode,
-  l: number,
-  r: number,
-  val: number,
-  operator: ALUOperatorSchema,
+  l?: number,
+  r?: number,
+  val?: number,
+  operator?: ALUOperatorSchema,
 ) => number|boolean;
 
 /**
@@ -58,6 +59,7 @@ export enum X86ALUOperator {
   COMPARE = 0b111,
 }
 
+
 /**
  * Arithmetic logic unit
  *
@@ -68,16 +70,8 @@ export enum X86ALUOperator {
 export class X86ALU extends X86Unit {
   public operators: ALUOperatorsSchemaSet;
 
-  /**
-   * Flags used to set values in status register
-   *
-   * @protected
-   * @static
-   * @type {{[offset: number]: ALUFlagChecker}}
-   * @memberof X86ALU
-   */
-  protected static flagsCheckers: [number, ALUFlagChecker][] = [
-    /** Carry flag */ [X86_FLAGS_OFFSETS.cf, (signed, bits, l, r, val) => val !== signed],
+  protected static flagsCheckersMap: {[key in keyof typeof X86_FLAGS_OFFSETS]?: ALUFlagChecker} = {
+    /** Carry flag */ cf: (signed, bits, l, r, val) => val !== signed,
     /**
      * Overflow occurs when the result of adding two positive numbers
      * is negative or the result of adding two negative numbers is positive.
@@ -86,7 +80,7 @@ export class X86ALU extends X86Unit {
      * @todo Not sure if it works correctly
      * @see http://www.righto.com/2012/12/the-6502-overflow-flag-explained.html
      */
-    [X86_FLAGS_OFFSETS.of, (signed, bits, l, r, val, operator) => {
+    of: (signed, bits, l, r, val, operator) => {
       const lBit = getMSbit(l, bits);
       let rBit = getMSbit(r, bits);
 
@@ -96,8 +90,8 @@ export class X86ALU extends X86Unit {
         rBit ^= 1;
 
       return lBit === rBit && lBit !== getMSbit(signed, bits);
-    }],
-    /** Parity flag */ [X86_FLAGS_OFFSETS.pf, (signed) => {
+    },
+    /** Parity flag */ pf: (signed) => {
       /**
        * Use SWAR algorithm
        * @see http://stackoverflow.com/a/109025/6635215
@@ -106,10 +100,44 @@ export class X86ALU extends X86Unit {
       signed = (signed & 0x33333333) + ((signed >> 2) & 0x33333333);
       signed = (((signed + (signed >> 4)) & 0x0F0F0F0F) * 0x01010101) >> 24;
       return !(signed % 2);
-    }],
-    /** Zero flag */ [X86_FLAGS_OFFSETS.zf, (signed) => signed === 0x0],
-    /** Sign flag */ [X86_FLAGS_OFFSETS.sf, (signed, bits) => getMSbit(signed, bits) === 0x1],
-  ];
+    },
+    /** Zero flag */ zf: (signed, bits) => (signed & X86_BINARY_MASKS[bits]) === 0x0,
+    /** Sign flag */ sf: (signed, bits) => getMSbit(signed, bits) === 0x1,
+  };
+
+  /**
+   * Sets zero sign parity flags
+   *
+   * @param {number} num
+   * @param {X86BitsMode} bits
+   * @memberof X86ALU
+   */
+  setZSPFlags(num: number, bits: X86BitsMode): void {
+    const {registers: {status}} = this.cpu;
+    const {flagsCheckersMap} = X86ALU;
+
+    status.zf = +flagsCheckersMap.zf(num, bits);
+    status.sf = +flagsCheckersMap.sf(num, bits);
+    status.pf = +flagsCheckersMap.pf(num, bits);
+  }
+
+  /**
+   * Check CPU flags
+   *
+   * @type {ALUFlagChecker}
+   * @memberof X86ALU
+   */
+  private updateALUFlags: ALUFlagChecker = (signed, bits, l, r, val, operator): boolean => {
+    const {registers: {status}} = this.cpu;
+    const {flagsCheckersMap} = X86ALU;
+
+    this.setZSPFlags(signed, bits);
+
+    status.cf = +flagsCheckersMap.cf(signed, bits, l, r, val, operator);
+    status.of = +flagsCheckersMap.of(signed, bits, l, r, val, operator);
+
+    return true;
+  };
 
   /**
    * Performs ALU operation, sets flags and other stuff
@@ -122,7 +150,6 @@ export class X86ALU extends X86Unit {
    * @memberof X86ALU
    */
   exec(operator: ALUOperatorSchema, l: number, r: number, bits: X86BitsMode = 0x1): number {
-    const {flagsCheckers} = X86ALU;
     const {registers} = this.cpu;
 
     l = l || 0;
@@ -139,18 +166,8 @@ export class X86ALU extends X86Unit {
     if (typeof operator.set === 'undefined')
       operator.set = 0xFF;
 
-    /**
-     * Value returned after flags
-     * @todo Unroll, remove loop
-     */
-    for (let i = 0; i < flagsCheckers.length; ++i) {
-      const [offset, checker] = flagsCheckers[i];
-
-      if (((operator.set >> offset) & 0x1) === 1) {
-        const _val = checker(signed, bits, l, r, val, operator);
-        registers.flags = setBit(offset, _val, registers.flags);
-      }
-    }
+    /** Set all CPU flags */
+    this.updateALUFlags(signed, bits, l, r, val, operator);
 
     /** temp - for cmp and temporary operations */
     return operator._flagOnly ? l : signed;

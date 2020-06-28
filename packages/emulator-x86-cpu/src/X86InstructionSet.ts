@@ -493,44 +493,71 @@ export class X86InstructionSet extends X86Unit {
         );
       },
 
-      /** RCL r/m8,  cl */ 0xD2: (bits: X86BitsMode = 0x1, dir = 0x1) => {
-        cpu.parseRmByte(
-          (reg: string) => {
-            cpu.registers[reg] = cpu.rcl(cpu.registers[reg], cpu.registers.cl * dir, bits);
-          },
-          (address) => {
-            memIO.write[bits](
-              cpu.rcl(memIO.read[bits](address), registers.cl * dir, bits),
-              address,
-            );
-          },
-          bits,
-        );
-      },
-      /** RCL r/m16, cl */ 0xD3: () => opcodes[0xD2](0x2),
-
       /** ROL/SHR/SHL   */ 0xD0: X86InstructionSet.switchRMOpcodeInstruction(cpu, 0x1, {
         /** ROL */ 0x0: (val, bits) => cpu.rol(val, 0x1, bits),
         /** ROR */ 0x1: (val, bits) => cpu.rol(val, -0x1, bits),
+        /** RCL */ 0x2: (val, bits) => cpu.rcl(val, 0x1, bits),
+        /** RCR */ 0x3: (val, bits) => cpu.rcl(val, -0x1, bits),
         /** SHL */ 0x4: (val, bits) => cpu.shl(val, 0x1, bits),
         /** SHR */ 0x5: (val, bits) => cpu.shr(val, 0x1, bits),
+        // /** SAL */ 0x6: (val, bits) => cpu.sal(val, 0x1, bits),
+        // /** SAR */ 0x7: (val, bits) => cpu.sar(val, 0x1, bits),
+      }),
+
+      /** ROL/SHR/SHL r/m8, 1 */ 0xD1: X86InstructionSet.switchRMOpcodeInstruction(cpu, 0x2, {
+        /** ROL */ 0x0: (val, bits) => cpu.rol(val, 0x1, bits),
+        /** ROR */ 0x1: (val, bits) => cpu.rol(val, -0x1, bits),
+        /** RCL */ 0x2: (val, bits) => cpu.rcl(val, 0x1, bits),
+        /** RCR */ 0x3: (val, bits) => cpu.rcl(val, -0x1, bits),
+        /** SHL */ 0x4: (val, bits) => cpu.shl(val, 0x1, bits),
+        /** SHR */ 0x5: (val, bits) => cpu.shr(val, 0x1, bits),
+        // /** SAL */ 0x6: (val, bits) => cpu.sal(val, 0x1, bits),
+        // /** SAR */ 0x7: (val, bits) => cpu.sar(val, 0x1, bits),
+      }),
+
+      /** ROL/SHR/SHL r/m8, cl */ 0xD2: X86InstructionSet.switchRMOpcodeInstruction(cpu, 0x1, {
+        /** ROL */ 0x0: (val, bits) => cpu.rol(val, registers.cl, bits),
+        /** ROR */ 0x1: (val, bits) => cpu.rol(val, -registers.cl, bits),
+        /** RCL */ 0x2: (val, bits) => cpu.rcl(val, registers.cl, bits),
+        /** RCR */ 0x3: (val, bits) => cpu.rcl(val, -registers.cl, bits),
+        /** SHL */ 0x4: (val, bits) => cpu.shl(val, registers.cl, bits),
+        /** SHR */ 0x5: (val, bits) => cpu.shr(val, registers.cl, bits),
+        // /** SAL */ 0x6: (val, bits) => cpu.sal(val, registers.cl, bits),
+        // /** SAR */ 0x7: (val, bits) => cpu.sar(val, registers.cl, bits),
+      }),
+
+      /** ROL/SHR/SHL r/m8, cl */ 0xD3: X86InstructionSet.switchRMOpcodeInstruction(cpu, 0x2, {
+        /** ROL */ 0x0: (val, bits) => cpu.rol(val, registers.cl, bits),
+        /** ROR */ 0x1: (val, bits) => cpu.rol(val, -registers.cl, bits),
+        /** RCL */ 0x2: (val, bits) => cpu.rcl(val, registers.cl, bits),
+        /** RCR */ 0x3: (val, bits) => cpu.rcl(val, -registers.cl, bits),
+        /** SHL */ 0x4: (val, bits) => cpu.shl(val, registers.cl, bits),
+        /** SHR */ 0x5: (val, bits) => cpu.shr(val, registers.cl, bits),
+        // /** SAL */ 0x6: (val, bits) => cpu.sal(val, registers.cl, bits),
+        // /** SAR */ 0x7: (val, bits) => cpu.sar(val, registers.cl, bits),
       }),
 
       /** ROL/SHR/SHL r/m8  */ 0xC0: X86InstructionSet.switchRMOpcodeInstruction(cpu, 0x1, {
         /** ROL */ 0x0: (val, bits) => cpu.rol(val, cpu.fetchOpcode(), bits),
         /** ROR */ 0x1: (val, bits) => cpu.rol(val, -cpu.fetchOpcode(), bits),
-        /** SHL IMM8 */ 0x4: (val) => cpu.shl(val, cpu.fetchOpcode(), 0x1),
-        /** SHR IMM8 */ 0x5: (val) => cpu.shr(val, cpu.fetchOpcode(), 0x1),
+        /** RCL */ 0x2: (val, bits) => cpu.rcl(val, cpu.fetchOpcode(), bits),
+        /** RCR */ 0x3: (val, bits) => cpu.rcl(val, -cpu.fetchOpcode(), bits),
+        /** SHL IMM8 */ 0x4: (val, bits) => cpu.shl(val, cpu.fetchOpcode(), bits),
+        /** SHR IMM8 */ 0x5: (val, bits) => cpu.shr(val, cpu.fetchOpcode(), bits),
+        // /** SAL */ 0x6: (val, bits) => cpu.sal(val, cpu.fetchOpcode(), bits),
+        // /** SAR */ 0x7: (val, bits) => cpu.sar(val, cpu.fetchOpcode(), bits),
       }),
 
       /** ROL/SHR/SHL r/m16 */ 0xC1: X86InstructionSet.switchRMOpcodeInstruction(cpu, 0x2, {
         /** ROL */ 0x0: (val, bits) => cpu.rol(val, cpu.fetchOpcode(), bits),
         /** ROR */ 0x1: (val, bits) => cpu.rol(val, -cpu.fetchOpcode(), bits),
-        /** SHL IMM8 */ 0x4: (val) => cpu.shl(val, cpu.fetchOpcode(), 0x2),
-        /** SHR IMM8 */ 0x5: (val) => cpu.shr(val, cpu.fetchOpcode(), 0x2),
+        /** RCL */ 0x2: (val, bits) => cpu.rcl(val, cpu.fetchOpcode(), bits),
+        /** RCR */ 0x3: (val, bits) => cpu.rcl(val, -cpu.fetchOpcode(), bits),
+        /** SHL IMM8 */ 0x4: (val, bits) => cpu.shl(val, cpu.fetchOpcode(), bits),
+        /** SHR IMM8 */ 0x5: (val, bits) => cpu.shr(val, cpu.fetchOpcode(), bits),
+        // /** SAL */ 0x6: (val, bits) => cpu.sal(val, cpu.fetchOpcode(), 0x2),
+        // /** SAR */ 0x7: (val, bits) => cpu.sar(val, cpu.fetchOpcode(), 0x2),
       }),
-
-      /** ROR r/m8, 1   */ 0xD1: () => opcodes[0xD0](0x2),
 
       /** CBW */ 0x98: () => {
         registers.ah = (registers.al & 0x80) === 0x80 ? 0xFF : 0x0;

@@ -5,6 +5,7 @@ import {
   X86_REGISTERS,
   X86_PREFIXES,
   X86_PREFIX_LABEL_MAP,
+  X86_BINARY_MASKS,
 } from './constants/x86';
 
 import {
@@ -631,7 +632,7 @@ export class X86CPU extends X86AbstractCPU {
 
   /**
    * Shift bits to right with carry flag
-   * see: https://github.com/NeatMonster/Intel8086/blob/master/src/fr/neatmonster/ibmpc/Intel8086.java#L4200
+   * @see {@link https://github.com/NeatMonster/Intel8086/blob/master/src/fr/neatmonster/ibmpc/Intel8086.java#L4200}
    *
    * @param {number} num
    * @param {number} times Bits to shift
@@ -640,19 +641,18 @@ export class X86CPU extends X86AbstractCPU {
    * @memberof X86CPU
    */
   shr(num: number, times: number, bits: X86BitsMode = 0x1): number {
-    const {status} = this.registers;
-    const mask = BINARY_MASKS[bits];
+    if (!times)
+      return num;
 
-    for (; times > 0; --times) {
-      status.cf = num & 0x1;
-      num >>= 0x1;
-      num &= mask;
-    }
+    const {alu, registers} = this;
+    const {status} = registers;
+    const result = (num >>> times) & X86_BINARY_MASKS[bits];
 
-    status.zf = +(num === 0);
-    status.of = getMSbit(num) ^ status.cf;
+    status.cf = (num >> (times - 1)) & 1;
+    status.of = getMSbit(num, bits) & 0x1;
+    alu.setZSPFlags(result, bits);
 
-    return num;
+    return result;
   }
 
   /**
@@ -665,7 +665,8 @@ export class X86CPU extends X86AbstractCPU {
    * @memberof X86CPU
    */
   shl(num: number, times: number, bits: X86BitsMode = 0x1): number {
-    const {status} = this.registers;
+    const {alu, registers} = this;
+    const {status} = registers;
     const mask = BINARY_MASKS[bits];
 
     for (; times > 0; --times) {
@@ -676,6 +677,7 @@ export class X86CPU extends X86AbstractCPU {
 
     status.zf = +(num === 0);
     status.of = getMSbit(num) ^ status.cf;
+    alu.setZSPFlags(num, bits);
 
     return num;
   }
