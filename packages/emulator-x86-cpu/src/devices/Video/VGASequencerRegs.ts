@@ -91,19 +91,6 @@ export class VGASequencerRegs extends VGAIndexedReg {
   charMapSelectReg = new CharMapSelectReg;
   memModeReg = new SequencerMemModeReg;
 
-  getRegByIndex(index: number = this.indexReg): number {
-    switch (index) {
-      case 0x0: return this.resetReg.number;
-      case 0x1: return this.clockingModeReg.number;
-      case 0x2: return this.mapMaskReg.number;
-      case 0x3: return this.charMapSelectReg.number;
-      case 0x4: return this.memModeReg.number;
-
-      default:
-        return null;
-    }
-  }
-
   /**
    * Returns two fonts charsets
    *
@@ -120,5 +107,31 @@ export class VGASequencerRegs extends VGAIndexedReg {
       CHARSET_MEMORY_MAPS[(csas2 << 2) | charSetASelect],
       CHARSET_MEMORY_MAPS[(csbs2 << 2) | charSetBSelect],
     ];
+  }
+
+
+  getRegByIndex(index: number = this.indexReg): number {
+    switch (index) {
+      case 0x0: return this.resetReg.number;
+      case 0x1: return this.clockingModeReg.number;
+      case 0x2: return this.mapMaskReg.number;
+      case 0x3: return this.charMapSelectReg.number;
+      case 0x4: return this.memModeReg.number;
+
+      default:
+        return null;
+    }
+  }
+
+  setRegByIndex(value: number, index: number = this.indexReg): void {
+    switch (index) {
+      case 0x0: this.resetReg.number = value; break;
+      case 0x1: this.clockingModeReg.number = value; break;
+      case 0x2: this.mapMaskReg.number = value; break;
+      case 0x3: this.charMapSelectReg.number = value; break;
+      case 0x4: this.memModeReg.number = value; break;
+
+      default:
+    }
   }
 }

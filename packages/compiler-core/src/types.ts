@@ -57,15 +57,15 @@ export class RGBColor {
    * Creates color from HEX
    *
    * @static
-   * @param {number} hex
+   * @param {number} num
    * @returns {RGBColor}
    * @memberof RGBColor
    */
-  static fromHex(hex: number): RGBColor {
+  static fromNumber(num: number): RGBColor {
     return new RGBColor(
-      (hex >> 16) & 0xFF,
-      (hex >> 8) & 0xFF,
-      hex & 0xFF,
+      (num >> 16) & 0xFF,
+      (num >> 8) & 0xFF,
+      num & 0xFF,
     );
   }
 }

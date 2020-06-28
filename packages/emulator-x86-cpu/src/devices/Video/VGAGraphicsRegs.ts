@@ -160,4 +160,20 @@ export class VGAGraphicsRegs extends VGAIndexedReg {
         return null;
     }
   }
+
+  setRegByIndex(value: number, index: number = this.indexReg): void {
+    switch (index) {
+      case 0x0: this.setResetReg.number = value; break;
+      case 0x1: this.enableSetResetReg.number = value; break;
+      case 0x2: this.colorCompareReg.number = value; break;
+      case 0x3: this.dataRotateReg.number = value; break;
+      case 0x4: this.readMapSelectReg.number = value; break;
+      case 0x5: this.graphicsModeReg.number = value; break;
+      case 0x6: this.miscGraphicsReg.number = value; break;
+      case 0x7: this.colorDontCareReg.number = value; break;
+      case 0x8: this.colorBitmaskReg.number = value; break;
+
+      default:
+    }
+  }
 }

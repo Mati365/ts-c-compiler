@@ -134,11 +134,15 @@ export class VGA extends uuidX86Device<X86CPU>('vga') implements ByteMemRegionAc
     // CRT Controller Index Register
     this.mountPortsHandler([0x3B4, 0x3D4], {
       get: () => crtcRegs.indexReg,
+      set: (value) => {
+        crtcRegs.indexReg = value & 0x3f;
+      },
     });
 
     // CRT Controller Data Register
-    this.mountPortsHandler([0x3D5, 0x3D5], {
+    this.mountPortsHandler([0x3B5, 0x3D5], {
       get: () => crtcRegs.getRegByIndex(),
+      set: (value) => { crtcRegs.setRegByIndex(value); },
     });
 
     // VGA Input Status Register 1
@@ -146,7 +150,7 @@ export class VGA extends uuidX86Device<X86CPU>('vga') implements ByteMemRegionAc
       get: () => {
         const {inputStatus1} = externalRegs;
 
-        externalRegs.next3c0IsIndex = true;
+        attrRegs.next3c0IsIndex = true;
         if ((inputStatus1.number & 0x01) !== 0)
           inputStatus1.number &= ~0x30;
         else
@@ -157,28 +161,63 @@ export class VGA extends uuidX86Device<X86CPU>('vga') implements ByteMemRegionAc
     });
 
     // Attribute Controller Index Register
-    this.mountPortsHandler(0x3C0, {get: () => attrRegs.indexReg});
+    this.mountPortsHandler(0x3C0, {
+      get: () => attrRegs.indexReg,
+      set: (value) => {
+        if (attrRegs.next3c0IsIndex) {
+          attrRegs.indexReg = value & 0x1f;
+          attrRegs.attrAddressReg.pas = (value & 0x20) >> 5;
+        } else
+          attrRegs.setRegByIndex(value);
+
+        attrRegs.next3c0IsIndex = !attrRegs.next3c0IsIndex;
+      },
+    });
 
     // Attribute Controller Data Register
     this.mountPortsHandler(0x3C1, {get: () => attrRegs.getRegByIndex()});
 
     // VGA Input Status Register 0
-    this.mountPortsHandler(0x3C2, {get: () => externalRegs.inputStatus0.number});
+    this.mountPortsHandler(0x3C2, {
+      get: () => externalRegs.inputStatus0.number,
+      set: (value) => { externalRegs.miscReg.number = value; },
+    });
 
     // VGA Sequencer Index register
-    this.mountPortsHandler(0x3C4, {get: () => sequencerRegs.indexReg});
+    this.mountPortsHandler(0x3C4, {
+      get: () => sequencerRegs.indexReg,
+      set: (value) => { sequencerRegs.indexReg = value; },
+    });
 
     // VGA Sequencer Data register
-    this.mountPortsHandler(0x3C5, {get: () => sequencerRegs.getRegByIndex()});
+    this.mountPortsHandler(0x3C5, {
+      get: () => sequencerRegs.getRegByIndex(),
+      set: (value) => { sequencerRegs.setRegByIndex(value); },
+    });
 
     // DAC Pixel Data Mask Register
-    this.mountPortsHandler(0x3C6, {get: () => dacRegs.pixelMask});
+    this.mountPortsHandler(0x3C6, {
+      get: () => dacRegs.pixelMask,
+      set: (value) => { dacRegs.pixelMask = value; },
+    });
 
     // DAC State Register
-    this.mountPortsHandler(0x3C7, {get: () => dacRegs.stateReg.number});
+    this.mountPortsHandler(0x3C7, {
+      get: () => dacRegs.stateReg.number,
+      set: (value) => {
+        dacRegs.colorIndexRead = value * 3;
+        dacRegs.stateReg.number &= 0x0;
+      },
+    });
 
     // DAC Palette Write Index Register
-    this.mountPortsHandler(0x3C8, {get: () => dacRegs.writeAddressReg});
+    this.mountPortsHandler(0x3C8, {
+      get: () => (dacRegs.colorIndexWrite / 3) | 0,
+      set: (value) => {
+        dacRegs.colorIndexWrite = value * 3;
+        dacRegs.stateReg.number |= 0x3;
+      },
+    });
 
     // DAC Palette Data Register
     this.mountPortsHandler(0x3C9, {
@@ -190,16 +229,40 @@ export class VGA extends uuidX86Device<X86CPU>('vga') implements ByteMemRegionAc
         dacRegs.colorIndexRead++;
         return ((color >> ((2 - offset) * 8 & 0xFF)) / 255) * 63 | 0;
       },
+      set: (value) => {
+        const {palette} = this.vga256;
+        const index = dacRegs.colorIndexWrite / 3 | 0;
+        const offset = dacRegs.colorIndexWrite % 3;
+        let color = palette[index].toNumber();
+
+        value = (((value & 0x3F) * 255) / 63) | 0;
+
+        if (offset === 0)
+          color = (color & ~0xFF0000) | (value << 16);
+        else if (offset === 1)
+          color = (color & ~0xFF00) | (value << 8);
+        else
+          color |= (color & ~0xFF);
+
+        palette[index] = RGBColor.fromNumber(color);
+        dacRegs.colorIndexWrite++;
+      },
     });
 
     // VGA Miscellaneous Output Register
     this.mountPortsHandler(0x3CC, {get: () => externalRegs.miscReg.number});
 
     // Graphics Controller Index Register
-    this.mountPortsHandler(0x3CE, {get: () => graphicsRegs.indexReg});
+    this.mountPortsHandler(0x3CE, {
+      get: () => graphicsRegs.indexReg,
+      set: (value) => { graphicsRegs.indexReg = value; },
+    });
 
     // Graphics Controller Data Register
-    this.mountPortsHandler(0x3CF, {get: () => graphicsRegs.getRegByIndex()});
+    this.mountPortsHandler(0x3CF, {
+      get: () => graphicsRegs.getRegByIndex(),
+      set: (value) => { graphicsRegs.setRegByIndex(value); },
+    });
   }
 
   getPlanes(): Uint8Array[] { return this.planes; }

@@ -76,6 +76,7 @@ export class ColorSelectReg extends UnionStruct {
  * @extends {VGAIndexedReg}
  */
 export class VGAAttrRegs extends VGAIndexedReg {
+  next3c0IsIndex = false; /* check 0x3DA port behaviour */
   attrAddressReg = new AttributeAddressReg;
   paletteRegs: number[] = R.repeat(0, 16); /* Palette Registers (Index 00-0Fh) */
   attrModeControlReg = new AttributeModeControlReg;
@@ -83,6 +84,10 @@ export class VGAAttrRegs extends VGAIndexedReg {
   colorPlaneEnableReg = new ColorPlaneEnableReg;
   horizontalPixelPanningReg = new HorizontalPixelPanningReg;
   colorSelectReg = new ColorSelectReg;
+
+  isBlinkEnabled() {
+    return this.attrModeControlReg.blink === 1;
+  }
 
   getRegByIndex(index: number = this.indexReg): number {
     if (index >= 0x0 && index <= 0xF)
@@ -100,7 +105,19 @@ export class VGAAttrRegs extends VGAIndexedReg {
     }
   }
 
-  isBlinkEnabled() {
-    return this.attrModeControlReg.blink === 1;
+  setRegByIndex(value: number, index: number = this.indexReg): void {
+    if (index >= 0x0 && index <= 0xF) {
+      this.paletteRegs[index] = value;
+      return;
+    }
+
+    switch (index) {
+      case 0x10: this.attrModeControlReg.number = value; break;
+      case 0x11: this.overscanColorReg = value; break;
+      case 0x12: this.colorPlaneEnableReg.number = value; break;
+      case 0x13: this.horizontalPixelPanningReg.number = value; break;
+      case 0x14: this.colorSelectReg.number = value; break;
+      default:
+    }
   }
 }

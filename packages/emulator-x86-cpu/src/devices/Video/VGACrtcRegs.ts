@@ -213,40 +213,6 @@ export class VGACrtcRegs extends VGAIndexedReg {
   crtcModeControlReg = new CRTCModeControlReg; /* Index 17h */
   lineCompareReg = 0x0; /* Index 18h */
 
-  getRegByIndex(index: number = this.indexReg): number {
-    switch (index) {
-      case 0x0: return this.horizontalTotalReg;
-      case 0x1: return this.endHorizontalDisplayReg;
-      case 0x2: return this.startHorizontalBlankingReg;
-      case 0x3: return this.endHorizontalBlankingReg.number;
-      case 0x4: return this.startHorizontalRetraceReg;
-      case 0x5: return this.endHorizontalRetraceReg.number;
-      case 0x6: return this.verticalTotalReg;
-      case 0x7: return this.overflowReg.number;
-      case 0x8: return this.presetRowScanReg.number;
-      case 0x9: return this.maxScanLineReg.number;
-      case 0xA: return this.cursorStartReg.number;
-      case 0xB: return this.cursorEndReg.number;
-      case 0xC: return this.startAddress.high;
-      case 0xD: return this.startAddress.low;
-      case 0xE: return this.cursorLocation.high;
-      case 0xF: return this.cursorLocation.low;
-      case 0x10: return this.verticalRetraceStartReg;
-      case 0x11: return this.verticalRetraceEndReg;
-      case 0x12: return this.verticalDisplayEndReg;
-      case 0x13: return this.offsetReg;
-      case 0x14: return this.underlineLocation.number;
-      case 0x15: return this.startVerticalBlankingReg;
-      case 0x16: return this.endVerticalBlankingReg;
-      case 0x17: return this.crtcModeControlReg.number;
-      case 0x18: return this.lineCompareReg;
-
-      default:
-        console.warn(`Unknown port ${index} in VGA CRTC!`);
-        return null;
-    }
-  }
-
   isTextCursorDisabled(): boolean {
     return this.cursorStartReg.cd === 1;
   }
@@ -297,5 +263,70 @@ export class VGACrtcRegs extends VGAIndexedReg {
 
   getLineCompare() {
     return this.lineCompareReg | (this.overflowReg.lc8 << 8);
+  }
+
+  getRegByIndex(index: number = this.indexReg): number {
+    switch (index) {
+      case 0x0: return this.horizontalTotalReg;
+      case 0x1: return this.endHorizontalDisplayReg;
+      case 0x2: return this.startHorizontalBlankingReg;
+      case 0x3: return this.endHorizontalBlankingReg.number;
+      case 0x4: return this.startHorizontalRetraceReg;
+      case 0x5: return this.endHorizontalRetraceReg.number;
+      case 0x6: return this.verticalTotalReg;
+      case 0x7: return this.overflowReg.number;
+      case 0x8: return this.presetRowScanReg.number;
+      case 0x9: return this.maxScanLineReg.number;
+      case 0xA: return this.cursorStartReg.number;
+      case 0xB: return this.cursorEndReg.number;
+      case 0xC: return this.startAddress.high;
+      case 0xD: return this.startAddress.low;
+      case 0xE: return this.cursorLocation.high;
+      case 0xF: return this.cursorLocation.low;
+      case 0x10: return this.verticalRetraceStartReg;
+      case 0x11: return this.verticalRetraceEndReg;
+      case 0x12: return this.verticalDisplayEndReg;
+      case 0x13: return this.offsetReg;
+      case 0x14: return this.underlineLocation.number;
+      case 0x15: return this.startVerticalBlankingReg;
+      case 0x16: return this.endVerticalBlankingReg;
+      case 0x17: return this.crtcModeControlReg.number;
+      case 0x18: return this.lineCompareReg;
+
+      default:
+        console.warn(`Unknown port ${index} in VGA CRTC!`);
+        return null;
+    }
+  }
+
+  setRegByIndex(value: number, index: number = this.indexReg): void {
+    switch (index) {
+      case 0x0: this.horizontalTotalReg = value; break;
+      case 0x1: this.endHorizontalDisplayReg = value; break;
+      case 0x2: this.startHorizontalBlankingReg = value; break;
+      case 0x3: this.endHorizontalBlankingReg.number = value; break;
+      case 0x4: this.startHorizontalRetraceReg = value; break;
+      case 0x5: this.endHorizontalRetraceReg.number = value; break;
+      case 0x6: this.verticalTotalReg = value; break;
+      case 0x7: this.overflowReg.number = value; break;
+      case 0x8: this.presetRowScanReg.number = value; break;
+      case 0x9: this.maxScanLineReg.number = value; break;
+      case 0xA: this.cursorStartReg.number = value; break;
+      case 0xB: this.cursorEndReg.number = value; break;
+      case 0xC: this.startAddress.high = value; break;
+      case 0xD: this.startAddress.low = value; break;
+      case 0xE: this.cursorLocation.high = value; break;
+      case 0xF: this.cursorLocation.low = value; break;
+      case 0x10: this.verticalRetraceStartReg = value; break;
+      case 0x11: this.verticalRetraceEndReg = value; break;
+      case 0x12: this.verticalDisplayEndReg = value; break;
+      case 0x13: this.offsetReg = value; break;
+      case 0x14: this.underlineLocation.number = value; break;
+      case 0x15: this.startVerticalBlankingReg = value; break;
+      case 0x16: this.endVerticalBlankingReg = value; break;
+      case 0x17: this.crtcModeControlReg.number = value; break;
+      case 0x18: this.lineCompareReg = value; break;
+      default:
+    }
   }
 }

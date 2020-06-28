@@ -88,7 +88,7 @@ export function assignPresetToVGA(vga: VGA, preset: number[]): void {
  * See vgaColorsScrapper.js, it might be not accurate
  */
 export const VGA256Palette: RGBColor[] = R.map(
-  RGBColor.fromHex,
+  RGBColor.fromNumber,
   [
     0x000000, 0x0000aa, 0x00aa00, 0x00aaaa, 0xaa0000, 0xaa00aa, 0xaa5500, 0xaaaaaa, 0x555555, 0x5555ff,
     0x55ff55, 0x55ffff, 0xff5555, 0xff55ff, 0xffff55, 0xffffff, 0x000000, 0x101010, 0x202020, 0x353535,

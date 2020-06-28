@@ -95,6 +95,7 @@ export abstract class VGAIndexedReg {
   indexReg = 0x0;
 
   abstract getRegByIndex(index: number): number;
+  abstract setRegByIndex(value: number, index: number): void;
 }
 /**
  * [scanline start, scanline end]
