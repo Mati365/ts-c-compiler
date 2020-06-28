@@ -20,6 +20,8 @@ export class X86Stack extends X86Unit {
    * @memberof X86Stack
    */
   protected init(cpu: X86CPU) {
+    const {registers, memIO} = cpu;
+
     /**
      * Default stack segment address, after push()
      * values will be added at the end of mem
@@ -27,7 +29,7 @@ export class X86Stack extends X86Unit {
      * @param {Number}  segment Stack segment index
      */
     /** Set default stack environment */
-    Object.assign(cpu.registers, {
+    Object.assign(registers, {
       ss: 0x0,
       sp: 0x0,
     });
@@ -45,9 +47,21 @@ export class X86Stack extends X86Unit {
       (name, key) => {
         const index = +key;
 
-        /** PUSH sr16 */ cpu.opcodes[0x6 + index] = () => this.push(cpu.registers[stackSregMap[index]]);
+        /** PUSH sr16 */ cpu.opcodes[0x6 + index] = () => this.push(registers[stackSregMap[index]]);
         /** POP sr16  */ cpu.opcodes[0x7 + index] = () => {
-          cpu.registers[stackSregMap[index]] = this.pop();
+          registers[stackSregMap[index]] = this.pop();
+        };
+
+        /** POP r/m16/32 */ cpu.opcodes[0x8F] = () => {
+          cpu.parseRmByte(
+            (reg: string) => {
+              cpu.registers[reg] = this.pop(0x2);
+            },
+            (address) => {
+              memIO.write[0x2](this.pop(0x2), address);
+            },
+            0x2,
+          );
         };
       },
       stackSregMap,
