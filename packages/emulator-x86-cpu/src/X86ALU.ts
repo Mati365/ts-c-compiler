@@ -122,24 +122,6 @@ export class X86ALU extends X86Unit {
   }
 
   /**
-   * Check CPU flags
-   *
-   * @type {ALUFlagChecker}
-   * @memberof X86ALU
-   */
-  private updateALUFlags: ALUFlagChecker = (signed, bits, l, r, val, operator): boolean => {
-    const {registers: {status}} = this.cpu;
-    const {flagsCheckersMap} = X86ALU;
-
-    this.setZSPFlags(signed, bits);
-
-    status.cf = +flagsCheckersMap.cf(signed, bits, l, r, val, operator);
-    status.of = +flagsCheckersMap.of(signed, bits, l, r, val, operator);
-
-    return true;
-  };
-
-  /**
    * Performs ALU operation, sets flags and other stuff
    *
    * @param {ALUOperatorSchema} operator
@@ -151,6 +133,8 @@ export class X86ALU extends X86Unit {
    */
   exec(operator: ALUOperatorSchema, l: number, r: number, bits: X86BitsMode = 0x1): number {
     const {registers} = this.cpu;
+    const {status} = registers;
+    const {flagsCheckersMap} = X86ALU;
 
     l = l || 0;
     r = r || 0;
@@ -167,7 +151,22 @@ export class X86ALU extends X86Unit {
       operator.set = 0xFF;
 
     /** Set all CPU flags */
-    this.updateALUFlags(signed, bits, l, r, val, operator);
+    const {set: updatedChecker} = operator;
+
+    if (updatedChecker & X86_FLAGS_MASKS.zf)
+      status.zf = +flagsCheckersMap.zf(signed, bits);
+
+    if (updatedChecker & X86_FLAGS_MASKS.sf)
+      status.sf = +flagsCheckersMap.sf(signed, bits);
+
+    if (updatedChecker & X86_FLAGS_MASKS.pf)
+      status.pf = +flagsCheckersMap.pf(signed, bits);
+
+    if (updatedChecker & X86_FLAGS_MASKS.cf)
+      status.cf = +flagsCheckersMap.cf(signed, bits, l, r, val, operator);
+
+    if (updatedChecker & X86_FLAGS_MASKS.of)
+      status.of = +flagsCheckersMap.of(signed, bits, l, r, val, operator);
 
     /** temp - for cmp and temporary operations */
     return operator._flagOnly ? l : signed;
