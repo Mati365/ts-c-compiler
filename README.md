@@ -60,17 +60,17 @@ yarn run test
     - [x] Basic canvas graphics driver
     - [x] Text Mode
     - [x] Graphics VGA
-    - [ ] VGA IO ports bindings
+    - [x] VGA IO ports bindings
   - [ ] BIOS
     - [x] Basic bios interrupt handlers
+- [ ] App frontend
+  - [ ] Basic front CSS UI
+  - [ ] Debugger
 - [ ] Nano C compiler
   - [ ] Frontend
     - [ ] Syntax parser
   - [ ] Backend
     - [ ] X86-16 Code generator
-- [ ] App frontend
-  - [ ] Basic front CSS UI
-  - [ ] Debugger
 
 ## Screens
 
