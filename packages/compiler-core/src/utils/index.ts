@@ -17,3 +17,4 @@ export * from './appendToMapKeyArray';
 export * from './arrayToHexString';
 export * from './mergeNumberBytes';
 export * from './genUUID';
+export * from './asap';

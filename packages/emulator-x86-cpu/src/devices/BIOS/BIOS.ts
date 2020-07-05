@@ -1,4 +1,5 @@
 import {getBit} from '@compiler/core/utils/bits';
+import {asap} from '@compiler/core/utils/asap';
 import {Vec2D} from '@compiler/core/types';
 import {UnionStruct, bits} from '@compiler/core/shared/UnionStruct';
 
@@ -20,6 +21,7 @@ import {VGA} from '../Video/VGA';
 import {
   VGA_TEXT_MODES_PRESET,
   VGA_GRAPHICS_MODES_PRESET,
+  VGA_8X8_FONT,
 } from '../Video/VGAModesPresets';
 
 type KeymapTable = {
@@ -398,9 +400,47 @@ export class BIOS extends uuidX86Device<X86CPU, BIOSInitConfig>('bios') {
   /**
    * Loads exec vblank
    *
+   * @todo
+   *  Check if 8x8 font is always loaded in graphics mode. Where is font located?
+   *
    * @memberof BIOS
    */
   initScreen() {
+    const graphicsModeCharSize = {
+      w: 8,
+      h: 8,
+    };
+
+    const writeGraphicsCharacter = (
+      pos: Vec2D,
+      char: number,
+      attr: number,
+      fgColor: number,
+    ) => {
+      const {cpu, vga} = this;
+      const screenSize = vga.getPixelScreenSize();
+      const writer = cpu.memIO.write[0x1];
+      const background = (attr & 0x70) >> 4;
+
+      for (let row = 0; row < graphicsModeCharSize.h; ++row) {
+        const charBitsetRow = VGA_8X8_FONT.data[graphicsModeCharSize.w * char + row];
+
+        for (let col = 0; col < graphicsModeCharSize.w; ++col) {
+          const bit = (charBitsetRow >> col) & 0x1;
+
+          writer(
+            bit
+              ? fgColor
+              : background,
+            0xA0000
+              + (pos.y * graphicsModeCharSize.h + row) * screenSize.w
+              + pos.x * graphicsModeCharSize.w
+              + (graphicsModeCharSize.w - 1 - col),
+          );
+        }
+      }
+    };
+
     const writeCharacter = (
       character: number,
       attribute?: number,
@@ -410,10 +450,7 @@ export class BIOS extends uuidX86Device<X86CPU, BIOSInitConfig>('bios') {
     ): void => {
       const {cpu, regs, vga} = this;
       const {page, mode} = this.screen;
-
-      /** todo: check bahaviour */
-      if (!vga.textMode)
-        return;
+      const {textMode} = vga;
 
       switch (character) {
         /** Backspace */
@@ -438,21 +475,29 @@ export class BIOS extends uuidX86Device<X86CPU, BIOSInitConfig>('bios') {
 
         /** Normal characters */
         default:
+          color = (color && (typeof attribute === 'undefined' ? regs.bl : attribute)) || 0b111;
+
           /** Direct write to memory */
-          mode.write(
-            cpu.memIO,
-            character,
-            (color && (typeof attribute === 'undefined' ? regs.bl : attribute)) || 0b111,
-            cursor.x,
-            cursor.y,
-            page,
-          );
+          if (textMode) {
+            mode.write(
+              cpu.memIO,
+              character,
+              color,
+              cursor.x,
+              cursor.y,
+              page,
+            );
+          } else
+            writeGraphicsCharacter(cursor, character, attribute, color);
 
           /** Render cursor */
           cursor.x++;
           if (cursor.x >= mode.w) {
-            cursor.x = 0;
-            cursor.y++;
+            if (textMode) {
+              cursor.x = 0;
+              cursor.y++;
+            } else
+              cursor.x--;
           }
       }
 
@@ -564,7 +609,14 @@ export class BIOS extends uuidX86Device<X86CPU, BIOSInitConfig>('bios') {
         writeCharacters(null, false);
       },
 
-      0xE: () => writeCharacter(this.regs.al, null, false, true),
+      0xE: () => {
+        const {regs, vga: {textMode}} = this;
+
+        if (textMode)
+          writeCharacter(regs.al, null, false, true);
+        else
+          writeCharacter(regs.al, regs.bl, true, true);
+      },
 
       /** Blinking */
       0x10: () => {
@@ -614,16 +666,22 @@ export class BIOS extends uuidX86Device<X86CPU, BIOSInitConfig>('bios') {
       const vga = <VGA> cpu.devices.vga;
       vga.setScreenElement(screenElement);
 
-      const frame = () => {
-        try {
-          cpu.exec(15);
-          this.redraw();
+      try {
+        asap(
+          () => {
+            cpu.exec(1);
+            return !cpu.isHalted();
+          },
+        );
+      } catch (e) {
+        cpu.logger.error(e.stack);
+      }
 
-          if (!cpu.isHalted())
-            requestAnimationFrame(frame);
-        } catch (e) {
-          cpu.logger.error(e.stack);
-        }
+      const frame = () => {
+        this.redraw();
+
+        if (!cpu.isHalted())
+          requestAnimationFrame(frame);
       };
 
       requestAnimationFrame(frame);

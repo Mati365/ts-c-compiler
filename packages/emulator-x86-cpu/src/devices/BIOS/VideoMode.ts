@@ -32,7 +32,7 @@ export class VideoMode {
    * @returns {number}
    * @memberof VideoMode
    */
-  getPageOffset(page = 0x0): number {
+  getPageOffset(page: number = 0x0): number {
     return this.offset + page * this.pageSize;
   }
 

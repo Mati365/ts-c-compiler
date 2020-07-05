@@ -37,6 +37,7 @@ import {
 import {
   VGA_TEXT_MODES_PRESET,
   VGA_8X16_FONT,
+  VGA_8X8_FONT,
   assignPresetToVGA,
   VGA256Palette,
 } from './VGAModesPresets';
@@ -435,9 +436,19 @@ export class VGA extends uuidX86Device<X86CPU>('vga') implements ByteMemRegionAc
    * @memberof VGA
    */
   private loadTextModeDefaults(): void {
-    const {textModeState: {size}, textAttrsMem} = this;
+    const {
+      textModeState: {
+        size,
+      },
+      textAttrsMem,
+      textModeState,
+    } = this;
 
-    this.writeFontPack(VGA_8X16_FONT);
+    this.writeFontPack(
+      textModeState.charSize.h === 16
+        ? VGA_8X16_FONT
+        : VGA_8X8_FONT,
+    );
 
     // set default foreground color
     for (let i = 0; i < size.w * size.h; ++i)
