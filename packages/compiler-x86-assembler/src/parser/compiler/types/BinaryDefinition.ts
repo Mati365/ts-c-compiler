@@ -186,11 +186,13 @@ export class BinaryDefinition extends BinaryBlob<ASTDef> {
 
     for (let offsetIndex = 0; offsetIndex < _unresolvedOffsets.length;) {
       const offset = _unresolvedOffsets[offsetIndex];
+      const argIndex = (offset / byteSize) | 0;
+
       const result = safeKeywordResultRPN(
         {
           keywordResolver: labelResolver,
         },
-        args[offset].text,
+        args[argIndex].text,
       );
 
       if (!result.isOk()) {

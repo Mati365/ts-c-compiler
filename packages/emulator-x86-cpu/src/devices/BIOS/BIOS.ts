@@ -85,8 +85,8 @@ export class BIOS extends uuidX86Device<X86CPU, BIOSInitConfig>('bios') {
     0x2: new VideoMode(0x2, 80, 25, VGA_TEXT_MODES_PRESET['80x25'], 0x8),
     0x3: new VideoMode(0x3, 80, 25, VGA_TEXT_MODES_PRESET['80x25'], 0x8),
     0x4: new VideoMode(0x4, 320, 200, VGA_GRAPHICS_MODES_PRESET['320x200x4'], 0x1),
-    0x11: new VideoMode(0x11, 640, 480, VGA_GRAPHICS_MODES_PRESET['640x200x2'], 0x1),
-    0x12: new VideoMode(0x12, 640, 480, VGA_GRAPHICS_MODES_PRESET['640x200x16'], 0x1),
+    0x11: new VideoMode(0x11, 640, 480, VGA_GRAPHICS_MODES_PRESET['640x480x2'], 0x1),
+    0x12: new VideoMode(0x12, 640, 480, VGA_GRAPHICS_MODES_PRESET['640x480x16'], 0x1),
     0x13: new VideoMode(0x13, 320, 200, VGA_GRAPHICS_MODES_PRESET['320x200x256'], 0x1),
   };
 

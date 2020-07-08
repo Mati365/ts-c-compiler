@@ -1,14 +1,14 @@
 [org 0x7c00]
 
 _start:
-    mov ax, 0x0013
+    mov ax, 0x0012
     int 0x10                ; set video 320x200x256 mode
 
     mov ax, 0xa000          ; 0xa000 video segment
     mov es, ax              ; setup extended segment
 
     mov al, 0x0f
-    mov cx, screen_width*screen_height
+    mov cx, 2
     xor di, di
     rep stosb
 
