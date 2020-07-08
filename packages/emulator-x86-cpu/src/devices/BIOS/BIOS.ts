@@ -125,11 +125,7 @@ export class BIOS extends uuidX86Device<X86CPU, BIOSInitConfig>('bios') {
    */
   init({screenElement}: BIOSInitConfig): void {
     /** Canvas config */
-    if (screenElement) {
-      /** 0x3 text mode is used in the most BIOS implementations */
-      this.screenElement = screenElement;
-      this.setVideoMode(0x3);
-    }
+    this.screenElement = screenElement;
 
     /** Drives */
     this.drives = {
@@ -342,18 +338,22 @@ export class BIOS extends uuidX86Device<X86CPU, BIOSInitConfig>('bios') {
     this.attachInterrupts(0x13, 'ah', {
       /** Reset floppy drive */
       0x0: () => {
-        if (this.drives[this.regs.dl]) {
+        const {drives, regs} = this;
+
+        if (drives[regs.dl]) {
           // this.drives[this.regs.dl] = 0x0;
-          this.regs.ah = 0x0;
-          this.regs.status.cf = 0x0;
+          regs.ah = 0x0;
+          regs.status.cf = 0x0;
         } else {
-          this.regs.ah = 0x6;
-          this.regs.status.cf = 0x1;
+          regs.ah = 0x6;
+          regs.status.cf = 0x1;
         }
       },
 
       /** Read from floppy drive */
       0x2: () => {
+        const {drives, regs, cpu} = this;
+
         /**
          * see: https://en.wikipedia.org/wiki/INT_13H#INT_13h_AH.3D02h:_Read_Sectors_From_Drive
          * todo: Fixme
@@ -362,23 +362,23 @@ export class BIOS extends uuidX86Device<X86CPU, BIOSInitConfig>('bios') {
          * cylinder : 76543210 98
          * sector   :            543210
          */
-        const cylinder = ((this.regs.cx & 0xFF00) >> 8) | (((this.regs.cx & 0xC0) << 2)),
-          sector = this.regs.cl & 0x3F,
-          drive = this.drives[this.regs.dl],
+        const cylinder = ((regs.cx & 0xFF00) >> 8) | (((regs.cx & 0xC0) << 2)),
+          sector = regs.cl & 0x3F,
+          drive = drives[regs.dl],
           /** Mem adresses */
-          src = ((cylinder * drive.info.heads + this.regs.dh) * drive.info.sectors + sector - 0x1) * drive.info.sector,
-          dest = this.cpu.getMemAddress('es', 'bx');
+          src = ((cylinder * drive.info.heads + regs.dh) * drive.info.sectors + sector - 0x1) * drive.info.sector,
+          dest = cpu.getMemAddress('es', 'bx');
 
         /** Device is init before boot, if device is null, assign boot medium */
         if (!drive.buffer)
-          drive.buffer = this.cpu.device;
+          drive.buffer = cpu.device;
 
         if (drive.buffer) {
           /** Copy sectors */
-          for (let i = 0; i < this.regs.al; ++i) {
+          for (let i = 0; i < regs.al; ++i) {
             const offset = i * drive.info.sector;
             drive.buffer.copy(
-              this.cpu.mem,
+              cpu.mem,
               dest + offset, /** Dest address */
               src + offset, /** Source address start */
               src + offset + drive.info.sector, /** Source address end */
@@ -386,12 +386,12 @@ export class BIOS extends uuidX86Device<X86CPU, BIOSInitConfig>('bios') {
           }
 
           /** Always success, buffer is provided */
-          this.regs.status.cf = 0x0;
-          this.regs.ah = 0x0;
+          regs.status.cf = 0x0;
+          regs.ah = 0x0;
         } else {
           /** Error */
-          this.regs.status.cf = 0x1;
-          this.regs.ah = 0xBB;
+          regs.status.cf = 0x1;
+          regs.ah = 0xBB;
         }
       },
     });
@@ -636,12 +636,14 @@ export class BIOS extends uuidX86Device<X86CPU, BIOSInitConfig>('bios') {
 
       /** Write string */
       0x13: () => {
-        for (let i = 0; i < this.regs.cx; ++i) {
+        const {cpu, regs} = this;
+
+        for (let i = 0; i < regs.cx; ++i) {
           writeCharacter(
-            this.cpu.memIO.read[0x1](this.cpu.getMemAddress('es', 'bp')),
-            this.regs.al <= 0x1 && this.regs.bl,
+            cpu.memIO.read[0x1](cpu.getMemAddress('es', 'bp')),
+            regs.al <= 0x1 && regs.bl,
           );
-          this.regs.bp++;
+          regs.bp++;
         }
       },
 

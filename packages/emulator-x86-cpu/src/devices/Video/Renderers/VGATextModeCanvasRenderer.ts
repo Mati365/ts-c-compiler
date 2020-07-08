@@ -1,4 +1,3 @@
-import {VGA_CHAR_BYTE_SIZE} from '../VGAConstants';
 import {VGAPixBufCanvasRenderer} from './utils/VGAPixBufCanvasRenderer';
 
 /**
@@ -65,7 +64,7 @@ export class VGATextModeCanvasRenderer extends VGAPixBufCanvasRenderer {
           ((attr & 0x8) !== 0
             ? charsetARegion
             : charsetBRegion
-          ).low + (char << VGA_CHAR_BYTE_SIZE)
+          ).low + (char << 5)
         );
 
         let fgColor = (attr & 0xF) & 0xFF;

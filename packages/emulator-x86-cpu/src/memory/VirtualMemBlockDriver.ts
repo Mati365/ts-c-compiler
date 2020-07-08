@@ -207,7 +207,7 @@ export class VirtualMemBlockDriver implements ByteMemRegionAccessor {
     const endOffset = address + count - 1;
 
     for (let i = 0; i < count; ++i)
-      this.writeNumber(bytes[i], endOffset - i, 0x1);
+      this.writeNumber(endOffset - i, bytes[i], 0x1);
 
     return address;
   }
@@ -224,7 +224,7 @@ export class VirtualMemBlockDriver implements ByteMemRegionAccessor {
     const {length: count} = bytes;
 
     for (let i = 0; i < count; ++i)
-      this.writeNumber(bytes[i], i, 0x1);
+      this.writeNumber(address + i, bytes[i], 0x1);
 
     return address;
   }

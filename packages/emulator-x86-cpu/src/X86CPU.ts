@@ -1,4 +1,6 @@
 import {getMSbit} from '@compiler/core/utils/bits';
+import {unsafeASM} from '@compiler/x86-assembler';
+
 import {BINARY_MASKS} from '@compiler/core/constants';
 
 import {
@@ -32,8 +34,9 @@ import {
   Keyboard,
 } from './devices';
 
+import fakeBIOS from './devices/BIOS/asm/fakeBIOS.asm';
+
 type X86CPUConfig = {
-  ignoreMagic?: boolean,
   debugger?: boolean,
   silent?: boolean,
 };
@@ -58,7 +61,6 @@ export class X86CPU extends X86AbstractCPU {
     super();
 
     this.config = config || {
-      ignoreMagic: false,
       debugger: false,
       silent: false,
     };
@@ -113,47 +115,30 @@ export class X86CPU extends X86AbstractCPU {
     this.clock = true;
     this.device = device;
 
+    const {memIO, registers} = this;
     Object.assign(
-      this.registers,
+      registers,
       {
         dl: id,
       },
     );
 
-    this.logger.info('CPU: Intel 8086 compatible processor');
-    this.loadMBR(this.readChunk(0, 512));
-  }
+    // jmp to reset vector
+    memIO.writeBytesBE(0xffff0, unsafeASM('jmp 0xF000:0x0000'));
+    memIO.writeBytesBE(0xf0000, unsafeASM(fakeBIOS));
 
-  /**
-   * Check code magic number, at the end of 512B
-   * block there should be magic number
-   *
-   * @static
-   * @param {Buffer} code First 512B of machine code
-   */
-  loadMBR(code: Buffer): void {
-    if (this.config.ignoreMagic || code.readUInt16LE(510) === 0xAA55) {
-      this.logger.info('Booting from MBR');
+    Object.assign(
+      registers,
+      {
+        cs: 0xffff,
+        ip: 0x0,
+        ss: 0x0,
+        sp: 0xffd6, // same as bochs
+        flags: 0x82,
+      },
+    );
 
-      /** CS:IP */
-      Object.assign(
-        this.registers,
-        {
-          cs: 0x0,
-          ss: 0x0,
-          ip: 0x7c00,
-          sp: 0xffd6, // same as bochs
-          flags: 0x82,
-        },
-      );
-
-      this.loadBuffer(
-        code,
-        this.physicalIP,
-        510,
-      );
-    } else
-      this.halt('Unable to boot device!');
+    this.logger.info('CPU: Intel 8086 compatible processor, jumping to 0xFFFF0 reset vector!');
   }
 
   /**

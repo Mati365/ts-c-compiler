@@ -121,7 +121,9 @@ export abstract class VGAPixBufCanvasRenderer extends VGACanvasRenderer {
   redraw(frameNumber: number): void {
     super.redraw(frameNumber);
 
-    this.drawToImageData(this.imageData.data, frameNumber);
-    this.drawImgDataToCanvas();
+    if (this.imageData) {
+      this.drawToImageData(this.imageData.data, frameNumber);
+      this.drawImgDataToCanvas();
+    }
   }
 }

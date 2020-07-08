@@ -31,14 +31,13 @@ export abstract class VGACanvasRenderer {
     const {vga, canvas} = this;
     const screenSize = vga.getPixelScreenSize();
 
-    if (screenSize.w === canvas.width
-        && screenSize.h === canvas.height)
+    if (!canvas || (screenSize.w === canvas.width && screenSize.h === canvas.height))
       return false;
 
     canvas.width = screenSize.w;
     canvas.height = screenSize.h;
 
-    return true;
+    return canvas.width * canvas.height > 0;
   }
 
   abstract isSuitable(): boolean;

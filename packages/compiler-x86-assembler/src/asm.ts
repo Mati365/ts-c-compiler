@@ -66,3 +66,23 @@ export function asm(
       .andThen(compile)
   );
 }
+
+/**
+ * Compiles asm instruction without result,
+ * it can crash if provided code is incorrect.
+ *
+ * Use it only in internal JITs etc.
+ *
+ * @export
+ * @param {string} code
+ * @param {AssemblerConfig} [config={}]
+ * @returns {number[]}
+ */
+export function unsafeASM(code: string, config: AssemblerConfig = {}): number[] {
+  return (
+    asm(code, config)
+      .unwrap()
+      .output
+      .getBinary()
+  );
+}
