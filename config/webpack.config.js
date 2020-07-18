@@ -1,10 +1,11 @@
 const path = require('path');
 
 const pkgResolve = (pkgPath) => path.resolve(__dirname, path.join('../packages/', pkgPath));
+const srcResolve = (pkgPath) => path.resolve(__dirname, path.join('../src/', pkgPath));
 
 module.exports = {
   target: 'web',
-  entry: pkgResolve('emulator-ui/src/main.tsx'),
+  entry: srcResolve('client/index.tsx'),
   devtool: 'source-map',
   devServer: {
     port: 8080,
@@ -61,8 +62,8 @@ module.exports = {
       '@compiler/rpn': pkgResolve('compiler-rpn/src/'),
       '@compiler/x86-assembler': pkgResolve('compiler-x86-assembler/src/'),
       '@compiler/x86-nano-c': pkgResolve('compiler-x86-nano-c/src'),
-      '@emulator/ui': pkgResolve('emulator-ui/src/'),
       '@emulator/x86-cpu': pkgResolve('emulator-x86-cpu/src'),
+      '@ui/context-state': pkgResolve('ui-context-state/src'),
     },
   },
   output: {

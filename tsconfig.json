@@ -27,11 +27,11 @@
       "@compiler/x86-nano-c": ["compiler-x86-nano-c/src/"],
       "@compiler/x86-nano-c/*": ["compiler-x86-nano-c/src/*"],
 
-      "@emulator/ui": ["emulator-ui/src/"],
-      "@emulator/ui/*": ["emulator-ui/src/*"],
-
       "@emulator/x86-cpu": ["emulator-x86-cpu/src/"],
-      "@emulator/x86-cpu/*": ["emulator-x86-cpu/src/*"]
+      "@emulator/x86-cpu/*": ["emulator-x86-cpu/src/*"],
+
+      "@ui/context-state": ["ui-context-state/src/"],
+      "@ui/context-state/*": ["ui-context-state/src/*"]
     }
   },
   "exclude": [

@@ -8,8 +8,12 @@ import {
   compile,
   ast,
   safeResultAsmLexer,
-  CompilerOutput,
+  CompilerFinalResult,
 } from './parser';
+
+export {
+  CompilerFinalResult,
+};
 
 export type AssemblerConfig = {
   preprocessor?: boolean,
@@ -21,14 +25,14 @@ export type AssemblerConfig = {
  * @export
  * @param {string} code
  * @param {AssemblerConfig} [{preprocessor}={}]
- * @returns {Result<CompilerOutput, CompilerError[]>}
+ * @returns {CompilerFinalResult}
  */
 export function asm(
   code: string,
   {
     preprocessor = true,
   }: AssemblerConfig = {},
-): Result<CompilerOutput, CompilerError[]> {
+): CompilerFinalResult {
   let preprocessorResult: Result<PreprocessorResult, CompilerError[]> = null;
 
   if (preprocessor) {
