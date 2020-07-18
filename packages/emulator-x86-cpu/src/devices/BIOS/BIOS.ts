@@ -1,5 +1,4 @@
 import {getBit} from '@compiler/core/utils/bits';
-import {asap} from '@compiler/core/utils/asap';
 import {Vec2D} from '@compiler/core/types';
 import {UnionStruct, bits} from '@compiler/core/shared/UnionStruct';
 
@@ -39,10 +38,6 @@ type ScreenState = {
   mode: VideoMode,
 };
 
-type BIOSInitConfig = {
-  screenElement: HTMLElement,
-};
-
 type BIOSFloppyDrive = {
   buffer: Buffer,
   track: number,
@@ -70,7 +65,7 @@ class BIOSKeyboardFlags extends UnionStruct {
  * @class BIOS
  * @extends {Device}
  */
-export class BIOS extends uuidX86Device<X86CPU, BIOSInitConfig>('bios') {
+export class BIOS extends uuidX86Device<X86CPU>('bios') {
   /** Mapped memory */
   static mapped = X86_REALMODE_MAPPED_ADDRESSES;
 
@@ -101,8 +96,6 @@ export class BIOS extends uuidX86Device<X86CPU, BIOSInitConfig>('bios') {
     mode: null,
   };
 
-  private screenElement: HTMLElement;
-
   private drives: {[drive: number]: BIOSFloppyDrive} = null;
 
   /**
@@ -120,13 +113,8 @@ export class BIOS extends uuidX86Device<X86CPU, BIOSInitConfig>('bios') {
 
   /**
    * Initialize BIOS
-   *
-   * @param {Canvas} canvas Canvas context
    */
-  init({screenElement}: BIOSInitConfig): void {
-    /** Canvas config */
-    this.screenElement = screenElement;
-
+  init(): void {
     /** Drives */
     this.drives = {
       /**
@@ -660,46 +648,6 @@ export class BIOS extends uuidX86Device<X86CPU, BIOSInitConfig>('bios') {
         this.regs.ah = mode.w;
       },
     });
-
-    /** Monitor render loop */
-    const {screenElement, cpu} = this;
-    if (screenElement) {
-      /** Render loop */
-      const vga = <VGA> cpu.devices.vga;
-      vga.setScreenElement(screenElement);
-
-      try {
-        asap(
-          () => {
-            cpu.exec(1);
-            return !cpu.isHalted();
-          },
-        );
-      } catch (e) {
-        cpu.logger.error(e.stack);
-      }
-
-      const frame = () => {
-        this.redraw();
-
-        if (!cpu.isHalted())
-          requestAnimationFrame(frame);
-      };
-
-      requestAnimationFrame(frame);
-    }
-  }
-
-  private frameNumber: number = 0;
-
-  redraw(): void {
-    const {vga} = this;
-
-    vga
-      .getCurrentRenderer()
-      .redraw(this.frameNumber);
-
-    this.frameNumber = (this.frameNumber + 1) % 0x30;
   }
 
   /**

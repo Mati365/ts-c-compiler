@@ -1,8 +1,9 @@
+import * as R from 'ramda';
+
 import {getMSbit} from '@compiler/core/utils/bits';
 import {unsafeASM} from '@compiler/x86-assembler';
 
 import {BINARY_MASKS} from '@compiler/core/constants';
-
 import {
   X86_REGISTERS,
   X86_PREFIXES,
@@ -28,10 +29,11 @@ import {X86ALU} from './X86ALU';
 import {X86IO} from './X86IO';
 import {X86InstructionSet} from './X86InstructionSet';
 import {
-  VGA,
+  BIOS,
   CMOS,
-  PIT,
   Keyboard,
+  PIT,
+  VGA,
 } from './devices';
 
 import fakeBIOS from './devices/BIOS/asm/fakeBIOS.asm';
@@ -69,7 +71,8 @@ export class X86CPU extends X86AbstractCPU {
       .attach(PIT)
       .attach(CMOS)
       .attach(VGA)
-      .attach(Keyboard);
+      .attach(Keyboard)
+      .attach(BIOS);
 
     this.mem = new Uint8Array(1048576);
     this.memIO = new X86RAM<X86CPU>(this, this.mem);
@@ -136,6 +139,11 @@ export class X86CPU extends X86AbstractCPU {
         sp: 0xffd6, // same as bochs
         flags: 0x82,
       },
+    );
+
+    R.forEachObjIndexed(
+      (cpuDevice) => cpuDevice.boot(),
+      this.devices,
     );
 
     this.logger.info('CPU: Intel 8086 compatible processor, jumping to 0xFFFF0 reset vector!');
@@ -729,6 +737,11 @@ export class X86CPU extends X86AbstractCPU {
       this.logger.warn('CPU is already turned off');
     else {
       this.clock = false;
+
+      R.forEachObjIndexed(
+        (cpuDevice) => cpuDevice.halt(),
+        this.devices,
+      );
 
       /** Optional args */
       if (message)

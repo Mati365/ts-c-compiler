@@ -1,4 +1,9 @@
-import {CompilerFinalResult} from '@compiler/x86-assembler';
+import {CompilerFinalResult as AssemblerResult} from '@compiler/x86-assembler';
+
+export enum EmulatorLanguage {
+  ASM,
+  C,
+}
 
 export enum EmulationState {
   RUNNING,
@@ -8,5 +13,7 @@ export enum EmulationState {
 
 export type EmulatorState = {
   emulationState: EmulationState,
-  compilerOutput: CompilerFinalResult,
+  compilerOutput: {
+    asm: AssemblerResult,
+  },
 };

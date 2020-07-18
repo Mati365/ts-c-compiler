@@ -124,6 +124,20 @@ export abstract class X86AbstractDevice<
   }
 
   /**
+   * Called when CPU is booting
+   *
+   * @memberof X86AbstractDevice
+   */
+  boot(): void {}
+
+  /**
+   * Called when CPU is halting
+   *
+   * @memberof X86AbstractDevice
+   */
+  halt(): void {}
+
+  /**
    * Removes listeners from CPU
    *
    * @memberof AbstractDevice

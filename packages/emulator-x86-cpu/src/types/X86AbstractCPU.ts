@@ -228,6 +228,23 @@ export abstract class X86AbstractCPU {
   }
 
   /**
+   * Releases memory allocated by all devices
+   *
+   * @memberof X86AbstractCPU
+   */
+  release(): void {
+    if (!this.isHalted())
+      this.halt();
+
+    R.forEachObjIndexed(
+      (device) => device.release(),
+      this.devices,
+    );
+
+    this.devices = null;
+  }
+
+  /**
    * Return value in microseconds
    *
    * @static
