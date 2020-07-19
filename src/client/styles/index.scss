@@ -1,2 +1,6 @@
-@import '~codemirror/lib/codemirror.css';
-@import '~codemirror/theme/material.css';
+@import '~codemirror/lib/codemirror';
+@import '~codemirror/theme/material';
+@import '~@ui/webapp-scss/../styles';
+
+@import './objects/controls';
+@import './layouts/page';

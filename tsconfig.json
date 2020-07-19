@@ -31,7 +31,10 @@
       "@emulator/x86-cpu/*": ["emulator-x86-cpu/src/*"],
 
       "@ui/context-state": ["ui-context-state/src/"],
-      "@ui/context-state/*": ["ui-context-state/src/*"]
+      "@ui/context-state/*": ["ui-context-state/src/*"],
+
+      "@ui/webapp-scss": ["ui-webapp-scss/src/"],
+      "@ui/webapp-scss/*": ["ui-webapp-scss/src/*"]
     }
   },
   "exclude": [

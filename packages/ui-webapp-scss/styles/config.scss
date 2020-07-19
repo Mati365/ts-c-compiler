@@ -1,0 +1,49 @@
+$webapp-config: () !default;
+$webapp-colors: () !default;
+
+$webapp-config: map-merge(
+  (
+    'container-width': 1248px,
+
+    'card-space': 3,
+    'card-radius': 6px,
+
+    'padding-space-helpers-count': 5,
+    'padding-space': 4px,
+
+    'margin-space-helpers-count': 5,
+    'margin-space': 4px,
+
+    'grid-space': 4px,
+  ),
+  $webapp-config
+);
+
+$webapp-colors: map-merge(
+  (
+    'text-default': #24292e,
+
+    'card-border': #e1e4e8,
+    'card-primary-background': #f1f8ff,
+    'card-primary-border': #c8e1ff,
+    'card-secondary-background': #f6f8fa,
+    'card-secondary-border': #e1e4e8,
+  ),
+  $webapp-colors
+);
+
+@function webapp-color($color) {
+  @if map-has-key($webapp-colors, $color) {
+    @return map-get($webapp-colors, $color);
+  } @else {
+    @error "Unknown color #{$color}!"
+  }
+};
+
+@function webapp-config($config) {
+  @if map-has-key($webapp-config, $config) {
+    @return map-get($webapp-config, $config);
+  } @else {
+    @error "Unknown config #{$config}!"
+  }
+};

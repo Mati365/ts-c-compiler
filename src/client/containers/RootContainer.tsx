@@ -1,5 +1,7 @@
 import React, {useEffect, useRef} from 'react';
 
+import {Container, Card, CardType} from '@ui/webapp-scss';
+
 import {X86CPU} from '@emulator/x86-cpu/X86CPU';
 import {VGARenderLoopDriver} from '@emulator/x86-cpu/devices/Video/HTML/VGARenderLoopDriver';
 import {ScreenHolder} from './ScreenHolder';
@@ -40,10 +42,23 @@ export const RootContainer = () => {
   );
 
   return (
-    <>
-      <CodeEditor />
-      <ScreenHolder ref={screenRef} />
-    </>
+    <section>
+      <Container className='l-repl-container'>
+        <Card
+          header='Play'
+          contentSpaced={false}
+        >
+          <CodeEditor />
+        </Card>
+
+        <Card
+          type={CardType.PRIMARY}
+          header='ABCdef'
+        >
+          <ScreenHolder ref={screenRef} />
+        </Card>
+      </Container>
+    </section>
   );
 };
 

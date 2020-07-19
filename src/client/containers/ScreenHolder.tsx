@@ -1,8 +1,6 @@
-import React, {forwardRef, DetailedHTMLProps, HTMLAttributes} from 'react';
+import React, {forwardRef} from 'react';
 
-type HTMLDivElementProps = DetailedHTMLProps<HTMLAttributes<HTMLDivElement>, HTMLDivElement>;
-
-export const ScreenHolder = forwardRef<HTMLDivElement, HTMLDivElementProps>((props, ref) => (
+export const ScreenHolder = forwardRef<HTMLDivElement, JSX.IntrinsicElements['div']>((props, ref) => (
   <div
     {...props}
     ref={ref}

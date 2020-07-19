@@ -1,0 +1,82 @@
+@mixin define-size-selector($selector, $name, $times, $spacing) {
+  &#{$name} {
+    @for $i from 0 through $times {
+      &-#{$i} {
+        #{$selector}: ($i * $spacing) !important;
+      }
+    }
+  }
+}
+
+.m {
+  $times: map-get($webapp-config, 'margin-space-helpers-count');
+  $spacing: map-get($webapp-config, 'margin-space');
+
+  @include define-size-selector('margin', '', $times, $spacing);
+  @include define-size-selector('margin-bottom', 'b', $times, $spacing);
+  @include define-size-selector('margin-top', 't', $times, $spacing);
+  @include define-size-selector('margin-left', 'l', $times, $spacing);
+  @include define-size-selector('margin-right', 'r', $times, $spacing);
+}
+
+.p {
+  $times: map-get($webapp-config, 'padding-space-helpers-count');
+  $spacing: map-get($webapp-config, 'padding-space');
+
+  @include define-size-selector('padding', '', $times, $spacing);
+  @include define-size-selector('padding-bottom', 'b', $times, $spacing);
+  @include define-size-selector('padding-top', 't', $times, $spacing);
+  @include define-size-selector('padding-left', 'l', $times, $spacing);
+  @include define-size-selector('padding-right', 'r', $times, $spacing);
+}
+
+// display classes
+.d {
+  &-inline-block  { display: inline-block !important; }
+  &-block         { display: block !important; }
+  &-flex          { display: flex !important; }
+}
+
+.flex {
+  &-column { flex-direction: column !important; }
+  &-row    { flex-direction: row !important;    }
+}
+
+.align {
+  &-self {
+    align-self: end;
+  }
+
+  &-items {
+    &-center { align-items: center !important; }
+  }
+}
+
+.position {
+  &-absolute { position: absolute; }
+  &-relative { position: relative; }
+
+}
+
+.w {
+  &-25  { width: 25% !important; }
+  &-50  { width: 50% !important; }
+  &-100 { width: 100% !important; }
+}
+
+.cursor {
+  &-grab {
+    &, * {
+      cursor: move !important;
+      cursor: -webkit-grab !important;
+    }
+  }
+
+  &-pointer {
+    &, * { cursor: pointer !important; }
+  }
+}
+
+.is-hidden {
+  display: none;
+}

@@ -16,7 +16,8 @@
           ['@compiler/x86-assembler', './packages/compiler-x86-assembler/src/'],
           ['@compiler/x86-nano-c', './packages/compiler-x86-nano-c/src/'],
           ['@emulator/x86-cpu', './packages/emulator-x86-cpu/src'],
-          ['@ui/context-state', './packages/ui-context-state/src']
+          ['@ui/context-state', './packages/ui-context-state/src'],
+          ['@ui/webapp-scss', './packages/ui-webapp-scss/src']
         ],
         extensions: ['.js', '.ts', '.tsx', '.scss', '.json']
       }

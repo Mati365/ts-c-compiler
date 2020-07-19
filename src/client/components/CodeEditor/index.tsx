@@ -8,6 +8,10 @@ type CodeEditorProps = LinkProps<string> & ICodeMirror;
 
 export const CodeEditor = linkInputs<string>()(({value, l, initialData, ...props}: CodeEditorProps) => (
   <CodeMirror
+    className='o-code-editor'
+    options={{
+      lineNumbers: true,
+    }}
     defineMode={{
       name: 'nasm',
       fn: nasmSyntaxDefine,

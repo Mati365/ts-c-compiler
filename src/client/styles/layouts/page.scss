@@ -1,0 +1,5 @@
+.l-repl-container {
+  display: grid;
+  grid-template-columns: 0.5fr 0.5fr;
+  column-gap: webapp-config(grid-space) * 3;
+}
