@@ -3,6 +3,7 @@ import React, {useEffect, useRef} from 'react';
 import {X86CPU} from '@emulator/x86-cpu/X86CPU';
 import {VGARenderLoopDriver} from '@emulator/x86-cpu/devices/Video/HTML/VGARenderLoopDriver';
 import {ScreenHolder} from './ScreenHolder';
+import {CodeEditor} from '../components/CodeEditor';
 
 import {useEmulatorContext} from '../context/emulator-state/context';
 
@@ -15,14 +16,15 @@ export const RootContainer = () => {
 
   const screenRef = useRef<HTMLDivElement>();
   const cpuRef = useRef<X86CPU>();
+  const {asm: asmResult} = compilerOutput;
 
   useEffect(
     () => {
-      if (compilerOutput.asm.isErr())
+      if (!asmResult || asmResult.isErr())
         return undefined;
 
       const cpu = new X86CPU;
-      const binary = compilerOutput.asm.unwrap().output.getBinary();
+      const binary = asmResult.unwrap().output.getBinary();
 
       cpu
         .attach(VGARenderLoopDriver, {screenElement: screenRef.current})
@@ -34,11 +36,14 @@ export const RootContainer = () => {
         cpu.release();
       };
     },
-    [compilerOutput.asm],
+    [asmResult],
   );
 
   return (
-    <ScreenHolder ref={screenRef} />
+    <>
+      <CodeEditor />
+      <ScreenHolder ref={screenRef} />
+    </>
   );
 };
 

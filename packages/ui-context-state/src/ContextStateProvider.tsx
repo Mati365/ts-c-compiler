@@ -79,9 +79,8 @@ ContextProviderState<S>
         && prevResetStateKey !== resetStateKey
         && resetStateKey !== undefined) {
       newAppState = initialState;
-    } else {
+    } else
       newAppState = appState || initialState;
-    }
 
     if (getStateFromProps) {
       const {keys, fn} = getStateFromProps;

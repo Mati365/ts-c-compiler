@@ -1,11 +1,15 @@
 import {createContextPack} from '@ui/context-state';
-import {EmulatorState} from './state';
+import {createInitialEmulatorState, EmulatorState} from './state';
 import {EmulatorActions} from './actions';
 
 const {
   Provider,
   useStateContext,
-} = createContextPack<EmulatorState, typeof EmulatorActions>();
+} = createContextPack<EmulatorState, typeof EmulatorActions>(
+  {
+    initialState: createInitialEmulatorState(),
+  },
+);
 
 export const EmulatorContextProvider = Provider;
 

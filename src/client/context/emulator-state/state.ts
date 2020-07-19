@@ -6,6 +6,7 @@ export enum EmulatorLanguage {
 }
 
 export enum EmulationState {
+  STOPPED,
   RUNNING,
   PAUSE,
   BREAKPOINT,
@@ -17,3 +18,12 @@ export type EmulatorState = {
     asm: AssemblerResult,
   },
 };
+
+export function createInitialEmulatorState(): EmulatorState {
+  return {
+    emulationState: EmulationState.STOPPED,
+    compilerOutput: {
+      asm: null,
+    },
+  };
+}

@@ -1,4 +1,5 @@
 const path = require('path');
+const MiniCssExtractPlugin = require('mini-css-extract-plugin');
 
 const pkgResolve = (pkgPath) => path.resolve(__dirname, path.join('../packages/', pkgPath));
 const srcResolve = (pkgPath) => path.resolve(__dirname, path.join('../src/', pkgPath));
@@ -20,6 +21,16 @@ module.exports = {
       {
         test: /\.(bin|flp)/,
         use: 'arraybuffer-loader',
+      },
+      {
+        test: /\.s?css$/,
+        use: [
+          {
+            loader: MiniCssExtractPlugin.loader,
+          },
+          'css-loader',
+          'sass-loader',
+        ],
       },
       {
         test: /\.(png|jpe?g|gif|ttf|svg)$/,
@@ -53,6 +64,14 @@ module.exports = {
       },
     ],
   },
+  plugins: [
+    new MiniCssExtractPlugin(
+      {
+        filename: 'bundle.css',
+        chunkFilename: '[id].css',
+      },
+    ),
+  ],
   resolve: {
     extensions: ['.tsx', '.ts', '.js', '.jsx'],
     alias: {

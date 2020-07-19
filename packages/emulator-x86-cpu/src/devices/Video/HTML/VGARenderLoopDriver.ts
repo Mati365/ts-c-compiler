@@ -14,7 +14,7 @@ type VGARenderLoopDriverInitConfig = {
  * @class VGARenderLoopDriver
  * @extends {uuidX86Device('vgaRenderLoopDriver')}
  */
-export class VGARenderLoopDriver extends uuidX86Device('vgaRenderLoopDriver') {
+export class VGARenderLoopDriver extends uuidX86Device('vgaRenderLoop') {
   private screenElement: HTMLElement = null;
   private frameNumber: number = 0;
 

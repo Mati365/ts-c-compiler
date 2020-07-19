@@ -5,6 +5,7 @@ import {X86_REGISTERS} from './constants/x86';
 import {X86Unit} from './X86Unit';
 import {X86CPU, X86RegRMCallback, X86MemRMCallback} from './X86CPU';
 import {X86ALUOperator} from './X86ALU';
+import {VGARenderLoopDriver} from './devices/Video/HTML/VGARenderLoopDriver';
 import {
   X86BitsMode,
   X86Flags,
@@ -13,8 +14,6 @@ import {
   X86Interrupt,
   X86InterruptType,
 } from './types';
-
-import {BIOS} from './devices';
 
 type X86FlagCondition = (flags: X86Flags) => boolean|number;
 
@@ -587,7 +586,10 @@ export class X86InstructionSet extends X86Unit {
             cpu.debugDumpRegisters();
 
             if (arg === 0xDB) { // xchg bx, bx
-              (<BIOS> cpu.devices.bios).redraw();
+              const loop = (<VGARenderLoopDriver> cpu.devices.vgaRenderLoop);
+              if (loop)
+                loop.redraw();
+
               debugger; // eslint-disable-line no-debugger
             }
             break;
