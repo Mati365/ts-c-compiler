@@ -124,6 +124,11 @@ export class VGA extends uuidX86Device<X86CPU>('vga') implements ByteMemRegionAc
     this.initPorts();
   }
 
+  release() {
+    super.release();
+    this.renderer?.release(); // eslint-disable-line no-unused-expressions
+  }
+
   private initPorts(): void {
     const {
       crtcRegs, externalRegs, attrRegs,

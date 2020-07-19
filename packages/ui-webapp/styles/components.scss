@@ -1,0 +1,121 @@
+.c-card {
+  display: block;
+
+  &.is-bordered {
+    > .c-card-content {
+      border: 1px solid webapp-color(card-border);
+    }
+
+    > .c-card-header {
+      border-width: 1px;
+      border-style: solid;
+    }
+
+    .c-card-header + .c-card-content {
+      border-top: 0;
+    }
+  }
+
+  &.is-rounded {
+    $radius: webapp-config(card-radius);
+
+    > .c-card-header {
+      border-top-left-radius: $radius;
+      border-top-right-radius: $radius;
+    }
+
+    > .c-card-content {
+      border-bottom-left-radius: $radius;
+      border-bottom-right-radius: $radius;
+
+      &:only-child {
+        border-radius: $radius;
+      }
+    }
+  }
+
+  &-header {
+    padding: (webapp-config(padding-space) * 2) (webapp-config(padding-space) * 4);
+
+    &.is-primary {
+      background: webapp-color(card-primary-background);
+      border-color: webapp-color(card-primary-border);
+    }
+
+    &.is-secondary {
+      background: webapp-color(card-secondary-background);
+      border-color: webapp-color(card-secondary-border);
+    }
+  }
+
+  &-content {
+    flex: 1;
+
+    &.is-spaced {
+      padding: (webapp-config(card-space) * webapp-config(padding-space));
+    }
+  }
+}
+
+.o-btn {
+  position: relative;
+  display: inline-block;
+  padding: 5px 16px;
+  font-size: 14px;
+  font-weight: 600;
+  line-height: 20px;
+  white-space: nowrap;
+  vertical-align: middle;
+  cursor: pointer;
+  user-select: none;
+  border: 1px solid;
+  border-radius: 6px;
+  -webkit-appearance: none;
+  appearance: none;
+  transition: background-color .2s cubic-bezier(.3,0,.5,1);
+  text-decoration: none;
+
+  &:hover,
+  &:active,
+  &:focus {
+    outline: 0;
+    transition-duration: .1s;
+  }
+
+  &.is-default {
+    color: #24292e;
+    background-color: #fafbfc;
+    border-color: rgba(27,31,35,.15);
+    box-shadow: 0 1px 0 rgba(27,31,35,.04), inset 0 1px 0 hsla(0,0%,100%,.25);
+
+    &:hover {
+      background-color: #f3f4f6;
+    }
+  }
+
+  &.is-primary {
+    color: rgb(255, 255, 255);
+    background-color: rgb(46, 164, 79);
+    box-shadow: rgba(20, 70, 32, 0.1) 0px 1px 0px, rgba(255, 255, 255, 0.03) 0px 2px 0px inset;
+    border-color: rgb(34, 134, 58);
+
+    &:hover {
+      background-color: rgb(44, 151, 75);
+      border-color: rgba(27, 31, 35, 0.15);
+    }
+  }
+
+  &.is-danger {
+    color: rgb(203, 36, 49);
+    background-color: rgb(250, 251, 252);
+    box-shadow: rgba(149, 157, 165, 0.1) 0px 1px 0px, rgba(255, 255, 255, 0.25) 0px 2px 0px inset;
+    border-color: rgb(225, 228, 232);
+
+    &:hover {
+      color: rgb(255, 255, 255);
+      background-color: rgb(203, 36, 49);
+      box-shadow: rgba(27, 31, 35, 0.1) 0px 1px 0px, rgba(255, 255, 255, 0.03) 0px 2px 0px inset;
+      border-color: rgba(27, 31, 35, 0.15);
+    }
+  }
+}

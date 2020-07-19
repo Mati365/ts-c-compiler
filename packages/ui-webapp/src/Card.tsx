@@ -62,3 +62,5 @@ export const Card = (
 );
 
 Card.displayName = 'Card';
+
+Card.Type = CardType;

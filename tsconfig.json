@@ -33,8 +33,8 @@
       "@ui/context-state": ["ui-context-state/src/"],
       "@ui/context-state/*": ["ui-context-state/src/*"],
 
-      "@ui/webapp-scss": ["ui-webapp-scss/src/"],
-      "@ui/webapp-scss/*": ["ui-webapp-scss/src/*"]
+      "@ui/webapp": ["ui-webapp/src/"],
+      "@ui/webapp/*": ["ui-webapp/src/*"]
     }
   },
   "exclude": [

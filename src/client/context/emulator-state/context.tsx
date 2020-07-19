@@ -8,6 +8,7 @@ const {
 } = createContextPack<EmulatorState, typeof EmulatorActions>(
   {
     initialState: createInitialEmulatorState(),
+    actions: EmulatorActions,
   },
 );
 

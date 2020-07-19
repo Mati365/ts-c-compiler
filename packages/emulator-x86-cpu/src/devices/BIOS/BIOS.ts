@@ -240,6 +240,9 @@ export class BIOS extends uuidX86Device<X86CPU>('bios') {
       if (keymap.key === null) {
         cpu.pause = true;
         keymap.callback = (e: KeyboardEvent): void => {
+          if (document.activeElement !== document.body)
+            return;
+
           e.preventDefault();
 
           if (isCaseModifyKeycode(keymap.key)) {

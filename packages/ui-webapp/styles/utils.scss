@@ -9,8 +9,8 @@
 }
 
 .m {
-  $times: map-get($webapp-config, 'margin-space-helpers-count');
-  $spacing: map-get($webapp-config, 'margin-space');
+  $times: webapp-config(margin-space-helpers-count);
+  $spacing: webapp-config(margin-space);
 
   @include define-size-selector('margin', '', $times, $spacing);
   @include define-size-selector('margin-bottom', 'b', $times, $spacing);
@@ -20,8 +20,8 @@
 }
 
 .p {
-  $times: map-get($webapp-config, 'padding-space-helpers-count');
-  $spacing: map-get($webapp-config, 'padding-space');
+  $times: webapp-config(padding-space-helpers-count);
+  $spacing: webapp-config(padding-space);
 
   @include define-size-selector('padding', '', $times, $spacing);
   @include define-size-selector('padding-bottom', 'b', $times, $spacing);
@@ -32,21 +32,18 @@
 
 // display classes
 .d {
-  &-inline-block  { display: inline-block !important; }
-  &-block         { display: block !important; }
-  &-flex          { display: flex !important; }
+  &-inline-block { display: inline-block !important; }
+  &-block { display: block !important; }
+  &-flex { display: flex !important; }
 }
 
 .flex {
+  &-justify-space-between { justify-content: space-between; }
   &-column { flex-direction: column !important; }
-  &-row    { flex-direction: row !important;    }
+  &-row { flex-direction: row !important; }
 }
 
 .align {
-  &-self {
-    align-self: end;
-  }
-
   &-items {
     &-center { align-items: center !important; }
   }
@@ -59,9 +56,17 @@
 }
 
 .w {
-  &-25  { width: 25% !important; }
-  &-50  { width: 50% !important; }
+  &-25 { width: 25% !important; }
+  &-50 { width: 50% !important; }
   &-100 { width: 100% !important; }
+}
+
+.text {
+  &-underline { text-decoration: underline; }
+  &-uppercase { text-transform: uppercase; }
+  &-small { font-size: 0.75rem;}
+  &-normal { font-size: 1rem; }
+  &-big { font-size: 1.25rem; }
 }
 
 .cursor {

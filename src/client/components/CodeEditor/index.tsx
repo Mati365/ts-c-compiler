@@ -1,7 +1,7 @@
 import React from 'react';
 import {Controlled as CodeMirror, ICodeMirror} from 'react-codemirror2';
 
-import {linkInputs, LinkProps} from '../../decorators/linkInputs';
+import {linkInputs, LinkProps} from '@ui/webapp/decorators/linkInputs';
 import {nasmSyntaxDefine} from './nasmSyntaxDefine';
 
 type CodeEditorProps = LinkProps<string> & ICodeMirror;

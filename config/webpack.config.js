@@ -83,7 +83,7 @@ module.exports = {
       '@compiler/x86-nano-c': pkgResolve('compiler-x86-nano-c/src'),
       '@emulator/x86-cpu': pkgResolve('emulator-x86-cpu/src'),
       '@ui/context-state': pkgResolve('ui-context-state/src'),
-      '@ui/webapp-scss': pkgResolve('ui-webapp-scss/src'),
+      '@ui/webapp': pkgResolve('ui-webapp/src'),
     },
   },
   output: {

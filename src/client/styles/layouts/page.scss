@@ -1,5 +1,21 @@
-.l-repl-container {
-  display: grid;
-  grid-template-columns: 0.5fr 0.5fr;
-  column-gap: webapp-config(grid-space) * 3;
+.l-repl {
+  &-container {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: webapp-config(grid-space) * 3;
+    margin: 15px auto;
+
+    &.is-active {
+      grid-template-columns: 1fr minmax(0, 780px);
+    }
+
+    .o-code-editor {
+      height: 500px;
+    }
+  }
+
+  &-editor {
+    max-width: 100%;
+    overflow: hidden;
+  }
 }

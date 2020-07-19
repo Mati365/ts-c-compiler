@@ -1,11 +1,12 @@
 import React, {useEffect, useRef} from 'react';
+import c from 'classnames';
 
-import {Container, Card, CardType} from '@ui/webapp-scss';
-
+import {Container, Card} from '@ui/webapp';
 import {X86CPU} from '@emulator/x86-cpu/X86CPU';
 import {VGARenderLoopDriver} from '@emulator/x86-cpu/devices/Video/HTML/VGARenderLoopDriver';
+
 import {ScreenHolder} from './ScreenHolder';
-import {CodeEditor} from '../components/CodeEditor';
+import {CodeEditorCard} from './cards/CodeEditorCard';
 
 import {useEmulatorContext} from '../context/emulator-state/context';
 
@@ -22,7 +23,7 @@ export const RootContainer = () => {
 
   useEffect(
     () => {
-      if (!asmResult || asmResult.isErr())
+      if (!screenRef.current || !asmResult || asmResult.isErr())
         return undefined;
 
       const cpu = new X86CPU;
@@ -38,25 +39,24 @@ export const RootContainer = () => {
         cpu.release();
       };
     },
-    [asmResult],
+    [asmResult, screenRef.current],
   );
 
+  const active = asmResult?.isOk();
   return (
     <section>
-      <Container className='l-repl-container'>
-        <Card
-          header='Play'
-          contentSpaced={false}
-        >
-          <CodeEditor />
-        </Card>
-
-        <Card
-          type={CardType.PRIMARY}
-          header='ABCdef'
-        >
-          <ScreenHolder ref={screenRef} />
-        </Card>
+      <Container
+        className={c(
+          'l-repl-container',
+          active && 'is-active',
+        )}
+      >
+        <CodeEditorCard className='l-repl-editor' />
+        {active && (
+          <Card className='l-repl-output'>
+            <ScreenHolder ref={screenRef} />
+          </Card>
+        )}
       </Container>
     </section>
   );
