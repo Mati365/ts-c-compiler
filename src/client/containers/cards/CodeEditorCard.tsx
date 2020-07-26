@@ -1,5 +1,7 @@
 import React, {memo} from 'react';
-import {PlayCircleOutline, Stop} from '@material-ui/icons';
+
+import PlayCircleOutline from '@material-ui/icons/PlayCircleOutline';
+import Stop from '@material-ui/icons/Stop';
 
 import {useI18n, useInputLink} from '@ui/webapp/hooks';
 
