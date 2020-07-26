@@ -37,6 +37,14 @@ export abstract class VGACanvasRenderer {
     canvas.width = screenSize.w;
     canvas.height = screenSize.h;
 
+    Object.assign(
+      canvas.style,
+      {
+        width: `${screenSize.w}px`,
+        height: `${screenSize.h}px`,
+      },
+    );
+
     return canvas.width * canvas.height > 0;
   }
 

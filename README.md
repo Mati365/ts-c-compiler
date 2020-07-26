@@ -10,7 +10,7 @@
 
 16bit x86 virtual machine and assembler simulator written in TypeScript. It is designed to help with prototyping small bootsector (or bigger) real mode games 🎮 and apps 💻.
 
-<img src="/doc/screen-6.png" align="right" />
+<img src="/doc/editor.png" align="right" />
 
 ## Running
 

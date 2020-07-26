@@ -1,13 +1,10 @@
 .l-repl {
   &-container {
-    display: grid;
-    grid-template-columns: 1fr;
-    gap: webapp-config(grid-space) * 3;
+    display: flex;
+    flex-direction: row;
+    align-items: flex-start;
+    width: auto;
     margin: 15px auto;
-
-    &.is-active {
-      grid-template-columns: 1fr minmax(0, 780px);
-    }
 
     .o-code-editor {
       height: 500px;
@@ -15,7 +12,27 @@
   }
 
   &-editor {
-    max-width: 100%;
     overflow: hidden;
+
+    &:only-child {
+      width: 100%;
+    }
+
+    &:not(:only-child) {
+      width: 800px;
+      margin-right: 15px;
+    }
+  }
+
+  &-output {
+    width: auto;
+
+    canvas {
+      display: block;
+    }
+
+    .c-card-content {
+      height: 100%;
+    }
   }
 }

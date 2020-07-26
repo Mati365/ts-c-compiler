@@ -8,25 +8,45 @@ import {EmulationState, EmulatorLanguage, EmulatorState} from './state';
  *  Add worker compilation!
  */
 export const execCode = ({code, language}: {code: string, language: EmulatorLanguage}) => (state: EmulatorState) => {
-  const newState = {
-    ...state,
-    emulationState: EmulationState.RUNNING,
-  };
-
   switch (language) {
-    case EmulatorLanguage.ASM:
+    case EmulatorLanguage.ASM: {
+      const output = asm(code);
+
       return {
-        ...newState,
+        ...state,
+        emulationState: output.match(
+          {
+            ok: () => EmulationState.RUNNING,
+            err: () => EmulationState.STOPPED,
+          },
+        ),
         compilerOutput: {
-          asm: asm(code),
+          asm: output,
         },
       };
+    }
 
     default:
       throw new Error('Unsupported language');
   }
 };
 
+/**
+ * Stops emulator
+ *
+ * @param clearOutput If true - clears errors / warnings informations and blob
+ */
+export const stopExec = (clearOutput: boolean = false) => (state: EmulatorState) => ({
+  ...state,
+  emulationState: EmulationState.STOPPED,
+  compilerOutput: (
+    clearOutput
+      ? {asm: null}
+      : state.compilerOutput
+  ),
+});
+
 export const EmulatorActions = {
   execCode,
+  stopExec,
 };

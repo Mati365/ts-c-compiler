@@ -1,4 +1,5 @@
 import React, {memo} from 'react';
+import {PlayCircleOutline, Stop} from '@material-ui/icons';
 
 import {useI18n, useInputLink} from '@ui/webapp/hooks';
 
@@ -15,9 +16,11 @@ type CodeEditorCardProps = {
 export const CodeEditorCard = memo(({className}: CodeEditorCardProps) => {
   const t = useI18n();
   const l = useInputLink<string>();
-  const {execCode} = useEmulatorContext(
-    ({actions}) => ({
+  const {execCode, stopExec, running} = useEmulatorContext(
+    ({actions, selectors}) => ({
+      running: selectors.isRunning(),
       execCode: actions.execCode,
+      stopExec: actions.stopExec,
     }),
   );
 
@@ -30,18 +33,41 @@ export const CodeEditorCard = memo(({className}: CodeEditorCardProps) => {
     );
   };
 
+  const onStop = () => {
+    stopExec(true);
+  };
+
+  const primaryActionButton = (
+    running
+      ? (
+        <Button
+          type={Button.Type.DANGER}
+          title={t('titles.stop')}
+          onClick={onStop}
+        >
+          <Stop />
+          {t('titles.stop')}
+        </Button>
+      )
+      : (
+        <Button
+          type={Button.Type.PRIMARY}
+          title={t('titles.run')}
+          onClick={onRun}
+        >
+          <PlayCircleOutline />
+          {t('titles.run')}
+        </Button>
+      )
+  );
+
   return (
     <Card
       className={className}
       contentSpaced={false}
       header={(
         <div className='d-flex flex-row flex-justify-space-between'>
-          <Button
-            type={Button.Type.PRIMARY}
-            onClick={onRun}
-          >
-            {t('titles.run')}
-          </Button>
+          {primaryActionButton}
         </div>
       )}
     >

@@ -1,5 +1,6 @@
 .l-container {
   width: webapp-config(container-width);
+  max-width: webapp-config(container-width);
   margin: 0 auto;
   padding: 0 32px;
 }
