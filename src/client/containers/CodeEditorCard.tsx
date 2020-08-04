@@ -5,11 +5,12 @@ import Stop from '@material-ui/icons/Stop';
 
 import {useI18n, useInputLink} from '@ui/webapp/hooks';
 
+import {SizeType} from '@ui/webapp/shared/types';
 import {Button, Card} from '@ui/webapp';
-import {CodeEditor} from '../../components/CodeEditor';
-import {EmulatorLanguage} from '../../context/emulator-state/state';
+import {CodeEditor} from '../components/CodeEditor';
+import {EmulatorLanguage} from '../context/emulator-state/state';
 
-import {useEmulatorContext} from '../../context/emulator-state/context';
+import {useEmulatorContext} from '../context/emulator-state/context';
 
 type CodeEditorCardProps = {
   className?: string,
@@ -19,7 +20,8 @@ export const CodeEditorCard = memo(({className}: CodeEditorCardProps) => {
   const t = useI18n();
   const l = useInputLink<string>();
   const {execCode, stopExec, running} = useEmulatorContext(
-    ({actions, selectors}) => ({
+    ({actions, selectors, state}) => ({
+      compilerOutput: state.compilerOutput,
       running: selectors.isRunning(),
       execCode: actions.execCode,
       stopExec: actions.stopExec,
@@ -44,6 +46,7 @@ export const CodeEditorCard = memo(({className}: CodeEditorCardProps) => {
       ? (
         <Button
           type={Button.Type.DANGER}
+          size={SizeType.SMALL}
           title={t('titles.stop')}
           onClick={onStop}
         >
@@ -54,6 +57,7 @@ export const CodeEditorCard = memo(({className}: CodeEditorCardProps) => {
       : (
         <Button
           type={Button.Type.PRIMARY}
+          size={SizeType.SMALL}
           title={t('titles.run')}
           onClick={onRun}
         >
@@ -64,17 +68,18 @@ export const CodeEditorCard = memo(({className}: CodeEditorCardProps) => {
   );
 
   return (
-    <Card
-      className={className}
-      contentSpaced={false}
-      header={(
-        <div className='d-flex flex-row flex-justify-space-between'>
-          {primaryActionButton}
-        </div>
-      )}
-    >
-      <CodeEditor {...l.input()} />
-    </Card>
+    <div className={className}>
+      <Card
+        contentSpaced={false}
+        header={(
+          <div className='d-flex flex-row flex-justify-space-between'>
+            {primaryActionButton}
+          </div>
+        )}
+      >
+        <CodeEditor {...l.input()} />
+      </Card>
+    </div>
   );
 });
 

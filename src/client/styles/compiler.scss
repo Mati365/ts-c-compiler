@@ -1,0 +1,19 @@
+.c-errors-list {
+  $list-item-spacing: 8px;
+
+  &__item {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+
+    &:not(:last-child) {
+      margin-bottom: $list-item-spacing;
+      padding-bottom: $list-item-spacing;
+      border-bottom: 1px solid webapp-color(border-default);
+    }
+  }
+
+  &__logo {
+    color: webapp-color(danger);
+  }
+}

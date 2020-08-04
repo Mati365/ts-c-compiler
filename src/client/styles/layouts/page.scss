@@ -1,5 +1,5 @@
 .l-repl {
-  &-container {
+  &__container {
     display: flex;
     flex-direction: row;
     align-items: flex-start;
@@ -11,7 +11,7 @@
     }
   }
 
-  &-editor {
+  &__editor {
     overflow: hidden;
 
     &:only-child {
@@ -24,7 +24,7 @@
     }
   }
 
-  &-output {
+  &__output {
     width: auto;
 
     canvas {

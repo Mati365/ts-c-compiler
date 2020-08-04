@@ -68,6 +68,12 @@ export function nasmSyntaxDefine(): CodeMirror.Mode<any> {
           return 'tag';
       }
 
+      // macro
+      if (ch === '%') {
+        stream.eatWhile(/\w/);
+        return 'tag';
+      }
+
       // decimal and hexadecimal numbers
       if (/\d/.test(ch)) {
         if (ch === '0' && stream.eat('x')) {

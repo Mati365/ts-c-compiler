@@ -6,7 +6,8 @@ import {X86CPU} from '@emulator/x86-cpu/X86CPU';
 import {VGARenderLoopDriver} from '@emulator/x86-cpu/devices/Video/HTML/VGARenderLoopDriver';
 
 import {ScreenHolder} from './ScreenHolder';
-import {CodeEditorCard} from './cards/CodeEditorCard';
+import {CodeEditorCard} from './CodeEditorCard';
+import {CompilerToolbar} from './CompilerToolbar/CompilerToolbar';
 
 import {useEmulatorContext} from '../context/emulator-state/context';
 
@@ -47,16 +48,20 @@ export const RootContainer = () => {
     <section>
       <Container
         className={c(
-          'l-repl-container',
+          'l-repl',
           active && 'is-active',
         )}
       >
-        <CodeEditorCard className='l-repl-editor' />
-        {active && (
-          <Card className='l-repl-output'>
-            <ScreenHolder ref={screenRef} />
-          </Card>
-        )}
+        <div className='l-repl__container'>
+          <CodeEditorCard className='l-repl__editor' />
+          {active && (
+            <Card className='l-repl__output'>
+              <ScreenHolder ref={screenRef} />
+            </Card>
+          )}
+        </div>
+
+        <CompilerToolbar className='l-repl__toolbar' />
       </Container>
     </section>
   );

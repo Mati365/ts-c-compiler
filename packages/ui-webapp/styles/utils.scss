@@ -62,11 +62,17 @@
 }
 
 .text {
+  &-center { text-align: center; }
   &-underline { text-decoration: underline; }
   &-uppercase { text-transform: uppercase; }
   &-small { font-size: 0.75rem;}
   &-normal { font-size: 1rem; }
   &-big { font-size: 1.25rem; }
+
+  &-muted { color: webapp-color(muted-dark); }
+  &-danger { color: webapp-color(danger); }
+  &-warning { color: webapp-color(warning); }
+  &-success { color: webapp-color(success); }
 }
 
 .cursor {
@@ -84,4 +90,10 @@
 
 .is-hidden {
   display: none;
+}
+
+.c-clean-list {
+  list-style-type: none;
+  margin: 0;
+  padding: 0;
 }
