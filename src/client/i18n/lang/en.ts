@@ -10,5 +10,11 @@ export const EN_LANG_PACK = {
       ast: 'AST tree',
       binary: 'Binary graph',
     },
+    graph: {
+      label: 'Label',
+      offset: 'Offset',
+      binary: 'Binary',
+      instruction: 'Instruction',
+    },
   },
 };

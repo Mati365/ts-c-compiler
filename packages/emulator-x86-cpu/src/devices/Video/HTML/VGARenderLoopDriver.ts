@@ -46,10 +46,11 @@ export class VGARenderLoopDriver extends uuidX86Device('vgaRenderLoop') {
       }
 
       const frame = () => {
-        this.redraw();
+        if (cpu.isHalted())
+          return;
 
-        if (!cpu.isHalted())
-          requestAnimationFrame(frame);
+        this.redraw();
+        requestAnimationFrame(frame);
       };
 
       requestAnimationFrame(frame);

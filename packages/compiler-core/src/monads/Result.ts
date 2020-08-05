@@ -26,6 +26,7 @@ export abstract class Result<T, E, ValType = T|E> {
   abstract unwrap(): T|never;
   abstract unwrapErr(): E|never;
   abstract unwrapOr(val: T): T;
+  abstract unwrapBoth(): [E, T];
 
   /**
    * Executes function provided via arg with monad value and returns its value
@@ -83,6 +84,10 @@ export class Ok<T, E = never> extends Result<T, E> {
     return <T> this._value;
   }
 
+  unwrapBoth(): [E, T] {
+    return [null, <T> this._value];
+  }
+
   isOk() { return true; }
 
   isErr() { return false; }
@@ -120,6 +125,10 @@ export class Err<T, E> extends Result<T, E> {
 
   unwrapOr<A = T>(a: A): A {
     return a;
+  }
+
+  unwrapBoth(): [E, T] {
+    return [<E> this._value, null];
   }
 
   isOk() { return false; }

@@ -23,6 +23,7 @@ $webapp-config: map-merge(
 $webapp-colors: map-merge(
   (
     'text-default': #24292e,
+    'link': #007bff,
     'border-default': #e1e4e8,
 
     'card-border': #e1e4e8,
@@ -36,9 +37,22 @@ $webapp-colors: map-merge(
     'warning': rgb(255, 193, 7),
     'success': rgb(46, 164, 79),
     'success-dark': rgb(34, 134, 58),
+    'info': rgba(0, 123, 255),
+
+    'dimmed-purple': #708,
+    'dimmed-green': #164,
+    'dimmed-red': #a11,
+    'dimmed-blue': #30a,
+    'dimmed-brown': #a50,
   ),
   $webapp-colors
 );
+
+:root {
+  @each $name, $color in $webapp-colors {
+    --#{$name}: #{$color};
+  }
+}
 
 @function webapp-color($color) {
   @if map-has-key($webapp-colors, $color) {

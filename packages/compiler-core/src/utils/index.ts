@@ -18,3 +18,4 @@ export * from './arrayToHexString';
 export * from './mergeNumberBytes';
 export * from './genUUID';
 export * from './asap';
+export * from './createTiming';

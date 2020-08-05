@@ -1,12 +1,11 @@
 import React, {memo} from 'react';
 import c from 'classnames';
-import * as R from 'ramda';
 
 import {useI18n} from '@ui/webapp/hooks';
 
-import {CompilerError} from '@compiler/core/shared';
 import {Nav, NavTab, Badge} from '@ui/webapp';
 import {CompilerErrorsList} from './CompilerErrorsList';
+import {CompilerBinaryGraph} from './CompilerBinaryGraph';
 
 import {useEmulatorContext} from '../../context/emulator-state/context';
 
@@ -22,12 +21,7 @@ export const CompilerToolbar = memo(({className}: CompilerToolbarProps) => {
     }),
   );
 
-  const errors = compilerOutput.asm?.match<CompilerError[]>(
-    {
-      ok: () => null,
-      err: R.identity,
-    },
-  );
+  const [errors, result] = compilerOutput.asm?.unwrapBoth() || [];
 
   return (
     <Nav
@@ -63,11 +57,7 @@ export const CompilerToolbar = memo(({className}: CompilerToolbarProps) => {
           t('titles.compiler.logs')
         }
       >
-        {() => (
-          <div>
-            Logs
-          </div>
-        )}
+        {() => 'LOGS'}
       </NavTab>
 
       <NavTab
@@ -76,10 +66,8 @@ export const CompilerToolbar = memo(({className}: CompilerToolbarProps) => {
           t('titles.compiler.binary')
         }
       >
-        {() => (
-          <div>
-            Binary
-          </div>
+        {() => result && (
+          <CompilerBinaryGraph output={result.output} />
         )}
       </NavTab>
 

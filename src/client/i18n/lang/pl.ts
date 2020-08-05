@@ -10,5 +10,11 @@ export const PL_LANG_PACK = {
       ast: 'Drzewo AST',
       binary: 'Kod binarny',
     },
+    graph: {
+      label: 'Etykieta',
+      offset: 'Offset',
+      binary: 'Binarnie',
+      instruction: 'Instrukcja',
+    },
   },
 };

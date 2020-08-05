@@ -1,3 +1,5 @@
+import {CompilerTimings} from '@compiler/core/utils/compiler/createCompilerTiming';
+
 import {Result, ok} from '@compiler/core/monads/Result';
 import {CompilerError} from '@compiler/core/shared/CompilerError';
 
@@ -8,6 +10,7 @@ import {SecondPassResult} from './BinaryPassResults';
 export type CompilerOutput = {
   compiler: X86Compiler,
   output: SecondPassResult,
+  timings?: CompilerTimings,
 };
 
 export type CompilerFinalResult = Result<CompilerOutput, CompilerError[]>;

@@ -1,5 +1,6 @@
 import {Result, ok} from '@compiler/core/monads/Result';
 import {CompilerError} from '@compiler/core/shared/CompilerError';
+import {createCompilerTimings} from '@compiler/core/utils/compiler/createCompilerTiming';
 
 import {formatDate, formatTime} from '@compiler/core/utils/format';
 import {safeResultPreprocessor, PreprocessorResult} from './preprocessor';
@@ -20,6 +21,31 @@ export type AssemblerConfig = {
 };
 
 /**
+ * Generates predefined functions thar are appended
+ * to all assembler builds (if preprocessor enabled)
+ *
+ * @export
+ * @returns
+ */
+export function genPreExecPreprocessorCode() {
+  const today = new Date;
+
+  return `
+    %define __DATE__ '${formatDate(today, true)}'
+    %define __TIME__ '${formatTime(today, true)}'
+    %define __DATE_NUM__ ${formatDate(today, true, '')}
+    %define __TIME_NUM__ ${formatTime(today, true, '')}
+    %define __POSIX_TIME__ ${(+today / 1000) | 0}
+
+    %idefine use16 [bits 16]
+    %idefine use32 [bits 32]
+
+    %idefine cpu(cpu_id) [target cpu_id]
+    %idefine section(section_name) [section section_name]
+  `;
+}
+
+/**
  * Compile ASM file
  *
  * @export
@@ -33,30 +59,18 @@ export function asm(
     preprocessor = true,
   }: AssemblerConfig = {},
 ): CompilerFinalResult {
-  let preprocessorResult: Result<PreprocessorResult, CompilerError[]> = null;
+  const timings = createCompilerTimings();
 
+  let preprocessorResult: Result<PreprocessorResult, CompilerError[]> = null;
   if (preprocessor) {
-    const today = new Date;
     const preprocessorConfig: PreprocessorInterpreterConfig = {
+      preExec: genPreExecPreprocessorCode(),
       grammarConfig: {
         prefixChar: '%',
       },
-      preExec: `
-        %define __DATE__ '${formatDate(today, true)}'
-        %define __TIME__ '${formatTime(today, true)}'
-        %define __DATE_NUM__ ${formatDate(today, true, '')}
-        %define __TIME_NUM__ ${formatTime(today, true, '')}
-        %define __POSIX_TIME__ ${(+today / 1000) | 0}
-
-        %idefine use16 [bits 16]
-        %idefine use32 [bits 32]
-
-        %idefine cpu(cpu_id) [target cpu_id]
-        %idefine section(section_name) [section section_name]
-      `,
     };
 
-    preprocessorResult = safeResultPreprocessor(code, preprocessorConfig);
+    preprocessorResult = timings.add('preprocessor', safeResultPreprocessor)(code, preprocessorConfig);
   } else {
     preprocessorResult = ok(
       new PreprocessorResult(null, code),
@@ -65,9 +79,13 @@ export function asm(
 
   return (
     preprocessorResult
-      .andThen(({result}) => safeResultAsmLexer(null, result))
-      .andThen(ast)
-      .andThen(compile)
+      .andThen(timings.add('lexer', ({result}) => safeResultAsmLexer(null, result)))
+      .andThen(timings.add('ast', ast))
+      .andThen(timings.add('compiler', compile))
+      .andThen((result) => {
+        result.timings = timings.unwrap();
+        return ok(result);
+      })
   );
 }
 
