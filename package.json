@@ -1,6 +1,7 @@
 {
   "scripts": {
     "develop": "NODE_ENV=development node_modules/.bin/webpack-dev-server --watch --config=config/webpack.config.js",
+    "build:production": "NODE_ENV=production node_modules/.bin/webpack --config=config/webpack.config.js --mode=production",
     "test": "node_modules/.bin/jest --c config/jest.config.js"
   },
   "husky": {
