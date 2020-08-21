@@ -3,7 +3,9 @@ import * as R from 'ramda';
 
 import {flipMap} from '@compiler/core/utils/flipMap';
 import {useI18n} from '@ui/webapp/hooks';
-import {SecondPassResult} from '@compiler/x86-assembler/parser/compiler/BinaryPassResults';
+
+import {TableBinaryView} from '@compiler/x86-assembler/parser/compiler/view/TableBinaryView';
+import {CompilerFinalResult} from '@compiler/x86-assembler';
 
 import {NASM_HIGHLIGHT} from '../../components/CodeEditor/nasmSyntaxDefine';
 
@@ -39,7 +41,7 @@ export function highlightInstructionHTML(line: string, colors = HIGHLIGHT_INSTRU
       else
         color = colors.other;
 
-      return `<span style="color: ${color};">${keyword}</style>`;
+      return `<span style="color: ${color};">${keyword}</span>`;
     },
   );
 
@@ -47,11 +49,12 @@ export function highlightInstructionHTML(line: string, colors = HIGHLIGHT_INSTRU
 }
 
 type CompilerBinaryGraphProps = {
-  output: SecondPassResult,
+  result: CompilerFinalResult,
 };
 
-export const CompilerBinaryGraph = memo(({output}: CompilerBinaryGraphProps) => {
+export const CompilerBinaryGraph = memo(({result}: CompilerBinaryGraphProps) => {
   const t = useI18n('titles.graph');
+  const {output} = result.unwrap();
 
   const {labelsByOffsets, hasLabels} = useMemo(
     () => ({
@@ -59,6 +62,18 @@ export const CompilerBinaryGraph = memo(({output}: CompilerBinaryGraphProps) => 
       hasLabels: output.labelsOffsets.size > 0,
     }),
     [output],
+  );
+
+  const {entries, hasJumps} = useMemo(
+    () => {
+      const _entries = new TableBinaryView(result).serialize();
+
+      return {
+        entries: _entries,
+        hasJumps: R.any((item) => !!item.jmpGraph, _entries),
+      };
+    },
+    [labelsByOffsets],
   );
 
   return (
@@ -81,32 +96,43 @@ export const CompilerBinaryGraph = memo(({output}: CompilerBinaryGraphProps) => 
               <th className='c-binary-graph__list-header--instruction'>
                 {t('instruction')}
               </th>
+              {hasJumps && (
+                <th>
+                  {t('jumps')}
+                </th>
+              )}
             </tr>
           </thead>
 
           <tbody>
-            {[...output.blobs.entries()].map(
-              ([offset, blob]) => {
+            {entries.map(
+              ({offset, jmpGraph, blob}) => {
                 const label = labelsByOffsets.get(offset);
 
                 return (
                   <tr key={offset}>
                     {hasLabels && (
-                      <td>
+                      <td className='is-label'>
                         {label ? `${label}:` : null}
                       </td>
                     )}
-                    <td>
+                    <td className='is-offset'>
                       {`0x${offset.toString(16).padStart(4, '0')}:`}
                     </td>
-                    <td>
+                    <td className='is-blob'>
                       {blob.toString(false)}
                     </td>
                     <td
+                      className='is-instruction'
                       dangerouslySetInnerHTML={{
                         __html: highlightInstructionHTML(blob.ast.toString()),
                       }}
                     />
+                    {hasJumps && (
+                      <td className='is-jmp-graph'>
+                        {jmpGraph}
+                      </td>
+                    )}
                   </tr>
                 );
               },

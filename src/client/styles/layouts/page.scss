@@ -1,17 +1,19 @@
 .l-repl {
+  $self: &;
+
   &__container {
     display: flex;
     flex-direction: row;
-    align-items: flex-start;
     width: auto;
     margin: 15px auto;
 
     .o-code-editor {
-      height: 500px;
+      height: 650px;
     }
   }
 
   &__editor {
+    flex: 1;
     overflow: hidden;
 
     &:only-child {
@@ -19,20 +21,30 @@
     }
 
     &:not(:only-child) {
-      width: 800px;
       margin-right: 15px;
     }
   }
 
   &__output {
+    display: flex;
+    flex-direction: column;
     width: auto;
+    max-width:750px;
+  }
 
-    canvas {
-      display: block;
+  &__toolbar {
+    display: flex;
+    flex-direction: column;
+    flex: 1;
+
+    &:not(:first-child) {
+      margin-top: 15px;
     }
 
-    .c-card-content {
-      height: 100%;
+    .c-nav__content {
+      flex: 1 1 auto;
+      overflow-y: auto;
+      height: 0;
     }
   }
 }

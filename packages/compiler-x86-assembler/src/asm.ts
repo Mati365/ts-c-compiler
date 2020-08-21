@@ -10,10 +10,12 @@ import {
   ast,
   safeResultAsmLexer,
   CompilerFinalResult,
+  CompilerOutput,
 } from './parser';
 
 export {
   CompilerFinalResult,
+  CompilerOutput,
 };
 
 export type AssemblerConfig = {

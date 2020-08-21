@@ -1,7 +1,11 @@
 import React, {memo} from 'react';
 import c from 'classnames';
 
-import {useI18n} from '@ui/webapp/hooks';
+import {
+  useI18n,
+  useInputLink,
+  useUpdateEffect,
+} from '@ui/webapp/hooks';
 
 import {Nav, NavTab, Badge} from '@ui/webapp';
 import {CompilerErrorsList} from './CompilerErrorsList';
@@ -9,29 +13,54 @@ import {CompilerBinaryGraph} from './CompilerBinaryGraph';
 
 import {useEmulatorContext} from '../../context/emulator-state/context';
 
+enum CompilerToolbarTabs {
+  BINARY = 'binary',
+  ERRORS = 'errors',
+  LOGS = 'logs',
+  AST = 'ast',
+}
+
 type CompilerToolbarProps = {
   className?: string,
 };
 
 export const CompilerToolbar = memo(({className}: CompilerToolbarProps) => {
   const t = useI18n();
-  const {compilerOutput} = useEmulatorContext(
+  const navInput = useInputLink<CompilerToolbarTabs>(
+    {
+      initialData: CompilerToolbarTabs.ERRORS,
+    },
+  );
+
+  const {compilerOutput: {asm: asmResult}} = useEmulatorContext(
     ({state}) => ({
       compilerOutput: state.compilerOutput,
     }),
   );
 
-  const [errors, result] = compilerOutput.asm?.unwrapBoth() || [];
+  const [errors, output] = asmResult?.unwrapBoth() || [];
+
+  useUpdateEffect(
+    () => {
+      navInput.setValue(
+        errors?.length
+          ? CompilerToolbarTabs.ERRORS
+          : CompilerToolbarTabs.BINARY,
+      );
+    },
+    [output],
+  );
 
   return (
     <Nav
+      {...navInput.input()}
       className={c(
-        'c-compiler-toolbar mt-3',
+        'c-compiler-toolbar',
         className,
       )}
     >
       <NavTab
-        id='errors'
+        id={CompilerToolbarTabs.ERRORS}
         title={(
           <>
             {t('titles.compiler.errors')}
@@ -52,7 +81,7 @@ export const CompilerToolbar = memo(({className}: CompilerToolbarProps) => {
       </NavTab>
 
       <NavTab
-        id='logs'
+        id={CompilerToolbarTabs.LOGS}
         title={
           t('titles.compiler.logs')
         }
@@ -61,18 +90,18 @@ export const CompilerToolbar = memo(({className}: CompilerToolbarProps) => {
       </NavTab>
 
       <NavTab
-        id='binary'
+        id={CompilerToolbarTabs.BINARY}
         title={
           t('titles.compiler.binary')
         }
       >
-        {() => result && (
-          <CompilerBinaryGraph output={result.output} />
+        {() => asmResult && !errors && (
+          <CompilerBinaryGraph result={asmResult} />
         )}
       </NavTab>
 
       <NavTab
-        id='ast'
+        id={CompilerToolbarTabs.AST}
         title={
           t('titles.compiler.ast')
         }

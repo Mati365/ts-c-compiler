@@ -11,6 +11,7 @@ export const PL_LANG_PACK = {
       binary: 'Kod binarny',
     },
     graph: {
+      jumps: 'Skoki',
       label: 'Etykieta',
       offset: 'Offset',
       binary: 'Binarnie',

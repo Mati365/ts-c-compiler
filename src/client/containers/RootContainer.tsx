@@ -1,7 +1,7 @@
 import React, {useEffect, useRef} from 'react';
 import c from 'classnames';
 
-import {Container, Card} from '@ui/webapp';
+import {Container} from '@ui/webapp';
 import {X86CPU} from '@emulator/x86-cpu/X86CPU';
 import {VGARenderLoopDriver} from '@emulator/x86-cpu/devices/Video/HTML/VGARenderLoopDriver';
 
@@ -54,14 +54,18 @@ export const RootContainer = () => {
       >
         <div className='l-repl__container'>
           <CodeEditorCard className='l-repl__editor' />
-          {active && (
-            <Card className='l-repl__output'>
+          <div
+            className={c(
+              'l-repl__output',
+              active && 'is-active',
+            )}
+          >
+            {active && (
               <ScreenHolder ref={screenRef} />
-            </Card>
-          )}
+            )}
+            <CompilerToolbar className='l-repl__toolbar' />
+          </div>
         </div>
-
-        <CompilerToolbar className='l-repl__toolbar' />
       </Container>
     </section>
   );

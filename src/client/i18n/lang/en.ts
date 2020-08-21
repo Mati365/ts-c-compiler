@@ -11,6 +11,7 @@ export const EN_LANG_PACK = {
       binary: 'Binary graph',
     },
     graph: {
+      jumps: 'Jumps',
       label: 'Label',
       offset: 'Offset',
       binary: 'Binary',

@@ -22,8 +22,6 @@
   &-binary-graph {
     &__list {
       width: 100%;
-      max-height: 500px;
-      overflow-y: auto;
 
       th {
         padding-bottom: 10px;
@@ -31,16 +29,25 @@
       }
 
       td {
-        // label
-        &:nth-child(1) {
-          cursor: pointer;
-          text-decoration: underline;
-          color: webapp-color(danger);
-        }
+        vertical-align: top;
+        white-space: nowrap;
 
-        // binary
-        &:nth-child(3) {
-          color: webapp-color(muted-dark);
+        &.is {
+          &-label {
+            cursor: pointer;
+            text-decoration: underline;
+            color: webapp-color(danger);
+          }
+
+          &-offset {
+            color: webapp-color(muted-dark);
+          }
+
+          &-jmp-graph {
+            font-family: 'Lucida Console', Monaco, monospace;
+            color: webapp-color(info);
+            white-space: pre-wrap;
+          }
         }
       }
 

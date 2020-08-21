@@ -1,10 +1,8 @@
 import * as R from 'ramda';
 
-import {flipMap} from '@compiler/core/utils/flipMap';
 import {
   setCharAt,
   mapMapValues,
-  arrayToHexString,
 } from '@compiler/core/utils';
 
 import {CompilerError} from '@compiler/core/shared/CompilerError';
@@ -12,10 +10,6 @@ import {ASTInstruction} from '../../ast/instruction/ASTInstruction';
 import {BinaryView} from './BinaryView';
 import {BinaryBlob} from '../BinaryBlob';
 import {CompilerFinalResult, CompilerOutput} from '../compile';
-
-type JMPLines = Map<number, number>;
-
-type SerializedBlobsOffsets = Map<number, string[]>;
 
 type BinaryPrintConfig = {
   template: {
@@ -39,14 +33,24 @@ type BinaryPrintConfig = {
   },
 };
 
+type JMPLines = Map<number, number>;
+
+type JMPTableEntry = {
+  offset: number,
+  jmpGraph: string,
+  blob: BinaryBlob,
+};
+
+type SerializedBlobsOffsets = Map<number, JMPTableEntry>;
+
 /**
- * Prints whole binary tree like obj dump
+ * Prints whole binary tree like obj dump as list of strings
  *
  * @export
- * @class ConsoleBinaryView
- * @extends {BinaryView<string>}
+ * @class TableBinaryView
+ * @extends {BinaryView<JMPTableEntry[]>}
  */
-export class ConsoleBinaryView extends BinaryView<string> {
+export class TableBinaryView extends BinaryView<JMPTableEntry[]> {
   constructor(
     compilerResult: CompilerFinalResult,
     private printConfig: BinaryPrintConfig = {
@@ -80,7 +84,7 @@ export class ConsoleBinaryView extends BinaryView<string> {
    * @param {SerializedBlobsOffsets} serializedOffsets
    * @param {JMPLines} jmpLines
    * @returns {string}
-   * @memberof ConsoleBinaryView
+   * @memberof TableBinaryView
    */
   applyJmpLinesToOutput(
     serializedOffsets: SerializedBlobsOffsets,
@@ -90,13 +94,6 @@ export class ConsoleBinaryView extends BinaryView<string> {
 
     const offsetsEntries = Array.from(serializedOffsets.entries());
     const jmpLinesEntries = Array.from(jmpLines.entries());
-    const minLineLength = R.reduce(
-      (acc, item) => Math.max(acc, (<any> item).length),
-      0,
-      R.unnest(
-        R.map(R.nth(1), offsetsEntries),
-      ),
-    );
 
     const getJmpLineStr = (
       offset: number,
@@ -192,9 +189,9 @@ export class ConsoleBinaryView extends BinaryView<string> {
     // do not use mapMapValues, function must known next
     // binary blob value to calculate jump margin for
     // multiline instructions
-    const mapped = new Map<number, string[]>();
+    const mapped = new Map<number, JMPTableEntry>();
     for (let i = 0; i < offsetsEntries.length; ++i) {
-      const [offset, lines]: [number, string[]] = offsetsEntries[i];
+      const [offset, entry]: [number, JMPTableEntry] = offsetsEntries[i];
       const [[prevOffset], [nextOffset]] = [
         offsetsEntries[i - 1] ?? [-Infinity],
         offsetsEntries[i + 1] ?? [Infinity],
@@ -202,9 +199,10 @@ export class ConsoleBinaryView extends BinaryView<string> {
 
       mapped.set(
         offset,
-        lines.map(
-          (line, index) => `${line.padEnd(minLineLength)} ${getJmpLineStr(offset, prevOffset, nextOffset, index)}`,
-        ),
+        {
+          ...entry,
+          jmpGraph: getJmpLineStr(offset, prevOffset, nextOffset, 0),
+        },
       );
     }
 
@@ -216,9 +214,9 @@ export class ConsoleBinaryView extends BinaryView<string> {
    *
    * @param {CompilerError[]} errors
    * @returns {string}
-   * @memberof ConsoleBinaryView
+   * @memberof TableBinaryView
    */
-  error(errors: CompilerError[]): string {
+  error(errors: CompilerError[]): JMPTableEntry[] {
     R.forEach(
       (error) => {
         console.error(error);
@@ -226,88 +224,48 @@ export class ConsoleBinaryView extends BinaryView<string> {
       errors,
     );
 
-    return R.compose(
-      R.join('\n'),
-      R.map(
-        (error) => (
-          error instanceof CompilerError
-            ? error.getCompilerMessage()
-            : error
-        ),
-      ),
-    )(errors);
+    return null;
   }
 
   /**
    * Serialize success tree
    *
-   * @returns {string}
-   * @memberof ConsoleBinaryView
+   * @returns {JMPTableEntry[]}
+   * @memberof TableBinaryView
    */
-  success(compilerResult: CompilerOutput): string {
-    const {labelsOffsets, blobs, totalPasses} = compilerResult.output;
-
-    const labelsByOffsets = flipMap(labelsOffsets);
-    const maxLabelLength = R.reduce(
-      (acc, label) => Math.max(acc, label.length),
-      0,
-      Array.from(labelsOffsets.keys()),
-    );
-
+  success(compilerResult: CompilerOutput): JMPTableEntry[] {
+    const {blobs} = compilerResult.output;
 
     // reduce all blobs into lines map
     const jmpLines: JMPLines = new Map<number, number>();
     const serializedLines: SerializedBlobsOffsets = mapMapValues(
-      (blob: BinaryBlob, offset: number): string[] => {
+      (blob: BinaryBlob, offset: number): JMPTableEntry => {
         // used for draw jump arrows
         const {ast} = blob;
         if (
           ast instanceof ASTInstruction
             && ast.jumpInstruction
+            && !ast.regArgs.length
             && !ast.memArgs.length
             && !ast.segMemArgs.length
         ) {
           jmpLines.set(offset, +ast.args[0].val);
         }
 
-        const offsetStr = `0x${offset.toString(16).padStart(4, '0')}`;
-        let labelStr = (labelsByOffsets.get(offset) || '');
-        if (labelStr)
-          labelStr = `${labelStr}:`;
-
-        const prefix = `${labelStr.padEnd(maxLabelLength + 4)}${offsetStr}: `;
-        const blobStr = blob.toString(true);
-
-        // handle multiline serialize
-        return <string[]> R.addIndex(R.map)(
-          (str: string, index: number) => (
-            index
-              ? (`  .    ${str}`).padStart(prefix.length + str.length, ' ')
-              : `${prefix}${str}`
-          ),
-          <string[]> blobStr,
-        );
+        return {
+          jmpGraph: null,
+          offset,
+          blob,
+        };
       },
       blobs,
     );
 
     // sum output
-    const str = R.compose(
-      R.join('\n'),
-      R.unnest,
-      Array.from,
-    )(
+    return Array.from(
       this
         .applyJmpLinesToOutput(serializedLines, jmpLines)
         .values(),
     );
-
-    return [
-      `Total passes: ${totalPasses + 1}`,
-      `Output size: ${compilerResult.output.byteSize} bytes`,
-      `Binary mapping:\n\n${str}\n`,
-      'Binary:',
-      arrayToHexString(compilerResult.output.getBinary(), ''),
-    ].join('\n');
   }
 }
