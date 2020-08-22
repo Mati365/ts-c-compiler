@@ -1,3 +1,5 @@
+import * as R from 'ramda';
+
 /**
  * Measures multiple functions in chain and assigns it to object
  *
@@ -20,8 +22,15 @@ export function createTiming<T extends Record<string, number>>(startValues: T) {
         return result;
       };
     },
-    unwrap(): T {
-      return values;
+    unwrap(): T & {total: number} {
+      return {
+        ...values,
+        total: R.reduce(
+          (acc, [, val]) => acc + (val || 0),
+          0,
+          R.toPairs(values),
+        ),
+      };
     },
   };
 }

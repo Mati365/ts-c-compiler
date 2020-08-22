@@ -10,6 +10,7 @@ import {
 import {Nav, NavTab, Badge} from '@ui/webapp';
 import {CompilerErrorsList} from './CompilerErrorsList';
 import {CompilerBinaryGraph} from './CompilerBinaryGraph';
+import {CompilerStats} from './CompilerStats';
 
 import {useEmulatorContext} from '../../context/emulator-state/context';
 
@@ -39,6 +40,7 @@ export const CompilerToolbar = memo(({className}: CompilerToolbarProps) => {
   );
 
   const [errors, output] = asmResult?.unwrapBoth() || [];
+  const successCompilation = asmResult && !errors;
 
   useUpdateEffect(
     () => {
@@ -86,7 +88,9 @@ export const CompilerToolbar = memo(({className}: CompilerToolbarProps) => {
           t('titles.compiler.logs')
         }
       >
-        {() => 'LOGS'}
+        {() => successCompilation && (
+          <CompilerStats result={asmResult} />
+        )}
       </NavTab>
 
       <NavTab
@@ -95,7 +99,7 @@ export const CompilerToolbar = memo(({className}: CompilerToolbarProps) => {
           t('titles.compiler.binary')
         }
       >
-        {() => asmResult && !errors && (
+        {() => successCompilation && (
           <CompilerBinaryGraph result={asmResult} />
         )}
       </NavTab>

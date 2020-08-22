@@ -1,12 +1,5 @@
 import {createTiming} from '../createTiming';
 
-export type CompilerTimings = {
-  preprocessor: number,
-  lexer: number,
-  ast: number,
-  compiler: number,
-};
-
 /**
  * Create pack that measures
  *
@@ -14,7 +7,7 @@ export type CompilerTimings = {
  * @returns
  */
 export function createCompilerTimings() {
-  return createTiming<CompilerTimings>(
+  return createTiming(
     {
       preprocessor: 0,
       lexer: 0,
@@ -23,3 +16,5 @@ export function createCompilerTimings() {
     },
   );
 }
+
+export type CompilerTimings = ReturnType<ReturnType<typeof createCompilerTimings>['unwrap']>;

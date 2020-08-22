@@ -1,235 +1,128 @@
-.c-card {
-  display: block;
+.c {
+  &-card {
+    display: block;
 
-  &.is-bordered {
-    > .c-card-content {
-      border: 1px solid webapp-color(card-border);
+    &.is-bordered {
+      > .c-card-content {
+        border: 1px solid webapp-color(card-border);
+      }
+
+      > .c-card-header {
+        border-width: 1px;
+        border-style: solid;
+      }
+
+      .c-card-header + .c-card-content {
+        border-top: 0;
+      }
     }
 
-    > .c-card-header {
-      border-width: 1px;
-      border-style: solid;
+    &.is-rounded {
+      $radius: webapp-config(card-radius);
+
+      > .c-card-header {
+        border-top-left-radius: $radius;
+        border-top-right-radius: $radius;
+      }
+
+      > .c-card-content {
+        border-bottom-left-radius: $radius;
+        border-bottom-right-radius: $radius;
+
+        &:only-child {
+          border-radius: $radius;
+        }
+      }
     }
 
-    .c-card-header + .c-card-content {
-      border-top: 0;
+    &-header {
+      padding: (webapp-config(padding-space) * 2) (webapp-config(padding-space) * 4);
+
+      &.is-primary {
+        background: webapp-color(card-primary-background);
+        border-color: webapp-color(card-primary-border);
+      }
+
+      &.is-secondary {
+        background: webapp-color(card-secondary-background);
+        border-color: webapp-color(card-secondary-border);
+      }
     }
-  }
 
-  &.is-rounded {
-    $radius: webapp-config(card-radius);
-
-    > .c-card-header {
-      border-top-left-radius: $radius;
-      border-top-right-radius: $radius;
-    }
-
-    > .c-card-content {
-      border-bottom-left-radius: $radius;
-      border-bottom-right-radius: $radius;
-
-      &:only-child {
-        border-radius: $radius;
+    &-content {
+      &.is-spaced {
+        padding: (webapp-config(card-space) * webapp-config(padding-space));
       }
     }
   }
 
-  &-header {
-    padding: (webapp-config(padding-space) * 2) (webapp-config(padding-space) * 4);
-
-    &.is-primary {
-      background: webapp-color(card-primary-background);
-      border-color: webapp-color(card-primary-border);
-    }
-
-    &.is-secondary {
-      background: webapp-color(card-secondary-background);
-      border-color: webapp-color(card-secondary-border);
-    }
-  }
-
-  &-content {
-    &.is-spaced {
-      padding: (webapp-config(card-space) * webapp-config(padding-space));
-    }
-  }
-}
-
-.o-btn {
-  position: relative;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  padding: 5px 10px;
-  font-size: webapp-config(default-font-size);
-  font-weight: 600;
-  line-height: 20px;
-  white-space: nowrap;
-  vertical-align: middle;
-  cursor: pointer;
-  user-select: none;
-  border: 1px solid;
-  border-radius: 6px;
-  -webkit-appearance: none;
-  appearance: none;
-  transition: background-color .2s cubic-bezier(.3,0,.5,1);
-  text-decoration: none;
-
-  &:hover,
-  &:active,
-  &:focus {
-    outline: 0;
-    transition-duration: .1s;
-  }
-
-  &.is-small {
-    padding: 2px 8px;
-    font-size: webapp-config(small-font-size);
-
-    > svg {
-      margin-right: 2px;
-      height: 0.8em;
-    }
-  }
-
-  &.is-default {
-    color: #24292e;
-    background-color: #fafbfc;
-    border-color: rgba(27,31,35,.15);
-    box-shadow: 0 1px 0 rgba(27,31,35,.04), inset 0 1px 0 hsla(0,0%,100%,.25);
-
-    &:hover {
-      background-color: #f3f4f6;
-    }
-  }
-
-  &.is-primary {
-    color: rgb(255, 255, 255);
-    box-shadow: rgba(20, 70, 32, 0.1) 0px 1px 0px, rgba(255, 255, 255, 0.03) 0px 2px 0px inset;
-    background-color: webapp-color(success);
-    border-color: webapp-color(success-dark);
-
-    &:hover {
-      background-color: webapp-color(success);
-      border-color: rgba(27, 31, 35, 0.15);
-    }
-  }
-
-  &.is-danger {
-    color: webapp-color(danger);
-    background-color: rgb(250, 251, 252);
-    box-shadow: rgba(149, 157, 165, 0.1) 0px 1px 0px, rgba(255, 255, 255, 0.25) 0px 2px 0px inset;
-    border-color: rgb(225, 228, 232);
-
-    &:hover {
-      color: rgb(255, 255, 255);
-      background-color: webapp-color(danger);
-      box-shadow: rgba(27, 31, 35, 0.1) 0px 1px 0px, rgba(255, 255, 255, 0.03) 0px 2px 0px inset;
-      border-color: rgba(27, 31, 35, 0.15);
-    }
-  }
-
-  > svg {
-    margin-left: -4px;
-    margin-right: 8px;
-  }
-}
-
-.c-flash {
-  position: relative;
-  margin-top: 0px;
-  padding: 16px;
-  font-size: webapp-config(default-font-size);
-  border-style: solid;
-  border-width: 1px;
-  border-radius: 6px;
-  color: webapp-color(text-default);
-
-  &.is-success {
-    background-color: rgb(220, 255, 228);
-    border-color: rgba(23, 111, 44, 0.2);
-  }
-
-  &.is-danger {
-    background-color: rgb(255, 227, 230);
-    border-color: rgba(158, 28, 35, 0.2);
-  }
-
-  &.is-warning {
-    background-color: rgb(255, 251, 221);
-    border-color: rgba(176, 136, 0, 0.2);
-  }
-
-  &.is-default {
-    background-color: rgb(219, 237, 255);
-    border-color: rgba(4, 66, 137, 0.2);
-  }
-}
-
-.c-nav {
-  font-size: webapp-config(default-font-size);
-
-  &__list {
-    @extend .c-clean-list;
-
-    display: flex;
-    flex-direction: row;
-    border-bottom: 1px solid webapp-color(border-default);
-  }
-
-  &__tab {
-    margin-bottom: -1px;
-    padding: 8px 12px;
-    font-size: 14px;
-    line-height: 20px;
+  &-flash {
+    position: relative;
+    margin-top: 0px;
+    padding: 16px;
+    font-size: webapp-config(default-font-size);
+    border-style: solid;
+    border-width: 1px;
+    border-radius: 6px;
     color: webapp-color(text-default);
-    background-color: transparent;
-    text-decoration: none;
-    border-width: 1px 1px 0px;
-    border-style: solid solid solid;
-    border-color: transparent transparent transparent;
-    border-bottom: 0px;
-    cursor: pointer;
 
-    &.is-active {
-      color: rgb(36, 41, 46);
-      border-top-right-radius: 6px;
-      border-top-left-radius: 6px;
-      background-color: #fff;
-      border-color: webapp-color(border-default);
+    &.is-success {
+      background-color: rgb(220, 255, 228);
+      border-color: rgba(23, 111, 44, 0.2);
+    }
+
+    &.is-danger {
+      background-color: rgb(255, 227, 230);
+      border-color: rgba(158, 28, 35, 0.2);
+    }
+
+    &.is-warning {
+      background-color: rgb(255, 251, 221);
+      border-color: rgba(176, 136, 0, 0.2);
+    }
+
+    &.is-default {
+      background-color: rgb(219, 237, 255);
+      border-color: rgba(4, 66, 137, 0.2);
     }
   }
 
-  &__content {
-    padding: 16px 8px;
-  }
-}
+  &-nav {
+    font-size: webapp-config(default-font-size);
 
-.o-badge {
-  display: inline-block;
-  padding: .25em .4em;
-  font-size: 75%;
-  font-weight: 700;
-  line-height: 1;
-  text-align: center;
-  white-space: nowrap;
-  vertical-align: baseline;
-  border-radius: .25rem;
-  color: #fff;
+    &__list {
+      @extend .c-clean-list;
 
-  &.is-default {
-    background-color: webapp-color(muted-dark);
-  }
+      display: flex;
+      flex-direction: row;
+      border-bottom: 1px solid webapp-color(border-default);
+    }
 
-  &.is-primary {
-    background-color: webapp-color(success);
-  }
+    &__tab {
+      margin-bottom: -1px;
+      padding: 8px 12px;
+      font-size: 14px;
+      line-height: 20px;
+      color: webapp-color(text-default);
+      background-color: transparent;
+      text-decoration: none;
+      border-width: 1px 1px 0px;
+      border-style: solid solid solid;
+      border-color: transparent transparent transparent;
+      border-bottom: 0px;
+      cursor: pointer;
 
-  &.is-danger {
-    background-color: webapp-color(danger);
-  }
+      &.is-active {
+        color: rgb(36, 41, 46);
+        border-top-right-radius: 6px;
+        border-top-left-radius: 6px;
+        background-color: #fff;
+        border-color: webapp-color(border-default);
+      }
+    }
 
-  &.is-warning {
-    background-color: webapp-color(warning);
+    &__content {
+      padding: 16px 8px;
+    }
   }
 }

@@ -5,3 +5,4 @@ export * from './Text';
 export * from './Flash';
 export * from './Nav';
 export * from './Badge';
+export * from './Tree';

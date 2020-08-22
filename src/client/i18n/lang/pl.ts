@@ -5,8 +5,8 @@ export const PL_LANG_PACK = {
     compiler: {
       no_errors: 'Brak błędów',
       errors: 'Błędy kompilatora',
-      error_line: '(linia: %{row}, kolumna: %{col})',
       logs: 'Logi kompilatora',
+      error_line: '(linia: %{row}, kolumna: %{col})',
       ast: 'Drzewo AST',
       binary: 'Kod binarny',
     },
@@ -16,6 +16,18 @@ export const PL_LANG_PACK = {
       offset: 'Offset',
       binary: 'Binarnie',
       instruction: 'Instrukcja',
+    },
+    timings: {
+      asm: {
+        passes: 'Przejść:',
+        size: 'Wyemitowane bajty:',
+        header: 'Assembler:',
+        total: 'Czas kompilacji:',
+        preprocessor: 'Preprocesor:',
+        lexer: 'Lexer:',
+        ast: 'Generator AST:',
+        compiler: 'Kompilator:',
+      },
     },
   },
 };
