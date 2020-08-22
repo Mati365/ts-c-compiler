@@ -31,7 +31,16 @@ export const RootContainer = () => {
       const binary = asmResult.unwrap().output.getBinary();
 
       cpu
-        .attach(VGARenderLoopDriver, {screenElement: screenRef.current})
+        .attach(
+          VGARenderLoopDriver,
+          {
+            screenElement: screenRef.current,
+            upscaleWidth: Number.parseInt(
+              getComputedStyle(document.body).getPropertyValue('--repl-output-width'),
+              10,
+            ),
+          },
+        )
         .boot(Buffer.from(binary));
 
       cpuRef.current = cpu;

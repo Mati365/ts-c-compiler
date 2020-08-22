@@ -68,6 +68,7 @@ export enum ParserErrorCode {
 
   // define data
   DEFINED_DATA_EXCEEDES_BOUNDS,
+  EMPTY_DATA_DEFINITION_LIST,
   UNSUPPORTED_DEFINE_TOKEN,
   INCORRECT_FLOAT_SIZE,
 
@@ -147,6 +148,7 @@ export const ERROR_TRANSLATIONS: Record<ParserErrorCode, string> = {
 
   // defined data
   [ParserErrorCode.DEFINED_DATA_EXCEEDES_BOUNDS]: 'Defined data "%{data}" excedees bounds (%{maxSize} bytes)!',
+  [ParserErrorCode.EMPTY_DATA_DEFINITION_LIST]: 'Empty data definition list!',
   [ParserErrorCode.UNSUPPORTED_DEFINE_TOKEN]: 'Invalid "%{token}" define token value!',
   [ParserErrorCode.INCORRECT_FLOAT_SIZE]: 'Incorrect float "%{number}" size!',
 

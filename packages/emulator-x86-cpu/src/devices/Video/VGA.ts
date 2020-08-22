@@ -91,6 +91,8 @@ export class VGA extends uuidX86Device<X86CPU>('vga') implements ByteMemRegionAc
 
   /* size */
   private pixelScreenSize: Size = new Size(0, 0);
+  private pixelScreenUpscaleWidth: number = null;
+
   private textModeState: VGATextModeState;
   private graphicsModeState: VGAGraphicsModeState;
 
@@ -274,13 +276,24 @@ export class VGA extends uuidX86Device<X86CPU>('vga') implements ByteMemRegionAc
   getPixelBuffer(): Uint8Array { return this.pixelBuffer; }
 
   getPixelScreenSize(): Readonly<Size> { return this.pixelScreenSize; }
+  getPixelUpscaleWidth(): number { return this.pixelScreenUpscaleWidth; }
+
   getGraphicsModeState(): Readonly<VGAGraphicsModeState> { return this.graphicsModeState; }
   getVGA256State(): Readonly<VGA256State> { return this.vga256; }
   getCurrentRenderer(): VGACanvasRenderer { return this.renderer; }
 
   getScreenElement(): HTMLElement { return this.screenElement; }
-  setScreenElement(screenElement: HTMLElement): void {
+  setScreenElement(
+    {
+      upscaleWidth,
+      screenElement,
+    }: {
+      upscaleWidth?: number,
+      screenElement: HTMLElement,
+    },
+  ): void {
     this.screenElement = screenElement;
+    this.pixelScreenUpscaleWidth = upscaleWidth;
     this.matchPixBufRenderer();
   }
 

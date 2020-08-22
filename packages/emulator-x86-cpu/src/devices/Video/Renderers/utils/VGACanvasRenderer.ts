@@ -1,3 +1,6 @@
+import * as R from 'ramda';
+
+import {Size} from '@compiler/core/types';
 import {VGA} from '../../VGA';
 
 /**
@@ -30,6 +33,7 @@ export abstract class VGACanvasRenderer {
   protected updateCanvasSize(): boolean {
     const {vga, canvas} = this;
     const screenSize = vga.getPixelScreenSize();
+    const upscaleWidth = vga.getPixelUpscaleWidth();
 
     if (!canvas || (screenSize.w === canvas.width && screenSize.h === canvas.height))
       return false;
@@ -37,11 +41,20 @@ export abstract class VGACanvasRenderer {
     canvas.width = screenSize.w;
     canvas.height = screenSize.h;
 
+    const canvasSize: Readonly<Size> = (
+      R.isNil(upscaleWidth)
+        ? screenSize
+        : new Size(
+          upscaleWidth,
+          upscaleWidth * (screenSize.h / screenSize.w),
+        )
+    );
+
     Object.assign(
       canvas.style,
       {
-        width: `${screenSize.w}px`,
-        height: `${screenSize.h}px`,
+        width: `${canvasSize.w}px`,
+        height: `${canvasSize.h}px`,
       },
     );
 

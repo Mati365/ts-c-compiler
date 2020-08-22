@@ -22,6 +22,7 @@ type BinaryPrintConfig = {
     },
     arrows: {
       left: string,
+      right: string,
       top: string,
       bottom: string,
       loopLeft: string,
@@ -64,6 +65,7 @@ export class TableBinaryView extends BinaryView<JMPTableEntry[]> {
         },
         arrows: {
           left: '◀',
+          right: '▶',
           top: '▲',
           bottom: '▼',
           loopLeft: '⮌',

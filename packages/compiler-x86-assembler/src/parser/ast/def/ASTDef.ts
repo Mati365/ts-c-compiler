@@ -96,6 +96,13 @@ export class ASTDef extends KindASTAsmNode(ASTNodeKind.DEFINE) {
     // pick all args
     const argsTokens = fetchInstructionTokensArgsList(parser, false);
 
+    if (R.isEmpty(argsTokens)) {
+      throw new ParserError(
+        ParserErrorCode.EMPTY_DATA_DEFINITION_LIST,
+        token.loc,
+      );
+    }
+
     // throw error if any number exceddes token def size
     // todo: check strings?
     R.forEach(
@@ -110,7 +117,7 @@ export class ASTDef extends KindASTAsmNode(ASTNodeKind.DEFINE) {
             token.loc,
             {
               data: numberToken.text,
-              maxSize: tokenDefSize,
+              maxSize: tokenSize,
             },
           );
         }

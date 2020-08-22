@@ -5,6 +5,7 @@ import {VGA} from '../VGA';
 
 type VGARenderLoopDriverInitConfig = {
   screenElement: HTMLElement,
+  upscaleWidth?: number,
 };
 
 /**
@@ -16,23 +17,30 @@ type VGARenderLoopDriverInitConfig = {
  */
 export class VGARenderLoopDriver extends uuidX86Device('vgaRenderLoop') {
   private screenElement: HTMLElement = null;
+  private upscaleWidth: number = null;
   private frameNumber: number = 0;
 
   get vga(): VGA {
     return <VGA> this.cpu.devices.vga;
   }
 
-  init({screenElement}: VGARenderLoopDriverInitConfig): void {
+  init({screenElement, upscaleWidth}: VGARenderLoopDriverInitConfig): void {
     this.screenElement = screenElement;
+    this.upscaleWidth = upscaleWidth;
   }
 
   boot(): void {
     /** Monitor render loop */
-    const {screenElement, cpu} = this;
+    const {screenElement, upscaleWidth, cpu} = this;
     if (screenElement) {
       /** Render loop */
       const vga = <VGA> cpu.devices.vga;
-      vga.setScreenElement(screenElement);
+      vga.setScreenElement(
+        {
+          upscaleWidth,
+          screenElement,
+        },
+      );
 
       try {
         asap(

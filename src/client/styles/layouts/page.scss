@@ -8,7 +8,7 @@
     margin: 15px auto;
 
     .o-code-editor {
-      height: 650px;
+      height: calc(100vh - 100px);
     }
   }
 
@@ -29,7 +29,7 @@
     display: flex;
     flex-direction: column;
     width: auto;
-    max-width:750px;
+    max-width: var(--repl-output-width);
   }
 
   &__toolbar {
