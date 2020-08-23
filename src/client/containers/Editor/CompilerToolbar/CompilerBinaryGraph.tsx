@@ -7,7 +7,7 @@ import {useI18n} from '@ui/webapp/hooks';
 import {TableBinaryView} from '@compiler/x86-assembler/parser/compiler/view/TableBinaryView';
 import {CompilerFinalResult} from '@compiler/x86-assembler';
 
-import {NASM_HIGHLIGHT} from '../../components/CodeEditor/nasmSyntaxDefine';
+import {NASM_HIGHLIGHT} from '@client/components/CodeEditor/nasmSyntaxDefine';
 
 const HIGHLIGHT_INSTRUCTION_COLORS = {
   other: 'var(--dimmed-green)',

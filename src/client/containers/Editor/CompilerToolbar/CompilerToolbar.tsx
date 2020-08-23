@@ -7,12 +7,12 @@ import {
   useUpdateEffect,
 } from '@ui/webapp/hooks';
 
+import {useEmulatorContext} from '@client/context/emulator-state/context';
+
 import {Nav, NavTab, Badge} from '@ui/webapp';
 import {CompilerErrorsList} from './CompilerErrorsList';
 import {CompilerBinaryGraph} from './CompilerBinaryGraph';
 import {CompilerStats} from './CompilerStats';
-
-import {useEmulatorContext} from '../../context/emulator-state/context';
 
 enum CompilerToolbarTabs {
   BINARY = 'binary',

@@ -1,16 +1,37 @@
 const path = require('path');
+const nodeExternals = require('webpack-node-externals');
 const MiniCssExtractPlugin = require('mini-css-extract-plugin');
+const NodemonPlugin = require('nodemon-webpack-plugin');
+const ManifestPlugin = require('webpack-manifest-plugin');
+
+const PRODUCTION_MODE = process.env.NODE_ENV === 'production';
 
 const pkgResolve = (pkgPath) => path.resolve(__dirname, path.join('../packages/', pkgPath));
 const srcResolve = (pkgPath) => path.resolve(__dirname, path.join('../src/', pkgPath));
 
-module.exports = {
-  target: 'web',
-  entry: srcResolve('client/index.tsx'),
+const createConfig = (
+  {
+    nodemon,
+    target,
+    entryName,
+    mainFile,
+    outputFile,
+    outputCssFile,
+    outputPath = '',
+    plugins = [],
+  },
+) => ({
+  target,
+  mode: PRODUCTION_MODE ? 'production' : 'development',
+  watch: !PRODUCTION_MODE,
   devtool: 'source-map',
-  devServer: {
-    port: 8080,
-    contentBase: path.resolve(__dirname, '../assets/'),
+  entry: {
+    [entryName]: srcResolve(mainFile),
+  },
+  output: {
+    filename: outputFile,
+    publicPath: 'public/',
+    path: path.resolve(__dirname, '../dist', outputPath || ''),
   },
   module: {
     rules: [
@@ -64,12 +85,34 @@ module.exports = {
       },
     ],
   },
+  externals: (
+    target === 'node'
+      ? [
+        nodeExternals(),
+      ]
+      : []
+  ),
+  node: {
+    __dirname: false,
+  },
   plugins: [
     new MiniCssExtractPlugin(
       {
-        filename: 'bundle.css',
+        filename: outputCssFile,
         chunkFilename: '[id].css',
       },
+    ),
+    ...plugins,
+    ...(
+      nodemon
+        ? [
+          new NodemonPlugin(
+            {
+              watch: 'dist',
+            },
+          ),
+        ]
+        : []
     ),
   ],
   resolve: {
@@ -84,10 +127,33 @@ module.exports = {
       '@emulator/x86-cpu': pkgResolve('emulator-x86-cpu/src'),
       '@ui/context-state': pkgResolve('ui-context-state/src'),
       '@ui/webapp': pkgResolve('ui-webapp/src'),
+      '@client': srcResolve('client'),
+      '@server': srcResolve('server'),
     },
   },
-  output: {
-    filename: 'bundle.js',
-    path: path.resolve(__dirname, '../dist/'),
-  },
-};
+});
+
+module.exports = [
+  createConfig(
+    {
+      target: 'web',
+      entryName: 'client',
+      mainFile: 'client/index.tsx',
+      outputPath: 'public',
+      outputFile: `client${PRODUCTION_MODE ? '-[hash]' : ''}.js`,
+      outputCssFile: `client${PRODUCTION_MODE ? '-[hash]' : ''}.css`,
+      plugins: [
+        new ManifestPlugin,
+      ],
+    },
+  ),
+  createConfig(
+    {
+      target: 'node',
+      entryName: 'server',
+      mainFile: 'server/main.ts',
+      outputFile: 'server.js',
+      nodemon: true,
+    },
+  ),
+];

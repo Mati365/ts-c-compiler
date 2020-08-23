@@ -4,13 +4,12 @@ import PlayCircleOutline from '@material-ui/icons/PlayCircleOutline';
 import Stop from '@material-ui/icons/Stop';
 
 import {useI18n, useInputLink} from '@ui/webapp/hooks';
+import {useEmulatorContext} from '@client/context/emulator-state/context';
 
 import {SizeType} from '@ui/webapp/shared/types';
 import {Button, Card} from '@ui/webapp';
-import {CodeEditor} from '../components/CodeEditor';
-import {EmulatorLanguage} from '../context/emulator-state/state';
-
-import {useEmulatorContext} from '../context/emulator-state/context';
+import {CodeEditor} from '@client/components/CodeEditor';
+import {EmulatorLanguage} from '@client/context/emulator-state/state';
 
 type CodeEditorCardProps = {
   className?: string,
