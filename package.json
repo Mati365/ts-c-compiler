@@ -3,7 +3,10 @@
     "build": "rm -rf ./dist && node_modules/.bin/webpack --config=config/webpack.config.js",
     "develop": "NODE_ENV=development yarn run build",
     "build:production": "NODE_ENV=production yarn run build",
-    "test": "node_modules/.bin/jest --c config/jest.config.js"
+    "test": "node_modules/.bin/jest --c config/jest.config.js",
+    "migration:generate": "ts-node node_modules/.bin/typeorm migration:generate",
+    "migration:run": "ts-node node_modules/.bin/typeorm migration:run",
+    "migration:revert": "ts-node node_modules/.bin/typeorm migration:revert"
   },
   "husky": {
     "hooks": {
@@ -32,9 +35,12 @@
     "@typescript-eslint/parser": "^2.10.0",
     "arraybuffer-loader": "^1.0.8",
     "buffer": "^5.4.3",
+    "class-transformer": "^0.3.1",
+    "class-validator": "^0.12.2",
     "classnames": "^2.2.6",
     "codemirror": "^5.55.0",
     "css-loader": "^3.6.0",
+    "dotenv": "^8.2.0",
     "eslint": "^6.8.0",
     "eslint-config-airbnb-typescript": "^6.3.1",
     "eslint-import-resolver-alias": "^1.1.2",
@@ -51,6 +57,7 @@
     "js-cookie": "^2.2.1",
     "long": "^4.0.0",
     "mini-css-extract-plugin": "^0.9.0",
+    "nodemon-webpack-plugin": "^4.3.2",
     "prop-types": "^15.7.2",
     "ramda": "^0.26.1",
     "raw-loader": "^4.0.0",
@@ -74,6 +81,6 @@
   "name": "i8086.js",
   "private": true,
   "dependencies": {
-    "nodemon-webpack-plugin": "^4.3.2"
+    "pg": "^8.3.2"
   }
 }

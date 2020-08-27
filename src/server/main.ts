@@ -1,7 +1,12 @@
-import {NestFactory} from '@nestjs/core';
+import {NestFactory, Reflector} from '@nestjs/core';
 import {NestExpressApplication} from '@nestjs/platform-express';
+import {ClassSerializerInterceptor} from '@nestjs/common';
+import {useContainer} from 'class-validator';
 import * as R from 'ramda';
 
+import './config';
+
+import {LoggerInterceptor} from './interceptors/LoggerInterceptor';
 import {AppModule} from './app.module';
 
 const {APP_PORT} = process.env;
@@ -16,6 +21,18 @@ async function bootstrap(
   },
 ) {
   const app = await NestFactory.create<NestExpressApplication>(AppModule);
+  app.useGlobalInterceptors(
+    new ClassSerializerInterceptor(app.get(Reflector)),
+    new LoggerInterceptor,
+  );
+
+  // eslint-disable-next-line react-hooks/rules-of-hooks
+  useContainer(
+    app.select(AppModule),
+    {
+      fallbackOnErrors: true,
+    },
+  );
   await app.listen(port, address);
 }
 

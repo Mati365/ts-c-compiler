@@ -1,8 +1,8 @@
 import {CompilerFinalResult as AssemblerResult} from '@compiler/x86-assembler';
 
 export enum EmulatorLanguage {
-  ASM,
-  C,
+  ASM = 'ASM',
+  C = 'C',
 }
 
 export enum EmulationState {

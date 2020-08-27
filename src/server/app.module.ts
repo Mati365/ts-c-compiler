@@ -2,16 +2,18 @@ import {resolve} from 'path';
 import {Module} from '@nestjs/common';
 import {ServeStaticModule} from '@nestjs/serve-static';
 
-// import {TypeOrmModule} from '@nestjs/typeorm';
-// import {Connection} from 'typeorm';
-
+import {IsUniqueValueConstraint} from './validators/IsUniqueValue';
 import {AppController} from './app.controller';
-import {ManifestModule} from './modules/manifest';
+import {
+  DatabaseModule,
+  ProjectModule,
+  ManifestModule,
+  TagModule,
+} from './modules';
 
 @Module(
   {
     imports: [
-      // TypeOrmModule.forRoot(),
       ServeStaticModule.forRoot(
         {
           serveRoot: '/public',
@@ -27,13 +29,16 @@ import {ManifestModule} from './modules/manifest';
           filePath: resolve(__dirname, './public/manifest.json'),
         },
       ),
+      DatabaseModule,
+      TagModule,
+      ProjectModule,
     ],
     controllers: [
       AppController,
     ],
-    providers: [],
+    providers: [
+      IsUniqueValueConstraint,
+    ],
   },
 )
-export class AppModule {
-  // constructor(private readonly connection: Connection) {}
-}
+export class AppModule {}
