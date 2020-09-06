@@ -63,17 +63,17 @@ export const EditorContainer = () => {
       >
         <div className='l-repl__container'>
           <CodeEditorCard className='l-repl__editor' />
-          <div
-            className={c(
-              'l-repl__output',
-              active && 'is-active',
-            )}
-          >
-            {active && (
+          {active && (
+            <div
+              className={c(
+                'l-repl__output',
+                active && 'is-active',
+              )}
+            >
               <ScreenHolder ref={screenRef} />
-            )}
-            <CompilerToolbar className='l-repl__toolbar' />
-          </div>
+              <CompilerToolbar className='l-repl__toolbar' />
+            </div>
+          )}
         </div>
       </Container>
     </section>

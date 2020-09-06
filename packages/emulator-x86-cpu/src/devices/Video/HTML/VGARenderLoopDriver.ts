@@ -1,6 +1,7 @@
 import {asap} from '@compiler/core/utils/asap';
 import {uuidX86Device} from '@emulator/x86-cpu/types';
 
+import {VGAPixBufCanvasRenderer} from '../Renderers';
 import {VGA} from '../VGA';
 
 type VGARenderLoopDriverInitConfig = {
@@ -21,7 +22,9 @@ export class VGARenderLoopDriver extends uuidX86Device('vgaRenderLoop') {
   private frameNumber: number = 0;
 
   get vga(): VGA {
-    return <VGA> this.cpu.devices.vga;
+    const {devices} = this.cpu;
+
+    return <VGA> (devices && devices.vga);
   }
 
   init({screenElement, upscaleWidth}: VGARenderLoopDriverInitConfig): void {
@@ -31,10 +34,9 @@ export class VGARenderLoopDriver extends uuidX86Device('vgaRenderLoop') {
 
   boot(): void {
     /** Monitor render loop */
-    const {screenElement, upscaleWidth, cpu} = this;
+    const {screenElement, upscaleWidth, cpu, vga} = this;
     if (screenElement) {
       /** Render loop */
-      const vga = <VGA> cpu.devices.vga;
       vga.setScreenElement(
         {
           upscaleWidth,
@@ -54,8 +56,14 @@ export class VGARenderLoopDriver extends uuidX86Device('vgaRenderLoop') {
       }
 
       const frame = () => {
-        if (cpu.isHalted())
+        if (cpu.isHalted()) {
+          const renderer = vga.getCurrentRenderer();
+          if (renderer instanceof VGAPixBufCanvasRenderer)
+            renderer.markWholeRegionAsDirty();
+
+          this.redraw();
           return;
+        }
 
         this.redraw();
         requestAnimationFrame(frame);
@@ -67,6 +75,8 @@ export class VGARenderLoopDriver extends uuidX86Device('vgaRenderLoop') {
 
   redraw(): void {
     const {vga} = this;
+    if (!vga)
+      return;
 
     vga
       .getCurrentRenderer()

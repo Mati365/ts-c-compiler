@@ -66,11 +66,11 @@ export const CompilerBinaryGraph = memo(({result}: CompilerBinaryGraphProps) => 
 
   const {entries, hasJumps} = useMemo(
     () => {
-      const _entries = new TableBinaryView(result).serialize();
+      const newEntries = new TableBinaryView(result).serialize();
 
       return {
-        entries: _entries,
-        hasJumps: R.any((item) => !!item.jmpGraph, _entries),
+        entries: newEntries,
+        hasJumps: R.any((item) => !!item.jmpGraph, newEntries),
       };
     },
     [labelsByOffsets],
@@ -82,6 +82,11 @@ export const CompilerBinaryGraph = memo(({result}: CompilerBinaryGraphProps) => 
         <table>
           <thead>
             <tr>
+              {hasJumps && (
+                <th>
+                  {t('jumps')}
+                </th>
+              )}
               {hasLabels && (
                 <th className='c-binary-graph__list-header--label'>
                   {t('label')}
@@ -96,11 +101,6 @@ export const CompilerBinaryGraph = memo(({result}: CompilerBinaryGraphProps) => 
               <th className='c-binary-graph__list-header--instruction'>
                 {t('instruction')}
               </th>
-              {hasJumps && (
-                <th>
-                  {t('jumps')}
-                </th>
-              )}
             </tr>
           </thead>
 
@@ -111,6 +111,11 @@ export const CompilerBinaryGraph = memo(({result}: CompilerBinaryGraphProps) => 
 
                 return (
                   <tr key={offset}>
+                    {hasJumps && (
+                      <td className='is-jmp-graph'>
+                        {jmpGraph}
+                      </td>
+                    )}
                     {hasLabels && (
                       <td className='is-label'>
                         {label ? `${label}:` : null}
@@ -128,11 +133,6 @@ export const CompilerBinaryGraph = memo(({result}: CompilerBinaryGraphProps) => 
                         __html: highlightInstructionHTML(blob.ast.toString()),
                       }}
                     />
-                    {hasJumps && (
-                      <td className='is-jmp-graph'>
-                        {jmpGraph}
-                      </td>
-                    )}
                   </tr>
                 );
               },

@@ -28,7 +28,6 @@ export function fetchTokensUntil(
   return tokens;
 }
 
-
 /**
  * Fetch all tokens to end of line
  *

@@ -1,6 +1,8 @@
 import {Module} from '@nestjs/common';
 import {TypeOrmModule} from '@nestjs/typeorm';
 
+import {isDevBuild} from '@ui/webapp/utils/isDevBuild';
+
 import {Tag} from '@server/modules/tag/tag.entity';
 import {
   Project,
@@ -27,6 +29,11 @@ const {
           password: DB_PASS,
           port: +DB_PORT,
           synchronize: true,
+          logging: (
+            isDevBuild()
+              ? 'all'
+              : false
+          ),
           entities: [
             Project,
             CompilerInput,

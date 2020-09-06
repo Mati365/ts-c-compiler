@@ -7,6 +7,7 @@ import {Project, CompilerInput} from './entities';
 import {TagService} from '../tag/tag.service';
 import {CreateTagDto} from '../tag/dto/CreateTag.dto';
 import {CreateProjectDto} from './dto';
+import {paginate, PaginationOptions, PaginationResult} from '../shared/pagination';
 
 @Injectable()
 export class ProjectService {
@@ -54,6 +55,7 @@ export class ProjectService {
     const project = new Project(
       {
         title: dto.title,
+        description: dto.description,
         tags: await this.tagService.createListIfNotExist(
           dto.tags.map((tag) => new CreateTagDto(
             {
@@ -67,6 +69,17 @@ export class ProjectService {
 
     await manager.save(input);
     return manager.save(project);
+  }
+
+  /**
+   * Search single record by id
+   *
+   * @param {number} id
+   * @returns {Promise<Project>}
+   * @memberof ProjectService
+   */
+  find(id: number): Promise<Project> {
+    return this.projectRepository.findOne(id, {relations: ['input', 'tags']});
   }
 
   /**
@@ -92,10 +105,17 @@ export class ProjectService {
   /**
    * List all projects
    *
-   * @returns {Promise<Project[]>}
+   * @param {PaginationOptions} options
+   * @returns {Promise<PaginationResult<Project>>}
    * @memberof ProjectService
    */
-  findAll(): Promise<Project[]> {
-    return this.projectRepository.find();
+  findAll(options: PaginationOptions): Promise<PaginationResult<Project>> {
+    return paginate(
+      this.projectRepository,
+      {
+        ...options,
+        relations: ['tags'],
+      },
+    );
   }
 }

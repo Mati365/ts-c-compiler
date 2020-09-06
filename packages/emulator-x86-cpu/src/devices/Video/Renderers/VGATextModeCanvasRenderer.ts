@@ -72,9 +72,7 @@ export class VGATextModeCanvasRenderer extends VGAPixBufCanvasRenderer {
         let swapColors = false;
 
         // if character is already rendered - ignore
-        if (currentCursor && !blink)
-          fgColor = 0x0;
-        else if (blink && ((attr & 0x80) !== 0))
+        if (blink && ((attr & 0x80) !== 0))
           swapColors = true;
 
         // flips background with fg
@@ -85,28 +83,7 @@ export class VGATextModeCanvasRenderer extends VGAPixBufCanvasRenderer {
         }
 
         const cacheKey = (char << 16) | (fgColor << 8) | bgColor;
-        if (renderCharsCache[charMemOffset] === cacheKey)
-          continue;
-
-        if (currentCursor) {
-          // draw cursor
-          for (let row = 0; row < cursorEnd; ++row) {
-            const destRowOffset = screenSize.w * (row + screenRow * charSize.h) * 4;
-            const color = vga256.palette[
-              pixelMask & paletteRegs[row >= cursorStart ? fgColor : bgColor]
-            ];
-
-            for (let col = 0; col < charSize.w; ++col) {
-              const destColOffset = (col + screenCol * charSize.w) << 2;
-
-              buffer[destRowOffset + destColOffset] = color.r;
-              buffer[destRowOffset + destColOffset + 1] = color.g;
-              buffer[destRowOffset + destColOffset + 2] = color.b;
-            }
-          }
-
-          renderCharsCache[charMemOffset] = null;
-        } else {
+        if (renderCharsCache[charMemOffset] !== cacheKey) {
           // draw character
           for (let row = 0; row < charSize.h; ++row) {
             const charBitsetRow = textFontMem[charFontOffset + row];
@@ -126,6 +103,29 @@ export class VGATextModeCanvasRenderer extends VGAPixBufCanvasRenderer {
           }
 
           renderCharsCache[charMemOffset] = cacheKey;
+        }
+
+        if (currentCursor) {
+          if (blink)
+            fgColor = bgColor;
+
+          // draw cursor
+          for (let row = cursorStart; row < cursorEnd; ++row) {
+            const destRowOffset = screenSize.w * (row + screenRow * charSize.h) * 4;
+            const color = vga256.palette[
+              pixelMask & paletteRegs[fgColor]
+            ];
+
+            for (let col = 0; col < charSize.w; ++col) {
+              const destColOffset = (col + screenCol * charSize.w) << 2;
+
+              buffer[destRowOffset + destColOffset] = color.r;
+              buffer[destRowOffset + destColOffset + 1] = color.g;
+              buffer[destRowOffset + destColOffset + 2] = color.b;
+            }
+          }
+
+          renderCharsCache[charMemOffset] = null;
         }
       }
     }

@@ -23,10 +23,14 @@ export class Project {
   )
   title: string;
 
+  @Column('text')
+  description: string;
+
   @OneToOne('CompilerInput', 'project', {onDelete: 'CASCADE'})
   @JoinColumn({name: 'inputId'})
   input: CompilerInput;
 
+  @Column({select: false})
   @RelationId((project: Project) => project.input)
   inputId: number;
 

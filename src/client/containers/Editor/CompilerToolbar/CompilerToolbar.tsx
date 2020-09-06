@@ -1,10 +1,9 @@
-import React, {memo} from 'react';
+import React, {memo, useEffect} from 'react';
 import c from 'classnames';
 
 import {
   useI18n,
   useInputLink,
-  useUpdateEffect,
 } from '@ui/webapp/hooks';
 
 import {useEmulatorContext} from '@client/context/emulator-state/context';
@@ -42,7 +41,7 @@ export const CompilerToolbar = memo(({className}: CompilerToolbarProps) => {
   const [errors, output] = asmResult?.unwrapBoth() || [];
   const successCompilation = asmResult && !errors;
 
-  useUpdateEffect(
+  useEffect(
     () => {
       navInput.setValue(
         errors?.length
@@ -101,19 +100,6 @@ export const CompilerToolbar = memo(({className}: CompilerToolbarProps) => {
       >
         {() => successCompilation && (
           <CompilerBinaryGraph result={asmResult} />
-        )}
-      </NavTab>
-
-      <NavTab
-        id={CompilerToolbarTabs.AST}
-        title={
-          t('titles.compiler.ast')
-        }
-      >
-        {() => (
-          <div>
-            AST
-          </div>
         )}
       </NavTab>
     </Nav>

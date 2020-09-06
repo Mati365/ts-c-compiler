@@ -59,7 +59,6 @@ export enum X86ALUOperator {
   COMPARE = 0b111,
 }
 
-
 /**
  * Arithmetic logic unit
  *

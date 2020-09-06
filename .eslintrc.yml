@@ -4,6 +4,7 @@
   parserOptions:
     ecmaVersion: 6
     sourceType: module
+    project: ./tsconfig.json
 
   settings:
     import/resolver:

@@ -24,7 +24,7 @@ const createConfig = (
   target,
   mode: PRODUCTION_MODE ? 'production' : 'development',
   watch: !PRODUCTION_MODE,
-  devtool: 'source-map',
+  devtool: PRODUCTION_MODE ? 'source-map' : 'cheap-source-map',
   entry: {
     [entryName]: srcResolve(mainFile),
   },
@@ -72,6 +72,7 @@ const createConfig = (
         loader: 'eslint-loader',
         options: {
           emitError: false,
+          cache: true,
         },
       },
       {

@@ -9,22 +9,22 @@ type GlobalJSONProviderProps = {
 const jsonEntrypoint = (varName: string, data: object): string => `window['${varName}'] = ${JSON.stringify(data)};`;
 
 export const JSONGlobalVariable = ({globalVariableName, data}: GlobalJSONProviderProps) => {
-  let __html = null;
+  let html = null;
 
   if (globalVariableName)
-    __html = jsonEntrypoint(globalVariableName, data);
+    html = jsonEntrypoint(globalVariableName, data);
   else if (data && !R.isEmpty(data)) {
-    __html = R.reduce(
+    html = R.reduce(
       (acc: string, [varName, value]: [string, object]) => `${acc}${jsonEntrypoint(varName, value)}`,
       '',
       R.toPairs(data as any),
     );
   }
 
-  return __html && (
+  return html && (
     <script
       dangerouslySetInnerHTML={{
-        __html,
+        __html: html,
       }}
     />
   );

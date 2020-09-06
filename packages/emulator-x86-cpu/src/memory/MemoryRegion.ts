@@ -24,7 +24,10 @@ export class MemoryRegionRange {
     public low: number,
     public high: number,
   ) {
-    this.size = high - low + 1;
+    if (low > high)
+      [this.low, this.high] = [high, low];
+
+    this.size = this.high - this.low + 1;
   }
 
   /**
@@ -39,6 +42,19 @@ export class MemoryRegionRange {
     const {low, high} = this;
 
     return address + margin >= low && address <= high;
+  }
+
+  /**
+   * Check if region intersects with other region
+   *
+   * @param {MemoryRegionRange} range
+   * @returns {boolean}
+   * @memberof MemoryRegionRange
+   */
+  intersects(range: MemoryRegionRange): boolean {
+    const {low, high} = this;
+
+    return range.low <= high && range.high >= low;
   }
 }
 

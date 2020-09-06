@@ -17,7 +17,11 @@ type CodeEditorCardProps = {
 
 export const CodeEditorCard = memo(({className}: CodeEditorCardProps) => {
   const t = useI18n();
-  const l = useInputLink<string>();
+  const l = useInputLink<string>(
+    {
+      initialData: '',
+    },
+  );
   const {execCode, stopExec, running} = useEmulatorContext(
     ({actions, selectors, state}) => ({
       compilerOutput: state.compilerOutput,

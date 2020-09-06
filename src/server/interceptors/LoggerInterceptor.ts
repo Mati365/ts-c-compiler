@@ -10,18 +10,22 @@ import {catchError, tap} from 'rxjs/operators';
 @Injectable()
 export class LoggerInterceptor implements NestInterceptor {
   private readonly ctxPrefix: string = LoggerInterceptor.name;
+
   private readonly logger: Logger = new Logger(this.ctxPrefix);
 
   intercept(context: ExecutionContext, next: CallHandler): Observable<any> {
     const req = context.switchToHttp().getRequest();
-    const {statusCode} = context.switchToHttp().getResponse();
     const {
       originalUrl,
       method,
     } = req;
 
     const now = Date.now();
-    const getLoggerContent = () => `${method} ${originalUrl} | total: ${Date.now() - now}ms | code: ${statusCode}`;
+    const getLoggerContent = () => {
+      const {statusCode} = context.switchToHttp().getResponse();
+
+      return `${method} ${originalUrl} | total: ${Date.now() - now}ms | code: ${statusCode}`;
+    };
 
     return next
       .handle()

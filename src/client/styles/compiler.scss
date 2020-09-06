@@ -44,7 +44,8 @@
           }
 
           &-jmp-graph {
-            font-family: 'Lucida Console', Monaco, monospace;
+            transform: rotate3d(0, 1, 0, 180deg);
+            font-family: monospace;
             color: webapp-color(info);
             white-space: pre-wrap;
           }

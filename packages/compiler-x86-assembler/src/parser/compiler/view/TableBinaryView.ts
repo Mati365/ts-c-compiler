@@ -5,6 +5,7 @@ import {
   mapMapValues,
 } from '@compiler/core/utils';
 
+import {MemoryRegionRange} from '@emulator/x86-cpu/memory/MemoryRegion';
 import {CompilerError} from '@compiler/core/shared/CompilerError';
 import {ASTInstruction} from '../../ast/instruction/ASTInstruction';
 import {BinaryView} from './BinaryView';
@@ -94,8 +95,32 @@ export class TableBinaryView extends BinaryView<JMPTableEntry[]> {
   ): SerializedBlobsOffsets {
     const {template: t} = this.printConfig;
 
+    const nestLevels: MemoryRegionRange[][] = [];
+    const addNestLevel = (region: MemoryRegionRange): number => {
+      let nesting = 0;
+
+      for (; nesting < nestLevels.length; ++nesting) {
+        const level = nestLevels[nesting];
+        if (level && level.length) {
+          if (!level.some((levelRegion) => levelRegion.intersects(region)))
+            break;
+        } else
+          break;
+      }
+
+      (nestLevels[nesting] = (nestLevels[nesting] || [])).push(region);
+      return nesting;
+    };
+
     const offsetsEntries = Array.from(serializedOffsets.entries());
-    const jmpLinesEntries = Array.from(jmpLines.entries());
+    const jmpLinesEntries = Array
+      .from(jmpLines.entries())
+      .map(
+        ([low, high]) => [low, high, addNestLevel(new MemoryRegionRange(low, high))],
+      )
+      .sort(
+        (a, b) => a[2] - b[2],
+      );
 
     const getJmpLineStr = (
       offset: number,
@@ -106,7 +131,10 @@ export class TableBinaryView extends BinaryView<JMPTableEntry[]> {
       let str = '';
 
       for (let i = 0; i < jmpLinesEntries.length; ++i) {
-        let [jmpSrc, jmpDest] = jmpLinesEntries[i];
+        const entry = jmpLinesEntries[i];
+        const nesting = entry[2] * 2;
+
+        let [jmpSrc, jmpDest] = entry;
         let infinityArrow: string = null;
 
         if (jmpSrc > offset && jmpSrc < nextOffset)
@@ -121,7 +149,6 @@ export class TableBinaryView extends BinaryView<JMPTableEntry[]> {
         }
 
         const toUpper = jmpDest > jmpSrc;
-        const nesting = i * 2;
         const inArrowBody = offset >= Math.min(jmpSrc, jmpDest) && offset <= Math.max(jmpDest, jmpSrc);
 
         // detect top arrow jump overflow

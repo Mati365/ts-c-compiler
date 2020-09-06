@@ -1,4 +1,3 @@
-
 import {replaceNthByte, extractNthByte} from '@compiler/core/utils/extractNthByte';
 import {uuidX86Device} from '../../types/X86AbstractDevice';
 

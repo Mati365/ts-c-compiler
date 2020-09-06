@@ -109,7 +109,6 @@ export class VGASequencerRegs extends VGAIndexedReg {
     ];
   }
 
-
   getRegByIndex(index: number = this.indexReg): number {
     switch (index) {
       case 0x0: return this.resetReg.number;
