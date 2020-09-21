@@ -18,9 +18,7 @@ import {
   IdentifierToken,
 } from './tokens';
 
-export type IdentifiersMap = {
-  [key: string]: number, // identifier ID => text
-};
+export type IdentifiersMap = Record<string, number>;
 
 export type TokenTerminalCharactersMap = {
   [operator: string]: TokenType,
@@ -34,6 +32,7 @@ export const TERMINAL_CHARACTERS: TokenTerminalCharactersMap = {
   // single
   ',': TokenType.COMMA,
   ':': TokenType.COLON,
+  ';': TokenType.SEMICOLON,
   '+': TokenType.PLUS,
   '-': TokenType.MINUS,
   '*': TokenType.MUL,
@@ -42,6 +41,7 @@ export const TERMINAL_CHARACTERS: TokenTerminalCharactersMap = {
   '&': TokenType.BIT_AND,
   '|': TokenType.BIT_OR,
   '^': TokenType.POW,
+  '=': TokenType.ASSIGN,
 
   // binary
   '<<': TokenType.BIT_SHIFT_LEFT,
@@ -106,8 +106,10 @@ function parseToken(
  * Flags used for parsing flow control
  */
 export type LexerConfig = {
+  commentParser?(code: string, offset: number, character: string): number,
   tokensParsers?: TokenParsersMap,
   appendEOF?: boolean,
+  ignoreEOL?: boolean,
   signOperatorsAsSeparateTokens?: boolean,
   terminalCharacters?: TokenTerminalCharactersMap,
   identifiers?: IdentifiersMap,
@@ -128,11 +130,13 @@ export type LexerConfig = {
  */
 export function* lexer(config: LexerConfig, code: string): IterableIterator<Token> {
   const {
+    commentParser,
     identifiers,
     tokensParsers,
     allowBracketPrefixKeyword,
     terminalCharacters = TERMINAL_CHARACTERS,
     appendEOF = true,
+    ignoreEOL,
     signOperatorsAsSeparateTokens = false,
     consumeBracketContent = true,
   } = config;
@@ -234,7 +238,13 @@ export function* lexer(config: LexerConfig, code: string): IterableIterator<Toke
     }
 
     // ignore line, it is comment
-    if (isComment(character)) {
+    if (commentParser) {
+      const newOffset = commentParser(code, offset, character);
+      if (newOffset !== null) {
+        offset = newOffset;
+        return;
+      }
+    } else if (isComment(character)) {
       for (; offset < length; ++offset) {
         if (isNewline(code[offset + 1]))
           break;
@@ -257,24 +267,21 @@ export function* lexer(config: LexerConfig, code: string): IterableIterator<Toke
     if (bracket) {
       if (tokenBuffer) {
         // handle case test[123]
-        if (allowBracketPrefixKeyword) {
+        if (allowBracketPrefixKeyword && character === '(') {
           // if empty character
-          if (character === '(') {
-            yield* appendToken(
-              new Token(
-                TokenType.KEYWORD,
-                TokenKind.BRACKET_PREFIX,
-                tokenBuffer,
-                location.clone(),
-              ),
-            );
-          } else {
-            yield* appendToken(
-              parseToken(identifiers, tokensParsers, location, tokenBuffer),
-            );
-          }
-        } else
-          throw new LexerError(LexerErrorCode.UNKNOWN_TOKEN, null, {token: tokenBuffer});
+          yield* appendToken(
+            new Token(
+              TokenType.KEYWORD,
+              TokenKind.BRACKET_PREFIX,
+              tokenBuffer,
+              location.clone(),
+            ),
+          );
+        } else {
+          yield* appendToken(
+            parseToken(identifiers, tokensParsers, location, tokenBuffer),
+          );
+        }
       }
 
       if (consumeBracketContent) {
@@ -309,9 +316,12 @@ export function* lexer(config: LexerConfig, code: string): IterableIterator<Toke
     }
 
     // end of line
-    if (eol)
-      yield* appendCharToken(TokenType.EOL, character);
-    else {
+    if (eol) {
+      if (ignoreEOL)
+        tokenBuffer = '';
+      else
+        yield* appendCharToken(TokenType.EOL, character);
+    } else {
       // handle ++, && etc. two byte terminals
       const binarySeparator = character + code[offset + 1];
       if (terminalCharacters[binarySeparator]) {

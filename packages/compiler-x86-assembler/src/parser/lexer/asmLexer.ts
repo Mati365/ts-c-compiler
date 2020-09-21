@@ -1,4 +1,4 @@
-import {lexer, LexerConfig} from '@compiler/lexer/lexer';
+import {lexer, LexerConfig, TokenParsersMap} from '@compiler/lexer/lexer';
 import {safeResultLexer} from '@compiler/lexer/safeResultLexer';
 
 import {Result} from '@compiler/core/monads/Result';
@@ -20,9 +20,7 @@ import {
 /**
  * Set of all ASM related parsers
  */
-export const TOKEN_PARSERS: {
-  [parser: number]: (token: string, loc?: TokenLocation) => boolean|Token,
-} = Object.freeze(
+export const TOKEN_PARSERS: TokenParsersMap = Object.freeze(
   {
     /** NUMBER */
     [TokenType.NUMBER]: NumberToken.parse,

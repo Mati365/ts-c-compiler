@@ -1,4 +1,20 @@
-import {RegisterSchema} from './constants';
+import {
+  X86BitsMode,
+  X86RegName,
+  X86SegmentRegName,
+  ExtendedX86RegName,
+} from '@emulator/x86-cpu/types';
+
+import {InstructionPrefix, RegisterSchema} from './constants';
+
+export {
+  X86BitsMode,
+  X86RegName,
+  X86SegmentRegName,
+  ExtendedX86RegName,
+};
+
+export type X86PrefixName = keyof typeof InstructionPrefix;
 
 /**
  * Newer CPU = higher value
@@ -31,6 +47,8 @@ export enum InstructionArgSize {
   QWORD = 0x8,
   TWORD = 0xA,
 }
+
+export type InstructionArgSizeName = keyof typeof InstructionArgSize;
 
 export enum BranchAddressingType {
   NEAR = 'near',

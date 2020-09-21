@@ -20,6 +20,7 @@ export function safeResultLexer(config: LexerConfig, code: string): Result<Token
       ),
     );
   } catch (e) {
+    console.error(e);
     return err(
       [
         e,

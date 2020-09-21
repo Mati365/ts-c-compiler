@@ -21,7 +21,11 @@ export class SyntaxError extends GrammarError {
 }
 
 /** Basic type config */
-export type GrammarProduction<K> = () => TreeNode<K> | TreeNode<K>[];
+export type GrammarCheckListBreak = {
+  continue?: boolean,
+};
+
+export type GrammarProduction<K> = () => GrammarCheckListBreak | (TreeNode<K> | TreeNode<K>[] | {});
 
 export type GrammarProductions<K> = {
   [key: string]: GrammarProduction<K>,
@@ -36,12 +40,14 @@ export type GrammarInitializer<I, K> = (
 export type GrammarConfig = {
   ignoreCase?: boolean,
   identifiers?: IdentifiersMap,
+  ignoreMatchCallNesting?: boolean,
 };
 
 type GrammarMatcherInfo<I> = {
   terminal?: string | I,
   optional?: boolean,
   type?: TokenType,
+  types?: TokenType[],
   consume?: boolean,
   ignoreMatchNesting?: boolean,
 };
@@ -101,29 +107,32 @@ export class Grammar<I, K = string> extends TokensIterator {
   /**
    * Produces grammar tree
    *
-   * @param {string} code
+   * @param {string|Token[]} code
    * @returns {TreeNode}
    * @memberof Grammar
    */
-  process(code: string): TreeNode<K> {
-    const {identifiers} = this._config;
+  process(code: string|Token[]): TreeNode<K> {
+    if (R.is(String, code)) {
+      const {identifiers} = this._config;
 
-    this.tokens = Array.from(
-      lexer(
-        {
-          identifiers,
-          consumeBracketContent: false,
-          allowBracketPrefixKeyword: true,
-          signOperatorsAsSeparateTokens: true,
-          tokensParsers: {
-            [TokenType.NUMBER]: NumberToken.parse,
-            [TokenType.FLOAT_NUMBER]: FloatNumberToken.parse,
-            [TokenType.KEYWORD]: R.T,
+      this.tokens = Array.from(
+        lexer(
+          {
+            identifiers,
+            consumeBracketContent: false,
+            allowBracketPrefixKeyword: true,
+            signOperatorsAsSeparateTokens: true,
+            tokensParsers: {
+              [TokenType.NUMBER]: NumberToken.parse,
+              [TokenType.FLOAT_NUMBER]: FloatNumberToken.parse,
+              [TokenType.KEYWORD]: R.T,
+            },
           },
-        },
-        code,
-      ),
-    );
+          <string> code,
+        ),
+      );
+    } else
+      this.tokens = <Token[]> code;
 
     try {
       // this.tokenIndex = 0;
@@ -159,7 +168,7 @@ export class Grammar<I, K = string> extends TokensIterator {
         break;
 
       let node = this.or(productions);
-      if (node) {
+      if (node && !(<GrammarCheckListBreak> node).continue) {
         if (!R.is(Array, node))
           node = [<TreeNode<K>> node];
 
@@ -178,10 +187,10 @@ export class Grammar<I, K = string> extends TokensIterator {
    * Saves token index and tries to exec grammar
    *
    * @param {GrammarProduction<K>} production
-   * @returns {(TreeNode<K> | TreeNode<K>[])}
+   * @returns {ReturnType<GrammarProduction<K>>}
    * @memberof Grammar
    */
-  try(production: GrammarProduction<K>): TreeNode<K> | TreeNode<K>[] {
+  try(production: GrammarProduction<K>): ReturnType<GrammarProduction<K>> {
     const savedIndex = this.tokenIndex;
 
     try {
@@ -205,7 +214,7 @@ export class Grammar<I, K = string> extends TokensIterator {
    * @type {number}
    * @memberof Grammar
    */
-  or(productions: GrammarProductions<K>): TreeNode<K> | TreeNode<K>[] {
+  or(productions: GrammarProductions<K>): ReturnType<GrammarProduction<K>> {
     // search for matching production
     const savedIndex = this.tokenIndex;
 
@@ -218,7 +227,7 @@ export class Grammar<I, K = string> extends TokensIterator {
       } catch (e) {
         // already consumed some of instruction
         // but occurs parsing error
-        if (!('code' in e) || this._matchCallNesting > 1)
+        if (!('code' in e) || (!this._config.ignoreMatchCallNesting && this._matchCallNesting > 1))
           throw e;
         else
           this.tokenIndex = savedIndex;
@@ -254,6 +263,7 @@ export class Grammar<I, K = string> extends TokensIterator {
       terminal = null,
       consume = true,
       type = TokenType.KEYWORD,
+      types,
       optional,
       ignoreMatchNesting,
     }: GrammarMatcherInfo<I> = {},
@@ -266,7 +276,9 @@ export class Grammar<I, K = string> extends TokensIterator {
     const {ignoreCase} = this._config;
     const token: Token = this.fetchRelativeToken(0, false);
 
-    if (token?.type !== type || (terminal !== null && ((ignoreCase ? token.lowerText : token.text) !== terminal))) {
+    if ((!types && terminal === null && token?.type !== type)
+        || (types && types.indexOf(token.type) === -1)
+        || (terminal !== null && ((ignoreCase ? token.lowerText : token.text) !== terminal))) {
       if (optional)
         return null;
 
@@ -277,6 +289,22 @@ export class Grammar<I, K = string> extends TokensIterator {
       this.consume();
 
     return token;
+  }
+
+  /**
+   * Matches single character
+   *
+   * @param {string} char
+   * @returns
+   * @memberof Grammar
+   */
+  terminal(char: string) {
+    return this.match(
+      {
+        type: null,
+        terminal: char,
+      },
+    );
   }
 
   /**

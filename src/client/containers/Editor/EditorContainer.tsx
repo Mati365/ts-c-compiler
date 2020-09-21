@@ -52,25 +52,26 @@ export const EditorContainer = () => {
     [asmResult, screenRef.current],
   );
 
-  const active = asmResult?.isOk();
   return (
     <section>
       <Container
         className={c(
           'l-repl',
-          active && 'is-active',
+          asmResult && 'is-active',
         )}
       >
         <div className='l-repl__container'>
           <CodeEditorCard className='l-repl__editor' />
-          {active && (
+          {asmResult && (
             <div
               className={c(
                 'l-repl__output',
-                active && 'is-active',
+                asmResult && 'is-active',
               )}
             >
-              <ScreenHolder ref={screenRef} />
+              {asmResult.isOk() && (
+                <ScreenHolder ref={screenRef} />
+              )}
               <CompilerToolbar className='l-repl__toolbar' />
             </div>
           )}

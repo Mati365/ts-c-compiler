@@ -380,7 +380,7 @@ export class X86CPU extends X86AbstractCPU {
 
     if (maxTime) {
       const maxEndTime = X86AbstractCPU.microtick() + maxTime;
-      for (;X86AbstractCPU.microtick() <= maxEndTime;)
+      for (;X86AbstractCPU.microtick() <= maxEndTime && this.clock;)
         tick();
     } else {
       while (this.clock)

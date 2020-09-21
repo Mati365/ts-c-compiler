@@ -206,7 +206,9 @@ export class X86RegsStore extends X86ByteRegsStore {
 /**
  * 8/16bit regs only
  */
-export type X86RegName = keyof(X86RegsStore);
+export type X86RegName = keyof X86RegsStore;
+
+export type X86SegmentRegName = 'ds' | 'fs' | 'es' | 'cs' | 'ss' | 'gs';
 
 /**
  * 32bit regs

@@ -34,7 +34,6 @@
 
         &.is {
           &-label {
-            cursor: pointer;
             text-decoration: underline;
             color: webapp-color(danger);
           }
@@ -46,8 +45,9 @@
           &-jmp-graph {
             transform: rotate3d(0, 1, 0, 180deg);
             font-family: monospace;
-            color: webapp-color(info);
             white-space: pre-wrap;
+            font-weight: bold;
+            color: webapp-color(dimmed-purple-blue);
           }
         }
       }

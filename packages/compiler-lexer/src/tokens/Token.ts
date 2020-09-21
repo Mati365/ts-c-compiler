@@ -17,8 +17,10 @@ import {
 export enum TokenType {
   // Text
   QUOTE = 'QUOTE',
+  ASSIGN = 'ASSIGN',
   BRACKET = 'BRACKET',
   COMMA = 'COMMA',
+  SEMICOLON = 'SEMICOLON',
   COLON = 'COLON',
   NUMBER = 'NUMBER',
   FLOAT_NUMBER = 'FLOAT_NUMBER',

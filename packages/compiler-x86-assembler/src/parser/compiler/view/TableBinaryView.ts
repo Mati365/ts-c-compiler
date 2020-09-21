@@ -65,10 +65,10 @@ export class TableBinaryView extends BinaryView<JMPTableEntry[]> {
           bottomLeft: '╯',
         },
         arrows: {
-          left: '◀',
-          right: '▶',
-          top: '▲',
-          bottom: '▼',
+          left: '<',
+          right: '>',
+          top: 'ʌ',
+          bottom: 'v',
           loopLeft: '⮌',
           inline: {
             top: '⬏',
