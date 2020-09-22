@@ -7,10 +7,14 @@ export enum CCompilerIdentifier {
   INT,
   BOOL,
   VOID,
+  STRUCT,
 
   // Blocks
   IF,
   ELSE,
+
+  // Stmts
+  RETURN,
 }
 
 export enum CPrimitiveModifiers {
@@ -50,4 +54,6 @@ export const CCOMPILER_IDENTIFIERS_MAP: IdentifiersMap = {
   void: CCompilerIdentifier.VOID,
   if: CCompilerIdentifier.IF,
   else: CCompilerIdentifier.ELSE,
+  return: CCompilerIdentifier.RETURN,
+  struct: CCompilerIdentifier.STRUCT,
 };

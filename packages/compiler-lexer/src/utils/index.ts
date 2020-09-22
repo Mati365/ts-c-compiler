@@ -1,4 +1,5 @@
 export * from './matchCharacter';
+export * from './isEOFToken';
 export * from './isLineTerminatorToken';
 export * from './isRelationOpToken';
 export * from './isMathOpToken';

@@ -294,17 +294,24 @@ export class Grammar<I, K = string> extends TokensIterator {
   /**
    * Matches single character
    *
-   * @param {string} char
+   * @param {string|string[]} char
+   * @param {boolean} consume
    * @returns
    * @memberof Grammar
    */
-  terminal(char: string) {
-    return this.match(
-      {
-        type: null,
-        terminal: char,
-      },
-    );
+  terminal(char: string|string[], consume: boolean = true) {
+    const token: Token = this.fetchRelativeToken(0, false);
+
+    if (char instanceof Array) {
+      if (!char.includes(token.text))
+        throw new SyntaxError;
+    } else if (token.text !== char)
+      throw new SyntaxError;
+
+    if (consume)
+      this.consume();
+
+    return token;
   }
 
   /**

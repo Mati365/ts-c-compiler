@@ -1,0 +1,13 @@
+import {ValueNode} from '@compiler/grammar/tree/TreeNode';
+import {Token} from '@compiler/lexer/tokens';
+import {ASTCCompilerKind} from './ASTCCompilerNode';
+
+/**
+ * Holds constant numeric values
+ *
+ * @export
+ * @class ASTCValueNode
+ * @extends {ValueNode<T, ASTCCompilerKind>}
+ * @template T
+ */
+export class ASTCValueNode<T extends Token[] = any> extends ValueNode<T, ASTCCompilerKind> {}

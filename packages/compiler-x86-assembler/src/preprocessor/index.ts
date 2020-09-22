@@ -25,7 +25,7 @@ export class PreprocessorResult {
   dump() {
     const {result, ast} = this;
 
-    console.info((new TreePrintVisitor).visit(ast).reduced);
+    console.info(TreePrintVisitor.valueOf(ast));
     console.info(`Preprocessor Output: \n${result}`);
   }
 }

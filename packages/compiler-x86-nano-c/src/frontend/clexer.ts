@@ -59,6 +59,7 @@ export function clexer(config: CLexerConfig, code: string) {
       commentParser: ccomentParser,
       consumeBracketContent: false,
       ignoreEOL: true,
+      signOperatorsAsSeparateTokens: true,
       ...config,
     },
     code,

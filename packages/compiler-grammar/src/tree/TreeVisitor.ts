@@ -60,4 +60,16 @@ export class TreePrintVisitor<T extends TreeNode<any>> extends TreeVisitor<T> {
 
     this._reduced += `${''.padStart((this.nesting - 1) * 3, ' ')}<${node.toString()} />\n`;
   }
+
+  /**
+   * Converts node to string
+   *
+   * @static
+   * @param {T} node
+   * @returns {string}
+   * @memberof TreePrintVisitor
+   */
+  static valueOf<T extends TreeNode<any>>(node: T): string {
+    return (new TreePrintVisitor).visit(node).reduced;
+  }
 }

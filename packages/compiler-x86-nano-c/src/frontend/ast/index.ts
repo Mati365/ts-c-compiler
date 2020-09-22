@@ -4,3 +4,7 @@ export * from './ASTCVariableDeclarator';
 export * from './ASTCExpression';
 export * from './ASTCType';
 export * from './ASTCFunction';
+export * from './ASTCReturn';
+export * from './ASTCBinaryNode';
+export * from './ASTCValueNode';
+export * from './ASTCIf';

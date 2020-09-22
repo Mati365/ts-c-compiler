@@ -18,4 +18,15 @@ export class ASTCType extends ASTCCompilerNode {
   ) {
     super(ASTCCompilerKind.Type, loc);
   }
+
+  /**
+   * @todo
+   *   Add pointers support
+   *
+   * @returns
+   * @memberof ASTCType
+   */
+  toString() {
+    return this.name;
+  }
 }

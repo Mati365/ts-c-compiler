@@ -13,7 +13,6 @@ export class ASTCVariableDeclarator extends ASTCCompilerNode {
   constructor(
     loc: NodeLocation,
     declarations: ASTCCompilerNode[],
-    public readonly type: ASTCType,
   ) {
     super(ASTCCompilerKind.VariableDeclarator, loc, declarations);
   }
@@ -29,9 +28,16 @@ export class ASTCVariableDeclarator extends ASTCCompilerNode {
 export class ASTCVariableDeclaration extends ASTCCompilerNode {
   constructor(
     loc: NodeLocation,
+    public readonly type: ASTCType,
     public readonly name: string,
     public readonly expression: ASTCCompilerNode = null,
   ) {
     super(ASTCCompilerKind.VariableDeclaration, loc);
+  }
+
+  toString() {
+    const {type, kind, name, expression} = this;
+
+    return `${kind} type="${type}" name="${name}" expression="${expression || ''}"`;
   }
 }
