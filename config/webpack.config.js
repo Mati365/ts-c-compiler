@@ -152,7 +152,7 @@ module.exports = [
     {
       target: 'node',
       entryName: 'server',
-      mainFile: 'server/main.ts',
+      mainFile: 'server/server.ts',
       outputFile: 'server.js',
       nodemon: true,
     },

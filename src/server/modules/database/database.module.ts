@@ -1,43 +1,36 @@
 import {Module} from '@nestjs/common';
 import {TypeOrmModule} from '@nestjs/typeorm';
 
-import {isDevBuild} from '@ui/webapp/utils/isDevBuild';
+import {ENV} from '@server/constants/env';
+import {isDevMode} from '@server/shared/helpers';
 
-import {Tag} from '@server/modules/tag/tag.entity';
-import {
-  Project,
-  CompilerInput,
-} from '@server/modules/project/entities';
-
-const {
-  DB_NAME,
-  DB_HOST,
-  DB_USER,
-  DB_PASS,
-  DB_PORT,
-} = process.env;
+import {TagEntity} from '@server/modules/tag/Tag.entity';
+import {ArticleEntity} from '@server/modules/article/Article.entity';
+import {ArticleCategoryEntity} from '../article-category/ArticleCategory.entity';
+import {UserEntity} from '../user/User.entity';
+import {UserScopeEntity} from '../user/Scope.entity';
+import {AttachmentEntity} from '../attachment/Attachment.entity';
 
 @Module(
   {
     imports: [
       TypeOrmModule.forRoot(
         {
+          ...ENV.dbConfig,
           type: 'postgres',
-          database: DB_NAME,
-          host: DB_HOST,
-          username: DB_USER,
-          password: DB_PASS,
-          port: +DB_PORT,
-          synchronize: true,
+          synchronize: false,
           logging: (
-            isDevBuild()
+            isDevMode()
               ? 'all'
               : false
           ),
           entities: [
-            Project,
-            CompilerInput,
-            Tag,
+            ArticleEntity,
+            TagEntity,
+            ArticleCategoryEntity,
+            UserEntity,
+            AttachmentEntity,
+            UserScopeEntity,
           ],
         },
       ),

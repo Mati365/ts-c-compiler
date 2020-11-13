@@ -1,41 +1,41 @@
-import {resolve} from 'path';
 import {Module} from '@nestjs/common';
 import {ServeStaticModule} from '@nestjs/serve-static';
 
-import {IsUniqueValueConstraint} from './validators/IsUniqueValue';
-import {AppController} from './app.controller';
+import {IsUniqueValueConstraint} from '@server/validators/IsUniqueValue';
 import {
   DatabaseModule,
-  ProjectModule,
-  ManifestModule,
+  ArticleModule,
+  ArticleCategoryModule,
   TagModule,
+  UserModule,
+  AuthModule,
+  AttachmentModule,
 } from './modules';
+
+import {ENV} from './constants/env';
 
 @Module(
   {
     imports: [
       ServeStaticModule.forRoot(
         {
-          serveRoot: '/public',
-          renderPath: '/public',
-          rootPath: resolve(__dirname, 'public'),
+          serveRoot: '/uploads',
+          renderPath: '/uploads',
+          rootPath: ENV.uploader.destination,
           serveStaticOptions: {
             index: false,
           },
         },
       ),
-      ManifestModule.forRoot(
-        {
-          filePath: resolve(__dirname, './public/manifest.json'),
-        },
-      ),
       DatabaseModule,
+      UserModule,
+      AuthModule,
       TagModule,
-      ProjectModule,
+      ArticleCategoryModule,
+      ArticleModule,
+      AttachmentModule.register(),
     ],
-    controllers: [
-      AppController,
-    ],
+    controllers: [],
     providers: [
       IsUniqueValueConstraint,
     ],
