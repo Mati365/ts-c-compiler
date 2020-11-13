@@ -16,7 +16,7 @@ export class UserScopeEntity {
 
   @Column(
     {
-      type: 'tinyint',
+      type: 'smallint',
       nullable: false,
     },
   )
