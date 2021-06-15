@@ -25,6 +25,11 @@ Used libs:
 yarn run develop
 ```
 
+## ASM syntax
+
+It's pretty similar to NASM syntax (including preprocessor), examples:
+https://github.com/Mati365/i8086.js/tree/master/packages/compiler-x86-assembler/tests/asm
+
 ## Testing
 
 ```bash
