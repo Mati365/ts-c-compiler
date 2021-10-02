@@ -13,12 +13,13 @@ export class ASTCExpression extends ASTCCompilerNode {
   }
 
   toString() {
-    const {expression} = this;
-
-    return (
+    const {kind, expression} = this;
+    const tokens = (
       expression
         ? joinTokensTexts(' ', expression)
         : ''
     );
+
+    return `${kind} expression="${tokens}"`;
   }
 }

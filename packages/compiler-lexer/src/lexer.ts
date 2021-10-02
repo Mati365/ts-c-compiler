@@ -18,7 +18,7 @@ import {
   IdentifierToken,
 } from './tokens';
 
-export type IdentifiersMap = Record<string, number>;
+export type IdentifiersMap = Record<string, number | string>;
 
 export type TokenTerminalCharactersMap = {
   [operator: string]: TokenType,
@@ -41,7 +41,6 @@ export const TERMINAL_CHARACTERS: TokenTerminalCharactersMap = {
   '&': TokenType.BIT_AND,
   '|': TokenType.BIT_OR,
   '^': TokenType.POW,
-  '=': TokenType.ASSIGN,
 
   // binary
   '<<': TokenType.BIT_SHIFT_LEFT,
@@ -56,6 +55,19 @@ export const TERMINAL_CHARACTERS: TokenTerminalCharactersMap = {
   '||': TokenType.OR,
   '++': TokenType.INCREMENT,
   '--': TokenType.DECREMENT,
+
+  // assign
+  '=': TokenType.ASSIGN,
+  '*=': TokenType.MUL_ASSIGN,
+  '/=': TokenType.DIV_ASSIGN,
+  '%=': TokenType.MOD_ASSIGN,
+  '+=': TokenType.ADD_ASSIGN,
+  '-=': TokenType.SUB_ASSIGN,
+  '<<=': TokenType.SHIFT_LEFT_ASSIGN,
+  '>>=': TokenType.SHIFT_RIGHT_ASSIGN,
+  '&=': TokenType.AND_ASSIGN,
+  '^=': TokenType.XOR_ASSIGN,
+  '|=': TokenType.OR_ASSIGN,
 };
 
 /**
@@ -324,7 +336,15 @@ export function* lexer(config: LexerConfig, code: string): IterableIterator<Toke
     } else {
       // handle ++, && etc. two byte terminals
       const binarySeparator = character + code[offset + 1];
-      if (terminalCharacters[binarySeparator]) {
+      const ternarySeparator = binarySeparator + code[offset + 2];
+
+      if (terminalCharacters[ternarySeparator]) {
+        offset += 2;
+        yield* appendCharToken(
+          terminalCharacters[ternarySeparator],
+          ternarySeparator,
+        );
+      } else if (terminalCharacters[binarySeparator]) {
         offset++;
         yield* appendCharToken(
           terminalCharacters[binarySeparator],

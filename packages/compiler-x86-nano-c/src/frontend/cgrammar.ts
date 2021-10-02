@@ -7,21 +7,31 @@ import {empty} from '@compiler/grammar/matchers';
 import {isEOFToken} from '@compiler/lexer/utils';
 import {fetchTokensUntil} from '@compiler/grammar/utils';
 
-import {CCompilerIdentifier} from '../constants';
 import {ASTCCompilerKind, ASTCCompilerNode} from './ast/ASTCCompilerNode';
+import {
+  CCompilerIdentifier,
+  CCompilerKeyword,
+  CTypeQualifiers,
+} from '../constants';
+
 import {
   ASTCFunction,
   ASTCExpression,
   ASTCStmt,
   ASTCType,
   ASTCVariableDeclaration,
-  ASTCVariableDeclarator,
   ASTCReturn,
   ASTCIf,
+  ASTCAssignExpression,
+  ASTCVariableDeclarator,
 } from './ast';
 
 import {logicExpression} from './matchers';
 
+/**
+ * @see {@link https://www.lysator.liu.se/c/ANSI-C-grammar-y.html}
+ * @see {@link https://cs.wmich.edu/~gupta/teaching/cs4850/sumII06/The%20syntax%20of%20C%20in%20Backus-Naur%20form.htm}
+ */
 const compilerMatcher: GrammarInitializer<CCompilerIdentifier, ASTCCompilerKind> = ({g}) => {
   /**
    * Fetch expression
@@ -50,12 +60,35 @@ const compilerMatcher: GrammarInitializer<CCompilerIdentifier, ASTCCompilerKind>
    * @returns {ASTCReturn}
    */
   function returnStmt(): ASTCReturn {
-    const startToken = g.identifier(CCompilerIdentifier.RETURN);
+    const startToken = g.identifier(CCompilerKeyword.RETURN);
 
     return new ASTCReturn(
       NodeLocation.fromTokenLoc(startToken.loc),
       expression(),
     );
+  }
+
+  /**
+   * Matches const/volatile
+   *
+   * @param {boolean} optional
+   */
+  function typeQualifier(opitonal?: boolean) {
+    /**
+      type_qualifier
+      : CONST
+      | VOLATILE
+      ;
+     */
+    const token = g.identifier(
+      [
+        CTypeQualifiers.CONST,
+        CTypeQualifiers.VOLATILE,
+      ],
+      opitonal,
+    );
+
+    return token && CTypeQualifiers[token.upperText];
   }
 
   /**
@@ -68,6 +101,30 @@ const compilerMatcher: GrammarInitializer<CCompilerIdentifier, ASTCCompilerKind>
    * @returns {ASTCType}
    */
   function typeDeclaration(): ASTCType {
+    /**
+      declarator
+        : pointer direct_declarator
+        | direct_declarator
+        ;
+
+      direct_declarator
+        : IDENTIFIER
+        | '(' declarator ')'
+        | direct_declarator '[' constant_expression ']'
+        | direct_declarator '[' ']'
+        | direct_declarator '(' parameter_type_list ')'
+        | direct_declarator '(' identifier_list ')'
+        | direct_declarator '(' ')'
+        ;
+
+      pointer
+        : '*'
+        | '*' type_qualifier_list
+        | '*' pointer
+        | '*' type_qualifier_list pointer
+        ;
+     */
+    const qualifier = typeQualifier(true);
     const token = g.match(
       {
         type: TokenType.KEYWORD,
@@ -77,6 +134,21 @@ const compilerMatcher: GrammarInitializer<CCompilerIdentifier, ASTCCompilerKind>
     return new ASTCType(
       NodeLocation.fromTokenLoc(token.loc),
       token.text,
+      qualifier,
+    );
+  }
+
+  function directDeclarator() {
+    const type = typeDeclaration();
+
+    return new ASTCVariableDeclaration(
+      type.loc,
+      type,
+      g.match(
+        {
+          type: TokenType.KEYWORD,
+        },
+      ).text,
     );
   }
 
@@ -105,17 +177,8 @@ const compilerMatcher: GrammarInitializer<CCompilerIdentifier, ASTCCompilerKind>
       if (isEOFToken(token) || token.text === ')')
         break;
 
-      const type = typeDeclaration();
       args.push(
-        new ASTCVariableDeclaration(
-          type.loc,
-          type,
-          g.match(
-            {
-              type: TokenType.KEYWORD,
-            },
-          ).text,
-        ),
+        directDeclarator(),
       );
 
       const nextToken = g.terminal([')', ','], false);
@@ -141,6 +204,79 @@ const compilerMatcher: GrammarInitializer<CCompilerIdentifier, ASTCCompilerKind>
     g.terminal(')');
 
     return new ASTCFunction(type.loc, type, name.text, args, stmtBlock());
+  }
+
+  /**
+   * if ( <expression> ) {}
+   *
+   * @returns {ASTCIf}
+   */
+  function ifStmt(): ASTCIf {
+    const startToken = g.identifier(CCompilerKeyword.IF);
+    g.terminal('(');
+    const testExpression = logicExpression(g);
+    g.terminal(')');
+
+    return new ASTCIf(
+      NodeLocation.fromTokenLoc(startToken.loc),
+      testExpression,
+      stmtBlock(),
+    );
+  }
+
+  /**
+    <expression> ::= <assignment-expression>
+                  | <expression> , <assignment-expression>
+
+    <assignment-expression> ::= <conditional-expression>
+                              | <unary-expression> <assignment-operator> <assignment-expression>
+   */
+  function assignOperator(): Token {
+    return g.match(
+      {
+        types: [
+          TokenType.ASSIGN,
+          TokenType.MUL_ASSIGN,
+          TokenType.DIV_ASSIGN,
+          TokenType.MOD_ASSIGN,
+          TokenType.ADD_ASSIGN,
+          TokenType.SUB_ASSIGN,
+          TokenType.SHIFT_LEFT_ASSIGN,
+          TokenType.SHIFT_RIGHT_ASSIGN,
+          TokenType.AND_ASSIGN,
+          TokenType.XOR_ASSIGN,
+          TokenType.OR_ASSIGN,
+        ],
+      },
+    );
+  }
+
+  function assignExpression(): ASTCAssignExpression {
+    const unary = g.match(
+      {
+        type: TokenType.KEYWORD,
+      },
+    );
+
+    const op = assignOperator();
+    const expr = g.match(
+      {
+        type: TokenType.KEYWORD,
+      },
+    );
+
+    g.match(
+      {
+        type: TokenType.SEMICOLON,
+      },
+    );
+
+    return new ASTCAssignExpression(
+      NodeLocation.fromTokenLoc(unary.loc),
+      new ASTCExpression(null, [unary]),
+      op.type,
+      new ASTCExpression(null, [expr]),
+    );
   }
 
   /**
@@ -194,24 +330,6 @@ const compilerMatcher: GrammarInitializer<CCompilerIdentifier, ASTCCompilerKind>
   }
 
   /**
-   * if ( <expression> ) {}
-   *
-   * @returns {ASTCIf}
-   */
-  function ifStmt(): ASTCIf {
-    const startToken = g.identifier(CCompilerIdentifier.IF);
-    g.terminal('(');
-    const testExpression = logicExpression(g);
-    g.terminal(')');
-
-    return new ASTCIf(
-      NodeLocation.fromTokenLoc(startToken.loc),
-      testExpression,
-      stmtBlock(),
-    );
-  }
-
-  /**
    * Matches list of ast compiler nodes
    */
   function stmt(): ASTCStmt {
@@ -220,10 +338,11 @@ const compilerMatcher: GrammarInitializer<CCompilerIdentifier, ASTCCompilerKind>
       <ASTCCompilerNode[]> g.matchList(
         {
           functionDeclaration,
-          variableDeclaration,
           returnStmt,
           stmtBlock,
           ifStmt,
+          assignExpression,
+          variableDeclaration,
           empty,
         },
       ),

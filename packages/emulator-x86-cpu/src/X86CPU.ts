@@ -607,7 +607,7 @@ export class X86CPU extends X86AbstractCPU {
     const mask = BINARY_MASKS[bits];
     const {registers: {status}} = this;
 
-    for (; times > 0; --times) {
+    for (let i = times; i > 0; --i) {
       num <<= 0x1;
       num |= status.cf;
       status.cf = (num >> 8) & 0x1;

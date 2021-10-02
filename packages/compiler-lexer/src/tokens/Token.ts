@@ -17,7 +17,6 @@ import {
 export enum TokenType {
   // Text
   QUOTE = 'QUOTE',
-  ASSIGN = 'ASSIGN',
   BRACKET = 'BRACKET',
   COMMA = 'COMMA',
   SEMICOLON = 'SEMICOLON',
@@ -29,6 +28,19 @@ export enum TokenType {
   STRING = 'STRING',
   EOL = 'EOL',
   EOF = 'EOF',
+
+  // Assign
+  ASSIGN = 'ASSIGN',
+  MUL_ASSIGN = 'MUL_ASSIGN',
+  DIV_ASSIGN = 'DIV_ASSIGN',
+  MOD_ASSIGN = 'MOD_ASSIGN',
+  ADD_ASSIGN = 'ADD_ASSIGN',
+  SUB_ASSIGN = 'SUB_ASSIGN',
+  SHIFT_LEFT_ASSIGN = 'SHIFT_LEFT_ASSIGN',
+  SHIFT_RIGHT_ASSIGN = 'SHIFT_RIGHT_ASSIGN',
+  AND_ASSIGN = 'AND_ASSIGN',
+  XOR_ASSIGN = 'XOR_ASSIGN',
+  OR_ASSIGN = 'OR_ASSIGN',
 
   // Logic
   EQUAL = 'EQUAL',

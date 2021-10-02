@@ -329,7 +329,7 @@ export class Grammar<I, K = string> extends TokensIterator {
     const token: Token = this.fetchRelativeToken(0, false);
     if (
       token.kind !== TokenKind.IDENTIFIER
-        || ((R.is(Array, identifier) ? !R.contains(token.value, <I[]> identifier) : token.value !== identifier))
+        || ((R.is(Array, identifier) ? !(<I[]> identifier).includes(token.value) : token.value !== identifier))
     ) {
       if (optional)
         return null;

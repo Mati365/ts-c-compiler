@@ -8,3 +8,4 @@ export * from './ASTCReturn';
 export * from './ASTCBinaryNode';
 export * from './ASTCValueNode';
 export * from './ASTCIf';
+export * from './ASTCAssignExpression';

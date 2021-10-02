@@ -504,7 +504,7 @@ export class X87 extends X86Unit {
               regs.safePush(mantissa);
             } return 1;
 
-            /* FPREM1 */ case 0xF5: regs.setNthValue(0x0, regs.st1 % regs.st1); return 1;
+            /* FPREM1 */ case 0xF5: regs.setNthValue(0x0, regs.st0 % regs.st1); return 1;
             /* FDECSTP */ case 0xF6: regs.setStackPointer(regs.stackPointer - 0x1); return 1;
             /* FINCSTP */ case 0xF7: regs.setStackPointer(regs.stackPointer + 0x1); return 1;
             /* FPREM */ case 0xF8: {

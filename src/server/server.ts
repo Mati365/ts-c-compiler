@@ -4,7 +4,6 @@ import {ClassSerializerInterceptor} from '@nestjs/common';
 import {useContainer} from 'class-validator';
 
 import {ENV} from './constants/env';
-
 import {LoggerInterceptor} from './interceptors/Logger.interceptor';
 import {AppModule} from './app.module';
 
