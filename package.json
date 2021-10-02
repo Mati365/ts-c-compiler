@@ -4,9 +4,8 @@
     "develop": "NODE_ENV=development yarn run build",
     "build:production": "NODE_ENV=production yarn run build",
     "test": "node_modules/.bin/jest --c config/jest.config.js",
-    "migration:generate": "ts-node node_modules/.bin/typeorm migration:generate",
-    "migration:run": "ts-node node_modules/.bin/typeorm migration:run",
-    "migration:revert": "ts-node node_modules/.bin/typeorm migration:revert"
+    "heroku-postbuild": "yarn run build:production",
+    "start": "NODE_ENV=production node ./dist/api/server.js"
   },
   "husky": {
     "hooks": {
