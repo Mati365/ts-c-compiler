@@ -9,7 +9,7 @@ type AppEnv = Partial<{
 
 const {
   APP_PORT = process.env.PORT || process.env.APP_PORT || 3000,
-  APP_LISTEN_ADDRESS = 'localhost',
+  APP_LISTEN_ADDRESS = '0.0.0.0',
 } = process.env;
 
 export const GLOBAL_CONFIG: Record<string, AppEnv> = {
