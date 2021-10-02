@@ -10,7 +10,6 @@ bochsout.txt
 parport.out
 
 dist/
-yarn.lock
 
 *.swp
 # Logs
