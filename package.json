@@ -77,7 +77,9 @@
     "long": "^4.0.0",
     "ts-enum-util": "^4.0.2",
     "typescript": "^3.8.3",
-    "tslib": "^1.10.0"
+    "tslib": "^1.10.0",
+    "class-transformer": "^0.3.1",
+    "class-validator": "^0.12.2"
   },
   "name": "i8086.js",
   "private": true
