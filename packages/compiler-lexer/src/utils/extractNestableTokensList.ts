@@ -9,10 +9,7 @@ import {Token} from '../tokens';
  *
  *
  * @export
- * @param {{
- *     up(token: Token): boolean,
- *     down(token: Token): boolean,
- *   }} fetchUntil
+ * @param {Object} fetchUntil
  * @param {Token[]} tokens
  * @param {number} offset
  * @returns {[Token[], number]}

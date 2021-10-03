@@ -358,29 +358,41 @@ export class BIOS extends uuidX86Device<X86CPU>('bios') {
           drive = drives[regs.dl],
           /** Mem adresses */
           src = ((cylinder * drive.info.heads + regs.dh) * drive.info.sectors + sector - 0x1) * drive.info.sector,
-          dest = cpu.getMemAddress('es', 'bx');
+          dest = cpu.getMemAddress('es', 'bx'),
+          sectorSize = drive.info.sector;
 
         /** Device is init before boot, if device is null, assign boot medium */
         if (!drive.buffer)
           drive.buffer = cpu.device;
 
+        let error = false;
         if (drive.buffer) {
           /** Copy sectors */
           for (let i = 0; i < regs.al; ++i) {
-            const offset = i * drive.info.sector;
+            const offset = i * sectorSize;
+
+            if (src + offset + sectorSize > drive.buffer.byteLength
+                || dest + offset + sectorSize > cpu.mem.byteLength) {
+              error = true;
+              break;
+            }
+
             drive.buffer.copy(
               cpu.mem,
               dest + offset, /** Dest address */
               src + offset, /** Source address start */
-              src + offset + drive.info.sector, /** Source address end */
+              src + offset + sectorSize, /** Source address end */
             );
           }
 
           /** Always success, buffer is provided */
           regs.status.cf = 0x0;
           regs.ah = 0x0;
-        } else {
-          /** Error */
+        } else
+          error = true;
+
+        /** Error */
+        if (error) {
           regs.status.cf = 0x1;
           regs.ah = 0xBB;
         }

@@ -4,8 +4,11 @@ import c from 'classnames';
 import {useEmulatorContext} from '@client/context/emulator-state/context';
 
 import {Container} from '@ui/webapp';
-import {X86CPU} from '@emulator/x86-cpu/X86CPU';
-import {VGARenderLoopDriver} from '@emulator/x86-cpu/devices/Video/HTML/VGARenderLoopDriver';
+import {
+  X86CPU,
+  VGARenderLoopDriver,
+  binaryToFloppy35Buffer,
+} from '@emulator/x86-cpu';
 
 import {ScreenHolder} from './ScreenHolder';
 import {CodeEditorCard} from './CodeEditorCard';
@@ -41,7 +44,7 @@ export const EditorContainer = () => {
             ),
           },
         )
-        .boot(Buffer.from(binary));
+        .boot(binaryToFloppy35Buffer(binary));
 
       cpuRef.current = cpu;
 
