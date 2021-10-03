@@ -79,7 +79,7 @@
     "typescript": "^3.8.3",
     "tslib": "^1.10.0",
     "class-transformer": "^0.3.1",
-    "class-validator": "^0.12.2"
+    "class-validator": "^0.13.0"
   },
   "name": "i8086.js",
   "private": true
