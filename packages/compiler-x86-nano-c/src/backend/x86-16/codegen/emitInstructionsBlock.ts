@@ -1,4 +1,4 @@
-import {EmitterResult} from './emitInstruction';
+import {EmitterResult} from '../constants/types';
 
 /**
  * Merges multiple instructions into block

@@ -1,4 +1,4 @@
-import {EmitterResult} from './emitInstruction';
+import {EmitterResult} from '../constants/types';
 
 /**
  * Emmits single assembly comment

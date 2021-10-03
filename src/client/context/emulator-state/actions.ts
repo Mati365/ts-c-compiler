@@ -1,5 +1,9 @@
 import {asm} from '@compiler/x86-assembler';
-import {EmulationState, EmulatorLanguage, EmulatorState} from './state';
+import {
+  EmulationState,
+  EmulatorLanguage,
+  EmulatorState,
+} from './state';
 
 /**
  * Executes code, assign result into state and change emulation state

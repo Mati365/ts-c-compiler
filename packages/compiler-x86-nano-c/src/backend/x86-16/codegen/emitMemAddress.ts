@@ -1,9 +1,9 @@
 import {
   X86SegmentRegName,
   InstructionArgSizeName,
-} from '@compiler/x86-assembler/types';
+} from '@compiler/x86-assembler';
 
-import {EmitterResult} from './emitInstruction';
+import {EmitterResult} from '../constants/types';
 
 /**
  * Emits single address instruction

@@ -1,12 +1,14 @@
 import {safeArray} from '@compiler/core/utils';
 
+import {
+  EmitterListResult,
+  EmitterResult,
+} from '../constants/types';
+
 import {emitInstructionsBlock} from './emitInstructionsBlock';
 import {emitComment} from './emitComment';
-import {
-  emitInstruction, emitLabel,
-  EmitterLabelResult,
-  EmitterListResult, EmitterResult,
-} from './emitInstruction';
+import {emitLabel, EmitterLabelResult} from './emitLabel';
+import {emitInstruction} from './emitInstruction';
 
 type BranchEmitterConfig = {
   expressionEmitter(ifFalseLabel: string): EmitterListResult,

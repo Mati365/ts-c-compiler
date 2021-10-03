@@ -1,7 +1,13 @@
 import * as R from 'ramda';
 
 import {safeArray} from '@compiler/core/utils';
-import {emitInstruction, EmitterResult, EmitterListResult} from './emitInstruction';
+
+import {
+  EmitterResult,
+  EmitterListResult,
+} from '../constants/types';
+
+import {emitInstruction} from './emitInstruction';
 import {emitInstructionsBlock} from './emitInstructionsBlock';
 import {emitComment} from './emitComment';
 

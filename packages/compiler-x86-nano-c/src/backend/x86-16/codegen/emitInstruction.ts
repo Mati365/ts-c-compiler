@@ -1,12 +1,6 @@
 import * as R from 'ramda';
-import {genUUID} from '@compiler/core/utils';
-import {X86PrefixName} from '@compiler/x86-assembler/types';
-
-export type EmitterResult = {
-  code: string,
-};
-
-export type EmitterListResult = EmitterResult | EmitterResult[];
+import {X86PrefixName} from '@compiler/x86-assembler';
+import {EmitterResult} from '../constants/types/emitter';
 
 /**
  * Emits single instruction
@@ -25,41 +19,25 @@ export function emitInstruction(
       ? [null, mnemonic]
       : mnemonic
   );
-  return {
-    code: [
-      prefix,
-      name,
-      args && (
-        R
-          .reject(R.isNil, args)
-          .map((arg) => (
-            typeof arg === 'object'
-              ? (<EmitterResult> arg).code
-              : arg
-          ))
-          .join(', ')
-      ),
-    ]
-      .filter(Boolean)
-      .join(' '),
-  };
-}
 
-export type EmitterLabelResult = EmitterResult & {uuid: string};
-
-/**
- * Generates uuid and generates label
- *
- * @export
- * @param {string} [prefix='_label_']
- * @param {string} defaultUUID
- * @returns {EmitterLabelResult}
- */
-export function emitLabel(prefix: string = '@@_', defaultUUID?: string): EmitterLabelResult {
-  const uuid = defaultUUID || genUUID(prefix);
+  const code = [
+    prefix,
+    name,
+    args && (
+      R
+        .reject(R.isNil, args)
+        .map((arg) => (
+          typeof arg === 'object'
+            ? (<EmitterResult> arg).code
+            : arg
+        ))
+        .join(', ')
+    ),
+  ]
+    .filter(Boolean)
+    .join(' ');
 
   return {
-    code: `${uuid}:`,
-    uuid,
+    code,
   };
 }
