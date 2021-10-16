@@ -10,12 +10,7 @@
 
 16 bit x86 (with X87 FPU) virtual machine and assembler written in TypeScript. It is designed to help with prototyping small bootsector (or bigger) real mode games 🎮 and apps 💻.
 
-Used libs:
-- Express.JS
-- NestJS
-- React
-- Ramda
-- TypeORM
+JavaScript 16bit x86 assembler bundled in emulator is designed to be fully binarny compatible with 16bit NASM compiler. 
 
 <img src="/doc/editor.png" align="right" />
 
