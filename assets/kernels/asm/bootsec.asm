@@ -1,387 +1,172 @@
-        ;
-        ; Pillman
-        ;
-        ; by Oscar Toledo G.
-        ; http://nanochess.org/
-        ;
-        ; (c) Copyright 2019 Oscar Toledo G.
-        ;
-        ; Creation date: Jun/11/2019.
-        ; Revision date: Jun/12/2019. Draws level.
-        ; Revision date: Jun/13/2019. Pillman can move.
-        ; Revision date: Jun/14/2019. Now ghosts don't get stuck. Ghost are
-        ;                             transparent. Pillman doesn't leave
-        ;                             trash.
-        ; Revision date: Jun/15/2019. Ghosts can catch pillman. Optimized.
-        ;                             509 bytes.
-        ; Revision date: Jul/09/2019. Self-modifying code, move subroutine,
-        ;                             cache routine address (Peter Ferrie).
-        ;                             504 bytes.
-        ; Revision date: Jul/22/2019. Added Esc key to exit.
-        ;
+;= test: bootman game
+;= bin:
 
-        cpu 8086
+; Boot-Man
+;
+; (c) 2019 Guido van den Heuvel
+;
+; Boot-Man is a Pac-Man clone that fits (snugly) inside the Master Boot Record of a USB stick.
+; A USB stick with Boot-Man on it boots into the game (hence the name). Unfortunately, however,
+; Boot-Man leaves no room in the MBR for a partition table, which means that a USB stick with Boot-Man
+; in its MBR cannot be used to store data. In fact, Windows does not recognize a USB stick with
+; Boot-Man in its MBR as a valid storage medium.
+;
+; Controls of the game: you control Boot-Man using the WASD keys. No other user input is necessary. Some other
+; keys can also be used to control Boot-Man, this is a side effect of coding my own keyboard handler in
+; just a few bytes. There simply wasn't room for checking the validity of every key press.
+;
+; The game starts automatically, and when Boot-Man dies, a new game starts automatically within a couple of seconds.
+;
+;
+; I've had to take a couple of liberties with the original Pac-Man game to fit Boot-Man inside the 510
+; bytes available in the MBR:
+;
+; * The ghosts start in the four corners of the maze, they do not emerge from a central cage like in the original
+;
+; * There's just a single level. If you finish the level, the game keeps running with an empty maze. While
+;   it is rather difficult to finish the game (which is intentional, because of the single level), it is possible.
+;
+; * Boot-Man only has 1 life. If Boot-Man dies, another game is started automatically (by re-reading the MBR
+;   from disk, there simply isn't enough room to re-initialize the game in any other way)
+;
+; * Power pills function differently from the original. When Boot-Man eats a power pill, all ghosts become
+;   ethereal (represented in game by just their eyes being visible) and cease to chase Boot-Man. While ethereal,
+;   Boot-Man can walk through ghosts with no ill effects. While I would really like to include the "ghost hunting"
+;   from the original, which I consider to be an iconic part of the game, this simply isn't possible in the little
+;   space available.
+;
+; * There's no score, and no fruit to get bonus points from.
+;
+; * All ghosts, as well as Boot-Man itself, have the same, constant movement speed. In the original, the ghosts
+;   run at higher speeds than Pac-Man, while Pac-Man gets delayed slightly when eating and ghosts get delayed when moving
+;   through the tunnel connecting both sides of the maze. This leads to very interesting dynamics and strategies
+;   in the original that Boot-Man, by necessity, lacks.
+;
+;
+; Boot-Man runs in text mode. It uses some of the graphical characters found in IBM codepage 437 for its objects:
+;   - Boot-Man itself is represented by the smiley face (☻), which is character 0x02 in the IBM charset
+;   - The Ghosts are represented by the infinity symbol (∞), which is character 0xec. These represent
+;     a ghost's eyes, with the ghost's body being represented simply by putting the character on a
+;     coloured background
+;   - The dots that represent Boot-Man's food are represented by the bullet character (•),
+;     which is character 0xf9
+;   - The power pills with which Boot-Man gains extra powers are represented by the diamond (♦),
+;     which is character 0x04
+;   - The walls of the maze are represented by the full block character (█), which is character 0xdb
+;
+; Boot-Man runs off int 8, which is connected to the timer interrupt. It should therefore run at the same speed
+; on all PCs. It includes its own int 9 (keyboard) handler. The code is quite heavily optimized for size, so
+; code quality is questionable at best, and downright atrocious at worst.
 
-    %ifndef com_file            ; If not defined create a boot sector
-com_file:       equ 0
-    %endif
 
-base:           equ 0xf9fe      ; Memory base (same segment as video)
-intended_dir:   equ base+0x00   ; Next direction for player
-frame:          equ base+0x01   ; Current video frame
-x_player:       equ base+0x02   ; Saved X-coordinate of player
-y_player:       equ ms6+0x01    ; Saved Y-coordinate of player
-old_time:       equ base+0x06   ; Old time
+org 0x7c00                          ; The MBR is loaded at 0x0000:0x7c00 by the BIOS
+bits 16                             ; Boot-Man runs in Real Mode. I am assuming that the BIOS leaves the CPU is Real Mode.
+                                    ; This is true for the vast majority of PC systems. If your system's BIOS
+                                    ; switches to Protected Mode or Long Mode during the boot process, Boot-Man
+                                    ; won't run on your machine.
 
-        ;
-        ; Maze should start at x,y coordinate multiple of 8
-        ;
-BASE_MAZE:      equ 16*X_OFFSET+32
-pos1:           equ BASE_MAZE+21*8*X_OFFSET
+start:
+    cli                             ; Disable interrupts, as we are going to set up interrupt handlers and a stack
+    xor ax, ax
+    mov ds, ax                      ; Set up a data segment that includes the Interrupt Vector Table and the Boot-Man code
+    mov [0], dl             ; save the current drive number, which has been stored in dl by the BIOS
+    mov ss, ax
+    mov sp, 0x28                    ; Set up a temporary stack, within the interrupt vector table
+    push ax                         ; This saves some bytes when setting up interrupt vectors
+    push word int9handler           ; Set up my own int 9 (keyboard) handler
+    push ax
+    push word int8handler           ; Set up my own int 8 (timer interrupr) handler
 
-X_OFFSET:       equ 0x0140
+    mov sp, ax                      ; Set up the real stack.
 
-MAZE_COLOR:     equ 0x37        ; No color should be higher or equal value
-PILL_COLOR:     equ 0x02        ; Color for pill
-PLAYER_COLOR:   equ 0x0e        ; Should be unique
+    inc ax                          ; int 0x10 / ah = 0: Switch video mode. Switch mode to 40x25 characters (al = 1).
+    mov ah, 2
+    int 0x10                        ; In this mode, characters are approximately square, which means that horizontal
+                                    ; and vertical movement speeds are almost the same.
+    xchg bx, bx
+	jmp $
 
-        ;
-        ; XOR combination of these plus PILL_COLOR shouldn't
-        ; result in PLAYER_COLOR
-        ;
-GHOST1_COLOR:   equ 0x21        ; Ghost 1 color
-GHOST2_COLOR:   equ 0x2e        ; Ghost 2 color
-GHOST3_COLOR:   equ 0x28        ; Ghost 3 color
-GHOST4_COLOR:   equ 0x34        ; Ghost 4 color
+int9handler:
+    pusha
+    in al, 0x60                 ; We use the legacy I/O port for the keyboard. This code
+                                ; would also work in an IBM PC from almost 40 years ago
 
-    %if com_file
-        org 0x0100              ; Start address for COM file
-    %else
-        org 0x7c00              ; Start address for boot sector
-    %endif
-restart:
-        mov ax,0x0013           ; Set mode 0x13 (320x200x256 VGA)
-        int 0x10                ; Call BIOS
-        cld
-        mov ax,0xa000           ; Video segment
-        mov ds,ax               ; Use as source data segment
-        mov es,ax               ; Use as target data segment
-        ;
-        ; Draw the maze
-        ;
-        mov si,maze             ; SI = Address of maze data
-        mov di,BASE_MAZE        ; DI = Address for drawing maze
-draw_maze_row:
-        cs lodsw                ; Load one word of data from Code Segment
-        xchg ax,cx              ; Put into AX
-        mov bx,30*8             ; Offset of mirror position
-draw_maze_col:
-        shl cx,1                ; Extract one tile of maze
-        mov ax,MAZE_COLOR*0x0100+0x18   ; Carry = 0 = Wall
-        jnc dm1                 ; If bit was zero, jump to dm1
-        mov ax,PILL_COLOR*0x0100+0x38   ; Carry = 1 = Pill
-dm1:    call draw_sprite        ; Draw tile
-        add di,bx               ; Go to mirror position
-        sub bx,16               ; Mirror finished?
-        jc dm2                  ; Yes, jump
-        call draw_sprite        ; Draw tile
-        sub di,bx               ; Restore position
-        sub di,8                ; Advance tile
-        jmp draw_maze_col       ; Repeat until finished
+    ; This code converts al from scancode to movement direction.
+    ; Input:  0x11 (W),  0x1e (A),     0x1f (S),    0x20 (D)
+    ; Output: 0xce (up), 0xca (right), 0xc6 (down), 0xc2 (left)
+    ;
+    ; Other scancodes below 0x21 are also mapped onto a movement direction
+    ; Starting input:             0x11 0x1e 0x1f 0x20
+    sub al, 0x21                ; 0xf0 0xfd 0xfe 0xff
+    jnc intxhandler_end         ;                      if al >= 0x21, ignore scancode;
+                                ;                      this includes key release events
+    and al, 3                   ; 0x00 0x01 0x02 0x03
+    shl al, 2                   ; 0x00 0x04 0x08 0x0c
+    neg al                      ; 0x00 0xfc 0xf8 0xf4
+    add al, 0xce                ; 0xce 0xca 0xc6 0xc2
+    cmp al, [bootman_data + 2]  ; If the new direction is the same as the current direction, ignore it
+    jz intxhandler_end
+    mov [bootman_data + 3], al  ; Set new direction to the direction derived from the keyboard input
 
-        ;
-        ; Move ghost
-        ; bh = color
-        ;
-move_ghost:
-        lodsw                   ; Load screen position
-        xchg ax,di
-        lodsw                   ; Load direction
-        test ah,ah
-        xchg ax,bx              ; Color now in ah
-        mov al,0x30
-        push ax
-        mov byte [si-1],0x02    ; Remove first time setup flag
-        call move_sprite3
-        pop ax
-        ;
-        ; Draw the sprite/tile
-        ;
-        ; ah = sprite color
-        ; al = sprite (x8)
-        ; di = Target address
-draw_sprite:
-        push ax
-        push bx
-        push cx
-        push di
-ds0:    push ax
-        mov bx,bitmaps-8
-        cs xlat                 ; Extract one byte from bitmap
-        xchg ax,bx
-        mov cx,8
-ds1:    mov al,bh
-        shl bl,1                ; Extract one bit
-        jc ds2
-        xor ax,ax               ; Background color
-ds2:
-        cmp bh,0x10             ; Color < 0x10
-        jc ds4                  ; Yes, jump
-        cmp byte [di],PLAYER_COLOR      ; "Eats" player?
-        je restart              ; Yes, it should crash after several hundred games
-ds3:
-        xor al,[di]             ; XOR ghost again pixel
-ds4:
-        stosb
-        loop ds1
-        add di,X_OFFSET-8       ; Go to next video line
-        pop ax
-        inc ax                  ; Next bitmap byte
-        test al,7               ; Sprite complete?
-        jne ds0                 ; No, jump
-        pop di
-        pop cx
-        pop bx
-        pop ax
-        ret
+int8handler:
+	nop
 
-dm2:
-        add di,X_OFFSET*8-15*8  ; Go to next row
-        cmp si,setup_data       ; Maze completed?
-        jne draw_maze_row       ; No, jump
+intxhandler_end:
+    popa
+    iret
 
-        ;
-        ; Setup characters
-        ;
-        ; CX is zero at this point
-        ; DI is equal to pos1 at this point
-       ;mov di,pos1
-        mov cl,5                ; 5 elements (player + ghosts)
-        mov ax,2                ; Going to right
-dm3:
-        cs movsw                ; Copy position from Code Segment
-        stosw                   ; Store desired direction
-        loop dm3                ; Loop
+bootman_data:
+    db 0x0f, 0x0f               ; Boot-Man's x and y position
+    db 0xca                     ; Boot-Man's direction
+    db 0xca                     ; Boot-Man's future direction
 
-        ;
-        ; Main game loop
-        ;
-game_loop:
-        mov ah,0x00
-        int 0x1a                ; BIOS clock read
-        cmp dx,[old_time]       ; Wait for time change
-        je game_loop
-        mov [old_time],dx       ; Save new time
+pace_counter: db 0x10
+ghost_timer:  db 0x0            ; if > 0 ghosts are invisible, and is counted backwards to 0
 
-        mov ah,0x01             ; BIOS Key available
-        int 0x16
-        mov ah,0x00             ; BIOS Read Key
-        je no_key
-        int 0x16
-no_key:
-        mov al,ah
-        cmp al,0x01             ; Esc key
-        jne no_esc
-        int 0x20
-no_esc:
-        sub al,0x48             ; Code for arrow up?
-        jc no_key2              ; Out of range, jump.
-        cmp al,0x09             ; Farther than arrow down?
-        jnc no_key2             ; Out of range, jump.
-        mov bx,dirs
-        cs xlat                 ; Translate direction to internal code
-        mov [intended_dir],al   ; Save as desired direction
-no_key2:
-        mov si,pos1             ; SI points to data for player
-        lodsw                   ; Load screen position
-        xchg ax,di
-        lodsw                   ; Load direction/type
-        xchg ax,bx
-        xor ax,ax               ; Delete pillman
-        call move_sprite2       ; Move
-        xor byte [frame],0x80   ; Alternate frame
-        mov ax,0x0e28           ; Closed mouth
-        js close_mouth          ; Jump if sign set.
-        mov al,[pos1+2]         ; Using current direction
-        mov cl,3                ; Multiply by 8
-        shl al,cl               ; Show open mouth
-close_mouth:
-        call draw_sprite        ; Draw
-        ;
-        ; Move ghosts
-        ;
-        mov bp, move_ghost
-        mov bh,GHOST1_COLOR
-        call bp
-        mov bh,GHOST2_COLOR
-        call bp
-        mov bh,GHOST3_COLOR
-        call bp
-        mov bh,GHOST4_COLOR
-        call bp
-        jmp game_loop
+ghostdata:
+    db 0xc2                     ; 1st ghost, direction
+ghostpos:
+    db 0x01, 0x01               ;            x and y position
+ghostterrain:
+    dw 0x0ff9                   ;            terrain underneath
+ghostfocus:
+    db 0x0, 0x0                 ;            focus point for movement
+secondghost:
+    db 0xce                     ; 2nd ghost, direction
+    db 0x01, 0x17               ;            x and y position
+    dw 0x0ff9                   ;            terrain underneath
+    db 0x0, 0x4                 ;            focus point for movement
+    db 0xca                     ; 3rd ghost, direction
+    db 0x1e, 0x01               ;            x and y position
+    dw 0x0ff9                   ;            terrain underneath
+    db 0xfc, 0x0                ;            focus point for movement
+    db 0xce                     ; 4th ghost, direction
+    db 0x1e, 0x17               ;            x and y position
+    dw 0x0ff9                   ;            terrain underneath
+    db 0x4, 0x0                 ;            focus point for movement
+lastghost:
 
-        ;
-        ; DI = address on the screen
-        ; BL = wanted direction
-        ;
-move_sprite3:
-        je move_sprite          ; If zero, won't remove first time
-move_sprite2:
-        call draw_sprite        ; Remove ghost
-move_sprite:
-        mov ax,di               ; Prepare to extract pixel row/column
-        xor dx,dx
-        mov cx,X_OFFSET
-        div cx
-                                ; Now AX = Row, DX = Column
-        mov ah,dl
-        or ah,al
-        and ah,7                ; Both aligned at 8 pixels?
-        jne ms0                 ; No, jump because cannot change direction.
-        ; AH is zero already
-       ;mov ah,0
-        ;
-        ; Get available directions
-        ;
-        mov ch,MAZE_COLOR
-        cmp [di-0x0001],ch      ; Left
-        adc ah,ah               ; AH = 0000 000L
-        cmp [di+X_OFFSET*8],ch  ; Down
-        adc ah,ah               ; AH = 0000 00LD
-        cmp [di+0x0008],ch      ; Right
-        adc ah,ah               ; AH = 0000 0LDR
-        cmp [di-X_OFFSET],ch    ; Up
-        adc ah,ah               ; AH = 0000 LDRU
+bm_length           equ ghostdata    - bootman_data
+gh_length           equ secondghost  - ghostdata
+gh_offset_pos       equ ghostpos     - ghostdata
+gh_offset_terrain   equ ghostterrain - ghostdata
+gh_offset_focus     equ ghostfocus   - ghostdata
+pace_offset         equ pace_counter - bootman_data
+timer_offset        equ ghost_timer  - bootman_data
 
-        test bh,bh              ; Is it pillman?
-        je ms4                  ; Yes, jump
+; The maze, as a bit array. Ones denote walls, zeroes denote food dots / corridors
+; The maze is stored upside down to save one cmp instruction in buildmaze
+maze: dw 0xffff, 0x8000, 0xbffd, 0x8081, 0xfabf, 0x8200, 0xbefd, 0x8001
+      dw 0xfebf, 0x0080, 0xfebf, 0x803f, 0xaebf, 0xaebf, 0x80bf, 0xfebf
+      dw 0x0080, 0xfefd, 0x8081, 0xbebf, 0x8000, 0xbefd, 0xbefd, 0x8001
+      dw 0xffff
+maze_length: equ $ - maze
 
-        ;
-        ; Ghost
-        ;
-        test bl,0x05            ; Test BL for .... .D.U
-        je ms6                  ; No, jump
-        ; Current direction is up/down
-        cmp dx,[x_player]       ; Compare X coordinate with player
-        mov al,0x02             ; Go right
-        jc ms8                  ; Jump if X ghost < X player
-        mov al,0x08             ; Go left
-        jmp ms8
+; Collision detection flag. It is initialized by the code
+collision_detect:
 
-        ; Current direction is left/right
-ms6:    cmp al,0x00             ; (SMC) Compare Y coordinate with player
-        mov al,0x04             ; Go down
-        jc ms8                  ; Jump if Y ghost < Y player
-        mov al,0x01             ; Go up
-ms8:
-        test ah,al              ; Can it go in intended direction?
-        jne ms1                 ; Yes, go in direction
+collision_offset equ collision_detect - bootman_data
 
-        mov al,bl
-ms9:    test ah,al              ; Can it go in current direction?
-        jne ms1                 ; Yes, jump
-        shr al,1                ; Try another direction
-        jne ms9
-        mov al,0x08             ; Cycle direction
-        jmp ms9
-
-        ;
-        ; Pillman
-        ;
-ms4:
-        mov [x_player],dx       ; Save current X coordinate
-        cs mov [y_player],al    ; Save current Y coordinate
-
-        mov al,[intended_dir]
-        test ah,al              ; Can it go in intended direction?
-        jne ms1                 ; Yes, go in that direction
-
-ms5:    and ah,bl               ; Can it go in current direction?
-        je ms2                  ; No, stops
-
-ms0:    mov al,bl
-
-ms1:    mov [si-2],al           ; Save new direction
-        test al,5               ; If going up/down...
-        mov bx,-X_OFFSET*2      ; ...bx = vertical movement
-        jne ms3
-        mov bx,1*2              ; ...bx = horizontal movement
-ms3:
-        test al,12
-        je ms7
-        neg bx                  ; Reverse direction
-ms7:
-        add di,bx               ; Do move
-        mov [si-4],di           ; Save the new screen position
-ms2:
-        ret
-
-        ;
-        ; Game bitmaps
-        ;
-bitmaps:
-        db 0x00,0x42,0xe7,0xe7,0xff,0xff,0x7e,0x3c      ; dir = 1
-        db 0x3c,0x7e,0xfc,0xf0,0xf0,0xfc,0x7e,0x3c      ; dir = 2
-        db 0xff,0xff,0xff,0xff,0xff,0xff,0xff,0xff      ; Maze
-        db 0x3c,0x7e,0xff,0xff,0xe7,0xe7,0x42,0x00      ; dir = 4
-        db 0x3c,0x7e,0xff,0xff,0xff,0xff,0x7e,0x3c      ; Closed mouth
-        db 0x3c,0x7e,0xdb,0xdb,0xff,0xff,0xff,0xa5      ; Ghost
-        db 0x00,0x00,0x00,0x18,0x18,0x00,0x00,0x00      ; Pill
-        db 0x3c,0x7e,0x3f,0x0f,0x0f,0x3f,0x7e,0x3c      ; dir = 8
-
-        ;
-        ; Maze shape
-        ;
-maze:
-        dw 0b0000_0000_0000_0000
-        dw 0b0111_1111_1111_1110
-        dw 0b0100_0010_0000_0010
-        dw 0b0100_0010_0000_0010
-        dw 0b0111_1111_1111_1111
-        dw 0b0100_0010_0100_0000
-        dw 0b0111_1110_0111_1110
-        dw 0b0000_0010_0000_0010
-        dw 0b0000_0010_0111_1111
-        dw 0b0000_0011_1100_0000
-        dw 0b0000_0010_0100_0000
-        dw 0b0000_0010_0111_1111
-        dw 0b0000_0010_0100_0000
-        dw 0b0111_1111_1111_1110
-        dw 0b0100_0010_0000_0010
-        dw 0b0111_1011_1111_1111
-        dw 0b0000_1010_0100_0000
-        dw 0b0111_1110_0111_1110
-        dw 0b0100_0000_0000_0010
-        dw 0b0111_1111_1111_1111
-        dw 0b0000_0000_0000_0000
-
-        ;
-        ; Starting positions
-        ;
-setup_data:
-        dw BASE_MAZE+0x78*X_OFFSET+0x78
-        dw BASE_MAZE+0x30*X_OFFSET+0x70
-        dw BASE_MAZE+0x40*X_OFFSET+0x78
-        dw BASE_MAZE+0x20*X_OFFSET+0x80
-        dw BASE_MAZE+0x30*X_OFFSET+0x88
-
-        ;
-        ; Convert arrow codes to internal directions
-        ;
-dirs:
-        db 0x01         ; 0x48 = Up arrow
-        db 0x00
-        db 0x00
-        db 0x08         ; 0x4b = Left arrow
-        db 0x00
-        db 0x02         ; 0x4d = Right arrow
-        db 0x00
-        db 0x00
-        db 0x04         ; 0x50 = Down arrow
-
-    %if com_file
-    %else
-        times 510-($-$$) db 0x4f
-        db 0x55,0xaa            ; Make it a bootable sector
-    %endif
+times 510 - ($ - $$) db 0
+db 0x55
+db 0xaa

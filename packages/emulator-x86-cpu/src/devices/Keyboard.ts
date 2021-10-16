@@ -53,8 +53,13 @@ export class Keyboard extends uuidX86Device<X86CPU>('keyboard') {
    * @memberof Keyboard
    */
   isSpeakerEnabled(): boolean {
-    const {controlReg} = this;
+    const {
+      controlReg: {
+        timer2Gate,
+        speakerGate,
+      },
+    } = this;
 
-    return controlReg.timer2Gate === 1 && controlReg.speakerGate === 1;
+    return timer2Gate === 1 && speakerGate === 1;
   }
 }

@@ -77,6 +77,7 @@ export class BIOS extends uuidX86Device<X86CPU>('bios') {
 
   static VideoMode = {
     0x0: new VideoMode(0x0, 40, 25, VGA_TEXT_MODES_PRESET['40x25'], 0x8),
+    0x1: new VideoMode(0x1, 40, 25, VGA_TEXT_MODES_PRESET['40x25'], 0x8),
     0x2: new VideoMode(0x2, 80, 25, VGA_TEXT_MODES_PRESET['80x25'], 0x8),
     0x3: new VideoMode(0x3, 80, 25, VGA_TEXT_MODES_PRESET['80x25'], 0x8),
     0x4: new VideoMode(0x4, 320, 200, VGA_GRAPHICS_MODES_PRESET['320x200x4'], 0x1),
@@ -524,7 +525,9 @@ export class BIOS extends uuidX86Device<X86CPU>('bios') {
     /** Graphics interrupts */
     this.attachInterrupts(0x10, 'ah', {
       /** Set video mode */
-      0x0: () => this.setVideoMode(this.regs.al),
+      0x0: () => {
+        this.setVideoMode(this.regs.al);
+      },
 
       /** Hide cursor */
       0x1: () => {
@@ -671,9 +674,13 @@ export class BIOS extends uuidX86Device<X86CPU>('bios') {
    * @param {Number|Object} code  Mode
    */
   setVideoMode(code: number|VideoMode): void {
-    const {screen, vga} = this;
+    const {screen, vga, cpu} = this;
+    const newMode = Number.isNaN(<number> code) ? code : BIOS.VideoMode[<number> code];
 
-    screen.mode = Number.isNaN(<number> code) ? code : BIOS.VideoMode[<number> code];
-    vga.loadModePreset(screen.mode.vgaPreset);
+    if (newMode) {
+      screen.mode = newMode;
+      vga.loadModePreset(screen.mode.vgaPreset);
+    } else
+      cpu.logger.warn(`Attempt to load unknown screen code ${code}!`);
   }
 }

@@ -19,10 +19,6 @@
     &:only-child {
       width: 100%;
     }
-
-    &:not(:only-child) {
-      margin-right: 15px;
-    }
   }
 
   &__output {
@@ -30,6 +26,10 @@
     flex-direction: column;
     width: auto;
     max-width: var(--repl-output-width);
+
+    &:not(:only-child) {
+      margin-right: 15px;
+    }
   }
 
   &__toolbar {

@@ -17,6 +17,8 @@ import JUMPS_BIN_TEST from './asm/jumps.asm';
 import PREFIXES_BIN_TEST from './asm/prefixes.asm';
 import MODRM_BIN_TEST from './asm/modrm.asm';
 import BOOTOS_BIN_TEST from './asm/bootos.asm';
+import BOOTSLIDE_BIN_TEST from './asm/bootslide.asm';
+import BOOTMAN_BIN_TEST from './asm/bootman.asm';
 
 import {parseBinaryTestList} from './utils/parseBinaryTestList';
 
@@ -36,6 +38,8 @@ const tests = parseBinaryTestList(
     PREFIXES_BIN_TEST,
     MODRM_BIN_TEST,
     BOOTOS_BIN_TEST,
+    BOOTSLIDE_BIN_TEST,
+    BOOTMAN_BIN_TEST,
   ].join('\n'),
 );
 
