@@ -1,7 +1,7 @@
 import * as R from 'ramda';
 
 import {TreeVisitor} from '@compiler/grammar/tree/TreeVisitor';
-import {ASTCBinaryOpNode, ASTCCompilerKind, ASTCCompilerNode} from '../../ast';
+import {ASTCBinaryOpNode, ASTCCompilerKind, ASTCCompilerNode} from '../../../ast';
 
 /**
  * @see

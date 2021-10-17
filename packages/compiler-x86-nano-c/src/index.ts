@@ -2,16 +2,14 @@ import {ccompiler} from './frontend';
 
 ccompiler(
   null,
-  'a *= 2;',
-  // `int main(const int arg1, float arg2) {
-  //   int a = 2, b;
-  //   float abc = 3;
-  //   if (2 + 2 > 4) {
-  //     float dupa = 3;
-  //   }
+  `
+    int main() {
+      int a = 3;
+      int b = 4;
 
-  //   return (2+2);
-  // }`,
+      return a + b;
+    }
+  `,
 )
   .unwrap()
   .dump();

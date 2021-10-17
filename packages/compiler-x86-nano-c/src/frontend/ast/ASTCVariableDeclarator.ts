@@ -1,4 +1,5 @@
 import {NodeLocation} from '@compiler/grammar/tree/NodeLocation';
+import {TreeVisitor} from '@compiler/grammar/tree/TreeVisitor';
 import {ASTCCompilerNode, ASTCCompilerKind} from './ASTCCompilerNode';
 import {ASTCType} from './ASTCType';
 
@@ -36,8 +37,23 @@ export class ASTCVariableDeclaration extends ASTCCompilerNode {
   }
 
   toString() {
-    const {type, kind, name, expression} = this;
+    const {type, kind, name} = this;
 
-    return `${kind} type="${type}" name="${name}" expression="${expression || ''}"`;
+    return `${kind} type="${type}" name="${name}"`;
+  }
+
+  /**
+   * Iterates throught tree
+   *
+   * @param {TreeVisitor<ASTCCompilerNode>} visitor
+   * @memberof ASTCVariableDeclaration
+   */
+  walk(visitor: TreeVisitor<ASTCCompilerNode>): void {
+    const {expression} = this;
+
+    super.walk(visitor);
+
+    if (expression)
+      visitor.visit(expression);
   }
 }

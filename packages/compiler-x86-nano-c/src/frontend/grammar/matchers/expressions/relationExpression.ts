@@ -3,11 +3,11 @@ import {empty} from '@compiler/grammar/matchers';
 import {isRelationOpToken} from '@compiler/lexer/utils/isRelationOpToken';
 
 import {TokenType} from '@compiler/lexer/tokens';
-import {ReducePostfixOperatorsVisitor} from './utils/ReducePostifxOperatorsVisitor';
+import {ReducePostfixOperatorsVisitor} from '../utils/ReducePostifxOperatorsVisitor';
 import {
   ASTCBinaryOpNode, ASTCCompilerNode,
   CCompilerGrammar, createBinOpIfBothSidesPresent,
-} from '../ast';
+} from '../../../ast';
 
 import {mathExpression} from './mathExpression';
 

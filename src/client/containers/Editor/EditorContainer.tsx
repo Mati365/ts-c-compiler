@@ -64,6 +64,7 @@ export const EditorContainer = () => {
         )}
       >
         <div className='l-repl__container'>
+          <CodeEditorCard className='l-repl__editor' />
           {asmResult && (
             <div
               className={c(
@@ -77,7 +78,6 @@ export const EditorContainer = () => {
               <CompilerToolbar className='l-repl__toolbar' />
             </div>
           )}
-          <CodeEditorCard className='l-repl__editor' />
         </div>
       </Container>
     </section>

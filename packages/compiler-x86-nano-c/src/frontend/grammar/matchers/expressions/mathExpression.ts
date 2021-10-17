@@ -4,12 +4,12 @@ import {empty} from '@compiler/grammar/matchers';
 import {TokenType, NumberToken, Token} from '@compiler/lexer/tokens';
 import {NodeLocation} from '@compiler/grammar/tree/NodeLocation';
 
-import {ReducePostfixOperatorsVisitor} from './utils/ReducePostifxOperatorsVisitor';
+import {ReducePostfixOperatorsVisitor} from '../utils/ReducePostifxOperatorsVisitor';
 import {
   ASTCBinaryOpNode, ASTCCompilerKind,
   ASTCCompilerNode, ASTCValueNode,
   CCompilerGrammar, createBinOpIfBothSidesPresent,
-} from '../ast';
+} from '../../../ast';
 
 /**
  * Prevents right recursion on same level operaotrs such as 2-2-2-2.

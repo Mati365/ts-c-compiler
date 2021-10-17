@@ -3,7 +3,7 @@ import React, {memo} from 'react';
 import PlayCircleOutline from '@material-ui/icons/PlayCircleOutline';
 import Stop from '@material-ui/icons/Stop';
 
-import HELLO_WORLD_ASM from '@client/examples/helloWorld.asm';
+import EXAMPLE_ASM from '@client/examples/example.asm';
 
 import {useI18n, useInputLink} from '@ui/webapp/hooks';
 import {useEmulatorContext} from '@client/context/emulator-state/context';
@@ -21,7 +21,7 @@ export const CodeEditorCard = memo(({className}: CodeEditorCardProps) => {
   const t = useI18n();
   const l = useInputLink<string>(
     {
-      initialData: HELLO_WORLD_ASM,
+      initialData: EXAMPLE_ASM,
     },
   );
 

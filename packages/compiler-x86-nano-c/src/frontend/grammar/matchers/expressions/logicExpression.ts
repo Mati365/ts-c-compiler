@@ -2,10 +2,12 @@
 import {empty} from '@compiler/grammar/matchers';
 
 import {TokenType} from '@compiler/lexer/tokens';
-import {createBinOpIfBothSidesPresent, ASTCBinaryOpNode} from '../ast/ASTCBinaryNode';
+import {
+  createBinOpIfBothSidesPresent, ASTCBinaryOpNode,
+  ASTCCompilerNode, CCompilerGrammar,
+} from '../../../ast';
 
-import {ReducePostfixOperatorsVisitor} from './utils/ReducePostifxOperatorsVisitor';
-import {ASTCCompilerNode, CCompilerGrammar} from '../ast';
+import {ReducePostfixOperatorsVisitor} from '../utils/ReducePostifxOperatorsVisitor';
 import {relationExpression} from './relationExpression';
 
 /**
