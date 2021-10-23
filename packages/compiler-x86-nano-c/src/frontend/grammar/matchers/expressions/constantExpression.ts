@@ -2,29 +2,28 @@
 import {NodeLocation} from '@compiler/grammar/tree/NodeLocation';
 import {Token, TokenType} from '@compiler/lexer/tokens';
 import {fetchTokensUntil} from '@compiler/grammar/utils';
-import {ASTCExpression} from '../../../ast';
+import {ASTCConstantExpression} from '../../../ast';
 import {CGrammar} from '../shared';
-
-export type ExpressionBreakFn = (token: Token) => boolean;
+import {ExpressionBreakFn} from './expression';
 
 /**
- * Fetch expression
+ * Fetch constant expression
  *
  * @param {CGrammar} c
  * @param {ExpressionBreakFn} breakFn
  * @param {boolean} excludeBreakToken
- * @returns {ASTCExpression}
+ * @returns {ASTCConstantExpression}
  */
-export function expression(
+export function constantExpression(
   {g}: CGrammar,
   breakFn: ExpressionBreakFn = (token: Token) => token.type === TokenType.SEMICOLON,
   excludeBreakToken?: boolean,
-): ASTCExpression {
+): ASTCConstantExpression {
   const tokens = fetchTokensUntil(breakFn, g, excludeBreakToken);
   if (!tokens.length)
     return null;
 
-  return new ASTCExpression(
+  return new ASTCConstantExpression(
     NodeLocation.fromTokenLoc(tokens[0].loc),
     tokens,
   );

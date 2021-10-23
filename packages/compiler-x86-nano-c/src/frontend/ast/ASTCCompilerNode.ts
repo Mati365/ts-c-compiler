@@ -6,17 +6,27 @@ export enum ASTCCompilerKind {
   If = 'If',
   Stmt = 'Stmt',
   Value = 'Value',
-  Type = 'Type',
-  PtrType = 'PtrType',
-  PtrArrayType = 'PtrArrayType',
-  Expression = 'Expression',
-  AssignExpression = 'AssignExpression',
   Function = 'Function',
   Return = 'Return',
+
+  EnumSpecifier = 'EnumSpecifier',
+  EnumItem = 'EnumItem',
+
+  Type = 'Type',
+  TypeSpecifier = 'TypeSpecifier',
+  PtrType = 'PtrType',
+  PtrArrayType = 'PtrArrayType',
+
+  Expression = 'Expression',
+  ConstantExpression = 'ConstantExpression',
+  AssignExpression = 'AssignExpression',
+
   VariableDeclaration = 'VariableDeclaration',
   VariableDeclarator = 'VariableDeclarator',
   BinaryOperator = 'BinaryOperator',
 }
+
+export type ASTCTreeNode = TreeNode<ASTCCompilerKind>;
 
 export class CCompilerGrammar extends Grammar<CCompilerIdentifier, ASTCCompilerKind> {}
 

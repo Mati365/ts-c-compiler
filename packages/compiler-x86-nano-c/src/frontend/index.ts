@@ -1,3 +1,3 @@
 export * from './ccompiler';
-export * from './grammar/cgrammar';
+export * from './grammar/grammar';
 export * from './lexer/clexer';

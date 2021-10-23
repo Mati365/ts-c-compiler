@@ -3,7 +3,6 @@ import {CCompilerKeyword} from '../../../../constants';
 import {ASTCIf} from '../../../ast/ASTCIf';
 
 import {CGrammar} from '../shared';
-import {logicExpression} from '../expressions/logicExpression';
 import {blockStmt} from './blockStmt';
 
 /**
@@ -16,7 +15,7 @@ export function ifStmt(grammar: CGrammar): ASTCIf {
   const startToken = g.identifier(CCompilerKeyword.IF);
 
   g.terminal('(');
-  const testExpression = logicExpression(g);
+  const testExpression = null; // todo
   g.terminal(')');
 
   return new ASTCIf(

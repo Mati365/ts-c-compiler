@@ -1,11 +1,11 @@
 import {CompilerError} from '@compiler/core/shared/CompilerError';
 
 export enum SSACodegenErrorCode {
-  UNKNWON_INSTRUCTION,
+  UNKNOWN_INSTRUCTION,
 }
 
 export const SSA_CODEGEN_ERROR_TRANSLATIONS: Record<SSACodegenErrorCode, string> = {
-  [SSACodegenErrorCode.UNKNWON_INSTRUCTION]: 'Unknown instruction!',
+  [SSACodegenErrorCode.UNKNOWN_INSTRUCTION]: 'Unknown instruction!',
 };
 
 /**

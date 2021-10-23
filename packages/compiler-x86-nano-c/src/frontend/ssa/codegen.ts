@@ -34,7 +34,7 @@ export function safeSAACodegen(tree: TreeNode): Result<SSAGeneratorResult, SSACo
       ssaCodegen(tree),
     );
   } catch (e) {
-    e.code = e.code ?? SSACodegenErrorCode.UNKNWON_INSTRUCTION;
+    e.code = e.code ?? SSACodegenErrorCode.UNKNOWN_INSTRUCTION;
 
     return err(
       [

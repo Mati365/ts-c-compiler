@@ -8,8 +8,9 @@ export class ASTCExpression extends ASTCCompilerNode {
   constructor(
     loc: NodeLocation,
     public readonly expression: Token[],
+    kind: ASTCCompilerKind = ASTCCompilerKind.Expression,
   ) {
-    super(ASTCCompilerKind.Expression, loc);
+    super(kind, loc);
   }
 
   toString() {

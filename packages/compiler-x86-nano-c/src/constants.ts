@@ -7,6 +7,7 @@ export enum CCompilerKeyword {
   RETURN = 'return',
   STRUCT = 'struct',
   TYPEDEF = 'typedef',
+  ENUM = 'enum',
 }
 
 export enum CPrimitiveType {
@@ -30,11 +31,15 @@ export enum CTypeSpecifiers {
   UNSIGNED = 'unsigned',
 }
 
-export type CCompilerIdentifier = (
-  CCompilerKeyword
-  | CPrimitiveType
+export type CCompilerTypeIdentifier = (
+  CPrimitiveType
   | CTypeQualifiers
   | CTypeSpecifiers
+);
+
+export type CCompilerIdentifier = (
+  CCompilerKeyword
+  | CCompilerTypeIdentifier
 );
 
 export class CType {
@@ -60,16 +65,21 @@ export const PRIMITIVE_TYPES: Record<string, CType> = R.reduce(
 );
 
 export const CCOMPILER_IDENTIFIERS_MAP: IdentifiersMap = {
+  enum: CCompilerKeyword.ENUM,
+  if: CCompilerKeyword.IF,
+  else: CCompilerKeyword.ELSE,
+  return: CCompilerKeyword.RETURN,
+  struct: CCompilerKeyword.STRUCT,
   int: CPrimitiveType.INT,
   float: CPrimitiveType.FLOAT,
   double: CPrimitiveType.DOUBLE,
   bool: CPrimitiveType.BOOL,
   void: CPrimitiveType.VOID,
   char: CPrimitiveType.CHAR,
-  if: CCompilerKeyword.IF,
-  else: CCompilerKeyword.ELSE,
-  return: CCompilerKeyword.RETURN,
-  struct: CCompilerKeyword.STRUCT,
   const: CTypeQualifiers.CONST,
   volatile: CTypeQualifiers.VOLATILE,
+  short: CTypeSpecifiers.SHORT,
+  long: CTypeSpecifiers.LONG,
+  signed: CTypeSpecifiers.SIGNED,
+  unsigned: CTypeSpecifiers.UNSIGNED,
 };

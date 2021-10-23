@@ -227,7 +227,9 @@ export class Grammar<I, K = string> extends TokensIterator {
       } catch (e) {
         // already consumed some of instruction
         // but occurs parsing error
-        if (!('code' in e) || (!this._config.ignoreMatchCallNesting && this._matchCallNesting > 1))
+        if (!(e instanceof SyntaxError)
+            || !('code' in e)
+            || (!this._config.ignoreMatchCallNesting && this._matchCallNesting > 1))
           throw e;
         else
           this.tokenIndex = savedIndex;
@@ -251,10 +253,7 @@ export class Grammar<I, K = string> extends TokensIterator {
   /**
    * Match single token or group of tokens
    *
-   * @param {GrammarMatcherInfo<TokenIdentifier>} {
-   *       terminal,
-   *       type = TokenType.KEYWORD,
-   *     }
+   * @param {GrammarMatcherInfo<TokenIdentifier>} attrs
    * @returns {Token}
    * @memberof Grammar
    */

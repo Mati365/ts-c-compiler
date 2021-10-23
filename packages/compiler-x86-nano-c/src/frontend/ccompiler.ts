@@ -2,7 +2,7 @@ import {ok} from '@compiler/core/monads/Result';
 import {TreeNode} from '@compiler/grammar/tree/TreeNode';
 import {TreePrintVisitor} from '@compiler/grammar/tree/TreeVisitor';
 
-import {createCCompilerGrammar} from './grammar/cgrammar';
+import {safeTreeGenerate} from './grammar';
 import {clexer, CLexerConfig} from './lexer/clexer';
 import {safeSAACodegen} from './ssa/codegen';
 
@@ -51,7 +51,7 @@ export function ccompiler(ccompilerConfig: CCompilerConfig, code: string) {
   ccompilerConfig = ccompilerConfig || {};
 
   return clexer(ccompilerConfig.lexer, code)
-    .andThen((tokens) => ok(createCCompilerGrammar().process(tokens)))
+    .andThen((tokens) => safeTreeGenerate(tokens))
     .andThen((ast) => safeSAACodegen(ast))
     .andThen((result) => ok(new CCompilerResult(code, result.tree)));
 }

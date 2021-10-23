@@ -8,8 +8,8 @@ import {
 import {CGrammar} from '../shared';
 import {blockStmt} from './blockStmt';
 import {
+  // variableDeclaration,
   directDeclarator,
-  typeDeclaration,
 } from '../declarations';
 
 /**
@@ -27,9 +27,9 @@ export function functionArgs(grammar: CGrammar): ASTCVariableDeclaration[] {
     if (isEOFToken(token) || token.text === ')')
       break;
 
-    args.push(
-      directDeclarator(grammar),
-    );
+    // args.push(
+    //   variableDeclaration(grammar),
+    // );
 
     const nextToken = g.terminal([')', ','], false);
     if (nextToken.text === ')')
@@ -44,7 +44,7 @@ export function functionArgs(grammar: CGrammar): ASTCVariableDeclaration[] {
 export function functionDeclaration(grammar: CGrammar): ASTCFunction {
   const {g} = grammar;
 
-  const type = typeDeclaration(grammar);
+  const type = directDeclarator(grammar);
   const name = g.match(
     {
       type: TokenType.KEYWORD,

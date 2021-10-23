@@ -1,5 +1,5 @@
 import {NodeLocation} from '@compiler/grammar/tree/NodeLocation';
-import {CTypeQualifiers, CTypeSpecifiers} from '@compiler/x86-nano-c/constants';
+import {CTypeQualifiers, CTypeSpecifiers} from '../../constants';
 import {ASTCCompilerKind, ASTCCompilerNode} from './ASTCCompilerNode';
 
 /**
@@ -12,7 +12,7 @@ import {ASTCCompilerKind, ASTCCompilerNode} from './ASTCCompilerNode';
  * @class ASTCType
  * @extends {ASTCCompilerNode}
  */
-export class ASTCType extends ASTCCompilerNode {
+export class ASTCIdentifierType extends ASTCCompilerNode {
   constructor(
     loc: NodeLocation,
     public readonly name: string,
@@ -72,14 +72,16 @@ export class ACTCPtrArrayType extends ACTCPtrType {
     loc: NodeLocation,
     type: ASTCCompilerNode,
     qualifier: CTypeQualifiers,
-    public readonly length: number,
+    public readonly lengthExpression: string,
   ) {
     super(loc, type, qualifier, ASTCCompilerKind.PtrArrayType);
   }
 
   toString() {
-    const {type, length} = this;
+    const {type, lengthExpression} = this;
 
-    return `(${type.toString()})[${length || ''}]`;
+    return `(${type.toString()})[${lengthExpression || ''}]`;
   }
 }
+
+export type ASTCType = ASTCIdentifierType | ACTCPtrType | ACTCPtrArrayType;

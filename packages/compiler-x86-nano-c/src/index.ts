@@ -3,13 +3,27 @@ import {ccompiler} from './frontend';
 ccompiler(
   null,
   `
-    int main() {
-      int a = 3;
-      int b = 4;
+    enum Size {
+      SMALL = 1,
+      BIG = 2,
+      LARGE = 3,
+    };
 
-      return a + b;
+    enum Size2 {
+      SMALL,
+      BIG = 2,
+      LARGE,
+    }
+
+    enum {
+      XD = 1
     }
   `,
-)
-  .unwrap()
-  .dump();
+).match(
+  {
+    ok: (result) => result.dump(),
+    err: (error) => {
+      console.error(error);
+    },
+  },
+);

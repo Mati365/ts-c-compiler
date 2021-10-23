@@ -1,8 +1,6 @@
 /* eslint-disable @typescript-eslint/no-use-before-define, no-use-before-define */
 import * as R from 'ramda';
 
-import {empty} from '@compiler/grammar/matchers';
-
 import {NodeLocation} from '@compiler/grammar/tree/NodeLocation';
 import {
   Grammar,
@@ -10,12 +8,13 @@ import {
   GrammarProductions,
 } from '@compiler/grammar/Grammar';
 
-import {ASTCCompilerKind, ASTCCompilerNode} from '../ast/ASTCCompilerNode';
+import {ASTCCompilerKind} from '../ast/ASTCCompilerNode';
 import {CCompilerIdentifier} from '../../constants';
 import {ASTCStmt} from '../ast';
 
 import {
   functionDeclaration,
+  enumDeclaration,
   returnStmt,
   blockStmt,
   ifStmt,
@@ -34,9 +33,10 @@ const compilerMatcher: GrammarInitializer<CCompilerIdentifier, ASTCCompilerKind>
     stmt,
   };
 
-  const stmts = R.mapObjIndexed<any, GrammarProductions<ASTCCompilerKind>>(
+  const stmts: GrammarProductions<ASTCCompilerKind> = R.mapObjIndexed(
     R.partial(R.__ as any, [grammar]),
     {
+      enumDeclaration,
       functionDeclaration,
       returnStmt,
       blockStmt,
@@ -52,12 +52,7 @@ const compilerMatcher: GrammarInitializer<CCompilerIdentifier, ASTCCompilerKind>
   function stmt(): ASTCStmt {
     return new ASTCStmt(
       NodeLocation.fromTokenLoc(g.currentToken.loc),
-      <ASTCCompilerNode[]> g.matchList(
-        {
-          ...stmts,
-          empty,
-        },
-      ),
+      g.matchList(stmts),
     );
   }
 

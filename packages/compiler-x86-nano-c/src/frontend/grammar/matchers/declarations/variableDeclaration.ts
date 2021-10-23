@@ -9,7 +9,7 @@ import {
 } from '../../../ast';
 
 import {expression} from '../expressions/expression';
-import {typeDeclaration} from './typeDeclaration';
+import {directDeclarator} from './directDeclarator';
 
 /**
  * Declaration of variable / constant
@@ -19,7 +19,7 @@ import {typeDeclaration} from './typeDeclaration';
  */
 export function variableDeclaration(grammar: CGrammar): ASTCVariableDeclarator {
   const {g} = grammar;
-  const type = typeDeclaration(grammar);
+  const type = directDeclarator(grammar);
   const declarations: ASTCVariableDeclaration[] = [];
 
   for (;;) {

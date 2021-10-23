@@ -58,6 +58,17 @@ export class TokensIterator {
   }
 
   /**
+   * Fetches next token to current
+   *
+   * @param {boolean} [increment=false]
+   * @return {Token}
+   * @memberof TokensIterator
+   */
+  nextToken(increment: boolean = false): Token {
+    return this.fetchRelativeToken(1, increment);
+  }
+
+  /**
    * Just increments tokenIndex
    *
    * @see
