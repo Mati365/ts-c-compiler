@@ -6,7 +6,7 @@ import {ASTAsmParser} from '../ASTAsmParser';
 import {ASTNodeKind} from '../types';
 import {KindASTAsmNode} from '../ASTAsmNode';
 
-import {fetchInstructionTokensArgsList} from '../../utils';
+import {fetchInstructionTokensArgsList} from '../../utils/fetchInstructionTokensArgsList';
 
 export const EQU_TOKEN_NAME = 'equ';
 

@@ -1,9 +1,6 @@
 import {safeFirstMatch} from '@compiler/core/utils/safeFirstMatch';
-import {
-  TokenLocation,
-  TokenType,
-  Token,
-} from '@compiler/lexer/tokens';
+import {TokenLocation, TokenType} from '../../shared';
+import {Token} from '../Token';
 
 const matchFloatNumber = safeFirstMatch(/^[+-]?(\d+([.]\d*)?(e[+-]?\d+)?)$/i);
 

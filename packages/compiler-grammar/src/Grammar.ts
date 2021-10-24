@@ -190,7 +190,7 @@ export class Grammar<I, K = string> extends TokensIterator {
    * @returns {ReturnType<GrammarProduction<K>>}
    * @memberof Grammar
    */
-  try(production: GrammarProduction<K>): ReturnType<GrammarProduction<K>> {
+  try<R>(production: () => R): R {
     const savedIndex = this.tokenIndex;
 
     try {
@@ -322,13 +322,13 @@ export class Grammar<I, K = string> extends TokensIterator {
    * @returns {Token}
    * @memberof Grammar
    */
-  identifier(identifier: I|I[], optional?: boolean, consume: boolean = true): Token {
+  identifier(identifier?: I|I[], optional?: boolean, consume: boolean = true): Token {
     this._matchCallNesting++;
 
     const token: Token = this.fetchRelativeToken(0, false);
-    if (
-      token.kind !== TokenKind.IDENTIFIER
-        || ((R.is(Array, identifier) ? !(<I[]> identifier).includes(token.value) : token.value !== identifier))
+    if (token.kind !== TokenKind.IDENTIFIER
+      || (!R.isNil(identifier)
+          && (R.is(Array, identifier) ? !(<I[]> identifier).includes(token.value) : token.value !== identifier))
     ) {
       if (optional)
         return null;

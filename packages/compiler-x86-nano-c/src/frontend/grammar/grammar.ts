@@ -13,13 +13,10 @@ import {CCompilerIdentifier} from '../../constants';
 import {ASTCStmt} from '../ast';
 
 import {
-  functionDeclaration,
-  enumDeclaration,
-  returnStmt,
+  unaryExpression,
+  enumDeclarator,
+  declaration,
   blockStmt,
-  ifStmt,
-  assignExpression,
-  variableDeclaration,
   CGrammar,
 } from './matchers';
 
@@ -31,18 +28,15 @@ const compilerMatcher: GrammarInitializer<CCompilerIdentifier, ASTCCompilerKind>
   const grammar: CGrammar = {
     g,
     stmt,
+    unaryExpression: () => unaryExpression(grammar),
   };
 
   const stmts: GrammarProductions<ASTCCompilerKind> = R.mapObjIndexed(
     R.partial(R.__ as any, [grammar]),
     {
-      enumDeclaration,
-      functionDeclaration,
-      returnStmt,
+      enumDeclarator,
+      declaration,
       blockStmt,
-      ifStmt,
-      assignExpression,
-      variableDeclaration,
     },
   );
 

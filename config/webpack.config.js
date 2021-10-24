@@ -3,6 +3,7 @@ const nodeExternals = require('webpack-node-externals');
 const MiniCssExtractPlugin = require('mini-css-extract-plugin');
 const NodemonPlugin = require('nodemon-webpack-plugin');
 const ManifestPlugin = require('webpack-manifest-plugin');
+const CircularDependencyPlugin = require('circular-dependency-plugin');
 
 const PRODUCTION_MODE = process.env.NODE_ENV === 'production';
 
@@ -97,6 +98,7 @@ const createConfig = (
     __dirname: false,
   },
   plugins: [
+    new CircularDependencyPlugin,
     new MiniCssExtractPlugin(
       {
         filename: outputCssFile,

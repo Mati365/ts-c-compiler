@@ -1,15 +1,8 @@
-import {
-  numberByteSize,
-  roundToPowerOfTwo,
-} from '@compiler/core/utils/numberByteSize';
-
-import {
-  TokenLocation,
-  TokenType,
-  Token,
-} from '@compiler/lexer/tokens';
-
+import {numberByteSize, roundToPowerOfTwo} from '@compiler/core/utils/numberByteSize';
 import {parseNumberToken} from '@compiler/lexer/utils/parseNumberToken';
+
+import {TokenType, TokenLocation} from '../../shared';
+import {Token} from '../Token';
 
 export enum NumberFormat {
   HEX,

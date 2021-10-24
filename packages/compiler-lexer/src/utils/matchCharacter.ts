@@ -1,4 +1,4 @@
-import {TokenKind} from '../tokens';
+import {TokenKind} from '../shared/TokenTypes';
 
 export function matchQuote(c: string): TokenKind {
   switch (c) {

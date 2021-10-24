@@ -10,8 +10,7 @@ import {ASTAsmParser, ASTAsmTree} from '../ASTAsmParser';
 import {ASTNodeKind} from '../types';
 import {KindASTAsmNode} from '../ASTAsmNode';
 
-import {isTokenInstructionBeginning} from '../instruction/ASTInstruction';
-
+import {isTokenInstructionBeginning} from '../instruction/utils/isTokenInstructionBeginning';
 import {tokenDefSize} from '../def/ASTDef';
 
 export const TIMES_TOKEN_NAME = 'times';

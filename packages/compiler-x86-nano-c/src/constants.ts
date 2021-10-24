@@ -1,5 +1,13 @@
-import * as R from 'ramda';
+import {$enum} from 'ts-enum-util';
 import {IdentifiersMap} from '@compiler/lexer/lexer';
+
+export enum CStorageClassSpecifier {
+  TYPEDEF = 'typedef',
+  EXTERN = 'extern',
+  STATIC = 'static',
+  AUTO = 'auto',
+  REGISTER = 'register',
+}
 
 export enum CCompilerKeyword {
   IF = 'if',
@@ -10,31 +18,51 @@ export enum CCompilerKeyword {
   ENUM = 'enum',
 }
 
-export enum CPrimitiveType {
+export enum CTypeQualifier {
+  CONST = 'const',
+  VOLATILE = 'volatile',
+}
+
+export enum CTypeSpecifier {
   FLOAT = 'float',
   DOUBLE = 'double',
   CHAR = 'char',
   INT = 'int',
   BOOL = 'bool',
   VOID = 'void',
-}
-
-export enum CTypeQualifiers {
-  CONST = 'const',
-  VOLATILE = 'volatile',
-}
-
-export enum CTypeSpecifiers {
   SHORT = 'short',
   LONG = 'long',
   SIGNED = 'signed',
   UNSIGNED = 'unsigned',
 }
 
+export enum CAssignOperator {
+  ASSIGN = '=',
+  MUL_ASSIGN = '*=',
+  DIV_ASSIGN = '/=',
+  MOD_ASSIGN = '%=',
+  ADD_ASSIGN = '+=',
+  SUB_ASSIGN = '-=',
+  LEFT_ASSIGN = '<<=',
+  RIGHT_ASSIGN = '>>=',
+  AND_ASSIGN = '&=',
+  XOR_ASSIGN = '^=',
+  OR_ASSIGN = '||=',
+}
+
+export enum CUnaryCastOperator {
+  AND = '&',
+  MUL = '*',
+  ADD = '+',
+  SUB = '-',
+  BITWISE_NOT = '~',
+  LOGICAL_NOT = '!',
+}
+
 export type CCompilerTypeIdentifier = (
-  CPrimitiveType
-  | CTypeQualifiers
-  | CTypeSpecifiers
+  CTypeQualifier
+  | CStorageClassSpecifier
+  | CTypeSpecifier
 );
 
 export type CCompilerIdentifier = (
@@ -42,44 +70,34 @@ export type CCompilerIdentifier = (
   | CCompilerTypeIdentifier
 );
 
-export class CType {
-  constructor(
-    public readonly keyword: string,
-    public readonly byteSize: number,
-  ) {}
-}
+export const CCOMPILER_TYPE_SPECIFIERS = $enum(CTypeSpecifier).getValues();
+export const CCOMPILER_TYPE_QUALIFIERS = $enum(CTypeQualifier).getValues();
+export const CCOMPILER_STORAGE_CLASS_SPECIFIERS = $enum(CStorageClassSpecifier).getValues();
+export const CCOMPILER_UNARY_OPERATORS = $enum(CUnaryCastOperator).getValues();
+export const CCOMPILER_ASSIGN_OPERATORS = $enum(CAssignOperator).getValues();
 
-export const PRIMITIVE_TYPES: Record<string, CType> = R.reduce(
-  (acc, type) => {
-    acc[type.keyword] = type;
-    return acc;
-  },
-  {},
-  [
-    new CType('float', 4),
-    new CType('int', 2),
-    new CType('char', 1),
-    new CType('bool', 1),
-    new CType('void', 1),
-  ],
-);
-
+// todo: use flipObject
 export const CCOMPILER_IDENTIFIERS_MAP: IdentifiersMap = {
   enum: CCompilerKeyword.ENUM,
   if: CCompilerKeyword.IF,
   else: CCompilerKeyword.ELSE,
   return: CCompilerKeyword.RETURN,
   struct: CCompilerKeyword.STRUCT,
-  int: CPrimitiveType.INT,
-  float: CPrimitiveType.FLOAT,
-  double: CPrimitiveType.DOUBLE,
-  bool: CPrimitiveType.BOOL,
-  void: CPrimitiveType.VOID,
-  char: CPrimitiveType.CHAR,
-  const: CTypeQualifiers.CONST,
-  volatile: CTypeQualifiers.VOLATILE,
-  short: CTypeSpecifiers.SHORT,
-  long: CTypeSpecifiers.LONG,
-  signed: CTypeSpecifiers.SIGNED,
-  unsigned: CTypeSpecifiers.UNSIGNED,
+  int: CTypeSpecifier.INT,
+  float: CTypeSpecifier.FLOAT,
+  double: CTypeSpecifier.DOUBLE,
+  bool: CTypeSpecifier.BOOL,
+  void: CTypeSpecifier.VOID,
+  char: CTypeSpecifier.CHAR,
+  const: CTypeQualifier.CONST,
+  volatile: CTypeQualifier.VOLATILE,
+  short: CTypeSpecifier.SHORT,
+  long: CTypeSpecifier.LONG,
+  signed: CTypeSpecifier.SIGNED,
+  unsigned: CTypeSpecifier.UNSIGNED,
+  typedef: CStorageClassSpecifier.TYPEDEF,
+  extern: CStorageClassSpecifier.EXTERN,
+  static: CStorageClassSpecifier.STATIC,
+  auto: CStorageClassSpecifier.AUTO,
+  register: CStorageClassSpecifier.REGISTER,
 };

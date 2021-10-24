@@ -82,7 +82,7 @@ function enumEnumerations(grammar: CGrammar): ASTCEnumEnumeration[] {
  * @param {CGrammar} grammar
  * @returns {ASTCEnumSpecifier}
  */
-export function enumDeclaration(grammar: CGrammar): ASTCEnumSpecifier {
+export function enumDeclarator(grammar: CGrammar): ASTCEnumSpecifier {
   const {g} = grammar;
   const startToken = g.identifier(CCompilerKeyword.ENUM);
   const name = g.match(

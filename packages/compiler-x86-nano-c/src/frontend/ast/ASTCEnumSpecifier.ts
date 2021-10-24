@@ -1,5 +1,6 @@
+import {walkOverFields} from '@compiler/grammar/decorators/walkOverFields';
+
 import {NodeLocation} from '@compiler/grammar/tree/NodeLocation';
-import {TreeVisitor} from '@compiler/grammar/tree/TreeVisitor';
 import {Token} from '@compiler/lexer/tokens';
 import {ASTCCompilerKind, ASTCCompilerNode} from './ASTCCompilerNode';
 import {ASTCEnumEnumeration} from './ASTCEnumEnumerator';
@@ -11,6 +12,13 @@ import {ASTCEnumEnumeration} from './ASTCEnumEnumerator';
  * @class ASTCEnumSpecifier
  * @extends {ASTCCompilerNode}
  */
+@walkOverFields(
+  {
+    fields: [
+      'enumerations',
+    ],
+  },
+)
 export class ASTCEnumSpecifier extends ASTCCompilerNode {
   constructor(
     loc: NodeLocation,
@@ -23,21 +31,11 @@ export class ASTCEnumSpecifier extends ASTCCompilerNode {
   toString() {
     const {kind, name} = this;
 
-    return `${kind} ${name ? `name="${name.text}"` : ''}`.trim();
-  }
-
-  /**
-   * Iterates throught tree
-   *
-   * @param {TreeVisitor<ASTCCompilerNode>} visitor
-   * @memberof ASTCEnumSpecifier
-   */
-  walk(visitor: TreeVisitor<ASTCCompilerNode>): void {
-    const {enumerations} = this;
-
-    super.walk(visitor);
-
-    if (enumerations)
-      enumerations.forEach((arg) => visitor.visit(arg));
+    return ASTCCompilerNode.dumpAttributesToString(
+      kind,
+      {
+        name,
+      },
+    );
   }
 }

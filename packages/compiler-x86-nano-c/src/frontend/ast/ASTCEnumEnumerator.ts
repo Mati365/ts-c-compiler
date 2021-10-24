@@ -1,8 +1,9 @@
+import {walkOverFields} from '@compiler/grammar/decorators/walkOverFields';
+
 import {NodeLocation} from '@compiler/grammar/tree/NodeLocation';
-import {TreeVisitor} from '@compiler/grammar/tree/TreeVisitor';
 import {Token} from '@compiler/lexer/tokens';
-import {ASTCConstantExpression} from './ASTCConstantExpression';
 import {ASTCCompilerKind, ASTCCompilerNode} from './ASTCCompilerNode';
+import {ASTCConstantExpression} from './ASTCConstantExpression';
 
 /**
  * Node that holds single enum item such as RED = 'blue'
@@ -11,6 +12,13 @@ import {ASTCCompilerKind, ASTCCompilerNode} from './ASTCCompilerNode';
  * @class ASTCEnumEnumeration
  * @extends {ASTCCompilerNode}
  */
+@walkOverFields(
+  {
+    fields: [
+      'expression',
+    ],
+  },
+)
 export class ASTCEnumEnumeration extends ASTCCompilerNode {
   constructor(
     loc: NodeLocation,
@@ -27,21 +35,11 @@ export class ASTCEnumEnumeration extends ASTCCompilerNode {
   toString() {
     const {kind, name} = this;
 
-    return `${kind} name="${name.toString()}"`.trim();
-  }
-
-  /**
-   * Iterates throught tree
-   *
-   * @param {TreeVisitor<ASTCCompilerNode>} visitor
-   * @memberof ASTCEnumSpecifier
-   */
-  walk(visitor: TreeVisitor<ASTCCompilerNode>): void {
-    const {expression} = this;
-
-    super.walk(visitor);
-
-    if (expression)
-      visitor.visit(expression);
+    return ASTCCompilerNode.dumpAttributesToString(
+      kind,
+      {
+        name,
+      },
+    );
   }
 }

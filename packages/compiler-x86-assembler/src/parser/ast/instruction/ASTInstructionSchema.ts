@@ -1,27 +1,7 @@
 import * as R from 'ramda';
 
 import {X86TargetCPU} from '@compiler/x86-assembler/types';
-import {
-  ASTInstructionArgMatcher,
-  isRMSchemaArg,
-  isMoffsSchemaArg,
-  isOptionalArg,
-} from './args/ASTInstructionArgMatchers';
-
-export class ASTInstructionMatcherSchema {
-  public readonly rm: boolean;
-  public readonly moffset: boolean;
-  public readonly optional: boolean;
-
-  constructor(
-    public readonly name: string,
-    public readonly matcher: ASTInstructionArgMatcher,
-  ) {
-    this.rm = isRMSchemaArg(name);
-    this.moffset = isMoffsSchemaArg(name);
-    this.optional = isOptionalArg(name);
-  }
-}
+import type {ASTInstructionMatcherSchema} from './args';
 
 export class ASTInstructionSchema {
   public readonly minArgsCount: number;

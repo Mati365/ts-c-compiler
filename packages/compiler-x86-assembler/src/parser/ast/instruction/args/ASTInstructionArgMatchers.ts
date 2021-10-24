@@ -1,13 +1,10 @@
 import * as R from 'ramda';
 
-import {RegisterSchema} from '../../../../constants';
+import {RegisterSchema} from '../../../../constants/x86';
 import {X86TargetCPU} from '../../../../types';
 import {ASTInstruction} from '../ASTInstruction';
 import {ASTInstructionArg} from './ASTInstructionArg';
-import {
-  ASTInstructionSchema,
-  ASTInstructionMatcherSchema,
-} from '../ASTInstructionSchema';
+import {ASTInstructionSchema} from '../ASTInstructionSchema';
 
 import {
   mem, moffs, reg, sreg, imm, relLabel, x87sti, x87st,
@@ -140,6 +137,21 @@ export const isRMSchemaArg = R.contains(
 
 export const isMoffsSchemaArg = R.contains(R.__, ['moffs']);
 
+export class ASTInstructionMatcherSchema {
+  public readonly rm: boolean;
+  public readonly moffset: boolean;
+  public readonly optional: boolean;
+
+  constructor(
+    public readonly name: string,
+    public readonly matcher: ASTInstructionArgMatcher,
+  ) {
+    this.rm = isRMSchemaArg(name);
+    this.moffset = isMoffsSchemaArg(name);
+    this.optional = isOptionalArg(name);
+  }
+}
+
 /**
  * Transforms string of arg schema to array
  *
@@ -199,7 +211,7 @@ export function findMatchingInstructionSchemas(
       if (minArgsCount > args.length)
         return false;
 
-      if (targetCheck && schema.targetCPU > targetCPU)
+      if (targetCheck && !R.isNil(targetCPU) && schema.targetCPU > targetCPU)
         return false;
 
       for (let i = args.length - 1; i >= 0; --i) {

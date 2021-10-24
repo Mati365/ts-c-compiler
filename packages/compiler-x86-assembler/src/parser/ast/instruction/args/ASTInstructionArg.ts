@@ -1,6 +1,6 @@
 import {InstructionArgType} from '../../../../types';
 
-import {ASTInstructionMatcherSchema} from '../ASTInstructionSchema';
+import {ASTInstructionMatcherSchema} from './ASTInstructionArgMatchers';
 import {ASTResolvableArg} from '../ASTResolvableArg';
 
 /**

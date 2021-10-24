@@ -1,3 +1,3 @@
-export * from './Token';
-export * from './TokenLocation';
+export {Token} from './Token';
 export * from './types';
+export * from '../shared';

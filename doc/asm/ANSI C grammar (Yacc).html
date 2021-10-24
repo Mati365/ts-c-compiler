@@ -1,0 +1,453 @@
+<html>
+<head>
+<title>ANSI C grammar (Yacc)</title>
+<link rel="made" rev="made" href="mailto:jutta@pobox.com">
+</head><body>
+
+<h1>ANSI C Yacc grammar</h1>
+
+In 1985, Jeff Lee published his Yacc grammar (which is
+accompanied by a matching <a href="ANSI-C-grammar-l.html">Lex specification</a>)
+for the April 30, 1985 draft version of the
+ANSI C standard.&#160;<tt> </tt>Tom Stockfisch reposted
+it to net.sources in 1987; that original, as mentioned in 
+the answer to <a href="c-faq/c-17.html#17-25">question 17.25</a>
+of the comp.lang.c FAQ, can be ftp'ed from ftp.uu.net, file
+<a href="ftp://ftp.uu.net/usenet/net.sources/ansi.c.grammar.Z"
+	>usenet/net.sources/ansi.c.grammar.Z</a>.
+<p>
+<a href="mailto:jutta@pobox.com">Jutta Degener</a>, 1995
+<p>
+<hr>
+<pre>
+%token <a href="ANSI-C-grammar-l.html#check-type">IDENTIFIER</a> <a href="ANSI-C-grammar-l.html#CONSTANT">CONSTANT</a> <a href="ANSI-C-grammar-l.html#STRING-LITERAL">STRING_LITERAL</a> <a href="ANSI-C-grammar-l.html#SIZEOF">SIZEOF</a>
+%token <a href="ANSI-C-grammar-l.html#PTR-OP">PTR_OP</a> <a href="ANSI-C-grammar-l.html#INC-OP">INC_OP</a> <a href="ANSI-C-grammar-l.html#DEC-OP">DEC_OP</a> <a href="ANSI-C-grammar-l.html#LEFT-OP">LEFT_OP</a> <a href="ANSI-C-grammar-l.html#RIGHT-OP">RIGHT_OP</a> <a href="ANSI-C-grammar-l.html#LE-OP">LE_OP</a> <a href="ANSI-C-grammar-l.html#GE-OP">GE_OP</a> <a href="ANSI-C-grammar-l.html#EQ-OP">EQ_OP</a> <a href="ANSI-C-grammar-l.html#NE-OP">NE_OP</a>
+%token <a href="ANSI-C-grammar-l.html#AND-OP">AND_OP</a> <a href="ANSI-C-grammar-l.html#OR-OP">OR_OP</a> <a href="ANSI-C-grammar-l.html#MUL-ASSIGN">MUL_ASSIGN</a> <a href="ANSI-C-grammar-l.html#DIV-ASSIGN">DIV_ASSIGN</a> <a href="ANSI-C-grammar-l.html#MOD-ASSIGN">MOD_ASSIGN</a> <a href="ANSI-C-grammar-l.html#ADD-ASSIGN">ADD_ASSIGN</a>
+%token <a href="ANSI-C-grammar-l.html#SUB-ASSIGN">SUB_ASSIGN</a> <a href="ANSI-C-grammar-l.html#LEFT-ASSIGN">LEFT_ASSIGN</a> <a href="ANSI-C-grammar-l.html#RIGHT-ASSIGN">RIGHT_ASSIGN</a> <a href="ANSI-C-grammar-l.html#AND-ASSIGN">AND_ASSIGN</a>
+%token <a href="ANSI-C-grammar-l.html#XOR-ASSIGN">XOR_ASSIGN</a> <a href="ANSI-C-grammar-l.html#OR-ASSIGN">OR_ASSIGN</a> <a href="ANSI-C-grammar-l.html#check-type">TYPE_NAME</a>
+
+%token <a href="ANSI-C-grammar-l.html#TYPEDEF">TYPEDEF</a> <a href="ANSI-C-grammar-l.html#EXTERN">EXTERN</a> <a href="ANSI-C-grammar-l.html#STATIC">STATIC</a> <a href="ANSI-C-grammar-l.html#AUTO">AUTO</a> <a href="ANSI-C-grammar-l.html#REGISTER">REGISTER</a>
+%token <a href="ANSI-C-grammar-l.html#CHAR">CHAR</a> <a href="ANSI-C-grammar-l.html#SHORT">SHORT</a> <a href="ANSI-C-grammar-l.html#INT">INT</a> <a href="ANSI-C-grammar-l.html#LONG">LONG</a> <a href="ANSI-C-grammar-l.html#SIGNED">SIGNED</a> <a href="ANSI-C-grammar-l.html#UNSIGNED">UNSIGNED</a> <a href="ANSI-C-grammar-l.html#FLOAT">FLOAT</a> <a href="ANSI-C-grammar-l.html#DOUBLE">DOUBLE</a> <a href="ANSI-C-grammar-l.html#CONST">CONST</a> <a href="ANSI-C-grammar-l.html#VOLATILE">VOLATILE</a> <a href="ANSI-C-grammar-l.html#VOID">VOID</a>
+%token <a href="ANSI-C-grammar-l.html#STRUCT">STRUCT</a> <a href="ANSI-C-grammar-l.html#UNION">UNION</a> <a href="ANSI-C-grammar-l.html#ENUM">ENUM</a> <a href="ANSI-C-grammar-l.html#ELLIPSIS">ELLIPSIS</a>
+
+%token <a href="ANSI-C-grammar-l.html#CASE">CASE</a> <a href="ANSI-C-grammar-l.html#DEFAULT">DEFAULT</a> <a href="ANSI-C-grammar-l.html#IF">IF</a> <a href="ANSI-C-grammar-l.html#ELSE">ELSE</a> <a href="ANSI-C-grammar-l.html#SWITCH">SWITCH</a> <a href="ANSI-C-grammar-l.html#WHILE">WHILE</a> <a href="ANSI-C-grammar-l.html#DO">DO</a> <a href="ANSI-C-grammar-l.html#FOR">FOR</a> <a href="ANSI-C-grammar-l.html#GOTO">GOTO</a> <a href="ANSI-C-grammar-l.html#CONTINUE">CONTINUE</a> <a href="ANSI-C-grammar-l.html#BREAK">BREAK</a> <a href="ANSI-C-grammar-l.html#RETURN">RETURN</a>
+
+%start <a href="#translation-unit">translation_unit</a>
+%%
+
+<a name="primary-expression">primary_expression</a>
+	: <a href="ANSI-C-grammar-l.html#check-type">IDENTIFIER</a>
+	| <a href="ANSI-C-grammar-l.html#CONSTANT">CONSTANT</a>
+	| <a href="ANSI-C-grammar-l.html#STRING-LITERAL">STRING_LITERAL</a>
+	| '(' <a href="#expression">expression</a> ')'
+	;
+
+<a name="postfix-expression">postfix_expression</a>
+	: <a href="#primary-expression">primary_expression</a>
+	| postfix_expression '[' <a href="#expression">expression</a> ']'
+	| postfix_expression '(' ')'
+	| postfix_expression '(' <a href="#argument-expression-list">argument_expression_list</a> ')'
+	| postfix_expression '.' <a href="ANSI-C-grammar-l.html#check-type">IDENTIFIER</a>
+	| postfix_expression <a href="ANSI-C-grammar-l.html#PTR-OP">PTR_OP</a> <a href="ANSI-C-grammar-l.html#check-type">IDENTIFIER</a>
+	| postfix_expression <a href="ANSI-C-grammar-l.html#INC-OP">INC_OP</a>
+	| postfix_expression <a href="ANSI-C-grammar-l.html#DEC-OP">DEC_OP</a>
+	;
+
+<a name="argument-expression-list">argument_expression_list</a>
+	: <a href="#assignment-expression">assignment_expression</a>
+	| argument_expression_list ',' <a href="#assignment-expression">assignment_expression</a>
+	;
+
+<a name="unary-expression">unary_expression</a>
+	: <a href="#postfix-expression">postfix_expression</a>
+	| <a href="ANSI-C-grammar-l.html#INC-OP">INC_OP</a> unary_expression
+	| <a href="ANSI-C-grammar-l.html#DEC-OP">DEC_OP</a> unary_expression
+	| <a href="#unary-operator">unary_operator</a> <a href="#cast-expression">cast_expression</a>
+	| <a href="ANSI-C-grammar-l.html#SIZEOF">SIZEOF</a> unary_expression
+	| <a href="ANSI-C-grammar-l.html#SIZEOF">SIZEOF</a> '(' <a href="#type-name">type_name</a> ')'
+	;
+
+<a name="unary-operator">unary_operator</a>
+	: '&amp;'
+	| '*'
+	| '+'
+	| '-'
+	| '~'
+	| '!'
+	;
+
+<a name="cast-expression">cast_expression</a>
+	: <a href="#unary-expression">unary_expression</a>
+	| '(' <a href="#type-name">type_name</a> ')' cast_expression
+	;
+
+<a name="multiplicative-expression">multiplicative_expression</a>
+	: <a href="#cast-expression">cast_expression</a>
+	| multiplicative_expression '*' <a href="#cast-expression">cast_expression</a>
+	| multiplicative_expression '/' <a href="#cast-expression">cast_expression</a>
+	| multiplicative_expression '%' <a href="#cast-expression">cast_expression</a>
+	;
+
+<a name="additive-expression">additive_expression</a>
+	: <a href="#multiplicative-expression">multiplicative_expression</a>
+	| additive_expression '+' <a href="#multiplicative-expression">multiplicative_expression</a>
+	| additive_expression '-' <a href="#multiplicative-expression">multiplicative_expression</a>
+	;
+
+<a name="shift-expression">shift_expression</a>
+	: <a href="#additive-expression">additive_expression</a>
+	| shift_expression <a href="ANSI-C-grammar-l.html#LEFT-OP">LEFT_OP</a> <a href="#additive-expression">additive_expression</a>
+	| shift_expression <a href="ANSI-C-grammar-l.html#RIGHT-OP">RIGHT_OP</a> <a href="#additive-expression">additive_expression</a>
+	;
+
+<a name="relational-expression">relational_expression</a>
+	: <a href="#shift-expression">shift_expression</a>
+	| relational_expression '&lt;' <a href="#shift-expression">shift_expression</a>
+	| relational_expression '&gt;' <a href="#shift-expression">shift_expression</a>
+	| relational_expression <a href="ANSI-C-grammar-l.html#LE-OP">LE_OP</a> <a href="#shift-expression">shift_expression</a>
+	| relational_expression <a href="ANSI-C-grammar-l.html#GE-OP">GE_OP</a> <a href="#shift-expression">shift_expression</a>
+	;
+
+<a name="equality-expression">equality_expression</a>
+	: <a href="#relational-expression">relational_expression</a>
+	| equality_expression <a href="ANSI-C-grammar-l.html#EQ-OP">EQ_OP</a> <a href="#relational-expression">relational_expression</a>
+	| equality_expression <a href="ANSI-C-grammar-l.html#NE-OP">NE_OP</a> <a href="#relational-expression">relational_expression</a>
+	;
+
+<a name="and-expression">and_expression</a>
+	: <a href="#equality-expression">equality_expression</a>
+	| and_expression '&amp;' <a href="#equality-expression">equality_expression</a>
+	;
+
+<a name="exclusive-or-expression">exclusive_or_expression</a>
+	: <a href="#and-expression">and_expression</a>
+	| exclusive_or_expression '^' <a href="#and-expression">and_expression</a>
+	;
+
+<a name="inclusive-or-expression">inclusive_or_expression</a>
+	: <a href="#exclusive-or-expression">exclusive_or_expression</a>
+	| inclusive_or_expression '|' <a href="#exclusive-or-expression">exclusive_or_expression</a>
+	;
+
+<a name="logical-and-expression">logical_and_expression</a>
+	: <a href="#inclusive-or-expression">inclusive_or_expression</a>
+	| logical_and_expression <a href="ANSI-C-grammar-l.html#AND-OP">AND_OP</a> <a href="#inclusive-or-expression">inclusive_or_expression</a>
+	;
+
+<a name="logical-or-expression">logical_or_expression</a>
+	: <a href="#logical-and-expression">logical_and_expression</a>
+	| logical_or_expression <a href="ANSI-C-grammar-l.html#OR-OP">OR_OP</a> <a href="#logical-and-expression">logical_and_expression</a>
+	;
+
+<a name="conditional-expression">conditional_expression</a>
+	: <a href="#logical-or-expression">logical_or_expression</a>
+	| <a href="#logical-or-expression">logical_or_expression</a> '?' <a href="#expression">expression</a> ':' conditional_expression
+	;
+
+<a name="assignment-expression">assignment_expression</a>
+	: <a href="#conditional-expression">conditional_expression</a>
+	| <a href="#unary-expression">unary_expression</a> <a href="#assignment-operator">assignment_operator</a> assignment_expression
+	;
+
+<a name="assignment-operator">assignment_operator</a>
+	: '='
+	| <a href="ANSI-C-grammar-l.html#MUL-ASSIGN">MUL_ASSIGN</a>
+	| <a href="ANSI-C-grammar-l.html#DIV-ASSIGN">DIV_ASSIGN</a>
+	| <a href="ANSI-C-grammar-l.html#MOD-ASSIGN">MOD_ASSIGN</a>
+	| <a href="ANSI-C-grammar-l.html#ADD-ASSIGN">ADD_ASSIGN</a>
+	| <a href="ANSI-C-grammar-l.html#SUB-ASSIGN">SUB_ASSIGN</a>
+	| <a href="ANSI-C-grammar-l.html#LEFT-ASSIGN">LEFT_ASSIGN</a>
+	| <a href="ANSI-C-grammar-l.html#RIGHT-ASSIGN">RIGHT_ASSIGN</a>
+	| <a href="ANSI-C-grammar-l.html#AND-ASSIGN">AND_ASSIGN</a>
+	| <a href="ANSI-C-grammar-l.html#XOR-ASSIGN">XOR_ASSIGN</a>
+	| <a href="ANSI-C-grammar-l.html#OR-ASSIGN">OR_ASSIGN</a>
+	;
+
+<a name="expression">expression</a>
+	: <a href="#assignment-expression">assignment_expression</a>
+	| expression ',' <a href="#assignment-expression">assignment_expression</a>
+	;
+
+<a name="constant-expression">constant_expression</a>
+	: <a href="#conditional-expression">conditional_expression</a>
+	;
+
+<a name="declaration">declaration</a>
+	: <a href="#declaration-specifiers">declaration_specifiers</a> ';'
+	| <a href="#declaration-specifiers">declaration_specifiers</a> <a href="#init-declarator-list">init_declarator_list</a> ';'
+	;
+
+<a name="declaration-specifiers">declaration_specifiers</a>
+	: <a href="#storage-class-specifier">storage_class_specifier</a>
+	| <a href="#storage-class-specifier">storage_class_specifier</a> declaration_specifiers
+	| <a href="#type-specifier">type_specifier</a>
+	| <a href="#type-specifier">type_specifier</a> declaration_specifiers
+	| <a href="#type-qualifier">type_qualifier</a>
+	| <a href="#type-qualifier">type_qualifier</a> declaration_specifiers
+	;
+
+<a name="init-declarator-list">init_declarator_list</a>
+	: <a href="#init-declarator">init_declarator</a>
+	| init_declarator_list ',' <a href="#init-declarator">init_declarator</a>
+	;
+
+<a name="init-declarator">init_declarator</a>
+	: <a href="#declarator">declarator</a>
+	| <a href="#declarator">declarator</a> '=' <a href="#initializer">initializer</a>
+	;
+
+<a name="storage-class-specifier">storage_class_specifier</a>
+	: <a href="ANSI-C-grammar-l.html#TYPEDEF">TYPEDEF</a>
+	| <a href="ANSI-C-grammar-l.html#EXTERN">EXTERN</a>
+	| <a href="ANSI-C-grammar-l.html#STATIC">STATIC</a>
+	| <a href="ANSI-C-grammar-l.html#AUTO">AUTO</a>
+	| <a href="ANSI-C-grammar-l.html#REGISTER">REGISTER</a>
+	;
+
+<a name="type-specifier">type_specifier</a>
+	: <a href="ANSI-C-grammar-l.html#VOID">VOID</a>
+	| <a href="ANSI-C-grammar-l.html#CHAR">CHAR</a>
+	| <a href="ANSI-C-grammar-l.html#SHORT">SHORT</a>
+	| <a href="ANSI-C-grammar-l.html#INT">INT</a>
+	| <a href="ANSI-C-grammar-l.html#LONG">LONG</a>
+	| <a href="ANSI-C-grammar-l.html#FLOAT">FLOAT</a>
+	| <a href="ANSI-C-grammar-l.html#DOUBLE">DOUBLE</a>
+	| <a href="ANSI-C-grammar-l.html#SIGNED">SIGNED</a>
+	| <a href="ANSI-C-grammar-l.html#UNSIGNED">UNSIGNED</a>
+	| <a href="#struct-or-union-specifier">struct_or_union_specifier</a>
+	| <a href="#enum-specifier">enum_specifier</a>
+	| <a href="ANSI-C-grammar-l.html#check-type">TYPE_NAME</a>
+	;
+
+<a name="struct-or-union-specifier">struct_or_union_specifier</a>
+	: <a href="#struct-or-union">struct_or_union</a> <a href="ANSI-C-grammar-l.html#check-type">IDENTIFIER</a> '{' <a href="#struct-declaration-list">struct_declaration_list</a> '}'
+	| <a href="#struct-or-union">struct_or_union</a> '{' <a href="#struct-declaration-list">struct_declaration_list</a> '}'
+	| <a href="#struct-or-union">struct_or_union</a> <a href="ANSI-C-grammar-l.html#check-type">IDENTIFIER</a>
+	;
+
+<a name="struct-or-union">struct_or_union</a>
+	: <a href="ANSI-C-grammar-l.html#STRUCT">STRUCT</a>
+	| <a href="ANSI-C-grammar-l.html#UNION">UNION</a>
+	;
+
+<a name="struct-declaration-list">struct_declaration_list</a>
+	: <a href="#struct-declaration">struct_declaration</a>
+	| struct_declaration_list <a href="#struct-declaration">struct_declaration</a>
+	;
+
+<a name="struct-declaration">struct_declaration</a>
+	: <a href="#specifier-qualifier-list">specifier_qualifier_list</a> <a href="#struct-declarator-list">struct_declarator_list</a> ';'
+	;
+
+<a name="specifier-qualifier-list">specifier_qualifier_list</a>
+	: <a href="#type-specifier">type_specifier</a> specifier_qualifier_list
+	| <a href="#type-specifier">type_specifier</a>
+	| <a href="#type-qualifier">type_qualifier</a> specifier_qualifier_list
+	| <a href="#type-qualifier">type_qualifier</a>
+	;
+
+<a name="struct-declarator-list">struct_declarator_list</a>
+	: <a href="#struct-declarator">struct_declarator</a>
+	| struct_declarator_list ',' <a href="#struct-declarator">struct_declarator</a>
+	;
+
+<a name="struct-declarator">struct_declarator</a>
+	: <a href="#declarator">declarator</a>
+	| ':' <a href="#constant-expression">constant_expression</a>
+	| <a href="#declarator">declarator</a> ':' <a href="#constant-expression">constant_expression</a>
+	;
+
+<a name="enum-specifier">enum_specifier</a>
+	: <a href="ANSI-C-grammar-l.html#ENUM">ENUM</a> '{' <a href="#enumerator-list">enumerator_list</a> '}'
+	| <a href="ANSI-C-grammar-l.html#ENUM">ENUM</a> <a href="ANSI-C-grammar-l.html#check-type">IDENTIFIER</a> '{' <a href="#enumerator-list">enumerator_list</a> '}'
+	| <a href="ANSI-C-grammar-l.html#ENUM">ENUM</a> <a href="ANSI-C-grammar-l.html#check-type">IDENTIFIER</a>
+	;
+
+<a name="enumerator-list">enumerator_list</a>
+	: <a href="#enumerator">enumerator</a>
+	| enumerator_list ',' <a href="#enumerator">enumerator</a>
+	;
+
+<a name="enumerator">enumerator</a>
+	: <a href="ANSI-C-grammar-l.html#check-type">IDENTIFIER</a>
+	| <a href="ANSI-C-grammar-l.html#check-type">IDENTIFIER</a> '=' <a href="#constant-expression">constant_expression</a>
+	;
+
+<a name="type-qualifier">type_qualifier</a>
+	: <a href="ANSI-C-grammar-l.html#CONST">CONST</a>
+	| <a href="ANSI-C-grammar-l.html#VOLATILE">VOLATILE</a>
+	;
+
+<a name="declarator">declarator</a>
+	: <a href="#pointer">pointer</a> <a href="#direct-declarator">direct_declarator</a>
+	| <a href="#direct-declarator">direct_declarator</a>
+	;
+
+<a name="direct-declarator">direct_declarator</a>
+	: <a href="ANSI-C-grammar-l.html#check-type">IDENTIFIER</a>
+	| '(' <a href="#declarator">declarator</a> ')'
+	| direct_declarator '[' <a href="#constant-expression">constant_expression</a> ']'
+	| direct_declarator '[' ']'
+	| direct_declarator '(' <a href="#parameter-type-list">parameter_type_list</a> ')'
+	| direct_declarator '(' <a href="#identifier-list">identifier_list</a> ')'
+	| direct_declarator '(' ')'
+	;
+
+<a name="pointer">pointer</a>
+	: '*'
+	| '*' <a href="#type-qualifier-list">type_qualifier_list</a>
+	| '*' pointer
+	| '*' <a href="#type-qualifier-list">type_qualifier_list</a> pointer
+	;
+
+<a name="type-qualifier-list">type_qualifier_list</a>
+	: <a href="#type-qualifier">type_qualifier</a>
+	| type_qualifier_list <a href="#type-qualifier">type_qualifier</a>
+	;
+
+
+<a name="parameter-type-list">parameter_type_list</a>
+	: <a href="#parameter-list">parameter_list</a>
+	| <a href="#parameter-list">parameter_list</a> ',' <a href="ANSI-C-grammar-l.html#ELLIPSIS">ELLIPSIS</a>
+	;
+
+<a name="parameter-list">parameter_list</a>
+	: <a href="#parameter-declaration">parameter_declaration</a>
+	| <a href="#parameter-list">parameter_list</a> ',' <a href="#parameter-declaration">parameter_declaration</a>
+	;
+
+<a name="parameter-declaration">parameter_declaration</a>
+	: <a href="#declaration-specifiers">declaration_specifiers</a> <a href="#declarator">declarator</a>
+	| <a href="#declaration-specifiers">declaration_specifiers</a> <a href="#abstract-declarator">abstract_declarator</a>
+	| <a href="#declaration-specifiers">declaration_specifiers</a>
+	;
+
+<a name="identifier-list">identifier_list</a>
+	: <a href="ANSI-C-grammar-l.html#check-type">IDENTIFIER</a>
+	| identifier_list ',' <a href="ANSI-C-grammar-l.html#check-type">IDENTIFIER</a>
+	;
+
+<a name="type-name">type_name</a>
+	: <a href="#specifier-qualifier-list">specifier_qualifier_list</a>
+	| <a href="#specifier-qualifier-list">specifier_qualifier_list</a> <a href="#abstract-declarator">abstract_declarator</a>
+	;
+
+<a name="abstract-declarator">abstract_declarator</a>
+	: <a href="#pointer">pointer</a>
+	| <a href="#direct-abstract-declarator">direct_abstract_declarator</a>
+	| <a href="#pointer">pointer</a> <a href="#direct-abstract-declarator">direct_abstract_declarator</a>
+	;
+
+<a name="direct-abstract-declarator">direct_abstract_declarator</a>
+	: '(' <a href="#abstract-declarator">abstract_declarator</a> ')'
+	| '[' ']'
+	| '[' <a href="#constant-expression">constant_expression</a> ']'
+	| direct_abstract_declarator '[' ']'
+	| direct_abstract_declarator '[' <a href="#constant-expression">constant_expression</a> ']'
+	| '(' ')'
+	| '(' <a href="#parameter-type-list">parameter_type_list</a> ')'
+	| direct_abstract_declarator '(' ')'
+	| direct_abstract_declarator '(' <a href="#parameter-type-list">parameter_type_list</a> ')'
+	;
+
+<a name="initializer">initializer</a>
+	: <a href="#assignment-expression">assignment_expression</a>
+	| '{' <a href="#initializer-list">initializer_list</a> '}'
+	| '{' <a href="#initializer-list">initializer_list</a> ',' '}'
+	;
+
+<a name="initializer-list">initializer_list</a>
+	: <a href="#initializer">initializer</a>
+	| initializer_list ',' <a href="#initializer">initializer</a>
+	;
+
+<a name="statement">statement</a>
+	: <a href="#labeled-statement">labeled_statement</a>
+	| <a href="#compound-statement">compound_statement</a>
+	| <a href="#expression-statement">expression_statement</a>
+	| <a href="#selection-statement">selection_statement</a>
+	| <a href="#iteration-statement">iteration_statement</a>
+	| <a href="#jump-statement">jump_statement</a>
+	;
+
+<a name="labeled-statement">labeled_statement</a>
+	: <a href="ANSI-C-grammar-l.html#check-type">IDENTIFIER</a> ':' <a href="#statement">statement</a>
+	| <a href="ANSI-C-grammar-l.html#CASE">CASE</a> <a href="#constant-expression">constant_expression</a> ':' <a href="#statement">statement</a>
+	| <a href="ANSI-C-grammar-l.html#DEFAULT">DEFAULT</a> ':' <a href="#statement">statement</a>
+	;
+
+<a name="compound-statement">compound_statement</a>
+	: '{' '}'
+	| '{' <a href="#statement-list">statement_list</a> '}'
+	| '{' <a href="#declaration-list">declaration_list</a> '}'
+	| '{' <a href="#declaration-list">declaration_list</a> <a href="#statement-list">statement_list</a> '}'
+	;
+
+<a name="declaration-list">declaration_list</a>
+	: <a href="#declaration">declaration</a>
+	| declaration_list <a href="#declaration">declaration</a>
+	;
+
+<a name="statement-list">statement_list</a>
+	: <a href="#statement">statement</a>
+	| statement_list <a href="#statement">statement</a>
+	;
+
+<a name="expression-statement">expression_statement</a>
+	: ';'
+	| <a href="#expression">expression</a> ';'
+	;
+
+<a name="selection-statement">selection_statement</a>
+	: <a href="ANSI-C-grammar-l.html#IF">IF</a> '(' <a href="#expression">expression</a> ')' <a href="#statement">statement</a>
+	| <a href="ANSI-C-grammar-l.html#IF">IF</a> '(' <a href="#expression">expression</a> ')' <a href="#statement">statement</a> <a href="ANSI-C-grammar-l.html#ELSE">ELSE</a> <a href="#statement">statement</a>
+	| <a href="ANSI-C-grammar-l.html#SWITCH">SWITCH</a> '(' <a href="#expression">expression</a> ')' <a href="#statement">statement</a>
+	;
+
+<a name="iteration-statement">iteration_statement</a>
+	: <a href="ANSI-C-grammar-l.html#WHILE">WHILE</a> '(' <a href="#expression">expression</a> ')' <a href="#statement">statement</a>
+	| <a href="ANSI-C-grammar-l.html#DO">DO</a> <a href="#statement">statement</a> <a href="ANSI-C-grammar-l.html#WHILE">WHILE</a> '(' <a href="#expression">expression</a> ')' ';'
+	| <a href="ANSI-C-grammar-l.html#FOR">FOR</a> '(' <a href="#expression-statement">expression_statement</a> <a href="#expression-statement">expression_statement</a> ')' <a href="#statement">statement</a>
+	| <a href="ANSI-C-grammar-l.html#FOR">FOR</a> '(' <a href="#expression-statement">expression_statement</a> <a href="#expression-statement">expression_statement</a> <a href="#expression">expression</a> ')' <a href="#statement">statement</a>
+	;
+
+<a name="jump-statement">jump_statement</a>
+	: <a href="ANSI-C-grammar-l.html#GOTO">GOTO</a> <a href="ANSI-C-grammar-l.html#check-type">IDENTIFIER</a> ';'
+	| <a href="ANSI-C-grammar-l.html#CONTINUE">CONTINUE</a> ';'
+	| <a href="ANSI-C-grammar-l.html#BREAK">BREAK</a> ';'
+	| <a href="ANSI-C-grammar-l.html#RETURN">RETURN</a> ';'
+	| <a href="ANSI-C-grammar-l.html#RETURN">RETURN</a> <a href="#expression">expression</a> ';'
+	;
+
+<a name="translation-unit">translation_unit</a>
+	: <a href="#external-declaration">external_declaration</a>
+	| translation_unit <a href="#external-declaration">external_declaration</a>
+	;
+
+<a name="external-declaration">external_declaration</a>
+	: <a href="#function-definition">function_definition</a>
+	| <a href="#declaration">declaration</a>
+	;
+
+<a name="function-definition">function_definition</a>
+	: <a href="#declaration-specifiers">declaration_specifiers</a> <a href="#declarator">declarator</a> <a href="#declaration-list">declaration_list</a> <a href="#compound-statement">compound_statement</a>
+	| <a href="#declaration-specifiers">declaration_specifiers</a> <a href="#declarator">declarator</a> <a href="#compound-statement">compound_statement</a>
+	| <a href="#declarator">declarator</a> <a href="#declaration-list">declaration_list</a> <a href="#compound-statement">compound_statement</a>
+	| <a href="#declarator">declarator</a> <a href="#compound-statement">compound_statement</a>
+	;
+
+%%
+#include &lt;stdio.h&gt;
+
+extern char yytext[];
+extern int column;
+
+yyerror(s)
+char *s;
+{
+	fflush(stdout);
+	printf(&quot;\n%*s\n%*s\n&quot;, column, &quot;^&quot;, column, s);
+}
+</pre>
+</body>
+</html>

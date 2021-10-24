@@ -1,4 +1,7 @@
 import * as R from 'ramda';
+
+import {removeNullValues} from '@compiler/core/utils';
+
 import {NodeLocation} from './NodeLocation';
 import {TreeVisitor} from './TreeVisitor';
 
@@ -66,6 +69,26 @@ export class TreeNode<K = string, C extends TreeNode<K, C> = any> {
         ? <any> kind
         : null
     );
+  }
+
+  /**
+   * Dumps provided attrs into string
+   *
+   * @static
+   * @param {string} kind
+   * @param {Record<string, any>} attrs
+   * @return {string}
+   * @memberof TreeNode
+   */
+  static dumpAttributesToString(kind: string, attrs: Record<string, any>): string {
+    const serializedAttrs = R.pipe(
+      removeNullValues,
+      R.toPairs as any,
+      R.map(([key, value]) => `${key}="${value}"`),
+      R.join(' '),
+    )(attrs);
+
+    return `${kind} ${serializedAttrs}`.trim();
   }
 }
 

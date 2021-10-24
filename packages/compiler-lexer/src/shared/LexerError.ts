@@ -1,5 +1,5 @@
 import {CompilerError} from '@compiler/core/shared/CompilerError';
-import {TokenLocation} from '../tokens';
+import {TokenLocation} from './TokenLocation';
 
 export enum LexerErrorCode {
   UNKNOWN_TOKEN,

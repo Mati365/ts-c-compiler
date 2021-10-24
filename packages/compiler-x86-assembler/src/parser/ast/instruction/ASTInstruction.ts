@@ -44,6 +44,7 @@ import {
 } from '../../lexer/tokens';
 
 import {findMatchingInstructionSchemas} from './args/ASTInstructionArgMatchers';
+import {isTokenInstructionBeginning} from './utils/isTokenInstructionBeginning';
 import {
   isJumpInstruction,
   toStringArgsList,
@@ -52,21 +53,6 @@ import {
   isAnyLabelInTokensList,
   isX87Instruction,
 } from '../../utils';
-
-/**
- * Returns true if token might be beginning of instruction
- *
- * @export
- * @param {Token} token
- * @returns {boolean}
- */
-export function isTokenInstructionBeginning(token: Token): boolean {
-  if (token.type !== TokenType.KEYWORD
-      || (!COMPILER_INSTRUCTIONS_SET[token.lowerText] && !InstructionPrefix[token.upperText]))
-    return false;
-
-  return true;
-}
 
 /**
  * Parser for:

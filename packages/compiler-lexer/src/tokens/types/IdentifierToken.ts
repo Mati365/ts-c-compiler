@@ -1,5 +1,5 @@
 import {Token, TokenType, TokenKind} from '../Token';
-import {TokenLocation} from '../TokenLocation';
+import {TokenLocation} from '../../shared/TokenLocation';
 
 /**
  * Used in higher level grammar syntaxes

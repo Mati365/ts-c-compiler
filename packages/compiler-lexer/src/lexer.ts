@@ -328,11 +328,8 @@ export function* lexer(config: LexerConfig, code: string): IterableIterator<Toke
     }
 
     // end of line
-    if (eol) {
-      if (ignoreEOL)
-        tokenBuffer = '';
-      else
-        yield* appendCharToken(TokenType.EOL, character);
+    if (eol && !ignoreEOL) {
+      yield* appendCharToken(TokenType.EOL, character);
     } else {
       // handle ++, && etc. two byte terminals
       const binarySeparator = character + code[offset + 1];

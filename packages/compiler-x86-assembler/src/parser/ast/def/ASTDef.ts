@@ -9,10 +9,8 @@ import {ASTNodeKind} from '../types';
 import {InstructionArgSize} from '../../../types';
 import {KindASTAsmNode} from '../ASTAsmNode';
 
-import {
-  fetchInstructionTokensArgsList,
-  toStringArgsList,
-} from '../../utils';
+import {toStringArgsList} from '../../utils/toStringArgsList';
+import {fetchInstructionTokensArgsList} from '../../utils/fetchInstructionTokensArgsList';
 
 export enum DefTokenNames {
   DB = InstructionArgSize.BYTE,

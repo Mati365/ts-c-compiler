@@ -21,6 +21,11 @@ export class ASTCExpression extends ASTCCompilerNode {
         : ''
     );
 
-    return `${kind} expression="${tokens}"`;
+    return ASTCCompilerNode.dumpAttributesToString(
+      kind,
+      {
+        expression: tokens,
+      },
+    );
   }
 }

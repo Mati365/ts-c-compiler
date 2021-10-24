@@ -2,9 +2,9 @@ import * as R from 'ramda';
 
 import {getBit, setBit} from '@compiler/core/utils/bits';
 
-import {X86CPU} from '../X86CPU';
 import {
   RegistersDebugDump,
+  X86AbstractCPU,
   X86RegsStore,
 } from '../types';
 
@@ -110,7 +110,7 @@ export class X87RegsStore {
   debugDump(): RegistersDebugDump {
     const {stack, tags, control, status, fip, fcs} = this;
     const regs = {
-      tags: X86CPU.toUnsignedNumber(tags, 0x2),
+      tags: X86AbstractCPU.toUnsignedNumber(tags, 0x2),
       control,
       status,
       fip,
