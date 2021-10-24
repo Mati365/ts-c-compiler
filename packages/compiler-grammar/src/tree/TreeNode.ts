@@ -5,6 +5,10 @@ import {removeNullValues} from '@compiler/core/utils';
 import {NodeLocation} from './NodeLocation';
 import {TreeVisitor} from './TreeVisitor';
 
+export function isTreeNode(item: any): item is TreeNode<any> {
+  return item && R.is(Object, item) && ('walk' in item);
+}
+
 /**
  * Node used to construct AST
  *

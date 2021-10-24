@@ -16,4 +16,15 @@ export class ASTCStorageClassSpecifiersList extends ASTCCompilerNode implements 
   isEmpty() {
     return R.isEmpty(this.items);
   }
+
+  toString() {
+    const {kind, items} = this;
+
+    return ASTCCompilerNode.dumpAttributesToString(
+      kind,
+      {
+        items: items?.join(' '),
+      },
+    );
+  }
 }

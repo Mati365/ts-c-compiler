@@ -3,14 +3,7 @@ import {ccompiler} from './frontend';
 ccompiler(
   null,
   `
-    int abcdef_aaa, kuj;
-    float gunwo;
-
-    enum Flagi {
-      ABC,
-      ABC2 = 2,
-      ABC3 = 3
-    };
+    const int abccc;
   `,
 ).match(
   {

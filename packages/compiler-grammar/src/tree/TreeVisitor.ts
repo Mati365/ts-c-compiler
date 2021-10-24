@@ -1,4 +1,4 @@
-import {TreeNode} from './TreeNode';
+import {isTreeNode, TreeNode} from './TreeNode';
 
 /**
  * Iterates over tree
@@ -22,6 +22,9 @@ export abstract class TreeVisitor<T extends TreeNode<any>> {
    * @memberof TreeVisitor
    */
   visit(node: T): this {
+    if (!isTreeNode(node))
+      return this;
+
     const {history} = this;
 
     history.push(node);

@@ -59,6 +59,7 @@ export enum ASTCCompilerKind {
   IdentifiersList = 'IdentifiersList',
   QualifiersList = 'QualifiersList',
   TypeSpecifiersList = 'TypeSpecifiersList',
+  TypeQualifiersList = 'TypeQualifiersList',
   StorageClassSpecifiersList = 'StorageClassSpecifiersList',
   ArgumentsExpressionList = 'ArgumentsExpressionList',
   ParametersTypedList = 'ParametersTypedList',
