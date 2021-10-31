@@ -11,20 +11,7 @@ import {
   InterpreterResult,
 } from '../interpreter/PreprocessorInterpreter';
 
-export function createBinOpIfBothSidesPresent<T extends ASTPreprocessorBinaryOpNode>(
-  ClassType: new(op: TokenType, left: ASTPreprocessorNode, right: ASTPreprocessorNode) => T,
-  op: TokenType,
-  left: ASTPreprocessorNode,
-  right: ASTPreprocessorNode,
-): T | ASTPreprocessorNode {
-  if (left && right)
-    return new ClassType(op, left, right);
-
-  if (!left)
-    return right;
-
-  return left;
-}
+export {createBinOpIfBothSidesPresent} from '@compiler/grammar/utils';
 
 /**
  * Transforms tree into for that second argument contains operator,

@@ -1,11 +1,13 @@
 import {LexerConfig, TokenParsersMap} from '@compiler/lexer/lexer';
-import {TokenType} from '@compiler/lexer/tokens';
+import {FloatNumberToken, NumberToken, TokenType} from '@compiler/lexer/tokens';
 import {safeResultLexer} from '@compiler/lexer/safeResultLexer';
 
 import {CCOMPILER_IDENTIFIERS_MAP} from '../../constants';
 import {ccomentParser} from './ccommentParser';
 
 export const CCOMPILER_TOKEN_PARSERS: TokenParsersMap = {
+  [TokenType.NUMBER]: NumberToken.parse,
+  [TokenType.FLOAT_NUMBER]: FloatNumberToken.parse,
   [TokenType.KEYWORD]: () => true,
 };
 

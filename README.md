@@ -10,7 +10,7 @@
 
 16 bit x86 (with X87 FPU) virtual machine and assembler written in TypeScript. It is designed to help with prototyping small bootsector (or bigger) real mode games 🎮 and apps 💻.
 
-JavaScript 16bit x86 assembler bundled in emulator is designed to be fully binarny compatible with 16bit NASM compiler. 
+JavaScript 16bit x86 assembler bundled in emulator is designed to be fully binarny compatible with 16bit NASM compiler.
 
 <img src="/doc/editor.png" align="right" />
 
@@ -90,6 +90,8 @@ yarn run test
 ![ASM Compiler](/doc/screen-3.png)
 
 ## Docs
+
+<https://www.youtube.com/watch?v=yTXCPGAD3SQ>
 
 <https://books.google.pl/books?id=Lq4yDwAAQBAJ&pg=PA120&lpg=PA120&dq=chain4+mode&source=bl&ots=Eun_wNFE7b&sig=ACfU3U37tSXE7qOZn0AKGeFwaaNLS4nrKg&hl=pl&sa=X&ved=2ahUKEwjlupT5-u_pAhVNxhoKHVfRA7YQ6AEwAnoECAoQAQ#v=onepage&q=chain4%20mode&f=false>
 

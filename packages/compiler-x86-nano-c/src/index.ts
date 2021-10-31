@@ -3,7 +3,12 @@ import {ccompiler} from './frontend';
 ccompiler(
   null,
   `
-    const int abccc;
+    const int abccc = 2 && 6;
+    enum Enumerator {
+      ABC = 2,
+      VAL,
+      DUPA = 4,
+    }
   `,
 ).match(
   {

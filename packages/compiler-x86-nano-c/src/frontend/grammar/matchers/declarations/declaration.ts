@@ -25,15 +25,7 @@ function declaratorList(grammar: CGrammar): ASTCInitDeclaratorList {
   const items: ASTCInitDeclarator[] = [];
 
   do {
-    const result = <ASTCInitDeclarator> g.or(
-      {
-        declarator: () => initDeclarator(grammar),
-        empty() {
-          return null;
-        },
-      },
-    );
-
+    const result = <ASTCInitDeclarator> g.try(() => initDeclarator(grammar));
     if (!result)
       break;
 

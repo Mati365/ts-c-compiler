@@ -1,6 +1,7 @@
 import * as R from 'ramda';
 
 import {removeNullValues} from '@compiler/core/utils';
+import {walkOverFields} from '../decorators/walkOverFields';
 
 import {NodeLocation} from './NodeLocation';
 import {TreeVisitor} from './TreeVisitor';
@@ -131,6 +132,14 @@ export class ValueNode<T, K = string> extends TreeNode<K> {
  * @template K
  * @template T
  */
+@walkOverFields(
+  {
+    fields: [
+      'left',
+      'right',
+    ],
+  },
+)
 export class BinaryNode<K = string, T extends TreeNode<K> = TreeNode<K>> extends TreeNode<K> {
   constructor(
     kind: K,
@@ -188,21 +197,5 @@ export class BinaryNode<K = string, T extends TreeNode<K> = TreeNode<K>> extends
         ? this.getFirstNonNullSide()
         : this
     );
-  }
-
-  /**
-   * Iterates throught tree
-   *
-   * @param {TreeVisitor<TreeNode<K>>} visitor
-   * @memberof BinaryNode
-   */
-  walk(visitor: TreeVisitor<TreeNode<K>>): void {
-    const {left, right} = this;
-
-    if (left)
-      visitor.visit(left);
-
-    if (right)
-      visitor.visit(right);
   }
 }

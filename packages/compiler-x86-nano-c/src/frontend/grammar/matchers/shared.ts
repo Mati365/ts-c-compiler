@@ -6,8 +6,10 @@ import {
   ASTCCompilerKind,
 } from '../../ast';
 
+export type CGrammarDef = Grammar<CCompilerIdentifier, ASTCCompilerKind>;
+
 export type CGrammar = {
-  g: Grammar<CCompilerIdentifier, ASTCCompilerKind>,
+  g: CGrammarDef,
   stmt(): ASTCStmt,
   unaryExpression(): ASTCUnaryExpression,
 };
