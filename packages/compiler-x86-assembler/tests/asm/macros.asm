@@ -74,3 +74,9 @@ var2: equ 2
 mov ax, var1
 abcdefe: equ 11*3+3-4-5-6-7
 mov bx, abcdefe
+
+;= test: advanced ifs
+;= bin:
+%if (12 + 3) > 10 && (12 < 3 || 4 > 5 || (2 * 2 > 1 && 1 > 2))
+  xor ax, ax
+%endif

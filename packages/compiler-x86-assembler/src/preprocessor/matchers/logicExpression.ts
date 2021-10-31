@@ -18,6 +18,10 @@ import {relationExpression} from './relationExpression';
  */
 function term(g: PreprocessorGrammar): ASTPreprocessorNode {
   const {currentToken: token} = g;
+  const relation = relationExpression(g, false);
+
+  if (relation)
+    return relation;
 
   if (token.type === TokenType.BRACKET && token.text === '(') {
     g.consume();
@@ -32,7 +36,7 @@ function term(g: PreprocessorGrammar): ASTPreprocessorNode {
     return expr;
   }
 
-  return relationExpression(g, false);
+  return null;
 }
 
 /**

@@ -18,7 +18,7 @@ import {mathExpression} from './mathExpression';
 
 /**
  * @see
- * term -> mathExpr | ( logic )
+ * term -> mathExpr | ( mathExpr )
  */
 function term(g: PreprocessorGrammar): ASTPreprocessorNode {
   const {currentToken: token} = g;
