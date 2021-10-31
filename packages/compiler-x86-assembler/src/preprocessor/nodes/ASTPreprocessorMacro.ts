@@ -76,7 +76,7 @@ export class ASTPreprocessorMacro extends ASTPreprocessorNode implements ASTPrep
    * Iterates throught tree
    *
    * @param {TreeVisitor<ASTPreprocessorNode>} visitor
-   * @memberof BinaryNode
+   * @memberof ASTPreprocessorMacro
    */
   walk(visitor: TreeVisitor<ASTPreprocessorNode>): void {
     const {content} = this;

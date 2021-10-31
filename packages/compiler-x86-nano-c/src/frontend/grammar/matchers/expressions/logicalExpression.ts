@@ -4,9 +4,10 @@ import {empty} from '@compiler/grammar/matchers';
 import {NodeLocation} from '@compiler/grammar/tree/NodeLocation';
 import {TokenType} from '@compiler/lexer/shared';
 import {CGrammar} from '../shared';
+import {CReducePostfixOperatorsVisitor} from '../utils/CReducePostfixOperatorVisitor';
 import {
   ASTCCompilerKind,
-  ASTCOperatorBinaryExpression,
+  ASTCBinaryOpNode,
   ASTCTreeNode,
   ASTCValueNode,
   createBinOpIfBothSidesPresent,
@@ -39,7 +40,7 @@ function andOp(grammar: CGrammar): ASTCTreeNode {
     {
       and() {
         return createBinOpIfBothSidesPresent(
-          ASTCOperatorBinaryExpression,
+          ASTCBinaryOpNode,
           null,
           term(grammar),
           andOpPrim(grammar),
@@ -62,7 +63,7 @@ function andOpPrim(grammar: CGrammar): ASTCTreeNode {
           },
         );
 
-        return new ASTCOperatorBinaryExpression(
+        return new ASTCBinaryOpNode(
           TokenType.AND,
           term(grammar),
           andOpPrim(grammar),
@@ -86,7 +87,7 @@ function orOp(grammar: CGrammar): ASTCTreeNode {
     {
       value() {
         return createBinOpIfBothSidesPresent(
-          ASTCOperatorBinaryExpression,
+          ASTCBinaryOpNode,
           null,
           andOp(grammar),
           orOpPrim(grammar),
@@ -109,7 +110,7 @@ function orOpPrim(grammar: CGrammar): ASTCTreeNode {
           },
         );
 
-        return new ASTCOperatorBinaryExpression(
+        return new ASTCBinaryOpNode(
           TokenType.OR,
           andOp(grammar),
           orOpPrim(grammar),
@@ -120,6 +121,11 @@ function orOpPrim(grammar: CGrammar): ASTCTreeNode {
   );
 }
 
-export function logicalOrExpression(grammar: CGrammar): ASTCTreeNode {
-  return orOp(grammar);
+export function logicalOrExpression(grammar: CGrammar, reducePostFixOps: boolean = true): ASTCTreeNode {
+  const expression = orOp(grammar);
+
+  if (reducePostFixOps)
+    (new CReducePostfixOperatorsVisitor).visit(expression);
+
+  return expression;
 }

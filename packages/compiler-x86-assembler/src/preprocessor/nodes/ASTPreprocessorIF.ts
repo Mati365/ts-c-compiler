@@ -82,7 +82,7 @@ export class ASTPreprocessorIF extends ASTPreprocessorCondition {
    * Iterates throught tree
    *
    * @param {TreeVisitor<ASTPreprocessorNode>} visitor
-   * @memberof BinaryNode
+   * @memberof ASTPreprocessorIF
    */
   walk(visitor: TreeVisitor<ASTPreprocessorNode>): void {
     const {test, consequent, alternate} = this;

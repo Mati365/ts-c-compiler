@@ -1,5 +1,7 @@
 import * as R from 'ramda';
 
+import {TokenType} from '@compiler/lexer/shared';
+
 import {removeNullValues} from '@compiler/core/utils';
 import {walkOverFields} from '../decorators/walkOverFields';
 
@@ -196,6 +198,37 @@ export class BinaryNode<K = string, T extends TreeNode<K> = TreeNode<K>> extends
       this.hasSingleSide()
         ? this.getFirstNonNullSide()
         : this
+    );
+  }
+}
+
+/**
+ * Binary node with operator
+ *
+ * @export
+ * @class BinaryOpNode
+ * @extends {BinaryNode<K, T>}
+ * @template K
+ * @template T
+ */
+export class BinaryOpNode<K = string, T extends TreeNode<K> = TreeNode<K>> extends BinaryNode<K, T> {
+  constructor(
+    kind: K,
+    public op: TokenType,
+    left: T,
+    right: T,
+  ) {
+    super(kind, left, right);
+  }
+
+  toString(): string {
+    const {op} = this;
+
+    return TreeNode.dumpAttributesToString(
+      <any> this.kind,
+      {
+        op,
+      },
     );
   }
 }

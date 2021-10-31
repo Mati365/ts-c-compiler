@@ -13,7 +13,7 @@ import {
   ASTPreprocessorNode,
 } from '../constants';
 
-import {ReducePostfixOperatorsVisitor} from './utils/ReducePostifxOperatorsVisitor';
+import {PreprocessorReducePostfixOperatorsVisitor} from './utils/PreprocessorReducePostifxOperatorsVisitor';
 import {mathExpression} from './mathExpression';
 
 /**
@@ -89,7 +89,7 @@ export function relationExpression(g: PreprocessorGrammar, reducePostFixOps: boo
   const node = relOp(g);
 
   if (reducePostFixOps)
-    (new ReducePostfixOperatorsVisitor).visit(node);
+    (new PreprocessorReducePostfixOperatorsVisitor).visit(node);
 
   return node;
 }

@@ -30,7 +30,6 @@ export enum ASTCCompilerKind {
   CastExpression = 'CastExpression',
   PrimaryExpression = 'PrimaryExpression',
   ConditionalExpression = 'ConditionalExpression',
-  BinaryOperatorExpression = 'BinaryOperatorExpression',
 
   PostfixExpression = 'PostfixExpression',
   PostfixArrayExpression = 'PostfixArrayExpression',

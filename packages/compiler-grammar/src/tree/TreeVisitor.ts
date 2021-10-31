@@ -7,7 +7,7 @@ import {isTreeNode, TreeNode} from './TreeNode';
  * @class TreeVisitor
  * @template T
  */
-export abstract class TreeVisitor<T extends TreeNode<any>> {
+export abstract class TreeVisitor<T extends TreeNode<any> = TreeNode> {
   protected history: T[] = [];
 
   get nesting() {

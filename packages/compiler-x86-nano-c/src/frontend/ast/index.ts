@@ -17,7 +17,7 @@ export * from './ASTCIdentifiersList';
 export * from './ASTCInitDeclarator';
 export * from './ASTCInitDeclaratorList';
 export * from './ASTCInitializer';
-export * from './ASTCOperatorBinaryExpression';
+export * from './ASTCBinaryOpNode';
 export * from './ASTCParameterDeclaration';
 export * from './ASTCParametersTypedList';
 export * from './ASTCPointer';

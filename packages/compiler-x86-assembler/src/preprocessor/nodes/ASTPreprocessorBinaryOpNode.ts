@@ -1,4 +1,4 @@
-import {BinaryNode} from '@compiler/grammar/tree/TreeNode';
+import {BinaryOpNode} from '@compiler/grammar/tree/TreeNode';
 import {TokenType} from '@compiler/lexer/tokens';
 import {
   ASTPreprocessorNode,
@@ -23,15 +23,15 @@ export {createBinOpIfBothSidesPresent} from '@compiler/grammar/utils';
  * @implements {PreprocessorInterpretable}
  */
 export class ASTPreprocessorBinaryOpNode
-  extends BinaryNode<ASTPreprocessorKind, ASTPreprocessorNode>
+  extends BinaryOpNode<ASTPreprocessorKind, ASTPreprocessorNode>
   implements PreprocessorInterpretable {
   constructor(
-    public op: TokenType,
+    op: TokenType,
     left: ASTPreprocessorNode,
     right: ASTPreprocessorNode,
     kind: ASTPreprocessorKind = ASTPreprocessorKind.BinaryOperator,
   ) {
-    super(kind, left, right);
+    super(kind, op, left, right);
   }
 
   clone(): ASTPreprocessorBinaryOpNode {
@@ -48,11 +48,5 @@ export class ASTPreprocessorBinaryOpNode
 
   toEmitterLine(): string {
     return '';
-  }
-
-  toString(): string {
-    const {op} = this;
-
-    return `${super.toString()} op=${op}`;
   }
 }

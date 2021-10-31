@@ -4,7 +4,7 @@ import {empty} from '@compiler/grammar/matchers';
 import {TokenType, NumberToken, Token} from '@compiler/lexer/tokens';
 import {NodeLocation} from '@compiler/grammar/tree/NodeLocation';
 
-import {ReducePostfixOperatorsVisitor} from './utils/ReducePostifxOperatorsVisitor';
+import {PreprocessorReducePostfixOperatorsVisitor} from './utils/PreprocessorReducePostifxOperatorsVisitor';
 import {
   ASTPreprocessorBinaryOpNode,
   createBinOpIfBothSidesPresent,
@@ -414,7 +414,7 @@ export function mathExpression(g: PreprocessorGrammar, reducePostFixOps: boolean
   const node = bitsOp(g);
 
   if (reducePostFixOps)
-    (new ReducePostfixOperatorsVisitor).visit(node);
+    (new PreprocessorReducePostfixOperatorsVisitor).visit(node);
 
   return node;
 }

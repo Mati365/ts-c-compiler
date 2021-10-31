@@ -9,7 +9,7 @@ import {
   ASTPreprocessorNode,
 } from '../constants';
 
-import {ReducePostfixOperatorsVisitor} from './utils/ReducePostifxOperatorsVisitor';
+import {PreprocessorReducePostfixOperatorsVisitor} from './utils/PreprocessorReducePostifxOperatorsVisitor';
 import {relationExpression} from './relationExpression';
 
 /**
@@ -137,7 +137,7 @@ export function logicExpression(g: PreprocessorGrammar, reducePostFixOps: boolea
   const node = orOp(g);
 
   if (reducePostFixOps)
-    (new ReducePostfixOperatorsVisitor).visit(node);
+    (new PreprocessorReducePostfixOperatorsVisitor).visit(node);
 
   return node;
 }
