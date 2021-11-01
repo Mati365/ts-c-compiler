@@ -38,11 +38,7 @@ export function unaryExpression(grammar: CGrammar): ASTCUnaryExpression {
 
   return <ASTCUnaryExpression> g.or(
     {
-      postfix() {
-        const postifxNode = postfixExpression(grammar);
-
-        return new ASTCUnaryExpression(postifxNode.loc, postifxNode);
-      },
+      postfix: () => postfixExpression(grammar),
 
       dec() {
         const loc = NodeLocation.fromTokenLoc(

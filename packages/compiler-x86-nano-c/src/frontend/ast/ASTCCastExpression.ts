@@ -2,24 +2,25 @@ import {walkOverFields} from '@compiler/grammar/decorators/walkOverFields';
 
 import {NodeLocation} from '@compiler/grammar/tree/NodeLocation';
 import {ASTCTypeName} from './ASTCTypeName';
-import {ASTCCompilerKind, ASTCCompilerNode} from './ASTCCompilerNode';
-import {ASTCUnaryExpression} from './ASTCUnaryExpression';
+import {
+  ASTCTreeNode,
+  ASTCCompilerKind,
+  ASTCCompilerNode,
+} from './ASTCCompilerNode';
 
 @walkOverFields(
   {
     fields: [
       'typeName',
-      'unaryExpression',
-      'castExpression',
+      'expression',
     ],
   },
 )
 export class ASTCCastExpression extends ASTCCompilerNode {
   constructor(
     loc: NodeLocation,
-    public readonly unaryExpression?: ASTCUnaryExpression,
     public readonly typeName?: ASTCTypeName,
-    public readonly castExpression?: ASTCCastExpression,
+    public readonly expression?: ASTCTreeNode,
   ) {
     super(ASTCCompilerKind.CastExpression, loc);
   }

@@ -8,6 +8,7 @@ import {
 } from '../../../ast';
 
 import {createLeftRecursiveOperatorMatcher} from '../utils';
+import {castExpression} from './castExpression';
 
 function term({g}: CGrammar) {
   const token = g.match(
@@ -25,7 +26,7 @@ function term({g}: CGrammar) {
 
 const multiplicativeOp = createLeftRecursiveOperatorMatcher(
   {
-    parentExpression: term,
+    parentExpression: castExpression,
     operator: [
       TokenType.MUL,
       TokenType.DIV,

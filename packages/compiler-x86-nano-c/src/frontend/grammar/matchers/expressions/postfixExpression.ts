@@ -1,4 +1,4 @@
-import {ASTCPostfixExpression} from '@compiler/x86-nano-c/frontend/ast';
+import {ASTCTreeNode} from '@compiler/x86-nano-c/frontend/ast';
 import {CGrammar} from '../shared';
 import {primaryExpression} from './primaryExpression';
 
@@ -21,19 +21,12 @@ import {primaryExpression} from './primaryExpression';
  * @param {CGrammar} grammar
  * @return {ASTCUnaryExpression}
  */
-export function postfixExpression(grammar: CGrammar): ASTCPostfixExpression {
+export function postfixExpression(grammar: CGrammar): ASTCTreeNode {
   const {g} = grammar;
 
-  return <ASTCPostfixExpression> g.or(
+  return <ASTCTreeNode> g.or(
     {
-      primary: () => {
-        const primaryExpressionNode = primaryExpression(grammar);
-
-        return new ASTCPostfixExpression(
-          primaryExpressionNode.loc,
-          primaryExpressionNode,
-        );
-      },
+      primary: () => primaryExpression(grammar),
     },
   );
 }

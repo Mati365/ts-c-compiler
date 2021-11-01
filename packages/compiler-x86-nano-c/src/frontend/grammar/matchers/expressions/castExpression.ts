@@ -1,5 +1,6 @@
-import {ASTCCastExpression} from '@compiler/x86-nano-c/frontend/ast';
+import {ASTCCastExpression, ASTCTreeNode} from '@compiler/x86-nano-c/frontend/ast';
 import {CGrammar} from '../shared';
+import {typename} from '../types';
 
 /**
  * cast_expression
@@ -14,16 +15,31 @@ import {CGrammar} from '../shared';
  * @param {CGrammar} grammar
  * @return {ASTCAssignmentExpression}
  */
-export function castExpression(grammar: CGrammar): ASTCCastExpression {
+export function castExpression(grammar: CGrammar): ASTCTreeNode {
   const {g, unaryExpression} = grammar;
 
-  return <ASTCCastExpression> g.or(
+  return <ASTCTreeNode> g.or(
     {
-      unary() {
-        const unaryNode = unaryExpression();
+      cast() {
+        g.match(
+          {
+            terminal: '(',
+          },
+        );
+        const type = typename(grammar);
+        g.match(
+          {
+            terminal: ')',
+          },
+        );
 
-        return new ASTCCastExpression(unaryNode.loc, unaryNode);
+        return new ASTCCastExpression(
+          type.loc,
+          type,
+          unaryExpression(),
+        );
       },
+      unary: unaryExpression,
     },
   );
 }
