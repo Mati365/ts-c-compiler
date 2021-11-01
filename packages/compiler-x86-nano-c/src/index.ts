@@ -3,7 +3,7 @@ import {ccompiler} from './frontend';
 ccompiler(
   null,
   `
-    const int abccc = 3 != 4 && 3 == 4 == 3 != 4;
+    const int abccc = 3 > 4 & 1 < 5;
   `,
 ).match(
   {
