@@ -6,6 +6,7 @@ export * from './logicalExpression';
 export * from './bitwiseExpression';
 export * from './equalityExpression';
 export * from './relationalExpression';
+export * from './shiftExpression';
 export * from './expression';
 export * from './postfixExpression';
 export * from './unaryExpression';
