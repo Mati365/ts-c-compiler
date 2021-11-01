@@ -325,6 +325,19 @@ function bitsOp(g: PreprocessorGrammar): ASTPreprocessorNode {
 function bitsOpPrim(g: PreprocessorGrammar): ASTPreprocessorNode {
   return <ASTPreprocessorNode> g.or(
     {
+      xor() {
+        g.match(
+          {
+            type: TokenType.POW,
+          },
+        );
+
+        return new ASTPreprocessorBinaryOpNode(
+          TokenType.POW,
+          add(g),
+          bitsOpPrim(g),
+        );
+      },
       and() {
         g.match(
           {

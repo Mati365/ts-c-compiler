@@ -3,6 +3,8 @@ export * from './castExpression';
 export * from './constantExpression';
 export * from './conditionalExpression';
 export * from './logicalExpression';
+export * from './bitwiseExpression';
+export * from './equalityExpression';
 export * from './expression';
 export * from './postfixExpression';
 export * from './unaryExpression';
