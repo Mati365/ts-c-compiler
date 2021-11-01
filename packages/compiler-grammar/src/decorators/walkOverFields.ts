@@ -6,7 +6,7 @@ import {TreeVisitor} from '../tree/TreeVisitor';
 type TreeNodeLikeConstructor = { new(...args: any[]): any };
 
 type WalkOverFieldsParams = {
-  fields: string[],
+  fields?: string[],
 };
 
 /**
@@ -20,7 +20,7 @@ type WalkOverFieldsParams = {
 export function walkOverFields<T extends TreeNodeLikeConstructor>(
   {
     fields,
-  }: WalkOverFieldsParams,
+  }: WalkOverFieldsParams = {},
 ): (constructor: T) => any {
   return (constructor: T): T => class extends constructor {
     walk(visitor: TreeVisitor<any>): void {

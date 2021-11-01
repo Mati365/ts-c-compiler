@@ -1,5 +1,6 @@
 import * as R from 'ramda';
 
+import {SyntaxError} from '@compiler/grammar/Grammar';
 import {TokenType} from '@compiler/lexer/shared';
 import {
   ASTCDeclaration,

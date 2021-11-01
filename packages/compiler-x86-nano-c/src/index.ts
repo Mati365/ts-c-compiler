@@ -3,7 +3,7 @@ import {ccompiler} from './frontend';
 ccompiler(
   null,
   `
-    const int abccc = 3 > 2 ? 2 + 2 : 1 + 1;
+    for (int a; b < 2 + 5;) {}
   `,
 ).match(
   {

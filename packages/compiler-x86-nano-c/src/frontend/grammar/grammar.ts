@@ -17,7 +17,7 @@ import {
   unaryExpression,
   enumDeclarator,
   declaration,
-  blockStmt,
+  statement,
   CGrammar,
 } from './matchers';
 
@@ -28,7 +28,7 @@ import {
 const compilerMatcher: GrammarInitializer<CCompilerIdentifier, ASTCCompilerKind> = ({g}) => {
   const grammar: CGrammar = {
     g,
-    stmt,
+    statement: () => statement(grammar),
     unaryExpression: () => unaryExpression(grammar),
     assignmentExpression: () => assignmentExpression(grammar),
   };
@@ -36,9 +36,9 @@ const compilerMatcher: GrammarInitializer<CCompilerIdentifier, ASTCCompilerKind>
   const stmts: GrammarProductions<ASTCCompilerKind> = R.mapObjIndexed(
     R.partial(R.__ as any, [grammar]),
     {
+      statement,
       enumDeclarator,
       declaration,
-      blockStmt,
     },
   );
 

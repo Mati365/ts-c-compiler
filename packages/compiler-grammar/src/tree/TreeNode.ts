@@ -164,6 +164,18 @@ export class BinaryNode<K = string, T extends TreeNode<K> = TreeNode<K>> extends
   }
 
   /**
+   * Returns true if both left / right are empty
+   *
+   * @return {boolean}
+   * @memberof BinaryNode
+   */
+  isEmpty(): boolean {
+    const {left, right} = this;
+
+    return !left && !right;
+  }
+
+  /**
    * Returns true if only one side is present
    *
    * @returns {boolean}
@@ -193,7 +205,10 @@ export class BinaryNode<K = string, T extends TreeNode<K> = TreeNode<K>> extends
    * @returns {(T|this)}
    * @memberof BinaryNode
    */
-  getSingleSideIfOnlyOne(): T|this {
+  getSingleSideIfOnlyOne(): T | this {
+    if (this.isEmpty())
+      return null;
+
     return (
       this.hasSingleSide()
         ? this.getFirstNonNullSide()

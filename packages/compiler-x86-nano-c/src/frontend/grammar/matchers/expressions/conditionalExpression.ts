@@ -24,7 +24,7 @@ export function conditionalExpression(grammar: CGrammar): ASTCCompilerNode {
   const orExpression = logicalOrExpression(grammar);
 
   if (!orExpression)
-    throw SyntaxError;
+    throw new SyntaxError;
 
   const questionMark = g.match(
     {

@@ -216,20 +216,27 @@ export class Grammar<I, K = string> extends TokensIterator {
    */
   or(productions: GrammarProductions<K>): ReturnType<GrammarProduction<K>> {
     // search for matching production
+    const savedMatchCallNesting = this._matchCallNesting;
     const savedIndex = this.tokenIndex;
 
     for (const name in productions) {
       const production = productions[name];
 
       try {
-        this._matchCallNesting = 0;
-        return production();
+        this._matchCallNesting = savedMatchCallNesting;
+        const result = production();
+        this._matchCallNesting = savedMatchCallNesting;
+
+        return result;
       } catch (e) {
+        const matchCallingDelta = this._matchCallNesting - savedMatchCallNesting;
+        this._matchCallNesting = savedMatchCallNesting;
+
         // already consumed some of instruction
         // but occurs parsing error
         if (!(e instanceof SyntaxError)
             || !('code' in e)
-            || (!this._config.ignoreMatchCallNesting && this._matchCallNesting > 1))
+            || (!this._config.ignoreMatchCallNesting && matchCallingDelta > 1))
           throw e;
         else
           this.tokenIndex = savedIndex;

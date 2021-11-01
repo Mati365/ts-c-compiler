@@ -12,10 +12,14 @@ export enum CStorageClassSpecifier {
 export enum CCompilerKeyword {
   IF = 'if',
   ELSE = 'else',
+  SWITCH = 'switch',
   RETURN = 'return',
   STRUCT = 'struct',
   TYPEDEF = 'typedef',
   ENUM = 'enum',
+  WHILE = 'while',
+  DO = 'do',
+  FOR = 'for',
 }
 
 export enum CTypeQualifier {
@@ -80,6 +84,10 @@ export const CCOMPILER_ASSIGN_OPERATORS = $enum(CAssignOperator).getValues();
 export const CCOMPILER_IDENTIFIERS_MAP: IdentifiersMap = {
   enum: CCompilerKeyword.ENUM,
   if: CCompilerKeyword.IF,
+  switch: CCompilerKeyword.SWITCH,
+  do: CCompilerKeyword.DO,
+  while: CCompilerKeyword.WHILE,
+  for: CCompilerKeyword.FOR,
   else: CCompilerKeyword.ELSE,
   return: CCompilerKeyword.RETURN,
   struct: CCompilerKeyword.STRUCT,

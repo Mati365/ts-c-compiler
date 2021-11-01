@@ -12,13 +12,13 @@ import {ASTCCompilerKind, ASTCCompilerNode} from './ASTCCompilerNode';
     ],
   },
 )
-export class ASTCConditionalExpression extends ASTCCompilerNode {
+export class ASTCIfStatement extends ASTCCompilerNode {
   constructor(
     loc: NodeLocation,
     public readonly logicalExpression: ASTCCompilerNode,
-    public readonly trueExpression?: ASTCCompilerNode,
+    public readonly trueExpression: ASTCCompilerNode,
     public readonly falseExpression?: ASTCCompilerNode,
   ) {
-    super(ASTCCompilerKind.ConditionalExpression, loc);
+    super(ASTCCompilerKind.IfStmt, loc);
   }
 }

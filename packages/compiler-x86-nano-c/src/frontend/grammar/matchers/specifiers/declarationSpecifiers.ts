@@ -1,3 +1,4 @@
+import {SyntaxError} from '@compiler/grammar/Grammar';
 import {NodeLocation} from '@compiler/grammar/tree/NodeLocation';
 import {
   ASTCCompilerNode,

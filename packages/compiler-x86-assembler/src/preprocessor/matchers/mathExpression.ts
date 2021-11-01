@@ -1,6 +1,7 @@
 /* eslint-disable no-use-before-define, @typescript-eslint/no-use-before-define */
 import {TokenType, NumberToken, Token} from '@compiler/lexer/tokens';
 import {NodeLocation} from '@compiler/grammar/tree/NodeLocation';
+import {SyntaxError} from '@compiler/grammar/Grammar';
 
 import {ASTPreprocessorBinaryOpNode} from '../nodes/ASTPreprocessorBinaryOpNode';
 import {ASTPreprocessorValueNode} from '../nodes/ASTPreprocessorValueNode';

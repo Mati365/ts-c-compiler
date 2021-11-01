@@ -4,13 +4,14 @@ import {
   ASTCStmt,
   ASTCUnaryExpression,
   ASTCCompilerKind,
+  ASTCCompilerNode,
 } from '../../ast';
 
 export type CGrammarDef = Grammar<CCompilerIdentifier, ASTCCompilerKind>;
 
 export type CGrammar = {
   g: CGrammarDef,
-  stmt(): ASTCStmt,
+  statement(): ASTCStmt,
   unaryExpression(): ASTCUnaryExpression,
-  assignmentExpression(): ASTCUnaryExpression,
+  assignmentExpression(): ASTCCompilerNode,
 };

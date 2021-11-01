@@ -4,7 +4,6 @@ import {CCompilerIdentifier} from '@compiler/x86-nano-c/constants';
 
 export enum ASTCCompilerKind {
   If = 'If',
-  Stmt = 'Stmt',
   Value = 'Value',
   Function = 'Function',
   Return = 'Return',
@@ -39,6 +38,21 @@ export enum ASTCCompilerKind {
   PostfixDecExpression = 'PostfixDecExpression',
   PostfixIncExpression = 'PostfixIncExpression',
 
+  Stmt = 'Stmt',
+  IfStmt = 'IfStmt',
+  SwitchStmt = 'SwitchStmt',
+  LabelStmt = 'LabelStmt',
+  CaseStmt = 'CaseStmt',
+  DefaultCaseStmt = 'DefaultCaseStmt',
+  WhileStmt = 'WhileStmt',
+  DoWhileStmt = 'DoWhileStmt',
+  ForStmt = 'ForStmt',
+  GotoStmt = 'GotoStmt',
+  ContinueStmt = 'ContinueStmt',
+  BreakStmt = 'BreakStmt',
+  ReturnStmt = 'ReturnStmt',
+  ExpressionStmt = 'ExpressionStmt',
+
   ParameterDeclaration = 'ParameterDeclaration',
   ParameterDeclarationSpecifier = 'ParameterDeclarationSpecifier',
 
@@ -62,6 +76,7 @@ export enum ASTCCompilerKind {
   StorageClassSpecifiersList = 'StorageClassSpecifiersList',
   ArgumentsExpressionList = 'ArgumentsExpressionList',
   ParametersTypedList = 'ParametersTypedList',
+  BlockItemList = 'BlockItemList',
 
   VariableDeclaration = 'VariableDeclaration',
   VariableDeclarator = 'VariableDeclarator',
