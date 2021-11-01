@@ -6,11 +6,13 @@ import {createLeftRecursiveOperatorMatcher} from '../utils';
 import {relationalExpression} from './relationalExpression';
 
 const equalOp = createLeftRecursiveOperatorMatcher(
-  [
-    TokenType.DIFFERS,
-    TokenType.EQUAL,
-  ],
-  relationalExpression,
+  {
+    parentExpression: relationalExpression,
+    operator: [
+      TokenType.DIFFERS,
+      TokenType.EQUAL,
+    ],
+  },
 ).op;
 
 export function equalityExpression(grammar: CGrammar): ASTCTreeNode {

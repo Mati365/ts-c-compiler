@@ -49,6 +49,7 @@ export enum TokenType {
   MUL = 'MUL',
   DIV = 'DIV',
   POW = 'POW',
+  MOD = 'MOD',
   BIT_AND = 'BIT_AND',
   BIT_OR = 'BIT_OR',
   BIT_SHIFT_RIGHT = 'BIT_SHIFT_RIGHT',

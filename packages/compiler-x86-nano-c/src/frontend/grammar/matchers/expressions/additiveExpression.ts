@@ -1,34 +1,18 @@
-import {NodeLocation} from '@compiler/grammar/tree/NodeLocation';
 import {TokenType} from '@compiler/lexer/shared';
 import {CGrammar} from '../shared';
-import {
-  ASTCCompilerKind,
-  ASTCTreeNode,
-  ASTCValueNode,
-} from '../../../ast';
+import {ASTCTreeNode} from '../../../ast';
 
 import {createLeftRecursiveOperatorMatcher} from '../utils';
-
-function term({g}: CGrammar) {
-  const token = g.match(
-    {
-      type: TokenType.NUMBER,
-    },
-  );
-
-  return new ASTCValueNode(
-    ASTCCompilerKind.Value,
-    NodeLocation.fromTokenLoc(token.loc),
-    [token],
-  );
-}
+import {multiplicativeExpression} from './multiplicativeExpression';
 
 const additiveOp = createLeftRecursiveOperatorMatcher(
-  [
-    TokenType.PLUS,
-    TokenType.MINUS,
-  ],
-  term,
+  {
+    parentExpression: multiplicativeExpression,
+    operator: [
+      TokenType.PLUS,
+      TokenType.MINUS,
+    ],
+  },
 ).op;
 
 export function additiveExpression(grammar: CGrammar): ASTCTreeNode {
@@ -37,7 +21,7 @@ export function additiveExpression(grammar: CGrammar): ASTCTreeNode {
   return <ASTCTreeNode> g.or(
     {
       additiveOp: () => additiveOp(grammar),
-      empty: () => term(grammar),
+      empty: () => multiplicativeExpression(grammar),
     },
   );
 }

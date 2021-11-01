@@ -1,6 +1,7 @@
 /* eslint-disable @typescript-eslint/no-use-before-define, no-use-before-define */
 import {empty} from '@compiler/grammar/matchers';
 import {safeArray} from '@compiler/core/utils';
+import {eatLeftRecursiveOperators} from '@compiler/grammar/utils';
 
 import {CanBeArray} from '@compiler/core/types';
 import {TokenType} from '@compiler/lexer/shared';
@@ -12,8 +13,13 @@ import {
 } from '../../../ast';
 
 export function createLeftRecursiveOperatorMatcher(
-  operator: CanBeArray<TokenType>,
-  parentExpression: (grammar: CGrammar) => ASTCTreeNode,
+  {
+    operator,
+    parentExpression,
+  }: {
+    operator: CanBeArray<TokenType>,
+    parentExpression: (grammar: CGrammar) => ASTCTreeNode,
+  },
 ) {
   /**
    * @see
@@ -27,6 +33,22 @@ export function createLeftRecursiveOperatorMatcher(
     return <ASTCTreeNode> g.or(
       {
         value() {
+          if (operator instanceof Array && operator.length > 1) {
+            const root = new ASTCBinaryOpNode(
+              null,
+              parentExpression(grammar),
+              null,
+            );
+
+            return eatLeftRecursiveOperators(
+              g,
+              root,
+              operator,
+              () => parentExpression(grammar),
+              () => opPrim(grammar),
+            );
+          }
+
           return createBinOpIfBothSidesPresent(
             ASTCBinaryOpNode,
             null,

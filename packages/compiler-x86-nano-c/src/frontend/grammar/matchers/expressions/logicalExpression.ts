@@ -6,8 +6,19 @@ import {ASTCTreeNode} from '../../../ast';
 import {bitwiseOrExpression} from './bitwiseExpression';
 import {createLeftRecursiveOperatorMatcher} from '../utils';
 
-const andOp = createLeftRecursiveOperatorMatcher(TokenType.AND, bitwiseOrExpression).op;
-const orOp = createLeftRecursiveOperatorMatcher(TokenType.OR, andOp).op;
+const andOp = createLeftRecursiveOperatorMatcher(
+  {
+    operator: TokenType.AND,
+    parentExpression: bitwiseOrExpression,
+  },
+).op;
+
+const orOp = createLeftRecursiveOperatorMatcher(
+  {
+    operator: TokenType.OR,
+    parentExpression: andOp,
+  },
+).op;
 
 export function logicalOrExpression(grammar: CGrammar, reducePostFixOps: boolean = true): ASTCTreeNode {
   const expression = orOp(grammar);

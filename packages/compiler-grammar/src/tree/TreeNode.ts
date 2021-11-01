@@ -221,6 +221,18 @@ export class BinaryOpNode<K = string, T extends TreeNode<K> = TreeNode<K>> exten
     super(kind, left, right);
   }
 
+  /**
+   * Clone of op tree
+   *
+   * @returns {BinaryOpNode<K, T>}
+   * @memberof BinaryOpNode
+   */
+  clone(): BinaryOpNode<K, T> {
+    const {kind, op, left, right} = this;
+
+    return new BinaryOpNode<K, T>(kind, op, left, right);
+  }
+
   toString(): string {
     const {op} = this;
 

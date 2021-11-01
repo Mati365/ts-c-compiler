@@ -6,11 +6,13 @@ import {createLeftRecursiveOperatorMatcher} from '../utils';
 import {additiveExpression} from './additiveExpression';
 
 const shiftOp = createLeftRecursiveOperatorMatcher(
-  [
-    TokenType.BIT_SHIFT_LEFT,
-    TokenType.BIT_SHIFT_RIGHT,
-  ],
-  additiveExpression,
+  {
+    parentExpression: additiveExpression,
+    operator: [
+      TokenType.BIT_SHIFT_LEFT,
+      TokenType.BIT_SHIFT_RIGHT,
+    ],
+  },
 ).op;
 
 export function shiftExpression(grammar: CGrammar): ASTCTreeNode {

@@ -8,9 +8,26 @@ import {
   CReducePostfixOperatorsVisitor,
 } from '../utils';
 
-const andBitwiseOp = createLeftRecursiveOperatorMatcher(TokenType.BIT_AND, equalityExpression).op;
-const xorBitwiseOp = createLeftRecursiveOperatorMatcher(TokenType.POW, andBitwiseOp).op;
-const orBitwiseOp = createLeftRecursiveOperatorMatcher(TokenType.BIT_OR, xorBitwiseOp).op;
+const andBitwiseOp = createLeftRecursiveOperatorMatcher(
+  {
+    operator: TokenType.BIT_AND,
+    parentExpression: equalityExpression,
+  },
+).op;
+
+const xorBitwiseOp = createLeftRecursiveOperatorMatcher(
+  {
+    operator: TokenType.POW,
+    parentExpression: andBitwiseOp,
+  },
+).op;
+
+const orBitwiseOp = createLeftRecursiveOperatorMatcher(
+  {
+    operator: TokenType.BIT_OR,
+    parentExpression: xorBitwiseOp,
+  },
+).op;
 
 export function bitwiseOrExpression(grammar: CGrammar, reducePostFixOps: boolean = true): ASTCTreeNode {
   const expression = orBitwiseOp(grammar);

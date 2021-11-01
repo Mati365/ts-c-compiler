@@ -443,7 +443,11 @@ export type PreprocessorGrammarConfig = {
   prefixChar?: string,
 };
 
-export function createPreprocessorGrammar({prefixChar = '%'}: PreprocessorGrammarConfig = {}) {
+export function createPreprocessorGrammar(
+  {
+    prefixChar = '%',
+  }: PreprocessorGrammarConfig = {},
+) {
   const identifiers = mapObjectKeys<IdentifiersMap>(
     (key) => `${prefixChar}${key}`,
     {

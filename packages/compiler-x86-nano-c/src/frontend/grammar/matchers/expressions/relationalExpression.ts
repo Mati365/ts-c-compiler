@@ -6,13 +6,15 @@ import {createLeftRecursiveOperatorMatcher} from '../utils';
 import {shiftExpression} from './shiftExpression';
 
 const relationOp = createLeftRecursiveOperatorMatcher(
-  [
-    TokenType.LESS_THAN,
-    TokenType.LESS_EQ_THAN,
-    TokenType.GREATER_THAN,
-    TokenType.GREATER_EQ_THAN,
-  ],
-  shiftExpression,
+  {
+    parentExpression: shiftExpression,
+    operator: [
+      TokenType.LESS_THAN,
+      TokenType.LESS_EQ_THAN,
+      TokenType.GREATER_THAN,
+      TokenType.GREATER_EQ_THAN,
+    ],
+  },
 ).op;
 
 export function relationalExpression(grammar: CGrammar): ASTCTreeNode {

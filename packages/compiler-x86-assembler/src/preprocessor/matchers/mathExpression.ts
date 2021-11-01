@@ -1,5 +1,6 @@
 /* eslint-disable no-use-before-define, @typescript-eslint/no-use-before-define */
 import {empty} from '@compiler/grammar/matchers';
+import {eatLeftRecursiveOperators} from '@compiler/grammar/utils';
 
 import {TokenType, NumberToken, Token} from '@compiler/lexer/tokens';
 import {NodeLocation} from '@compiler/grammar/tree/NodeLocation';
@@ -16,46 +17,6 @@ import {
   ASTPreprocessorNode,
   ASTPreprocessorKind,
 } from '../constants';
-
-/**
- * Prevents right recursion on same level operaotrs such as 2-2-2-2.
- * Those operators creates tree that is bigger on right
- *
- * @see {@link https://en.wikipedia.org/wiki/Left_recursion}
- *
- * @export
- * @param {PreprocessorGrammar} g
- * @param {ASTPreprocessorBinaryOpNode} root
- * @param {TokenType[]} sameLevelTokensTypes
- * @param {(g: PreprocessorGrammar) => ASTPreprocessorNode} highProduction
- * @param {(g: PreprocessorGrammar) => ASTPreprocessorNode} primProduction
- * @returns
- */
-export function eatLeftRecursiveOperators(
-  g: PreprocessorGrammar,
-  root: ASTPreprocessorBinaryOpNode,
-  sameLevelTokensTypes: TokenType[],
-  highProduction: (g: PreprocessorGrammar) => ASTPreprocessorNode,
-  primProduction: (g: PreprocessorGrammar) => ASTPreprocessorNode,
-) {
-  // kill right recursion and make it left
-  for (;;) {
-    const nextTokenType = g.fetchRelativeToken(0x0, false)?.type;
-    if (sameLevelTokensTypes.indexOf(nextTokenType) === -1)
-      break;
-
-    const token = g.consume();
-    root.left = new ASTPreprocessorBinaryOpNode(root.op, root.left, root.right).getSingleSideIfOnlyOne();
-    root.op = token.type;
-    root.right = highProduction(g);
-  }
-
-  if (root.right)
-    root.left = root.clone();
-
-  root.right = primProduction(g);
-  return root.getSingleSideIfOnlyOne();
-}
 
 /**
  * @see
@@ -181,7 +142,7 @@ function mul(g: PreprocessorGrammar): ASTPreprocessorNode {
         return eatLeftRecursiveOperators(
           g,
           root,
-          [TokenType.MUL, TokenType.DIV],
+          [TokenType.MUL, TokenType.DIV, TokenType.MOD],
           term,
           mulPrim,
         );
@@ -217,6 +178,20 @@ function mulPrim(g: PreprocessorGrammar): ASTPreprocessorNode {
 
         return new ASTPreprocessorBinaryOpNode(
           TokenType.DIV,
+          term(g),
+          mulPrim(g),
+        );
+      },
+
+      mod() {
+        g.match(
+          {
+            type: TokenType.MOD,
+          },
+        );
+
+        return new ASTPreprocessorBinaryOpNode(
+          TokenType.MOD,
           term(g),
           mulPrim(g),
         );
