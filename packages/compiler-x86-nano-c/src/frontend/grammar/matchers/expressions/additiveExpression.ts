@@ -5,6 +5,13 @@ import {ASTCTreeNode} from '../../../ast';
 import {createLeftRecursiveOperatorMatcher} from '../utils';
 import {multiplicativeExpression} from './multiplicativeExpression';
 
+/**
+ * @see
+ * add = mul add'
+ * add' = ε
+ * add' = "+" mul add'
+ * add' = "-" mul add'
+ */
 const additiveOp = createLeftRecursiveOperatorMatcher(
   {
     parentExpression: multiplicativeExpression,

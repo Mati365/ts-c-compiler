@@ -1,22 +1,19 @@
 /* eslint-disable no-use-before-define, @typescript-eslint/no-use-before-define */
-import {empty} from '@compiler/grammar/matchers';
-import {eatLeftRecursiveOperators} from '@compiler/grammar/utils';
-
 import {TokenType, NumberToken, Token} from '@compiler/lexer/tokens';
 import {NodeLocation} from '@compiler/grammar/tree/NodeLocation';
 
-import {PreprocessorReducePostfixOperatorsVisitor} from './utils/PreprocessorReducePostifxOperatorsVisitor';
-import {
-  ASTPreprocessorBinaryOpNode,
-  createBinOpIfBothSidesPresent,
-} from '../nodes/ASTPreprocessorBinaryOpNode';
-
+import {ASTPreprocessorBinaryOpNode} from '../nodes/ASTPreprocessorBinaryOpNode';
 import {ASTPreprocessorValueNode} from '../nodes/ASTPreprocessorValueNode';
 import {
   PreprocessorGrammar,
   ASTPreprocessorNode,
   ASTPreprocessorKind,
 } from '../constants';
+
+import {
+  PreprocessorReducePostfixOperatorsVisitor,
+  createLeftRecursiveOperatorMatcher,
+} from './utils';
 
 /**
  * @see
@@ -39,7 +36,7 @@ function num(g: PreprocessorGrammar): ASTPreprocessorNode {
 
   if (token.type === TokenType.BRACKET && token.text === '(') {
     g.consume();
-    const expr = bitsOp(g);
+    const expr = orBitwiseOp(g);
     g.match(
       {
         type: TokenType.BRACKET,
@@ -122,253 +119,47 @@ function keywordTerm(g: PreprocessorGrammar): ASTPreprocessorNode {
   );
 }
 
-/**
- * @see
- * mul = term mul'
- * mul = ε
- * mul' = "*" term mul'
- * mul' = "/" term mul'
- */
-function mul(g: PreprocessorGrammar): ASTPreprocessorNode {
-  return <ASTPreprocessorNode> g.or(
-    {
-      value() {
-        const root = new ASTPreprocessorBinaryOpNode(
-          null,
-          term(g),
-          null,
-        );
+const mul = createLeftRecursiveOperatorMatcher(
+  {
+    parentExpression: term,
+    operator: [
+      TokenType.MUL,
+      TokenType.DIV,
+      TokenType.MOD,
+    ],
+  },
+).op;
 
-        return eatLeftRecursiveOperators(
-          g,
-          root,
-          [TokenType.MUL, TokenType.DIV, TokenType.MOD],
-          term,
-          mulPrim,
-        );
-      },
-      empty,
-    },
-  );
-}
+const add = createLeftRecursiveOperatorMatcher(
+  {
+    parentExpression: mul,
+    operator: [
+      TokenType.PLUS,
+      TokenType.MINUS,
+    ],
+  },
+).op;
 
-function mulPrim(g: PreprocessorGrammar): ASTPreprocessorNode {
-  return <ASTPreprocessorNode> g.or(
-    {
-      mul() {
-        g.match(
-          {
-            type: TokenType.MUL,
-          },
-        );
+const andBitwiseOp = createLeftRecursiveOperatorMatcher(
+  {
+    operator: TokenType.BIT_AND,
+    parentExpression: add,
+  },
+).op;
 
-        return new ASTPreprocessorBinaryOpNode(
-          TokenType.MUL,
-          term(g),
-          mulPrim(g),
-        );
-      },
+const xorBitwiseOp = createLeftRecursiveOperatorMatcher(
+  {
+    operator: TokenType.POW,
+    parentExpression: andBitwiseOp,
+  },
+).op;
 
-      div() {
-        g.match(
-          {
-            type: TokenType.DIV,
-          },
-        );
-
-        return new ASTPreprocessorBinaryOpNode(
-          TokenType.DIV,
-          term(g),
-          mulPrim(g),
-        );
-      },
-
-      mod() {
-        g.match(
-          {
-            type: TokenType.MOD,
-          },
-        );
-
-        return new ASTPreprocessorBinaryOpNode(
-          TokenType.MOD,
-          term(g),
-          mulPrim(g),
-        );
-      },
-
-      empty,
-    },
-  );
-}
-
-/**
- * @see
- * add = mul add'
- * add' = ε
- * add' = "+" mul add'
- * add' = "-" mul add'
- */
-function add(g: PreprocessorGrammar): ASTPreprocessorNode {
-  return <ASTPreprocessorNode> g.or(
-    {
-      value() {
-        const root = new ASTPreprocessorBinaryOpNode(
-          null,
-          mul(g),
-          null,
-        );
-
-        return eatLeftRecursiveOperators(
-          g,
-          root,
-          [TokenType.PLUS, TokenType.MINUS],
-          mul,
-          addPrim,
-        );
-      },
-      empty() {
-        return null;
-      },
-    },
-  );
-}
-
-function addPrim(g: PreprocessorGrammar): ASTPreprocessorNode {
-  return <ASTPreprocessorNode> g.or(
-    {
-      add() {
-        g.match(
-          {
-            type: TokenType.PLUS,
-          },
-        );
-
-        return new ASTPreprocessorBinaryOpNode(
-          TokenType.PLUS,
-          mul(g),
-          addPrim(g),
-        );
-      },
-
-      minus() {
-        g.match(
-          {
-            type: TokenType.MINUS,
-          },
-        );
-
-        return new ASTPreprocessorBinaryOpNode(
-          TokenType.MINUS,
-          mul(g),
-          addPrim(g),
-        );
-      },
-
-      empty,
-    },
-  );
-}
-
-/**
- * @see
- * bitsOp = add bitsOp'
- * bitsOp' = ε
- * bitsOp' = "&" add bitsOp'
- * bitsOp' = "|" add bitsOp'
- * bitsOp' = "<<" add bitsOp'
- * bitsOp' = ">>" add bitsOp'
- */
-function bitsOp(g: PreprocessorGrammar): ASTPreprocessorNode {
-  return <ASTPreprocessorNode> g.or(
-    {
-      value() {
-        return createBinOpIfBothSidesPresent(
-          ASTPreprocessorBinaryOpNode,
-          null,
-          add(g),
-          bitsOpPrim(g),
-        );
-      },
-      empty() {
-        return null;
-      },
-    },
-  );
-}
-
-function bitsOpPrim(g: PreprocessorGrammar): ASTPreprocessorNode {
-  return <ASTPreprocessorNode> g.or(
-    {
-      xor() {
-        g.match(
-          {
-            type: TokenType.POW,
-          },
-        );
-
-        return new ASTPreprocessorBinaryOpNode(
-          TokenType.POW,
-          add(g),
-          bitsOpPrim(g),
-        );
-      },
-      and() {
-        g.match(
-          {
-            type: TokenType.BIT_AND,
-          },
-        );
-
-        return new ASTPreprocessorBinaryOpNode(
-          TokenType.BIT_AND,
-          add(g),
-          bitsOpPrim(g),
-        );
-      },
-      or() {
-        g.match(
-          {
-            type: TokenType.BIT_OR,
-          },
-        );
-
-        return new ASTPreprocessorBinaryOpNode(
-          TokenType.BIT_OR,
-          add(g),
-          bitsOpPrim(g),
-        );
-      },
-      sl() {
-        g.match(
-          {
-            type: TokenType.BIT_SHIFT_LEFT,
-          },
-        );
-
-        return new ASTPreprocessorBinaryOpNode(
-          TokenType.BIT_SHIFT_LEFT,
-          add(g),
-          bitsOpPrim(g),
-        );
-      },
-      sr() {
-        g.match(
-          {
-            type: TokenType.BIT_SHIFT_RIGHT,
-          },
-        );
-
-        return new ASTPreprocessorBinaryOpNode(
-          TokenType.BIT_SHIFT_RIGHT,
-          add(g),
-          bitsOpPrim(g),
-        );
-      },
-      empty,
-    },
-  );
-}
+const orBitwiseOp = createLeftRecursiveOperatorMatcher(
+  {
+    operator: TokenType.BIT_OR,
+    parentExpression: xorBitwiseOp,
+  },
+).op;
 
 /**
  * Matches math expression into tree
@@ -399,7 +190,7 @@ function bitsOpPrim(g: PreprocessorGrammar): ASTPreprocessorNode {
  * @returns {ASTPreprocessorNode}
  */
 export function mathExpression(g: PreprocessorGrammar, reducePostFixOps: boolean = true): ASTPreprocessorNode {
-  const node = bitsOp(g);
+  const node = orBitwiseOp(g);
 
   if (reducePostFixOps)
     (new PreprocessorReducePostfixOperatorsVisitor).visit(node);

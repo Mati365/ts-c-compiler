@@ -1,16 +1,16 @@
 /* eslint-disable no-use-before-define, @typescript-eslint/no-use-before-define */
-import {empty} from '@compiler/grammar/matchers';
-
 import {TokenType} from '@compiler/lexer/tokens';
-import {createBinOpIfBothSidesPresent, ASTPreprocessorBinaryOpNode} from '../nodes/ASTPreprocessorBinaryOpNode';
 
 import {
   PreprocessorGrammar,
   ASTPreprocessorNode,
 } from '../constants';
 
-import {PreprocessorReducePostfixOperatorsVisitor} from './utils/PreprocessorReducePostifxOperatorsVisitor';
 import {relationExpression} from './relationExpression';
+import {
+  createLeftRecursiveOperatorMatcher,
+  PreprocessorReducePostfixOperatorsVisitor,
+} from './utils';
 
 /**
  * @see
@@ -39,91 +39,19 @@ function term(g: PreprocessorGrammar): ASTPreprocessorNode {
   return null;
 }
 
-/**
- * @see
- * and = term and'
- * and = ε
- * and' = "&&" term and'
- */
-function andOp(g: PreprocessorGrammar): ASTPreprocessorNode {
-  return <ASTPreprocessorNode> g.or(
-    {
-      and() {
-        return createBinOpIfBothSidesPresent(
-          ASTPreprocessorBinaryOpNode,
-          null,
-          term(g),
-          andOpPrim(g),
-        );
-      },
-      empty,
-    },
-  );
-}
+const andOp = createLeftRecursiveOperatorMatcher(
+  {
+    operator: TokenType.AND,
+    parentExpression: term,
+  },
+).op;
 
-function andOpPrim(g: PreprocessorGrammar): ASTPreprocessorNode {
-  return <ASTPreprocessorNode> g.or(
-    {
-      and() {
-        g.match(
-          {
-            type: TokenType.AND,
-          },
-        );
-
-        return new ASTPreprocessorBinaryOpNode(
-          TokenType.AND,
-          term(g),
-          andOpPrim(g),
-        );
-      },
-      empty,
-    },
-  );
-}
-
-/**
- * @see
- * or = and or'
- * or = ε
- * or' = "||" and or'
- */
-function orOp(g: PreprocessorGrammar): ASTPreprocessorNode {
-  return <ASTPreprocessorNode> g.or(
-    {
-      value() {
-        return createBinOpIfBothSidesPresent(
-          ASTPreprocessorBinaryOpNode,
-          null,
-          andOp(g),
-          orOpPrim(g),
-        );
-      },
-      empty,
-    },
-  );
-}
-
-function orOpPrim(g: PreprocessorGrammar): ASTPreprocessorNode {
-  return <ASTPreprocessorNode> g.or(
-    {
-      or() {
-        g.match(
-          {
-            type: TokenType.OR,
-          },
-        );
-
-        return new ASTPreprocessorBinaryOpNode(
-          TokenType.OR,
-          andOp(g),
-          orOpPrim(g),
-        );
-      },
-      empty,
-    },
-  );
-}
+const orOp = createLeftRecursiveOperatorMatcher(
+  {
+    operator: TokenType.OR,
+    parentExpression: andOp,
+  },
+).op;
 
 /**
  * Creates tree of advanced &&, || operators
