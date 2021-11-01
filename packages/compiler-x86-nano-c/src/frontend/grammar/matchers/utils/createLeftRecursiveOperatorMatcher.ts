@@ -1,6 +1,8 @@
 /* eslint-disable @typescript-eslint/no-use-before-define, no-use-before-define */
 import {empty} from '@compiler/grammar/matchers';
+import {safeArray} from '@compiler/core/utils';
 
+import {CanBeArray} from '@compiler/core/types';
 import {TokenType} from '@compiler/lexer/shared';
 import {CGrammar} from '../shared';
 import {
@@ -10,7 +12,7 @@ import {
 } from '../../../ast';
 
 export function createLeftRecursiveOperatorMatcher(
-  operator: TokenType,
+  operator: CanBeArray<TokenType>,
   parentExpression: (grammar: CGrammar) => ASTCTreeNode,
 ) {
   /**
@@ -43,14 +45,14 @@ export function createLeftRecursiveOperatorMatcher(
     return <ASTCTreeNode> g.or(
       {
         op() {
-          g.match(
+          const token = g.match(
             {
-              type: operator,
+              types: safeArray(operator),
             },
           );
 
           return new ASTCBinaryOpNode(
-            operator,
+            token.type,
             parentExpression(grammar),
             opPrim(grammar),
           );

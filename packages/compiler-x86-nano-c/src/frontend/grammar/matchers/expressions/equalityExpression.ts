@@ -8,6 +8,8 @@ import {
   ASTCValueNode,
 } from '../../../ast';
 
+import {createLeftRecursiveOperatorMatcher} from '../utils';
+
 function term({g}: CGrammar) {
   const token = g.match(
     {
@@ -22,14 +24,21 @@ function term({g}: CGrammar) {
   );
 }
 
+const equalOp = createLeftRecursiveOperatorMatcher(
+  [
+    TokenType.DIFFERS,
+    TokenType.EQUAL,
+  ],
+  term,
+).op;
+
 export function equalityExpression(grammar: CGrammar): ASTCTreeNode {
   const {g} = grammar;
 
   return <ASTCTreeNode> g.or(
     {
-      empty() {
-        return term(grammar);
-      },
+      equalOp: () => equalOp(grammar),
+      empty: () => term(grammar),
     },
   );
 }

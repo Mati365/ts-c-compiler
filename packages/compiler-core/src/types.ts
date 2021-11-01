@@ -1,6 +1,9 @@
 /** Callbacks */
 export type UnmountCallback = () => void;
 
+/** Utils */
+export type CanBeArray<T> = T | T[];
+
 /** Size types */
 export type RectangleDimensions = {
   x?: number,
