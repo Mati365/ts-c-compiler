@@ -30,6 +30,7 @@ export type TokenParsersMap = {
 
 export const TERMINAL_CHARACTERS: TokenTerminalCharactersMap = {
   // single
+  '?': TokenType.QUESTION_MARK,
   ',': TokenType.COMMA,
   ':': TokenType.COLON,
   ';': TokenType.SEMICOLON,

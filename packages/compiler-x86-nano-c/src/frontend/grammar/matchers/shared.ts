@@ -12,4 +12,5 @@ export type CGrammar = {
   g: CGrammarDef,
   stmt(): ASTCStmt,
   unaryExpression(): ASTCUnaryExpression,
+  assignmentExpression(): ASTCUnaryExpression,
 };

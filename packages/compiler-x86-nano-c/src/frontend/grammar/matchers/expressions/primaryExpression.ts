@@ -40,7 +40,7 @@ export function primaryExpression(grammar: CGrammar): ASTCPrimaryExpression {
       literal() {
         const literal = g.match(
           {
-            type: TokenType.STRING,
+            type: TokenType.QUOTE,
           },
         );
 

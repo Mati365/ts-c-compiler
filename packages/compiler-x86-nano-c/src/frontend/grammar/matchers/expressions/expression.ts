@@ -1,31 +1,40 @@
-/* eslint-disable @typescript-eslint/no-use-before-define, no-use-before-define */
-import {NodeLocation} from '@compiler/grammar/tree/NodeLocation';
-import {Token, TokenType} from '@compiler/lexer/tokens';
-import {fetchTokensUntil} from '@compiler/grammar/utils';
-import {ASTCExpression} from '../../../ast';
-import {CGrammar} from '../shared';
+import * as R from 'ramda';
 
-export type ExpressionBreakFn = (token: Token) => boolean;
+import {TokenType} from '@compiler/lexer/shared';
+import {ASTCExpression, ASTCCompilerNode} from '../../../ast';
+import {CGrammar} from '../shared';
 
 /**
  * Fetch expression
  *
  * @param {CGrammar} c
- * @param {ExpressionBreakFn} breakFn
- * @param {boolean} excludeBreakToken
  * @returns {ASTCExpression}
  */
-export function expression(
-  {g}: CGrammar,
-  breakFn: ExpressionBreakFn = (token: Token) => token.type === TokenType.SEMICOLON,
-  excludeBreakToken?: boolean,
-): ASTCExpression {
-  const tokens = fetchTokensUntil(breakFn, g, excludeBreakToken);
-  if (!tokens.length)
-    return null;
+export function expression(grammar: CGrammar): ASTCExpression {
+  const {g, assignmentExpression} = grammar;
+  const assignments: ASTCCompilerNode[] = [];
+
+  do {
+    assignments.push(
+      assignmentExpression(),
+    );
+
+    const comma = g.match(
+      {
+        type: TokenType.COMMA,
+        optional: true,
+      },
+    );
+
+    if (!comma)
+      break;
+  } while (true);
+
+  if (R.isEmpty(assignments))
+    throw new SyntaxError;
 
   return new ASTCExpression(
-    NodeLocation.fromTokenLoc(tokens[0].loc),
-    tokens,
+    assignments[0].loc,
+    assignments,
   );
 }

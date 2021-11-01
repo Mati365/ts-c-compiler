@@ -20,18 +20,11 @@ export function castExpression(grammar: CGrammar): ASTCTreeNode {
 
   return <ASTCTreeNode> g.or(
     {
+      unary: unaryExpression,
       cast() {
-        g.match(
-          {
-            terminal: '(',
-          },
-        );
+        g.terminal('(');
         const type = typename(grammar);
-        g.match(
-          {
-            terminal: ')',
-          },
-        );
+        g.terminal(')');
 
         return new ASTCCastExpression(
           type.loc,
@@ -39,7 +32,6 @@ export function castExpression(grammar: CGrammar): ASTCTreeNode {
           unaryExpression(),
         );
       },
-      unary: unaryExpression,
     },
   );
 }

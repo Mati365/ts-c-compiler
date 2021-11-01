@@ -51,13 +51,8 @@ function enumEnumerations(grammar: CGrammar): ASTCEnumEnumeration[] {
       },
     );
 
-    if (assignment) {
-      expression = constantExpression(
-        grammar,
-        (token) => token.type === TokenType.COMMA || token.text === '}',
-        true,
-      );
-    }
+    if (assignment)
+      expression = constantExpression(grammar);
 
     enumerations.push(
       new ASTCEnumEnumeration(

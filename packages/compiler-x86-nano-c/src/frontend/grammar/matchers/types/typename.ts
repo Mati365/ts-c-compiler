@@ -7,6 +7,9 @@ import {CGrammar} from '../shared';
  * | specifier_qualifier_list
  * ;
  *
+ * @todo
+ *  Add definition!
+ *
  * @param {CGrammar} grammar
  * @param {boolean} optional
  */

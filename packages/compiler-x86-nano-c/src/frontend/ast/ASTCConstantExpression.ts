@@ -1,7 +1,7 @@
+import {walkOverFields} from '@compiler/grammar/decorators/walkOverFields';
+
 import {NodeLocation} from '@compiler/grammar/tree/NodeLocation';
-import {Token} from '@compiler/lexer/tokens';
-import {ASTCCompilerKind} from './ASTCCompilerNode';
-import {ASTCExpression} from './ASTCExpression';
+import {ASTCCompilerKind, ASTCCompilerNode} from './ASTCCompilerNode';
 
 /**
  * Expressions that can be evaluated during compile time
@@ -10,11 +10,18 @@ import {ASTCExpression} from './ASTCExpression';
  * @class ASTCConstantExpression
  * @extends {ASTCExpression}
  */
-export class ASTCConstantExpression extends ASTCExpression {
+@walkOverFields(
+  {
+    fields: [
+      'expression',
+    ],
+  },
+)
+export class ASTCConstantExpression extends ASTCCompilerNode {
   constructor(
     loc: NodeLocation,
-    expression: Token[],
+    public readonly expression: ASTCCompilerNode,
   ) {
-    super(loc, expression, ASTCCompilerKind.ConstantExpression);
+    super(ASTCCompilerKind.ConstantExpression, loc);
   }
 }

@@ -15,7 +15,7 @@ export enum TokenType {
   FLOAT_NUMBER = 'FLOAT_NUMBER',
   KEYWORD = 'KEYWORD',
   CHARACTER = 'CHARACTER',
-  STRING = 'STRING',
+  QUESTION_MARK = 'QUESTION_MARK',
   EOL = 'EOL',
   EOF = 'EOF',
 

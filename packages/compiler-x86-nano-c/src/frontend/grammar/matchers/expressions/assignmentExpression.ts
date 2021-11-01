@@ -1,5 +1,4 @@
 import {CAssignOperator, CCOMPILER_ASSIGN_OPERATORS} from '@compiler/x86-nano-c/constants';
-
 import {ASTCAssignmentExpression} from '@compiler/x86-nano-c/frontend/ast';
 import {Token} from '@compiler/lexer/tokens';
 import {CGrammar} from '../shared';
@@ -15,9 +14,6 @@ function matchAssignmentOperator({g}: CGrammar): Token {
  *  : conditional_expression
  *  | unary_expression assignment_operator assignment_expression
  *  ;
- *
- * @todo
- *  Add conditional_expression
  *
  * @export
  * @param {CGrammar} grammar

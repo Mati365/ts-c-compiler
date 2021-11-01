@@ -3,7 +3,7 @@ import {ccompiler} from './frontend';
 ccompiler(
   null,
   `
-    const int abccc = 4 + 12 / 2 - 1 << 11 & 1;
+    const int abccc = 3 > 2 ? 2 + 2 : 1 + 1;
   `,
 ).match(
   {
