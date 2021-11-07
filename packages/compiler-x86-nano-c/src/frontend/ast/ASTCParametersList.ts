@@ -11,11 +11,11 @@ import {ASTCParameterDeclaration} from './ASTCParameterDeclaration';
     ],
   },
 )
-export class ASTCParametersTypedList extends ASTCCompilerNode {
+export class ASTCParametersList extends ASTCCompilerNode {
   constructor(
     loc: NodeLocation,
     public readonly items: ASTCParameterDeclaration[],
   ) {
-    super(ASTCCompilerKind.ParametersTypedList, loc);
+    super(ASTCCompilerKind.ParametersList, loc);
   }
 }

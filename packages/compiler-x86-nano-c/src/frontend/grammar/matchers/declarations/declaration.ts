@@ -21,7 +21,7 @@ import {initDeclarator} from './initDeclarator';
  * @param {CGrammar} grammar
  * @return {ASTCInitDeclaratorList}
  */
-function declaratorList(grammar: CGrammar): ASTCInitDeclaratorList {
+function initDeclaratorList(grammar: CGrammar): ASTCInitDeclaratorList {
   const {g} = grammar;
   const items: ASTCInitDeclarator[] = [];
 
@@ -85,7 +85,7 @@ export function declaration(grammar: CGrammar): ASTCDeclaration {
   if (semicolonToken)
     g.consume();
   else {
-    initList = declaratorList(grammar);
+    initList = initDeclaratorList(grammar);
     g.match(
       {
         type: TokenType.SEMICOLON,

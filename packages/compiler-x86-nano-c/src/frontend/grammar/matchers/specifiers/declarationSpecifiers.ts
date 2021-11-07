@@ -19,6 +19,13 @@ import {typeSpecifier} from './typeSpecifier';
  *  | type_specifier declaration_specifiers
  *  | type_qualifier
  *  | type_qualifier declaration_specifiers
+ *  | function_specifier declaration_specifiers
+ *  | function_specifier
+ *  | alignment_specifier declaration_specifiers
+ *  | alignment_specifier
+ *
+ * @todo
+ *  Add function, alignment specifiers!
  *
  * @export
  * @param {CGrammar} grammar

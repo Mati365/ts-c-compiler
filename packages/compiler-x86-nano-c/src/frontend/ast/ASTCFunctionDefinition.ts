@@ -4,11 +4,14 @@ import {NodeLocation} from '@compiler/grammar/tree/NodeLocation';
 import {ASTCCompilerKind, ASTCCompilerNode} from './ASTCCompilerNode';
 import {ASTCDeclarationSpecifier} from './ASTCDeclarationSpecifier';
 import {ASTCDeclarator} from './ASTCDeclarator';
-import {ASTCAbstractDeclarator} from './ASTCAbstractDeclarator';
+import {ASTCBlockItemsList} from './ASTCBlockItemsList';
+import {ASTCDeclarationsList} from './ASTCDeclarationsList';
 
 /**
+ * int main() {}
+ *
  * @export
- * @class ASTCParameterDeclaration
+ * @class ASTCFunctionDefinition
  * @extends {ASTCCompilerNode}
  */
 @walkOverFields(
@@ -16,17 +19,19 @@ import {ASTCAbstractDeclarator} from './ASTCAbstractDeclarator';
     fields: [
       'specifier',
       'declarator',
-      'abstractDeclarator',
+      'declarationsList',
+      'content',
     ],
   },
 )
-export class ASTCParameterDeclaration extends ASTCCompilerNode {
+export class ASTCFunctionDefinition extends ASTCCompilerNode {
   constructor(
     loc: NodeLocation,
     public readonly specifier: ASTCDeclarationSpecifier,
-    public readonly declarator?: ASTCDeclarator,
-    public readonly abstractDeclarator?: ASTCAbstractDeclarator,
+    public readonly declarator: ASTCDeclarator,
+    public readonly declarationsList: ASTCDeclarationsList,
+    public readonly content: ASTCBlockItemsList,
   ) {
-    super(ASTCCompilerKind.ParameterDeclaration, loc);
+    super(ASTCCompilerKind.FunctionDefinition, loc);
   }
 }

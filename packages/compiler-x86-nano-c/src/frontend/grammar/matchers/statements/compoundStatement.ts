@@ -24,10 +24,7 @@ function blockItemList(grammar: CGrammar): ASTCBlockItemsList {
   const items: ASTCCompilerNode[] = [];
 
   do {
-    const item = g.try(
-      () => blockItem(grammar),
-    );
-
+    const item = g.try(() => blockItem(grammar));
     if (!item)
       break;
 
@@ -53,7 +50,7 @@ export function compoundStatement(grammar: CGrammar): ASTCBlockItemsList {
   const {g} = grammar;
 
   g.terminal('{');
-  const list = blockItemList(grammar);
+  const list = g.try(() => blockItemList(grammar));
   g.terminal('}');
 
   return list;

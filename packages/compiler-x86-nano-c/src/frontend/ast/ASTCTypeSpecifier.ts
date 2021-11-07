@@ -1,9 +1,20 @@
+import {walkOverFields} from '@compiler/grammar/decorators/walkOverFields';
+
 import {NodeLocation} from '@compiler/grammar/tree/NodeLocation';
 import {Token} from '@compiler/lexer/tokens';
 import {CTypeSpecifier} from '../../constants';
 import {ASTCCompilerKind, ASTCCompilerNode} from './ASTCCompilerNode';
 import {ASTCEnumSpecifier} from './ASTCEnumSpecifier';
 
+@walkOverFields(
+  {
+    fields: [
+      'specifier',
+      'typeName',
+      'enumSpecifier',
+    ],
+  },
+)
 export class ASTCTypeSpecifier extends ASTCCompilerNode {
   constructor(
     loc: NodeLocation,
@@ -17,7 +28,7 @@ export class ASTCTypeSpecifier extends ASTCCompilerNode {
   get displayName() {
     const {specifier, typeName} = this;
 
-    return (specifier || typeName?.text).trim();
+    return (specifier || typeName?.text)?.trim();
   }
 
   /**

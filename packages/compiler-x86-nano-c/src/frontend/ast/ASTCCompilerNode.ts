@@ -3,9 +3,10 @@ import {TreeNode} from '@compiler/grammar/tree/TreeNode';
 import {CCompilerIdentifier} from '@compiler/x86-nano-c/constants';
 
 export enum ASTCCompilerKind {
+  TranslationUnit = 'TranslationUnit',
+
   If = 'If',
   Value = 'Value',
-  Function = 'Function',
   Return = 'Return',
 
   EnumSpecifier = 'EnumSpecifier',
@@ -68,6 +69,8 @@ export enum ASTCCompilerKind {
   DirectDeclaratorArrayExpression = 'DirectDeclaratorArrayExpression',
   DirectDeclaratorFnExpression = 'DirectDeclaratorFnExpression',
 
+  FunctionDefinition = 'FunctionDefinition',
+
   InitDeclaratorList = 'InitDeclaratorList',
   IdentifiersList = 'IdentifiersList',
   QualifiersList = 'QualifiersList',
@@ -75,8 +78,9 @@ export enum ASTCCompilerKind {
   TypeQualifiersList = 'TypeQualifiersList',
   StorageClassSpecifiersList = 'StorageClassSpecifiersList',
   ArgumentsExpressionList = 'ArgumentsExpressionList',
-  ParametersTypedList = 'ParametersTypedList',
+  ParametersList = 'ParametersList',
   BlockItemList = 'BlockItemList',
+  DeclarationsList = 'DeclarationsList',
 
   VariableDeclaration = 'VariableDeclaration',
   VariableDeclarator = 'VariableDeclarator',

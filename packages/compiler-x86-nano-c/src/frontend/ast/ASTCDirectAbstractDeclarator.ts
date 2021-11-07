@@ -3,7 +3,7 @@ import {walkOverFields} from '@compiler/grammar/decorators/walkOverFields';
 import {NodeLocation} from '@compiler/grammar/tree/NodeLocation';
 import {ASTCCompilerKind, ASTCCompilerNode} from './ASTCCompilerNode';
 import {ASTCConstantExpression} from './ASTCConstantExpression';
-import {ASTCParametersTypedList} from './ASTCParametersTypedList';
+import {ASTCParametersList} from './ASTCParametersList';
 
 /**
  * Handlers []
@@ -47,7 +47,7 @@ export class ASTCDirectAbstractDeclaratorFnExpression extends ASTCCompilerNode {
   constructor(
     loc: NodeLocation,
     public readonly abstractDeclarator?: ASTCDirectAbstractDeclarator,
-    public readonly parameterTypeList?: ASTCParametersTypedList,
+    public readonly parameterTypeList?: ASTCParametersList,
   ) {
     super(ASTCCompilerKind.DirectAbstractDeclaratorFnExpression, loc);
   }

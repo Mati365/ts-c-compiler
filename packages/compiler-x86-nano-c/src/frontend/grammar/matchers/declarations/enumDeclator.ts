@@ -110,13 +110,6 @@ export function enumDeclarator(grammar: CGrammar): ASTCEnumSpecifier {
     g.terminal('}');
   }
 
-  g.match(
-    {
-      type: TokenType.SEMICOLON,
-      optional: true,
-    },
-  );
-
   return new ASTCEnumSpecifier(
     NodeLocation.fromTokenLoc(startToken.loc),
     name,

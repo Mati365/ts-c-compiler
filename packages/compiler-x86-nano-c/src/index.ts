@@ -3,7 +3,16 @@ import {ccompiler} from './frontend';
 ccompiler(
   null,
   `
-    for (int a; b < 2 + 5;) {}
+    enum Enumek {
+      A = 1,
+      B,
+    };
+
+    void main(int a, double b) {
+      if (a > b) {
+        return;
+      }
+    }
   `,
 ).match(
   {

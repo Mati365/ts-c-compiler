@@ -1,24 +1,18 @@
-/* eslint-disable @typescript-eslint/no-use-before-define, no-use-before-define */
-import * as R from 'ramda';
-
-import {NodeLocation} from '@compiler/grammar/tree/NodeLocation';
 import {
   Grammar,
   GrammarInitializer,
-  GrammarProductions,
 } from '@compiler/grammar/Grammar';
 
 import {ASTCCompilerKind} from '../ast/ASTCCompilerNode';
 import {CCompilerIdentifier} from '../../constants';
-import {ASTCStmt} from '../ast';
 
 import {
   assignmentExpression,
   unaryExpression,
-  enumDeclarator,
-  declaration,
+  declarator,
   statement,
   CGrammar,
+  translationUnit,
 } from './matchers';
 
 /**
@@ -28,31 +22,13 @@ import {
 const compilerMatcher: GrammarInitializer<CCompilerIdentifier, ASTCCompilerKind> = ({g}) => {
   const grammar: CGrammar = {
     g,
+    declarator: () => declarator(grammar),
     statement: () => statement(grammar),
     unaryExpression: () => unaryExpression(grammar),
     assignmentExpression: () => assignmentExpression(grammar),
   };
 
-  const stmts: GrammarProductions<ASTCCompilerKind> = R.mapObjIndexed(
-    R.partial(R.__ as any, [grammar]),
-    {
-      statement,
-      enumDeclarator,
-      declaration,
-    },
-  );
-
-  /**
-   * Matches list of ast compiler nodes
-   */
-  function stmt(): ASTCStmt {
-    return new ASTCStmt(
-      NodeLocation.fromTokenLoc(g.currentToken.loc),
-      g.matchList(stmts),
-    );
-  }
-
-  return stmt;
+  return () => translationUnit(grammar);
 };
 
 export function createCCompilerGrammar() {
