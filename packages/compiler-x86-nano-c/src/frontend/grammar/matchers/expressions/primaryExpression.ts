@@ -15,11 +15,7 @@ export function primaryExpression(grammar: CGrammar): ASTCPrimaryExpression {
   return <ASTCPrimaryExpression> g.or(
     {
       identifier() {
-        const identifier = g.match(
-          {
-            type: TokenType.KEYWORD,
-          },
-        );
+        const identifier = g.nonIdentifierKeyword();
 
         return new ASTCPrimaryExpression(
           NodeLocation.fromTokenLoc(identifier.loc),

@@ -38,12 +38,8 @@ function enumEnumerations(grammar: CGrammar): ASTCEnumEnumeration[] {
       break;
 
     let expression: ASTCConstantExpression = null;
-    const name = g.match(
-      {
-        type: TokenType.KEYWORD,
-      },
-    );
 
+    const name = g.nonIdentifierKeyword();
     const assignment = g.match(
       {
         type: TokenType.ASSIGN,

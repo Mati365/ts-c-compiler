@@ -26,9 +26,9 @@ export function statement(grammar: CGrammar): ASTCCompilerNode {
 
   return <ASTCCompilerNode> g.or(
     {
-      iteration: () => iterationStatement(grammar),
       labeled: () => labeledStatement(grammar),
       compound: () => compoundStatement(grammar),
+      iteration: () => iterationStatement(grammar),
       expression: () => expressionStatement(grammar),
       selection: () => selectionStatement(grammar),
       jump: () => jumpStatement(grammar),

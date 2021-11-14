@@ -5,7 +5,10 @@ import {ASTCCompilerKind, ASTCCompilerNode} from './ASTCCompilerNode';
 
 @walkOverFields(
   {
-    fields: ['statement'],
+    fields: [
+      'expression',
+      'statement',
+    ],
   },
 )
 export class ASTCSwitchStatement extends ASTCCompilerNode {

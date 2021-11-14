@@ -1,3 +1,4 @@
+import {TokenType} from '@compiler/lexer/shared';
 import {CGrammar} from '../shared';
 import {
   ASTCCompilerNode,
@@ -17,20 +18,12 @@ import {expression} from '../expressions/expression';
  */
 export function expressionStatement(grammar: CGrammar): ASTCExpressionStatement {
   const {g} = grammar;
+  const node = <ASTCCompilerNode> g.try(() => {
+    const expressionNode = expression(grammar);
 
-  return <ASTCCompilerNode> g.or(
-    {
-      expression() {
-        const expressionNode = expression(grammar);
-        g.terminal(';');
+    return new ASTCExpressionStatement(expressionNode.loc, expressionNode);
+  });
 
-        return new ASTCExpressionStatement(expressionNode.loc, expressionNode);
-      },
-
-      empty() {
-        g.terminal(';');
-        return null;
-      },
-    },
-  );
+  g.terminalType(TokenType.SEMICOLON);
+  return node;
 }

@@ -1,3 +1,4 @@
+import {TokenType} from '@compiler/lexer/shared';
 import {NodeLocation} from '@compiler/grammar/tree/NodeLocation';
 import {CCompilerKeyword} from '@compiler/x86-nano-c/constants';
 import {CGrammar} from '../shared';
@@ -55,7 +56,7 @@ export function iterationStatement(grammar: CGrammar): ASTCCompilerNode {
         const expressionNode = expression(grammar);
 
         g.terminal(')');
-        g.terminal(';');
+        g.terminalType(TokenType.SEMICOLON);
 
         return new ASTCDoWhileStatement(
           NodeLocation.fromTokenLoc(startToken.loc),
@@ -78,9 +79,7 @@ export function iterationStatement(grammar: CGrammar): ASTCCompilerNode {
            * FOR '(' declaration expression_statement expression ')' statement
            */
           conditionNode = expressionStatement(grammar);
-          console.info('sa');
           expressionNode = g.try(() => expression(grammar));
-          console.info('s');
         } else {
           /**
            * FOR '(' expression_statement expression_statement ')' statement

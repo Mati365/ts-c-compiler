@@ -47,6 +47,7 @@ type GrammarMatcherInfo<I> = {
   terminal?: string | I,
   optional?: boolean,
   type?: TokenType,
+  kind?: TokenKind,
   types?: TokenType[],
   consume?: boolean,
   ignoreMatchNesting?: boolean,
@@ -269,6 +270,7 @@ export class Grammar<I, K = string> extends TokensIterator {
       terminal = null,
       consume = true,
       type = TokenType.KEYWORD,
+      kind,
       types,
       optional,
       ignoreMatchNesting,
@@ -282,7 +284,11 @@ export class Grammar<I, K = string> extends TokensIterator {
     const {ignoreCase} = this._config;
     const token: Token = this.fetchRelativeToken(0, false);
 
-    if ((!types && terminal === null && token?.type !== type)
+    if (!token)
+      return null;
+
+    if ((!types && terminal === null && token.type !== type)
+        || (kind !== undefined && token.kind !== kind)
         || (types && types.indexOf(token.type) === -1)
         || (terminal !== null && ((ignoreCase ? token.lowerText : token.text) !== terminal))) {
       if (optional)
@@ -295,6 +301,36 @@ export class Grammar<I, K = string> extends TokensIterator {
       this.consume();
 
     return token;
+  }
+
+  /**
+   * Return token that is not identifier
+   *
+   * @return {Token}
+   * @memberof Grammar
+   */
+  nonIdentifierKeyword(): Token {
+    return this.match(
+      {
+        type: TokenType.KEYWORD,
+        kind: null,
+      },
+    );
+  }
+
+  /**
+   * Match token by type
+   *
+   * @param {TokenType} type
+   * @return {Token}
+   * @memberof Grammar
+   */
+  terminalType(type: TokenType): Token {
+    return this.match(
+      {
+        type,
+      },
+    );
   }
 
   /**

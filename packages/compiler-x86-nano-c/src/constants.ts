@@ -20,6 +20,11 @@ export enum CCompilerKeyword {
   WHILE = 'while',
   DO = 'do',
   FOR = 'for',
+  CASE = 'case',
+  BREAK = 'break',
+  CONTINUE = 'continue',
+  DEFAULT = 'default',
+  GOTO = 'goto',
   ALIGN_AS = '_Alignas',
   ALIGN_OF = '_Alignof',
 }
@@ -92,6 +97,11 @@ export const CCOMPILER_UNARY_OPERATORS = $enum(CUnaryCastOperator).getValues();
 export const CCOMPILER_ASSIGN_OPERATORS = $enum(CAssignOperator).getValues();
 
 export const CCOMPILER_IDENTIFIERS_MAP: IdentifiersMap = {
+  goto: CCompilerKeyword.GOTO,
+  continue: CCompilerKeyword.CONTINUE,
+  default: CCompilerKeyword.DEFAULT,
+  case: CCompilerKeyword.CASE,
+  break: CCompilerKeyword.BREAK,
   enum: CCompilerKeyword.ENUM,
   if: CCompilerKeyword.IF,
   switch: CCompilerKeyword.SWITCH,

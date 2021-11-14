@@ -3,8 +3,7 @@ import {ccompiler} from './frontend';
 ccompiler(
   null,
   `
-    int abc(int nargs, ...) {
-      int a = 2;
+    inline int main() {
     }
   `,
 ).match(

@@ -2,7 +2,6 @@ import {empty} from '@compiler/grammar/matchers';
 
 import {SyntaxError} from '@compiler/grammar/Grammar';
 import {NodeLocation} from '@compiler/grammar/tree/NodeLocation';
-import {TokenType} from '@compiler/lexer/shared';
 import {
   ASTCDirectDeclarator,
   ASTCDirectDeclaratorFnExpression,
@@ -75,11 +74,7 @@ export function directDeclarator(grammar: CGrammar): ASTCDirectDeclarator {
     let newDirectDeclaratorNode = g.try(() => <ASTCDirectDeclarator> g.or(
       {
         identifier() {
-          const identifier = g.match(
-            {
-              type: TokenType.KEYWORD,
-            },
-          );
+          const identifier = g.nonIdentifierKeyword();
 
           return new ASTCDirectDeclarator(
             NodeLocation.fromTokenLoc(identifier.loc),
