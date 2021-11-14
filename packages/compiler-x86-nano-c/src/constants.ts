@@ -29,6 +29,11 @@ export enum CCompilerKeyword {
   ALIGN_OF = '_Alignof',
 }
 
+export enum CStructLikeSpecifiers {
+  STRUCT = 'struct',
+  UNION = 'union',
+}
+
 export enum CTypeQualifier {
   CONST = 'const',
   VOLATILE = 'volatile',
@@ -82,6 +87,7 @@ export type CCompilerTypeIdentifier = (
   | CStorageClassSpecifier
   | CTypeSpecifier
   | CFunctionSpecifier
+  | CStructLikeSpecifiers
 );
 
 export type CCompilerIdentifier = (
@@ -89,6 +95,7 @@ export type CCompilerIdentifier = (
   | CCompilerTypeIdentifier
 );
 
+export const CCOMPILER_STRUCT_LIKE_SPECIFIERS = $enum(CStructLikeSpecifiers).getValues();
 export const CCOMPILER_FUNCTION_SPECIFIERS = $enum(CFunctionSpecifier).getValues();
 export const CCOMPILER_TYPE_SPECIFIERS = $enum(CTypeSpecifier).getValues();
 export const CCOMPILER_TYPE_QUALIFIERS = $enum(CTypeQualifier).getValues();

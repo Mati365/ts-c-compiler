@@ -57,6 +57,8 @@ export enum ASTCCompilerKind {
 
   ParameterDeclaration = 'ParameterDeclaration',
   ParameterDeclarationSpecifier = 'ParameterDeclarationSpecifier',
+  StructSpecifier = 'StructSpecifier',
+  UnionSpecifier = 'UnionSpecifier',
 
   AbstractDeclarator = 'AbstractDeclarator',
   DirectAbstractDeclarator = 'AbstractDeclarator',

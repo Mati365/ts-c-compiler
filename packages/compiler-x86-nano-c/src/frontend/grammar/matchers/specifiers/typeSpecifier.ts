@@ -2,7 +2,9 @@ import {CCOMPILER_TYPE_SPECIFIERS, CTypeSpecifier} from '@compiler/x86-nano-c/co
 import {NodeLocation} from '@compiler/grammar/tree/NodeLocation';
 import {ASTCTypeSpecifier} from '@compiler/x86-nano-c/frontend/ast';
 import {CGrammar} from '../shared';
+
 import {enumDeclarator} from '../declarations/enumDeclator';
+import {structOrUnionSpecifier} from './structOrUnionSpecifier';
 
 /**
  * type_specifier
@@ -35,6 +37,15 @@ export function typeSpecifier(grammar: CGrammar): ASTCTypeSpecifier {
         return new ASTCTypeSpecifier(
           NodeLocation.fromTokenLoc(specifierToken.loc),
           specifierToken.text as CTypeSpecifier,
+        );
+      },
+      struct() {
+        const structOrUnion = structOrUnionSpecifier(grammar);
+
+        return new ASTCTypeSpecifier(
+          structOrUnion.loc,
+          null, null, null,
+          structOrUnion,
         );
       },
       enum() {
