@@ -20,11 +20,20 @@ export enum CCompilerKeyword {
   WHILE = 'while',
   DO = 'do',
   FOR = 'for',
+  ALIGN_AS = '_Alignas',
+  ALIGN_OF = '_Alignof',
 }
 
 export enum CTypeQualifier {
   CONST = 'const',
   VOLATILE = 'volatile',
+  RESTRICT = 'restrict',
+  ATOMIC= ' _Atomic',
+}
+
+export enum CFunctionSpecifier {
+  INLINE = 'inline',
+  NORETURN = 'noreturn',
 }
 
 export enum CTypeSpecifier {
@@ -67,6 +76,7 @@ export type CCompilerTypeIdentifier = (
   CTypeQualifier
   | CStorageClassSpecifier
   | CTypeSpecifier
+  | CFunctionSpecifier
 );
 
 export type CCompilerIdentifier = (
@@ -74,13 +84,13 @@ export type CCompilerIdentifier = (
   | CCompilerTypeIdentifier
 );
 
+export const CCOMPILER_FUNCTION_SPECIFIERS = $enum(CFunctionSpecifier).getValues();
 export const CCOMPILER_TYPE_SPECIFIERS = $enum(CTypeSpecifier).getValues();
 export const CCOMPILER_TYPE_QUALIFIERS = $enum(CTypeQualifier).getValues();
 export const CCOMPILER_STORAGE_CLASS_SPECIFIERS = $enum(CStorageClassSpecifier).getValues();
 export const CCOMPILER_UNARY_OPERATORS = $enum(CUnaryCastOperator).getValues();
 export const CCOMPILER_ASSIGN_OPERATORS = $enum(CAssignOperator).getValues();
 
-// todo: use flipObject
 export const CCOMPILER_IDENTIFIERS_MAP: IdentifiersMap = {
   enum: CCompilerKeyword.ENUM,
   if: CCompilerKeyword.IF,
@@ -99,6 +109,7 @@ export const CCOMPILER_IDENTIFIERS_MAP: IdentifiersMap = {
   char: CTypeSpecifier.CHAR,
   const: CTypeQualifier.CONST,
   volatile: CTypeQualifier.VOLATILE,
+  restrict: CTypeQualifier.RESTRICT,
   short: CTypeSpecifier.SHORT,
   long: CTypeSpecifier.LONG,
   signed: CTypeSpecifier.SIGNED,
@@ -108,4 +119,9 @@ export const CCOMPILER_IDENTIFIERS_MAP: IdentifiersMap = {
   static: CStorageClassSpecifier.STATIC,
   auto: CStorageClassSpecifier.AUTO,
   register: CStorageClassSpecifier.REGISTER,
+  inline: CFunctionSpecifier.INLINE,
+  _Atomic: CTypeQualifier.ATOMIC,
+  _Noreturn: CFunctionSpecifier.NORETURN,
+  _Alignas: CCompilerKeyword.ALIGN_AS,
+  _Alignof: CCompilerKeyword.ALIGN_OF,
 };

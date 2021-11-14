@@ -30,7 +30,7 @@ export function typeSpecifier(grammar: CGrammar): ASTCTypeSpecifier {
   return <ASTCTypeSpecifier> g.or(
     {
       identifier() {
-        const specifierToken = g.identifier(CCOMPILER_TYPE_SPECIFIERS as CTypeSpecifier[]);
+        const specifierToken = g.identifier(CCOMPILER_TYPE_SPECIFIERS);
 
         return new ASTCTypeSpecifier(
           NodeLocation.fromTokenLoc(specifierToken.loc),

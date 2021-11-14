@@ -1,10 +1,12 @@
 import {walkOverFields} from '@compiler/grammar/decorators/walkOverFields';
 
 import {NodeLocation} from '@compiler/grammar/tree/NodeLocation';
+import {ASTCFunctionSpecifiersList} from './ASTCFunctionSpecifiersList';
 import {ASTCCompilerKind, ASTCCompilerNode} from './ASTCCompilerNode';
 import {ASTCStorageClassSpecifiersList} from './ASTCStorageClassSpecifiersList';
 import {ASTCTypeQualifiersList} from './ASTCTypeQualifiersList';
 import {ASTCTypeSpecifiersList} from './ASTCTypeSpecifiersList';
+import {ASTCAlignmentSpecifiersList} from './ASTCAlignmentSpecifiersList';
 
 @walkOverFields(
   {
@@ -12,6 +14,8 @@ import {ASTCTypeSpecifiersList} from './ASTCTypeSpecifiersList';
       'storageClassSpecifiers',
       'typeSpecifiers',
       'typeQualifiers',
+      'functionSpecifiers',
+      'alignmentSpecifiers',
     ],
   },
 )
@@ -21,14 +25,18 @@ export class ASTCDeclarationSpecifier extends ASTCCompilerNode {
     public readonly storageClassSpecifiers: ASTCStorageClassSpecifiersList,
     public readonly typeSpecifiers: ASTCTypeSpecifiersList,
     public readonly typeQualifiers: ASTCTypeQualifiersList,
+    public readonly functionSpecifiers: ASTCFunctionSpecifiersList,
+    public readonly alignmentSpecifiers: ASTCAlignmentSpecifiersList,
   ) {
     super(ASTCCompilerKind.ParameterDeclarationSpecifier, loc);
   }
 
   dropEmpty(): ASTCDeclarationSpecifier {
     const {
-      loc, storageClassSpecifiers,
+      loc,
+      functionSpecifiers, storageClassSpecifiers,
       typeSpecifiers, typeQualifiers,
+      alignmentSpecifiers,
     } = this;
 
     return new ASTCDeclarationSpecifier(
@@ -36,6 +44,8 @@ export class ASTCDeclarationSpecifier extends ASTCCompilerNode {
       storageClassSpecifiers.isEmpty() ? null : storageClassSpecifiers,
       typeSpecifiers.isEmpty() ? null : typeSpecifiers,
       typeQualifiers.isEmpty() ? null : typeQualifiers,
+      functionSpecifiers.isEmpty() ? null : functionSpecifiers,
+      alignmentSpecifiers.isEmpty() ? null : alignmentSpecifiers,
     );
   }
 }

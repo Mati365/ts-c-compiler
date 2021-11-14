@@ -90,6 +90,9 @@ export class TreeNode<K = string, C extends TreeNode<K, C> = any> {
   static dumpAttributesToString(kind: string, attrs: Record<string, any>): string {
     const serializedAttrs = R.pipe(
       removeNullValues,
+      R.mapObjIndexed(
+        R.when(R.is(Boolean), (val) => +val),
+      ),
       R.toPairs as any,
       R.map(([key, value]) => `${key}="${value}"`),
       R.join(' '),

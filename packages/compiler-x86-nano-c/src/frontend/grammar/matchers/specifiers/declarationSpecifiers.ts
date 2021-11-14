@@ -1,15 +1,22 @@
 import {SyntaxError} from '@compiler/grammar/Grammar';
 import {NodeLocation} from '@compiler/grammar/tree/NodeLocation';
 import {
+  ASTCAlignmentSpecifiersList,
   ASTCCompilerNode,
-  ASTCDeclarationSpecifier, ASTCStorageClassSpecifiersList,
-  ASTCTypeQualifiersList, ASTCTypeSpecifiersList,
+  ASTCDeclarationSpecifier,
+  ASTCFunctionSpecifiersList,
+  ASTCStorageClassSpecifiersList,
+  ASTCTypeQualifiersList,
+  ASTCTypeSpecifiersList,
 } from '@compiler/x86-nano-c/frontend/ast';
 
 import {CGrammar} from '../shared';
+
 import {matchStorageClassSpecifier} from './storageClassSpecifier';
 import {matchTypeQualifier} from './typeQualifier';
+import {matchFunctionSpecifier} from './functionSpecifier';
 import {typeSpecifier} from './typeSpecifier';
+import {alignmentSpecifier} from './alignmentSpecifier';
 
 /**
  * declaration_specifiers
@@ -24,9 +31,6 @@ import {typeSpecifier} from './typeSpecifier';
  *  | alignment_specifier declaration_specifiers
  *  | alignment_specifier
  *
- * @todo
- *  Add function, alignment specifiers!
- *
  * @export
  * @param {CGrammar} grammar
  * @return {ASTCAssignmentExpression}
@@ -38,6 +42,8 @@ export function declarationSpecifiers(grammar: CGrammar): ASTCDeclarationSpecifi
   const storageClassSpecifiers = new ASTCStorageClassSpecifiersList(null, []);
   const typeSpecifiers = new ASTCTypeSpecifiersList(null, []);
   const typeQualifiers = new ASTCTypeQualifiersList(null, []);
+  const functionSpecifiers = new ASTCFunctionSpecifiersList(null, []);
+  const alignmentSpecifiers = new ASTCAlignmentSpecifiersList(null, []);
 
   do {
     const item = <ASTCCompilerNode> g.or(
@@ -53,6 +59,14 @@ export function declarationSpecifiers(grammar: CGrammar): ASTCDeclarationSpecifi
         qualifier() {
           const node = matchTypeQualifier(grammar);
           return (typeQualifiers.items.push(node), node);
+        },
+        functionSpecifier() {
+          const node = matchFunctionSpecifier(grammar);
+          return (functionSpecifiers.items.push(node), node);
+        },
+        alignmentSpecifier() {
+          const node = alignmentSpecifier(grammar);
+          return (alignmentSpecifiers.items.push(node), node);
         },
         empty() {
           return null;
@@ -75,6 +89,8 @@ export function declarationSpecifiers(grammar: CGrammar): ASTCDeclarationSpecifi
     storageClassSpecifiers,
     typeSpecifiers,
     typeQualifiers,
+    functionSpecifiers,
+    alignmentSpecifiers,
   );
 
   return specifier.dropEmpty();

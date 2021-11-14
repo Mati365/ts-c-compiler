@@ -1,4 +1,6 @@
+import {NodeLocation} from '@compiler/grammar/tree/NodeLocation';
 import {TokenType} from '@compiler/lexer/shared';
+import {ASTCParameterDeclaration} from '../../../ast/ASTCParameterDeclaration';
 import {ASTCParametersList} from '../../../ast/ASTCParametersList';
 import {CGrammar} from '../shared';
 
@@ -19,17 +21,19 @@ export function parameterTypeList(grammar: CGrammar): ASTCParametersList {
   const list = parameterList(grammar);
 
   g.try(() => {
-    g.match(
-      {
-        type: TokenType.COMMA,
-      },
-    );
-
-    g.match(
+    const ellipsisNode = g.match(
       {
         type: TokenType.KEYWORD,
         terminal: '...',
       },
+    );
+
+    list.items.push(
+      new ASTCParameterDeclaration(
+        NodeLocation.fromTokenLoc(ellipsisNode.loc),
+        null, null, null,
+        true,
+      ),
     );
   });
 

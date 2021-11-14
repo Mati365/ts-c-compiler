@@ -6,7 +6,7 @@ import {
 import {CGrammar} from '../shared';
 
 export function matchTypeQualifier({g}: CGrammar): CTypeQualifier {
-  const specifier = g.identifier(CCOMPILER_TYPE_QUALIFIERS as CTypeQualifier[]);
+  const specifier = g.identifier(CCOMPILER_TYPE_QUALIFIERS);
 
   return specifier.text as CTypeQualifier;
 }

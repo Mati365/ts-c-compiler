@@ -1,4 +1,6 @@
 export * from './ASTCAbstractDeclarator';
+export * from './ASTCAlignmentSpecifier';
+export * from './ASTCAlignmentSpecifiersList';
 export * from './ASTCArgumentsExpressionList';
 export * from './ASTCAssignmentExpression';
 export * from './ASTCBinaryOpNode';
@@ -22,6 +24,7 @@ export * from './ASTCExpression';
 export * from './ASTCExpressionStatement';
 export * from './ASTCForStatement';
 export * from './ASTCFunctionDefinition';
+export * from './ASTCFunctionSpecifiersList';
 export * from './ASTCGotoStatement';
 export * from './ASTCIdentifiersList';
 export * from './ASTCIfStatement';

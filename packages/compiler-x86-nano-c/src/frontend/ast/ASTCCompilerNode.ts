@@ -15,6 +15,7 @@ export enum ASTCCompilerKind {
   Type = 'Type',
   TypeName = 'TypeName',
   TypeSpecifier = 'TypeSpecifier',
+  AlignmentSpecifier = 'AlignmentSpecifier',
   Pointer = 'Pointer',
 
   Initializer = 'Initializer',
@@ -77,6 +78,8 @@ export enum ASTCCompilerKind {
   TypeSpecifiersList = 'TypeSpecifiersList',
   TypeQualifiersList = 'TypeQualifiersList',
   StorageClassSpecifiersList = 'StorageClassSpecifiersList',
+  AlignmentSpecifiersList = 'AlignmentSpecifiersList',
+  FunctionSpecifiersList = 'FunctionSpecifiersList',
   ArgumentsExpressionList = 'ArgumentsExpressionList',
   ParametersList = 'ParametersList',
   BlockItemList = 'BlockItemList',
