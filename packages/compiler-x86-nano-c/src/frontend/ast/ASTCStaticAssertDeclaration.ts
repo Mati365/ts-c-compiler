@@ -2,33 +2,32 @@ import {walkOverFields} from '@compiler/grammar/decorators/walkOverFields';
 
 import {Token} from '@compiler/lexer/tokens';
 import {NodeLocation} from '@compiler/grammar/tree/NodeLocation';
+import {ASTCConstantExpression} from './ASTCConstantExpression';
 import {ASTCCompilerKind, ASTCCompilerNode} from './ASTCCompilerNode';
-import {ASTCStructDeclarationList} from './ASTCStructDeclarationList';
 
 @walkOverFields(
   {
     fields: [
-      'list',
+      'expression',
     ],
   },
 )
-export class ASTCStructSpecifier extends ASTCCompilerNode {
+export class ASTCStaticAssertDeclaration extends ASTCCompilerNode {
   constructor(
     loc: NodeLocation,
-    public readonly list: ASTCStructDeclarationList,
-    public readonly name?: Token<string>,
-    kind: ASTCCompilerKind = ASTCCompilerKind.StructSpecifier,
+    public readonly expression: ASTCConstantExpression,
+    public readonly literal: Token<string>,
   ) {
-    super(kind, loc);
+    super(ASTCCompilerKind.StaticAssertDeclaration, loc);
   }
 
   toString() {
-    const {kind, name} = this;
+    const {kind, literal} = this;
 
     return ASTCCompilerNode.dumpAttributesToString(
       kind,
       {
-        name: name?.text,
+        literal: literal.text,
       },
     );
   }

@@ -6,6 +6,7 @@ import {
   ASTCCompilerKind,
   ASTCCompilerNode,
   ASTCDeclarator,
+  ASTCSpecifiersQualifiersList,
 } from '../../ast';
 
 export type CGrammarDef = Grammar<CCompilerIdentifier, ASTCCompilerKind>;
@@ -16,4 +17,5 @@ export type CGrammar = {
   statement(): ASTCStmt,
   unaryExpression(): ASTCUnaryExpression,
   assignmentExpression(): ASTCCompilerNode,
+  qualifiersSpecifiers(): ASTCSpecifiersQualifiersList,
 };

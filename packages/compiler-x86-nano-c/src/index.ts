@@ -3,10 +3,16 @@ import {ccompiler} from './frontend';
 ccompiler(
   null,
   `
-    struct ABC {}
+    struct ABC {
+      _Static_assert(n == 5, "TAK");
+    }
 
     inline int main() {
-      short abc = 2;
+      if (2 > 3) {
+        if (true) {}
+      } else {
+        int b = 2;
+      }
     }
   `,
 ).match(

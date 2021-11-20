@@ -79,6 +79,7 @@ export enum ASTCCompilerKind {
   QualifiersList = 'QualifiersList',
   TypeSpecifiersList = 'TypeSpecifiersList',
   TypeQualifiersList = 'TypeQualifiersList',
+  TypeSpecifiersQualifiersList = 'TypeSpecifiersQualifiersList',
   StorageClassSpecifiersList = 'StorageClassSpecifiersList',
   AlignmentSpecifiersList = 'AlignmentSpecifiersList',
   FunctionSpecifiersList = 'FunctionSpecifiersList',
@@ -86,8 +87,12 @@ export enum ASTCCompilerKind {
   ParametersList = 'ParametersList',
   BlockItemList = 'BlockItemList',
   DeclarationsList = 'DeclarationsList',
+  StructDeclaratorList = 'StructDeclaratorList',
+  StructDeclarationList = 'StructDeclarationList',
 
   VariableDeclaration = 'VariableDeclaration',
+  StructDeclaration = 'StructDeclaration',
+  StaticAssertDeclaration = 'StaticAssertDeclaration',
   VariableDeclarator = 'VariableDeclarator',
   BinaryOperator = 'BinaryOperator',
 }

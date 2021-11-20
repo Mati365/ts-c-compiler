@@ -6,11 +6,13 @@ import {
 } from '../../../../constants';
 
 import {
+  ASTCStructDeclarationList,
   ASTCStructSpecifier,
   ASTCUnionSpecifier,
 } from '../../../ast';
 
 import {CGrammar} from '../shared';
+import {structDeclarationList} from '../declarations/structDeclarationList';
 
 function structOrUnionConstructor({g}: CGrammar) {
   const typeToken = g.identifier(CCOMPILER_STRUCT_LIKE_SPECIFIERS);
@@ -44,14 +46,17 @@ export function structOrUnionSpecifier(grammar: CGrammar): ASTCStructSpecifier {
   } = structOrUnionConstructor(grammar);
 
   const name = g.try(() => g.nonIdentifierKeyword());
+  let list: ASTCStructDeclarationList = null;
+
   if (g.currentToken.text === '{') {
     g.terminal('{');
+    list = structDeclarationList(grammar);
     g.terminal('}');
   }
 
   return new StructLikeConstructor(
     NodeLocation.fromTokenLoc(typeToken.loc),
-    [],
+    list,
     name,
   );
 }

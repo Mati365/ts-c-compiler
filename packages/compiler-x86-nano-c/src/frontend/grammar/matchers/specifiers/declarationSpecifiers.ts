@@ -84,14 +84,12 @@ export function declarationSpecifiers(grammar: CGrammar): ASTCDeclarationSpecifi
   if (!loc)
     throw new SyntaxError;
 
-  const specifier = new ASTCDeclarationSpecifier(
+  return new ASTCDeclarationSpecifier(
     loc,
     storageClassSpecifiers,
     typeSpecifiers,
     typeQualifiers,
     functionSpecifiers,
     alignmentSpecifiers,
-  );
-
-  return specifier.dropEmpty();
+  ).dropEmpty();
 }

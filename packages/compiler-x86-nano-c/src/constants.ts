@@ -15,6 +15,7 @@ export enum CCompilerKeyword {
   SWITCH = 'switch',
   RETURN = 'return',
   STRUCT = 'struct',
+  UNION = 'union',
   TYPEDEF = 'typedef',
   ENUM = 'enum',
   WHILE = 'while',
@@ -27,18 +28,19 @@ export enum CCompilerKeyword {
   GOTO = 'goto',
   ALIGN_AS = '_Alignas',
   ALIGN_OF = '_Alignof',
+  STATIC_ASSERT = '_Static_assert',
 }
 
 export enum CStructLikeSpecifiers {
-  STRUCT = 'struct',
-  UNION = 'union',
+  STRUCT = CCompilerKeyword.STRUCT,
+  UNION = CCompilerKeyword.UNION,
 }
 
 export enum CTypeQualifier {
   CONST = 'const',
   VOLATILE = 'volatile',
   RESTRICT = 'restrict',
-  ATOMIC= ' _Atomic',
+  ATOMIC = ' _Atomic',
 }
 
 export enum CFunctionSpecifier {
@@ -118,6 +120,7 @@ export const CCOMPILER_IDENTIFIERS_MAP: IdentifiersMap = {
   else: CCompilerKeyword.ELSE,
   return: CCompilerKeyword.RETURN,
   struct: CCompilerKeyword.STRUCT,
+  union: CCompilerKeyword.UNION,
   int: CTypeSpecifier.INT,
   float: CTypeSpecifier.FLOAT,
   double: CTypeSpecifier.DOUBLE,
@@ -137,8 +140,9 @@ export const CCOMPILER_IDENTIFIERS_MAP: IdentifiersMap = {
   auto: CStorageClassSpecifier.AUTO,
   register: CStorageClassSpecifier.REGISTER,
   inline: CFunctionSpecifier.INLINE,
-  _Atomic: CTypeQualifier.ATOMIC,
-  _Noreturn: CFunctionSpecifier.NORETURN,
-  _Alignas: CCompilerKeyword.ALIGN_AS,
-  _Alignof: CCompilerKeyword.ALIGN_OF,
+  _atomic: CTypeQualifier.ATOMIC,
+  _noreturn: CFunctionSpecifier.NORETURN,
+  _alignas: CCompilerKeyword.ALIGN_AS,
+  _alignof: CCompilerKeyword.ALIGN_OF,
+  _static_assert: CCompilerKeyword.STATIC_ASSERT,
 };
