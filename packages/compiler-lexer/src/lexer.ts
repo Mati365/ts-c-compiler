@@ -74,25 +74,34 @@ export const TERMINAL_CHARACTERS: TokenTerminalCharactersMap = {
 /**
  * Analyze single token
  *
- * @param {IdentifiersMap} identifiers
- * @param {TokenParsersMap} tokensParsers
+ * @param {LexerConfig} config
  * @param {TokenLocation} location
  * @param {string} token
  * @returns {Token}
  */
 function parseToken(
-  identifiers: IdentifiersMap,
-  tokensParsers: TokenParsersMap,
+  config: LexerConfig,
   location: TokenLocation,
   token: string,
 ): Token {
   if (!token || !token.length)
     return null;
 
+  const {
+    identifiers,
+    tokensParsers,
+    ignoreSpecifiersCase = true,
+  } = config;
+
   const loc = location.clone();
   loc.column -= token.length;
 
-  const identifier = identifiers && identifiers[R.toLower(token)];
+  const identifier = identifiers && identifiers[
+    ignoreSpecifiersCase
+      ? R.toLower(token)
+      : token
+  ];
+
   if (!R.isNil(identifier))
     return new IdentifierToken(identifier, token, loc);
 
@@ -126,6 +135,7 @@ export type LexerConfig = {
   signOperatorsAsSeparateTokens?: boolean,
   terminalCharacters?: TokenTerminalCharactersMap,
   identifiers?: IdentifiersMap,
+  ignoreSpecifiersCase?: boolean,
   allowBracketPrefixKeyword?: boolean, // dupa[xD]
   consumeBracketContent?: boolean,
 };
@@ -144,12 +154,10 @@ export type LexerConfig = {
 export function* lexer(config: LexerConfig, code: string): IterableIterator<Token> {
   const {
     commentParser,
-    identifiers,
-    tokensParsers,
     allowBracketPrefixKeyword,
     terminalCharacters = TERMINAL_CHARACTERS,
-    appendEOF = true,
     ignoreEOL,
+    appendEOF = true,
     signOperatorsAsSeparateTokens = false,
     consumeBracketContent = true,
   } = config;
@@ -182,7 +190,7 @@ export function* lexer(config: LexerConfig, code: string): IterableIterator<Toke
       if (trimmedTokenBuffer.length) {
         // it clears tokenBuffer
         yield* appendToken(
-          parseToken(identifiers, tokensParsers, location, trimmedTokenBuffer),
+          parseToken(config, location, trimmedTokenBuffer),
         );
       }
 
@@ -292,7 +300,7 @@ export function* lexer(config: LexerConfig, code: string): IterableIterator<Toke
           );
         } else {
           yield* appendToken(
-            parseToken(identifiers, tokensParsers, location, tokenBuffer),
+            parseToken(config, location, tokenBuffer),
           );
         }
       }
@@ -365,7 +373,7 @@ export function* lexer(config: LexerConfig, code: string): IterableIterator<Toke
         } else if (tokenBuffer.length) {
           // if empty character
           yield* appendToken(
-            parseToken(identifiers, tokensParsers, location, tokenBuffer),
+            parseToken(config, location, tokenBuffer),
           );
         }
       }
@@ -390,7 +398,7 @@ export function* lexer(config: LexerConfig, code: string): IterableIterator<Toke
 
   if (tokenBuffer) {
     yield* appendToken(
-      parseToken(identifiers, tokensParsers, location, tokenBuffer),
+      parseToken(config, location, tokenBuffer),
     );
   }
 

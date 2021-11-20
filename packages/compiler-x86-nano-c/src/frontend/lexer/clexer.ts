@@ -41,6 +41,7 @@ export function clexer(config: CLexerConfig, code: string) {
       commentParser: ccomentParser,
       consumeBracketContent: false,
       ignoreEOL: true,
+      ignoreSpecifiersCase: false,
       signOperatorsAsSeparateTokens: true,
       ...config,
     },
