@@ -24,11 +24,6 @@ export function assignmentExpression(grammar: CGrammar): ASTCAssignmentExpressio
 
   return <ASTCAssignmentExpression> g.or(
     {
-      conditional() {
-        const expression = conditionalExpression(grammar);
-
-        return new ASTCAssignmentExpression(expression.loc, expression);
-      },
       unary() {
         const unaryNode = unaryExpression(grammar);
         const operator = matchAssignmentOperator(grammar);
@@ -36,10 +31,15 @@ export function assignmentExpression(grammar: CGrammar): ASTCAssignmentExpressio
         return new ASTCAssignmentExpression(
           unaryNode.loc,
           null,
-          null,
+          unaryNode,
           operator.text as CAssignOperator,
           assignmentExpression(grammar),
         );
+      },
+      conditional() {
+        const expression = conditionalExpression(grammar);
+
+        return new ASTCAssignmentExpression(expression.loc, expression);
       },
     },
   );

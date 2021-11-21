@@ -90,6 +90,7 @@ export class ASTCPostfixDecExpression extends ASTCCompilerNode {
 @walkOverFields(
   {
     fields: [
+      'postfixExpression',
       'primaryExpression',
       'arrayExpression',
       'fnExpression',
@@ -101,16 +102,17 @@ export class ASTCPostfixDecExpression extends ASTCCompilerNode {
   },
 )
 export class ASTCPostfixExpression extends ASTCCompilerNode {
-  constructor(
-    loc: NodeLocation,
-    public readonly primaryExpression?: ASTCPrimaryExpression,
-    public readonly arrayExpression?: ASTCPostfixArrayExpression,
-    public readonly fnExpression?: ASTCPostfixFnExpression,
-    public readonly dotExpression?: ASTCPostfixDotExpression,
-    public readonly ptrExpression?: ASTCPostfixPtrExpression,
-    public readonly incExpression?: ASTCPostfixIncExpression,
-    public readonly decExpression?: ASTCPostfixDecExpression,
-  ) {
+  public readonly primaryExpression: ASTCPrimaryExpression;
+  public readonly arrayExpression: ASTCPostfixArrayExpression;
+  public readonly fnExpression: ASTCPostfixFnExpression;
+  public readonly dotExpression: ASTCPostfixDotExpression;
+  public readonly ptrExpression: ASTCPostfixPtrExpression;
+  public readonly incExpression: ASTCPostfixIncExpression;
+  public readonly decExpression: ASTCPostfixDecExpression;
+  public readonly postfixExpression: ASTCPostfixExpression;
+
+  constructor(loc: NodeLocation, attrs: Partial<ASTCPostfixExpression>) {
     super(ASTCCompilerKind.PostfixExpression, loc);
+    Object.assign(this, attrs);
   }
 }

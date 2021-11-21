@@ -137,6 +137,8 @@ export function directDeclarator(grammar: CGrammar): ASTCDirectDeclarator {
             declaratorNode.loc,
             null,
             declaratorNode,
+            null, null,
+            directDeclaratorNode,
           );
         },
 

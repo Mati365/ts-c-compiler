@@ -1,18 +1,9 @@
-import {walkOverFields} from '@compiler/grammar/decorators/walkOverFields';
 import {NodeLocation} from '@compiler/grammar/tree/NodeLocation';
-import {ASTCCompilerKind, ASTCCompilerNode} from './ASTCCompilerNode';
-import {ASTCAssignmentExpression} from './ASTCAssignmentExpression';
+import {ASTCCompilerNode, ASTCCompilerKind} from './ASTCCompilerNode';
+import {ASTCExpression} from './ASTCExpression';
 
-@walkOverFields(
-  {
-    fields: ['parameters'],
-  },
-)
-export class ASTCArgumentsExpressionList extends ASTCCompilerNode {
-  constructor(
-    loc: NodeLocation,
-    public readonly parameters: ASTCAssignmentExpression[],
-  ) {
-    super(ASTCCompilerKind.ArgumentsExpressionList, loc);
+export class ASTCArgumentsExpressionList extends ASTCExpression {
+  constructor(loc: NodeLocation, assignments: ASTCCompilerNode[]) {
+    super(loc, assignments, ASTCCompilerKind.ArgumentsExpressionList);
   }
 }

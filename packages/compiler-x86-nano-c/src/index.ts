@@ -15,6 +15,7 @@ ccompiler(
       double test, test2 = 2;
       float vec;
 
+      vec[2] = 2;
       sizeof(int);
 
       if (2 > 1 && 2 < 3) {
