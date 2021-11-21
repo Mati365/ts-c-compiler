@@ -1,9 +1,6 @@
-import * as R from 'ramda';
-
-import {SyntaxError} from '@compiler/grammar/Grammar';
-import {TokenType} from '@compiler/lexer/shared';
 import {ASTCExpression, ASTCCompilerNode} from '../../../ast';
 import {CGrammar} from '../shared';
+import {fetchSplittedProductionsList} from '../utils';
 
 /**
  * Fetch expression
@@ -13,26 +10,7 @@ import {CGrammar} from '../shared';
  */
 export function expression(grammar: CGrammar): ASTCExpression {
   const {g, assignmentExpression} = grammar;
-  const assignments: ASTCCompilerNode[] = [];
-
-  do {
-    assignments.push(
-      assignmentExpression(),
-    );
-
-    const comma = g.match(
-      {
-        type: TokenType.COMMA,
-        optional: true,
-      },
-    );
-
-    if (!comma)
-      break;
-  } while (true);
-
-  if (R.isEmpty(assignments))
-    throw new SyntaxError;
+  const assignments = fetchSplittedProductionsList<ASTCCompilerNode>(g, assignmentExpression);
 
   return new ASTCExpression(
     assignments[0].loc,

@@ -1,11 +1,9 @@
 /* eslint-disable no-use-before-define, @typescript-eslint/no-use-before-define */
-import * as R from 'ramda';
-
 import {TokenType} from '@compiler/lexer/shared';
-import {SyntaxError} from '@compiler/grammar/Grammar';
-
 import {CGrammar} from '../shared';
 import {ASTCStructDeclaratorList, ASTCStructDeclarator} from '../../../ast';
+
+import {fetchSplittedProductionsList} from '../utils';
 import {constantExpression} from '../expressions/constantExpression';
 
 /**
@@ -19,28 +17,10 @@ import {constantExpression} from '../expressions/constantExpression';
  */
 export function structDeclaratorList(grammar: CGrammar): ASTCStructDeclaratorList {
   const {g} = grammar;
-  const items: ASTCStructDeclarator[] = [];
-
-  do {
-    const result = <ASTCStructDeclarator> g.try(() => structDeclarator(grammar));
-    if (!result)
-      break;
-
-    items.push(result);
-
-    const comma = g.match(
-      {
-        type: TokenType.COMMA,
-        optional: true,
-      },
-    );
-
-    if (!comma)
-      break;
-  } while (true);
-
-  if (R.isEmpty(items))
-    throw new SyntaxError;
+  const items = fetchSplittedProductionsList<ASTCStructDeclarator>(
+    g,
+    () => structDeclarator(grammar),
+  );
 
   return new ASTCStructDeclaratorList(items[0].loc, items);
 }

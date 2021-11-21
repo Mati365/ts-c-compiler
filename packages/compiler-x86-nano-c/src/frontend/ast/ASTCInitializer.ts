@@ -9,6 +9,7 @@ import {ASTCAssignmentExpression} from './ASTCAssignmentExpression';
     fields: [
       'assignmentExpression',
       'initializers',
+      'designation',
     ],
   },
 )

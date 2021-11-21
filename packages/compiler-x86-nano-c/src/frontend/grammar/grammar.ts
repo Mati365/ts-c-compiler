@@ -7,14 +7,15 @@ import {ASTCCompilerKind} from '../ast/ASTCCompilerNode';
 import {CCompilerIdentifier} from '../../constants';
 
 import {
+  CGrammar,
   qualifiersSpecifiers,
   assignmentExpression,
   unaryExpression,
   declarator,
   abstractDeclarator,
   statement,
-  CGrammar,
   translationUnit,
+  initializer,
 } from './matchers';
 
 /**
@@ -30,6 +31,7 @@ const compilerMatcher: GrammarInitializer<CCompilerIdentifier, ASTCCompilerKind>
     unaryExpression: () => unaryExpression(grammar),
     assignmentExpression: () => assignmentExpression(grammar),
     qualifiersSpecifiers: () => qualifiersSpecifiers(grammar),
+    initializer: () => initializer(grammar),
   };
 
   return () => translationUnit(grammar);

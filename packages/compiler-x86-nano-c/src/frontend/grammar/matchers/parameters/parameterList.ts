@@ -1,11 +1,8 @@
-import * as R from 'ramda';
-
-import {SyntaxError} from '@compiler/grammar/Grammar';
-import {TokenType} from '@compiler/lexer/shared';
 import {ASTCParametersList, ASTCParameterDeclaration} from '../../../ast';
 import {CGrammar} from '../shared';
 
 import {parameterDeclaration} from '../declarations/parameterDeclaration';
+import {fetchSplittedProductionsList} from '../utils';
 
 /**
  * parameter_list
@@ -19,28 +16,10 @@ import {parameterDeclaration} from '../declarations/parameterDeclaration';
  */
 export function parameterList(grammar: CGrammar): ASTCParametersList {
   const {g} = grammar;
-  const items: ASTCParameterDeclaration[] = [];
-
-  do {
-    const result = <ASTCParameterDeclaration> g.try(() => parameterDeclaration(grammar));
-    if (!result)
-      break;
-
-    items.push(result);
-
-    const comma = g.match(
-      {
-        type: TokenType.COMMA,
-        optional: true,
-      },
-    );
-
-    if (!comma)
-      break;
-  } while (true);
-
-  if (R.isEmpty(items))
-    throw new SyntaxError;
+  const items = fetchSplittedProductionsList<ASTCParameterDeclaration>(
+    g,
+    () => parameterDeclaration(grammar),
+  );
 
   return new ASTCParametersList(items[0].loc, items);
 }
