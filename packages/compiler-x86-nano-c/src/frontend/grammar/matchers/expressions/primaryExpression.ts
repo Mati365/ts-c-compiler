@@ -5,6 +5,14 @@ import {expression} from './expression';
 import {CGrammar} from '../shared';
 
 /**
+ * primary_expression
+ *  : IDENTIFIER
+ *  | constant
+ *  | string
+ *  | '(' expression ')'
+ *  | generic_selection
+ *  ;
+ *
  * @export
  * @param {CGrammar} grammar
  * @return {ASTCPrimaryExpression}
