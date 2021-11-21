@@ -2,6 +2,8 @@
 import * as R from 'ramda';
 
 import {TokenType} from '@compiler/lexer/shared';
+import {SyntaxError} from '@compiler/grammar/Grammar';
+
 import {CGrammar} from '../shared';
 import {ASTCStructDeclaratorList, ASTCStructDeclarator} from '../../../ast';
 import {constantExpression} from '../expressions/constantExpression';

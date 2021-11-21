@@ -5,4 +5,5 @@ export * from './qualifiersSpecifiers';
 export * from './storageClassSpecifier';
 export * from './structOrUnionSpecifier';
 export * from './typeQualifier';
+export * from './typeQualifiers';
 export * from './typeSpecifier';

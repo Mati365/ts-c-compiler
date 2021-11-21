@@ -26,6 +26,7 @@ export enum CCompilerKeyword {
   CONTINUE = 'continue',
   DEFAULT = 'default',
   GOTO = 'goto',
+  SIZEOF = 'sizeof',
   ALIGN_AS = '_Alignas',
   ALIGN_OF = '_Alignof',
   STATIC_ASSERT = '_Static_assert',
@@ -106,6 +107,7 @@ export const CCOMPILER_UNARY_OPERATORS = $enum(CUnaryCastOperator).getValues();
 export const CCOMPILER_ASSIGN_OPERATORS = $enum(CAssignOperator).getValues();
 
 export const CCOMPILER_IDENTIFIERS_MAP: IdentifiersMap = {
+  sizeof: CCompilerKeyword.SIZEOF,
   goto: CCompilerKeyword.GOTO,
   continue: CCompilerKeyword.CONTINUE,
   default: CCompilerKeyword.DEFAULT,

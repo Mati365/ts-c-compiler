@@ -2,8 +2,11 @@ import {walkOverFields} from '@compiler/grammar/decorators/walkOverFields';
 
 import {NodeLocation} from '@compiler/grammar/tree/NodeLocation';
 import {ASTCCompilerKind, ASTCCompilerNode} from './ASTCCompilerNode';
-import {ASTCConstantExpression} from './ASTCConstantExpression';
+import {ASTCAbstractDeclarator} from './ASTCAbstractDeclarator';
 import {ASTCParametersList} from './ASTCParametersList';
+import {ASTCAssignmentExpression} from './ASTCAssignmentExpression';
+import {ASTCTypeQualifiersList} from './ASTCTypeQualifiersList';
+import {ASTCDirectDeclaratorArrayExpression} from './ASTCDirectDeclarator';
 
 /**
  * Handlers []
@@ -12,19 +15,18 @@ import {ASTCParametersList} from './ASTCParametersList';
  * @class DirectAbstractDeclaratorArrayExpression
  * @extends {ASTCCompilerNode}
  */
-@walkOverFields(
-  {
-    fields: [
-      'constantExpression',
-    ],
-  },
-)
-export class ASTCDirectAbstractDeclaratorArrayExpression extends ASTCCompilerNode {
+export class ASTCDirectAbstractDeclaratorArrayExpression extends ASTCDirectDeclaratorArrayExpression {
   constructor(
     loc: NodeLocation,
-    public readonly constantExpression?: ASTCConstantExpression,
+    star?: boolean,
+    typeQualifiersList?: ASTCTypeQualifiersList,
+    assignmentExpression?: ASTCAssignmentExpression,
   ) {
-    super(ASTCCompilerKind.DirectAbstractDeclaratorArrayExpression, loc);
+    super(
+      loc, star,
+      typeQualifiersList, assignmentExpression,
+      ASTCCompilerKind.DirectAbstractDeclaratorArrayExpression,
+    );
   }
 }
 
@@ -46,7 +48,7 @@ export class ASTCDirectAbstractDeclaratorArrayExpression extends ASTCCompilerNod
 export class ASTCDirectAbstractDeclaratorFnExpression extends ASTCCompilerNode {
   constructor(
     loc: NodeLocation,
-    public readonly abstractDeclarator?: ASTCDirectAbstractDeclarator,
+    public readonly abstractDeclarator?: ASTCAbstractDeclarator,
     public readonly parameterTypeList?: ASTCParametersList,
   ) {
     super(ASTCCompilerKind.DirectAbstractDeclaratorFnExpression, loc);
@@ -61,7 +63,7 @@ export class ASTCDirectAbstractDeclaratorFnExpression extends ASTCCompilerNode {
 @walkOverFields(
   {
     fields: [
-      'directDeclarator',
+      'directAbstractDeclarator',
       'arrayExpression',
       'fnExpression',
     ],
@@ -70,9 +72,9 @@ export class ASTCDirectAbstractDeclaratorFnExpression extends ASTCCompilerNode {
 export class ASTCDirectAbstractDeclarator extends ASTCCompilerNode {
   constructor(
     loc: NodeLocation,
-    public readonly directDeclarator?: ASTCDirectAbstractDeclaratorFnExpression,
     public readonly arrayExpression?: ASTCDirectAbstractDeclaratorArrayExpression,
     public readonly fnExpression?: ASTCDirectAbstractDeclaratorFnExpression,
+    public readonly directAbstractDeclarator?: ASTCDirectAbstractDeclarator,
   ) {
     super(ASTCCompilerKind.DirectAbstractDeclarator, loc);
   }

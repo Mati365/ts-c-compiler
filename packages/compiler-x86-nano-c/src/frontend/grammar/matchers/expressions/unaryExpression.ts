@@ -1,4 +1,4 @@
-import {CCOMPILER_UNARY_OPERATORS, CUnaryCastOperator} from '@compiler/x86-nano-c/constants';
+import {CCompilerKeyword, CCOMPILER_UNARY_OPERATORS, CUnaryCastOperator} from '@compiler/x86-nano-c/constants';
 
 import {NodeLocation} from '@compiler/grammar/tree/NodeLocation';
 import {Token} from '@compiler/lexer/tokens';
@@ -9,8 +9,10 @@ import {
   ASTCIncUnaryExpression,
   ASTCDecUnaryExpression,
   ASTCCastUnaryExpression,
+  ASTCSizeofUnaryExpression,
 } from '../../../ast';
 
+import {typename} from '../types/typename';
 import {postfixExpression} from './postfixExpression';
 
 function matchUnaryOperator({g}: CGrammar): Token {
@@ -85,6 +87,26 @@ export function unaryExpression(grammar: CGrammar): ASTCUnaryExpression {
             null,
           ),
         );
+      },
+
+      sizeofUnary() {
+        g.identifier(CCompilerKeyword.SIZEOF);
+
+        const unaryExpressionNode = unaryExpression(grammar);
+
+        return new ASTCSizeofUnaryExpression(
+          unaryExpressionNode.loc,
+          null, unaryExpressionNode,
+        );
+      },
+
+      sizeofTypename() {
+        g.identifier(CCompilerKeyword.SIZEOF);
+        g.terminal('(');
+        const typenameNode = typename(grammar);
+        g.terminal(')');
+
+        return new ASTCSizeofUnaryExpression(typenameNode.loc, typenameNode);
       },
     },
   );

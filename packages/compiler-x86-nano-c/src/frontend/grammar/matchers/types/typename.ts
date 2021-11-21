@@ -7,13 +7,18 @@ import {CGrammar} from '../shared';
  * | specifier_qualifier_list
  * ;
  *
- * @todo
- *  Add definition!
- *
  * @param {CGrammar} grammar
  * @param {boolean} optional
  */
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
-export function typename({g}: CGrammar): ASTCTypeName {
-  return null;
+export function typename(grammar: CGrammar): ASTCTypeName {
+  const {g, abstractDeclarator, qualifiersSpecifiers} = grammar;
+
+  const specifierList = qualifiersSpecifiers();
+  const declaratorNode = g.try(abstractDeclarator);
+
+  return new ASTCTypeName(
+    specifierList.loc,
+    specifierList,
+    declaratorNode,
+  );
 }

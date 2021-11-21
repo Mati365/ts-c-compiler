@@ -11,6 +11,7 @@ import {
   assignmentExpression,
   unaryExpression,
   declarator,
+  abstractDeclarator,
   statement,
   CGrammar,
   translationUnit,
@@ -24,6 +25,7 @@ const compilerMatcher: GrammarInitializer<CCompilerIdentifier, ASTCCompilerKind>
   const grammar: CGrammar = {
     g,
     declarator: () => declarator(grammar),
+    abstractDeclarator: () => abstractDeclarator(grammar),
     statement: () => statement(grammar),
     unaryExpression: () => unaryExpression(grammar),
     assignmentExpression: () => assignmentExpression(grammar),

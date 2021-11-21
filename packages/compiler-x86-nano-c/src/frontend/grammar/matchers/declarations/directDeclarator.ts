@@ -1,42 +1,97 @@
-import {empty} from '@compiler/grammar/matchers';
-
 import {SyntaxError} from '@compiler/grammar/Grammar';
 import {NodeLocation} from '@compiler/grammar/tree/NodeLocation';
 import {
   ASTCDirectDeclarator,
   ASTCDirectDeclaratorFnExpression,
+  ASTCDirectDeclaratorArrayExpression,
 } from '@compiler/x86-nano-c/frontend/ast';
 
 import {CGrammar} from '../shared';
 import {parameterTypeList} from '../parameters/parameterTypeList';
+import {assignmentExpression} from '../expressions/assignmentExpression';
+import {typeQualifiers} from '../specifiers/typeQualifiers';
 
 /**
+ * | '(' declarator ')'
  * | direct_declarator '(' parameter_type_list ')'
  * | direct_declarator '(' identifier_list ')'
  * | direct_declarator '(' ')'
+ *
+ * @todo
+ *  Add identifiers list!
  *
  * @param {CGrammar} grammar
  * @return {ASTCDirectDeclaratorFnExpression}
  */
 function directDeclaratorFnExpression(grammar: CGrammar): ASTCDirectDeclaratorFnExpression {
   const {g} = grammar;
-  let expression: ASTCDirectDeclaratorFnExpression = null;
 
-  g.terminal('(');
-  expression = <ASTCDirectDeclaratorFnExpression> g.or(
+  const startTerminalLoc = NodeLocation.fromTokenLoc(g.terminal('(').loc);
+  const expression = <ASTCDirectDeclaratorFnExpression> g.or(
     {
       typeList() {
-        const parameterTypeListNode = parameterTypeList(grammar);
-
         return new ASTCDirectDeclaratorFnExpression(
-          parameterTypeListNode.loc,
-          parameterTypeListNode,
+          startTerminalLoc,
+          parameterTypeList(grammar),
         );
       },
-      empty,
+      empty() {
+        return new ASTCDirectDeclaratorFnExpression(startTerminalLoc);
+      },
     },
   );
+
   g.terminal(')');
+
+  return expression;
+}
+
+/**
+ * | direct_declarator '[' ']'
+ * | direct_declarator '[' '*' ']'
+ * | direct_declarator '[' STATIC type_qualifier_list assignment_expression ']'
+ * | direct_declarator '[' STATIC assignment_expression ']'
+ * | direct_declarator '[' type_qualifier_list '*' ']'
+ * | direct_declarator '[' type_qualifier_list STATIC assignment_expression ']'
+ * | direct_declarator '[' type_qualifier_list assignment_expression ']'
+ * | direct_declarator '[' type_qualifier_list ']'
+ * | direct_declarator '[' assignment_expression ']'
+ *
+ * @param {CGrammar} grammar
+ * @return {ASTCDirectDeclaratorArrayExpression}
+ */
+function directDeclaratorArrayExpression(grammar: CGrammar): ASTCDirectDeclaratorArrayExpression {
+  const {g} = grammar;
+
+  const startTerminalLoc = NodeLocation.fromTokenLoc(g.terminal('[').loc);
+  const expression = <ASTCDirectDeclaratorArrayExpression> g.or(
+    {
+      empty() {
+        return new ASTCDirectDeclaratorArrayExpression(
+          startTerminalLoc,
+        );
+      },
+
+      star() {
+        g.terminal('*');
+
+        return new ASTCDirectDeclaratorArrayExpression(
+          startTerminalLoc,
+          true,
+        );
+      },
+
+      qualifiersAndAssign() {
+        return new ASTCDirectDeclaratorArrayExpression(
+          startTerminalLoc,
+          false,
+          g.try(() => typeQualifiers(grammar)),
+          g.try(() => assignmentExpression(grammar)),
+        );
+      },
+    },
+  );
+  g.terminal(']');
 
   return expression;
 }
@@ -44,7 +99,6 @@ function directDeclaratorFnExpression(grammar: CGrammar): ASTCDirectDeclaratorFn
 /**
  * direct_declarator
  *  : IDENTIFIER
- *  | '(' declarator ')'
  *  | direct_declarator '[' ']'
  *  | direct_declarator '[' '*' ']'
  *  | direct_declarator '[' STATIC type_qualifier_list assignment_expression ']'
@@ -71,17 +125,9 @@ export function directDeclarator(grammar: CGrammar): ASTCDirectDeclarator {
   let directDeclaratorNode: ASTCDirectDeclarator = null;
 
   do {
-    let newDirectDeclaratorNode = g.try(() => <ASTCDirectDeclarator> g.or(
+    // eslint-disable-next-line no-loop-func
+    const newDirectDeclaratorNode = g.try(() => <ASTCDirectDeclarator> g.or(
       {
-        identifier() {
-          const identifier = g.nonIdentifierKeyword();
-
-          return new ASTCDirectDeclarator(
-            NodeLocation.fromTokenLoc(identifier.loc),
-            identifier,
-          );
-        },
-
         declarator() {
           g.terminal('(');
           const declaratorNode = declarator();
@@ -93,23 +139,45 @@ export function directDeclarator(grammar: CGrammar): ASTCDirectDeclarator {
             declaratorNode,
           );
         },
+
+        identifier() {
+          const identifier = g.nonIdentifierKeyword();
+
+          return new ASTCDirectDeclarator(
+            NodeLocation.fromTokenLoc(identifier.loc),
+            identifier,
+            null, null, null,
+            directDeclaratorNode,
+          );
+        },
+
+        fnExpression() {
+          const fnExpression = directDeclaratorFnExpression(grammar);
+
+          return new ASTCDirectDeclarator(
+            fnExpression.loc,
+            null, null,
+            fnExpression,
+            directDeclaratorNode,
+          );
+        },
+
+        arrayExpression() {
+          const arrayExpression = directDeclaratorArrayExpression(grammar);
+
+          return new ASTCDirectDeclarator(
+            arrayExpression.loc,
+            null,
+            arrayExpression,
+            null,
+            directDeclaratorNode,
+          );
+        },
       },
     ));
 
     if (!newDirectDeclaratorNode)
       break;
-
-    // handles ()
-    const arrayExpression = g.try(() => directDeclaratorFnExpression(grammar));
-    if (arrayExpression) {
-      newDirectDeclaratorNode = new ASTCDirectDeclarator(
-        arrayExpression.loc,
-        null, null,
-        arrayExpression,
-        null,
-        newDirectDeclaratorNode,
-      );
-    }
 
     directDeclaratorNode = newDirectDeclaratorNode;
   } while (true);

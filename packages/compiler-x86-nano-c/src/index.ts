@@ -3,16 +3,27 @@ import {ccompiler} from './frontend';
 ccompiler(
   null,
   `
-    struct ABC {
-      _Static_assert(n == 5, "TAK");
+    struct Vec2 {
+      double x, y;
     }
 
-    inline int main() {
-      if (2 > 3) {
-        if (true) {}
+    void add(float x, float y) {
+      return x + y;
+    }
+
+    int main() {
+      double test, test2 = 2;
+      float vec;
+
+      sizeof(int);
+
+      if (2 > 1 && 2 < 3) {
+        float dupa;
       } else {
-        int b = 2;
+        int dupa;
       }
+
+      return 1;
     }
   `,
 ).match(

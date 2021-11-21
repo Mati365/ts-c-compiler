@@ -1,4 +1,6 @@
 import {CCOMPILER_TYPE_SPECIFIERS, CTypeSpecifier} from '@compiler/x86-nano-c/constants';
+
+import {Token} from '@compiler/lexer/tokens';
 import {NodeLocation} from '@compiler/grammar/tree/NodeLocation';
 import {ASTCTypeSpecifier} from '@compiler/x86-nano-c/frontend/ast';
 import {CGrammar} from '../shared';
@@ -32,11 +34,16 @@ export function typeSpecifier(grammar: CGrammar): ASTCTypeSpecifier {
   return <ASTCTypeSpecifier> g.or(
     {
       identifier() {
-        const specifierToken = g.identifier(CCOMPILER_TYPE_SPECIFIERS);
+        const identifierToken = <Token<string>> g.or(
+          {
+            identifier: () => g.identifier(CCOMPILER_TYPE_SPECIFIERS),
+            // typeName: () => g.nonIdentifierKeyword(),
+          },
+        );
 
         return new ASTCTypeSpecifier(
-          NodeLocation.fromTokenLoc(specifierToken.loc),
-          specifierToken.text as CTypeSpecifier,
+          NodeLocation.fromTokenLoc(identifierToken.loc),
+          identifierToken.text as CTypeSpecifier,
         );
       },
       struct() {

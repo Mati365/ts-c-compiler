@@ -17,7 +17,7 @@ export class ASTCAbstractDeclarator extends ASTCCompilerNode {
   constructor(
     loc: NodeLocation,
     public readonly pointer: ASTCPointer,
-    public readonly directAbstractDeclarator: ASTCDirectDeclaratorArrayExpression,
+    public readonly directAbstractDeclarator?: ASTCDirectDeclaratorArrayExpression,
   ) {
     super(ASTCCompilerKind.AbstractDeclarator, loc);
   }
