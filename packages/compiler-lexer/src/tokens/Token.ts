@@ -57,8 +57,8 @@ export class Token<V = any, O = any> {
     return !!this.originalToken;
   }
 
-  fork(newText: string = this.text): Token<V> {
-    const {type, kind, loc, value} = this;
+  fork(newText: string = this.text, loc: TokenLocation = this.loc): Token<V> {
+    const {type, kind, value} = this;
 
     return new Token(
       type,

@@ -1,8 +1,8 @@
 import {Result, ok} from '@compiler/core/monads/Result';
 import {CompilerError} from '@compiler/core/shared/CompilerError';
-import {createCompilerTimings} from '@compiler/core/utils/compiler/createCompilerTiming';
 
 import {formatDate, formatTime} from '@compiler/core/utils/format';
+import {createAssemblerTimings} from './utils/createAssemblerTimings';
 import {safeResultPreprocessor, PreprocessorResult} from './preprocessor';
 import {PreprocessorInterpreterConfig} from './preprocessor/interpreter/PreprocessorInterpreter';
 import {
@@ -61,7 +61,7 @@ export function asm(
     preprocessor = true,
   }: AssemblerConfig = {},
 ): CompilerFinalResult {
-  const timings = createCompilerTimings();
+  const timings = createAssemblerTimings();
 
   let preprocessorResult: Result<PreprocessorResult, CompilerError[]> = null;
   if (preprocessor) {

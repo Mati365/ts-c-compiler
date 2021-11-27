@@ -28,9 +28,6 @@ function matchUnaryOperator({g}: CGrammar): Token {
  *  | SIZEOF unary_expression
  *  | SIZEOF '(' type_name ')'
  *
- * @todo
- *  Add sizeof expressions
- *
  * @export
  * @param {CGrammar} grammar
  * @return {ASTCUnaryExpression}

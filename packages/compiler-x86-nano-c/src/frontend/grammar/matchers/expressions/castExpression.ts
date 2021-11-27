@@ -8,9 +8,6 @@ import {typename} from '../types';
  *  | '(' type_name ')' cast_expression
  *  ;
  *
- * @todo
- *  Add typename cast expression
- *
  * @export
  * @param {CGrammar} grammar
  * @return {ASTCAssignmentExpression}

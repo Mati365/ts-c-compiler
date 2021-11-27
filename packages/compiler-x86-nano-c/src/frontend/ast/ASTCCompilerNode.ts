@@ -37,8 +37,6 @@ export enum ASTCCompilerKind {
   PostfixFnExpression = 'PostfixFnExpression',
   PostfixDotExpression = 'PostfixDotExpression',
   PostfixPtrExpression = 'PostfixPtrExpression',
-  PostfixDecExpression = 'PostfixDecExpression',
-  PostfixIncExpression = 'PostfixIncExpression',
 
   Stmt = 'Stmt',
   IfStmt = 'IfStmt',
@@ -71,6 +69,7 @@ export enum ASTCCompilerKind {
   DirectDeclarator = 'DirectDeclarator',
   DirectDeclaratorArrayExpression = 'DirectDeclaratorArrayExpression',
   DirectDeclaratorFnExpression = 'DirectDeclaratorFnExpression',
+  Designator = 'Designator',
 
   FunctionDefinition = 'FunctionDefinition',
 
@@ -89,6 +88,7 @@ export enum ASTCCompilerKind {
   DeclarationsList = 'DeclarationsList',
   StructDeclaratorList = 'StructDeclaratorList',
   StructDeclarationList = 'StructDeclarationList',
+  DesignatorList = 'DesignatorList',
 
   VariableDeclaration = 'VariableDeclaration',
   StructDeclaration = 'StructDeclaration',

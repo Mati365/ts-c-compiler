@@ -75,18 +75,6 @@ export class ASTCPostfixPtrExpression extends ASTCCompilerNode {
   }
 }
 
-export class ASTCPostfixIncExpression extends ASTCCompilerNode {
-  constructor(loc: NodeLocation) {
-    super(ASTCCompilerKind.PostfixIncExpression, loc);
-  }
-}
-
-export class ASTCPostfixDecExpression extends ASTCCompilerNode {
-  constructor(loc: NodeLocation) {
-    super(ASTCCompilerKind.PostfixDecExpression, loc);
-  }
-}
-
 @walkOverFields(
   {
     fields: [
@@ -96,8 +84,6 @@ export class ASTCPostfixDecExpression extends ASTCCompilerNode {
       'fnExpression',
       'dotExpression',
       'ptrExpression',
-      'incExpression',
-      'decExpression',
     ],
   },
 )
@@ -107,12 +93,24 @@ export class ASTCPostfixExpression extends ASTCCompilerNode {
   public readonly fnExpression: ASTCPostfixFnExpression;
   public readonly dotExpression: ASTCPostfixDotExpression;
   public readonly ptrExpression: ASTCPostfixPtrExpression;
-  public readonly incExpression: ASTCPostfixIncExpression;
-  public readonly decExpression: ASTCPostfixDecExpression;
+  public readonly incExpression: boolean;
+  public readonly decExpression: boolean;
   public readonly postfixExpression: ASTCPostfixExpression;
 
   constructor(loc: NodeLocation, attrs: Partial<ASTCPostfixExpression>) {
     super(ASTCCompilerKind.PostfixExpression, loc);
     Object.assign(this, attrs);
+  }
+
+  toString() {
+    const {kind, incExpression, decExpression} = this;
+
+    return ASTCCompilerNode.dumpAttributesToString(
+      kind,
+      {
+        incExpression,
+        decExpression,
+      },
+    );
   }
 }

@@ -16,6 +16,8 @@ export * from './ASTCDeclaration';
 export * from './ASTCDeclarationSpecifier';
 export * from './ASTCDeclarationsList';
 export * from './ASTCDeclarator';
+export * from './ASTCDesignator';
+export * from './ASTCDesignatorList';
 export * from './ASTCDirectAbstractDeclarator';
 export * from './ASTCDirectDeclarator';
 export * from './ASTCEnumEnumerator';

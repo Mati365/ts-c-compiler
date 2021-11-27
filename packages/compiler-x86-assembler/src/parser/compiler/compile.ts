@@ -1,8 +1,7 @@
-import {CompilerTimings} from '@compiler/core/utils/compiler/createCompilerTiming';
-
 import {Result, ok} from '@compiler/core/monads/Result';
 import {CompilerError} from '@compiler/core/shared/CompilerError';
 
+import {AssemblerTimings} from '../../utils/createAssemblerTimings';
 import {X86Compiler} from './X86Compiler';
 import {ASTAsmTree} from '../ast/ASTAsmParser';
 import {SecondPassResult} from './BinaryPassResults';
@@ -10,7 +9,7 @@ import {SecondPassResult} from './BinaryPassResults';
 export type CompilerOutput = {
   compiler: X86Compiler,
   output: SecondPassResult,
-  timings?: CompilerTimings,
+  timings?: AssemblerTimings,
 };
 
 export type CompilerFinalResult = Result<CompilerOutput, CompilerError[]>;

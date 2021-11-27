@@ -5,6 +5,7 @@ import {CGrammar} from '../shared';
 
 import {assignmentExpression} from '../expressions/assignmentExpression';
 import {fetchSplittedProductionsList} from '../utils';
+import {designation} from './designation';
 
 /**
  * initializer_list
@@ -13,10 +14,7 @@ import {fetchSplittedProductionsList} from '../utils';
  *  | initializer_list ',' designation initializer
  *  | initializer_list ',' initializer
  *  ;
- *
- * @todo
- *  Add designation!
- *
+
  * @param {CGrammar} grammar
  * @return {ASTCInitializer[]}
  */
@@ -34,15 +32,13 @@ function initializerList(grammar: CGrammar): ASTCInitializer[] {
  *  | '{' initializer_list ',' '}'
  *  ;
  *
- * @todo
- *  Add initializers list
- *
  * @export
  * @param {CGrammar} grammar
  * @return {ASTCInitializer}
  */
 export function initializer(grammar: CGrammar): ASTCInitializer {
   const {g} = grammar;
+  const designationNode = g.try(() => designation(grammar));
 
   return <ASTCInitializer> g.or(
     {
@@ -52,6 +48,8 @@ export function initializer(grammar: CGrammar): ASTCInitializer {
         return new ASTCInitializer(
           assignmentExpressionNode.loc,
           assignmentExpressionNode,
+          null,
+          designationNode,
         );
       },
 
@@ -74,6 +72,7 @@ export function initializer(grammar: CGrammar): ASTCInitializer {
           initializers[0].loc,
           null,
           initializers,
+          designationNode,
         );
       },
     },

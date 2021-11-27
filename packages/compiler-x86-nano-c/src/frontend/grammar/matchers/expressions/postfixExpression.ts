@@ -4,8 +4,10 @@ import {
   ASTCPostfixExpression,
   ASTCPostfixFnExpression,
   ASTCArgumentsExpressionList,
+  ASTCPostfixPtrExpression,
 } from '@compiler/x86-nano-c/frontend/ast';
 
+import {TokenType} from '@compiler/lexer/shared';
 import {NodeLocation} from '@compiler/grammar/tree/NodeLocation';
 import {SyntaxError} from '@compiler/grammar/Grammar';
 import {CGrammar} from '../shared';
@@ -24,10 +26,7 @@ import {expression} from './expression';
  *  | postfix_expression INC_OP
  *  | postfix_expression DEC_OP
  *  ;
- *
- * @todo
- *  Add postfix_expression recursive blocks
- *
+
  * @export
  * @param {CGrammar} grammar
  * @return {ASTCUnaryExpression}
@@ -82,6 +81,39 @@ export function postfixExpression(grammar: CGrammar): ASTCPostfixExpression {
 
           g.terminal(')');
           return postfix;
+        },
+
+        incDec() {
+          const token = g.match(
+            {
+              types: [
+                TokenType.INCREMENT,
+                TokenType.DECREMENT,
+              ],
+            },
+          );
+
+          return new ASTCPostfixExpression(
+            startLoc,
+            {
+              ...postfixExpressionNode,
+              incExpression: token.type === TokenType.INCREMENT,
+              decExpression: token.type === TokenType.DECREMENT,
+            },
+          );
+        },
+
+        ptr() {
+          g.terminals('->');
+          const identifier = g.nonIdentifierKeyword();
+
+          return new ASTCPostfixExpression(
+            startLoc,
+            {
+              ...postfixExpressionNode,
+              ptrExpression: new ASTCPostfixPtrExpression(startLoc, identifier),
+            },
+          );
         },
       },
     ));

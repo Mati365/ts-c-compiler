@@ -1,9 +1,12 @@
 import {ok} from '@compiler/core/monads/Result';
+import {timingsToString} from '@compiler/core/utils';
+
 import {TreeNode} from '@compiler/grammar/tree/TreeNode';
 import {TreePrintVisitor} from '@compiler/grammar/tree/TreeVisitor';
+import {CCompilerTimings, createCCompilerTimings} from './utils/createCCompilerTimings';
 
-import {safeTreeGenerate} from './grammar';
 import {clexer, CLexerConfig} from './lexer/clexer';
+import {safeTreeGenerate} from './grammar';
 import {safeSAACodegen} from './ssa/codegen';
 
 type CCompilerConfig = {
@@ -16,15 +19,18 @@ type CCompilerConfig = {
  * @export
  * @class CCompilerResult
  */
-export class CCompilerResult {
+export class CCompilerOutput {
   constructor(
     public readonly code: string,
     public readonly ast: TreeNode,
+    public readonly timings: CCompilerTimings,
   ) {}
 
   dump() {
-    const {ast, code} = this;
+    const {ast, code, timings} = this;
     const lines = [
+      'Time:',
+      `${timingsToString(timings)}\n`,
       'Source:',
       code,
       'Syntax tree:\n',
@@ -43,15 +49,21 @@ export class CCompilerResult {
  *  Lexer -> ASTGenerator -> ASTIRCompiler -> X86CodeGen
  *
  * @export
- * @param {CCompilerConfig} ccompilerConfig
  * @param {string} code
+ * @param {CCompilerConfig} ccompilerConfig
  * @returns
  */
-export function ccompiler(ccompilerConfig: CCompilerConfig, code: string) {
-  ccompilerConfig = ccompilerConfig || {};
+export function ccompiler(code: string, ccompilerConfig: CCompilerConfig = {}) {
+  const timings = createCCompilerTimings();
 
   return clexer(ccompilerConfig.lexer, code)
-    .andThen((tokens) => safeTreeGenerate(tokens))
-    .andThen((ast) => safeSAACodegen(ast))
-    .andThen((result) => ok(new CCompilerResult(code, result.tree)));
+    .andThen(timings.add('lexer', (tokens) => safeTreeGenerate(tokens)))
+    .andThen(timings.add('ast', (ast) => safeSAACodegen(ast)))
+    .andThen((result) => ok(
+      new CCompilerOutput(
+        code,
+        result.tree,
+        timings.unwrap(),
+      )),
+    );
 }

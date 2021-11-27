@@ -10,6 +10,13 @@ export class TokenLocation {
     public column: number = 0,
   ) {}
 
+  append(row: number, column: number = 0): TokenLocation {
+    return new TokenLocation(
+      this.row + row,
+      this.column + column,
+    );
+  }
+
   clone(): TokenLocation {
     const {row, column} = this;
 

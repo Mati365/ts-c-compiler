@@ -1,24 +1,36 @@
 import {ccompiler} from './frontend';
 
 ccompiler(
-  null,
   `
-    struct ABC {
-      int dupa, abc;
+    struct Vec2 {
+      float x, y;
     }
 
-    const float add(const float a, const float b) {
+    union Register {
+      int a;
+      char b;
+    }
+
+    unsigned float add(const float a, const float b) {
       return a + b;
     }
 
-    int main() {
-      const int title[] = { 1 + 2, 2, 3 };
+    int main(int argc, char** argv[]) {
+      int array[] = { 1, 2, 3, 4 };
+      array[1] = 2;
 
-      add(3, 4.5);
+      if (array[1] > 2) {}
+      for (int i = 0; i < 10; ++i) {
+        do {
+          i--;
+        } while (2 > 1);
 
-      if (2 + 2 > 3 && 3 << 3 > 1) {} else {
-        add(4, 5);
+        if (i > 10) {
+          break;
+        }
       }
+
+      add(3, 4);
     }
   `,
 ).match(

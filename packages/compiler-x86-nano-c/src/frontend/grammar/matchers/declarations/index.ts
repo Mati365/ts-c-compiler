@@ -2,6 +2,7 @@ export * from './abstractDeclarator';
 export * from './declaration';
 export * from './declarationList';
 export * from './declarator';
+export * from './designation';
 export * from './directAbstractDeclarator';
 export * from './directDeclarator';
 export * from './enumDeclator';

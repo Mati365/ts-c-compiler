@@ -357,6 +357,17 @@ export class Grammar<I, K = string> extends TokensIterator {
   }
 
   /**
+   * Catches multiple terminals in row
+   *
+   * @param {string} chars
+   * @memberof Grammar
+   */
+  terminals(chars: string) {
+    for (let i = 0; i < chars.length; ++i)
+      this.terminal(chars[i]);
+  }
+
+  /**
    * Matches token defined in identifiers list
    *
    * @param {(I|I[])} identifier

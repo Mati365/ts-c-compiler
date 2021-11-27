@@ -12,8 +12,6 @@ import {compoundStatement} from '../statements/compoundStatement';
  *  | declaration_specifiers declarator compound_statement
  *  ;
  *
- * @todo declaration_list
- *
  * @export
  * @param {CGrammar} grammar
  */
