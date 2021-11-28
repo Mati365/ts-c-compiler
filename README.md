@@ -75,8 +75,12 @@ yarn run test
   - [ ] Debugger
 - [ ] Nano C compiler
   - [ ] Frontend
-    - [ ] Syntax parser
+    - [x] Syntax parser
+    - [ ] Typechecker
+    - [ ] Tree optimizer
+    - [ ] IR code generator
   - [ ] Backend
+    - [ ] IR optimizer
     - [ ] X86-16 Code generator
 
 ## Screens
@@ -88,6 +92,7 @@ yarn run test
 ![Tetris](/doc/screen-5.png)
 ![ASM Preprocessor](/doc/screen-4.png)
 ![ASM Compiler](/doc/screen-3.png)
+![C Compiler](/doc/screen-8.png)
 
 ## Docs
 

@@ -14,6 +14,7 @@ import {
 
 import {typename} from '../types/typename';
 import {postfixExpression} from './postfixExpression';
+import {castExpression} from './castExpression';
 
 function matchUnaryOperator({g}: CGrammar): Token {
   return g.terminal(CCOMPILER_UNARY_OPERATORS as string[]);
@@ -74,6 +75,7 @@ export function unaryExpression(grammar: CGrammar): ASTCUnaryExpression {
       cast() {
         const operator = matchUnaryOperator(grammar);
         const loc = NodeLocation.fromTokenLoc(operator.loc);
+        const castExpressionNode = castExpression(grammar);
 
         return new ASTCUnaryExpression(
           loc,
@@ -81,7 +83,7 @@ export function unaryExpression(grammar: CGrammar): ASTCUnaryExpression {
           new ASTCCastUnaryExpression(
             loc,
             operator.text as CUnaryCastOperator,
-            null,
+            castExpressionNode,
           ),
         );
       },

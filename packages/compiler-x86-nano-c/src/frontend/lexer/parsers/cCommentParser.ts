@@ -9,7 +9,7 @@ import {isNewline} from '@compiler/lexer/utils';
  * @param {string} character
  * @returns {number}
  */
-export function ccomentParser(code: string, offset: number, character: string): number {
+export function cComentParser(code: string, offset: number, character: string): number {
   // detect inline C commnet
   if (character === '/' && code[offset + 1] === '/') {
     for (offset += 1; offset < code.length; ++offset) {

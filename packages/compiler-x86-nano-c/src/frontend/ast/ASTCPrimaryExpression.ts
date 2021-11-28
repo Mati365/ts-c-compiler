@@ -29,7 +29,7 @@ export class ASTCPrimaryExpression extends ASTCCompilerNode {
     return ASTCCompilerNode.dumpAttributesToString(
       kind,
       {
-        name: identifier?.text,
+        identifier: identifier?.text,
         constant: constant?.text,
         stringLiteral,
       },

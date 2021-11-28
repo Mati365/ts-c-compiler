@@ -66,12 +66,6 @@ function directDeclaratorArrayExpression(grammar: CGrammar): ASTCDirectDeclarato
   const startTerminalLoc = NodeLocation.fromTokenLoc(g.terminal('[').loc);
   const expression = <ASTCDirectDeclaratorArrayExpression> g.or(
     {
-      empty() {
-        return new ASTCDirectDeclaratorArrayExpression(
-          startTerminalLoc,
-        );
-      },
-
       star() {
         g.terminal('*');
 
@@ -88,6 +82,10 @@ function directDeclaratorArrayExpression(grammar: CGrammar): ASTCDirectDeclarato
           g.try(() => typeQualifiers(grammar)),
           g.try(() => assignmentExpression(grammar)),
         );
+      },
+
+      empty() {
+        return new ASTCDirectDeclaratorArrayExpression(startTerminalLoc);
       },
     },
   );

@@ -5,6 +5,7 @@ import {
   ASTCPostfixFnExpression,
   ASTCArgumentsExpressionList,
   ASTCPostfixPtrExpression,
+  ASTCPostfixDotExpression,
 } from '@compiler/x86-nano-c/frontend/ast';
 
 import {TokenType} from '@compiler/lexer/shared';
@@ -62,7 +63,6 @@ export function postfixExpression(grammar: CGrammar): ASTCPostfixExpression {
           return postfix;
         },
 
-        // eslint-disable-next-line no-loop-func
         function() {
           g.terminal('(');
 
@@ -83,6 +83,32 @@ export function postfixExpression(grammar: CGrammar): ASTCPostfixExpression {
           return postfix;
         },
 
+        dot() {
+          g.terminal('.');
+          const identifier = g.nonIdentifierKeyword();
+
+          return new ASTCPostfixExpression(
+            startLoc,
+            {
+              ...postfixExpressionNode,
+              ptrExpression: new ASTCPostfixDotExpression(startLoc, identifier),
+            },
+          );
+        },
+
+        ptr() {
+          g.terminals('->');
+          const identifier = g.nonIdentifierKeyword();
+
+          return new ASTCPostfixExpression(
+            startLoc,
+            {
+              ...postfixExpressionNode,
+              ptrExpression: new ASTCPostfixPtrExpression(startLoc, identifier),
+            },
+          );
+        },
+
         incDec() {
           const token = g.match(
             {
@@ -99,19 +125,6 @@ export function postfixExpression(grammar: CGrammar): ASTCPostfixExpression {
               ...postfixExpressionNode,
               incExpression: token.type === TokenType.INCREMENT,
               decExpression: token.type === TokenType.DECREMENT,
-            },
-          );
-        },
-
-        ptr() {
-          g.terminals('->');
-          const identifier = g.nonIdentifierKeyword();
-
-          return new ASTCPostfixExpression(
-            startLoc,
-            {
-              ...postfixExpressionNode,
-              ptrExpression: new ASTCPostfixPtrExpression(startLoc, identifier),
             },
           );
         },

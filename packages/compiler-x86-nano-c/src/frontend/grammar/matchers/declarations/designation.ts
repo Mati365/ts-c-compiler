@@ -1,5 +1,3 @@
-import {TokenType} from '@compiler/lexer/shared';
-import {SyntaxError} from '@compiler/grammar/Grammar';
 import {NodeLocation} from '@compiler/grammar/tree/NodeLocation';
 import {ASTCDesignatorList, ASTCDesignator} from '../../../ast';
 import {CGrammar} from '../shared';
@@ -30,19 +28,8 @@ function designator(grammar: CGrammar): ASTCDesignator {
       },
 
       identifier() {
-        const dotToken = g.match(
-          {
-            type: TokenType.KEYWORD,
-          },
-        );
-
-        if (!dotToken.text.startsWith('.'))
-          throw new SyntaxError;
-
-        const identifier = dotToken.fork(
-          dotToken.text.substring(1),
-          dotToken.loc.append(1),
-        );
+        const dotToken = g.terminal('.');
+        const identifier = g.nonIdentifierKeyword();
 
         return new ASTCDesignator(
           NodeLocation.fromTokenLoc(dotToken.loc),

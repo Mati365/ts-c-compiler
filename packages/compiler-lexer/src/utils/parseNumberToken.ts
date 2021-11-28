@@ -1,5 +1,7 @@
 import * as R from 'ramda';
+
 import {safeFirstMatch} from '@compiler/core/utils/safeFirstMatch';
+import {isSign} from './matchCharacter';
 
 const safeNumberMatch = (regex: RegExp, radix: number) => R.compose(
   R.unless(
@@ -51,10 +53,21 @@ export const DIGIT_FORMATS_PARSERS: Record<string, (str: string) => number> = {
  * @returns {[string, number]}
  */
 export function parseNumberToken(text: string): [string, number] {
+  if (!text)
+    return null;
+
+  let sign = 1;
+  if (isSign(text[0])) {
+    if (text[0] === '-')
+      sign = -1;
+
+    text = text.substring(1);
+  }
+
   for (const format in DIGIT_FORMATS_PARSERS) {
     const number = DIGIT_FORMATS_PARSERS[format](text);
     if (number !== null)
-      return [format, number];
+      return [format, sign * number];
   }
 
   return null;

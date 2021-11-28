@@ -1,19 +1,28 @@
 import {
+  FloatNumberToken,
+  NumberToken,
+  TokenType,
+} from '@compiler/lexer/tokens';
+
+import {
   LexerConfig,
   TokenParsersMap,
   TokenTerminalCharactersMap,
   TERMINAL_CHARACTERS,
 } from '@compiler/lexer/lexer';
 
-import {FloatNumberToken, NumberToken, TokenType} from '@compiler/lexer/tokens';
 import {safeResultLexer} from '@compiler/lexer/safeResultLexer';
 
 import {CCOMPILER_IDENTIFIERS_MAP} from '../../constants';
-import {ccomentParser} from './ccommentParser';
+import {
+  cComentParser,
+  cMergeNumbersTokens,
+} from './parsers';
 
 export const CCOMPILER_TERMINAL_CHARACTERS: TokenTerminalCharactersMap = {
   ...TERMINAL_CHARACTERS,
   '%': TokenType.MOD,
+  '.': TokenType.DOT,
 };
 
 export const CCOMPILER_TOKEN_PARSERS: TokenParsersMap = {
@@ -33,12 +42,12 @@ export type CLexerConfig = LexerConfig;
  * @returns
  */
 export function clexer(config: CLexerConfig, code: string) {
-  return safeResultLexer(
+  const result = safeResultLexer(
     {
       identifiers: CCOMPILER_IDENTIFIERS_MAP,
       tokensParsers: CCOMPILER_TOKEN_PARSERS,
       terminalCharacters: CCOMPILER_TERMINAL_CHARACTERS,
-      commentParser: ccomentParser,
+      commentParser: cComentParser,
       consumeBracketContent: false,
       ignoreEOL: true,
       ignoreSpecifiersCase: false,
@@ -47,4 +56,6 @@ export function clexer(config: CLexerConfig, code: string) {
     },
     code,
   );
+
+  return result.map(cMergeNumbersTokens);
 }

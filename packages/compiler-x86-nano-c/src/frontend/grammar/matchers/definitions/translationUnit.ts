@@ -1,5 +1,7 @@
 import * as R from 'ramda';
 
+import {isEOFToken} from '@compiler/lexer/utils';
+
 import {SyntaxError} from '@compiler/grammar/Grammar';
 import {ASTCTranslationUnit, ASTCTreeNode} from '../../../ast';
 import {CGrammar} from '../shared';
@@ -20,11 +22,12 @@ export function translationUnit(grammar: CGrammar): ASTCTranslationUnit {
   const {g} = grammar;
 
   do {
-    const declaration = g.try(() => externalDeclaration(grammar));
-    if (!declaration)
-      break;
+    declarations.push(
+      externalDeclaration(grammar),
+    );
 
-    declarations.push(declaration);
+    if (isEOFToken(g.currentToken))
+      break;
   } while (true);
 
   if (R.isEmpty(declarations))

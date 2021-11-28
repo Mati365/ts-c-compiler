@@ -2,7 +2,12 @@ import {safeFirstMatch} from '@compiler/core/utils/safeFirstMatch';
 import {TokenLocation, TokenType} from '../../shared';
 import {Token} from '../Token';
 
-const matchFloatNumber = safeFirstMatch(/^[+-]?(\d+([.]\d*)?(e[+-]?\d+)?)$/i);
+/**
+ * There is more floating point formats
+ *
+ * @see https://www.cs.uic.edu/~jbell/CourseNotes/C_Programming/DataTypesSummary.pdf
+ */
+const matchFloatNumber = safeFirstMatch(/^[+-]?(\d+([.]\d*)?(e[+-]?\d+)?)[FfLl]?$/i);
 
 export type FloatNumberTokenValue = {
   number: number,

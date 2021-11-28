@@ -16,6 +16,7 @@ import {ASTCCompilerKind, ASTCCompilerNode} from './ASTCCompilerNode';
       'declaration',
       'condition',
       'expression',
+      'statement',
     ],
   },
 )

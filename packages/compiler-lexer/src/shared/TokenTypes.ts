@@ -18,6 +18,7 @@ export enum TokenType {
   QUESTION_MARK = 'QUESTION_MARK',
   EOL = 'EOL',
   EOF = 'EOF',
+  DOT = 'DOT',
 
   // Assign
   ASSIGN = 'ASSIGN',
