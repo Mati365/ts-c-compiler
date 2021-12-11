@@ -5,9 +5,11 @@ import {TreeNode} from '@compiler/grammar/tree/TreeNode';
 import {TreePrintVisitor} from '@compiler/grammar/tree/TreeVisitor';
 import {CCompilerTimings, createCCompilerTimings} from './utils/createCCompilerTimings';
 
-import {clexer, CLexerConfig} from './lexer/clexer';
-import {safeTreeGenerate} from './grammar';
-import {safeSAACodegen} from './ssa/codegen';
+import './typecheck';
+import {
+  safeTreeGenerate, clexer,
+  CLexerConfig,
+} from './parser';
 
 type CCompilerConfig = {
   lexer?: CLexerConfig,
@@ -56,14 +58,13 @@ export class CCompilerOutput {
 export function ccompiler(code: string, ccompilerConfig: CCompilerConfig = {}) {
   const timings = createCCompilerTimings();
 
-  return clexer(ccompilerConfig.lexer, code)
-    .andThen(timings.add('lexer', (tokens) => safeTreeGenerate(tokens)))
-    .andThen(timings.add('ast', (ast) => safeSAACodegen(ast)))
-    .andThen((result) => ok(
+  return timings.add('lexer', clexer)(ccompilerConfig.lexer, code)
+    .andThen(timings.add('ast', (tokens) => safeTreeGenerate(tokens)))
+    .andThen(timings.add('compiler', (tree) => ok(
       new CCompilerOutput(
         code,
-        result.tree,
+        tree,
         timings.unwrap(),
-      )),
-    );
+      ),
+    )));
 }

@@ -1,3 +1,2 @@
-export * from './ast';
+export * from './parser/ast';
 export * from './ccompiler';
-export * from './grammar';

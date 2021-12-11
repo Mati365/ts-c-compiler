@@ -120,3 +120,18 @@ export function reverseByte(byte: number): number {
 
   return retVal;
 }
+
+/**
+ * Count bits in 32 int
+ *
+ * @see {@url https://stackoverflow.com/a/43122214}
+ *
+ * @export
+ * @param {number} n
+ * @return {number}
+ */
+export function countBits(n: number): number {
+  n -= ((n >> 1) & 0x55555555);
+  n = (n & 0x33333333) + ((n >> 2) & 0x33333333);
+  return ((n + (n >> 4) & 0xF0F0F0F) * 0x1010101) >> 24;
+}

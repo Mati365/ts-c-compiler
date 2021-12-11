@@ -58,6 +58,7 @@ export enum CTypeSpecifier {
   VOID = 'void',
   SHORT = 'short',
   LONG = 'long',
+  LONG_LONG = 'long long',
   SIGNED = 'signed',
   UNSIGNED = 'unsigned',
 }
