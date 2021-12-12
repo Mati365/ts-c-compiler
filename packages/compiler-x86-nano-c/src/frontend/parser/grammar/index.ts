@@ -1,1 +1,1 @@
-export * from './treeGenerate';
+export * from './generateTree';

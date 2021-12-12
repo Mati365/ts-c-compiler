@@ -1,3 +1,4 @@
+import * as R from 'ramda';
 import {$enum} from 'ts-enum-util';
 import {IdentifiersMap} from '@compiler/lexer/lexer';
 
@@ -54,7 +55,7 @@ export enum CTypeSpecifier {
   DOUBLE = 'double',
   CHAR = 'char',
   INT = 'int',
-  BOOL = 'bool',
+  BOOL = '_Bool',
   VOID = 'void',
   SHORT = 'short',
   LONG = 'long',
@@ -107,45 +108,25 @@ export const CCOMPILER_STORAGE_CLASS_SPECIFIERS = $enum(CStorageClassSpecifier).
 export const CCOMPILER_UNARY_OPERATORS = $enum(CUnaryCastOperator).getValues();
 export const CCOMPILER_ASSIGN_OPERATORS = $enum(CAssignOperator).getValues();
 
-export const CCOMPILER_IDENTIFIERS_MAP: IdentifiersMap = {
-  sizeof: CCompilerKeyword.SIZEOF,
-  goto: CCompilerKeyword.GOTO,
-  continue: CCompilerKeyword.CONTINUE,
-  default: CCompilerKeyword.DEFAULT,
-  case: CCompilerKeyword.CASE,
-  break: CCompilerKeyword.BREAK,
-  enum: CCompilerKeyword.ENUM,
-  if: CCompilerKeyword.IF,
-  switch: CCompilerKeyword.SWITCH,
-  do: CCompilerKeyword.DO,
-  while: CCompilerKeyword.WHILE,
-  for: CCompilerKeyword.FOR,
-  else: CCompilerKeyword.ELSE,
-  return: CCompilerKeyword.RETURN,
-  struct: CCompilerKeyword.STRUCT,
-  union: CCompilerKeyword.UNION,
-  int: CTypeSpecifier.INT,
-  float: CTypeSpecifier.FLOAT,
-  double: CTypeSpecifier.DOUBLE,
-  bool: CTypeSpecifier.BOOL,
-  void: CTypeSpecifier.VOID,
-  char: CTypeSpecifier.CHAR,
-  const: CTypeQualifier.CONST,
-  volatile: CTypeQualifier.VOLATILE,
-  restrict: CTypeQualifier.RESTRICT,
-  short: CTypeSpecifier.SHORT,
-  long: CTypeSpecifier.LONG,
-  signed: CTypeSpecifier.SIGNED,
-  unsigned: CTypeSpecifier.UNSIGNED,
-  typedef: CStorageClassSpecifier.TYPEDEF,
-  extern: CStorageClassSpecifier.EXTERN,
-  static: CStorageClassSpecifier.STATIC,
-  auto: CStorageClassSpecifier.AUTO,
-  register: CStorageClassSpecifier.REGISTER,
-  inline: CFunctionSpecifier.INLINE,
-  _Atomic: CTypeQualifier.ATOMIC,
-  _Noreturn: CFunctionSpecifier.NORETURN,
-  _Alignas: CCompilerKeyword.ALIGN_AS,
-  _Alignof: CCompilerKeyword.ALIGN_OF,
-  _Static_assert: CCompilerKeyword.STATIC_ASSERT,
-};
+export const CCOMPILER_IDENTIFIERS_MAP: IdentifiersMap = [
+  CCompilerKeyword,
+  CTypeSpecifier,
+  CTypeQualifier,
+  CStorageClassSpecifier,
+  CFunctionSpecifier,
+  CCompilerKeyword,
+].reduce(
+  (acc, enumerator) => {
+    Object.assign(
+      acc,
+      R.fromPairs(
+        $enum(enumerator)
+          .getValues()
+          .map((value) => [value, value]),
+      ),
+    );
+
+    return acc;
+  },
+  {},
+);

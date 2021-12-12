@@ -2,9 +2,9 @@ import {ccompiler} from './frontend';
 
 ccompiler(
   /* cpp */ `
-    int main(int argc, char** array[]) {
-      int dupa = 2;
-    }
+    struct Dupa {
+      int dupa;
+    };
   `,
 ).match(
   {

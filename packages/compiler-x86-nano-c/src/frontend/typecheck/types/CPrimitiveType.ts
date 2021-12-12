@@ -70,6 +70,14 @@ export type CPrimitiveTypeSourceParserAttrs = {
  * @extends {CType<CPrimitiveTypeDescriptor>}
  */
 export class CPrimitiveType extends CType<CPrimitiveTypeDescriptor> {
+  static readonly int = CPrimitiveType.ofSpecifiers(CSpecBitmap.int);
+  static readonly float = CPrimitiveType.ofSpecifiers(CSpecBitmap.float);
+  static readonly double = CPrimitiveType.ofSpecifiers(CSpecBitmap.double);
+  static readonly short = CPrimitiveType.ofSpecifiers(CSpecBitmap.short);
+  static readonly char = CPrimitiveType.ofSpecifiers(CSpecBitmap.char);
+  static readonly bool = CPrimitiveType.ofSpecifiers(CSpecBitmap._Bool);
+  static readonly void = CPrimitiveType.ofSpecifiers(CSpecBitmap.void);
+
   get bitset() {
     return this.value.bitset;
   }
@@ -83,7 +91,36 @@ export class CPrimitiveType extends CType<CPrimitiveTypeDescriptor> {
   }
 
   getByteSize(): number {
-    switch (this.specifiers) {
+    return CPrimitiveType.sizeOf(this.specifiers);
+  }
+
+  getDisplayName() {
+    const {specifiers, qualifiers} = this;
+
+    return [
+      ...bitsetToKeywords(CQualBitmap, qualifiers),
+      ...bitsetToKeywords(CSpecBitmap, specifiers),
+    ].join(' ');
+  }
+
+  hasSpecifierType(types: number): boolean {
+    return hasFlag(types, this.specifiers);
+  }
+
+  isVoid = () => this.hasSpecifierType(CSpecBitmap.void);
+  isSigned = () => !this.hasSpecifierType(CSpecBitmap.signed);
+  isUnsigned = () => !this.isSigned();
+
+  /**
+   * Returns sizeof from specifiers of primitive type
+   *
+   * @static
+   * @param {number} specifiers
+   * @return {number}
+   * @memberof CPrimitiveType
+   */
+  static sizeOf(specifiers: number): number {
+    switch (specifiers) {
       case CSpecBitmap.char:
       case CSpecBitmap.signed | CSpecBitmap.char:
       case CSpecBitmap.unsigned | CSpecBitmap.char:
@@ -115,23 +152,6 @@ export class CPrimitiveType extends CType<CPrimitiveTypeDescriptor> {
     }
   }
 
-  isVoid = () => this.hasSpecifierType(CSpecBitmap.void);
-  isSigned = () => !this.hasSpecifierType(CSpecBitmap.signed);
-  isUnsigned = () => !this.isSigned();
-
-  hasSpecifierType(types: number): boolean {
-    return hasFlag(types, this.specifiers);
-  }
-
-  getDisplayName() {
-    const {specifiers, qualifiers} = this;
-
-    return [
-      ...bitsetToKeywords(CQualBitmap, qualifiers),
-      ...bitsetToKeywords(CSpecBitmap, specifiers),
-    ].join(' ');
-  }
-
   /**
    * Perform check if type has correctly set specifiers.
    *
@@ -158,6 +178,26 @@ export class CPrimitiveType extends CType<CPrimitiveTypeDescriptor> {
 
     return err(
       new CTypeCheckError(CTypeCheckErrorCode.INCORRECT_TYPE_SPECIFIERS),
+    );
+  }
+
+  /**
+   * Init of type based of only bitflags
+   *
+   * @static
+   * @param {number} specifiers
+   * @param {number} [qualifiers=0]
+   * @return {CPrimitiveType}
+   * @memberof CPrimitiveType
+   */
+  static ofSpecifiers(specifiers: number, qualifiers: number = 0): CPrimitiveType {
+    return new CPrimitiveType(
+      {
+        bitset: {
+          qualifiers,
+          specifiers,
+        },
+      },
     );
   }
 

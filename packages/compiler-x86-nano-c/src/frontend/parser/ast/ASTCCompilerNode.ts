@@ -1,6 +1,7 @@
 import {Grammar} from '@compiler/grammar/Grammar';
 import {TreeNode} from '@compiler/grammar/tree/TreeNode';
 import {CCompilerIdentifier} from '@compiler/x86-nano-c/constants';
+import {CType} from '../../typecheck';
 
 export enum ASTCCompilerKind {
   TranslationUnit = 'TranslationUnit',
@@ -101,4 +102,6 @@ export type ASTCTreeNode = TreeNode<ASTCCompilerKind>;
 
 export class CCompilerGrammar extends Grammar<CCompilerIdentifier, ASTCCompilerKind> {}
 
-export class ASTCCompilerNode extends TreeNode<ASTCCompilerKind> {}
+export class ASTCCompilerNode extends TreeNode<ASTCCompilerKind> {
+  type?: CType;
+}

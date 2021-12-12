@@ -2,7 +2,7 @@
 import {Result, err, ok} from '@compiler/core/monads/Result';
 import {CompilerError} from '@compiler/core/shared/CompilerError';
 
-import {TreePrintVisitor} from '@compiler/grammar/tree/TreeVisitor';
+import {TreePrintVisitor} from '@compiler/grammar/tree/TreePrintVisitor';
 import {ASTPreprocessorNode} from './constants';
 import {PreprocessorErrorCode} from './PreprocessorError';
 import {

@@ -11,7 +11,7 @@ import {createCCompilerGrammar} from './grammar';
  * @param {Token[]} tokens
  * @return {ASTCTreeNode}
  */
-export function treeGenerate(tokens: Token[]): ASTCTreeNode {
+export function generateTree(tokens: Token[]): ASTCTreeNode {
   return createCCompilerGrammar().process(tokens);
 }
 
@@ -22,10 +22,10 @@ export function treeGenerate(tokens: Token[]): ASTCTreeNode {
  * @param {Token[]} tokens
  * @return {Result<ASTCTreeNode, CGrammarError[]>}
  */
-export function safeTreeGenerate(tokens: Token[]): Result<ASTCTreeNode, CGrammarError[]> {
+export function safeGenerateTree(tokens: Token[]): Result<ASTCTreeNode, CGrammarError[]> {
   try {
     return ok(
-      treeGenerate(tokens),
+      generateTree(tokens),
     );
   } catch (e) {
     e.code = e.code ?? CGrammarErrorCode.SYNTAX_ERROR;

@@ -41,38 +41,3 @@ export abstract class TreeVisitor<T extends TreeNode<any> = TreeNode> {
   enter?(node: T, history: T[]): void;
   leave?(node: T, history: T[]): void;
 }
-
-/**
- * Default visitor that prints tree like HTML
- *
- * @export
- * @class TreePrintVisitor
- * @extends {TreeVisitor<T>}
- * @template T
- */
-export class TreePrintVisitor<T extends TreeNode<any>> extends TreeVisitor<T> {
-  private _reduced: string = '';
-
-  get reduced() { return this._reduced; }
-
-  enter(node: T) {
-    const {nesting} = this;
-
-    if (nesting === 1)
-      this._reduced = '';
-
-    this._reduced += `${''.padStart((this.nesting - 1) * 3, ' ')}<${node.toString()} />\n`;
-  }
-
-  /**
-   * Converts node to string
-   *
-   * @static
-   * @param {T} node
-   * @returns {string}
-   * @memberof TreePrintVisitor
-   */
-  static valueOf<T extends TreeNode<any>>(node: T): string {
-    return (new TreePrintVisitor).visit(node).reduced;
-  }
-}

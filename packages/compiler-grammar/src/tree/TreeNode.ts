@@ -98,6 +98,9 @@ export class TreeNode<K = string, C extends TreeNode<K, C> = any> {
       R.join(' '),
     )(attrs);
 
+    if (R.isNil(kind))
+      return serializedAttrs;
+
     return `${kind} ${serializedAttrs}`.trim();
   }
 }
