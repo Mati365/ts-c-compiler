@@ -40,6 +40,6 @@ export function parseKeywordsToBitset(
       return ok(acc | bitFlag);
     },
     0,
-    keywords,
+    keywords || [],
   );
 }

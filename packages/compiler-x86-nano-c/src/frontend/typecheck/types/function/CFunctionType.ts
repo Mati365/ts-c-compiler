@@ -27,13 +27,8 @@ export class CFunctionType extends CType<CFunctionTypeDescriptor> {
     );
   }
 
-  get returnType() {
-    return this.value.returnType;
-  }
-
-  get args() {
-    return this.value.args;
-  }
+  get returnType() { return this.value.returnType; }
+  get args() { return this.value.args; }
 
   isCallable(): boolean {
     return true;

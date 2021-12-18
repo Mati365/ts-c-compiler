@@ -1,4 +1,7 @@
+import {concatNonEmptyStrings} from '@compiler/core/utils';
+
 import {Identity} from '@compiler/core/monads';
+import {CCompilerArch} from '@compiler/x86-nano-c/constants';
 import {CType} from './CType';
 
 export type CArrayTypeDescriptor = {
@@ -36,15 +39,20 @@ export class CArrayType extends CType<CArrayTypeDescriptor> {
     );
   }
 
-  getByteSize(): number {
+  getByteSize(arch: CCompilerArch): number {
     const {baseType, size} = this;
 
-    return baseType.getByteSize() * size;
+    return baseType.getByteSize(arch) * size;
   }
 
   getDisplayName(): string {
     const {baseType, size} = this;
 
-    return `${baseType.getDisplayName()}[${size}]`;
+    return concatNonEmptyStrings(
+      [
+        this.getQualifiersDisplayName(),
+        `${baseType.getDisplayName()}[${size}]`,
+      ],
+    );
   }
 }

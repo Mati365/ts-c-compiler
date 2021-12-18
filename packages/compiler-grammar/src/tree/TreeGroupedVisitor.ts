@@ -27,7 +27,7 @@ export function isInlineTreeVisitor(visitor: any): visitor is InlineTreeVisitor<
  * @template P parent node type
  * @template C context type
  */
-export class GroupTreeVisitor<
+export abstract class GroupTreeVisitor<
     T extends TreeNode<any> = TreeNode,
     P extends GroupTreeVisitor<T> = any,
     C extends {} = any> extends TreeVisitor<T> {
@@ -40,6 +40,11 @@ export class GroupTreeVisitor<
     super();
   }
 
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  initForRootNode(node: T): this {
+    return this;
+  }
+
   override enter(node: T) {
     const visitor = this.getNodeVisitor(node);
     if (!visitor)
@@ -49,10 +54,7 @@ export class GroupTreeVisitor<
       return visitor.enter.call(this, node);
     }
 
-    this
-      .intantizeWithContext(visitor)
-      .visit(node);
-
+    this.initializeAndEnter(visitor, node);
     return false;
   }
 
@@ -64,11 +66,13 @@ export class GroupTreeVisitor<
     visitor.leave?.call(this, node);
   }
 
-  intantizeWithContext<D extends GroupTreeVisitor<T>>(Visitor: Newable<D>): D {
+  initializeAndEnter<D extends GroupTreeVisitor<T>>(Visitor: Newable<D>, node: T): D {
     return (
       new Visitor()
         .setParentVisitor(this)
-        .setContext(this)
+        .setContext(this.context)
+        .initForRootNode(node)
+        .visit(node)
     );
   }
 

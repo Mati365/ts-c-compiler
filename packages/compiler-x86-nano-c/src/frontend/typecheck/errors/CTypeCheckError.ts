@@ -7,6 +7,7 @@ export enum CTypeCheckErrorCode {
   INCORRECT_VOID_SPECIFIERS,
   INCORRECT_TYPE_SPECIFIERS,
   REDEFINITION_OF_TYPE,
+  UNABLE_TO_EXTRACT_STRUCT_TYPE,
 }
 
 export const C_TYPE_CHECK_ERROR_TRANSLATIONS: Record<CTypeCheckErrorCode, string> = {
@@ -16,6 +17,7 @@ export const C_TYPE_CHECK_ERROR_TRANSLATIONS: Record<CTypeCheckErrorCode, string
   [CTypeCheckErrorCode.INCORRECT_TYPE_SPECIFIERS]: 'Incorrect type specifiers!',
   [CTypeCheckErrorCode.INCORRECT_VOID_SPECIFIERS]: 'Wrong specifiers used with void!',
   [CTypeCheckErrorCode.REDEFINITION_OF_TYPE]: 'Redefinition of type %{name}!',
+  [CTypeCheckErrorCode.UNABLE_TO_EXTRACT_STRUCT_TYPE]: 'Fixme: Unable to extract struct type!',
 };
 
 /**

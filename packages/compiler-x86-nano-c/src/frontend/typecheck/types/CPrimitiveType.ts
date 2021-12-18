@@ -1,40 +1,23 @@
 import * as R from 'ramda';
 
-import {hasFlag} from '@compiler/core/utils';
+import {concatNonEmptyStrings, hasFlag} from '@compiler/core/utils';
+
+import {SIZEOF_PRIMITIVE_TYPE} from '@compiler/x86-nano-c/arch';
 import {Result, err, ok} from '@compiler/core/monads';
 import {
+  CCompilerArch,
   CTypeQualifier,
   CTypeSpecifier,
 } from '@compiler/x86-nano-c/constants';
 
 import {CTypeCheckError, CTypeCheckErrorCode} from '../errors/CTypeCheckError';
 import {CType} from './CType';
+import {CSpecBitmap} from '../constants';
 
 import {
   bitsetToKeywords,
   parseKeywordsToBitset,
 } from '../utils';
-
-const CQualBitmap: Record<CTypeQualifier, number> = {
-  [CTypeQualifier.CONST]: 1,
-  [CTypeQualifier.ATOMIC]: 1 << 1,
-  [CTypeQualifier.RESTRICT]: 1 << 2,
-  [CTypeQualifier.VOLATILE]: 1 << 3,
-};
-
-const CSpecBitmap: Record<CTypeSpecifier, number> = {
-  [CTypeSpecifier.SIGNED]: 1,
-  [CTypeSpecifier.UNSIGNED]: 1 << 1,
-  [CTypeSpecifier.LONG]: 1 << 2,
-  [CTypeSpecifier.LONG_LONG]: 1 << 3,
-  [CTypeSpecifier.SHORT]: 1 << 4,
-  [CTypeSpecifier.FLOAT]: 1 << 5,
-  [CTypeSpecifier.DOUBLE]: 1 << 6,
-  [CTypeSpecifier.CHAR]: 1 << 7,
-  [CTypeSpecifier.INT]: 1 << 8,
-  [CTypeSpecifier.BOOL]: 1 << 9,
-  [CTypeSpecifier.VOID]: 1 << 10,
-};
 
 export enum CSpecifierFlag {
   SIGNED = 1,
@@ -51,13 +34,11 @@ export enum CSpecifierFlag {
 }
 
 export type CPrimitiveTypeDescriptor = {
-  bitset: {
-    qualifiers: number,
-    specifiers: number,
-  },
+  specifiers: number,
 };
 
 export type CPrimitiveTypeSourceParserAttrs = {
+  arch: CCompilerArch,
   qualifiers?: CTypeQualifier[],
   specifiers?: CTypeSpecifier[],
 };
@@ -78,78 +59,52 @@ export class CPrimitiveType extends CType<CPrimitiveTypeDescriptor> {
   static readonly bool = CPrimitiveType.ofSpecifiers(CSpecBitmap._Bool);
   static readonly void = CPrimitiveType.ofSpecifiers(CSpecBitmap.void);
 
-  get bitset() {
-    return this.value.bitset;
-  }
-
   get specifiers() {
-    return this.bitset.specifiers;
+    return this.value.specifiers;
   }
 
-  get qualifiers() {
-    return this.bitset.qualifiers;
-  }
-
-  getByteSize(): number {
-    return CPrimitiveType.sizeOf(this.specifiers);
+  getByteSize(arch: CCompilerArch): number {
+    return CPrimitiveType.sizeOf(arch, this.specifiers);
   }
 
   getDisplayName() {
-    const {specifiers, qualifiers} = this;
+    const {specifiers} = this;
 
-    return [
-      ...bitsetToKeywords(CQualBitmap, qualifiers),
-      ...bitsetToKeywords(CSpecBitmap, specifiers),
-    ].join(' ');
+    return concatNonEmptyStrings(
+      [
+        this.getQualifiersDisplayName(),
+        ...bitsetToKeywords(CSpecBitmap, specifiers),
+      ],
+    );
   }
 
   hasSpecifierType(types: number): boolean {
     return hasFlag(types, this.specifiers);
   }
 
-  isVoid = () => this.hasSpecifierType(CSpecBitmap.void);
-  isSigned = () => !this.hasSpecifierType(CSpecBitmap.signed);
-  isUnsigned = () => !this.isSigned();
+  isVoid() {
+    return this.hasSpecifierType(CSpecBitmap.void);
+  }
+
+  isSigned() {
+    return !this.hasSpecifierType(CSpecBitmap.signed);
+  }
+
+  isUnsigned() {
+    return !this.isSigned();
+  }
 
   /**
    * Returns sizeof from specifiers of primitive type
    *
    * @static
+   * @param {CCompilerArch} arch
    * @param {number} specifiers
    * @return {number}
    * @memberof CPrimitiveType
    */
-  static sizeOf(specifiers: number): number {
-    switch (specifiers) {
-      case CSpecBitmap.char:
-      case CSpecBitmap.signed | CSpecBitmap.char:
-      case CSpecBitmap.unsigned | CSpecBitmap.char:
-        return 1;
-
-      case CSpecBitmap.short:
-      case CSpecBitmap.short | CSpecBitmap.int:
-      case CSpecBitmap.signed | CSpecBitmap.short:
-      case CSpecBitmap.signed | CSpecBitmap.short | CSpecBitmap.int:
-      case CSpecBitmap.unsigned | CSpecBitmap.short:
-      case CSpecBitmap.unsigned | CSpecBitmap.short | CSpecBitmap.int:
-      case CSpecBitmap.int:
-      case CSpecBitmap.signed:
-      case CSpecBitmap.signed | CSpecBitmap.int:
-      case CSpecBitmap.unsigned:
-      case CSpecBitmap.unsigned | CSpecBitmap.int:
-        return 2;
-
-      case CSpecBitmap.long:
-      case CSpecBitmap.long | CSpecBitmap.int:
-      case CSpecBitmap.signed | CSpecBitmap.long:
-      case CSpecBitmap.signed | CSpecBitmap.long | CSpecBitmap.int:
-      case CSpecBitmap.unsigned | CSpecBitmap.long:
-      case CSpecBitmap.unsigned | CSpecBitmap.long | CSpecBitmap.int:
-        return 4;
-
-      default:
-        return null;
-    }
+  static sizeOf(arch: CCompilerArch, specifiers: number): number {
+    return SIZEOF_PRIMITIVE_TYPE[arch](specifiers);
   }
 
   /**
@@ -160,12 +115,13 @@ export class CPrimitiveType extends CType<CPrimitiveTypeDescriptor> {
    *  int => it is fine
    *
    * @static
+   * @param {CCompilerArch} arch
    * @param {CPrimitiveType} type
    * @return {Result<CPrimitiveType, CTypeCheckError>}
    * @memberof CPrimitiveType
    */
-  static validate(type: CPrimitiveType): Result<CPrimitiveType, CTypeCheckError> {
-    const byteSize = type.getByteSize();
+  static validate(arch: CCompilerArch, type: CPrimitiveType): Result<CPrimitiveType, CTypeCheckError> {
+    const byteSize = type.getByteSize(arch);
     if (!R.isNil(byteSize))
       return ok(type);
 
@@ -193,10 +149,8 @@ export class CPrimitiveType extends CType<CPrimitiveTypeDescriptor> {
   static ofSpecifiers(specifiers: number, qualifiers: number = 0): CPrimitiveType {
     return new CPrimitiveType(
       {
-        bitset: {
-          qualifiers,
-          specifiers,
-        },
+        qualifiers,
+        specifiers,
       },
     );
   }
@@ -219,24 +173,17 @@ export class CPrimitiveType extends CType<CPrimitiveTypeDescriptor> {
     );
 
     return specifiersResult.andThen((specifiers) => {
-      const qualifiersResult = parseKeywordsToBitset(
-        {
-          errorCode: CTypeCheckErrorCode.UNKNOWN_QUALIFIERS_KEYWORD,
-          bitmap: CQualBitmap,
-          keywords: attrs.qualifiers,
-        },
-      );
+      const qualifiersResult = CType.qualifiersToBitset(attrs.qualifiers);
 
       if (qualifiersResult.isErr())
         return err(qualifiersResult.unwrapErr());
 
       return this.validate(
+        attrs.arch,
         new CPrimitiveType(
           {
-            bitset: {
-              qualifiers: qualifiersResult.unwrap(),
-              specifiers,
-            },
+            qualifiers: qualifiersResult.unwrap(),
+            specifiers,
           },
         ),
       );

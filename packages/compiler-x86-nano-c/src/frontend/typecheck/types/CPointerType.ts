@@ -1,4 +1,7 @@
+import {concatNonEmptyStrings} from '@compiler/core/utils';
+
 import {Identity} from '@compiler/core/monads';
+import {CCompilerArch} from '@compiler/x86-nano-c/constants';
 import {CType} from './CType';
 import {CPrimitiveType} from './CPrimitiveType';
 
@@ -25,11 +28,16 @@ export class CPointerType extends CType<CPointerTypeDescriptor> {
     return value.baseType.isEqual(this.baseType);
   }
 
-  getByteSize(): number {
-    return CPrimitiveType.int.getByteSize();
+  getByteSize(arch: CCompilerArch): number {
+    return CPrimitiveType.int.getByteSize(arch);
   }
 
   getDisplayName(): string {
-    return `*(${this.baseType.getDisplayName()})`;
+    return concatNonEmptyStrings(
+      [
+        this.getQualifiersDisplayName(),
+        `*(${this.baseType.getDisplayName()})`,
+      ],
+    );
   }
 }

@@ -21,3 +21,4 @@ export * from './asap';
 export * from './createTiming';
 export * from './removeNullValues';
 export * from './findByProp';
+export * from './concatNonEmptyStrings';

@@ -47,8 +47,4 @@ export abstract class TreeVisitor<T extends TreeNode<any> = TreeNode> implements
 
   enter?(node: T, history: T[]): void | boolean;
   leave?(node: T, history: T[]): void;
-
-  querySelector(selector: TreeQuerySelector) {
-
-  }
 }

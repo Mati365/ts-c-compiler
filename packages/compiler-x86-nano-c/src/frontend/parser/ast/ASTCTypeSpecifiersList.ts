@@ -21,6 +21,26 @@ export class ASTCTypeSpecifiersList extends ASTCCompilerNode implements IsEmpty 
     super(ASTCCompilerKind.TypeSpecifiersList, loc);
   }
 
+  findPrimitiveSpecifiers() {
+    return this.items.filter((item) => !!item.specifier);
+  }
+
+  findStructSpecifiers() {
+    return this.items.filter((item) => !!item.structOrUnionSpecifier);
+  }
+
+  findEnumSpecifiers() {
+    return this.items.filter((item) => !!item.enumSpecifier);
+  }
+
+  getGroupedSpecifiers() {
+    return {
+      primitives: this.findPrimitiveSpecifiers(),
+      structs: this.findStructSpecifiers(),
+      enums: this.findEnumSpecifiers(),
+    };
+  }
+
   isEmpty() {
     return R.isEmpty(this.items);
   }

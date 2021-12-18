@@ -103,6 +103,6 @@ export type ASTCTreeNode = TreeNode<ASTCCompilerKind>;
 
 export class CCompilerGrammar extends Grammar<CCompilerIdentifier, ASTCCompilerKind> {}
 
-export class ASTCCompilerNode extends TreeNode<ASTCCompilerKind> {
+export class ASTCCompilerNode<C extends TreeNode<ASTCCompilerKind> = any> extends TreeNode<ASTCCompilerKind, C> {
   type?: CType;
 }

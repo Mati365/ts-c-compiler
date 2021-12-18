@@ -28,7 +28,7 @@ export function parameterTypeList(grammar: CGrammar): ASTCParametersList {
       },
     );
 
-    list.items.push(
+    list.children.push(
       new ASTCParameterDeclaration(
         NodeLocation.fromTokenLoc(ellipsisNode.loc),
         null, null, null,

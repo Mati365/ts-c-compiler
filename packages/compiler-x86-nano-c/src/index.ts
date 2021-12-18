@@ -2,10 +2,11 @@ import {ccompiler} from './frontend';
 
 ccompiler(
   /* cpp */ `
-    struct Vec2 {};
+    enum ABC {
+        A = 1 + 2
+    };
 
-    struct Dupa {
-      struct Vec2 pos;
+    struct Vec {
     };
   `,
 ).match(

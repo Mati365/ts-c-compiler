@@ -1,30 +1,9 @@
-import {
-  ASTCCompilerKind,
-  ASTCStructSpecifier,
-  ASTCStructDeclaration,
-  ASTCSpecifiersQualifiersList,
-} from '@compiler/x86-nano-c/frontend/parser';
-
+import {ASTCStructSpecifier} from '@compiler/x86-nano-c/frontend/parser';
 import {CStructType} from '../../types';
 import {CTypeTreeVisitor} from './CTypeTreeVisitor';
+import {CTypeCheckError, CTypeCheckErrorCode} from '../../errors/CTypeCheckError';
 
-class CStructDeclarationListVisitor extends CTypeTreeVisitor<CTypeStructVisitor> {
-  protected entry = CStructType.ofBlank();
-
-  constructor() {
-    super(
-      {
-        [ASTCCompilerKind.ParameterDeclarationSpecifier]: {
-          enter: (node: ASTCSpecifiersQualifiersList) => {
-            console.info(node);
-          },
-        },
-      },
-    );
-
-    console.info('entry');
-  }
-}
+import {extractTypeFromDeclarationSpecifier} from '../extractors';
 
 /**
  * Enters structure and analyzes its content
@@ -34,41 +13,40 @@ class CStructDeclarationListVisitor extends CTypeTreeVisitor<CTypeStructVisitor>
  * @extends {CTypeTreeVisitor}
  */
 export class CTypeStructVisitor extends CTypeTreeVisitor {
-  protected structureType = CStructType.ofBlank();
+  initForRootNode(node: ASTCStructSpecifier): this {
+    const displayName = (
+      this
+        .extractStructTypeFromNode(node)
+        .getDisplayName()
+    );
 
-  constructor() {
-    super();
-    this
-      .setVisitorsMap(CTypeStructVisitor.nestedVisitors)
-      .setContext(this);
-  }
-
-  mapStruct(fn: (struct: CStructType) => CStructType): this {
-    this.structureType = fn(this.structureType);
+    console.info(displayName);
     return this;
   }
 
-  static readonly nestedVisitors = {
-    [ASTCCompilerKind.StructSpecifier]: {
-      enter(this: CTypeStructVisitor, {name}: ASTCStructSpecifier) {
-        this.mapStruct((struct) => struct.ofName(name.text));
-      },
+  /**
+   * Walks over struct tree node and constructs type
+   *
+   * @param {ASTCStructSpecifier} structSpecifier
+   * @return {CStructType}
+   * @memberof CTypeStructVisitor
+   */
+  extractStructTypeFromNode(structSpecifier: ASTCStructSpecifier): CStructType {
+    const {context} = this;
+    let structType = CStructType.ofBlank(structSpecifier.name.text);
 
-      leave(this: CTypeStructVisitor) {
-        console.info(this.structureType.toString());
-      },
-    },
+    structSpecifier.list?.children.forEach((declaration) => {
+      const type = extractTypeFromDeclarationSpecifier(
+        context,
+        declaration.specifierList,
+      );
 
-    [ASTCCompilerKind.StructDeclaration]: {
-      enter(this: CTypeStructVisitor, node: ASTCStructDeclaration) {
-        (
-          this
-            .intantizeWithContext(CStructDeclarationListVisitor)
-            .visit(node)
-        );
+      if (!type)
+        throw new CTypeCheckError(CTypeCheckErrorCode.UNABLE_TO_EXTRACT_STRUCT_TYPE);
 
-        return false;
-      },
-    },
-  };
+      structType = structType.ofAppendedField(type, 'xD');
+    });
+
+    return structType;
+  }
 }

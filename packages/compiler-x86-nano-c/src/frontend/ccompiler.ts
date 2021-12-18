@@ -4,18 +4,11 @@ import {timingsToString} from '@compiler/core/utils';
 import {TreeNode} from '@compiler/grammar/tree/TreeNode';
 import {TreePrintVisitor} from '@compiler/grammar/tree/TreePrintVisitor';
 import {CCompilerTimings, createCCompilerTimings} from './utils/createCCompilerTimings';
+import {CCompilerConfig, CCompilerArch} from '../constants/config';
 
 import {ASTCCompilerNode} from './parser/ast';
 import {safeAssignTypesToTree} from './typecheck';
-import {
-  safeGenerateTree,
-  clexer,
-  CLexerConfig,
-} from './parser';
-
-type CCompilerConfig = {
-  lexer?: CLexerConfig,
-};
+import {safeGenerateTree, clexer} from './parser';
 
 /**
  * Output of compilation
@@ -69,12 +62,17 @@ export class CCompilerOutput {
  * @param {CCompilerConfig} ccompilerConfig
  * @returns
  */
-export function ccompiler(code: string, ccompilerConfig: CCompilerConfig = {}) {
+export function ccompiler(
+  code: string,
+  ccompilerConfig: CCompilerConfig = {
+    arch: CCompilerArch.X86_16,
+  },
+) {
   const timings = createCCompilerTimings();
 
   return timings.add('lexer', clexer)(ccompilerConfig.lexer, code)
     .andThen(timings.add('ast', safeGenerateTree))
-    .andThen(timings.add('typecheck', safeAssignTypesToTree))
+    .andThen(timings.add('typecheck', (tree) => safeAssignTypesToTree(ccompilerConfig, tree)))
     .andThen(timings.add('compiler', (tree) => ok(
       new CCompilerOutput(
         code,

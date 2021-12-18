@@ -21,6 +21,7 @@ export abstract class Result<T, E, ValType = T | E> {
   abstract unwrap(): T | never;
   abstract unwrapErr(): E | never;
   abstract unwrapOr(val: T): T;
+  abstract unwrapOrThrow(): T;
   abstract unwrapBoth(): [E, T];
 
   /**
@@ -79,6 +80,10 @@ export class Ok<T, E = never> extends Result<T, E> {
     return <T> this._value;
   }
 
+  unwrapOrThrow(): T {
+    return this.unwrap();
+  }
+
   unwrapBoth(): [E, T] {
     return [null, <T> this._value];
   }
@@ -120,6 +125,10 @@ export class Err<T, E> extends Result<T, E> {
 
   unwrapOr<A = T>(a: A): A {
     return a;
+  }
+
+  unwrapOrThrow(): T {
+    throw <any> this._value;
   }
 
   unwrapBoth(): [E, T] {

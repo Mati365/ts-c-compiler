@@ -1,12 +1,14 @@
 import * as R from 'ramda';
 
 import {Identity} from '@compiler/core/monads';
+import {CCompilerArch, CStructAlign} from '@compiler/x86-nano-c/constants';
 import {CType} from './CType';
 import {CPrimitiveType} from './CPrimitiveType';
 
 export type CStructTypeEntryPair = [string, CType];
 export type CStructTypeDescriptor = {
   name?: string,
+  align: CStructAlign,
   fields: Map<string, CType>,
 };
 
@@ -18,17 +20,18 @@ export type CStructTypeDescriptor = {
  * @extends {CType<CStructTypeDescriptor>}
  */
 export class CStructType extends CType<CStructTypeDescriptor> {
-  static ofBlank() {
+  static ofBlank(name?: string) {
     return new CStructType(
       {
+        name,
+        align: CStructAlign.PACKED,
         fields: new Map,
       },
     );
   }
 
-  get name() {
-    return this.value.name;
-  }
+  get name() { return this.value.name; }
+  get align() { return this.value.align; }
 
   /**
    * Appends new type to newly created struct
@@ -70,7 +73,8 @@ export class CStructType extends CType<CStructTypeDescriptor> {
    * @memberof CStructType
    */
   isEqual(value: Identity<CStructTypeDescriptor>): boolean {
-    if (!(value instanceof CStructType))
+    if (!(value instanceof CStructType)
+        || value.align !== this.align)
       return false;
 
     const [left, right] = [
@@ -99,12 +103,12 @@ export class CStructType extends CType<CStructTypeDescriptor> {
     return [...this.value.fields.entries()];
   }
 
-  getByteSize(): number {
-    return CPrimitiveType.int.getByteSize();
+  getByteSize(arch: CCompilerArch): number {
+    return CPrimitiveType.int.getByteSize(arch);
   }
 
   getDisplayName(): string {
-    const {name} = this;
+    const {name, align} = this;
     let fields = (
       this
         .getFieldsList()
@@ -115,6 +119,6 @@ export class CStructType extends CType<CStructTypeDescriptor> {
     if (!R.isEmpty(fields))
       fields = `\n${fields}\n`;
 
-    return `struct ${name || '<anonymous>'} {${fields}}`;
+    return `struct [[${align}]] ${name || '<anonymous>'} {${fields}}`;
   }
 }

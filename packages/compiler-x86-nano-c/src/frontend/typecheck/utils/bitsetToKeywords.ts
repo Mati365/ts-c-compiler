@@ -11,8 +11,10 @@ import {hasFlag} from '@compiler/core/utils';
  * @return {string[]}
  */
 export function bitsetToKeywords(bitmap: Record<string, number>, number: number): string[] {
-  const keywords: string[] = [];
+  if (R.isNil(number))
+    return [];
 
+  const keywords: string[] = [];
   R.forEachObjIndexed(
     (flag, keyword) => {
       if (hasFlag(flag, number))

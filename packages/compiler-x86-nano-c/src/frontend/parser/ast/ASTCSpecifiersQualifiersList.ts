@@ -1,25 +1,15 @@
-import {walkOverFields} from '@compiler/grammar/decorators/walkOverFields';
-
 import {NodeLocation} from '@compiler/grammar/tree/NodeLocation';
-import {ASTCCompilerKind, ASTCCompilerNode} from './ASTCCompilerNode';
+import {ASTCDeclarationSpecifier} from './ASTCDeclarationSpecifier';
 import {ASTCTypeQualifiersList} from './ASTCTypeQualifiersList';
 import {ASTCTypeSpecifiersList} from './ASTCTypeSpecifiersList';
 
-@walkOverFields(
-  {
-    fields: [
-      'typeSpecifiers',
-      'typeQualifiers',
-    ],
-  },
-)
-export class ASTCSpecifiersQualifiersList extends ASTCCompilerNode {
+export class ASTCSpecifiersQualifiersList extends ASTCDeclarationSpecifier {
   constructor(
     loc: NodeLocation,
-    public readonly typeSpecifiers: ASTCTypeSpecifiersList,
-    public readonly typeQualifiers: ASTCTypeQualifiersList,
+    typeSpecifiers: ASTCTypeSpecifiersList,
+    typeQualifiers: ASTCTypeQualifiersList,
   ) {
-    super(ASTCCompilerKind.ParameterDeclarationSpecifier, loc);
+    super(loc, null, typeSpecifiers, typeQualifiers, null, null);
   }
 
   dropEmpty(): ASTCSpecifiersQualifiersList {
