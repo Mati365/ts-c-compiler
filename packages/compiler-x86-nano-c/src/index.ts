@@ -2,8 +2,10 @@ import {ccompiler} from './frontend';
 
 ccompiler(
   /* cpp */ `
+    struct Vec2 {};
+
     struct Dupa {
-      int dupa;
+      struct Vec2 pos;
     };
   `,
 ).match(

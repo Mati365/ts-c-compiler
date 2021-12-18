@@ -20,14 +20,20 @@ export const toMultilineBinaryBlockString = R.compose(
  */
 export class BinaryBlob<T = any> {
   constructor(
-    protected _ast: T = null,
-    protected _binary: number[] = null,
+    protected ast: T = null,
+    protected binary: number[] = null,
     public slaveBlobs: BinaryBlob[] = null, // for some 0 bytes instructions
   ) {}
 
-  get ast() { return this._ast; }
-  get binary() { return this._binary; }
-  get byteSize() { return this._binary.length; }
+  getAST() {
+    return this.ast;
+  }
+
+  getBinary() {
+    return this.binary;
+  }
+
+  get byteSize() { return this.binary.length; }
 
   /**
    * Print blob like objdump
@@ -51,8 +57,8 @@ export class BinaryBlob<T = any> {
 
   /* eslint-disable @typescript-eslint/no-unused-vars */
   compile(compiler?: X86Compiler, offset?: number): BinaryBlob<T> {
-    if (!this._binary)
-      this._binary = [];
+    if (!this.binary)
+      this.binary = [];
 
     return this;
   }

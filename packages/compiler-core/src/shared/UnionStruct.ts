@@ -32,7 +32,7 @@ export class UnionStruct {
    */
   unpack<T extends typeof UnionStruct>() {
     const output: {
-      [key in keyof Omit<InstanceType<T>, 'number'|'toString'>]?: number
+      [key in keyof Omit<InstanceType<T>, 'number' | 'toString'>]?: number
     } = {};
 
     const bitFields: BitFieldMetaInfo[] = Reflect.getOwnMetadata(unionStructMetaField, this.constructor);
@@ -68,7 +68,7 @@ export class UnionStruct {
    */
   static pack<T extends typeof UnionStruct>(
     this: T,
-    obj: {[key in keyof Omit<InstanceType<T>, 'number'|'toString'>]?: number},
+    obj: {[key in keyof Omit<InstanceType<T>, 'number' | 'toString'>]?: number},
   ): InstanceType<T> {
     const struct = (new this()) as InstanceType<T>;
 

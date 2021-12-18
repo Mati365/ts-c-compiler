@@ -14,7 +14,7 @@ export function toIEEE754(v: number, ebits: number, fbits: number): number[] {
   const extendedPrecision = ebits === 15 && fbits === 63;
 
   // Compute sign, exponent, fraction
-  let s: number|boolean,
+  let s: number | boolean,
     e: number,
     f: number;
 

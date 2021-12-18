@@ -130,7 +130,7 @@ export const CompilerBinaryGraph = memo(({result}: CompilerBinaryGraphProps) => 
                     <td
                       className='is-instruction'
                       dangerouslySetInnerHTML={{
-                        __html: highlightInstructionHTML(blob.ast.toString()),
+                        __html: highlightInstructionHTML(blob.getAST().toString()),
                       }}
                     />
                   </tr>

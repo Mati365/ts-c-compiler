@@ -3,6 +3,9 @@ export type UnmountCallback = () => void;
 
 /** Utils */
 export type CanBeArray<T> = T | T[];
+export type Newable<T, A extends Array<any> = any> = {
+  new(...args: A): T,
+};
 
 /** Size types */
 export type RectangleDimensions = {

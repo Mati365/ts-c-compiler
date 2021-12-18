@@ -123,7 +123,7 @@ export function directDeclarator(grammar: CGrammar): ASTCDirectDeclarator {
   let directDeclaratorNode: ASTCDirectDeclarator = null;
 
   do {
-    // eslint-disable-next-line no-loop-func
+    // eslint-disable-next-line no-loop-func, @typescript-eslint/no-loop-func
     const newDirectDeclaratorNode = g.try(() => <ASTCDirectDeclarator> g.or(
       {
         declarator() {

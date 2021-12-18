@@ -217,7 +217,7 @@ export class VGACrtcRegs extends VGAIndexedReg {
     return this.cursorStartReg.cd === 1;
   }
 
-  setTextCursorDisabled(disabled: number|boolean) {
+  setTextCursorDisabled(disabled: number | boolean) {
     this.cursorStartReg.cd = +disabled;
   }
 

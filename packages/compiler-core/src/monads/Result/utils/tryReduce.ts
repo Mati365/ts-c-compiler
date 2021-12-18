@@ -15,7 +15,7 @@ import {Result, Err, ok} from '../Result';
 export function tryReduce<A, T, E>(
   mapper: (acc: T, item: A) => Result<T, E>,
   init: T,
-  array: A[]|Iterable<A>,
+  array: A[] | Iterable<A>,
 ): Result<T | null, E> {
   let acc: T = init;
 

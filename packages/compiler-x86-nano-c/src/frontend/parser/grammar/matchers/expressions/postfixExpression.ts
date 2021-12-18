@@ -38,6 +38,8 @@ export function postfixExpression(grammar: CGrammar): ASTCPostfixExpression {
 
   do {
     const startLoc = NodeLocation.fromTokenLoc(g.currentToken.loc);
+
+    // eslint-disable-next-line no-loop-func, @typescript-eslint/no-loop-func
     const newPostfixExpressionNode = g.try(() => <ASTCPostfixExpression> g.or(
       {
         primary: () => new ASTCPostfixExpression(

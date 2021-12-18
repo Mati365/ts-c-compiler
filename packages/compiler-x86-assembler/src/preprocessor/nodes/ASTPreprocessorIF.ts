@@ -13,7 +13,7 @@ import {
 } from '../interpreter/PreprocessorInterpreter';
 
 export class ASTPreprocessorCondition extends ASTPreprocessorNode {
-  protected _result: boolean = false;
+  protected result: boolean = false;
 
   constructor(
     kind: ASTPreprocessorKind,
@@ -26,9 +26,9 @@ export class ASTPreprocessorCondition extends ASTPreprocessorNode {
   }
 
   toEmitterLine(interpreter: PreprocessorInterpreter): string {
-    const {_result, consequent, alternate} = this;
+    const {result, consequent, alternate} = this;
 
-    if (_result)
+    if (result)
       return consequent.toEmitterLine(interpreter);
 
     return alternate?.toEmitterLine(interpreter) ?? '';
@@ -71,7 +71,7 @@ export class ASTPreprocessorIF extends ASTPreprocessorCondition {
     if (negated)
       result = !result;
 
-    this._result = result;
+    this.result = result;
     if (result)
       return consequent.exec(interpreter);
 

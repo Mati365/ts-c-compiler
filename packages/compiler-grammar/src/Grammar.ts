@@ -66,21 +66,21 @@ type GrammarMatcherInfo<I> = {
  * @template K NodeKind
  */
 export class Grammar<I, K = string> extends TokensIterator {
-  private _rootProduction: GrammarProduction<K>;
-  private _tree: TreeNode<K> = new TreeNode<K>(null, null, []);
-  private _matchCallNesting: number = 0;
+  private rootProduction: GrammarProduction<K>;
+  private tree: TreeNode<K> = new TreeNode<K>(null, null, []);
+  private matchCallNesting: number = 0;
 
   constructor(
-    private _config: GrammarConfig,
+    private config: GrammarConfig,
   ) {
     super(null);
 
-    this._config = _config ?? {};
-    this._config.ignoreCase = this._config.ignoreCase ?? true;
+    this.config = config ?? {};
+    this.config.ignoreCase = this.config.ignoreCase ?? true;
   }
 
-  get tree() { return this._tree; }
-  get config() { return this._config; }
+  getRootProduction() { return this.rootProduction; }
+  getTree() { return this.tree; }
 
   /**
    * Creates grammar
@@ -96,7 +96,7 @@ export class Grammar<I, K = string> extends TokensIterator {
   static build<I, K>(config: GrammarConfig, initializer: GrammarInitializer<I, K>): Grammar<I, K> {
     const grammar = new Grammar<I, K>(config);
 
-    grammar._rootProduction = initializer(
+    grammar.rootProduction = initializer(
       {
         g: grammar,
       },
@@ -112,9 +112,9 @@ export class Grammar<I, K = string> extends TokensIterator {
    * @returns {TreeNode}
    * @memberof Grammar
    */
-  process(code: string|Token[]): TreeNode<K> {
+  process(code: string | Token[]): TreeNode<K> {
     if (R.is(String, code)) {
-      const {identifiers} = this._config;
+      const {identifiers} = this.config;
 
       this.tokens = Array.from(
         lexer(
@@ -138,11 +138,11 @@ export class Grammar<I, K = string> extends TokensIterator {
     try {
       // this.tokenIndex = 0;
       // this._matchCallNesting = 0;
-      this._tree = new TreeNode<K>(
+      this.tree = new TreeNode<K>(
         <any> 'Root',
         null,
         safeArray(
-          this._rootProduction(),
+          this.rootProduction(),
         ),
       );
     } catch (e) {
@@ -150,7 +150,7 @@ export class Grammar<I, K = string> extends TokensIterator {
       throw e;
     }
 
-    return this._tree;
+    return this.tree;
   }
 
   /**
@@ -217,27 +217,27 @@ export class Grammar<I, K = string> extends TokensIterator {
    */
   or(productions: GrammarProductions<K>): ReturnType<GrammarProduction<K>> {
     // search for matching production
-    const savedMatchCallNesting = this._matchCallNesting;
+    const savedMatchCallNesting = this.matchCallNesting;
     const savedIndex = this.tokenIndex;
 
     for (const name in productions) {
       const production = productions[name];
 
       try {
-        this._matchCallNesting = savedMatchCallNesting;
+        this.matchCallNesting = savedMatchCallNesting;
         const result = production();
-        this._matchCallNesting = savedMatchCallNesting;
+        this.matchCallNesting = savedMatchCallNesting;
 
         return result;
       } catch (e) {
-        const matchCallingDelta = this._matchCallNesting - savedMatchCallNesting;
-        this._matchCallNesting = savedMatchCallNesting;
+        const matchCallingDelta = this.matchCallNesting - savedMatchCallNesting;
+        this.matchCallNesting = savedMatchCallNesting;
 
         // already consumed some of instruction
         // but occurs parsing error
         if (!(e instanceof SyntaxError)
             || !('code' in e)
-            || (!this._config.ignoreMatchCallNesting && matchCallingDelta > 1))
+            || (!this.config.ignoreMatchCallNesting && matchCallingDelta > 1))
           throw e;
         else
           this.tokenIndex = savedIndex;
@@ -254,7 +254,7 @@ export class Grammar<I, K = string> extends TokensIterator {
    * @memberof Grammar
    */
   raiseNonCriticalMatchError(): void {
-    this._matchCallNesting = null;
+    this.matchCallNesting = null;
     throw new SyntaxError;
   }
 
@@ -277,11 +277,11 @@ export class Grammar<I, K = string> extends TokensIterator {
     }: GrammarMatcherInfo<I> = {},
   ): Token {
     if (!ignoreMatchNesting)
-      this._matchCallNesting++;
+      this.matchCallNesting++;
 
     // check if exists occurs when check types
     // throws error anyway because null token mismatch type
-    const {ignoreCase} = this._config;
+    const {ignoreCase} = this.config;
     const token: Token = this.fetchRelativeToken(0, false);
 
     if (!token)
@@ -341,7 +341,7 @@ export class Grammar<I, K = string> extends TokensIterator {
    * @returns
    * @memberof Grammar
    */
-  terminal(char: string|string[], consume: boolean = true) {
+  terminal(char: string | string[], consume: boolean = true) {
     const token: Token = this.fetchRelativeToken(0, false);
 
     if (char instanceof Array) {
@@ -376,8 +376,8 @@ export class Grammar<I, K = string> extends TokensIterator {
    * @returns {Token}
    * @memberof Grammar
    */
-  identifier(identifier?: I|I[], optional?: boolean, consume: boolean = true): Token {
-    this._matchCallNesting++;
+  identifier(identifier?: I | I[], optional?: boolean, consume: boolean = true): Token {
+    this.matchCallNesting++;
 
     const token: Token = this.fetchRelativeToken(0, false);
     if (token.kind !== TokenKind.IDENTIFIER

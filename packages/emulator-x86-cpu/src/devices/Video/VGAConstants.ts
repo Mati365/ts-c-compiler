@@ -103,7 +103,7 @@ export abstract class VGAIndexedReg {
  * @export
  * @enum {number}
  */
-export const VGA_CURSOR_SHAPES: Record<'FULL_BLOCK'|'UNDERLINE', [number, number]> = {
+export const VGA_CURSOR_SHAPES: Record<'FULL_BLOCK' | 'UNDERLINE', [number, number]> = {
   FULL_BLOCK: [0x0, 0xE],
   UNDERLINE: [0xD, 0xE],
 };

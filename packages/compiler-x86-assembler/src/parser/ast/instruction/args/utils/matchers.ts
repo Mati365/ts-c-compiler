@@ -46,12 +46,12 @@ export function reg(arg: ASTInstructionArg, byteSize: X86BitsMode, segment: bool
   if (arg.type !== InstructionArgType.REGISTER)
     return false;
 
-  const _reg = (<ASTInstructionRegisterArg> arg).val;
+  const regArg = (<ASTInstructionRegisterArg> arg).val;
   return (
     arg.type === InstructionArgType.REGISTER
-      && !_reg.x87
-      && _reg.byteSize === byteSize
-      && _reg.segment === segment
+      && !regArg.x87
+      && regArg.byteSize === byteSize
+      && regArg.segment === segment
   );
 }
 
@@ -178,21 +178,21 @@ function x87reg(arg: ASTInstructionArg): RegisterSchema {
   if (arg.type !== InstructionArgType.REGISTER)
     return null;
 
-  const _reg = (<ASTInstructionRegisterArg> arg).val;
-  if (!_reg.x87)
+  const regArg = (<ASTInstructionRegisterArg> arg).val;
+  if (!regArg.x87)
     return null;
 
-  return _reg;
+  return regArg;
 }
 
 export function x87sti(arg: ASTInstructionArg, index: number = null): boolean {
-  const _reg = x87reg(arg);
+  const regArg = x87reg(arg);
 
-  return _reg && (index === null || (_reg.index === index));
+  return regArg && (index === null || (regArg.index === index));
 }
 
 export function x87st(arg: ASTInstructionArg, instruction: ASTInstruction) {
-  const _reg = x87reg(arg);
+  const regArg = x87reg(arg);
 
-  return _reg && (instruction.args.length === 1 || _reg.index === 0);
+  return regArg && (instruction.args.length === 1 || regArg.index === 0);
 }

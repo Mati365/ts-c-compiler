@@ -2,6 +2,10 @@ import * as R from 'ramda';
 import {$enum} from 'ts-enum-util';
 import {IdentifiersMap} from '@compiler/lexer/lexer';
 
+export enum CStructAlign {
+  PACKED = 'packed',
+}
+
 export enum CStorageClassSpecifier {
   TYPEDEF = 'typedef',
   EXTERN = 'extern',

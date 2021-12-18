@@ -8,7 +8,7 @@ import {CompilerError} from '@compiler/core/shared/CompilerError';
 import {ParserError, ParserErrorCode} from '../../shared/ParserError';
 import {ASTAsmNode} from './ASTAsmNode';
 
-export type TokensList = Token[]|IterableIterator<Token>;
+export type TokensList = Token[] | IterableIterator<Token>;
 
 /**
  * @todo

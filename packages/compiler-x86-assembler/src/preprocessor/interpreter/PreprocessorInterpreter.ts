@@ -72,29 +72,28 @@ export type PreprocessorInterpreterConfig = {
  * @class PreprocessorInterpreter
  */
 export class PreprocessorInterpreter {
-  private _scopes: PreprocessorScope[];
-
-  private _secondPassExec: boolean = false;
-  private _secondExecPassNodes: ASTPreprocessorNode[] = [];
+  private scopes: PreprocessorScope[];
+  private secondPassExec: boolean = false;
+  private secondExecPassNodes: ASTPreprocessorNode[] = [];
 
   constructor(
     private config: PreprocessorInterpreterConfig,
   ) {
-    this._scopes = [
+    this.scopes = [
       config.rootScope ?? new PreprocessorScope,
     ];
   }
 
-  get secondPassExec(): boolean {
-    return this._secondPassExec;
+  isSecondPass() {
+    return this.secondPassExec;
   }
 
   get rootScope(): PreprocessorScope {
-    return this._scopes[0];
+    return this.scopes[0];
   }
 
   get currentScope(): PreprocessorScope {
-    return R.last(this._scopes);
+    return R.last(this.scopes);
   }
 
   /**
@@ -104,7 +103,7 @@ export class PreprocessorInterpreter {
    * @memberof PreprocessorInterpreter
    */
   appendToSecondPassExec(node: ASTPreprocessorNode): void {
-    this._secondExecPassNodes.push(node);
+    this.secondExecPassNodes.push(node);
   }
 
   /**
@@ -120,14 +119,14 @@ export class PreprocessorInterpreter {
     variables: [string, InterpreterResult][],
     fn: (scope: PreprocessorScope) => R,
   ): R {
-    const {_scopes} = this;
+    const {scopes} = this;
     const scope = new PreprocessorScope(
       new Map<string, InterpreterResult>(variables || []),
     );
 
-    _scopes.push(scope);
+    scopes.push(scope);
     const result = fn(scope);
-    _scopes.pop();
+    scopes.pop();
 
     return result;
   }
@@ -163,20 +162,20 @@ export class PreprocessorInterpreter {
     let acc = '';
 
     // first phase
-    this._secondPassExec = false;
-    this._secondExecPassNodes = [];
+    this.secondPassExec = false;
+    this.secondExecPassNodes = [];
     ast.exec(this);
 
     // second phase
-    if (this._secondExecPassNodes.length) {
-      this._secondPassExec = true;
+    if (this.secondExecPassNodes.length) {
+      this.secondPassExec = true;
       R.forEach(
         (node) => {
           node.exec(this);
         },
-        this._secondExecPassNodes,
+        this.secondExecPassNodes,
       );
-      this._secondExecPassNodes = [];
+      this.secondExecPassNodes = [];
     }
 
     const interpreter = this;
@@ -292,10 +291,10 @@ export class PreprocessorInterpreter {
    * @memberof PreprocessorInterpreter
    */
   getVariable(name: string, currentScopeOnly: boolean = false): InterpreterResult {
-    const {_scopes} = this;
+    const {scopes} = this;
 
-    for (let i = _scopes.length - 1; i >= 0; --i) {
-      const {variables} = _scopes[i];
+    for (let i = scopes.length - 1; i >= 0; --i) {
+      const {variables} = scopes[i];
 
       if (variables.has(name))
         return variables.get(name);
@@ -542,7 +541,7 @@ export class PreprocessorInterpreter {
    * @memberof PreprocessorInterpreter
    */
   clear() {
-    this._scopes = [
+    this.scopes = [
       new PreprocessorScope,
     ];
   }

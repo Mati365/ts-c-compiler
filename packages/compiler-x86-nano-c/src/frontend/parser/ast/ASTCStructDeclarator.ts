@@ -19,6 +19,6 @@ export class ASTCStructDeclarator extends ASTCCompilerNode {
     public readonly declarator: ASTCDeclarator,
     public readonly expression?: ASTCConstantExpression,
   ) {
-    super(ASTCCompilerKind.StructDeclaratorList, loc);
+    super(ASTCCompilerKind.StructDeclarator, loc);
   }
 }

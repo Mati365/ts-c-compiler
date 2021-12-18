@@ -240,7 +240,7 @@ export class X87RegsStore {
    * @param {number|boolean} bit
    * @memberof X87RegsStore
    */
-  setStatusBit(nth: number, bit: number|boolean): void {
+  setStatusBit(nth: number, bit: number | boolean): void {
     this.status = setBit(nth, bit, this.status);
   }
 

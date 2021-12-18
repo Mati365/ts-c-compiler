@@ -27,7 +27,7 @@ export enum DefTokenNames {
  * @param {string|Token} token
  * @returns {number}
  */
-export function tokenDefSize(token: string|Token): number {
+export function tokenDefSize(token: string | Token): number {
   if (token instanceof Token) {
     if (token.type !== TokenType.KEYWORD)
       return null;

@@ -13,7 +13,7 @@ export const INNER_ITEM_MATCH_REGEX: RegExp = /%{([?.\w]*)}/g; // match = 1
  * @param {(object|Array<any>)} params
  * @returns {string}
  */
-export function format(str: string, params: object|Array<any>): string {
+export function format(str: string, params: object | Array<any>): string {
   let counter = 0;
 
   return str.replace(

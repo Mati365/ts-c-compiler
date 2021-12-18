@@ -7,7 +7,7 @@
  * @param {number} num
  * @returns {number}
  */
-export function setBit(nth: number, value: number|boolean, num: number): number {
+export function setBit(nth: number, value: number | boolean, num: number): number {
   return (
     value
       ? (num | (1 << nth))

@@ -14,6 +14,7 @@ export type MatcherResult = {
 
 declare global {
   namespace jest {
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     interface Matchers<R = any> {
       toOutputsBinary(match: BinaryOutputObject): MatcherResult;
       toHasCompilerError(errorCode: number): MatcherResult;
@@ -47,11 +48,12 @@ function toOutputsBinary(received: string, binary: BinaryOutputObject): MatcherR
       };
     }
 
-    if (!R.equals(blob.binary, code)) {
+    const compiledBinary = blob.getBinary();
+    if (!R.equals(compiledBinary, code)) {
       return {
         pass: false,
         message: () => (
-          `Binary mismatch, expected ${arrayToHexString(code)} but received ${arrayToHexString(blob.binary)}!`
+          `Binary mismatch, expected ${arrayToHexString(code)} but received ${arrayToHexString(compiledBinary)}!`
         ),
       };
     }
@@ -70,12 +72,13 @@ function toOutputsBinary(received: string, binary: BinaryOutputObject): MatcherR
  * @param {number} code
  * @returns {MatcherResult}
  */
-function toHasCompilerError(received: string|[string, AssemblerConfig], code: number): MatcherResult {
+function toHasCompilerError(received: string | [string, AssemblerConfig], code: number): MatcherResult {
   const parseResult = (
     R.is(Array, received)
       ? asm(received[0], <AssemblerConfig> received[1])
       : asm(<string> received)
   );
+
   if (parseResult.isOk()) {
     return {
       pass: false,

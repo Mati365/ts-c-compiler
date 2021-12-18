@@ -270,7 +270,8 @@ export class TableBinaryView extends BinaryView<JMPTableEntry[]> {
     const serializedLines: SerializedBlobsOffsets = mapMapValues(
       (blob: BinaryBlob, offset: number): JMPTableEntry => {
         // used for draw jump arrows
-        const {ast} = blob;
+        const ast = blob.getAST();
+
         if (
           ast instanceof ASTInstruction
             && ast.jumpInstruction

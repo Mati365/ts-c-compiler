@@ -51,7 +51,7 @@ export class ASTPreprocessorIFDef extends ASTPreprocessorCondition {
     if (negated)
       result = !result;
 
-    this._result = result;
+    this.result = result;
     if (result)
       return consequent.exec(interpreter);
 

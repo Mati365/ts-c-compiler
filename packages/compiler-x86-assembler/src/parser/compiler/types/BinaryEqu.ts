@@ -14,18 +14,18 @@ import {ASTEqu} from '../../ast/critical/ASTEqu';
  * @extends {BinaryBlob<ASTEqu>}
  */
 export class BinaryEqu extends BinaryBlob<ASTEqu> {
-  private _value: number = null;
-  private _labeled: boolean = false;
+  private value: number = null;
+  private labeled: boolean = false;
 
   constructor(ast: ASTEqu) {
     super(ast);
 
     this.pass();
-    this._labeled = R.isNil(this._value);
+    this.labeled = R.isNil(this.value);
   }
 
-  get val() { return this._value; }
-  get labeled() { return this._labeled; }
+  getValue() { return this.value; }
+  isLabeled() { return this.labeled; }
 
   pass(labelResolver?: ASTLabelAddrResolver): BinaryEqu {
     const {ast} = this;
@@ -37,9 +37,9 @@ export class BinaryEqu extends BinaryBlob<ASTEqu> {
     );
 
     if (result.isOk())
-      this._value = result.unwrap();
+      this.value = result.unwrap();
     else
-      this._value = null;
+      this.value = null;
 
     return this;
   }

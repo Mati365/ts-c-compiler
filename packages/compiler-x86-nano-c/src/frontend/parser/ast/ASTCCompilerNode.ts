@@ -87,6 +87,7 @@ export enum ASTCCompilerKind {
   ParametersList = 'ParametersList',
   BlockItemList = 'BlockItemList',
   DeclarationsList = 'DeclarationsList',
+  StructDeclarator = 'StructDeclarator',
   StructDeclaratorList = 'StructDeclaratorList',
   StructDeclarationList = 'StructDeclarationList',
   DesignatorList = 'DesignatorList',

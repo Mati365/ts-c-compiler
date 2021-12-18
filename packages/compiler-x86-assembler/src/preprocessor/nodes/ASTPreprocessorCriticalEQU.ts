@@ -1,10 +1,10 @@
 import * as R from 'ramda';
 
+import {joinTokensWithSpaces} from '@compiler/lexer/utils/joinTokensTexts';
+
 import {Token} from '@compiler/lexer/tokens';
 import {NodeLocation} from '@compiler/grammar/tree/NodeLocation';
 import {TreeVisitor} from '@compiler/grammar/tree/TreeVisitor';
-
-import {joinTokensWithSpaces} from '@compiler/lexer/utils/joinTokensTexts';
 
 import {
   ASTPreprocessorKind,
@@ -24,7 +24,7 @@ import {
  * @extends {ASTPreprocessorNode}
  */
 export class ASTPreprocessorCriticalEQU extends ASTPreprocessorNode {
-  private _constant: boolean = null;
+  private constant: boolean = null;
 
   constructor(
     loc: NodeLocation,
@@ -42,9 +42,9 @@ export class ASTPreprocessorCriticalEQU extends ASTPreprocessorNode {
    * @memberof ASTPreprocessorCriticalEQU
    */
   toEmitterLine(): string {
-    const {_constant, originalTokens} = this;
+    const {constant, originalTokens} = this;
 
-    if (_constant)
+    if (constant)
       return '';
 
     return joinTokensWithSpaces(
@@ -84,16 +84,16 @@ export class ASTPreprocessorCriticalEQU extends ASTPreprocessorNode {
       interpreter.setVariable(
         name,
         interpreter.evalExpression(expression),
-        interpreter.secondPassExec,
+        interpreter.isSecondPass(),
       );
 
-      this._constant = true;
+      this.constant = true;
     } catch (e) {
-      if (!interpreter.secondPassExec) {
+      if (!interpreter.isSecondPass()) {
         interpreter.setVariable(name, null);
         interpreter.appendToSecondPassExec(this);
       } else
-        this._constant = false;
+        this.constant = false;
     }
   }
 }

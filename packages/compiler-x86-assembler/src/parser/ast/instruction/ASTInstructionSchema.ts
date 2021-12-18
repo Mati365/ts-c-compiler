@@ -12,7 +12,10 @@ export class ASTInstructionSchema {
     public readonly binarySchema: string[],
     public readonly targetCPU = X86TargetCPU.I_186,
   ) {
-    this.minArgsCount = R.reject((arg) => arg.optional, argsSchema).length;
+    this.minArgsCount = R.reject(
+      (arg: ASTInstructionMatcherSchema) => arg.optional,
+      argsSchema,
+    ).length;
   }
 
   get byteSize() { return this.binarySchema.length; }

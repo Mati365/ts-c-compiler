@@ -136,7 +136,7 @@ export function directAbstractDeclarator(grammar: CGrammar): ASTCDirectAbstractD
 
   // direct_abstract_declarator *, array
   do {
-    // eslint-disable-next-line no-loop-func
+    // eslint-disable-next-line no-loop-func, @typescript-eslint/no-loop-func
     const newDirectDeclaratorNode = g.try(() => <ASTCDirectAbstractDeclarator> g.or(
       {
         fnExpression() {

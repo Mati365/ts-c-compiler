@@ -24,7 +24,7 @@ export class X86IO extends X86Unit {
     const {registers, opcodes, ports} = cpu;
 
     Object.assign(opcodes, {
-      /** IN AL, 8bits  */ 0xE4: (bits = 0x1, port: number) => {
+      /** IN AL, 8bits  */ 0xE4: (bits = 0x1, port?: number) => {
         if (!port)
           port = cpu.fetchOpcode(0x1);
 
@@ -36,8 +36,9 @@ export class X86IO extends X86Unit {
       /** IN AL, port[DX] */ 0xEC: () => opcodes[0xE4](0x1, registers.dx),
       /** IN AL, port[DX] */ 0xED: () => opcodes[0xE4](0x2, registers.dx),
 
-      /** OUT 8bits, al  */ 0xE6: (bits: X86BitsMode = 0x1, port: number) => {
+      /** OUT 8bits, al  */ 0xE6: (bits: X86BitsMode = 0x1, port?: number) => {
         port = port ?? cpu.fetchOpcode(0x1);
+
         if (port in ports)
           ports[port].set(registers[<string> X86_REGISTERS[bits][0x0]], bits);
       },

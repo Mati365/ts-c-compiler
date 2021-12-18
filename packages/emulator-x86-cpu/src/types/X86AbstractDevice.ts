@@ -63,7 +63,7 @@ export abstract class X86AbstractDevice<
    * @param {X86Port} handler
    * @memberof X86AbstractDevice
    */
-  protected mountPortsHandler(ports: number|number[], handler: X86Port): void {
+  protected mountPortsHandler(ports: number | number[], handler: X86Port): void {
     if (ports instanceof Array) {
       R.forEach(
         (port) => {
@@ -104,7 +104,7 @@ export abstract class X86AbstractDevice<
    * @memberof X86AbstractDevice
    */
   attachInterrupts(
-    interruptCode: string|number,
+    interruptCode: string | number,
     reg: X86RegName,
     list: {[address: number]: X86InterruptHandlerCallback},
     physicalAddress: number = ((this.memRegion && this.memRegion.low) || X86_MAPPED_VM_MEM.low) + +interruptCode,

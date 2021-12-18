@@ -141,7 +141,7 @@ export class X86Compiler {
      */
     function criticalKeywordResolver(name: string): number {
       if (equ.has(name))
-        return equ.get(name).val ?? 0;
+        return equ.get(name).getValue() ?? 0;
 
       return undefined;
     }
@@ -199,7 +199,7 @@ export class X86Compiler {
         blob.slaveBlobs.push(prevBlob);
       }
 
-      offset += size ?? blob.binary?.length ?? 1;
+      offset += size ?? blob.getBinary()?.length ?? 1;
     };
 
     /**
@@ -413,7 +413,7 @@ export class X86Compiler {
           return instructionOffset;
 
         if (equ.has(name))
-          return equ.get(name).val ?? 0;
+          return equ.get(name).getValue() ?? 0;
 
         if (isLocalLabel(name)) {
           name = resolveLocalTokenAbsName(
@@ -473,21 +473,17 @@ export class X86Compiler {
      * @returns {boolean}
      */
     function passEqu(offset: number, blob: BinaryEqu): boolean {
-      const {
-        ast,
-        labeled,
-        val: prevValue,
-      } = blob;
+      const prevValue = blob.getValue();
 
       // ignore, it is propably already resolved
-      if (!labeled)
+      if (!blob.isLabeled())
         return false;
 
       blob.pass(
-        labelResolver(ast, offset),
+        labelResolver(blob.getAST(), offset),
       );
 
-      return prevValue !== blob.val || R.isNil(prevValue);
+      return prevValue !== blob.getValue() || R.isNil(prevValue);
     }
 
     /**
@@ -500,7 +496,9 @@ export class X86Compiler {
      * @returns {boolean} True if need to repeat pass
      */
     function passDefinition(offset: number, blob: BinaryDefinition): boolean {
-      return blob.hasUnresolvedDefinitions() && !blob.tryResolveOffsets(labelResolver(blob.ast, offset));
+      return blob.hasUnresolvedDefinitions() && !blob.tryResolveOffsets(
+        labelResolver(blob.getAST(), offset),
+      );
     }
 
     // proper resolve labels
@@ -520,8 +518,12 @@ export class X86Compiler {
               if (slave instanceof BinaryEqu) {
                 if (passEqu(offset, slave))
                   needPass = true;
-              } else
-                throw new ParserError(ParserErrorCode.INCORRECT_SLAVE_BLOBS, blob.ast.loc.start);
+              } else {
+                throw new ParserError(
+                  ParserErrorCode.INCORRECT_SLAVE_BLOBS,
+                  blob.getAST().loc.start,
+                );
+              }
             }
           }
 
@@ -538,7 +540,12 @@ export class X86Compiler {
               continue;
           } else if (blob instanceof BinaryRepeatedNode) {
             // repeats instruction nth times
-            const blobResult = blob.pass(this, offset - this._origin, labelResolver(blob.ast, offset));
+            const blobResult = blob.pass(
+              this,
+              offset - this._origin,
+              labelResolver(blob.getAST(), offset),
+            );
+
             const blobSize = blobResult.getByteSize();
 
             // prevent loop, kill times
@@ -551,8 +558,8 @@ export class X86Compiler {
               break;
             }
           } else if (blob instanceof BinaryInstruction) {
-            const {ast, binary} = blob;
-            const pessimisticSize = binary.length;
+            const ast = blob.getAST();
+            const pessimisticSize = blob.byteSize;
 
             // generally check for JMP/CALL etc instructions
             // and all args have defined values
@@ -598,7 +605,7 @@ export class X86Compiler {
             ];
           }
         } catch (e) {
-          e.loc = e.loc ?? blob.ast?.loc?.start;
+          e.loc = e.loc ?? blob.getAST()?.loc?.start;
 
           throw e;
         }
@@ -632,7 +639,7 @@ export class X86Compiler {
       if (blob instanceof BinaryInstruction)
         compiled = blob.compile(this, offset);
 
-      if (blob.binary) {
+      if (blob.getBinary()) {
         result.byteSize = Math.max(result.byteSize, offset + blob.byteSize - this._origin);
         result.blobs.set(offset, compiled);
       }

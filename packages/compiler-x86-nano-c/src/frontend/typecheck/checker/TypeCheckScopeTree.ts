@@ -10,8 +10,8 @@ import {CTypeCheckError, CTypeCheckErrorCode} from '../errors/CTypeCheckError';
  * @class TypeCheckScopeTree
  */
 export class TypeCheckScopeTree {
-  private _childs: TypeCheckScopeTree[] = [];
-  private _types: Record<string, CType> = {};
+  private childs: TypeCheckScopeTree[] = [];
+  private types: Record<string, CType> = {};
 
   constructor(
     public readonly parentContext: TypeCheckScopeTree = null,
@@ -30,9 +30,9 @@ export class TypeCheckScopeTree {
    * @memberof TypeCheckScopeTree
    */
   defineType(name: string, type: CType): Result<CType, CTypeCheckError> {
-    const {_types} = this;
+    const {types} = this;
 
-    if (_types[name]) {
+    if (types[name]) {
       return err(
         new CTypeCheckError(
           CTypeCheckErrorCode.REDEFINITION_OF_TYPE,
@@ -43,7 +43,7 @@ export class TypeCheckScopeTree {
       );
     }
 
-    _types[name] = type;
+    types[name] = type;
     return ok(type);
   }
 
@@ -56,9 +56,9 @@ export class TypeCheckScopeTree {
    * @memberof TypeCheckScopeTree
    */
   findType(name: string): CType {
-    const {_types, parentContext} = this;
+    const {types, parentContext} = this;
 
-    const type = _types[name];
+    const type = types[name];
     if (type)
       return type;
 
@@ -77,12 +77,12 @@ export class TypeCheckScopeTree {
    * @memberof TypeCheckScopeTree
    */
   enterScope<T>(fn: (scope: TypeCheckScopeTree) => T): T {
-    const {_childs} = this;
+    const {childs} = this;
     const childScope = new TypeCheckScopeTree(this);
 
-    _childs.push(childScope);
+    childs.push(childScope);
     const result = fn(childScope);
-    _childs.pop();
+    childs.pop();
 
     return result;
   }

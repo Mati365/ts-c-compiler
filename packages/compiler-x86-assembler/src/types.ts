@@ -65,7 +65,7 @@ export const BRANCH_ADDRESSING_SIZE_MAPPING = {
 /**
  * @see {@link https://cs.lmu.edu/~ray/notes/nasmtutorial/}
  */
-export type MemSIBScale = 1|2|4|8;
+export type MemSIBScale = 1 | 2 | 4 | 8;
 
 export type MemAddressDescription = {
   sreg?: RegisterSchema,

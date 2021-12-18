@@ -31,8 +31,11 @@
 
   plugins:
     - '@typescript-eslint'
+    - 'jsx-a11y'
     - react-hooks
+    - react
     - xss
+    - import
 
   rules:
     max-len: ["error", 120]
@@ -40,15 +43,18 @@
     quotes: ["error", "single"]
     import/no-default-export: [2]
     import/prefer-default-export: "off"
-    react/static-property-placement: ["warn", "static public field", {
-      childContextTypes: "static getter",
-      contextTypes: "static public field",
-      contextType: "static public field",
-      displayName: "static public field",
-    }]
+    react/static-property-placement:
+      - "warn"
+      - "static public field"
+      - childContextTypes: "static getter"
+        contextTypes: "static public field"
+        contextType: "static public field"
+        displayName: "static public field"
+
     no-constant-condition: ["error", {"checkLoops": false}]
     object-property-newline: 0
     lines-between-class-members: 0
+    '@typescript-eslint/lines-between-class-members': 0
     max-classes-per-file: 0
     spaced-comment: 0
     react-hooks/rules-of-hooks: "error"
@@ -60,7 +66,7 @@
     jsx-a11y/anchor-is-valid: ["warn", {"aspects": ["invalidHref"]}]
     jsx-a11y/click-events-have-key-events: 0
     jsx-a11y/mouse-events-have-key-events: 0
-    object-curly-spacing: ["error", "never"]
+    '@typescript-eslint/object-curly-spacing': ["error", "never"]
     function-paren-newline: 0
     object-curly-newline: 0
     one-var: 0
@@ -80,7 +86,7 @@
     no-plusplus: 0
     no-underscore-dangle: 0
     no-console: ["error", {"allow": ["warn", "error", "info"]}]
-    no-use-before-define: ["error", {"variables": false}]
+    no-use-before-define: 0
     no-unused-expressions: ["error", {"allowTaggedTemplates": true, "allowShortCircuit": true}]
     react/destructuring-assignment: 0
     react/forbid-prop-types: 0
@@ -96,42 +102,41 @@
     react/no-danger: 0
     react/prop-types: 0
     react/jsx-props-no-spreading: 0
-    react/sort-comp: [1, {
-      "order": [
-        "static-methods",
-        "lifecycle",
-        "everything-else",
-        "render"
-      ],
-      "groups": {
-        "lifecycle": [
-          "displayName",
-          "propTypes",
-          "contextTypes",
-          "childContextTypes",
-          "mixins",
-          "defaultProps",
-          "statics",
-          "static-variables",
-          "getDefaultProps",
-          "state",
-          "instance-variables",
-          "constructor",
-          "getInitialState",
-          "getChildContext",
-          "getDerivedStateFromProps",
-          "componentWillMount",
-          "UNSAFE_componentWillMount",
-          "componentDidMount",
-          "UNSAFE_componentWillReceiveProps",
-          "UNSAFE_UNSAFE_componentWillReceiveProps",
-          "shouldComponentUpdate",
-          "componentWillUpdate",
-          "UNSAFE_componentWillUpdate",
-          "getSnapshotBeforeUpdate",
-          "componentDidUpdate",
-          "componentDidCatch",
-          "componentWillUnmount"
+    react/sort-comp:
+      - 1
+      - order: [
+          "static-methods",
+          "lifecycle",
+          "everything-else",
+          "render"
         ]
-      }
-    }]
+        groups:
+          lifecycle: [
+            "displayName",
+            "propTypes",
+            "contextTypes",
+            "childContextTypes",
+            "mixins",
+            "defaultProps",
+            "statics",
+            "static-variables",
+            "getDefaultProps",
+            "state",
+            "instance-variables",
+            "constructor",
+            "getInitialState",
+            "getChildContext",
+            "getDerivedStateFromProps",
+            "componentWillMount",
+            "UNSAFE_componentWillMount",
+            "componentDidMount",
+            "UNSAFE_componentWillReceiveProps",
+            "UNSAFE_UNSAFE_componentWillReceiveProps",
+            "shouldComponentUpdate",
+            "componentWillUpdate",
+            "UNSAFE_componentWillUpdate",
+            "getSnapshotBeforeUpdate",
+            "componentDidUpdate",
+            "componentDidCatch",
+            "componentWillUnmount"
+          ]

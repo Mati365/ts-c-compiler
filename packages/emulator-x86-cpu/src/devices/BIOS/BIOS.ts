@@ -448,7 +448,7 @@ export class BIOS extends uuidX86Device<X86CPU>('bios') {
     const writeCharacter = (
       character: number,
       attribute?: number,
-      color: number|boolean = true,
+      color: number | boolean = true,
       moveCursor?: boolean,
       cursor: Vec2D = this.vga.getTextCursorLocation(),
     ): void => {
@@ -511,7 +511,7 @@ export class BIOS extends uuidX86Device<X86CPU>('bios') {
 
     const writeCharacters = (
       attribute?: number,
-      color: number|boolean = true,
+      color: number | boolean = true,
       moveCursor: boolean = false,
     ): void => {
       const {regs, vga} = this;
@@ -673,7 +673,7 @@ export class BIOS extends uuidX86Device<X86CPU>('bios') {
    *
    * @param {Number|Object} code  Mode
    */
-  setVideoMode(code: number|VideoMode): void {
+  setVideoMode(code: number | VideoMode): void {
     const {screen, vga, cpu} = this;
     const newMode = Number.isNaN(<number> code) ? code : BIOS.VideoMode[<number> code];
 

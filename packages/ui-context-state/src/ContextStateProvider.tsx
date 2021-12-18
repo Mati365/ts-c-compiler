@@ -16,7 +16,7 @@ export type StateAccessor<S> = {getState(): S};
 
 export type ContextSelectorsFactory<S, SS> = (accessor?: StateAccessor<S>) => SS;
 
-export type ContextAction<R = any> = (...args: R[]|[R]) => any;
+export type ContextAction<R = any> = (...args: R[] | [R]) => any;
 
 export type ContextStateRenderChildren<S> = (state: S) => ReactNode;
 

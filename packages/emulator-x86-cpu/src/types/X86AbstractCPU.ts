@@ -139,7 +139,7 @@ export abstract class X86AbstractCPU {
 
   /** logic methods */
   abstract fetchOpcode(size?: number, incrementIP?: boolean, ignorePrefix?: boolean): number;
-  abstract boot(device: Buffer|string, id?: number): void;
+  abstract boot(device: Buffer | string, id?: number): void;
   abstract exec(time: number): void;
   abstract halt(message?: string, dump?: boolean): void;
   abstract interrupt(interrupt: X86Interrupt): boolean;
@@ -311,7 +311,7 @@ export abstract class X86AbstractCPU {
    * @param {X86RegName}  reg   Normal register or offset
    * @returns {number}
    */
-  getMemAddress(sreg: X86RegName, reg: X86RegName|Number): number {
+  getMemAddress(sreg: X86RegName, reg: X86RegName | Number): number {
     return (
       (X86AbstractCPU.toUnsignedNumber(this.registers[<string> sreg], 0x2) << 4)
         + X86AbstractCPU.toUnsignedNumber((<string> reg).length ? this.registers[<string> reg] : reg, 0x2)

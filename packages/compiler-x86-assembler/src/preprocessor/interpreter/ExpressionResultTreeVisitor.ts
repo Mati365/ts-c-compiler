@@ -28,18 +28,18 @@ import {
  * @extends {TreeVisitor<ASTPreprocessorNode>}
  */
 export class ExpressionResultTreeVisitor extends TreeVisitor<ASTPreprocessorNode> {
-  private _expressionArgs: InterpreterResult[] = [];
+  private expressionArgs: InterpreterResult[] = [];
 
   constructor(
-    private readonly _interpreter: PreprocessorInterpreter,
+    private readonly interpreter: PreprocessorInterpreter,
   ) {
     super();
   }
 
-  get value() { return R.last(this._expressionArgs); }
+  get value() { return R.last(this.expressionArgs); }
 
   leave(node: ASTPreprocessorNode) {
-    const {_expressionArgs} = this;
+    const {expressionArgs, interpreter} = this;
 
     switch (node.kind) {
       case ASTPreprocessorKind.BinaryOperator: {
@@ -47,10 +47,10 @@ export class ExpressionResultTreeVisitor extends TreeVisitor<ASTPreprocessorNode
         if (R.isNil(op))
           return;
 
-        const [left, right] = [_expressionArgs.pop(), _expressionArgs.pop()];
+        const [left, right] = [expressionArgs.pop(), expressionArgs.pop()];
 
         if (R.isNil(right)) {
-          _expressionArgs.push(left);
+          expressionArgs.push(left);
           return;
         }
 
@@ -71,7 +71,7 @@ export class ExpressionResultTreeVisitor extends TreeVisitor<ASTPreprocessorNode
           result = evalLogicOp(op, <boolean[]> reversedArgs);
 
         if (result !== null)
-          _expressionArgs.push(result);
+          expressionArgs.push(result);
         else {
           throw new PreprocessorError(
             PreprocessorErrorCode.INCORRECT_EXPRESSION,
@@ -83,8 +83,8 @@ export class ExpressionResultTreeVisitor extends TreeVisitor<ASTPreprocessorNode
       case ASTPreprocessorKind.Value: {
         const valNode = <ASTPreprocessorValueNode<NumberToken[]>> node;
 
-        _expressionArgs.push(
-          valNode.exec(this._interpreter),
+        expressionArgs.push(
+          valNode.exec(interpreter),
         );
       } break;
 

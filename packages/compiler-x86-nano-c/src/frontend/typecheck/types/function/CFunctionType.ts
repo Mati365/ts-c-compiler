@@ -2,6 +2,7 @@ import {findByName} from '@compiler/core/utils';
 
 import {Identity} from '@compiler/core/monads';
 import {CType} from '../CType';
+import {CPrimitiveType} from '../CPrimitiveType';
 import {CFunctionArgType} from './CFunctionArgType';
 
 export type CFunctionTypeDescriptor = {
@@ -17,6 +18,15 @@ export type CFunctionTypeDescriptor = {
  * @extends {CType<CFunctionTypeDescriptor>}
  */
 export class CFunctionType extends CType<CFunctionTypeDescriptor> {
+  static ofBlank() {
+    return new CFunctionType(
+      {
+        returnType: CPrimitiveType.void,
+        args: [],
+      },
+    );
+  }
+
   get returnType() {
     return this.value.returnType;
   }

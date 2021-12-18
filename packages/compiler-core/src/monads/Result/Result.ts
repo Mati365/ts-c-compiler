@@ -3,7 +3,7 @@ type ResultMatch<T, E, O> = {
   err(value: E): O;
 };
 
-export abstract class Result<T, E, ValType = T|E> {
+export abstract class Result<T, E, ValType = T | E> {
   constructor(
     protected readonly _value: ValType,
   ) {}
@@ -18,8 +18,8 @@ export abstract class Result<T, E, ValType = T|E> {
    * @returns {ValType}
    * @memberof Result
    */
-  abstract unwrap(): T|never;
-  abstract unwrapErr(): E|never;
+  abstract unwrap(): T | never;
+  abstract unwrapErr(): E | never;
   abstract unwrapOr(val: T): T;
   abstract unwrapBoth(): [E, T];
 
@@ -110,7 +110,7 @@ export class Ok<T, E = never> extends Result<T, E> {
  * @template E
  */
 export class Err<T, E> extends Result<T, E> {
-  unwrap(): T|never {
+  unwrap(): T | never {
     throw new Error('Cannot unwrap error!');
   }
 

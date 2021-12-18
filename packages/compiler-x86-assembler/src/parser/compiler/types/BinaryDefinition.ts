@@ -104,9 +104,7 @@ export function encodeDefineToken(byteSize: number, token: Token): number[] {
  * @extends {BinaryBlob<ASTDef>}
  */
 export class BinaryDefinition extends BinaryBlob<ASTDef> {
-  private _unresolvedOffsets: number[] = [];
-
-  get unresolvedOffsets() { return this._unresolvedOffsets; }
+  private unresolvedOffsets: number[] = [];
 
   /**
    * Returns true after compile() methods returns any null value.
@@ -117,7 +115,7 @@ export class BinaryDefinition extends BinaryBlob<ASTDef> {
    * @memberof BinaryDefinition
    */
   hasUnresolvedDefinitions(): boolean {
-    return this._unresolvedOffsets.length > 0;
+    return this.unresolvedOffsets.length > 0;
   }
 
   /**
@@ -164,8 +162,8 @@ export class BinaryDefinition extends BinaryBlob<ASTDef> {
       args,
     );
 
-    this._binary = binary;
-    this._unresolvedOffsets = this.collectUnresolvedOffsets();
+    this.binary = binary;
+    this.unresolvedOffsets = this.collectUnresolvedOffsets();
 
     return this;
   }
@@ -179,13 +177,13 @@ export class BinaryDefinition extends BinaryBlob<ASTDef> {
    */
   tryResolveOffsets(labelResolver: ASTLabelAddrResolver): boolean {
     const {
-      _binary,
-      _unresolvedOffsets,
+      binary,
+      unresolvedOffsets,
       ast: {args, byteSize},
     } = this;
 
-    for (let offsetIndex = 0; offsetIndex < _unresolvedOffsets.length;) {
-      const offset = _unresolvedOffsets[offsetIndex];
+    for (let offsetIndex = 0; offsetIndex < unresolvedOffsets.length;) {
+      const offset = unresolvedOffsets[offsetIndex];
       const argIndex = (offset / byteSize) | 0;
 
       const result = safeKeywordResultRPN(
@@ -202,11 +200,11 @@ export class BinaryDefinition extends BinaryBlob<ASTDef> {
 
       const offsetBytes = extractMultipleNumberBytes(byteSize, result.unwrap());
       for (let i = 0; i < offsetBytes.length; ++i)
-        _binary[offset + i] = offsetBytes[i];
+        binary[offset + i] = offsetBytes[i];
 
-      _unresolvedOffsets.splice(offsetIndex, 1);
+      unresolvedOffsets.splice(offsetIndex, 1);
     }
 
-    return !_unresolvedOffsets.length;
+    return !unresolvedOffsets.length;
   }
 }

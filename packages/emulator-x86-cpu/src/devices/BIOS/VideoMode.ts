@@ -50,7 +50,7 @@ export class VideoMode {
   write(
     mem: X86RAM<X86AbstractCPU>,
     char: number,
-    color: number|boolean,
+    color: number | boolean,
     x: number,
     y: number,
     page: number = 0x0,

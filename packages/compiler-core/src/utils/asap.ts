@@ -7,7 +7,7 @@ import {genUUID} from './genUUID';
  * @param {(() => void|boolean)} fn
  * @returns {VoidFunction}
  */
-export function asap(fn: () => void|boolean): VoidFunction {
+export function asap(fn: () => void | boolean): VoidFunction {
   const eventUUID = genUUID('asap-handler');
   let destroyed = false;
 

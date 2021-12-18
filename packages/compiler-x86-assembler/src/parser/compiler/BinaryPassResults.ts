@@ -76,7 +76,7 @@ export class SecondPassResult {
 
     let currentOffset = 0;
     for (const [, blob] of blobs) {
-      const {binary} = blob;
+      const binary = blob.getBinary();
       for (let i = 0; i < binary.length; ++i)
         bin[currentOffset + i] = binary[i];
 

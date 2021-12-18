@@ -86,7 +86,7 @@ export function rpnTokens(tokens: Token[], parserConfig?: MathParserConfig) {
  */
 export function safeKeywordResultRPN(
   config: MathParserConfig,
-  tokens: Token[]|string,
+  tokens: Token[] | string,
 ): Result<number, ASTExpressionParserError> {
   try {
     if (R.is(String, tokens)) {

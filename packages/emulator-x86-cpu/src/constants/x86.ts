@@ -64,11 +64,11 @@ export const X86_REGISTERS: Record<string, X86RegsSet> = {
   },
 };
 
-export const X86_REGISTER_NAMES = R.compose(
+export const X86_REGISTER_NAMES: string[] = R.compose(
   R.concat(['ip']),
-  R.unnest,
+  R.unnest as any,
   R.map(
-    ([, regs]) => R.values(regs),
+    ([, regs]: [unknown, Record<any, any>]) => R.values(regs),
   ),
   R.toPairs,
 )(X86_REGISTERS);

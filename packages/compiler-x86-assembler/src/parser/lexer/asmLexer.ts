@@ -29,7 +29,7 @@ export const TOKEN_PARSERS: TokenParsersMap = Object.freeze(
     [TokenType.FLOAT_NUMBER]: FloatNumberToken.parse,
 
     /** KEYWORD */
-    [TokenType.KEYWORD]: (token: string, loc?: TokenLocation): boolean|Token => (
+    [TokenType.KEYWORD]: (token: string, loc?: TokenLocation): boolean | Token => (
       RegisterToken.parse(token, loc)
         ?? BranchAddressingTypeToken.parse(token, loc)
         ?? SizeOverrideToken.parse(token, loc)

@@ -75,7 +75,7 @@ export class ASTInstruction extends KindASTAsmNode(ASTNodeKind.INSTRUCTION) {
   // used for optimistic instruction size predictions
   public originalArgsTokens: Token<any>[];
   public unresolvedArgs: boolean;
-  public typedArgs: {[type in InstructionArgType]: (ASTInstructionArg|ASTInstructionMemPtrArg)[]};
+  public typedArgs: {[type in InstructionArgType]: (ASTInstructionArg | ASTInstructionMemPtrArg)[]};
 
   // matched for args
   public schemas: ASTInstructionSchema[];
@@ -89,7 +89,7 @@ export class ASTInstruction extends KindASTAsmNode(ASTNodeKind.INSTRUCTION) {
   constructor(
     public readonly opcode: string,
     public argsTokens: Token<any>[],
-    public readonly prefixes: InstructionPrefix[] = [],
+    public readonly prefixes: InstructionPrefix[],
     loc: NodeLocation,
   ) {
     super(loc);

@@ -281,7 +281,7 @@ export class BinaryInstruction extends BinaryBlob<ASTInstruction> {
       },
     );
 
-    this._binary = [...binaryPrefixes, ...binary];
+    this.binary = [...binaryPrefixes, ...binary];
     return this;
   }
 

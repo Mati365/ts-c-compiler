@@ -9,13 +9,16 @@ import {IsEqual} from '../interfaces';
  * @template T
  */
 export class Identity<T> implements IsEqual<Identity<T>> {
-  constructor(
-    protected readonly value: T,
-  ) {}
+  protected readonly value: Readonly<T>;
+
+  constructor(value: T) {
+    this.value = Object.freeze(value);
+  }
 
   isEqual(value: Identity<T>): boolean {
-    if (!value)
+    if (!value) {
       return false;
+    }
 
     return R.equals(this.value, value.unwrap());
   }
@@ -28,8 +31,8 @@ export class Identity<T> implements IsEqual<Identity<T>> {
     return fn(this.value);
   }
 
-  map(fn: (value: T) => T): Identity<T> {
-    return new Identity(
+  map(fn: (value: T) => T): this {
+    return <this> new (this.constructor as any)(
       this.bind(fn),
     );
   }

@@ -40,7 +40,7 @@ type ALUFlagChecker = (
   r?: number,
   val?: number,
   operator?: ALUOperatorSchema,
-) => number|boolean;
+) => number | boolean;
 
 /**
  * Codes of ALU operators
@@ -269,12 +269,12 @@ export class X86ALU extends X86Unit {
    * Parses RM byte and decodes multipler operator
    *
    * @protected
-   * @param {X86BitsMode} [bits=0x1]
+   * @param {X86BitsMode} bits
    * @param {(a: number, byte: RMByte) => number} mul
    * @memberof X86ALU
    */
   protected rmByteMultiplierParse(
-    bits: X86BitsMode = 0x1,
+    bits: X86BitsMode,
     mul: (a: number, byte: RMByte) => void,
   ): void {
     const {cpu} = this;
@@ -479,12 +479,12 @@ export class X86ALU extends X86Unit {
 
           if (byte.reg === 0x7) {
             /** IDIV */
-            const _ax = X86AbstractCPU.getSignedNumber(registers.ax, 0x2),
-              _val = X86AbstractCPU.getSignedNumber(val);
+            const ax = X86AbstractCPU.getSignedNumber(registers.ax, 0x2);
+            const signedVal = X86AbstractCPU.getSignedNumber(val);
 
             registers.ax = (
-              X86AbstractCPU.toUnsignedNumber(parseInt(<any> (_ax / _val), 10))
-                | (X86AbstractCPU.toUnsignedNumber((_ax % _val)) << 8)
+              X86AbstractCPU.toUnsignedNumber(parseInt(<any> (ax / signedVal), 10))
+                | (X86AbstractCPU.toUnsignedNumber((ax % signedVal)) << 8)
             );
           } else {
             /** DIV */

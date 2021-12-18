@@ -105,7 +105,7 @@ export class X86CPU extends X86AbstractCPU {
    * @param {number} id
    * @memberof X86CPU
    */
-  boot(device: Buffer|string, id: number = 0x0): void {
+  boot(device: Buffer | string, id: number = 0x0): void {
     /** Convert HEX string to Node buffer */
     if (typeof device === 'string')
       device = Buffer.from(device, 'hex');

@@ -1,11 +1,14 @@
-import {TreeVisitor} from '@compiler/grammar/tree/TreeVisitor';
+import {GroupTreeVisitor} from '@compiler/grammar/tree/TreeGroupedVisitor';
 import {ASTCCompilerNode} from '../../parser/ast/ASTCCompilerNode';
 import {TypeCheckScopeTree} from './TypeCheckScopeTree';
+import {C_TYPES_VISITORS} from './visitors';
 
-export class TypeCheckerVisitor extends TreeVisitor<ASTCCompilerNode> {
+export class TypeCheckerVisitor extends GroupTreeVisitor<ASTCCompilerNode> {
   private globalScope = new TypeCheckScopeTree;
 
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  leave(node: ASTCCompilerNode) {
+  constructor() {
+    super(C_TYPES_VISITORS);
   }
+
+  getGlobalScope() { return this.globalScope; }
 }

@@ -1,5 +1,11 @@
 import {isTreeNode, TreeNode} from './TreeNode';
 
+export type TreeQuerySelector = (string | number)[];
+
+export interface AbstractTreeVisitor<T extends TreeNode<any>> {
+  visit(node: T): this;
+}
+
 /**
  * Iterates over tree
  *
@@ -7,7 +13,7 @@ import {isTreeNode, TreeNode} from './TreeNode';
  * @class TreeVisitor
  * @template T
  */
-export abstract class TreeVisitor<T extends TreeNode<any> = TreeNode> {
+export abstract class TreeVisitor<T extends TreeNode<any> = TreeNode> implements AbstractTreeVisitor<T> {
   protected history: T[] = [];
 
   get nesting() {
@@ -28,9 +34,10 @@ export abstract class TreeVisitor<T extends TreeNode<any> = TreeNode> {
     const {history} = this;
 
     history.push(node);
-    this.enter?.(node, history); // eslint-disable-line no-unused-expressions
 
-    node.walk(this);
+    const result = this.enter?.(node, history);
+    if (result !== false)
+      node.walk(this);
 
     this.leave?.(node, history); // eslint-disable-line no-unused-expressions
     history.pop();
@@ -38,6 +45,10 @@ export abstract class TreeVisitor<T extends TreeNode<any> = TreeNode> {
     return this;
   }
 
-  enter?(node: T, history: T[]): void;
+  enter?(node: T, history: T[]): void | boolean;
   leave?(node: T, history: T[]): void;
+
+  querySelector(selector: TreeQuerySelector) {
+
+  }
 }

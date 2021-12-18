@@ -15,8 +15,8 @@ import {Result, Err, ok} from '../Result';
 export function tryFold<A, T, E>(
   mapper: (a: A) => Result<T, E>,
   init: T[],
-  array: A[]|Iterable<A>,
-): Result<(T|null)[], E> {
+  array: A[] | Iterable<A>,
+): Result<(T | null)[], E> {
   const acc: T[] = init || [];
 
   for (const item of array) {

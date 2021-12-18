@@ -7,7 +7,7 @@ import {reduceTextToBitset} from '@compiler/core/utils';
 import {MathOperator} from './MathOperators';
 import {MathError, MathErrorCode} from './MathError';
 
-export type MathPostfixTokens = (string|MathOperator)[];
+export type MathPostfixTokens = (string | MathOperator)[];
 
 export type MathParserConfig = {
   keywordResolver?: (name: string) => number,

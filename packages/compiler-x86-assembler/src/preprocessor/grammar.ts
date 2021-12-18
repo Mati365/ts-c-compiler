@@ -61,7 +61,7 @@ const preprocessorMatcher: GrammarInitializer<PreprocessorIdentifier, ASTPreproc
    * @param {(PreprocessorIdentifier|PreprocessorIdentifier[])} identifier
    * @returns {Token}
    */
-  function singleLineIdentifier(identifier: PreprocessorIdentifier|PreprocessorIdentifier[]): Token {
+  function singleLineIdentifier(identifier: PreprocessorIdentifier | PreprocessorIdentifier[]): Token {
     startLine();
     return g.identifier(identifier);
   }

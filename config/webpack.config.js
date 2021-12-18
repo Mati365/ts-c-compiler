@@ -2,8 +2,9 @@ const path = require('path');
 const nodeExternals = require('webpack-node-externals');
 const MiniCssExtractPlugin = require('mini-css-extract-plugin');
 const NodemonPlugin = require('nodemon-webpack-plugin');
-const ManifestPlugin = require('webpack-manifest-plugin');
 const CircularDependencyPlugin = require('circular-dependency-plugin');
+const ESLintPlugin = require('eslint-webpack-plugin');
+const {WebpackManifestPlugin} = require('webpack-manifest-plugin');
 
 const PRODUCTION_MODE = process.env.NODE_ENV === 'production';
 
@@ -67,16 +68,6 @@ const createConfig = (
         ],
       },
       {
-        enforce: 'pre',
-        test: /\.tsx?$/,
-        exclude: /node_modules/,
-        loader: 'eslint-loader',
-        options: {
-          emitError: false,
-          cache: true,
-        },
-      },
-      {
         test: /\.tsx?$/,
         loader: 'ts-loader',
         exclude: /node_modules/,
@@ -98,6 +89,12 @@ const createConfig = (
     __dirname: false,
   },
   plugins: [
+    new ESLintPlugin(
+      {
+        extensions: ['js', 'jsx', 'ts', 'tsx'],
+        exclude: ['node_modules'],
+      },
+    ),
     new CircularDependencyPlugin,
     new MiniCssExtractPlugin(
       {
@@ -146,7 +143,7 @@ module.exports = [
       outputFile: `client${PRODUCTION_MODE ? '-[hash]' : ''}.js`,
       outputCssFile: `client${PRODUCTION_MODE ? '-[hash]' : ''}.css`,
       plugins: [
-        new ManifestPlugin,
+        new WebpackManifestPlugin,
       ],
     },
   ),

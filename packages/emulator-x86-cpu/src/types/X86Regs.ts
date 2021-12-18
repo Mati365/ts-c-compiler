@@ -146,7 +146,7 @@ export class X86RegsStore extends X86ByteRegsStore {
    * @returns {NumericRegisterDumpRow[]}
    * @memberof X86RegsStore
    */
-  static toRegistersTable(regs: Record<string, string|number>): NumericRegisterDumpRow[] {
+  static toRegistersTable(regs: Record<string, string | number>): NumericRegisterDumpRow[] {
     const insertDot = (str: string, pos: number) => `${str.slice(0, pos)}.${str.slice(pos)}`;
 
     /** Registers */

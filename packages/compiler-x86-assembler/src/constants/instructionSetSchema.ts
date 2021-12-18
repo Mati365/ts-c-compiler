@@ -9,7 +9,7 @@ import {
   ASTOpcodeMatchers,
 } from '../parser/ast/instruction/args/ASTInstructionArgMatchers';
 
-const _op = (
+const opcode = (
   mnemonic: string,
   argsSchema: string,
   binarySchema: string,
@@ -28,13 +28,15 @@ const _op = (
 export const COMPILER_INSTRUCTIONS_SET: ASTOpcodeMatchers = <any> R.mapObjIndexed(
   (instructions, mneomonic) => R.ifElse(
     R.is(String),
-    (binarySchema) => [_op(mneomonic, '', binarySchema)],
+    (binarySchema) => [
+      opcode(mneomonic, '', binarySchema),
+    ],
     (binarySchemas) => {
       if (R.is(String, binarySchemas[0]))
         binarySchemas = [binarySchemas];
 
       return R.map(
-        ([argsSchema, binarySchema, target]) => _op(mneomonic, argsSchema, binarySchema, target),
+        ([argsSchema, binarySchema, target]) => opcode(mneomonic, argsSchema, binarySchema, target),
         R.sort(
           (schemaA, schemaB) => schemaA[1].length - schemaB[1].length,
           binarySchemas,

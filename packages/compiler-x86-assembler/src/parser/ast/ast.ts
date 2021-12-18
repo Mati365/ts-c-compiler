@@ -30,7 +30,7 @@ export const ASTNodesParsers = [
  * @param {Token[]|IterableIterator<Token>} tokensIterator
  * @returns {Result<ASTAsmTree, CompilerError[]>}
  */
-export function ast(tokensIterator: Token[]|IterableIterator<Token>): Result<ASTAsmTree, CompilerError[]> {
+export function ast(tokensIterator: Token[] | IterableIterator<Token>): Result<ASTAsmTree, CompilerError[]> {
   const parser = new ASTAsmParser(ASTNodesParsers, tokensIterator);
 
   return parser.getTree();

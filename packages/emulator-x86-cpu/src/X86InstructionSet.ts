@@ -15,7 +15,7 @@ import {
   X86InterruptType,
 } from './types';
 
-type X86FlagCondition = (flags: X86Flags) => boolean|number;
+type X86FlagCondition = (flags: X86Flags) => boolean | number;
 
 type SwitchOpcodeOperator = (num: number, mode: X86BitsMode, byte: RMByte, register: boolean) => any;
 type SwitchOpcodeOperators = {[offset: number]: SwitchOpcodeOperator} & {
@@ -621,8 +621,8 @@ export class X86InstructionSet extends X86Unit {
     for (let opcode = 0; opcode < Object.keys(X86_REGISTERS[0x1]).length; ++opcode) {
       /** MOV register opcodes */
       ((_opcode) => {
-        const _r8: string = X86_REGISTERS[0x1][_opcode];
-        const _r16: string = X86_REGISTERS[0x2][_opcode];
+        const r8: string = X86_REGISTERS[0x1][_opcode];
+        const r16: string = X86_REGISTERS[0x2][_opcode];
 
         /** XCHG AX, r16 */ opcodes[0x90 + _opcode] = () => {
           const dest = X86_REGISTERS[0x2][_opcode],
@@ -633,26 +633,26 @@ export class X86InstructionSet extends X86Unit {
         };
 
         /** MOV reg8, imm8 $B0 + reg8 code */
-        opcodes[0xB0 + _opcode] = () => { registers[_r8] = cpu.fetchOpcode(); };
+        opcodes[0xB0 + _opcode] = () => { registers[r8] = cpu.fetchOpcode(); };
 
         /** MOV reg16, imm16 $B8 + reg16 code */
-        opcodes[0xB8 + _opcode] = () => { registers[_r16] = cpu.fetchOpcode(0x2); };
+        opcodes[0xB8 + _opcode] = () => { registers[r16] = cpu.fetchOpcode(0x2); };
 
         /** INC reg16 */
         opcodes[0x40 + _opcode] = () => {
-          registers[_r16] = alu.exec(alu.operators.extra.increment, registers[_r16], null, 0x2);
+          registers[r16] = alu.exec(alu.operators.extra.increment, registers[r16], null, 0x2);
         };
 
         /** DEC reg16 */
         opcodes[0x48 + _opcode] = () => {
-          registers[_r16] = alu.exec(alu.operators.extra.decrement, registers[_r16], null, 0x2);
+          registers[r16] = alu.exec(alu.operators.extra.decrement, registers[r16], null, 0x2);
         };
 
         /** PUSH reg16 */
-        opcodes[0x50 + _opcode] = () => stack.push(registers[_r16]);
+        opcodes[0x50 + _opcode] = () => stack.push(registers[r16]);
 
         /** POP reg16 */
-        opcodes[0x58 + _opcode] = () => { registers[_r16] = stack.pop(); };
+        opcodes[0x58 + _opcode] = () => { registers[r16] = stack.pop(); };
       })(opcode);
     }
   }

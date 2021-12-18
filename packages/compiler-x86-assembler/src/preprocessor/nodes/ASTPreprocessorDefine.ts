@@ -48,7 +48,7 @@ export class ASTPreprocessorDefine extends ASTPreprocessorNode implements ASTPre
     public readonly name: string,
     public readonly caseSensitive: boolean,
     public readonly argsSchema: ASTPreprocessorDefineArgSchema[] = [],
-    public readonly expression: Token[],
+    public readonly expression?: Token[],
   ) {
     super(ASTPreprocessorKind.DefineStmt, loc);
   }
