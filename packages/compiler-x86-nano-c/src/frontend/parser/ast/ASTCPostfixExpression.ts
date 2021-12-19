@@ -1,3 +1,4 @@
+import {dumpAttributesToString} from '@compiler/core/utils';
 import {walkOverFields} from '@compiler/grammar/decorators/walkOverFields';
 
 import {Token} from '@compiler/lexer/tokens';
@@ -46,7 +47,7 @@ export class ASTCPostfixDotExpression extends ASTCCompilerNode {
   toString() {
     const {kind, name} = this;
 
-    return ASTCCompilerNode.dumpAttributesToString(
+    return dumpAttributesToString(
       kind,
       {
         name: name.text,
@@ -66,7 +67,7 @@ export class ASTCPostfixPtrExpression extends ASTCCompilerNode {
   toString() {
     const {kind, name} = this;
 
-    return ASTCCompilerNode.dumpAttributesToString(
+    return dumpAttributesToString(
       kind,
       {
         name: name.text,
@@ -105,7 +106,7 @@ export class ASTCPostfixExpression extends ASTCCompilerNode {
   toString() {
     const {kind, incExpression, decExpression} = this;
 
-    return ASTCCompilerNode.dumpAttributesToString(
+    return dumpAttributesToString(
       kind,
       {
         incExpression,

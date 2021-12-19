@@ -4,6 +4,8 @@ import {TypeCheckerContext} from '../TypeCheckerContext';
 
 export abstract class CTypeTreeVisitor<
     P extends GroupTreeVisitor<ASTCCompilerNode> = GroupTreeVisitor<ASTCCompilerNode>,
-    C extends {} = TypeCheckerContext>
+    C extends  TypeCheckerContext = TypeCheckerContext>
   extends GroupTreeVisitor<ASTCCompilerNode, P, C> {
+
+  get arch() { return this.context.config.arch; }
 }

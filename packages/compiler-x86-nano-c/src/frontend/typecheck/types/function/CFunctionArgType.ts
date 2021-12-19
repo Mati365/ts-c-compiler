@@ -1,32 +1,21 @@
 import {Identity} from '@compiler/core/monads';
+import {CNamedTypedEntry} from '../CNamedTypedEntry';
 import {CType} from '../CType';
-
-export type CFunctionArgTypeDescriptor = {
-  type: CType,
-  name?: string,
-};
 
 /**
  * Function arg that can contain name
  *
  * @export
  * @class CFunctionArgType
- * @extends {CType<CFunctionArgTypeDescriptor>}
+ * @extends {CType<CNamedTypedEntry>}
  */
-export class CFunctionArgType extends CType<CFunctionArgTypeDescriptor> {
-  get name() {
-    return this.value.name;
-  }
+export class CFunctionArgType extends CType<CNamedTypedEntry> {
+  get name() { return this.value.name; }
+  get type() { return this.value.type; }
 
-  get type() {
-    return this.value.type;
-  }
+  isCallable(): boolean { return true; }
 
-  isCallable(): boolean {
-    return true;
-  }
-
-  isEqual(value: Identity<CFunctionArgTypeDescriptor>): boolean {
+  isEqual(value: Identity<CNamedTypedEntry>): boolean {
     if (!(value instanceof CFunctionArgType))
       return false;
 

@@ -21,4 +21,6 @@ export class ASTCAbstractDeclarator extends ASTCCompilerNode {
   ) {
     super(ASTCCompilerKind.AbstractDeclarator, loc);
   }
+
+  isPointer() { return !!this.pointer; }
 }

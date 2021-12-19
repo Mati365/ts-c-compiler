@@ -1,3 +1,4 @@
+import {dumpAttributesToString} from '@compiler/core/utils';
 import {walkOverFields} from '@compiler/grammar/decorators/walkOverFields';
 
 import {NodeLocation} from '@compiler/grammar/tree/NodeLocation';
@@ -70,7 +71,7 @@ export class ASTCCastUnaryExpression extends ASTCCompilerNode {
   toString() {
     const {kind, operator} = this;
 
-    return ASTCCompilerNode.dumpAttributesToString(
+    return dumpAttributesToString(
       kind,
       {
         operator,

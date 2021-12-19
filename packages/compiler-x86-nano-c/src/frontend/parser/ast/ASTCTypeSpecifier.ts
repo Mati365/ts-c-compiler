@@ -1,3 +1,4 @@
+import {dumpAttributesToString} from '@compiler/core/utils';
 import {walkOverFields} from '@compiler/grammar/decorators/walkOverFields';
 
 import {NodeLocation} from '@compiler/grammar/tree/NodeLocation';
@@ -41,7 +42,7 @@ export class ASTCTypeSpecifier extends ASTCCompilerNode {
   toString() {
     const {kind, displayName} = this;
 
-    return ASTCCompilerNode.dumpAttributesToString(
+    return dumpAttributesToString(
       kind,
       {
         displayName,

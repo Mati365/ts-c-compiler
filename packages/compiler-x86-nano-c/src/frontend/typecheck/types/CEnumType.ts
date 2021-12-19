@@ -1,4 +1,3 @@
-import {CCompilerArch} from '@compiler/x86-nano-c/constants';
 import {CPrimitiveType} from './CPrimitiveType';
 import {CType} from './CType';
 
@@ -22,7 +21,7 @@ export class CEnumType extends CType<CEnumDescriptor> {
     throw new Error('Method not implemented.');
   }
 
-  getByteSize(arch: CCompilerArch): number {
-    return CPrimitiveType.int.getByteSize(arch);
+  getByteSize(): number {
+    return CPrimitiveType.int(this.arch).getByteSize();
   }
 }

@@ -1,3 +1,4 @@
+import {dumpAttributesToString} from '@compiler/core/utils';
 import {walkOverFields} from '@compiler/grammar/decorators/walkOverFields';
 
 import {Token} from '@compiler/lexer/tokens';
@@ -24,7 +25,7 @@ export class ASTCStaticAssertDeclaration extends ASTCCompilerNode {
   toString() {
     const {kind, literal} = this;
 
-    return ASTCCompilerNode.dumpAttributesToString(
+    return dumpAttributesToString(
       kind,
       {
         literal: literal.text,

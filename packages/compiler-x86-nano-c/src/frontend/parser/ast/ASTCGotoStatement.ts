@@ -1,3 +1,5 @@
+import {dumpAttributesToString} from '@compiler/core/utils';
+
 import {NodeLocation} from '@compiler/grammar/tree/NodeLocation';
 import {Token} from '@compiler/lexer/tokens';
 import {ASTCCompilerKind, ASTCCompilerNode} from './ASTCCompilerNode';
@@ -13,7 +15,7 @@ export class ASTCGotoStatement extends ASTCCompilerNode {
   toString() {
     const {kind, name} = this;
 
-    return ASTCCompilerNode.dumpAttributesToString(
+    return dumpAttributesToString(
       kind,
       {
         name: name.text,

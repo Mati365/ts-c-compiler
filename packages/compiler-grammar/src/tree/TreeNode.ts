@@ -1,10 +1,9 @@
 import * as R from 'ramda';
 
+import {dumpAttributesToString} from '@compiler/core/utils';
 import {TokenType} from '@compiler/lexer/shared';
 
-import {removeNullValues} from '@compiler/core/utils';
 import {walkOverFields} from '../decorators/walkOverFields';
-
 import {NodeLocation} from './NodeLocation';
 import {TreeVisitor} from './TreeVisitor';
 
@@ -76,32 +75,6 @@ export class TreeNode<K = string, C extends TreeNode<K, C> = any> {
         ? <any> kind
         : null
     );
-  }
-
-  /**
-   * Dumps provided attrs into string
-   *
-   * @static
-   * @param {string} kind
-   * @param {Record<string, any>} attrs
-   * @return {string}
-   * @memberof TreeNode
-   */
-  static dumpAttributesToString(kind: string, attrs: Record<string, any>): string {
-    const serializedAttrs = R.pipe(
-      removeNullValues,
-      R.mapObjIndexed(
-        R.when(R.is(Boolean), (val) => +val),
-      ),
-      R.toPairs as any,
-      R.map(([key, value]) => `${key}="${value}"`),
-      R.join(' '),
-    )(attrs);
-
-    if (R.isNil(kind))
-      return serializedAttrs;
-
-    return `${kind} ${serializedAttrs}`.trim();
   }
 }
 
@@ -257,7 +230,7 @@ export class BinaryOpNode<K = string, T extends TreeNode<K> = TreeNode<K>> exten
   toString(): string {
     const {op} = this;
 
-    return TreeNode.dumpAttributesToString(
+    return dumpAttributesToString(
       <any> this.kind,
       {
         op,

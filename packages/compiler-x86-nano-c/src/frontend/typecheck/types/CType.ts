@@ -8,6 +8,7 @@ import {CQualBitmap} from '../constants';
 import {bitsetToKeywords, parseKeywordsToBitset} from '../utils';
 
 type CTypeDescriptor<T extends {}> = T & {
+  arch: CCompilerArch,
   qualifiers?: number,
 };
 
@@ -21,9 +22,8 @@ type CTypeDescriptor<T extends {}> = T & {
  * @template T
  */
 export abstract class CType<T extends {} = any> extends Identity<CTypeDescriptor<T>> {
-  get qualifiers() {
-    return this.value.qualifiers;
-  }
+  get arch() { return this.value.arch; }
+  get qualifiers() { return this.value.qualifiers; }
 
   isIndexable() { return false; }
   isCallbable() { return false; }
@@ -61,11 +61,10 @@ export abstract class CType<T extends {} = any> extends Identity<CTypeDescriptor
    * Gets size of type in bytes
    *
    * @abstract
-   * @param {CCompilerArch} arch
    * @return {number}
    * @memberof CType
    */
-  abstract getByteSize(arch: CCompilerArch): number;
+  abstract getByteSize(): number;
 
   /**
    * Converts array of string type qualifiers into internal bitset format

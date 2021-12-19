@@ -17,6 +17,15 @@ export type CPointerTypeDescriptor = {
  * @extends {CType<CPointerTypeDescriptor>}
  */
 export class CPointerType extends CType<CPointerTypeDescriptor> {
+  static ofType(arch: CCompilerArch, baseType: CType) {
+    return new CPointerType(
+      {
+        arch,
+        baseType,
+      },
+    );
+  }
+
   get baseType() {
     return this.value.baseType;
   }
@@ -28,15 +37,15 @@ export class CPointerType extends CType<CPointerTypeDescriptor> {
     return value.baseType.isEqual(this.baseType);
   }
 
-  getByteSize(arch: CCompilerArch): number {
-    return CPrimitiveType.int.getByteSize(arch);
+  getByteSize(): number {
+    return CPrimitiveType.int(this.arch).getByteSize();
   }
 
   getDisplayName(): string {
     return concatNonEmptyStrings(
       [
         this.getQualifiersDisplayName(),
-        `*(${this.baseType.getDisplayName()})`,
+        `(${this.baseType.getDisplayName()})*`,
       ],
     );
   }

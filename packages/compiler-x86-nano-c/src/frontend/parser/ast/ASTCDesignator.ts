@@ -1,4 +1,5 @@
 import {walkOverFields} from '@compiler/grammar/decorators/walkOverFields';
+import {dumpAttributesToString} from '@compiler/core/utils';
 
 import {NodeLocation} from '@compiler/grammar/tree/NodeLocation';
 import {Token} from '@compiler/lexer/tokens';
@@ -24,7 +25,7 @@ export class ASTCDesignator extends ASTCCompilerNode {
   toString() {
     const {kind, identifier} = this;
 
-    return ASTCCompilerNode.dumpAttributesToString(
+    return dumpAttributesToString(
       kind,
       {
         identifier: identifier?.text,

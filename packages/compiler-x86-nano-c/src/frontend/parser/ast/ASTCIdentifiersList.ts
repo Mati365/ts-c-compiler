@@ -1,3 +1,4 @@
+import {dumpAttributesToString} from '@compiler/core/utils';
 import {joinTokensTexts} from '@compiler/lexer/utils';
 
 import {NodeLocation} from '@compiler/grammar/tree/NodeLocation';
@@ -20,7 +21,7 @@ export class ASTCIdentifiersList extends ASTCCompilerNode {
         : ''
     );
 
-    return ASTCCompilerNode.dumpAttributesToString(
+    return dumpAttributesToString(
       kind,
       {
         identifiers: tokens,

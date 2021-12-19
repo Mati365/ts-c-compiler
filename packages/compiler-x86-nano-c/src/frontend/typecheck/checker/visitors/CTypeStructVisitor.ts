@@ -1,12 +1,18 @@
 import {ASTCStructSpecifier} from '@compiler/x86-nano-c/frontend/parser';
+import {CTypeCheckError, CTypeCheckErrorCode} from '../../errors/CTypeCheckError';
 import {CStructType} from '../../types';
 import {CTypeTreeVisitor} from './CTypeTreeVisitor';
-import {CTypeCheckError, CTypeCheckErrorCode} from '../../errors/CTypeCheckError';
 
-import {extractTypeFromDeclarationSpecifier} from '../extractors';
+import {
+  extractNamedEntryFromDeclarator,
+  extractTypeFromDeclarationSpecifier,
+} from '../extractors';
 
 /**
  * Enters structure and analyzes its content
+ *
+ * @todo
+ *  - Add bitmask support (structField: bitmask;) after constant evaluation
  *
  * @export
  * @class CTypeStructVisitor
@@ -32,9 +38,10 @@ export class CTypeStructVisitor extends CTypeTreeVisitor {
    * @memberof CTypeStructVisitor
    */
   extractStructTypeFromNode(structSpecifier: ASTCStructSpecifier): CStructType {
-    const {context} = this;
-    let structType = CStructType.ofBlank(structSpecifier.name.text);
+    const {context, arch} = this;
+    let structType = CStructType.ofBlank(arch, structSpecifier.name.text);
 
+    // handle const int x, y;
     structSpecifier.list?.children.forEach((declaration) => {
       const type = extractTypeFromDeclarationSpecifier(
         context,
@@ -44,7 +51,18 @@ export class CTypeStructVisitor extends CTypeTreeVisitor {
       if (!type)
         throw new CTypeCheckError(CTypeCheckErrorCode.UNABLE_TO_EXTRACT_STRUCT_TYPE);
 
-      structType = structType.ofAppendedField(type, 'xD');
+      // define x, y as separate fields and calculate offsets
+      declaration.declaratorList.children.forEach((structDeclarator) => {
+        const entry = extractNamedEntryFromDeclarator(
+          {
+            declarator: structDeclarator.declarator,
+            context,
+            type,
+          },
+        );
+
+        structType = structType.ofAppendedField(entry);
+      });
     });
 
     return structType;

@@ -1,4 +1,5 @@
 import {walkOverFields} from '@compiler/grammar/decorators/walkOverFields';
+import {dumpAttributesToString} from '@compiler/core/utils';
 
 import {IsEmpty} from '@compiler/core/interfaces/IsEmpty';
 import {Token} from '@compiler/lexer/tokens';
@@ -7,7 +8,6 @@ import {NodeLocation} from '@compiler/grammar/tree/NodeLocation';
 import {ASTCCompilerKind, ASTCCompilerNode} from './ASTCCompilerNode';
 import {ASTCIdentifiersList} from './ASTCIdentifiersList';
 import {ASTCParametersList} from './ASTCParametersList';
-import {ASTCDeclarator} from './ASTCDeclarator';
 import {ASTCAssignmentExpression} from './ASTCAssignmentExpression';
 import {ASTCTypeQualifiersList} from './ASTCTypeQualifiersList';
 
@@ -40,7 +40,7 @@ export class ASTCDirectDeclaratorArrayExpression extends ASTCCompilerNode {
   toString() {
     const {kind, star} = this;
 
-    return ASTCCompilerNode.dumpAttributesToString(
+    return dumpAttributesToString(
       kind,
       {
         star,
@@ -82,7 +82,7 @@ export class ASTCDirectDeclaratorFnExpression extends ASTCCompilerNode implement
   toString() {
     const {kind} = this;
 
-    return ASTCCompilerNode.dumpAttributesToString(
+    return dumpAttributesToString(
       kind,
       {
         empty: this.isEmpty(),
@@ -110,7 +110,7 @@ export class ASTCDirectDeclarator extends ASTCCompilerNode {
   constructor(
     loc: NodeLocation,
     public readonly identifier?: Token<string>,
-    public readonly declarator?: ASTCDeclarator,
+    public readonly declarator?: ASTCCompilerNode,
     public readonly arrayExpression?: ASTCDirectDeclaratorArrayExpression,
     public readonly fnExpression?: ASTCDirectDeclaratorFnExpression,
     public readonly directDeclarator?: ASTCDirectDeclarator,
@@ -118,10 +118,14 @@ export class ASTCDirectDeclarator extends ASTCCompilerNode {
     super(ASTCCompilerKind.DirectDeclarator, loc);
   }
 
+  isArrayExpression() { return !!this.arrayExpression; }
+  isFnExpression() { return !!this.fnExpression; }
+  isIdentifier() { return !!this.identifier; }
+
   toString() {
     const {kind, identifier} = this;
 
-    return ASTCCompilerNode.dumpAttributesToString(
+    return dumpAttributesToString(
       kind,
       {
         identifier: identifier?.text,

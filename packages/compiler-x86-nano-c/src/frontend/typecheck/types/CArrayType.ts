@@ -1,7 +1,6 @@
 import {concatNonEmptyStrings} from '@compiler/core/utils';
 
 import {Identity} from '@compiler/core/monads';
-import {CCompilerArch} from '@compiler/x86-nano-c/constants';
 import {CType} from './CType';
 
 export type CArrayTypeDescriptor = {
@@ -17,13 +16,17 @@ export type CArrayTypeDescriptor = {
  * @extends {CType<CArrayTypeDescriptor>}
  */
 export class CArrayType extends CType<CArrayTypeDescriptor> {
-  get size() {
-    return this.value.size;
+  constructor(descriptor: Omit<CArrayTypeDescriptor, 'arch'>) {
+    super(
+      {
+        ...descriptor,
+        arch: descriptor.baseType.arch,
+      },
+    );
   }
 
-  get baseType() {
-    return this.value.baseType;
-  }
+  get size() { return this.value.size; }
+  get baseType() { return this.value.baseType; }
 
   isIndexable(): boolean {
     return true;
@@ -39,10 +42,10 @@ export class CArrayType extends CType<CArrayTypeDescriptor> {
     );
   }
 
-  getByteSize(arch: CCompilerArch): number {
+  getByteSize(): number {
     const {baseType, size} = this;
 
-    return baseType.getByteSize(arch) * size;
+    return baseType.getByteSize() * size;
   }
 
   getDisplayName(): string {

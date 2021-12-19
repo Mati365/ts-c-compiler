@@ -1,5 +1,7 @@
 import * as R from 'ramda';
 
+import {dumpAttributesToString} from '@compiler/core/utils';
+
 import {IsEmpty} from '@compiler/core/interfaces/IsEmpty';
 import {NodeLocation} from '@compiler/grammar/tree/NodeLocation';
 
@@ -21,7 +23,7 @@ export class ASTCStorageClassSpecifiersList extends ASTCCompilerNode implements 
   toString() {
     const {kind, items} = this;
 
-    return ASTCCompilerNode.dumpAttributesToString(
+    return dumpAttributesToString(
       kind,
       {
         items: items?.join(' '),

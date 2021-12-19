@@ -1,3 +1,4 @@
+import {dumpAttributesToString} from '@compiler/core/utils';
 import {walkOverFields} from '@compiler/grammar/decorators/walkOverFields';
 
 import {NodeLocation} from '@compiler/grammar/tree/NodeLocation';
@@ -21,7 +22,7 @@ export class ASTCLabelStatement extends ASTCCompilerNode {
   toString() {
     const {kind, name} = this;
 
-    return ASTCCompilerNode.dumpAttributesToString(
+    return dumpAttributesToString(
       kind,
       {
         name: name.text,

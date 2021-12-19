@@ -1,3 +1,4 @@
+import {dumpAttributesToString} from '@compiler/core/utils';
 import {walkOverFields} from '@compiler/grammar/decorators/walkOverFields';
 
 import {Token} from '@compiler/lexer/tokens';
@@ -25,7 +26,7 @@ export class ASTCStructSpecifier extends ASTCCompilerNode {
   toString() {
     const {kind, name} = this;
 
-    return ASTCCompilerNode.dumpAttributesToString(
+    return dumpAttributesToString(
       kind,
       {
         name: name?.text,

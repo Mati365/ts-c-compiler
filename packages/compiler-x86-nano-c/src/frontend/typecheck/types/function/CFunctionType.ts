@@ -1,6 +1,7 @@
 import {findByName} from '@compiler/core/utils';
 
 import {Identity} from '@compiler/core/monads';
+import {CCompilerArch} from '@compiler/x86-nano-c/constants';
 import {CType} from '../CType';
 import {CPrimitiveType} from '../CPrimitiveType';
 import {CFunctionArgType} from './CFunctionArgType';
@@ -18,11 +19,20 @@ export type CFunctionTypeDescriptor = {
  * @extends {CType<CFunctionTypeDescriptor>}
  */
 export class CFunctionType extends CType<CFunctionTypeDescriptor> {
-  static ofBlank() {
+  static ofBlank(arch: CCompilerArch) {
     return new CFunctionType(
       {
-        returnType: CPrimitiveType.void,
+        returnType: CPrimitiveType.void(arch),
         args: [],
+      },
+    );
+  }
+
+  constructor(descriptor: Omit<CFunctionTypeDescriptor, 'arch'>) {
+    super(
+      {
+        ...descriptor,
+        arch: descriptor.returnType.arch,
       },
     );
   }

@@ -1,4 +1,5 @@
 import {walkOverFields} from '@compiler/grammar/decorators/walkOverFields';
+import {dumpAttributesToString} from '@compiler/core/utils';
 
 import {NodeLocation} from '@compiler/grammar/tree/NodeLocation';
 import {Token} from '@compiler/lexer/tokens';
@@ -35,7 +36,7 @@ export class ASTCEnumEnumeration extends ASTCCompilerNode {
   toString() {
     const {kind, name} = this;
 
-    return ASTCCompilerNode.dumpAttributesToString(
+    return dumpAttributesToString(
       kind,
       {
         name,

@@ -2,11 +2,10 @@ import {ccompiler} from './frontend';
 
 ccompiler(
   /* cpp */ `
-    enum ABC {
-        A = 1 + 2
-    };
-
-    struct Vec {
+    struct Screen {
+      const int width, height;
+      const char (*memPtr)[4];
+      char array[10];
     };
   `,
 ).match(

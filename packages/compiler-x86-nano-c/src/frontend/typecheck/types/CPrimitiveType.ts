@@ -51,20 +51,22 @@ export type CPrimitiveTypeSourceParserAttrs = {
  * @extends {CType<CPrimitiveTypeDescriptor>}
  */
 export class CPrimitiveType extends CType<CPrimitiveTypeDescriptor> {
-  static readonly int = CPrimitiveType.ofSpecifiers(CSpecBitmap.int);
-  static readonly float = CPrimitiveType.ofSpecifiers(CSpecBitmap.float);
-  static readonly double = CPrimitiveType.ofSpecifiers(CSpecBitmap.double);
-  static readonly short = CPrimitiveType.ofSpecifiers(CSpecBitmap.short);
-  static readonly char = CPrimitiveType.ofSpecifiers(CSpecBitmap.char);
-  static readonly bool = CPrimitiveType.ofSpecifiers(CSpecBitmap._Bool);
-  static readonly void = CPrimitiveType.ofSpecifiers(CSpecBitmap.void);
+  static typeGenerator = (specifier: number) => (arch: CCompilerArch) => (
+    CPrimitiveType.ofSpecifiers(arch, specifier)
+  );
 
-  get specifiers() {
-    return this.value.specifiers;
-  }
+  static int = CPrimitiveType.typeGenerator(CSpecBitmap.int);
+  static float = CPrimitiveType.typeGenerator(CSpecBitmap.float);
+  static double = CPrimitiveType.typeGenerator(CSpecBitmap.double);
+  static short = CPrimitiveType.typeGenerator(CSpecBitmap.short);
+  static char = CPrimitiveType.typeGenerator(CSpecBitmap.char);
+  static void = CPrimitiveType.typeGenerator(CSpecBitmap.void);
+  static bool = CPrimitiveType.typeGenerator(CSpecBitmap._Bool);
 
-  getByteSize(arch: CCompilerArch): number {
-    return CPrimitiveType.sizeOf(arch, this.specifiers);
+  get specifiers() { return this.value.specifiers; }
+
+  getByteSize(): number {
+    return CPrimitiveType.sizeOf(this.arch, this.specifiers);
   }
 
   getDisplayName() {
@@ -82,17 +84,9 @@ export class CPrimitiveType extends CType<CPrimitiveTypeDescriptor> {
     return hasFlag(types, this.specifiers);
   }
 
-  isVoid() {
-    return this.hasSpecifierType(CSpecBitmap.void);
-  }
-
-  isSigned() {
-    return !this.hasSpecifierType(CSpecBitmap.signed);
-  }
-
-  isUnsigned() {
-    return !this.isSigned();
-  }
+  isVoid() { return this.hasSpecifierType(CSpecBitmap.void); }
+  isSigned() { return !this.hasSpecifierType(CSpecBitmap.signed); }
+  isUnsigned() { return !this.isSigned(); }
 
   /**
    * Returns sizeof from specifiers of primitive type
@@ -115,17 +109,15 @@ export class CPrimitiveType extends CType<CPrimitiveTypeDescriptor> {
    *  int => it is fine
    *
    * @static
-   * @param {CCompilerArch} arch
    * @param {CPrimitiveType} type
    * @return {Result<CPrimitiveType, CTypeCheckError>}
    * @memberof CPrimitiveType
    */
-  static validate(arch: CCompilerArch, type: CPrimitiveType): Result<CPrimitiveType, CTypeCheckError> {
-    const byteSize = type.getByteSize(arch);
+  static validate(type: CPrimitiveType): Result<CPrimitiveType, CTypeCheckError> {
+    const byteSize = type.getByteSize();
     if (!R.isNil(byteSize))
       return ok(type);
 
-    // check if type has additional specifiers to void that are not allowed
     if (type.isVoid() && type.specifiers !== CSpecBitmap.void) {
       return err(
         new CTypeCheckError(CTypeCheckErrorCode.INCORRECT_VOID_SPECIFIERS),
@@ -141,14 +133,16 @@ export class CPrimitiveType extends CType<CPrimitiveTypeDescriptor> {
    * Init of type based of only bitflags
    *
    * @static
+   * @param {CCompilerArch} arch
    * @param {number} specifiers
    * @param {number} [qualifiers=0]
    * @return {CPrimitiveType}
    * @memberof CPrimitiveType
    */
-  static ofSpecifiers(specifiers: number, qualifiers: number = 0): CPrimitiveType {
+  static ofSpecifiers(arch: CCompilerArch, specifiers: number, qualifiers: number = 0): CPrimitiveType {
     return new CPrimitiveType(
       {
+        arch,
         qualifiers,
         specifiers,
       },
@@ -179,9 +173,9 @@ export class CPrimitiveType extends CType<CPrimitiveTypeDescriptor> {
         return err(qualifiersResult.unwrapErr());
 
       return this.validate(
-        attrs.arch,
         new CPrimitiveType(
           {
+            arch: attrs.arch,
             qualifiers: qualifiersResult.unwrap(),
             specifiers,
           },

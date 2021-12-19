@@ -5,7 +5,7 @@ import {TreeNode} from './TreeNode';
 import {TreeVisitor} from './TreeVisitor';
 
 export type InlineTreeVisitor<T extends TreeNode<any>> = {
-  enter(node: T): void | boolean,
+  enter?(node: T): void | boolean,
   leave?(node: T): void,
 };
 
@@ -14,7 +14,7 @@ export type TreeVisitorsMap<T extends TreeNode<any>> = {
 };
 
 export function isInlineTreeVisitor(visitor: any): visitor is InlineTreeVisitor<any> {
-  return R.is(Object, visitor) && visitor?.enter;
+  return R.is(Object, visitor) && (visitor.enter || visitor.leave);
 }
 
 /**
@@ -51,7 +51,7 @@ export abstract class GroupTreeVisitor<
       return;
 
     if (isInlineTreeVisitor(visitor)) {
-      return visitor.enter.call(this, node);
+      return visitor.enter?.call(this, node);
     }
 
     this.initializeAndEnter(visitor, node);

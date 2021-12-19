@@ -1,7 +1,9 @@
 import {ok} from '@compiler/core/monads/Result';
-import {timingsToString} from '@compiler/core/utils';
+import {
+  dumpAttributesToString,
+  timingsToString,
+} from '@compiler/core/utils';
 
-import {TreeNode} from '@compiler/grammar/tree/TreeNode';
 import {TreePrintVisitor} from '@compiler/grammar/tree/TreePrintVisitor';
 import {CCompilerTimings, createCCompilerTimings} from './utils/createCCompilerTimings';
 import {CCompilerConfig, CCompilerArch} from '../constants/config';
@@ -28,7 +30,7 @@ export class CCompilerOutput {
     const tree = TreePrintVisitor.valueOf<ASTCCompilerNode>(
       ast,
       {
-        formatterFn: (node) => TreeNode.dumpAttributesToString(
+        formatterFn: (node) => dumpAttributesToString(
           node.toString(),
           {
             type: node.type?.toString(),
