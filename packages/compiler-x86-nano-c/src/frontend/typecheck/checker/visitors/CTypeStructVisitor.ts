@@ -20,13 +20,10 @@ import {
  */
 export class CTypeStructVisitor extends CTypeTreeVisitor {
   initForRootNode(node: ASTCStructSpecifier): this {
-    const displayName = (
-      this
-        .extractStructTypeFromNode(node)
-        .getDisplayName()
-    );
+    const struct = this.extractStructTypeFromNode(node);
+    if (struct)
+      this.scope.defineType(struct.name, struct);
 
-    console.info(displayName);
     return this;
   }
 

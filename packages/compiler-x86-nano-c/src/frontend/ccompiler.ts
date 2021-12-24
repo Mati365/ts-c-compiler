@@ -27,7 +27,7 @@ export class CCompilerOutput {
 
   dump() {
     const {ast, code, timings} = this;
-    const tree = TreePrintVisitor.valueOf<ASTCCompilerNode>(
+    const tree = TreePrintVisitor.serializeToString<ASTCCompilerNode>(
       ast,
       {
         formatterFn: (node) => dumpAttributesToString(

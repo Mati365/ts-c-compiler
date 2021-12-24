@@ -17,7 +17,10 @@ export function safeAssignTypesToTree(
   tree: ASTCTreeNode,
 ): Result<ASTCTreeNode, CTypeCheckError[]> {
   try {
-    new TypeCheckerVisitor(config).visit(tree);
+    const visitor = new TypeCheckerVisitor(config);
+    visitor.visit(tree);
+    console.info(visitor.scope.serializeToString(), '\n');
+
     return ok(tree);
   } catch (e) {
     e.code = e.code ?? CTypeCheckErrorCode.TYPECHECK_ERROR;

@@ -8,4 +8,5 @@ export abstract class CTypeTreeVisitor<
   extends GroupTreeVisitor<ASTCCompilerNode, P, C> {
 
   get arch() { return this.context.config.arch; }
+  get scope() { return this.context.scope; }
 }

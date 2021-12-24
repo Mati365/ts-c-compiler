@@ -1,4 +1,6 @@
 import * as R from 'ramda';
+import chalk from 'chalk';
+
 import {Result, ok, err} from '@compiler/core/monads';
 import {CType} from '../types/CType';
 import {CTypeCheckError, CTypeCheckErrorCode} from '../errors/CTypeCheckError';
@@ -10,8 +12,8 @@ import {CTypeCheckError, CTypeCheckErrorCode} from '../errors/CTypeCheckError';
  * @class TypeCheckScopeTree
  */
 export class TypeCheckScopeTree {
-  private childs: TypeCheckScopeTree[] = [];
   private types: Record<string, CType> = {};
+  private childs: TypeCheckScopeTree[] = [];
 
   constructor(
     public readonly parentContext: TypeCheckScopeTree = null,
@@ -85,5 +87,59 @@ export class TypeCheckScopeTree {
     childs.pop();
 
     return result;
+  }
+
+  /**
+   * Prints whole tree to console
+   *
+   * @param {number} [nesting=0]
+   * @returns {string}
+   * @memberof TypeCheckScopeTree
+   */
+  serializeToString(nesting: number = 0): string {
+    const {childs, types} = this;
+    let lines: string[] = [
+      chalk.bold.white('+ Types:'),
+      ...(
+        R
+          .toPairs(types)
+          .flatMap(([name, type]) => {
+            const typeLines = (
+              type
+                .getDisplayName()
+                .split('\n')
+                .map((str) => chalk.yellowBright(str))
+            );
+
+            const prefix = `  + ${name}: `;
+            return [
+              `${chalk.bold.green(prefix)}${typeLines[0]}`,
+              ...(
+                R
+                  .tail(typeLines)
+                  .map(R.concat(' '.padStart(prefix.length)))
+              ),
+            ];
+          })
+      ),
+    ];
+
+    if (!R.isEmpty(childs)) {
+      const scopeLines = [
+        chalk.bold.white('Scopes:'),
+        ...childs.map((scope) => scope.serializeToString(nesting + 1)),
+      ];
+
+      lines = [
+        ...lines,
+        ...scopeLines.map(R.concat('  ')),
+      ];
+    }
+
+    return (
+      lines
+        .map((line) => `${' '.padStart(nesting * 2, ' ')}${line}`)
+        .join('\n')
+    );
   }
 }

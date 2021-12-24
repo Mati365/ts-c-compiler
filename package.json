@@ -80,7 +80,8 @@
     "showdown": "^1.9.1",
     "ts-enum-util": "^4.0.2",
     "tslib": "^2.3.1",
-    "typescript": "^4.5.4"
+    "typescript": "^4.5.4",
+    "chalk": "^4.1.2"
   },
   "name": "i8086.js",
   "private": true

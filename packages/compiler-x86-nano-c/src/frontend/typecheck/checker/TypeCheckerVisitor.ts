@@ -13,19 +13,17 @@ import {C_TYPES_VISITORS} from './visitors';
  * @extends {GroupTreeVisitor<ASTCCompilerNode, any, TypeCheckerContext>}
  */
 export class TypeCheckerVisitor extends GroupTreeVisitor<ASTCCompilerNode, any, TypeCheckerContext> {
-  private globalScope = new TypeCheckScopeTree;
-
   constructor(config: CTypeCheckConfig) {
     super(C_TYPES_VISITORS);
     this.setContext(
       {
-        scope: this.globalScope,
+        scope: new TypeCheckScopeTree,
         config,
       },
     );
   }
 
-  getGlobalScope() {
-    return this.globalScope;
+  get scope() {
+    return this.context.scope;
   }
 }
