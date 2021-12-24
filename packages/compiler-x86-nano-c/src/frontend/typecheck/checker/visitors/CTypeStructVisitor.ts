@@ -41,8 +41,10 @@ export class CTypeStructVisitor extends CTypeTreeVisitor {
     // handle const int x, y;
     structSpecifier.list?.children.forEach((declaration) => {
       const type = extractTypeFromDeclarationSpecifier(
-        context,
-        declaration.specifierList,
+        {
+          declaration: declaration.specifierList,
+          context,
+        },
       );
 
       if (!type)

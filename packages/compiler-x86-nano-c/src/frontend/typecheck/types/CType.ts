@@ -1,5 +1,6 @@
 import {hasFlag} from '@compiler/core/utils';
 
+import {IsPrintable} from '@compiler/core/interfaces';
 import {Identity, Result} from '@compiler/core/monads';
 import {CCompilerArch, CTypeQualifier} from '@compiler/x86-nano-c/constants';
 import {CTypeCheckError, CTypeCheckErrorCode} from '../errors/CTypeCheckError';
@@ -18,10 +19,14 @@ type CTypeDescriptor<T extends {}> = T & {
  * @export
  * @abstract
  * @class CType
- * @extends {Identity<T>}
+ * @extends {Identity<CTypeDescriptor<T>>}
+ * @implements {IsPrintable}
  * @template T
  */
-export abstract class CType<T extends {} = any> extends Identity<CTypeDescriptor<T>> {
+export abstract class CType<T extends {} = any>
+  extends Identity<CTypeDescriptor<T>>
+  implements IsPrintable {
+
   get arch() { return this.value.arch; }
   get qualifiers() { return this.value.qualifiers; }
 

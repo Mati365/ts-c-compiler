@@ -3,7 +3,7 @@ import * as R from 'ramda';
 import {Identity} from '@compiler/core/monads';
 import {CCompilerArch, CStructAlign} from '@compiler/x86-nano-c/constants';
 import {CType} from '../CType';
-import {CNamedTypedEntry} from '../CNamedTypedEntry';
+import {CNamedTypedEntry} from '../parts';
 import {StructFieldAligner} from './align';
 import {
   CStructTypeDescriptor,

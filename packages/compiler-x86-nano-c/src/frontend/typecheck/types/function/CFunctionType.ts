@@ -4,11 +4,15 @@ import {Identity} from '@compiler/core/monads';
 import {CCompilerArch} from '@compiler/x86-nano-c/constants';
 import {CType} from '../CType';
 import {CPrimitiveType} from '../CPrimitiveType';
-import {CFunctionArgType} from './CFunctionArgType';
+import {CFunctionSpecifierMonad} from './CFunctionSpecifierMonad';
+import {CNamedTypedEntry, CStorageClassMonad} from '../parts';
 
 export type CFunctionTypeDescriptor = {
+  name?: string,
   returnType: CType,
-  args: CFunctionArgType[],
+  args: CNamedTypedEntry[],
+  specifier: CFunctionSpecifierMonad,
+  storage: CStorageClassMonad,
 };
 
 /**
@@ -23,6 +27,8 @@ export class CFunctionType extends CType<CFunctionTypeDescriptor> {
     return new CFunctionType(
       {
         returnType: CPrimitiveType.void(arch),
+        specifier: CFunctionSpecifierMonad.ofBlank(),
+        storage: CStorageClassMonad.ofBlank(),
         args: [],
       },
     );
@@ -38,7 +44,26 @@ export class CFunctionType extends CType<CFunctionTypeDescriptor> {
   }
 
   get returnType() { return this.value.returnType; }
+  get specifier() { return this.value.specifier; }
+  get storage() { return this.value.storage; }
+  get name() { return this.value.name; }
   get args() { return this.value.args; }
+
+  /**
+   * Lookups in array and returns arg by name
+   *
+   * @see
+   *  It is list search not hash! It is kinda slow!
+   *
+   * @param {string} name
+   * @return {CNamedTypedEntry}
+   * @memberof CFunctionType
+   */
+  getArgByName(name: string): CNamedTypedEntry {
+    const {args} = this;
+
+    return findByName(name)(args);
+  }
 
   isCallable(): boolean {
     return true;
@@ -48,10 +73,16 @@ export class CFunctionType extends CType<CFunctionTypeDescriptor> {
     if (!(value instanceof CFunctionType))
       return false;
 
-    const {returnType, args} = this;
+    const {
+      returnType, args,
+      specifier, storage,
+    } = this;
+
     return (
       value.returnType.isEqual(returnType)
         && value.args.length === args.length
+        && value.specifier.isEqual(specifier)
+        && value.storage.isEqual(storage)
         && !value.args.some((arg, index) => !arg.isEqual(args[index]))
     );
   }
@@ -61,25 +92,23 @@ export class CFunctionType extends CType<CFunctionTypeDescriptor> {
   }
 
   getDisplayName(): string {
-    const {returnType, args} = this;
-    const serializedArgs = args.map((arg) => arg.getDisplayName()).join(', ');
+    const {
+      returnType, args, name,
+      storage, specifier,
+    } = this;
 
-    return `(${serializedArgs}) -> ${returnType.getDisplayName()}`;
-  }
+    const serializedArgs = (
+      args
+        .map((arg) => arg.getDisplayName())
+        .join(', ')
+    );
 
-  /**
-   * Lookups in array and returns arg by name
-   *
-   * @see
-   *  It is list search not hash! It is kinda slow!
-   *
-   * @param {string} name
-   * @return {CFunctionArgType}
-   * @memberof CFunctionType
-   */
-  getArgByName(name: string): CFunctionArgType {
-    const {args} = this;
-
-    return findByName(name)(args);
+    return [
+      specifier.getDisplayName(),
+      storage.getDisplayName(),
+      returnType.getDisplayName(),
+      name || '<anonymous>',
+      `(${serializedArgs}) { ... }`,
+    ].filter(Boolean).join(' ');
   }
 }

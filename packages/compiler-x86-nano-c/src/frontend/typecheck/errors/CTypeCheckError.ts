@@ -1,5 +1,9 @@
 import {CompilerError} from '@compiler/core/shared/CompilerError';
 
+export function fixme(str: string) {
+  return `[[ fixme ]] ${str}`;
+}
+
 export enum CTypeCheckErrorCode {
   TYPECHECK_ERROR,
   UNKNOWN_SPECIFIERS_KEYWORD,
@@ -9,6 +13,7 @@ export enum CTypeCheckErrorCode {
   REDEFINITION_OF_TYPE,
   UNABLE_TO_EXTRACT_STRUCT_TYPE,
   UNKNOWN_DECLARATOR_ENTRY_IDENTIFIER,
+  UNKNOWN_DECLARATOR_ENTRY_TYPE,
 }
 
 export const C_TYPE_CHECK_ERROR_TRANSLATIONS: Record<CTypeCheckErrorCode, string> = {
@@ -18,8 +23,9 @@ export const C_TYPE_CHECK_ERROR_TRANSLATIONS: Record<CTypeCheckErrorCode, string
   [CTypeCheckErrorCode.INCORRECT_TYPE_SPECIFIERS]: 'Incorrect type specifiers!',
   [CTypeCheckErrorCode.INCORRECT_VOID_SPECIFIERS]: 'Wrong specifiers used with void!',
   [CTypeCheckErrorCode.REDEFINITION_OF_TYPE]: 'Redefinition of type %{name}!',
-  [CTypeCheckErrorCode.UNABLE_TO_EXTRACT_STRUCT_TYPE]: 'Unable to extract struct type!',
-  [CTypeCheckErrorCode.UNKNOWN_DECLARATOR_ENTRY_IDENTIFIER]: 'Unknown declarator entry identifier!',
+  [CTypeCheckErrorCode.UNABLE_TO_EXTRACT_STRUCT_TYPE]: fixme('Unable to extract struct type!'),
+  [CTypeCheckErrorCode.UNKNOWN_DECLARATOR_ENTRY_IDENTIFIER]: fixme('Unknown declarator entry identifier!'),
+  [CTypeCheckErrorCode.UNKNOWN_DECLARATOR_ENTRY_TYPE]: fixme('Unknown declarator entry type!'),
 };
 
 /**

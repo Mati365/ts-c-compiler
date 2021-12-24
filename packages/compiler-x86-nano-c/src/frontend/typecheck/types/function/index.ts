@@ -1,2 +1,2 @@
 export * from './CFunctionType';
-export * from './CFunctionArgType';
+export * from './CFunctionSpecifierMonad';

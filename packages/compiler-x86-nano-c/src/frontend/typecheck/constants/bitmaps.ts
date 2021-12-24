@@ -1,4 +1,9 @@
-import {CTypeSpecifier, CTypeQualifier} from '@compiler/x86-nano-c/constants/lang';
+import {
+  CTypeSpecifier,
+  CTypeQualifier,
+  CFunctionSpecifier,
+  CStorageClassSpecifier,
+} from '@compiler/x86-nano-c/constants/lang';
 
 export const CSpecBitmap: Record<CTypeSpecifier, number> = {
   [CTypeSpecifier.SIGNED]: 1,
@@ -19,4 +24,17 @@ export const CQualBitmap: Record<CTypeQualifier, number> = {
   [CTypeQualifier.ATOMIC]: 1 << 1,
   [CTypeQualifier.RESTRICT]: 1 << 2,
   [CTypeQualifier.VOLATILE]: 1 << 3,
+};
+
+export const CFuncSpecBitmap: Record<CFunctionSpecifier, number> = {
+  [CFunctionSpecifier.INLINE]: 1,
+  [CFunctionSpecifier.NORETURN]: 1 << 1,
+};
+
+export const CStorageSpecBitmap: Record<CStorageClassSpecifier, number> = {
+  [CStorageClassSpecifier.TYPEDEF]: 1,
+  [CStorageClassSpecifier.EXTERN]: 1 << 1,
+  [CStorageClassSpecifier.STATIC]: 1 << 2,
+  [CStorageClassSpecifier.AUTO]: 1 << 3,
+  [CStorageClassSpecifier.REGISTER]: 1 << 4,
 };

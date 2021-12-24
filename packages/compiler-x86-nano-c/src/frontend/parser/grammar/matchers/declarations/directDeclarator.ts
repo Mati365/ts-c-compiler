@@ -156,7 +156,7 @@ export function directDeclarator(grammar: CGrammar): ASTCDirectDeclarator {
 
           return new ASTCDirectDeclarator(
             fnExpression.loc,
-            null, null,
+            null, null, null,
             fnExpression,
             directDeclaratorNode,
           );

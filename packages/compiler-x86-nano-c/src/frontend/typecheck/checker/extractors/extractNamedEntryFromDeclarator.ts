@@ -1,6 +1,6 @@
 import {ASTCDeclarator} from '@compiler/x86-nano-c/frontend/parser/ast';
 import {CTypeCheckError, CTypeCheckErrorCode} from '../../errors/CTypeCheckError';
-import {CType} from '../../types';
+import {CType, CNamedTypedEntry} from '../../types';
 import {TypeCheckerContext} from '../TypeCheckerContext';
 import {TreeTypeBuilderVisitor} from '../visitors/CTreeTypeBuilderVisitor';
 
@@ -15,6 +15,7 @@ type DeclaratorExtractorAttrs = {
  * Extract name => type pair from declarator nodes
  *
  * @export
+ * @returns {CNamedTypedEntry}
  * @param {DeclaratorExtractorAttrs} object
  */
 export function extractNamedEntryFromDeclarator(
@@ -23,7 +24,10 @@ export function extractNamedEntryFromDeclarator(
     type,
     declarator,
   }: DeclaratorExtractorAttrs,
-) {
+): CNamedTypedEntry {
+  if (!type)
+    throw new CTypeCheckError(CTypeCheckErrorCode.UNKNOWN_DECLARATOR_ENTRY_TYPE);
+
   const buildEntry = (
     new TreeTypeBuilderVisitor(type)
       .setContext(context)

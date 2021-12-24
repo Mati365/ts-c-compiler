@@ -6,6 +6,11 @@ import {CTypeCheckError, CTypeCheckErrorCode} from '../../errors/CTypeCheckError
 import {CType, CPrimitiveType} from '../../types';
 import {TypeCheckerContext} from '../TypeCheckerContext';
 
+type DeclarationSpecifierExtractorAttrs = {
+  context: TypeCheckerContext,
+  declaration: ASTCDeclarationSpecifier,
+};
+
 /**
  * Extract type from ParameterDeclarationSpecifier
  *
@@ -13,13 +18,14 @@ import {TypeCheckerContext} from '../TypeCheckerContext';
  *  - Add structs and enums
  *
  * @export
- * @param {TypeCheckerContext} context
- * @param {ASTCDeclarationSpecifier} declaration
+ * @param {DeclarationExtractorAttrs} attrs
  * @return {CType}
  */
 export function extractTypeFromDeclarationSpecifier(
-  context: TypeCheckerContext,
-  declaration: ASTCDeclarationSpecifier,
+  {
+    context,
+    declaration,
+  }: DeclarationSpecifierExtractorAttrs,
 ): CType {
   if (!declaration)
     return null;

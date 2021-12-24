@@ -34,13 +34,16 @@ export class TreeTypeBuilderVisitor extends CTypeTreeVisitor {
           enter(node: ASTCDeclarator) {
             if (node.isPointer())
               this.type = CPointerType.ofType(this.arch, this.type);
+
+            if (this.isDone())
+              return false;
           },
         },
 
         [ASTCCompilerKind.DirectDeclarator]: {
           enter(node: ASTCDirectDeclarator) {
             if (node.isIdentifier())
-              this.name = node.identifier.text;
+              this.name = this.name || node.identifier.text;
             else if (node.isArrayExpression()) {
               this.type = new CArrayType(
                 {
@@ -49,10 +52,19 @@ export class TreeTypeBuilderVisitor extends CTypeTreeVisitor {
                 },
               );
             }
+
+            if (this.isDone())
+              return false;
           },
         },
       },
     );
+  }
+
+  isDone() {
+    const {type, name} = this;
+
+    return !!(type && name);
   }
 
   getBuiltEntry() {

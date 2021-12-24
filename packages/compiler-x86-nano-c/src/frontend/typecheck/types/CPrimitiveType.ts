@@ -19,20 +19,6 @@ import {
   parseKeywordsToBitset,
 } from '../utils';
 
-export enum CSpecifierFlag {
-  SIGNED = 1,
-  UNSIGNED = 1 << 1,
-  LONG = 1 << 2,
-  LONG_LONG = 1 << 3,
-  SHORT = 1 << 4,
-  FLOAT = 1 << 5,
-  DOUBLE = 1 << 6,
-  CHAR = 1 << 7,
-  INT = 1 << 8,
-  BOOL = 1 << 9,
-  VOID = 1 << 10,
-}
-
 export type CPrimitiveTypeDescriptor = {
   specifiers: number,
 };
