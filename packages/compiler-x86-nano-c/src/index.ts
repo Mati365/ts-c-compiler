@@ -2,20 +2,17 @@ import {ccompiler} from './frontend';
 
 ccompiler(
   /* cpp */ `
-    struct Vec2 {
-      int xyz;
-      int b;
+    enum Mode {
+      A = 1 + (2 + 3),
+      B,
+      C = 4
     }
 
-    enum Flags {
-      A = 1 + 2 + 3,
-      B = 2,
-      A = 4,
+    struct Vec {
+      const int x, y;
+      unsigned char letters2[10];
+      char* (*letters)[5][15];
     };
-
-    const int main(int argc, const char *argv[]) {
-      return x + y;
-    }
   `,
 ).match(
   {

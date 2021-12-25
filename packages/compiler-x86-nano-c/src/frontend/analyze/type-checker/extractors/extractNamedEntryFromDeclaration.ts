@@ -4,7 +4,7 @@ import {
 } from '@compiler/x86-nano-c/frontend/parser/ast';
 
 import {TypeCheckerContext} from '../TypeCheckerContext';
-import {CNamedTypedEntry} from '../../types';
+import {CNamedTypedEntry} from '../types';
 
 import {extractNamedEntryFromDeclarator} from './extractNamedEntryFromDeclarator';
 import {extractTypeFromDeclarationSpecifier} from './extractTypeFromDeclarationSpecifier';

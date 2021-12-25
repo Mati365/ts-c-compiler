@@ -4,7 +4,7 @@ import {dumpCompilerAttrs} from '@compiler/core/utils';
 
 import {Result, err, ok} from '@compiler/core/monads';
 import {CCompilerArch} from '@compiler/x86-nano-c/constants';
-import {CTypeCheckError, CTypeCheckErrorCode} from '../errors/CTypeCheckError';
+import {CTypeCheckError, CTypeCheckErrorCode} from '../../errors/CTypeCheckError';
 import {CPrimitiveType} from './CPrimitiveType';
 import {CType} from './CType';
 
@@ -16,9 +16,6 @@ export type CEnumDescriptor = {
 
 /**
  * Defines C-like enum with ints
- *
- * @todo
- *  Add more fields like in struct!
  *
  * @export
  * @class CEnumType
@@ -52,6 +49,7 @@ export class CEnumType extends CType<CEnumDescriptor> {
         return err(
           new CTypeCheckError(
             CTypeCheckErrorCode.REDEFINITION_OF_ENUM_ENTRY,
+            null,
             {
               name,
             },
@@ -84,7 +82,7 @@ export class CEnumType extends CType<CEnumDescriptor> {
     let fields = (
       this
         .getFieldsList()
-        .map(([fieldName, value]) => `  ${fieldName} = ${value};`)
+        .map(([fieldName, value]) => `  ${fieldName} = ${value},`)
         .join('\n')
     );
 
@@ -101,8 +99,12 @@ export class CEnumType extends CType<CEnumDescriptor> {
     return `${enumAttrs} enum ${name || '<anonymous>'} {${fields}}`;
   }
 
+  getEntryValueType() {
+    return CPrimitiveType.int(this.arch);
+  }
+
   getByteSize(): number {
-    return CPrimitiveType.int(this.arch).getByteSize();
+    return this.getEntryValueType().getByteSize();
   }
 
   hasField(name: string) {

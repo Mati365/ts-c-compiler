@@ -2,7 +2,7 @@ import * as R from 'ramda';
 import chalk from 'chalk';
 
 import {Result, ok, err} from '@compiler/core/monads';
-import {CType} from '../types/CType';
+import {CType} from './types/CType';
 import {CTypeCheckError, CTypeCheckErrorCode} from '../errors/CTypeCheckError';
 
 /**
@@ -38,6 +38,7 @@ export class TypeCheckScopeTree {
       return err(
         new CTypeCheckError(
           CTypeCheckErrorCode.REDEFINITION_OF_TYPE,
+          null,
           {
             name,
           },

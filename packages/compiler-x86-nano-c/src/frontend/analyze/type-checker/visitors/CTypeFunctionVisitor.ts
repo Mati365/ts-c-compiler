@@ -1,7 +1,7 @@
 import {ASTCFunctionDefinition} from '@compiler/x86-nano-c/frontend/parser';
 import {CTypeTreeVisitor} from './CTypeTreeVisitor';
-import {CFunctionType, CFunctionSpecifierMonad} from '../../types/function';
-import {CStorageClassMonad} from '../../types/parts/CFunctionStorageClassMonad';
+import {CFunctionType, CFunctionSpecifierMonad} from '../types/function';
+import {CStorageClassMonad} from '../types/parts/CFunctionStorageClassMonad';
 
 import {extractNamedEntryFromDeclaration} from '../extractors';
 

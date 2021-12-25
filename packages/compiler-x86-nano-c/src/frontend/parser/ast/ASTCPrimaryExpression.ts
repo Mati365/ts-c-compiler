@@ -36,4 +36,9 @@ export class ASTCPrimaryExpression extends ASTCCompilerNode {
       },
     );
   }
+
+  isConstant() { return !!this.constant; }
+  isIdentifier() { return !!this.identifier; }
+  isExpression() { return !!this.expression; }
+  isStringLiteral() { return !!this.stringLiteral; }
 }

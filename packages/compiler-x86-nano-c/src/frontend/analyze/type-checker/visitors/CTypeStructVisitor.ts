@@ -1,6 +1,6 @@
 import {ASTCStructSpecifier} from '@compiler/x86-nano-c/frontend/parser';
 import {CTypeCheckError, CTypeCheckErrorCode} from '../../errors/CTypeCheckError';
-import {CStructType} from '../../types';
+import {CStructType} from '../types';
 import {CTypeTreeVisitor} from './CTypeTreeVisitor';
 
 import {

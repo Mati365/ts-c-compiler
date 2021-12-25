@@ -7,7 +7,7 @@ import {CCompilerArch, CStructAlign} from '@compiler/x86-nano-c/constants';
 import {CType} from '../CType';
 import {CNamedTypedEntry} from '../parts';
 import {StructFieldAligner} from './align';
-import {CTypeCheckError, CTypeCheckErrorCode} from '../../errors/CTypeCheckError';
+import {CTypeCheckError, CTypeCheckErrorCode} from '../../../errors/CTypeCheckError';
 import {
   CStructTypeDescriptor,
   CStructEntry,
@@ -57,6 +57,7 @@ export class CStructType extends CType<CStructTypeDescriptor> {
         return err(
           new CTypeCheckError(
             CTypeCheckErrorCode.REDEFINITION_OF_STRUCT_ENTRY,
+            null,
             {
               name,
             },

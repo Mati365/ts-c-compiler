@@ -102,10 +102,10 @@ export class ASTCDirectDeclaratorFnExpression extends ASTCCompilerNode implement
 @walkOverFields(
   {
     fields: [
-      'declarator',
-      'directDeclarator',
       'arrayExpression',
       'fnExpression',
+      'directDeclarator',
+      'declarator',
     ],
   },
 )

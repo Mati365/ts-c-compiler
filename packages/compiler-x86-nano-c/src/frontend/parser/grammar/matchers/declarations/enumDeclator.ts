@@ -83,19 +83,16 @@ export function enumDeclarator(grammar: CGrammar): ASTCEnumSpecifier {
     },
   );
 
-  const emptyDeclaration = g.match(
+  const hasDefinition = g.match(
     {
-      type: TokenType.SEMICOLON,
+      terminal: '{',
       consume: false,
       optional: true,
     },
   );
 
   let enumerations = null;
-  if (emptyDeclaration) {
-    // handle enum Abc;
-    g.consume();
-  } else {
+  if (hasDefinition) {
     // handle enum Abc {}
     g.terminal('{');
 

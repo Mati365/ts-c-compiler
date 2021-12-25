@@ -7,6 +7,13 @@ import {
   ASTCCompilerNode,
 } from '../../../parser/ast/ASTCCompilerNode';
 
+export * from './CTypeTreeVisitor';
+export {
+  CTypeStructVisitor,
+  CTypeFunctionVisitor,
+  CTypeEnumVisitor,
+};
+
 export const C_TYPES_VISITORS: TreeVisitorsMap<ASTCCompilerNode> = {
   [ASTCCompilerKind.StructSpecifier]: CTypeStructVisitor,
   [ASTCCompilerKind.EnumSpecifier]: CTypeEnumVisitor,

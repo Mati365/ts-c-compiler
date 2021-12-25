@@ -1,16 +1,21 @@
+import * as R from 'ramda';
+
 import {
   ASTCCompilerKind,
   ASTCDeclarator,
   ASTCDirectDeclarator,
 } from '@compiler/x86-nano-c/frontend/parser/ast';
 
+import {evalConstantMathExpression} from '../../eval';
+
+import {CTypeCheckError, CTypeCheckErrorCode} from '../../errors/CTypeCheckError';
 import {CTypeTreeVisitor} from './CTypeTreeVisitor';
 import {
   CType,
   CNamedTypedEntry,
   CPointerType,
   CArrayType,
-} from '../../types';
+} from '../types';
 
 /**
  * Walks over declarator related types and treis to construct type
@@ -31,7 +36,7 @@ export class TreeTypeBuilderVisitor extends CTypeTreeVisitor {
     super(
       {
         [ASTCCompilerKind.Declarator]: {
-          enter(node: ASTCDeclarator) {
+          enter: (node: ASTCDeclarator) => {
             if (node.isPointer())
               this.type = CPointerType.ofType(this.arch, this.type);
 
@@ -47,15 +52,31 @@ export class TreeTypeBuilderVisitor extends CTypeTreeVisitor {
         },
 
         [ASTCCompilerKind.DirectDeclarator]: {
-          enter(node: ASTCDirectDeclarator) {
+          enter: (node: ASTCDirectDeclarator) => {
             if (node.isIdentifier())
               this.name = this.name || node.identifier.text;
             else if (node.isArrayExpression()) {
-              this.type = new CArrayType(
+              const {assignmentExpression} = node.arrayExpression;
+              const size = assignmentExpression && +evalConstantMathExpression(
                 {
-                  baseType: this.type,
+                  context: this.context,
+                  expression: <any> assignmentExpression,
                 },
-              );
+              ).unwrapOrThrow();
+
+              if (!R.isNil(size) && size <= 0)
+                throw new CTypeCheckError(CTypeCheckErrorCode.INVALID_ARRAY_SIZE);
+
+              if (this.type instanceof CArrayType)
+                this.type = this.type.ofPrependedDimension(size);
+              else {
+                this.type = new CArrayType(
+                  {
+                    baseType: this.type,
+                    size,
+                  },
+                );
+              }
             }
 
             if (this.isDone())

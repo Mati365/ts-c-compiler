@@ -1,6 +1,10 @@
 import * as R from 'ramda';
 
-import {concatNonEmptyStrings, hasFlag} from '@compiler/core/utils';
+import {
+  concatNonEmptyStrings,
+  hasFlag,
+  numberByteSize,
+} from '@compiler/core/utils';
 
 import {SIZEOF_PRIMITIVE_TYPE} from '@compiler/x86-nano-c/arch';
 import {Result, err, ok} from '@compiler/core/monads';
@@ -10,14 +14,14 @@ import {
   CTypeSpecifier,
 } from '@compiler/x86-nano-c/constants';
 
-import {CTypeCheckError, CTypeCheckErrorCode} from '../errors/CTypeCheckError';
+import {CTypeCheckError, CTypeCheckErrorCode} from '../../errors/CTypeCheckError';
 import {CType} from './CType';
-import {CSpecBitmap} from '../constants';
+import {CSpecBitmap} from '../../constants';
 
 import {
   bitsetToKeywords,
   parseKeywordsToBitset,
-} from '../utils';
+} from '../../utils';
 
 export type CPrimitiveTypeDescriptor = {
   specifiers: number,
@@ -73,6 +77,44 @@ export class CPrimitiveType extends CType<CPrimitiveTypeDescriptor> {
   isVoid() { return this.hasSpecifierType(CSpecBitmap.void); }
   isSigned() { return !this.hasSpecifierType(CSpecBitmap.signed); }
   isUnsigned() { return !this.isSigned(); }
+
+  /**
+   * Returns value type based on provided value
+   *
+   * @static
+   * @param {CCompilerArch} arch
+   * @param {*} value
+   * @return {CPrimitiveType}
+   * @memberof CPrimitiveType
+   */
+  static typeofValue(arch: CCompilerArch, value: any): CPrimitiveType {
+    // BOOLEAN
+    if (R.is(Boolean, value))
+      return CPrimitiveType.bool(arch);
+
+    // CHAR
+    if (R.is(String, value)) {
+      if (value.length === 1)
+        return CPrimitiveType.char(arch);
+
+      return null;
+    }
+
+    // INT
+    if (Number.isInteger(value)) {
+      const intType = CPrimitiveType.int(arch);
+      if (intType.getByteSize() < numberByteSize(value))
+        return null;
+
+      return intType;
+    }
+
+    // FLOAT
+    if (Number.isFinite(value))
+      return CPrimitiveType.float(arch);
+
+    return null;
+  }
 
   /**
    * Returns sizeof from specifiers of primitive type

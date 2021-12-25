@@ -29,6 +29,34 @@ export class CArrayType extends CType<CArrayTypeDescriptor> {
   get size() { return this.value.size; }
   get baseType() { return this.value.baseType; }
 
+  /**
+   * Creates new array of given size
+   *
+   * @param {number} size
+   * @return {CArrayType}
+   * @memberof CArrayType
+   */
+  ofSize(size: number): CArrayType {
+    return this.map((value) => ({
+      ...value,
+      size,
+    }));
+  }
+
+  /**
+   * Transforms for example single dimension array to multiple
+   *
+   * @param {number} size
+   * @return {CArrayType}
+   * @memberof CArrayType
+   */
+  ofPrependedDimension(size: number): CArrayType {
+    return this.map((value) => ({
+      ...value,
+      baseType: this.ofSize(size),
+    }));
+  }
+
   isUnknownSize() {
     return R.isNil(this.size);
   }

@@ -3,10 +3,10 @@ import {hasFlag} from '@compiler/core/utils';
 import {IsPrintable} from '@compiler/core/interfaces';
 import {Identity, Result} from '@compiler/core/monads';
 import {CCompilerArch, CTypeQualifier} from '@compiler/x86-nano-c/constants';
-import {CTypeCheckError, CTypeCheckErrorCode} from '../errors/CTypeCheckError';
-import {CQualBitmap} from '../constants';
+import {CTypeCheckError, CTypeCheckErrorCode} from '../../errors/CTypeCheckError';
+import {CQualBitmap} from '../../constants';
 
-import {bitsetToKeywords, parseKeywordsToBitset} from '../utils';
+import {bitsetToKeywords, parseKeywordsToBitset} from '../../utils';
 
 type CTypeDescriptor<T extends {}> = T & {
   arch: CCompilerArch,

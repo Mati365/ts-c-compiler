@@ -35,11 +35,18 @@ export abstract class TreeVisitor<T extends TreeNode<any> = TreeNode> implements
 
     history.push(node);
 
-    const result = this.enter?.(node, history);
-    if (result !== false)
-      node.walk(this);
+    try {
+      const result = this.enter?.(node, history);
+      if (result !== false)
+        node.walk(this);
 
-    this.leave?.(node, history); // eslint-disable-line no-unused-expressions
+      this.leave?.(node, history); // eslint-disable-line no-unused-expressions
+    } catch (e) {
+      e.loc = e.loc ?? node.loc.start;
+
+      throw e;
+    }
+
     history.pop();
 
     return this;

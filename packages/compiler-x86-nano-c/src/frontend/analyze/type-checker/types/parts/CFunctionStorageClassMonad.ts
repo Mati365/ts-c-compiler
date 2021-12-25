@@ -2,11 +2,11 @@ import {Identity, Result, ok} from '@compiler/core/monads';
 import {hasFlag} from '@compiler/core/utils';
 
 import {CStorageClassSpecifier} from '@compiler/x86-nano-c/constants';
-import {CTypeCheckError, CTypeCheckErrorCode} from '../../errors/CTypeCheckError';
-import {CStorageSpecBitmap} from '../../constants/bitmaps';
+import {CTypeCheckError, CTypeCheckErrorCode} from '../../../errors/CTypeCheckError';
+import {CStorageSpecBitmap} from '../../../constants/bitmaps';
 
 import {IsPrintable} from '@compiler/core/interfaces';
-import {bitsetToKeywords, parseKeywordsToBitset} from '../../utils';
+import {bitsetToKeywords, parseKeywordsToBitset} from '../../../utils';
 
 export type CStorageClassTypeDescriptor = {
   specifiers: number,

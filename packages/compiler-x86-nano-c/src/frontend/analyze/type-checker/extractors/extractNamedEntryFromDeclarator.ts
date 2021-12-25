@@ -1,6 +1,6 @@
 import {ASTCDeclarator} from '@compiler/x86-nano-c/frontend/parser/ast';
 import {CTypeCheckError, CTypeCheckErrorCode} from '../../errors/CTypeCheckError';
-import {CType, CNamedTypedEntry} from '../../types';
+import {CType, CNamedTypedEntry} from '../types';
 import {TypeCheckerContext} from '../TypeCheckerContext';
 import {TreeTypeBuilderVisitor} from '../visitors/CTreeTypeBuilderVisitor';
 
