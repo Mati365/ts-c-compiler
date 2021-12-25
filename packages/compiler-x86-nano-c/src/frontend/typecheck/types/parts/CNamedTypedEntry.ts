@@ -28,11 +28,11 @@ export function isNamedTypeEntry(obj: any): obj is CNamedTypedEntry {
 export class CNamedTypedEntry<D extends CNamedTypedEntryDescriptor = CNamedTypedEntryDescriptor>
   extends Identity<D> {
 
-  static ofBlank() {
-    return new CNamedTypedEntry(
+  static ofAnonymousType(type: CType) {
+    return new CNamedTypedEntry<CNamedTypedEntryDescriptor>(
       {
+        type,
         name: null,
-        type: null,
       },
     );
   }

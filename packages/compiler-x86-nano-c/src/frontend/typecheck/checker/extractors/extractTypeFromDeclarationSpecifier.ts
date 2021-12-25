@@ -8,7 +8,7 @@ import {TypeCheckerContext} from '../TypeCheckerContext';
 
 type DeclarationSpecifierExtractorAttrs = {
   context: TypeCheckerContext,
-  declaration: ASTCDeclarationSpecifier,
+  specifier: ASTCDeclarationSpecifier,
 };
 
 /**
@@ -24,13 +24,13 @@ type DeclarationSpecifierExtractorAttrs = {
 export function extractTypeFromDeclarationSpecifier(
   {
     context,
-    declaration,
+    specifier,
   }: DeclarationSpecifierExtractorAttrs,
 ): CType {
-  if (!declaration)
+  if (!specifier)
     return null;
 
-  const {typeQualifiers, typeSpecifiers} = declaration;
+  const {typeQualifiers, typeSpecifiers} = specifier;
 
   const qualifiers: CTypeQualifier[] = typeQualifiers?.items;
   const {primitives, structs, enums} = typeSpecifiers?.getGroupedSpecifiers();

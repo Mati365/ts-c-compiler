@@ -1,4 +1,4 @@
-import {findByName} from '@compiler/core/utils';
+import {findByName, dumpCompilerAttrs} from '@compiler/core/utils';
 
 import {Identity} from '@compiler/core/monads';
 import {CCompilerArch} from '@compiler/x86-nano-c/constants';
@@ -87,8 +87,8 @@ export class CFunctionType extends CType<CFunctionTypeDescriptor> {
     );
   }
 
-  getByteSize(): number {
-    return null;
+  getArgsByteSize(): number {
+    return this.args.reduce((acc, arg) => acc + arg.type.getByteSize(), 0);
   }
 
   getDisplayName(): string {
@@ -103,7 +103,14 @@ export class CFunctionType extends CType<CFunctionTypeDescriptor> {
         .join(', ')
     );
 
+    const attrs = dumpCompilerAttrs(
+      {
+        argsSizeof: this.getArgsByteSize(),
+      },
+    );
+
     return [
+      attrs,
       specifier.getDisplayName(),
       storage.getDisplayName(),
       returnType.getDisplayName(),

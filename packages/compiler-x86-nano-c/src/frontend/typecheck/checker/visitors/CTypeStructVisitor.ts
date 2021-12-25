@@ -42,7 +42,7 @@ export class CTypeStructVisitor extends CTypeTreeVisitor {
     structSpecifier.list?.children.forEach((declaration) => {
       const type = extractTypeFromDeclarationSpecifier(
         {
-          declaration: declaration.specifierList,
+          specifier: declaration.specifierList,
           context,
         },
       );
@@ -60,7 +60,11 @@ export class CTypeStructVisitor extends CTypeTreeVisitor {
           },
         );
 
-        structType = structType.ofAppendedField(entry);
+        structType = (
+          structType
+            .ofAppendedField(entry)
+            .unwrapOrThrow()
+        );
       });
     });
 

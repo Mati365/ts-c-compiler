@@ -1,16 +1,17 @@
 import * as R from 'ramda';
 
-import {Identity} from '@compiler/core/monads';
+import {dumpCompilerAttrs} from '@compiler/core/utils';
+
+import {Identity, Result, ok, err} from '@compiler/core/monads';
 import {CCompilerArch, CStructAlign} from '@compiler/x86-nano-c/constants';
 import {CType} from '../CType';
 import {CNamedTypedEntry} from '../parts';
 import {StructFieldAligner} from './align';
+import {CTypeCheckError, CTypeCheckErrorCode} from '../../errors/CTypeCheckError';
 import {
   CStructTypeDescriptor,
   CStructEntry,
 } from './constants/types';
-
-import {dumpCompilerAttrs} from '../../utils';
 
 /**
  * Defines C-like structure
@@ -39,18 +40,31 @@ export class CStructType extends CType<CStructTypeDescriptor> {
    *
    * @param {CNamedTypedEntry} entry
    * @param {number} [bitset]
-   * @return {CStructType}
+   * @return {Result<CStructType, CTypeCheckError>}
    * @memberof CStructType
    */
   ofAppendedField(
     entry: CNamedTypedEntry,
     bitset?: number,
-  ): CStructType {
+  ): Result<CStructType, CTypeCheckError> {
     const alignerFn = this.getAlignerFn();
 
-    return this.map((value) => {
+    return this.bind((value) => {
+      const {name} = entry;
+
+      if (this.getField(name)) {
+        return err(
+          new CTypeCheckError(
+            CTypeCheckErrorCode.REDEFINITION_OF_STRUCT_ENTRY,
+            {
+              name,
+            },
+          ),
+        );
+      }
+
       const newEntry: [string, CStructEntry] = [
-        entry.name,
+        name,
         new CStructEntry(
           {
             ...entry.unwrap(),
@@ -60,15 +74,17 @@ export class CStructType extends CType<CStructTypeDescriptor> {
         ),
       ];
 
-      return {
-        ...value,
-        fields: new Map(
-          [
-            ...this.getFieldsList(),
-            newEntry,
-          ],
-        ),
-      };
+      return ok(new CStructType(
+        {
+          ...value,
+          fields: new Map(
+            [
+              ...this.getFieldsList(),
+              newEntry,
+            ],
+          ),
+        },
+      ));
     });
   }
 
@@ -183,5 +199,9 @@ export class CStructType extends CType<CStructTypeDescriptor> {
 
   getFieldsList(): [string, CStructEntry][] {
     return [...this.value.fields.entries()];
+  }
+
+  getField(name: string) {
+    return this.value.fields.get(name);
   }
 }

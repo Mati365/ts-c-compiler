@@ -21,6 +21,8 @@ export const sizeofPrimitiveType: SizeofPrimitiveTypeFn = (specifiers) => {
     case CSpecBitmap.unsigned | CSpecBitmap.int:
       return 2;
 
+    case CSpecBitmap.float:
+    case CSpecBitmap.double:
     case CSpecBitmap.long:
     case CSpecBitmap.long | CSpecBitmap.int:
     case CSpecBitmap.signed | CSpecBitmap.long:

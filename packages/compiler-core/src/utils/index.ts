@@ -22,4 +22,4 @@ export * from './createTiming';
 export * from './removeNullValues';
 export * from './findByProp';
 export * from './concatNonEmptyStrings';
-export * from './serializers/dumpAttributesToString';
+export * from './serializers';

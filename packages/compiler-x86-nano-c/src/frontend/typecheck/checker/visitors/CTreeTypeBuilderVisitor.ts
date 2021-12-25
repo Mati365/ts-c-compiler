@@ -40,6 +40,12 @@ export class TreeTypeBuilderVisitor extends CTypeTreeVisitor {
           },
         },
 
+        [ASTCCompilerKind.DirectDeclaratorFnExpression]: {
+          enter() {
+            return false;
+          },
+        },
+
         [ASTCCompilerKind.DirectDeclarator]: {
           enter(node: ASTCDirectDeclarator) {
             if (node.isIdentifier())

@@ -1,6 +1,6 @@
 import {TreeVisitorsMap} from '@compiler/grammar/tree/TreeGroupedVisitor';
 import {CTypeStructVisitor} from './CTypeStructVisitor';
-import {CTypeFuncVisitor} from './CTypeFuncVisitor';
+import {CTypeFunctionVisitor} from './CTypeFunctionVisitor';
 import {
   ASTCCompilerKind,
   ASTCCompilerNode,
@@ -8,5 +8,5 @@ import {
 
 export const C_TYPES_VISITORS: TreeVisitorsMap<ASTCCompilerNode> = {
   [ASTCCompilerKind.StructSpecifier]: CTypeStructVisitor,
-  [ASTCCompilerKind.FunctionDefinition]: CTypeFuncVisitor,
+  [ASTCCompilerKind.FunctionDefinition]: CTypeFunctionVisitor,
 };

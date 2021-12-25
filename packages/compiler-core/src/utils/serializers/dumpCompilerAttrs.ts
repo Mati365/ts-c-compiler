@@ -1,4 +1,4 @@
-import {dumpAttributesToString} from '@compiler/core/utils';
+import {dumpAttributesToString} from './dumpAttributesToString';
 
 /**
  * Appends custom flags to specific fields such as struct members (offsets)

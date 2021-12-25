@@ -73,6 +73,9 @@ export class ASTCDirectDeclaratorFnExpression extends ASTCCompilerNode implement
     super(ASTCCompilerKind.DirectDeclaratorFnExpression, loc);
   }
 
+  get argsNodes() { return this.parameterTypeList?.children || []; }
+  get identifiersNodes() { return this.identifiersList?.children || []; }
+
   isEmpty() {
     const {parameterTypeList, identifiersList} = this;
 

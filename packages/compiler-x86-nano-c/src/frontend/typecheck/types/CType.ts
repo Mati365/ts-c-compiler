@@ -65,11 +65,12 @@ export abstract class CType<T extends {} = any>
   /**
    * Gets size of type in bytes
    *
-   * @abstract
    * @return {number}
    * @memberof CType
    */
-  abstract getByteSize(): number;
+  getByteSize(): number {
+    return null;
+  }
 
   /**
    * Converts array of string type qualifiers into internal bitset format

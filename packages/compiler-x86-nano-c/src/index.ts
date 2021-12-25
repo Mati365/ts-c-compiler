@@ -2,7 +2,11 @@ import {ccompiler} from './frontend';
 
 ccompiler(
   /* cpp */ `
-    inline extern const int main(int x, int y) {
+    struct Vec2D {
+      int x, y;
+    };
+
+    const int main(int argc, const char *argv[]) {
       return x + y;
     }
   `,
