@@ -4,7 +4,7 @@ import {
   ASTCDirectDeclarator,
 } from '@compiler/x86-nano-c/frontend/parser/ast';
 
-import {CTypeTreeVisitor} from '../visitors/CTypeTreeVisitor';
+import {CTypeTreeVisitor} from './CTypeTreeVisitor';
 import {
   CType,
   CNamedTypedEntry,

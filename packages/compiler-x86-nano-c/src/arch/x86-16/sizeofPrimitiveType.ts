@@ -1,4 +1,4 @@
-import {CSpecBitmap} from '@compiler/x86-nano-c/frontend/typecheck/constants/bitmaps';
+import {CSpecBitmap} from '@compiler/x86-nano-c/frontend/analyze/constants/bitmaps';
 import {SizeofPrimitiveTypeFn} from '../shared';
 
 export const sizeofPrimitiveType: SizeofPrimitiveTypeFn = (specifiers) => {

@@ -9,7 +9,7 @@ import {CCompilerTimings, createCCompilerTimings} from './utils/createCCompilerT
 import {CCompilerConfig, CCompilerArch} from '../constants/config';
 
 import {ASTCCompilerNode} from './parser/ast';
-import {safeAssignTypesToTree} from './typecheck';
+import {safeBuildTypedTree} from './analyze';
 import {safeGenerateTree, clexer} from './parser';
 
 /**
@@ -74,7 +74,7 @@ export function ccompiler(
 
   return timings.add('lexer', clexer)(ccompilerConfig.lexer, code)
     .andThen(timings.add('ast', safeGenerateTree))
-    .andThen(timings.add('typecheck', (tree) => safeAssignTypesToTree(ccompilerConfig, tree)))
+    .andThen(timings.add('analyze', (tree) => safeBuildTypedTree(ccompilerConfig, tree)))
     .andThen(timings.add('compiler', (tree) => ok(
       new CCompilerOutput(
         code,
