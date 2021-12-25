@@ -94,7 +94,7 @@ export class CFunctionType extends CType<CFunctionTypeDescriptor> {
   getDisplayName(): string {
     const {
       returnType, args, name,
-      storage, specifier,
+      arch, storage, specifier,
     } = this;
 
     const serializedArgs = (
@@ -105,6 +105,7 @@ export class CFunctionType extends CType<CFunctionTypeDescriptor> {
 
     const attrs = dumpCompilerAttrs(
       {
+        arch,
         argsSizeof: this.getArgsByteSize(),
       },
     );

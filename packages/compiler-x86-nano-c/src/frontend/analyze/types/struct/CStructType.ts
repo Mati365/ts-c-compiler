@@ -33,6 +33,7 @@ export class CStructType extends CType<CStructTypeDescriptor> {
   }
 
   get name() { return this.value.name; }
+  get fields() { return this.value.fields; }
   get align() { return this.value.align; }
 
   /**
@@ -160,7 +161,7 @@ export class CStructType extends CType<CStructTypeDescriptor> {
    * @memberof CStructType
    */
   getDisplayName(): string {
-    const {name, align} = this;
+    const {name, align, arch} = this;
     let fields = (
       this
         .getFieldsList()
@@ -184,24 +185,24 @@ export class CStructType extends CType<CStructTypeDescriptor> {
 
     const structAttrs = dumpCompilerAttrs(
       {
-        arch: this.arch,
-        sizeof: this.getByteSize(),
+        arch,
         align,
+        sizeof: this.getByteSize(),
       },
     );
 
-    return `struct ${structAttrs} ${name || '<anonymous>'} {${fields}}`;
+    return `${structAttrs} struct ${name || '<anonymous>'} {${fields}}`;
   }
 
   getAlignerFn() {
-    return StructFieldAligner[this.value.align];
+    return StructFieldAligner[this.align];
   }
 
   getFieldsList(): [string, CStructEntry][] {
-    return [...this.value.fields.entries()];
+    return [...this.fields.entries()];
   }
 
   getField(name: string) {
-    return this.value.fields.get(name);
+    return this.fields.get(name);
   }
 }

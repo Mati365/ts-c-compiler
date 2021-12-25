@@ -1,3 +1,4 @@
+import * as R from 'ramda';
 import {concatNonEmptyStrings} from '@compiler/core/utils';
 
 import {Identity} from '@compiler/core/monads';
@@ -5,7 +6,7 @@ import {CType} from './CType';
 
 export type CArrayTypeDescriptor = {
   baseType: CType,
-  size: number,
+  size?: number,
 };
 
 /**
@@ -28,6 +29,10 @@ export class CArrayType extends CType<CArrayTypeDescriptor> {
   get size() { return this.value.size; }
   get baseType() { return this.value.baseType; }
 
+  isUnknownSize() {
+    return R.isNil(this.size);
+  }
+
   isIndexable(): boolean {
     return true;
   }
@@ -45,7 +50,7 @@ export class CArrayType extends CType<CArrayTypeDescriptor> {
   getByteSize(): number {
     const {baseType, size} = this;
 
-    return baseType.getByteSize() * size;
+    return baseType.getByteSize() * (size ?? 1);
   }
 
   getDisplayName(): string {
@@ -54,7 +59,7 @@ export class CArrayType extends CType<CArrayTypeDescriptor> {
     return concatNonEmptyStrings(
       [
         this.getQualifiersDisplayName(),
-        `${baseType.getDisplayName()}[${size}]`,
+        `${baseType.getDisplayName()}[${size ?? ''}]`,
       ],
     );
   }

@@ -54,7 +54,6 @@ export class TreeTypeBuilderVisitor extends CTypeTreeVisitor {
               this.type = new CArrayType(
                 {
                   baseType: this.type,
-                  size: 4,
                 },
               );
             }
