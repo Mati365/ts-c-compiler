@@ -3,6 +3,7 @@ import {CTypeCheckError, CTypeCheckErrorCode} from '../../errors/CTypeCheckError
 import {CStructType} from '../types';
 import {CTypeTreeVisitor} from './CTypeTreeVisitor';
 
+import {evalConstantMathExpression} from '../../eval';
 import {
   extractNamedEntryFromDeclarator,
   extractTypeFromDeclarationSpecifier,
@@ -10,9 +11,6 @@ import {
 
 /**
  * Enters structure and analyzes its content
- *
- * @todo
- *  - Add bitmask support (structField: bitmask;) after constant evaluation
  *
  * @export
  * @class CTypeStructVisitor
@@ -60,9 +58,16 @@ export class CTypeStructVisitor extends CTypeTreeVisitor {
           },
         );
 
+        const bitset = evalConstantMathExpression(
+          {
+            expression: structDeclarator.expression,
+            context,
+          },
+        ).unwrapOrThrow();
+
         structType = (
           structType
-            .ofAppendedField(entry)
+            .ofAppendedField(entry, bitset)
             .unwrapOrThrow()
         );
       });

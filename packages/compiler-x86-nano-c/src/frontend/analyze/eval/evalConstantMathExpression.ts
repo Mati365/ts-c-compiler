@@ -1,11 +1,8 @@
 import {Result, err, ok} from '@compiler/core/monads';
-import {ASTCConstantExpression} from '../../../parser/ast';
-import {CTypeCheckError} from '../../errors/CTypeCheckError';
-import {TypeCheckerContext} from '../../type-checker';
-import {
-  MathExprEvalVisitor,
-  MathOperationResult,
-} from './MathExprEvalVisitor';
+import {ASTCConstantExpression} from '../../parser/ast';
+import {CTypeCheckError} from '../errors/CTypeCheckError';
+import {TypeCheckerContext} from '../type-checker';
+import {MathExpressionEvalVisitor} from './visitors/MathExpressionEvalVisitor';
 
 type EvalMathExpressionAttrs = {
   context: TypeCheckerContext,
@@ -17,15 +14,18 @@ export function evalConstantMathExpression(
     context,
     expression,
   }: EvalMathExpressionAttrs,
-): Result<MathOperationResult, CTypeCheckError> {
+): Result<number, CTypeCheckError> {
+  if (!expression)
+    return ok(null);
+
   try {
     const visitor = (
-      new MathExprEvalVisitor()
+      new MathExpressionEvalVisitor()
         .setContext(context)
         .visit(expression)
     );
 
-    return ok(visitor.value);
+    return ok(+visitor.value);
   } catch (e) {
     console.error(e);
 

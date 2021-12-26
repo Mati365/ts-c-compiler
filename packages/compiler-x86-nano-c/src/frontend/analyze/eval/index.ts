@@ -1,1 +1,1 @@
-export * from './eval-constant-math-expression';
+export * from './evalConstantMathExpression';

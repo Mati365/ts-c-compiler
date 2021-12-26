@@ -25,10 +25,10 @@ export type MathOperationResult = number | boolean;
  *  It is not constexpr! It only evaluates basic 2 + 3 etc. expressions
  *
  * @export
- * @class MathExprEvalVisitor
+ * @class MathExpressionEvalVisitor
  * @extends {CTypeTreeVisitor}
  */
-export class MathExprEvalVisitor extends CTypeTreeVisitor {
+export class MathExpressionEvalVisitor extends CTypeTreeVisitor {
   private expressionArgs: MathOperationResult[] = [];
 
   constructor() {
@@ -56,7 +56,7 @@ export class MathExprEvalVisitor extends CTypeTreeVisitor {
    *
    * @private
    * @param {ASTCPrimaryExpression} node
-   * @memberof MathExprEvalVisitor
+   * @memberof MathExpressionEvalVisitor
    */
   private pushConstant(node: ASTCPrimaryExpression) {
     if (node.isExpression())
@@ -74,7 +74,7 @@ export class MathExprEvalVisitor extends CTypeTreeVisitor {
    *
    * @private
    * @param {ASTCBinaryOpNode} node
-   * @memberof MathExprEvalVisitor
+   * @memberof MathExpressionEvalVisitor
    */
   private performBinaryOp(node: ASTCBinaryOpNode): number {
     const {expressionArgs} = this;

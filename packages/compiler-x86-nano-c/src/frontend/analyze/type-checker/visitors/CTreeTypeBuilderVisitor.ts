@@ -45,46 +45,58 @@ export class TreeTypeBuilderVisitor extends CTypeTreeVisitor {
           },
         },
 
+        [ASTCCompilerKind.DirectDeclarator]: {
+          enter: (node: ASTCDirectDeclarator) => this.extractDirectDeclarator(node),
+        },
+
         [ASTCCompilerKind.DirectDeclaratorFnExpression]: {
           enter() {
             return false;
           },
         },
-
-        [ASTCCompilerKind.DirectDeclarator]: {
-          enter: (node: ASTCDirectDeclarator) => {
-            if (node.isIdentifier())
-              this.name = this.name || node.identifier.text;
-            else if (node.isArrayExpression()) {
-              const {assignmentExpression} = node.arrayExpression;
-              const size = assignmentExpression && +evalConstantMathExpression(
-                {
-                  context: this.context,
-                  expression: <any> assignmentExpression,
-                },
-              ).unwrapOrThrow();
-
-              if (!R.isNil(size) && size <= 0)
-                throw new CTypeCheckError(CTypeCheckErrorCode.INVALID_ARRAY_SIZE);
-
-              if (this.type instanceof CArrayType)
-                this.type = this.type.ofPrependedDimension(size);
-              else {
-                this.type = new CArrayType(
-                  {
-                    baseType: this.type,
-                    size,
-                  },
-                );
-              }
-            }
-
-            if (this.isDone())
-              return false;
-          },
-        },
       },
     );
+  }
+
+  /**
+   * Modifices internal type
+   *
+   * @private
+   * @param {ASTCDirectDeclarator} node
+   * @return {boolean}
+   * @memberof TreeTypeBuilderVisitor
+   */
+  private extractDirectDeclarator(node: ASTCDirectDeclarator): boolean {
+    if (node.isIdentifier())
+      this.name = this.name || node.identifier.text;
+    else if (node.isArrayExpression()) {
+      const {assignmentExpression} = node.arrayExpression;
+      const size = assignmentExpression && evalConstantMathExpression(
+        {
+          context: this.context,
+          expression: <any> assignmentExpression,
+        },
+      ).unwrapOrThrow();
+
+      if (!R.isNil(size) && size <= 0)
+        throw new CTypeCheckError(CTypeCheckErrorCode.INVALID_ARRAY_SIZE);
+
+      if (this.type instanceof CArrayType)
+        this.type = this.type.ofPrependedDimension(size);
+      else {
+        this.type = new CArrayType(
+          {
+            baseType: this.type,
+            size,
+          },
+        );
+      }
+    }
+
+    if (this.isDone())
+      return false;
+
+    return true;
   }
 
   isDone() {

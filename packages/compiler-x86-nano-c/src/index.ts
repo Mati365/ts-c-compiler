@@ -2,16 +2,9 @@ import {ccompiler} from './frontend';
 
 ccompiler(
   /* cpp */ `
-    enum Mode {
-      A = 1 + (2 + 3),
-      B,
-      C = 4
-    }
-
-    struct Vec {
-      const int x, y;
-      unsigned char letters2[10];
-      char* (*letters)[5][15];
+    struct Vec2 {
+      int x: (4 + 8 / 2);
+      int y: 8;
     };
   `,
 ).match(
