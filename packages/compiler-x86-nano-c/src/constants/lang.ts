@@ -6,6 +6,10 @@ export enum CStructAlign {
   PACKED = 'packed',
 }
 
+export enum CFunctionCallConvention {
+  CDECL = 'CDECL',
+}
+
 export enum CStorageClassSpecifier {
   TYPEDEF = 'typedef',
   EXTERN = 'extern',

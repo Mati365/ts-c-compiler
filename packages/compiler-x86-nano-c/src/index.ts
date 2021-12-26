@@ -2,10 +2,10 @@ import {ccompiler} from './frontend';
 
 ccompiler(
   /* cpp */ `
-    struct Vec2 {
-      int x: (4 + 8 / 2);
-      int y: 8;
-    };
+    int sum(int x, int y) {
+      int c;
+      int d;
+    }
   `,
 ).match(
   {

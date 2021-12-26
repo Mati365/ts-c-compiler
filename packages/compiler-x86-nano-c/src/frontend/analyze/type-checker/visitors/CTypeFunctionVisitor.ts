@@ -1,4 +1,5 @@
 import {ASTCFunctionDefinition} from '@compiler/x86-nano-c/frontend/parser';
+import {CFunctionCallConvention} from '@compiler/x86-nano-c/constants';
 import {CTypeTreeVisitor} from './CTypeTreeVisitor';
 import {CFunctionType, CFunctionSpecifierMonad} from '../types/function';
 import {CStorageClassMonad} from '../types/parts/CFunctionStorageClassMonad';
@@ -60,6 +61,7 @@ export class CTypeFunctionVisitor extends CTypeTreeVisitor {
 
     return new CFunctionType(
       {
+        callConvention: CFunctionCallConvention.CDECL,
         name: returnTypeEntry.name,
         returnType: returnTypeEntry.type,
         args,
