@@ -71,13 +71,7 @@ export class CEnumType extends CType<CEnumDescriptor> {
     });
   }
 
-  /**
-   * Serialize whole enum to string
-   *
-   * @return {string}
-   * @memberof CEnumType
-   */
-  getDisplayName(): string {
+  override getDisplayName() {
     const {name, arch} = this;
     let fields = (
       this
@@ -99,12 +93,12 @@ export class CEnumType extends CType<CEnumDescriptor> {
     return `${enumAttrs} enum ${name || '<anonymous>'} {${fields}}`;
   }
 
-  getEntryValueType() {
-    return CPrimitiveType.int(this.arch);
+  override getByteSize(): number {
+    return this.getEntryValueType().getByteSize();
   }
 
-  getByteSize(): number {
-    return this.getEntryValueType().getByteSize();
+  getEntryValueType() {
+    return CPrimitiveType.int(this.arch);
   }
 
   hasField(name: string) {

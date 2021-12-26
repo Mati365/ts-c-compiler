@@ -52,11 +52,11 @@ export class CFunctionType extends CType<CFunctionTypeDescriptor> {
   get args() { return this.value.args; }
   get callConvention() { return this.value.callConvention; }
 
-  isCallable(): boolean {
+  override isCallable() {
     return true;
   }
 
-  isEqual(value: Identity<CFunctionType>): boolean {
+  override isEqual(value: Identity<CFunctionType>): boolean {
     if (!(value instanceof CFunctionType))
       return false;
 
@@ -75,6 +75,37 @@ export class CFunctionType extends CType<CFunctionTypeDescriptor> {
     );
   }
 
+  override getDisplayName(): string {
+    const {
+      returnType, args, name,
+      arch, storage, specifier,
+      callConvention,
+    } = this;
+
+    const serializedArgs = (
+      args
+        .map((arg) => arg.getDisplayName())
+        .join(', ')
+    );
+
+    const attrs = dumpCompilerAttrs(
+      {
+        arch,
+        callConvention,
+        argsSizeof: this.getArgsByteSize(),
+      },
+    );
+
+    return [
+      attrs,
+      specifier.getDisplayName(),
+      storage.getDisplayName(),
+      returnType.getDisplayName(),
+      name || '<anonymous>',
+      `(${serializedArgs}) { ... }`,
+    ].filter(Boolean).join(' ');
+  }
+
   /**
    * Lookups in array and returns arg by name
    *
@@ -91,36 +122,13 @@ export class CFunctionType extends CType<CFunctionTypeDescriptor> {
     return findByName(name)(args);
   }
 
+  /**
+   * Returns total byte size of arguments
+   *
+   * @return {number}
+   * @memberof CFunctionType
+   */
   getArgsByteSize(): number {
     return this.args.reduce((acc, arg) => acc + arg.type.getByteSize(), 0);
-  }
-
-  getDisplayName(): string {
-    const {
-      returnType, args, name,
-      arch, storage, specifier,
-    } = this;
-
-    const serializedArgs = (
-      args
-        .map((arg) => arg.getDisplayName())
-        .join(', ')
-    );
-
-    const attrs = dumpCompilerAttrs(
-      {
-        arch,
-        argsSizeof: this.getArgsByteSize(),
-      },
-    );
-
-    return [
-      attrs,
-      specifier.getDisplayName(),
-      storage.getDisplayName(),
-      returnType.getDisplayName(),
-      name || '<anonymous>',
-      `(${serializedArgs}) { ... }`,
-    ].filter(Boolean).join(' ');
   }
 }

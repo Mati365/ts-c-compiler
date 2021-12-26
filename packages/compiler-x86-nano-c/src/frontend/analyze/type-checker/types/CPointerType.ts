@@ -30,18 +30,18 @@ export class CPointerType extends CType<CPointerTypeDescriptor> {
     return this.value.baseType;
   }
 
-  isEqual(value: Identity<CPointerTypeDescriptor>): boolean {
+  override isEqual(value: Identity<CPointerTypeDescriptor>): boolean {
     if (!(value instanceof CPointerType))
       return false;
 
     return value.baseType.isEqual(this.baseType);
   }
 
-  getByteSize(): number {
+  override getByteSize(): number {
     return CPrimitiveType.int(this.arch).getByteSize();
   }
 
-  getDisplayName(): string {
+  override getDisplayName(): string {
     return concatNonEmptyStrings(
       [
         this.getQualifiersDisplayName(),

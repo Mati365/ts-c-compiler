@@ -1,3 +1,5 @@
+import * as R from 'ramda';
+
 import {walkOverFields} from '@compiler/grammar/decorators/walkOverFields';
 import {dumpAttributesToString} from '@compiler/core/utils';
 
@@ -27,6 +29,10 @@ export class ASTCEnumSpecifier extends ASTCCompilerNode {
     public readonly enumerations: ASTCEnumEnumeration[],
   ) {
     super(ASTCCompilerKind.EnumSpecifier, loc);
+  }
+
+  hasEnumerations() {
+    return !R.isNil(this.enumerations);
   }
 
   toString() {

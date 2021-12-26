@@ -16,6 +16,7 @@ export enum CTypeCheckErrorCode {
   INCORRECT_CONSTANT_EXPR,
   INCORRECT_CONSTANT_EXPR_IDENTIFIER,
   REDEFINITION_OF_TYPE,
+  REDEFINITION_OF_VARIABLE,
   REDEFINITION_OF_STRUCT_ENTRY,
   REDEFINITION_OF_ENUM_ENTRY,
   UNABLE_TO_EXTRACT_STRUCT_TYPE,
@@ -23,6 +24,7 @@ export enum CTypeCheckErrorCode {
   UNKNOWN_DECLARATOR_ENTRY_TYPE,
   UNKNOWN_CONSTANT_EXPR_EVAL_OPERAND,
   UNKNOWN_TYPE,
+  UNABLE_TO_EXTRACT_DECLARATION_TYPE,
 }
 
 export const C_TYPE_CHECK_ERROR_TRANSLATIONS: Record<CTypeCheckErrorCode, string> = {
@@ -34,6 +36,7 @@ export const C_TYPE_CHECK_ERROR_TRANSLATIONS: Record<CTypeCheckErrorCode, string
   [CTypeCheckErrorCode.INCORRECT_TYPE_SPECIFIERS]: 'Incorrect type specifiers!',
   [CTypeCheckErrorCode.INCORRECT_VOID_SPECIFIERS]: 'Wrong specifiers used with void!',
   [CTypeCheckErrorCode.REDEFINITION_OF_TYPE]: 'Redefinition of type %{name}!',
+  [CTypeCheckErrorCode.REDEFINITION_OF_VARIABLE]: 'Redefinition of variable %{name}!',
   [CTypeCheckErrorCode.REDEFINITION_OF_STRUCT_ENTRY]: 'Redefinition of struct entry %{name}!',
   [CTypeCheckErrorCode.REDEFINITION_OF_ENUM_ENTRY]: 'Redefinition of enum entry %{name}!',
   [CTypeCheckErrorCode.INCORRECT_CONSTANT_EXPR]: 'Incorrect constant expression!',
@@ -43,6 +46,7 @@ export const C_TYPE_CHECK_ERROR_TRANSLATIONS: Record<CTypeCheckErrorCode, string
   [CTypeCheckErrorCode.UNKNOWN_DECLARATOR_ENTRY_TYPE]: fixme('Unknown declarator entry type!'),
   [CTypeCheckErrorCode.UNKNOWN_CONSTANT_EXPR_EVAL_OPERAND]: fixme('Unknown constant expression operand!'),
   [CTypeCheckErrorCode.UNKNOWN_TYPE]: 'Unknown type named "%{typeName}"!',
+  [CTypeCheckErrorCode.UNABLE_TO_EXTRACT_DECLARATION_TYPE]: fixme('Unable to extract declaration type!'),
 };
 
 /**

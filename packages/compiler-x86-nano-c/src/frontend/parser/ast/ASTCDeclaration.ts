@@ -8,7 +8,7 @@ import {ASTCInitDeclaratorList} from './ASTCInitDeclaratorList';
 @walkOverFields(
   {
     fields: [
-      'specifiers',
+      'specifier',
       'initList',
     ],
   },
@@ -16,7 +16,7 @@ import {ASTCInitDeclaratorList} from './ASTCInitDeclaratorList';
 export class ASTCDeclaration extends ASTCCompilerNode {
   constructor(
     loc: NodeLocation,
-    public readonly specifiers: ASTCDeclarationSpecifier,
+    public readonly specifier: ASTCDeclarationSpecifier,
     public readonly initList: ASTCInitDeclaratorList,
   ) {
     super(ASTCCompilerKind.Declaration, loc);

@@ -54,6 +54,7 @@ export abstract class GroupTreeVisitor<
       return visitor.enter?.call(this, node);
     }
 
+    console.info(visitor);
     this.initializeAndEnter(visitor, node);
     return false;
   }

@@ -1,6 +1,6 @@
 import * as R from 'ramda';
 
-import {dumpCompilerAttrs} from '@compiler/core/utils';
+import {dropNewLines, dumpCompilerAttrs} from '@compiler/core/utils';
 
 import {Identity, Result, ok, err} from '@compiler/core/monads';
 import {CCompilerArch, CStructAlign} from '@compiler/x86-nano-c/constants';
@@ -111,7 +111,7 @@ export class CStructType extends CType<CStructTypeDescriptor> {
    * @return {boolean}
    * @memberof CStructType
    */
-  isEqual(value: Identity<CStructTypeDescriptor>): boolean {
+  override isEqual(value: Identity<CStructTypeDescriptor>): boolean {
     if (!(value instanceof CStructType)
         || value.align !== this.align)
       return false;
@@ -144,7 +144,7 @@ export class CStructType extends CType<CStructTypeDescriptor> {
    * @return {number}
    * @memberof CStructType
    */
-  getByteSize(): number {
+  override getByteSize(): number {
     return this.getFieldsList().reduce(
       (acc, [, entry]) => {
         const endOffset = entry.getOffset() + entry.type.getByteSize();
@@ -161,7 +161,7 @@ export class CStructType extends CType<CStructTypeDescriptor> {
    * @return {string}
    * @memberof CStructType
    */
-  getDisplayName(): string {
+  override getDisplayName(): string {
     const {name, align, arch} = this;
     let fields = (
       this
@@ -175,7 +175,7 @@ export class CStructType extends CType<CStructTypeDescriptor> {
           );
 
           return (
-            `  ${fieldAttrs} ${type.getDisplayName()} ${fieldName}${bitset ? `: ${bitset}` : ''};`
+            `  ${fieldAttrs} ${dropNewLines(type.getDisplayName())} ${fieldName}${bitset ? `: ${bitset}` : ''};`
           );
         })
         .join('\n')

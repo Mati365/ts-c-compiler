@@ -6,22 +6,19 @@ import {
   ASTCDirectDeclarator,
 } from '@compiler/x86-nano-c/frontend/parser/ast';
 
-import {evalConstantMathExpression} from '../../eval';
+import {evalConstantMathExpression} from '../../../eval';
 
-import {CTypeCheckError, CTypeCheckErrorCode} from '../../errors/CTypeCheckError';
-import {CTypeTreeVisitor} from './CTypeTreeVisitor';
+import {CTypeCheckError, CTypeCheckErrorCode} from '../../../errors/CTypeCheckError';
+import {CTypeTreeVisitor} from '../../visitors/CTypeTreeVisitor';
 import {
   CType,
   CNamedTypedEntry,
   CPointerType,
   CArrayType,
-} from '../types';
+} from '../../types';
 
 /**
  * Walks over declarator related types and treis to construct type
- *
- * @todo
- *  - Add constant evaluation of array size expression!
  *
  * @export
  * @class TreeTypeBuilderVisitor

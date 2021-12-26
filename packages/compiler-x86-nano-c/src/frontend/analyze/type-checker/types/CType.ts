@@ -11,6 +11,7 @@ import {bitsetToKeywords, parseKeywordsToBitset} from '../../utils';
 type CTypeDescriptor<T extends {}> = T & {
   arch: CCompilerArch,
   qualifiers?: number,
+  registered?: boolean, // checks if type is newly created or not
 };
 
 /**
@@ -30,8 +31,24 @@ export abstract class CType<T extends {} = any>
   get arch() { return this.value.arch; }
   get qualifiers() { return this.value.qualifiers; }
 
+  /**
+   * Creates instance that has registered=true flag.
+   * Registered flag indicates that type is present in registry
+   *
+   * @param {boolean} [registered=true]
+   * @return {this}
+   * @memberof CType
+   */
+  ofRegistered(registered: boolean = true): this {
+    return this.map((value) => ({
+      ...value,
+      registered,
+    }));
+  }
+
+  isRegistered() { return this.value.registered; }
   isIndexable() { return false; }
-  isCallbable() { return false; }
+  isCallable() { return false; }
 
   isConst() {
     return this.hasQualifierType(CQualBitmap.const);

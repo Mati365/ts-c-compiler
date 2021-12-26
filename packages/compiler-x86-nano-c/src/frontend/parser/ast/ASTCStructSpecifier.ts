@@ -1,3 +1,5 @@
+import * as R from 'ramda';
+
 import {dumpAttributesToString} from '@compiler/core/utils';
 import {walkOverFields} from '@compiler/grammar/decorators/walkOverFields';
 
@@ -21,6 +23,10 @@ export class ASTCStructSpecifier extends ASTCCompilerNode {
     kind: ASTCCompilerKind = ASTCCompilerKind.StructSpecifier,
   ) {
     super(kind, loc);
+  }
+
+  hasDeclarationList() {
+    return !R.isNil(this.list);
   }
 
   toString() {

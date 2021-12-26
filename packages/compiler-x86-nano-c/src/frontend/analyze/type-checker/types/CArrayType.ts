@@ -61,11 +61,11 @@ export class CArrayType extends CType<CArrayTypeDescriptor> {
     return R.isNil(this.size);
   }
 
-  isIndexable(): boolean {
+  override isIndexable() {
     return true;
   }
 
-  isEqual(value: Identity<CArrayTypeDescriptor>): boolean {
+  override isEqual(value: Identity<CArrayTypeDescriptor>) {
     if (!(value instanceof CArrayType))
       return false;
 
@@ -75,13 +75,13 @@ export class CArrayType extends CType<CArrayTypeDescriptor> {
     );
   }
 
-  getByteSize(): number {
+  override getByteSize(): number {
     const {baseType, size} = this;
 
     return baseType.getByteSize() * (size ?? 1);
   }
 
-  getDisplayName(): string {
+  override getDisplayName(): string {
     const {baseType, size} = this;
 
     return concatNonEmptyStrings(

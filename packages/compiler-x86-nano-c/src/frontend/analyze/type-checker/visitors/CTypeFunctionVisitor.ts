@@ -4,7 +4,7 @@ import {CTypeTreeVisitor} from './CTypeTreeVisitor';
 import {CFunctionType, CFunctionSpecifierMonad} from '../types/function';
 import {CStorageClassMonad} from '../types/parts/CFunctionStorageClassMonad';
 
-import {extractNamedEntryFromDeclaration} from '../extractors';
+import {extractNamedEntryFromDeclaration} from '../resolver';
 
 /**
  * Enters function definition and analyzes its content

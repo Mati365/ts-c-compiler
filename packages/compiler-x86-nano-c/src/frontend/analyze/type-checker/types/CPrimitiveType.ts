@@ -55,11 +55,11 @@ export class CPrimitiveType extends CType<CPrimitiveTypeDescriptor> {
 
   get specifiers() { return this.value.specifiers; }
 
-  getByteSize(): number {
+  override getByteSize(): number {
     return CPrimitiveType.sizeOf(this.arch, this.specifiers);
   }
 
-  getDisplayName() {
+  override getDisplayName() {
     const {specifiers} = this;
 
     return concatNonEmptyStrings(

@@ -2,9 +2,11 @@ import {ccompiler} from './frontend';
 
 ccompiler(
   /* cpp */ `
-    int sum(int x, int y) {
-      int c;
-      int d;
+    struct Vec2 {
+      int x, y;
+    };
+
+    int sum(struct Vec2 a, struct Vec2 b) {
     }
   `,
 ).match(

@@ -2,6 +2,7 @@ import * as R from 'ramda';
 
 import {Identity} from '@compiler/core/monads';
 import {CType} from '../CType';
+import {isNamedType} from '../../helpers/isNamedType';
 
 export type CNamedTypedEntryDescriptor = {
   type: CType,
@@ -42,8 +43,13 @@ export class CNamedTypedEntry<D extends CNamedTypedEntryDescriptor = CNamedTyped
 
   getDisplayName() {
     const {type, name} = this.unwrap();
+    const typeName = (
+      isNamedType(type)
+        ? type.name
+        : type.getDisplayName()
+    );
 
-    return `${type.getDisplayName()} ${name || '<anonymous>'}`;
+    return `${typeName} ${name || '<anonymous>'}`;
   }
 
   /**
