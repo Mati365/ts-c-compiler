@@ -29,6 +29,6 @@ export type TypeResolverAttrs = {
 };
 
 export type TypeExtractorAttrs = Pick<TypeResolverAttrs, 'context'> & {
-  resolveSpecifierType(attrs: SpecifierResolverAttrs): CType,
+  extractSpecifierType(attrs: SpecifierResolverAttrs): CType,
   extractNamedEntryFromDeclarator(attrs: DeclaratorExtractorAttrs): CNamedTypedEntry,
 };

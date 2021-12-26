@@ -10,11 +10,11 @@ type EnumTypeExtractorAttrs = TypeExtractorAttrs & {
 };
 
 /**
- * Walks over enum tree node and constructs type
+ * Walks over enum tree node and constructs enum type
  *
- * @param {ASTCEnumSpecifier} enumSpecifier
+ * @export
+ * @param {EnumTypeExtractorAttrs} attrs
  * @return {CEnumType}
- * @memberof CTypeEnumVisitor
  */
 export function extractEnumTypeFromNode(
   {

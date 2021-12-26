@@ -146,10 +146,14 @@ export class CPrimitiveType extends CType<CPrimitiveTypeDescriptor> {
     if (!R.isNil(byteSize))
       return ok(type);
 
-    if (type.isVoid() && type.specifiers !== CSpecBitmap.void) {
-      return err(
-        new CTypeCheckError(CTypeCheckErrorCode.INCORRECT_VOID_SPECIFIERS),
-      );
+    if (type.isVoid()) {
+      if (type.specifiers !== CSpecBitmap.void || type.qualifiers) {
+        return err(
+          new CTypeCheckError(CTypeCheckErrorCode.INCORRECT_VOID_SPECIFIERS),
+        );
+      }
+
+      return ok(type);
     }
 
     return err(

@@ -9,11 +9,18 @@ type StructTypeExtractorAttrs = TypeExtractorAttrs & {
   structSpecifier: ASTCStructSpecifier,
 };
 
+/**
+ * Walks over struct specifier tree and creates struct type
+ *
+ * @export
+ * @param {StructTypeExtractorAttrs} attrs
+ * @return {CStructType}
+ */
 export function extractStructTypeFromNode(
   {
     context,
     structSpecifier,
-    resolveSpecifierType,
+    extractSpecifierType,
     extractNamedEntryFromDeclarator,
   }: StructTypeExtractorAttrs,
 ): CStructType {
@@ -21,7 +28,7 @@ export function extractStructTypeFromNode(
 
   // handle const int x, y;
   structSpecifier.list?.children.forEach((declaration) => {
-    const type = resolveSpecifierType(
+    const type = extractSpecifierType(
       {
         specifier: declaration.specifierList,
         context,

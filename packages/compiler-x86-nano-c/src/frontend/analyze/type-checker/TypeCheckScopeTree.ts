@@ -1,7 +1,7 @@
 import * as R from 'ramda';
 import chalk from 'chalk';
 
-import {Result, ok, err} from '@compiler/core/monads';
+import {Result, ok, err, tryFold} from '@compiler/core/monads';
 import {CType} from './types/CType';
 import {CVariable} from './variables/CVariable';
 import {CTypeCheckError, CTypeCheckErrorCode} from '../errors/CTypeCheckError';
@@ -50,6 +50,21 @@ export class TypeCheckScopeTree {
 
     variables[name] = variable.ofGlobalScope(this.isGlobal());
     return ok(variable);
+  }
+
+  /**
+   * Defines pack of multiple variables
+   *
+   * @param {CVariable[]} variables
+   * @return {Result<CVariable[], CTypeCheckError>}
+   * @memberof TypeCheckScopeTree
+   */
+  defineVariables(variables: CVariable[]): Result<CVariable[], CTypeCheckError> {
+    return tryFold(
+      (variable) => this.defineVariable(variable),
+      [],
+      variables,
+    );
   }
 
   /**
@@ -189,7 +204,7 @@ export class TypeCheckScopeTree {
         ...(
           R
             .values(variables)
-            .map((variable) => chalk.bold.green(`  + ${variable.getDisplayName()}`))
+            .map((variable) => chalk.bold.green(`  + ${variable.getDisplayName()};`))
         ),
       ];
     }

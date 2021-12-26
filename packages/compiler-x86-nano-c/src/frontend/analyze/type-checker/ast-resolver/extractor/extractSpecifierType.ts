@@ -11,7 +11,8 @@ import {
   TypeResolverAttrs,
 } from '../constants/types';
 
-import {extractEnumTypeFromNode, extractStructTypeFromNode} from '../types';
+import {extractEnumTypeFromNode} from './extractEnumTypeFromNode';
+import {extractStructTypeFromNode} from './extractStructTypeFromNode';
 
 /**
  * Extract type from ParameterDeclarationSpecifier
@@ -23,7 +24,7 @@ import {extractEnumTypeFromNode, extractStructTypeFromNode} from '../types';
  * @param {SpecifierResolverAttrs} attrs
  * @return {CType}
  */
-export function resolveSpecifierType(
+export function extractSpecifierType(
   {
     context,
     specifier,
@@ -70,7 +71,7 @@ export function resolveSpecifierType(
         return extractStructTypeFromNode(
           {
             extractNamedEntryFromDeclarator,
-            resolveSpecifierType,
+            extractSpecifierType,
             structSpecifier,
             context,
           },
@@ -87,7 +88,7 @@ export function resolveSpecifierType(
         return extractEnumTypeFromNode(
           {
             extractNamedEntryFromDeclarator,
-            resolveSpecifierType,
+            extractSpecifierType,
             enumSpecifier,
             context,
           },
@@ -130,7 +131,7 @@ export function extractNamedEntryFromDeclaration(
   }: TypeResolverAttrs,
 ): CNamedTypedEntry {
   const {specifier, declarator} = declaration;
-  const type = resolveSpecifierType(
+  const type = extractSpecifierType(
     {
       specifier,
       context,

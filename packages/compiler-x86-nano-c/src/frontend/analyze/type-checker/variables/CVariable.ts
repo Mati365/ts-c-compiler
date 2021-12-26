@@ -1,7 +1,9 @@
+import {ASTCCompilerNode} from '@compiler/x86-nano-c/frontend/parser/ast';
 import {CNamedTypedEntry, CNamedTypedEntryDescriptor} from '../types/parts';
 
 export type CVariableDescriptor = CNamedTypedEntryDescriptor & {
   global?: boolean,
+  initializer?: ASTCCompilerNode,
 };
 
 /**
@@ -12,6 +14,20 @@ export type CVariableDescriptor = CNamedTypedEntryDescriptor & {
  * @extends {CNamedTypedEntry<CVariableDescriptor>}
  */
 export class CVariable extends CNamedTypedEntry<CVariableDescriptor> {
+  static ofInitializedEntry(entry: CNamedTypedEntry, initializer?: ASTCCompilerNode) {
+    return new CVariable(
+      {
+        ...entry.unwrap(),
+        initializer,
+      },
+    );
+  }
+
+  get initializer() { return this.value.initializer; }
+
+  isGlobal() { return this.value.global; }
+  isInitialized() { return !!this.initializer; }
+
   /**
    * Sets global flag and return new instance
    *
@@ -26,7 +42,11 @@ export class CVariable extends CNamedTypedEntry<CVariableDescriptor> {
     }));
   }
 
-  isGlobal() {
-    return this.value.global;
+  override getDisplayName() {
+    let str = super.getDisplayName();
+    if (this.isInitialized())
+      str += ' = [[ initializer ]]';
+
+    return str;
   }
 }

@@ -2,11 +2,23 @@ import {ccompiler} from './frontend';
 
 ccompiler(
   /* cpp */ `
-    struct Vec2 {
-      int x, y;
+    enum ScreenMode {
+      VGA,
+      EGA,
     };
 
-    int sum(struct Vec2 a, struct Vec2 b) {
+    struct Size {
+      int w, h;
+    };
+
+    struct ScreenDriver {
+      char mode;
+
+      struct Size size;
+      struct { int x, y; } cursor;
+    } screenDriver;
+
+    void init_screen(enum ScreenMode mode, struct Size size) {
     }
   `,
 ).match(
