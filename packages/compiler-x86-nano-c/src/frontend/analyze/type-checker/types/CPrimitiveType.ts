@@ -1,12 +1,13 @@
 import * as R from 'ramda';
 
+import {SIZEOF_PRIMITIVE_TYPE} from '@compiler/x86-nano-c/arch';
+
 import {
   concatNonEmptyStrings,
   hasFlag,
   numberByteSize,
 } from '@compiler/core/utils';
 
-import {SIZEOF_PRIMITIVE_TYPE} from '@compiler/x86-nano-c/arch';
 import {Result, err, ok} from '@compiler/core/monads';
 import {
   CCompilerArch,

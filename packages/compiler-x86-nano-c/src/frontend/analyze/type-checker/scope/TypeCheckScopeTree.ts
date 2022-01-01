@@ -1,28 +1,63 @@
 import * as R from 'ramda';
-import chalk from 'chalk';
 
 import {Result, ok, err, tryFold} from '@compiler/core/monads';
-import {CType} from './types/CType';
-import {CVariable} from './variables/CVariable';
-import {CTypeCheckError, CTypeCheckErrorCode} from '../errors/CTypeCheckError';
+import {CType} from '../types/CType';
+import {CVariable} from '../variables/CVariable';
+import {CFunctionNode} from '../nodes/function';
+import {CTypeCheckError, CTypeCheckErrorCode} from '../../errors/CTypeCheckError';
+import {AbstractTreeVisitor, IsWalkableNode} from '@compiler/grammar/tree/AbstractTreeVisitor';
+
+import type {IsInnerScoped} from '../nodes/CScopedBlockNode';
+
+type TypeFindAttrs = {
+  struct?: boolean,
+  primitive?: boolean,
+  enumerator?: boolean,
+  findInParent?: boolean,
+};
 
 /**
  * C language context scope
  *
  * @export
  * @class TypeCheckScopeTree
+ * @implements {IsWalkableNode}
+ * @implements {IsInnerScoped}
  */
-export class TypeCheckScopeTree {
+export class TypeCheckScopeTree implements IsWalkableNode, IsInnerScoped {
   private types: Record<string, CType> = {};
   private variables: Record<string, CVariable> = {};
-  private childs: TypeCheckScopeTree[] = [];
+  private functions: Record<string, CFunctionNode> = {};
 
   constructor(
     public readonly parentContext: TypeCheckScopeTree = null,
   ) {}
 
+  get innerScope(): TypeCheckScopeTree {
+    return this;
+  }
+
   isGlobal() {
     return R.isNil(this.parentContext);
+  }
+
+  walk(visitor: AbstractTreeVisitor): void {
+    const {functions} = this;
+
+    R.forEachObjIndexed(
+      visitor.visit.bind(visitor),
+      functions,
+    );
+  }
+
+  dump() {
+    const {types, variables, functions} = this;
+
+    return {
+      types,
+      variables,
+      functions,
+    };
   }
 
   /**
@@ -68,6 +103,33 @@ export class TypeCheckScopeTree {
   }
 
   /**
+   * Declares function
+   *
+   * @param {CFunctionNode} fn
+   * @return {Result<CFunctionNode, CTypeCheckError>}
+   * @memberof TypeCheckScopeTree
+   */
+  defineFunction(fn: CFunctionNode): Result<CFunctionNode, CTypeCheckError> {
+    const {functions} = this;
+    const {name} = fn;
+
+    if (functions[name]) {
+      return err(
+        new CTypeCheckError(
+          CTypeCheckErrorCode.REDEFINITION_OF_FUNCTION,
+          null,
+          {
+            name,
+          },
+        ),
+      );
+    }
+
+    functions[name] = fn;
+    return ok(fn);
+  }
+
+  /**
    * Defines signle type in scope
    *
    * @param {string} name
@@ -101,19 +163,31 @@ export class TypeCheckScopeTree {
    * if not found search in parent
    *
    * @param {string} name
-   * @param {boolean} [findInParent=true]
+   * @param {TypeFindAttrs} [attrs={}]
    * @return {CType}
    * @memberof TypeCheckScopeTree
    */
-  findType(name: string, findInParent: boolean = true): CType {
+  findType(name: string, attrs: TypeFindAttrs = {}): CType {
     const {types, parentContext} = this;
+    const {
+      findInParent = true,
+      primitive,
+      struct,
+      enumerator,
+    } = attrs;
 
     const type = types[name];
-    if (type)
+    if (type) {
+      if ((primitive && !type.isPrimitive())
+          || (struct && !type.isStruct())
+          || (enumerator && !type.isEnum()))
+        return null;
+
       return type;
+    }
 
     if (findInParent && parentContext)
-      return parentContext.findType(name, findInParent);
+      return parentContext.findType(name, attrs);
 
     return null;
   }
@@ -139,92 +213,12 @@ export class TypeCheckScopeTree {
   }
 
   /**
-   * Appends new scope to tree
+   * Creates new scope and sets current scope as parent
    *
-   * @template T
-   * @param {(scope: TypeCheckScopeTree) => T} fn
-   * @return {T}
+   * @return {TypeCheckScopeTree}
    * @memberof TypeCheckScopeTree
    */
-  enterScope<T>(fn: (scope: TypeCheckScopeTree) => T): T {
-    const {childs} = this;
-    const childScope = new TypeCheckScopeTree(this);
-
-    childs.push(childScope);
-    const result = fn(childScope);
-    childs.pop();
-
-    return result;
-  }
-
-  /**
-   * Prints whole tree to console
-   *
-   * @param {number} [nesting=0]
-   * @returns {string}
-   * @memberof TypeCheckScopeTree
-   */
-  serializeToString(nesting: number = 0): string {
-    const {childs, types, variables} = this;
-    let lines: string[] = [];
-
-    if (!R.isEmpty(types)) {
-      lines = [
-        ...lines,
-        chalk.bold.white('+ Types:'),
-        ...(
-          R
-            .toPairs(types)
-            .flatMap(([name, type]) => {
-              const typeLines = (
-                type
-                  .getDisplayName()
-                  .split('\n')
-                  .map((str) => chalk.yellowBright(str))
-              );
-
-              const prefix = `  + ${name}: `;
-              return [
-                `${chalk.bold.green(prefix)}${typeLines[0]}`,
-                ...(
-                  R
-                    .tail(typeLines)
-                    .map(R.concat(' '.padStart(prefix.length)))
-                ),
-              ];
-            })
-        ),
-      ];
-    }
-
-    if (!R.isEmpty(variables)) {
-      lines = [
-        ...lines,
-        chalk.bold.white('+ Variables:'),
-        ...(
-          R
-            .values(variables)
-            .map((variable) => chalk.bold.green(`  + ${variable.getDisplayName()};`))
-        ),
-      ];
-    }
-
-    if (!R.isEmpty(childs)) {
-      const scopeLines = [
-        chalk.bold.white('Scopes:'),
-        ...childs.map((scope) => scope.serializeToString(nesting + 1)),
-      ];
-
-      lines = [
-        ...lines,
-        ...scopeLines.map(R.concat('  ')),
-      ];
-    }
-
-    return (
-      lines
-        .map((line) => `${' '.padStart(nesting * 2, ' ')}${line}`)
-        .join('\n')
-    );
+  createChildScope(): TypeCheckScopeTree {
+    return new TypeCheckScopeTree(this);
   }
 }

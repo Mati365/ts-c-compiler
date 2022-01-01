@@ -3,7 +3,8 @@ import {
   ASTCDeclarator,
 } from '@compiler/x86-nano-c/frontend/parser/ast';
 
-import {CType, CNamedTypedEntry} from '../../types';
+import {CType} from '../../types/CType';
+import {CNamedTypedEntry} from '../../variables/CNamedTypedEntry';
 import {TypeCheckerContext} from '../../TypeCheckerContext';
 
 type ASTCDeclarationLike = {

@@ -5,7 +5,7 @@ import {dropNewLines, dumpCompilerAttrs} from '@compiler/core/utils';
 import {Identity, Result, ok, err} from '@compiler/core/monads';
 import {CCompilerArch, CStructAlign} from '@compiler/x86-nano-c/constants';
 import {CType} from '../CType';
-import {CNamedTypedEntry} from '../parts';
+import {CNamedTypedEntry} from '../../variables/CNamedTypedEntry';
 import {StructFieldAligner} from './align';
 import {CTypeCheckError, CTypeCheckErrorCode} from '../../../errors/CTypeCheckError';
 import {
@@ -31,6 +31,8 @@ export class CStructType extends CType<CStructTypeDescriptor> {
       },
     );
   }
+
+  override isStruct() { return true; }
 
   get name() { return this.value.name; }
   get fields() { return this.value.fields; }

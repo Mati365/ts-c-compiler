@@ -9,10 +9,10 @@ import {
 import {evalConstantMathExpression} from '../../../eval';
 
 import {CTypeCheckError, CTypeCheckErrorCode} from '../../../errors/CTypeCheckError';
-import {CTypeTreeVisitor} from '../../visitors/CTypeTreeVisitor';
+import {CTypeTreeVisitor} from '../../ast-visitors/CTypeTreeVisitor';
+import {CNamedTypedEntry} from '../../variables/CNamedTypedEntry';
 import {
   CType,
-  CNamedTypedEntry,
   CPointerType,
   CArrayType,
 } from '../../types';
@@ -34,8 +34,12 @@ export class TreeTypeBuilderVisitor extends CTypeTreeVisitor {
       {
         [ASTCCompilerKind.Declarator]: {
           enter: (node: ASTCDeclarator) => {
-            if (node.isPointer())
+            // todo: typeQualifierList, check if it should be used or not
+            let pointerNode = node.pointer;
+            while (pointerNode) {
               this.type = CPointerType.ofType(this.arch, this.type);
+              pointerNode = pointerNode.pointer;
+            }
 
             if (this.isDone())
               return false;
@@ -78,6 +82,7 @@ export class TreeTypeBuilderVisitor extends CTypeTreeVisitor {
       if (!R.isNil(size) && size <= 0)
         throw new CTypeCheckError(CTypeCheckErrorCode.INVALID_ARRAY_SIZE);
 
+      console.info(size);
       if (this.type instanceof CArrayType)
         this.type = this.type.ofPrependedDimension(size);
       else {

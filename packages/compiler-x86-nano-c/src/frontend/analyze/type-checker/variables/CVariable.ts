@@ -1,5 +1,5 @@
 import {ASTCCompilerNode} from '@compiler/x86-nano-c/frontend/parser/ast';
-import {CNamedTypedEntry, CNamedTypedEntryDescriptor} from '../types/parts';
+import {CNamedTypedEntry, CNamedTypedEntryDescriptor} from './CNamedTypedEntry';
 
 export type CVariableDescriptor = CNamedTypedEntryDescriptor & {
   global?: boolean,

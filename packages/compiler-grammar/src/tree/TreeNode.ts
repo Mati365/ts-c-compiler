@@ -6,6 +6,7 @@ import {TokenType} from '@compiler/lexer/shared';
 import {walkOverFields} from '../decorators/walkOverFields';
 import {NodeLocation} from './NodeLocation';
 import {TreeVisitor} from './TreeVisitor';
+import {IsWalkableNode} from './AbstractTreeVisitor';
 
 export function isTreeNode(item: any): item is TreeNode<any> {
   return item && R.is(Object, item) && ('walk' in item);
@@ -19,7 +20,7 @@ export function isTreeNode(item: any): item is TreeNode<any> {
  * @template K KindType
  * @template C TreeNode
  */
-export class TreeNode<K = string, C extends TreeNode<K, C> = any> {
+export class TreeNode<K = string, C extends TreeNode<K, C> = any> implements IsWalkableNode {
   constructor(
     public readonly kind: K,
     public readonly loc: NodeLocation,

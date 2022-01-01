@@ -3,7 +3,7 @@ import {CType} from '../../CType';
 import {
   CNamedTypedEntry,
   CNamedTypedEntryDescriptor,
-} from '../../parts/CNamedTypedEntry';
+} from '../../../variables/CNamedTypedEntry';
 
 export type CStructEntryDescriptor = CNamedTypedEntryDescriptor & {
   offset: number,

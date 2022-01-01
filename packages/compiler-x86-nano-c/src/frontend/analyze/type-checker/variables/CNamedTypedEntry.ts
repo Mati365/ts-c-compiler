@@ -1,8 +1,8 @@
 import * as R from 'ramda';
 
 import {Identity} from '@compiler/core/monads';
-import {CType} from '../CType';
-import {isNamedType} from '../../helpers/isNamedType';
+import {CType} from '../types/CType';
+import {isNamedType} from '../helpers/isNamedType';
 
 export type CNamedTypedEntryDescriptor = {
   type: CType,

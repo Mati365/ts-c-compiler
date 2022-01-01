@@ -1,11 +1,11 @@
-import {Identity, Result, ok} from '@compiler/core/monads';
 import {hasFlag} from '@compiler/core/utils';
+
+import {Identity, Result, ok} from '@compiler/core/monads';
+import {IsPrintable} from '@compiler/core/interfaces';
 
 import {CStorageClassSpecifier} from '@compiler/x86-nano-c/constants';
 import {CTypeCheckError, CTypeCheckErrorCode} from '../../../errors/CTypeCheckError';
 import {CStorageSpecBitmap} from '../../../constants/bitmaps';
-
-import {IsPrintable} from '@compiler/core/interfaces';
 import {bitsetToKeywords, parseKeywordsToBitset} from '../../../utils';
 
 export type CStorageClassTypeDescriptor = {

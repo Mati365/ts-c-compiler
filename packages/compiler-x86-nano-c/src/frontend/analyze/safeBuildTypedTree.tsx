@@ -3,6 +3,12 @@ import {CTypeCheckError, CTypeCheckErrorCode} from './errors/CTypeCheckError';
 import {CTypeCheckConfig} from './constants';
 import {ASTCTreeNode} from '../parser/ast';
 import {TypeCheckerVisitor} from './type-checker/TypeCheckerVisitor';
+import {TypeCheckScopeTree} from './type-checker';
+
+type ScopeTreeBuilderResult = {
+  scope: TypeCheckScopeTree,
+  tree: ASTCTreeNode,
+};
 
 /**
  * Returns result monad from tree assign
@@ -15,13 +21,16 @@ import {TypeCheckerVisitor} from './type-checker/TypeCheckerVisitor';
 export function safeBuildTypedTree(
   config: CTypeCheckConfig,
   tree: ASTCTreeNode,
-): Result<ASTCTreeNode, CTypeCheckError[]> {
+): Result<ScopeTreeBuilderResult, CTypeCheckError[]> {
   try {
-    const visitor = new TypeCheckerVisitor(config);
-    visitor.visit(tree);
-    console.info(visitor.scope.serializeToString(), '\n');
+    const {scope} = new TypeCheckerVisitor(config).visit(tree);
 
-    return ok(tree);
+    return ok(
+      {
+        scope,
+        tree,
+      },
+    );
   } catch (e) {
     e.code = e.code ?? CTypeCheckErrorCode.TYPECHECK_ERROR;
 

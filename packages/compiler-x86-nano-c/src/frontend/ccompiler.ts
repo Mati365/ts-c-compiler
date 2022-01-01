@@ -9,8 +9,12 @@ import {CCompilerTimings, createCCompilerTimings} from './utils/createCCompilerT
 import {CCompilerConfig, CCompilerArch} from '../constants/config';
 
 import {ASTCCompilerNode} from './parser/ast';
-import {safeBuildTypedTree} from './analyze';
 import {safeGenerateTree, clexer} from './parser';
+import {
+  safeBuildTypedTree,
+  TypeCheckScopeTree,
+  TypeCheckScopePrintVisitor,
+} from './analyze';
 
 /**
  * Output of compilation
@@ -22,11 +26,14 @@ export class CCompilerOutput {
   constructor(
     public readonly code: string,
     public readonly ast: ASTCCompilerNode,
+    public readonly scope: TypeCheckScopeTree,
     public readonly timings: CCompilerTimings,
   ) {}
 
   dump() {
-    const {ast, code, timings} = this;
+    const {ast, scope, code, timings} = this;
+
+    const scopeTree = TypeCheckScopePrintVisitor.serializeToString(scope);
     const tree = TreePrintVisitor.serializeToString<ASTCCompilerNode>(
       ast,
       {
@@ -39,16 +46,19 @@ export class CCompilerOutput {
       },
     );
 
-    const lines = [
-      'Time:',
-      `${timingsToString(timings)}\n`,
-      'Source:',
-      code,
-      'Syntax tree:\n',
-      tree,
-    ];
-
-    console.info(lines.join('\n'));
+    console.info(
+      [
+        'Time:',
+        `${timingsToString(timings)}\n`,
+        'Source:',
+        code,
+        'Syntax tree:\n',
+        tree,
+        'Scope tree:\n',
+        scopeTree,
+        '',
+      ].join('\n'),
+    );
   }
 }
 
@@ -75,10 +85,11 @@ export function ccompiler(
   return timings.add('lexer', clexer)(ccompilerConfig.lexer, code)
     .andThen(timings.add('ast', safeGenerateTree))
     .andThen(timings.add('analyze', (tree) => safeBuildTypedTree(ccompilerConfig, tree)))
-    .andThen(timings.add('compiler', (tree) => ok(
+    .andThen(timings.add('compiler', ({tree, scope}) => ok(
       new CCompilerOutput(
         code,
         tree,
+        scope,
         timings.unwrap(),
       ),
     )));

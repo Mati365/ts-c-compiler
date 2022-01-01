@@ -1,13 +1,15 @@
+import * as R from 'ramda';
 import {findByName, dumpCompilerAttrs} from '@compiler/core/utils';
 
-import {Identity} from '@compiler/core/monads';
-import {CCompilerArch, CFunctionCallConvention} from '@compiler/x86-nano-c/constants';
-import {CType} from '../CType';
-import {CPrimitiveType} from '../CPrimitiveType';
+import {CFunctionCallConvention} from '@compiler/x86-nano-c/constants';
+import {CType} from '../../types/CType';
 import {CFunctionSpecifierMonad} from './CFunctionSpecifierMonad';
-import {CNamedTypedEntry, CStorageClassMonad} from '../parts';
+import {CStorageClassMonad} from './CFunctionStorageClassMonad';
+import {CScopedBlockNode} from '../CScopedBlockNode';
+import {CScopedBlockNodeDescriptor} from '../CScopedBlockNode';
+import {CNamedTypedEntry} from '../../variables/CNamedTypedEntry';
 
-export type CFunctionTypeDescriptor = {
+export type CFunctionDescriptor = CScopedBlockNodeDescriptor & {
   name?: string,
   returnType: CType,
   args: CNamedTypedEntry[],
@@ -16,34 +18,19 @@ export type CFunctionTypeDescriptor = {
   storage: CStorageClassMonad,
 };
 
+export function isCFunctionNode(obj: any): obj is CFunctionNode {
+  return R.is(Object, obj) && obj.value?.returnType;
+}
+
 /**
- * Function pointer
+ * Function typed node
  *
  * @export
- * @class CFunctionType
- * @extends {CType<CFunctionTypeDescriptor>}
+ * @class CFunctionNode
+ * @extends {CScopedBlockNode<CFunctionDescriptor>}
  */
-export class CFunctionType extends CType<CFunctionTypeDescriptor> {
-  static ofBlank(arch: CCompilerArch) {
-    return new CFunctionType(
-      {
-        returnType: CPrimitiveType.void(arch),
-        specifier: CFunctionSpecifierMonad.ofBlank(),
-        storage: CStorageClassMonad.ofBlank(),
-        callConvention: CFunctionCallConvention.CDECL,
-        args: [],
-      },
-    );
-  }
-
-  constructor(descriptor: Omit<CFunctionTypeDescriptor, 'arch'>) {
-    super(
-      {
-        ...descriptor,
-        arch: descriptor.returnType.arch,
-      },
-    );
-  }
+export class CFunctionNode
+  extends CScopedBlockNode<CFunctionDescriptor> {
 
   get returnType() { return this.value.returnType; }
   get specifier() { return this.value.specifier; }
@@ -52,33 +39,10 @@ export class CFunctionType extends CType<CFunctionTypeDescriptor> {
   get args() { return this.value.args; }
   get callConvention() { return this.value.callConvention; }
 
-  override isCallable() {
-    return true;
-  }
-
-  override isEqual(value: Identity<CFunctionType>): boolean {
-    if (!(value instanceof CFunctionType))
-      return false;
-
-    const {
-      returnType, args,
-      specifier, storage,
-    } = this;
-
-    return (
-      value.returnType.isEqual(returnType)
-        && value.callConvention === value.callConvention
-        && value.args.length === args.length
-        && value.specifier.isEqual(specifier)
-        && value.storage.isEqual(storage)
-        && !value.args.some((arg, index) => !arg.isEqual(args[index]))
-    );
-  }
-
   override getDisplayName(): string {
     const {
       returnType, args, name,
-      arch, storage, specifier,
+      storage, specifier,
       callConvention,
     } = this;
 
@@ -90,7 +54,6 @@ export class CFunctionType extends CType<CFunctionTypeDescriptor> {
 
     const attrs = dumpCompilerAttrs(
       {
-        arch,
         callConvention,
         argsSizeof: this.getArgsByteSize(),
       },
@@ -114,7 +77,7 @@ export class CFunctionType extends CType<CFunctionTypeDescriptor> {
    *
    * @param {string} name
    * @return {CNamedTypedEntry}
-   * @memberof CFunctionType
+   * @memberof CFunction
    */
   getArgByName(name: string): CNamedTypedEntry {
     const {args} = this;
@@ -126,7 +89,7 @@ export class CFunctionType extends CType<CFunctionTypeDescriptor> {
    * Returns total byte size of arguments
    *
    * @return {number}
-   * @memberof CFunctionType
+   * @memberof CFunction
    */
   getArgsByteSize(): number {
     return this.args.reduce((acc, arg) => acc + arg.type.getByteSize(), 0);

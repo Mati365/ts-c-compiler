@@ -2,24 +2,7 @@ import {ccompiler} from './frontend';
 
 ccompiler(
   /* cpp */ `
-    enum ScreenMode {
-      VGA,
-      EGA,
-    };
-
-    struct Size {
-      int w, h;
-    };
-
-    struct ScreenDriver {
-      char mode;
-
-      struct Size size;
-      struct { int x, y; } cursor;
-    } screenDriver;
-
-    void init_screen(enum ScreenMode mode, struct Size size) {
-    }
+    int variable[5][6][7];
   `,
 ).match(
   {

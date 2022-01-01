@@ -1,7 +1,7 @@
 import {Grammar} from '@compiler/grammar/Grammar';
 import {TreeNode} from '@compiler/grammar/tree/TreeNode';
 import {CCompilerIdentifier} from '@compiler/x86-nano-c/constants';
-import {CType} from '../../analyze';
+import {CType} from '../../analyze/type-checker/types/CType';
 
 export enum ASTCCompilerKind {
   TranslationUnit = 'TranslationUnit',

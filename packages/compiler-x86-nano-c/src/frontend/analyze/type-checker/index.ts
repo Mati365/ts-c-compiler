@@ -1,4 +1,5 @@
-export * from './TypeCheckScopeTree';
+export * from './scope/TypeCheckScopeTree';
 export * from './TypeCheckerVisitor';
 export * from './TypeCheckerContext';
-export * from './visitors';
+export * from './ast-visitors';
+export * from './scope';

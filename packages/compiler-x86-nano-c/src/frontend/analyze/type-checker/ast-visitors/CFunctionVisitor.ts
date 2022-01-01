@@ -1,23 +1,26 @@
 import {ASTCFunctionDefinition} from '@compiler/x86-nano-c/frontend/parser';
 import {CFunctionCallConvention} from '@compiler/x86-nano-c/constants';
-import {CTypeTreeVisitor} from './CTypeTreeVisitor';
-import {CFunctionType, CFunctionSpecifierMonad} from '../types/function';
-import {CStorageClassMonad} from '../types/parts/CFunctionStorageClassMonad';
 
 import {extractNamedEntryFromDeclaration} from '../ast-resolver';
+import {CTypeTreeVisitor} from './CTypeTreeVisitor';
+import {
+  CFunctionNode,
+  CFunctionSpecifierMonad,
+  CStorageClassMonad,
+} from '../nodes/function';
 
 /**
  * Enters function definition and analyzes its content
 
  * @export
- * @class CTypeFunctionVisitor
+ * @class CFunctionVisitor
  * @extends {CTypeTreeVisitor}
  */
-export class CTypeFunctionVisitor extends CTypeTreeVisitor {
+export class CFunctionVisitor extends CTypeTreeVisitor {
   initForRootNode(node: ASTCFunctionDefinition): this {
-    const fnType = this.extractFuncTypeFromNode(node);
-    if (fnType)
-      this.scope.defineType(fnType.name, fnType);
+    const fn = this.extractFuncTypeFromNode(node);
+    if (fn)
+      this.scope.defineFunction(fn);
 
     return this;
   }
@@ -26,11 +29,11 @@ export class CTypeFunctionVisitor extends CTypeTreeVisitor {
    * Walks over function definition node and constructs type node
    *
    * @param {ASTCStructSpecifier} structSpecifier
-   * @return {CFunctionType}
+   * @return {CFunctionNode}
    * @memberof CTypeStructVisitor
    */
-  extractFuncTypeFromNode(fnDefinition: ASTCFunctionDefinition): CFunctionType {
-    const {context} = this;
+  extractFuncTypeFromNode(fnDefinition: ASTCFunctionDefinition): CFunctionNode {
+    const {context, parentVisitor} = this;
     const {fnExpression} = fnDefinition.declarator.directDeclarator;
 
     const returnTypeEntry = extractNamedEntryFromDeclaration(
@@ -59,11 +62,15 @@ export class CTypeFunctionVisitor extends CTypeTreeVisitor {
         .unwrapOrThrow()
     );
 
-    return new CFunctionType(
+    const innerScope = parentVisitor.visitAndAppendScope(fnDefinition.content);
+
+    return new CFunctionNode(
       {
+        ast: fnDefinition,
         callConvention: CFunctionCallConvention.CDECL,
         name: returnTypeEntry.name,
         returnType: returnTypeEntry.type,
+        innerScope,
         args,
         storage,
         specifier,

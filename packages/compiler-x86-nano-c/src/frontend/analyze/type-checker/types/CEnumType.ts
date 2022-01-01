@@ -32,6 +32,8 @@ export class CEnumType extends CType<CEnumDescriptor> {
     );
   }
 
+  override isEnum() { return true; }
+
   get name() { return this.value.name; }
   get fields() { return this.value.fields; }
 

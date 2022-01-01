@@ -48,7 +48,9 @@ export abstract class CType<T extends {} = any>
 
   isRegistered() { return this.value.registered; }
   isIndexable() { return false; }
-  isCallable() { return false; }
+  isEnum() { return false; }
+  isPrimitive() { return false; }
+  isStruct() { return false; }
 
   isConst() {
     return this.hasQualifierType(CQualBitmap.const);

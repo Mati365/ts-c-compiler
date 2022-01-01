@@ -3,8 +3,9 @@ import * as R from 'ramda';
 
 import {CTypeQualifier} from '@compiler/x86-nano-c/constants';
 import {CTypeCheckError, CTypeCheckErrorCode} from '../../../errors/CTypeCheckError';
-import {CType, CPrimitiveType, CNamedTypedEntry} from '../../types';
+import {CType, CPrimitiveType} from '../../types';
 import {TreeTypeBuilderVisitor} from '../builder/CTreeTypeBuilderVisitor';
+import {CNamedTypedEntry} from '../../variables/CNamedTypedEntry';
 import {
   DeclaratorExtractorAttrs,
   SpecifierResolverAttrs,
@@ -99,7 +100,14 @@ export function extractSpecifierType(
       typeName = enumSpecifier.name.text;
     }
 
-    const type = context.scope.findType(typeName);
+    const type = context.scope.findType(
+      typeName,
+      {
+        struct: hasStructs,
+        enumerator: hasEnums,
+      },
+    );
+
     if (!type) {
       throw new CTypeCheckError(
         CTypeCheckErrorCode.UNKNOWN_TYPE,
