@@ -1,4 +1,4 @@
-# i8086.js
+# ts-c99-compiler-toolkit
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg?style=flat-square)](https://opensource.org/licenses/MIT)
 ![GitHub code size in bytes](https://img.shields.io/github/languages/code-size/mati365/i8086.js?style=flat-square)
@@ -8,7 +8,7 @@
 
 **Heroku APP:** https://i8086.herokuapp.com/
 
-16 bit x86 (with X87 FPU) virtual machine and assembler written in TypeScript. It is designed to help with prototyping small bootsector (or bigger) real mode games 🎮 and apps 💻.
+16 bit x86 (with X87 FPU) C99 compiler, virtual machine and assembler written entirely in TypeScript. It is designed to help with prototyping small bootsector (or bigger) real mode games 🎮 and apps 💻.
 
 JavaScript 16bit x86 assembler bundled in emulator is designed to be fully binarny compatible with 16bit NASM compiler.
 

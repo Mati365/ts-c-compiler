@@ -10,10 +10,15 @@ ccompiler(
       } vec;
     };
 
+    struct OtherRect {
+      float w;
+    };
+
     int main() {
       struct Rect rect;
+      struct OtherRect rect_b;
 
-      rect.vec.x = 2;
+      rect = rect_b;
 
       return 0;
     }
