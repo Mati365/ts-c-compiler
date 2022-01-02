@@ -45,15 +45,19 @@ export class CArrayType extends CType<CArrayTypeDescriptor> {
 
   /**
    * Transforms for example single dimension array to multiple
+   * by appending new dimension to type.
+   *
+   * @see CTreeTypeBuilderVisitor
    *
    * @param {number} size
    * @return {CArrayType}
    * @memberof CArrayType
    */
-  ofPrependedDimension(size: number): CArrayType {
+  ofAppendedDimension(size: number): CArrayType {
     return this.map((value) => ({
       ...value,
-      baseType: this.ofSize(size),
+      size,
+      baseType: this,
     }));
   }
 

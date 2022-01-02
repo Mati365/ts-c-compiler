@@ -47,7 +47,7 @@ export class TreeTypeBuilderVisitor extends CTypeTreeVisitor {
         },
 
         [ASTCCompilerKind.DirectDeclarator]: {
-          enter: (node: ASTCDirectDeclarator) => this.extractDirectDeclarator(node),
+          leave: (node: ASTCDirectDeclarator) => this.extractDirectDeclarator(node),
         },
 
         [ASTCCompilerKind.DirectDeclaratorFnExpression]: {
@@ -82,9 +82,8 @@ export class TreeTypeBuilderVisitor extends CTypeTreeVisitor {
       if (!R.isNil(size) && size <= 0)
         throw new CTypeCheckError(CTypeCheckErrorCode.INVALID_ARRAY_SIZE);
 
-      console.info(size);
       if (this.type instanceof CArrayType)
-        this.type = this.type.ofPrependedDimension(size);
+        this.type = this.type.ofAppendedDimension(size);
       else {
         this.type = new CArrayType(
           {
