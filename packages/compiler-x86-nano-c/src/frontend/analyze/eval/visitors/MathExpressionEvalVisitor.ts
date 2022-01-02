@@ -13,7 +13,7 @@ import {
   ASTCBinaryOpNode,
   ASTCPrimaryExpression,
 } from '@compiler/x86-nano-c/frontend/parser/ast';
-import {CTypeTreeVisitor} from '../../type-checker/ast-visitors/CTypeTreeVisitor';
+import {CInnerTypeTreeVisitor} from '../../ast/type-extractor-visitors/CInnerTypeTreeVisitor';
 import {CTypeCheckError, CTypeCheckErrorCode} from '../../errors/CTypeCheckError';
 
 export type MathOperationResult = number | boolean;
@@ -26,9 +26,9 @@ export type MathOperationResult = number | boolean;
  *
  * @export
  * @class MathExpressionEvalVisitor
- * @extends {CTypeTreeVisitor}
+ * @extends {CInnerTypeTreeVisitor}
  */
-export class MathExpressionEvalVisitor extends CTypeTreeVisitor {
+export class MathExpressionEvalVisitor extends CInnerTypeTreeVisitor {
   private expressionArgs: MathOperationResult[] = [];
 
   constructor() {

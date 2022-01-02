@@ -2,7 +2,12 @@ import {ccompiler} from './frontend';
 
 ccompiler(
   /* cpp */ `
-    int variable[5][6][7];
+    int main() {
+      int x, y = 0;
+      double z;
+
+      x = 5;
+    }
   `,
 ).match(
   {

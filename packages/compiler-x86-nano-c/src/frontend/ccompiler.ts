@@ -12,8 +12,8 @@ import {ASTCCompilerNode} from './parser/ast';
 import {safeGenerateTree, clexer} from './parser';
 import {
   safeBuildTypedTree,
-  TypeCheckScopeTree,
-  TypeCheckScopePrintVisitor,
+  CScopeTree,
+  CScopePrintVisitor,
 } from './analyze';
 
 /**
@@ -26,14 +26,14 @@ export class CCompilerOutput {
   constructor(
     public readonly code: string,
     public readonly ast: ASTCCompilerNode,
-    public readonly scope: TypeCheckScopeTree,
+    public readonly scope: CScopeTree,
     public readonly timings: CCompilerTimings,
   ) {}
 
   dump() {
     const {ast, scope, code, timings} = this;
 
-    const scopeTree = TypeCheckScopePrintVisitor.serializeToString(scope);
+    const scopeTree = CScopePrintVisitor.serializeToString(scope);
     const tree = TreePrintVisitor.serializeToString<ASTCCompilerNode>(
       ast,
       {
