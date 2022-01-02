@@ -48,8 +48,8 @@ export class ASTCDirectAbstractDeclaratorArrayExpression extends ASTCDirectDecla
 export class ASTCDirectAbstractDeclaratorFnExpression extends ASTCCompilerNode {
   constructor(
     loc: NodeLocation,
-    public readonly abstractDeclarator?: ASTCAbstractDeclarator,
-    public readonly parameterTypeList?: ASTCParametersList,
+    readonly abstractDeclarator?: ASTCAbstractDeclarator,
+    readonly parameterTypeList?: ASTCParametersList,
   ) {
     super(ASTCCompilerKind.DirectAbstractDeclaratorFnExpression, loc);
   }
@@ -72,9 +72,9 @@ export class ASTCDirectAbstractDeclaratorFnExpression extends ASTCCompilerNode {
 export class ASTCDirectAbstractDeclarator extends ASTCCompilerNode {
   constructor(
     loc: NodeLocation,
-    public readonly arrayExpression?: ASTCDirectAbstractDeclaratorArrayExpression,
-    public readonly fnExpression?: ASTCDirectAbstractDeclaratorFnExpression,
-    public readonly directAbstractDeclarator?: ASTCDirectAbstractDeclarator,
+    readonly arrayExpression?: ASTCDirectAbstractDeclaratorArrayExpression,
+    readonly fnExpression?: ASTCDirectAbstractDeclaratorFnExpression,
+    readonly directAbstractDeclarator?: ASTCDirectAbstractDeclarator,
   ) {
     super(ASTCCompilerKind.DirectAbstractDeclarator, loc);
   }

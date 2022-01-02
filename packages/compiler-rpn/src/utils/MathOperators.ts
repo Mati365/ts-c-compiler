@@ -68,11 +68,11 @@ export class MathOperator {
   );
 
   constructor(
-    public readonly priority: number,
-    public readonly char: string,
-    public readonly argsCount: number,
-    public readonly resolver: MathOperatorResolver = null,
-    public readonly rightHand: boolean = false, // right hand is a = b = c
+    readonly priority: number,
+    readonly char: string,
+    readonly argsCount: number,
+    readonly resolver: MathOperatorResolver = null,
+    readonly rightHand: boolean = false, // right hand is a = b = c
   ) {}
 
   toString() { return this.char; }

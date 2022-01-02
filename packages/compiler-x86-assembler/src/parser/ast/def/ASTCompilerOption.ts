@@ -25,8 +25,8 @@ export enum CompilerOptions {
  */
 export class ASTCompilerOption extends KindASTAsmNode(ASTNodeKind.COMPILER_OPTION) {
   constructor(
-    public readonly option: string,
-    public readonly args: Token<any>[],
+    readonly option: string,
+    readonly args: Token<any>[],
     loc: NodeLocation,
   ) {
     super(loc);

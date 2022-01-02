@@ -11,7 +11,7 @@ import {ASTCCompilerKind, ASTCCompilerNode} from './ASTCCompilerNode';
 export class ASTCStorageClassSpecifiersList extends ASTCCompilerNode implements IsEmpty {
   constructor(
     loc: NodeLocation,
-    public readonly items: CStorageClassSpecifier[],
+    readonly items: CStorageClassSpecifier[],
   ) {
     super(ASTCCompilerKind.StorageClassSpecifiersList, loc);
   }

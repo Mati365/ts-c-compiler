@@ -2,9 +2,9 @@ import * as R from 'ramda';
 import {concatNonEmptyStrings} from '@compiler/core/utils';
 
 import {Identity} from '@compiler/core/monads';
-import {CType} from './CType';
+import {CType, CTypeDescriptor} from './CType';
 
-export type CArrayTypeDescriptor = {
+export type CArrayTypeDescriptor = CTypeDescriptor & {
   baseType: CType,
   size?: number,
 };

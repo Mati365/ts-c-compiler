@@ -1,14 +1,18 @@
 import {hasFlag} from '@compiler/core/utils';
 
 import {IsPrintable} from '@compiler/core/interfaces';
-import {Identity, Result} from '@compiler/core/monads';
+import {Identity, Result, ok} from '@compiler/core/monads';
 import {CCompilerArch, CTypeQualifier} from '@compiler/x86-nano-c/constants';
 import {CTypeCheckError, CTypeCheckErrorCode} from '../errors/CTypeCheckError';
 import {CQualBitmap} from '../constants';
 
-import {bitsetToKeywords, parseKeywordsToBitset} from '../utils';
+import {
+  bitsetToKeywords,
+  parseKeywordsToBitset,
+  isNamedType,
+} from '../utils';
 
-type CTypeDescriptor<T extends {}> = T & {
+export type CTypeDescriptor = {
   arch: CCompilerArch,
   qualifiers?: number,
   registered?: boolean, // checks if type is newly created or not
@@ -20,12 +24,12 @@ type CTypeDescriptor<T extends {}> = T & {
  * @export
  * @abstract
  * @class CType
- * @extends {Identity<CTypeDescriptor<T>>}
+ * @extends {Identity<T>}
  * @implements {IsPrintable}
  * @template T
  */
-export abstract class CType<T extends {} = any>
-  extends Identity<CTypeDescriptor<T>>
+export abstract class CType<T extends CTypeDescriptor = CTypeDescriptor>
+  extends Identity<T>
   implements IsPrintable {
 
   get arch() { return this.value.arch; }
@@ -65,6 +69,11 @@ export abstract class CType<T extends {} = any>
   isEnum() { return false; }
   isPrimitive() { return false; }
   isStruct() { return false; }
+  isUnion() { return false; }
+
+  isStructLike() {
+    return this.isEnum() || this.isStruct();
+  }
 
   isConst() {
     return this.hasQualifierType(CQualBitmap.const);
@@ -75,7 +84,7 @@ export abstract class CType<T extends {} = any>
   }
 
   toString() {
-    return this.getDisplayName();
+    return this.getShortestDisplayName();
   }
 
   getQualifiersDisplayName(): string {
@@ -96,6 +105,26 @@ export abstract class CType<T extends {} = any>
   abstract getDisplayName(): string;
 
   /**
+   * Checks if type has name and display it if so
+   *
+   * @return {string}
+   * @memberof CType
+   */
+  getShortestDisplayName(): string {
+    if (isNamedType(this)) {
+      let name = this.name;
+      if (this.isStruct())
+        name = `struct ${name}`;
+      else if (this.isUnion())
+        name = `union ${name}`;
+
+      return name;
+    }
+
+    return this.getDisplayName();
+  }
+
+  /**
    * Gets size of type in bytes
    *
    * @return {number}
@@ -114,6 +143,9 @@ export abstract class CType<T extends {} = any>
    * @memberof CType
    */
   static qualifiersToBitset(qualifiers: CTypeQualifier[]): Result<number, CTypeCheckError> {
+    if (!qualifiers)
+      return ok(0);
+
     return parseKeywordsToBitset(
       {
         errorCode: CTypeCheckErrorCode.UNKNOWN_QUALIFIERS_KEYWORD,

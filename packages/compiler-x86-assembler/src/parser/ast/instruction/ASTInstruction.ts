@@ -87,9 +87,9 @@ export class ASTInstruction extends KindASTAsmNode(ASTNodeKind.INSTRUCTION) {
   public x87Instruction: boolean;
 
   constructor(
-    public readonly opcode: string,
+    readonly opcode: string,
     public argsTokens: Token<any>[],
-    public readonly prefixes: InstructionPrefix[],
+    readonly prefixes: InstructionPrefix[],
     loc: NodeLocation,
   ) {
     super(loc);

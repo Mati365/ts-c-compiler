@@ -27,7 +27,11 @@ export enum CTypeCheckErrorCode {
   UNKNOWN_EXPR_TYPE,
   UNKNOWN_TYPE,
   UNKNOWN_CONSTANT_TYPE,
+  UNKNOWN_LEFT_DOT_EXPRESSION_TYPE,
+  UNKNOWN_STRUCT_LIKE_MEMBER,
   UNABLE_TO_EXTRACT_DECLARATION_TYPE,
+  PROVIDED_TYPE_DOES_NOT_CONTAIN_PROPERTIES,
+  ASSIGNMENT_EXPRESSION_TYPES_MISMATCH,
 }
 
 export const C_TYPE_CHECK_ERROR_TRANSLATIONS: Record<CTypeCheckErrorCode, string> = {
@@ -49,10 +53,18 @@ export const C_TYPE_CHECK_ERROR_TRANSLATIONS: Record<CTypeCheckErrorCode, string
   [CTypeCheckErrorCode.UNKNOWN_DECLARATOR_ENTRY_IDENTIFIER]: fixme('Unknown declarator entry identifier!'),
   [CTypeCheckErrorCode.UNKNOWN_DECLARATOR_ENTRY_TYPE]: fixme('Unknown declarator entry type!'),
   [CTypeCheckErrorCode.UNKNOWN_CONSTANT_EXPR_EVAL_OPERAND]: fixme('Unknown constant expression operand!'),
+  [CTypeCheckErrorCode.UNABLE_TO_EXTRACT_DECLARATION_TYPE]: fixme('Unable to extract declaration type!'),
   [CTypeCheckErrorCode.UNKNOWN_EXPR_TYPE]: 'Unknown expression type!',
   [CTypeCheckErrorCode.UNKNOWN_TYPE]: 'Unknown type named "%{typeName}"!',
   [CTypeCheckErrorCode.UNKNOWN_CONSTANT_TYPE]: 'Unknown type of "%{text}" constant!',
-  [CTypeCheckErrorCode.UNABLE_TO_EXTRACT_DECLARATION_TYPE]: fixme('Unable to extract declaration type!'),
+  [CTypeCheckErrorCode.UNKNOWN_LEFT_DOT_EXPRESSION_TYPE]: 'Unknown left side dot expression type!',
+  [CTypeCheckErrorCode.UNKNOWN_STRUCT_LIKE_MEMBER]: 'Unknown %{typeName} type "%{fieldName}" member!',
+  [CTypeCheckErrorCode.PROVIDED_TYPE_DOES_NOT_CONTAIN_PROPERTIES]: (
+    'Provided %{typeName} does not contain members!'
+  ),
+  [CTypeCheckErrorCode.ASSIGNMENT_EXPRESSION_TYPES_MISMATCH]: (
+    'Assignment expression types mismatch! Unable to assign %{right} to %{left}!'
+  ),
 };
 
 /**

@@ -23,7 +23,6 @@ export enum ASTCCompilerKind {
   AssignmentExpression = 'AssignmentExpression',
   Expression = 'Expression',
   ConstantExpression = 'ConstantExpression',
-  AssignExpression = 'AssignExpression',
   UnaryExpression = 'UnaryExpression',
   IncUnaryExpression = 'IncUnaryExpression',
   DecUnaryExpression = 'DecUnaryExpression',

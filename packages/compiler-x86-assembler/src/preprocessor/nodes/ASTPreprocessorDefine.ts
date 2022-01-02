@@ -22,7 +22,7 @@ import {
 
 export class ASTPreprocessorDefineArgSchema {
   constructor(
-    public readonly name: string,
+    readonly name: string,
   ) {}
 }
 
@@ -45,10 +45,10 @@ export interface ASTPreprocessorCallable {
 export class ASTPreprocessorDefine extends ASTPreprocessorNode implements ASTPreprocessorCallable {
   constructor(
     loc: NodeLocation,
-    public readonly name: string,
-    public readonly caseSensitive: boolean,
-    public readonly argsSchema: ASTPreprocessorDefineArgSchema[] = [],
-    public readonly expression?: Token[],
+    readonly name: string,
+    readonly caseSensitive: boolean,
+    readonly argsSchema: ASTPreprocessorDefineArgSchema[] = [],
+    readonly expression?: Token[],
   ) {
     super(ASTPreprocessorKind.DefineStmt, loc);
   }

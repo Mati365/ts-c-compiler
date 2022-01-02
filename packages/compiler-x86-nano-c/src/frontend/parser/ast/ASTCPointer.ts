@@ -23,8 +23,8 @@ import {ASTCTypeQualifiersList} from './ASTCTypeQualifiersList';
 export class ASTCPointer extends ASTCCompilerNode {
   constructor(
     loc: NodeLocation,
-    public readonly typeQualifierList?: ASTCTypeQualifiersList,
-    public readonly pointer?: ASTCPointer,
+    readonly typeQualifierList?: ASTCTypeQualifiersList,
+    readonly pointer?: ASTCPointer,
   ) {
     super(ASTCCompilerKind.Pointer, loc);
   }

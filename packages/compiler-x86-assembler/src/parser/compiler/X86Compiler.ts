@@ -64,8 +64,8 @@ export class X86Compiler {
   private _target: X86TargetCPU = X86TargetCPU.I_486;
 
   constructor(
-    public readonly tree: ASTAsmTree,
-    public readonly maxPasses: number = 7,
+    readonly tree: ASTAsmTree,
+    readonly maxPasses: number = 7,
   ) {}
 
   get origin() { return this._origin; }

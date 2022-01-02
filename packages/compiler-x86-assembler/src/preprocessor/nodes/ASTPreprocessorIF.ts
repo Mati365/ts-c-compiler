@@ -18,9 +18,9 @@ export class ASTPreprocessorCondition extends ASTPreprocessorNode {
   constructor(
     kind: ASTPreprocessorKind,
     loc: NodeLocation,
-    public readonly negated: boolean,
-    public readonly consequent: ASTPreprocessorNode,
-    public readonly alternate: ASTPreprocessorNode = null,
+    readonly negated: boolean,
+    readonly consequent: ASTPreprocessorNode,
+    readonly alternate: ASTPreprocessorNode = null,
   ) {
     super(kind, loc);
   }
@@ -51,7 +51,7 @@ export class ASTPreprocessorIF extends ASTPreprocessorCondition {
   constructor(
     loc: NodeLocation,
     negated: boolean,
-    public readonly test: ASTPreprocessorExpression,
+    readonly test: ASTPreprocessorExpression,
     consequent: ASTPreprocessorNode,
     alternate: ASTPreprocessorNode = null,
   ) {

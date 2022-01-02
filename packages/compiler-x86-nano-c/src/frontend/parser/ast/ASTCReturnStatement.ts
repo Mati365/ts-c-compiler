@@ -13,7 +13,7 @@ import {ASTCCompilerKind, ASTCCompilerNode} from './ASTCCompilerNode';
 export class ASTCReturnStatement extends ASTCCompilerNode {
   constructor(
     loc: NodeLocation,
-    public readonly expression?: ASTCCompilerNode,
+    readonly expression?: ASTCCompilerNode,
   ) {
     super(ASTCCompilerKind.ReturnStmt, loc);
   }

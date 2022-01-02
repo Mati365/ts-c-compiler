@@ -21,8 +21,8 @@ import {ASTCCompilerKind, ASTCCompilerNode} from './ASTCCompilerNode';
 export class ASTCWhileStatement extends ASTCCompilerNode {
   constructor(
     loc: NodeLocation,
-    public readonly expression: ASTCCompilerNode,
-    public readonly statement: ASTCCompilerNode,
+    readonly expression: ASTCCompilerNode,
+    readonly statement: ASTCCompilerNode,
     kind: ASTCCompilerKind = ASTCCompilerKind.WhileStmt,
   ) {
     super(kind, loc);

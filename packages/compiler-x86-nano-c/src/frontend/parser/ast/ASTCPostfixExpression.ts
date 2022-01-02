@@ -16,7 +16,7 @@ import {ASTCArgumentsExpressionList} from './ASTCArgumentsExpressionList';
 export class ASTCPostfixArrayExpression extends ASTCCompilerNode {
   constructor(
     loc: NodeLocation,
-    public readonly expression: ASTCExpression,
+    readonly expression: ASTCExpression,
   ) {
     super(ASTCCompilerKind.PostfixArrayExpression, loc);
   }
@@ -30,7 +30,7 @@ export class ASTCPostfixArrayExpression extends ASTCCompilerNode {
 export class ASTCPostfixFnExpression extends ASTCCompilerNode {
   constructor(
     loc: NodeLocation,
-    public readonly args: ASTCArgumentsExpressionList,
+    readonly args: ASTCArgumentsExpressionList,
   ) {
     super(ASTCCompilerKind.PostfixFnExpression, loc);
   }
@@ -39,7 +39,7 @@ export class ASTCPostfixFnExpression extends ASTCCompilerNode {
 export class ASTCPostfixDotExpression extends ASTCCompilerNode {
   constructor(
     loc: NodeLocation,
-    public readonly name: Token<string>,
+    readonly name: Token<string>,
   ) {
     super(ASTCCompilerKind.PostfixDotExpression, loc);
   }
@@ -59,7 +59,7 @@ export class ASTCPostfixDotExpression extends ASTCCompilerNode {
 export class ASTCPostfixPtrExpression extends ASTCCompilerNode {
   constructor(
     loc: NodeLocation,
-    public readonly name: Token<string>,
+    readonly name: Token<string>,
   ) {
     super(ASTCCompilerKind.PostfixPtrExpression, loc);
   }
@@ -89,14 +89,14 @@ export class ASTCPostfixPtrExpression extends ASTCCompilerNode {
   },
 )
 export class ASTCPostfixExpression extends ASTCCompilerNode {
-  public readonly primaryExpression: ASTCPrimaryExpression;
-  public readonly arrayExpression: ASTCPostfixArrayExpression;
-  public readonly fnExpression: ASTCPostfixFnExpression;
-  public readonly dotExpression: ASTCPostfixDotExpression;
-  public readonly ptrExpression: ASTCPostfixPtrExpression;
-  public readonly incExpression: boolean;
-  public readonly decExpression: boolean;
-  public readonly postfixExpression: ASTCPostfixExpression;
+  readonly primaryExpression: ASTCPrimaryExpression;
+  readonly arrayExpression: ASTCPostfixArrayExpression;
+  readonly fnExpression: ASTCPostfixFnExpression;
+  readonly dotExpression: ASTCPostfixDotExpression;
+  readonly ptrExpression: ASTCPostfixPtrExpression;
+  readonly incExpression: boolean;
+  readonly decExpression: boolean;
+  readonly postfixExpression: ASTCPostfixExpression;
 
   constructor(loc: NodeLocation, attrs: Partial<ASTCPostfixExpression>) {
     super(ASTCCompilerKind.PostfixExpression, loc);
@@ -114,4 +114,13 @@ export class ASTCPostfixExpression extends ASTCCompilerNode {
       },
     );
   }
+
+  isPrimaryExpression() { return !!this.primaryExpression; }
+  isArrayExpression() { return !!this.arrayExpression; }
+  isFnExpression() { return !!this.fnExpression; }
+  isDotExpression() { return !!this.dotExpression; }
+  isPtrExpression() { return !!this.ptrExpression; }
+  isIncExpression() { return this.incExpression; }
+  isDecExpression() { return this.decExpression; }
+  hasNestedPostfixExpression() { return this.postfixExpression; }
 }

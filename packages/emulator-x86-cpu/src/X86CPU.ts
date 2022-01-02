@@ -486,8 +486,6 @@ export class X86CPU extends X86AbstractCPU {
    */
   dfIncrement(delta: number = 0x1, ...args: X86RegName[]): void {
     const {registers} = this;
-
-    // todo: Move to ALU
     const dir = (
       registers.status.df
         ? -delta

@@ -13,8 +13,8 @@ import {ASTCCompilerKind, ASTCCompilerNode} from './ASTCCompilerNode';
 export class ASTCLabelStatement extends ASTCCompilerNode {
   constructor(
     loc: NodeLocation,
-    public readonly name: Token<string>,
-    public readonly statement: ASTCCompilerNode,
+    readonly name: Token<string>,
+    readonly statement: ASTCCompilerNode,
   ) {
     super(ASTCCompilerKind.LabelStmt, loc);
   }

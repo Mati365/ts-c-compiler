@@ -18,9 +18,9 @@ import {ASTCStructDeclaratorList} from './ASTCStructDeclaratorList';
 export class ASTCStructDeclaration extends ASTCCompilerNode {
   constructor(
     loc: NodeLocation,
-    public readonly specifierList?: ASTCSpecifiersQualifiersList,
-    public readonly declaratorList?: ASTCStructDeclaratorList,
-    public readonly assertDeclaration?: ASTCStaticAssertDeclaration,
+    readonly specifierList?: ASTCSpecifiersQualifiersList,
+    readonly declaratorList?: ASTCStructDeclaratorList,
+    readonly assertDeclaration?: ASTCStaticAssertDeclaration,
   ) {
     super(ASTCCompilerKind.StructDeclaration, loc);
   }

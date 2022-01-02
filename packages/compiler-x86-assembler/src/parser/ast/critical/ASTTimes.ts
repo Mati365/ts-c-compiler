@@ -24,8 +24,8 @@ export const TIMES_TOKEN_NAME = 'times';
  */
 export class ASTTimes extends KindASTAsmNode(ASTNodeKind.TIMES) {
   constructor(
-    public readonly timesExpression: Token[],
-    public readonly repatedNodesTree: ASTAsmTree,
+    readonly timesExpression: Token[],
+    readonly repatedNodesTree: ASTAsmTree,
     loc: NodeLocation,
   ) {
     super(loc);

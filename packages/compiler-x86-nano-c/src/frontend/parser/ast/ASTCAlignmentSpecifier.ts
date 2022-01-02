@@ -16,8 +16,8 @@ import {ASTCTypeName} from './ASTCTypeName';
 export class ASTCAlignmentSpecifier extends ASTCCompilerNode {
   constructor(
     loc: NodeLocation,
-    public readonly typename: ASTCTypeName,
-    public readonly expression?: ASTCConstantExpression,
+    readonly typename: ASTCTypeName,
+    readonly expression?: ASTCConstantExpression,
   ) {
     super(ASTCCompilerKind.AlignmentSpecifier, loc);
   }

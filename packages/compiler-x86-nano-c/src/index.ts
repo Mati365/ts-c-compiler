@@ -2,9 +2,20 @@ import {ccompiler} from './frontend';
 
 ccompiler(
   /* cpp */ `
+    struct Rect {
+      float w, h;
+
+      struct Vec2 {
+        int x, y;
+      } vec;
+    };
+
     int main() {
-      char d;
-      d = 2.5;
+      struct Rect rect;
+
+      rect.vec.x = 2;
+
+      return 0;
     }
   `,
 ).match(

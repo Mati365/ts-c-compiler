@@ -22,11 +22,11 @@ import {ASTCAlignmentSpecifiersList} from './ASTCAlignmentSpecifiersList';
 export class ASTCDeclarationSpecifier extends ASTCCompilerNode {
   constructor(
     loc: NodeLocation,
-    public readonly storageClassSpecifiers: ASTCStorageClassSpecifiersList,
-    public readonly typeSpecifiers: ASTCTypeSpecifiersList,
-    public readonly typeQualifiers: ASTCTypeQualifiersList,
-    public readonly functionSpecifiers: ASTCFunctionSpecifiersList,
-    public readonly alignmentSpecifiers: ASTCAlignmentSpecifiersList,
+    readonly storageClassSpecifiers: ASTCStorageClassSpecifiersList,
+    readonly typeSpecifiers: ASTCTypeSpecifiersList,
+    readonly typeQualifiers: ASTCTypeQualifiersList,
+    readonly functionSpecifiers: ASTCFunctionSpecifiersList,
+    readonly alignmentSpecifiers: ASTCAlignmentSpecifiersList,
   ) {
     super(ASTCCompilerKind.ParameterDeclarationSpecifier, loc);
   }

@@ -50,9 +50,8 @@ export abstract class GroupTreeVisitor<
     if (!visitor)
       return;
 
-    if (isInlineTreeVisitor(visitor)) {
-      return visitor.enter?.call(this, node);
-    }
+    if (isInlineTreeVisitor(visitor))
+      return visitor.enter?.(node);
 
     this.initializeAndEnter(visitor, node);
     return false;
@@ -63,7 +62,7 @@ export abstract class GroupTreeVisitor<
     if (!visitor || !isInlineTreeVisitor(visitor))
       return;
 
-    visitor.leave?.call(this, node);
+    visitor.leave?.(node);
   }
 
   initializeAndEnter<D extends GroupTreeVisitor<T>>(Visitor: Newable<D>, node: T): D {

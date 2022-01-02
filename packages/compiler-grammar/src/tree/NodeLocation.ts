@@ -8,8 +8,8 @@ import {TokenLocation} from '@compiler/lexer/tokens';
  */
 export class NodeLocation {
   constructor(
-    public readonly start: TokenLocation,
-    public readonly end: TokenLocation,
+    readonly start: TokenLocation,
+    readonly end: TokenLocation,
   ) {}
 
   static fromTokenLoc(tokenLoc: TokenLocation): NodeLocation {

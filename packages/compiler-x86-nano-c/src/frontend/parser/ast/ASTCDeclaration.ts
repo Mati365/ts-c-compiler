@@ -16,8 +16,8 @@ import {ASTCInitDeclaratorList} from './ASTCInitDeclaratorList';
 export class ASTCDeclaration extends ASTCCompilerNode {
   constructor(
     loc: NodeLocation,
-    public readonly specifier: ASTCDeclarationSpecifier,
-    public readonly initList: ASTCInitDeclaratorList,
+    readonly specifier: ASTCDeclarationSpecifier,
+    readonly initList: ASTCInitDeclaratorList,
   ) {
     super(ASTCCompilerKind.Declaration, loc);
   }

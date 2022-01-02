@@ -26,10 +26,10 @@ import {
 export class ASTPreprocessorMacro extends ASTPreprocessorNode implements ASTPreprocessorCallable {
   constructor(
     loc: NodeLocation,
-    public readonly name: string,
-    public readonly caseSensitive: boolean,
-    public readonly argsCount: number,
-    public readonly content: ASTPreprocessorStmt,
+    readonly name: string,
+    readonly caseSensitive: boolean,
+    readonly argsCount: number,
+    readonly content: ASTPreprocessorStmt,
   ) {
     super(ASTPreprocessorKind.MacroStmt, loc);
   }

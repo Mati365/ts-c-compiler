@@ -25,8 +25,8 @@ import {ASTCEnumEnumeration} from './ASTCEnumEnumerator';
 export class ASTCEnumSpecifier extends ASTCCompilerNode {
   constructor(
     loc: NodeLocation,
-    public readonly name: Token<string>,
-    public readonly enumerations: ASTCEnumEnumeration[],
+    readonly name: Token<string>,
+    readonly enumerations: ASTCEnumEnumeration[],
   ) {
     super(ASTCCompilerKind.EnumSpecifier, loc);
   }

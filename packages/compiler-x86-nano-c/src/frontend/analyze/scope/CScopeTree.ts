@@ -30,7 +30,7 @@ export class CScopeTree implements IsWalkableNode, IsInnerScoped {
   private functions: Record<string, CFunctionNode> = {};
 
   constructor(
-    public readonly parentContext: CScopeTree = null,
+    readonly parentContext: CScopeTree = null,
   ) {}
 
   get innerScope(): CScopeTree {

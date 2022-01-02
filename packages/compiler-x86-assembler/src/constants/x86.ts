@@ -25,11 +25,11 @@ export class RegisterSchema {
    * @memberof RegisterSchema
    */
   constructor(
-    public readonly mnemonic: ExtendedX86RegName,
-    public readonly index: number,
-    public readonly byteSize: X86BitsMode,
-    public readonly segment: boolean = false,
-    public readonly x87: boolean = false,
+    readonly mnemonic: ExtendedX86RegName,
+    readonly index: number,
+    readonly byteSize: X86BitsMode,
+    readonly segment: boolean = false,
+    readonly x87: boolean = false,
   ) {}
 
   toString() {

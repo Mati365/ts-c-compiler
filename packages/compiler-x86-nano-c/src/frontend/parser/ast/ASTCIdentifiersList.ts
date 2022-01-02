@@ -8,7 +8,7 @@ import {ASTCCompilerKind, ASTCCompilerNode} from './ASTCCompilerNode';
 export class ASTCIdentifiersList extends ASTCCompilerNode {
   constructor(
     loc: NodeLocation,
-    public readonly identifiers: Token[],
+    readonly identifiers: Token[],
   ) {
     super(ASTCCompilerKind.IdentifiersList, loc);
   }

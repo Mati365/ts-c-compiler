@@ -22,8 +22,8 @@ export function isTreeNode(item: any): item is TreeNode<any> {
  */
 export class TreeNode<K = string, C extends TreeNode<K, C> = any> implements IsWalkableNode {
   constructor(
-    public readonly kind: K,
-    public readonly loc: NodeLocation,
+    readonly kind: K,
+    readonly loc: NodeLocation,
     public children: C[] = null,
   ) {}
 
@@ -92,7 +92,7 @@ export class ValueNode<T, K = string> extends TreeNode<K> {
   constructor(
     kind: K,
     loc: NodeLocation,
-    public readonly value: T,
+    readonly value: T,
 
   ) {
     super(kind, loc, null);

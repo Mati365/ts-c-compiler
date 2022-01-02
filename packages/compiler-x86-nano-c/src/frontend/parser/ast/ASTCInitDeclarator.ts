@@ -21,8 +21,8 @@ import {ASTCInitializer} from './ASTCInitializer';
 export class ASTCInitDeclarator extends ASTCCompilerNode {
   constructor(
     loc: NodeLocation,
-    public readonly declarator: ASTCDeclarator,
-    public readonly initializer: ASTCInitializer,
+    readonly declarator: ASTCDeclarator,
+    readonly initializer: ASTCInitializer,
   ) {
     super(ASTCCompilerKind.InitDeclarator, loc);
   }

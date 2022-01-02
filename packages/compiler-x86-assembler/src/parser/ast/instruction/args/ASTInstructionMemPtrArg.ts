@@ -176,7 +176,7 @@ function parseMemExpression(
  */
 export class ASTInstructionMemPtrArg extends ASTInstructionArg<MemAddressDescription> {
   constructor(
-    public readonly phrase: string,
+    readonly phrase: string,
     byteSize: number,
   ) {
     super(InstructionArgType.MEMORY, null, byteSize, null, false);

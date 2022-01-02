@@ -13,7 +13,7 @@ export class CompilerError<C = any, L = any> extends CodeTranslatedError<C> {
   constructor(
     translations: object,
     code: C,
-    public readonly loc?: L,
+    readonly loc?: L,
     meta?: object,
   ) {
     super(translations, code, meta);

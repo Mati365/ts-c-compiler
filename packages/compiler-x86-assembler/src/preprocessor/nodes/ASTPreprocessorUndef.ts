@@ -21,7 +21,7 @@ import {
 export class ASTPreprocessorUndef extends ASTPreprocessorNode {
   constructor(
     loc: NodeLocation,
-    public readonly name: string,
+    readonly name: string,
   ) {
     super(ASTPreprocessorKind.UndefStmt, loc);
   }

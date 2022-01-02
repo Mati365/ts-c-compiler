@@ -14,8 +14,8 @@ import {ASTCCompilerKind, ASTCCompilerNode} from './ASTCCompilerNode';
 export class ASTCSwitchStatement extends ASTCCompilerNode {
   constructor(
     loc: NodeLocation,
-    public readonly expression: ASTCCompilerNode,
-    public readonly statement: ASTCCompilerNode,
+    readonly expression: ASTCCompilerNode,
+    readonly statement: ASTCCompilerNode,
   ) {
     super(ASTCCompilerKind.SwitchStmt, loc);
   }

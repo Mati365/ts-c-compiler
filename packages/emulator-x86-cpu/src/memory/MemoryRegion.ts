@@ -18,7 +18,7 @@ export interface ByteMemRegionAccessor {
  * @class MemoryRegion
  */
 export class MemoryRegionRange {
-  public readonly size: number;
+  readonly size: number;
 
   constructor(
     public low: number,

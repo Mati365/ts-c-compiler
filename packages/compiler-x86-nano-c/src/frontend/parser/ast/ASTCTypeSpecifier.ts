@@ -21,10 +21,10 @@ import {ASTCStructSpecifier} from './ASTCStructSpecifier';
 export class ASTCTypeSpecifier extends ASTCCompilerNode {
   constructor(
     loc: NodeLocation,
-    public readonly specifier?: CTypeSpecifier,
-    public readonly typeName?: Token,
-    public readonly enumSpecifier?: ASTCEnumSpecifier,
-    public readonly structOrUnionSpecifier?: ASTCStructSpecifier,
+    readonly specifier?: CTypeSpecifier,
+    readonly typeName?: Token,
+    readonly enumSpecifier?: ASTCEnumSpecifier,
+    readonly structOrUnionSpecifier?: ASTCStructSpecifier,
   ) {
     super(ASTCCompilerKind.TypeSpecifier, loc);
   }

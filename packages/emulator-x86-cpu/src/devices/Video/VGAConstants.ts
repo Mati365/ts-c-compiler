@@ -79,8 +79,8 @@ export const GRAPHICS_RESERVED_MEM_MAP = Object.freeze(
  */
 export class VGAFontPack {
   constructor(
-    public readonly charSize: Size,
-    public readonly data: number[],
+    readonly charSize: Size,
+    readonly data: number[],
   ) {}
 }
 

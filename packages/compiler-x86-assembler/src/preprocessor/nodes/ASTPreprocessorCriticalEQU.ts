@@ -28,8 +28,8 @@ export class ASTPreprocessorCriticalEQU extends ASTPreprocessorNode {
 
   constructor(
     loc: NodeLocation,
-    public readonly name: string,
-    public readonly expression: ASTPreprocessorNode,
+    readonly name: string,
+    readonly expression: ASTPreprocessorNode,
     public originalTokens: Token[],
   ) {
     super(ASTPreprocessorKind.EquStmt, loc);

@@ -19,8 +19,8 @@ import {
 export class ASTCCastExpression extends ASTCCompilerNode {
   constructor(
     loc: NodeLocation,
-    public readonly typeName?: ASTCTypeName,
-    public readonly expression?: ASTCTreeNode,
+    readonly typeName?: ASTCTypeName,
+    readonly expression?: ASTCTreeNode,
   ) {
     super(ASTCCompilerKind.CastExpression, loc);
   }

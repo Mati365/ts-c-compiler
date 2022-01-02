@@ -29,9 +29,9 @@ import {ASTCTypeQualifiersList} from './ASTCTypeQualifiersList';
 export class ASTCDirectDeclaratorArrayExpression extends ASTCCompilerNode {
   constructor(
     loc: NodeLocation,
-    public readonly star?: boolean,
-    public readonly typeQualifiersList?: ASTCTypeQualifiersList,
-    public readonly assignmentExpression?: ASTCAssignmentExpression,
+    readonly star?: boolean,
+    readonly typeQualifiersList?: ASTCTypeQualifiersList,
+    readonly assignmentExpression?: ASTCAssignmentExpression,
     kind: ASTCCompilerKind = ASTCCompilerKind.DirectAbstractDeclaratorArrayExpression,
   ) {
     super(kind, loc);
@@ -67,8 +67,8 @@ export class ASTCDirectDeclaratorArrayExpression extends ASTCCompilerNode {
 export class ASTCDirectDeclaratorFnExpression extends ASTCCompilerNode implements IsEmpty {
   constructor(
     loc: NodeLocation,
-    public readonly parameterTypeList?: ASTCParametersList,
-    public readonly identifiersList?: ASTCIdentifiersList,
+    readonly parameterTypeList?: ASTCParametersList,
+    readonly identifiersList?: ASTCIdentifiersList,
   ) {
     super(ASTCCompilerKind.DirectDeclaratorFnExpression, loc);
   }
@@ -112,11 +112,11 @@ export class ASTCDirectDeclaratorFnExpression extends ASTCCompilerNode implement
 export class ASTCDirectDeclarator extends ASTCCompilerNode {
   constructor(
     loc: NodeLocation,
-    public readonly identifier?: Token<string>,
-    public readonly declarator?: ASTCCompilerNode,
-    public readonly arrayExpression?: ASTCDirectDeclaratorArrayExpression,
-    public readonly fnExpression?: ASTCDirectDeclaratorFnExpression,
-    public readonly directDeclarator?: ASTCDirectDeclarator,
+    readonly identifier?: Token<string>,
+    readonly declarator?: ASTCCompilerNode,
+    readonly arrayExpression?: ASTCDirectDeclaratorArrayExpression,
+    readonly fnExpression?: ASTCDirectDeclaratorFnExpression,
+    readonly directDeclarator?: ASTCDirectDeclarator,
   ) {
     super(ASTCCompilerKind.DirectDeclarator, loc);
   }

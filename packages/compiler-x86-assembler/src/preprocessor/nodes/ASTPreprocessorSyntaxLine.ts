@@ -25,7 +25,7 @@ export class ASTPreprocessorSyntaxLine extends ASTPreprocessorNode {
 
   constructor(
     loc: NodeLocation,
-    public readonly tokens: Token[],
+    readonly tokens: Token[],
   ) {
     super(ASTPreprocessorKind.SyntaxStmt, loc);
   }

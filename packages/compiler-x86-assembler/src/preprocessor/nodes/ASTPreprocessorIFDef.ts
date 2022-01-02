@@ -31,7 +31,7 @@ export class ASTPreprocessorIFDef extends ASTPreprocessorCondition {
   constructor(
     loc: NodeLocation,
     negated: boolean,
-    public readonly itemName: string,
+    readonly itemName: string,
     consequent: ASTPreprocessorNode,
     alternate: ASTPreprocessorNode = null,
   ) {

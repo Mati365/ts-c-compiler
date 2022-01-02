@@ -16,8 +16,8 @@ import {ASTCConstantExpression} from './ASTCConstantExpression';
 export class ASTCStructDeclarator extends ASTCCompilerNode {
   constructor(
     loc: NodeLocation,
-    public readonly declarator: ASTCDeclarator,
-    public readonly expression?: ASTCConstantExpression,
+    readonly declarator: ASTCDeclarator,
+    readonly expression?: ASTCConstantExpression,
   ) {
     super(ASTCCompilerKind.StructDeclarator, loc);
   }

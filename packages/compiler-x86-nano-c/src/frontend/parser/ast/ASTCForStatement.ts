@@ -23,10 +23,10 @@ import {ASTCCompilerKind, ASTCCompilerNode} from './ASTCCompilerNode';
 export class ASTCForStatement extends ASTCCompilerNode {
   constructor(
     loc: NodeLocation,
-    public readonly statement: ASTCCompilerNode,
-    public readonly declaration: ASTCCompilerNode,
-    public readonly condition?: ASTCCompilerNode,
-    public readonly expression?: ASTCCompilerNode,
+    readonly statement: ASTCCompilerNode,
+    readonly declaration: ASTCCompilerNode,
+    readonly condition?: ASTCCompilerNode,
+    readonly expression?: ASTCCompilerNode,
   ) {
     super(ASTCCompilerKind.ForStmt, loc);
   }

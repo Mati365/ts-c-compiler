@@ -2,9 +2,9 @@ import {format} from '../utils/format';
 
 export class CodeTranslatedError<C = any> extends Error {
   constructor(
-    public readonly translations: object,
-    public readonly code: C,
-    public readonly meta?: object,
+    readonly translations: object,
+    readonly code: C,
+    readonly meta?: object,
   ) {
     super();
     this.message = format(

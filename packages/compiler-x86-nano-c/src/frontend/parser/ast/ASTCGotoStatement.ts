@@ -7,7 +7,7 @@ import {ASTCCompilerKind, ASTCCompilerNode} from './ASTCCompilerNode';
 export class ASTCGotoStatement extends ASTCCompilerNode {
   constructor(
     loc: NodeLocation,
-    public readonly name: Token<string>,
+    readonly name: Token<string>,
   ) {
     super(ASTCCompilerKind.GotoStmt, loc);
   }

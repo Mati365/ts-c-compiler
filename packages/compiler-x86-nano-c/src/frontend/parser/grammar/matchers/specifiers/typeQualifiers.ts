@@ -28,7 +28,7 @@ export function typeQualifiers(grammar: CGrammar): ASTCTypeQualifiersList {
     if (!loc)
       loc = NodeLocation.fromTokenLoc(g.currentToken.loc);
 
-    const result = matchTypeQualifier(grammar);
+    const result = g.try(() => matchTypeQualifier(grammar));
     if (!result)
       break;
 

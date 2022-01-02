@@ -11,7 +11,7 @@ import {ASTCCompilerKind, ASTCCompilerNode} from './ASTCCompilerNode';
 export class ASTCReturn extends ASTCCompilerNode {
   constructor(
     loc: NodeLocation,
-    public readonly expression: ASTCCompilerNode,
+    readonly expression: ASTCCompilerNode,
   ) {
     super(ASTCCompilerKind.Return, loc);
   }

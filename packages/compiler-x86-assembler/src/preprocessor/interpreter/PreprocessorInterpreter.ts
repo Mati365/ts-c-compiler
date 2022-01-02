@@ -47,12 +47,12 @@ export interface PreprocessorInterpretable {
  */
 export class PreprocessorScope {
   constructor(
-    public readonly variables = new Map<string, InterpreterResult>(),
-    public readonly callable = {
+    readonly variables = new Map<string, InterpreterResult>(),
+    readonly callable = {
       sensitive: new Map<string, ASTPreprocessorCallable[]>(),
       nonSensitive: new Map<string, ASTPreprocessorCallable[]>(),
     },
-    public readonly id = genUUID(),
+    readonly id = genUUID(),
   ) {}
 }
 

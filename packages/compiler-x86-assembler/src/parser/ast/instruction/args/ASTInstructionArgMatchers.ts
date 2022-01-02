@@ -138,13 +138,13 @@ export const isRMSchemaArg = R.contains(
 export const isMoffsSchemaArg = R.contains(R.__, ['moffs']);
 
 export class ASTInstructionMatcherSchema {
-  public readonly rm: boolean;
-  public readonly moffset: boolean;
-  public readonly optional: boolean;
+  readonly rm: boolean;
+  readonly moffset: boolean;
+  readonly optional: boolean;
 
   constructor(
-    public readonly name: string,
-    public readonly matcher: ASTInstructionArgMatcher,
+    readonly name: string,
+    readonly matcher: ASTInstructionArgMatcher,
   ) {
     this.rm = isRMSchemaArg(name);
     this.moffset = isMoffsSchemaArg(name);

@@ -16,7 +16,7 @@ import {ASTCPostfixExpression} from './ASTCPostfixExpression';
 export class ASTCIncUnaryExpression extends ASTCCompilerNode {
   constructor(
     loc: NodeLocation,
-    public readonly unaryExpression: ASTCUnaryExpression,
+    readonly unaryExpression: ASTCUnaryExpression,
   ) {
     super(ASTCCompilerKind.IncUnaryExpression, loc);
   }
@@ -30,7 +30,7 @@ export class ASTCIncUnaryExpression extends ASTCCompilerNode {
 export class ASTCDecUnaryExpression extends ASTCCompilerNode {
   constructor(
     loc: NodeLocation,
-    public readonly unaryExpression: ASTCUnaryExpression,
+    readonly unaryExpression: ASTCUnaryExpression,
   ) {
     super(ASTCCompilerKind.DecUnaryExpression, loc);
   }
@@ -47,8 +47,8 @@ export class ASTCDecUnaryExpression extends ASTCCompilerNode {
 export class ASTCSizeofUnaryExpression extends ASTCCompilerNode {
   constructor(
     loc: NodeLocation,
-    public readonly typeName?: ASTCTypeName,
-    public readonly unaryExpression?: ASTCUnaryExpression,
+    readonly typeName?: ASTCTypeName,
+    readonly unaryExpression?: ASTCUnaryExpression,
   ) {
     super(ASTCCompilerKind.SizeofUnaryExpression, loc);
   }
@@ -62,8 +62,8 @@ export class ASTCSizeofUnaryExpression extends ASTCCompilerNode {
 export class ASTCCastUnaryExpression extends ASTCCompilerNode {
   constructor(
     loc: NodeLocation,
-    public readonly operator: CUnaryCastOperator,
-    public readonly castExpression: ASTCCastExpression,
+    readonly operator: CUnaryCastOperator,
+    readonly castExpression: ASTCCastExpression,
   ) {
     super(ASTCCompilerKind.CastUnaryExpression, loc);
   }
@@ -94,11 +94,11 @@ export class ASTCCastUnaryExpression extends ASTCCompilerNode {
 export class ASTCUnaryExpression extends ASTCCompilerNode {
   constructor(
     loc: NodeLocation,
-    public readonly postfixExpression?: ASTCPostfixExpression,
-    public readonly castExpression?: ASTCCastUnaryExpression,
-    public readonly decExpression?: ASTCDecUnaryExpression,
-    public readonly incExpression?: ASTCIncUnaryExpression,
-    public readonly sizeofExpression?: ASTCSizeofUnaryExpression,
+    readonly postfixExpression?: ASTCPostfixExpression,
+    readonly castExpression?: ASTCCastUnaryExpression,
+    readonly decExpression?: ASTCDecUnaryExpression,
+    readonly incExpression?: ASTCIncUnaryExpression,
+    readonly sizeofExpression?: ASTCSizeofUnaryExpression,
   ) {
     super(ASTCCompilerKind.UnaryExpression, loc);
   }

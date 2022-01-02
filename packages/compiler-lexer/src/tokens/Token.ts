@@ -22,8 +22,8 @@ export {
  * @template V value
  */
 export class Token<V = any, O = any> {
-  public readonly upperText: string;
-  public readonly lowerText: string;
+  readonly upperText: string;
+  readonly lowerText: string;
 
   /**
    * sometimes token should be replaced in parse phase
@@ -43,11 +43,11 @@ export class Token<V = any, O = any> {
    * @memberof Token
    */
   constructor(
-    public readonly type: TokenType,
-    public readonly kind: TokenKind,
-    public readonly text: string,
-    public readonly loc: TokenLocation,
-    public readonly value: V = null,
+    readonly type: TokenType,
+    readonly kind: TokenKind,
+    readonly text: string,
+    readonly loc: TokenLocation,
+    readonly value: V = null,
   ) {
     this.upperText = text && R.toUpper(text);
     this.lowerText = text && R.toLower(text);

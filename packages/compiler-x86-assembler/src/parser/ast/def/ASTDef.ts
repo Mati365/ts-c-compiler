@@ -47,8 +47,8 @@ export function tokenDefSize(token: string | Token): number {
  */
 export class ASTDef extends KindASTAsmNode(ASTNodeKind.DEFINE) {
   constructor(
-    public readonly byteSize: number,
-    public readonly args: Token[],
+    readonly byteSize: number,
+    readonly args: Token[],
     loc: NodeLocation,
   ) {
     super(loc);

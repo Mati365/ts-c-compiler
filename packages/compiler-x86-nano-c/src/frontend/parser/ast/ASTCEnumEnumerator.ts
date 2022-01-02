@@ -23,8 +23,8 @@ import {ASTCConstantExpression} from './ASTCConstantExpression';
 export class ASTCEnumEnumeration extends ASTCCompilerNode {
   constructor(
     loc: NodeLocation,
-    public readonly name: Token<string>,
-    public readonly expression?: ASTCConstantExpression,
+    readonly name: Token<string>,
+    readonly expression?: ASTCConstantExpression,
   ) {
     super(ASTCCompilerKind.EnumItem, loc);
   }

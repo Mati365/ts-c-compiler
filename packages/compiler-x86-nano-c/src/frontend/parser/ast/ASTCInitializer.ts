@@ -17,9 +17,9 @@ import {ASTCDesignatorList} from './ASTCDesignatorList';
 export class ASTCInitializer extends ASTCCompilerNode {
   constructor(
     loc: NodeLocation,
-    public readonly assignmentExpression: ASTCAssignmentExpression,
-    public readonly initializers?: ASTCInitializer[],
-    public readonly designation?: ASTCDesignatorList,
+    readonly assignmentExpression: ASTCAssignmentExpression,
+    readonly initializers?: ASTCInitializer[],
+    readonly designation?: ASTCDesignatorList,
   ) {
     super(ASTCCompilerKind.Initializer, loc);
   }

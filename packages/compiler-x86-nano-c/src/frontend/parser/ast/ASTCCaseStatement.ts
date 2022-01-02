@@ -22,8 +22,8 @@ import {ASTCCompilerKind, ASTCCompilerNode} from './ASTCCompilerNode';
 export class ASTCCaseStatement extends ASTCCompilerNode {
   constructor(
     loc: NodeLocation,
-    public readonly expression: ASTCCompilerNode,
-    public readonly statement: ASTCCompilerNode,
+    readonly expression: ASTCCompilerNode,
+    readonly statement: ASTCCompilerNode,
   ) {
     super(ASTCCompilerKind.CaseStmt, loc);
   }
@@ -47,7 +47,7 @@ export class ASTCCaseStatement extends ASTCCompilerNode {
 export class ASTCDefaultCaseStatement extends ASTCCompilerNode {
   constructor(
     loc: NodeLocation,
-    public readonly statement: ASTCCompilerNode,
+    readonly statement: ASTCCompilerNode,
   ) {
     super(ASTCCompilerKind.DefaultCaseStmt, loc);
   }

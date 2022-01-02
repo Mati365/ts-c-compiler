@@ -16,8 +16,8 @@ import {ASTCCompilerKind, ASTCCompilerNode} from './ASTCCompilerNode';
 export class ASTCDesignator extends ASTCCompilerNode {
   constructor(
     loc: NodeLocation,
-    public readonly constantExpression?: ASTCConstantExpression,
-    public readonly identifier?: Token<string>,
+    readonly constantExpression?: ASTCConstantExpression,
+    readonly identifier?: Token<string>,
   ) {
     super(ASTCCompilerKind.Designator, loc);
   }

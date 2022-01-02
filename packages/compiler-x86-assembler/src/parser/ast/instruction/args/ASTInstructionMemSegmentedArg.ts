@@ -28,8 +28,8 @@ import {
 
 export class ASTSegmentedAddressDescription {
   constructor(
-    public readonly segment: NumberTokenValue,
-    public readonly offset: NumberTokenValue,
+    readonly segment: NumberTokenValue,
+    readonly offset: NumberTokenValue,
   ) {}
 }
 
@@ -125,7 +125,7 @@ export function parseSegmentedMemExpression(
  */
 export class ASTInstructionMemSegmentedArg extends ASTInstructionArg<ASTSegmentedAddressDescription> {
   constructor(
-    public readonly phrase: string,
+    readonly phrase: string,
     byteSize: number,
   ) {
     super(InstructionArgType.SEGMENTED_MEMORY, null, byteSize, null, false);

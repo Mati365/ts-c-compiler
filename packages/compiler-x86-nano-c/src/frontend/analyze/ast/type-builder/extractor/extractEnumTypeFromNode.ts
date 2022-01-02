@@ -45,8 +45,8 @@ export function extractEnumTypeFromNode(
           CTypeCheckErrorCode.EXPECTED_RECEIVE_TYPE,
           null,
           {
-            expected: expectedResultType.getDisplayName(),
-            received: resultType?.getDisplayName() ?? 'unknown',
+            expected: expectedResultType.getShortestDisplayName(),
+            received: resultType?.getShortestDisplayName() ?? 'unknown',
           },
         );
       }

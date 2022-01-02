@@ -5,11 +5,11 @@ import {dumpCompilerAttrs} from '@compiler/core/utils';
 import {Result, err, ok} from '@compiler/core/monads';
 import {CCompilerArch} from '@compiler/x86-nano-c/constants';
 import {CTypeCheckError, CTypeCheckErrorCode} from '../errors/CTypeCheckError';
+import {CType, CTypeDescriptor} from './CType';
 import {CPrimitiveType} from './CPrimitiveType';
-import {CType} from './CType';
 
 export type CEnumFieldsMap = Map<string, number>;
-export type CEnumDescriptor = {
+export type CEnumDescriptor = CTypeDescriptor & {
   name?: string,
   fields: CEnumFieldsMap,
 };

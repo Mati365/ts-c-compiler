@@ -27,10 +27,10 @@ import {ASTCDeclarationsList} from './ASTCDeclarationsList';
 export class ASTCFunctionDefinition extends ASTCCompilerNode {
   constructor(
     loc: NodeLocation,
-    public readonly specifier: ASTCDeclarationSpecifier,
-    public readonly declarator: ASTCDeclarator,
-    public readonly declarationsList: ASTCDeclarationsList,
-    public readonly content: ASTCBlockItemsList,
+    readonly specifier: ASTCDeclarationSpecifier,
+    readonly declarator: ASTCDeclarator,
+    readonly declarationsList: ASTCDeclarationsList,
+    readonly content: ASTCBlockItemsList,
   ) {
     super(ASTCCompilerKind.FunctionDefinition, loc);
   }

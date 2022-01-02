@@ -60,7 +60,14 @@ export class TreeTypeBuilderVisitor extends CInnerTypeTreeVisitor {
   private extractDeclarator(node: ASTCDeclarator): boolean {
     let pointerNode = node.pointer;
     while (pointerNode) {
-      this.type = CPointerType.ofType(this.arch, this.type);
+      this.type = CPointerType.ofType(
+        this.arch,
+        this.type,
+        CType
+          .qualifiersToBitset(pointerNode.typeQualifierList?.items)
+          .unwrapOrThrow(),
+      );
+
       pointerNode = pointerNode.pointer;
     }
 

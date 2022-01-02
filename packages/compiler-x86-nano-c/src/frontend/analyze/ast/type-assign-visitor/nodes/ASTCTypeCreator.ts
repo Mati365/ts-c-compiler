@@ -26,6 +26,16 @@ export abstract class ASTCTypeCreator<T extends ASTCCompilerNode = ASTCCompilerN
 
   enter?(node: T): void | boolean;
   leave?(node: T): void;
+
+  findVariableType(name: string) {
+    const {scope} = this;
+
+    return (
+      scope
+        .findVariable(name)
+        ?.type
+    );
+  }
 }
 
 export type NewableASTCTypeCreator = {

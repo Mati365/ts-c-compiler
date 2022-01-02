@@ -14,11 +14,11 @@ import {ASTCExpression} from './ASTCExpression';
 export class ASTCPrimaryExpression extends ASTCCompilerNode {
   constructor(
     loc: NodeLocation,
-    public readonly identifier?: Token,
-    public readonly constant?: Token,
-    public readonly stringLiteral?: string,
-    public readonly charLiteral?: string,
-    public readonly expression?: ASTCExpression,
+    readonly identifier?: Token,
+    readonly constant?: Token,
+    readonly stringLiteral?: string,
+    readonly charLiteral?: string,
+    readonly expression?: ASTCExpression,
   ) {
     super(ASTCCompilerKind.PrimaryExpression, loc);
   }

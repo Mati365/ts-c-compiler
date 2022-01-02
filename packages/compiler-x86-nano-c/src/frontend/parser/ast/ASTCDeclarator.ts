@@ -21,8 +21,8 @@ import {ASTCPointer} from './ASTCPointer';
 export class ASTCDeclarator extends ASTCCompilerNode {
   constructor(
     loc: NodeLocation,
-    public readonly pointer?: ASTCPointer,
-    public readonly directDeclarator?: ASTCDirectDeclarator,
+    readonly pointer?: ASTCPointer,
+    readonly directDeclarator?: ASTCDirectDeclarator,
   ) {
     super(ASTCCompilerKind.Declarator, loc);
   }

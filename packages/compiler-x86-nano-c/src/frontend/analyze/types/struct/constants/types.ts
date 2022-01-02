@@ -1,5 +1,5 @@
 import {CStructAlign} from '@compiler/x86-nano-c/constants';
-import {CType} from '../../CType';
+import {CType, CTypeDescriptor} from '../../CType';
 import {
   CNamedTypedEntry,
   CNamedTypedEntryDescriptor,
@@ -15,7 +15,7 @@ export class CStructEntry extends CNamedTypedEntry<CStructEntryDescriptor> {
 }
 
 export type CStructFieldsMap = Map<string, CStructEntry>;
-export type CStructTypeDescriptor = {
+export type CStructTypeDescriptor = CTypeDescriptor & {
   name?: string,
   align: CStructAlign,
   fields: CStructFieldsMap,

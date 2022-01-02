@@ -16,8 +16,8 @@ import {ASTCSpecifiersQualifiersList} from './ASTCSpecifiersQualifiersList';
 export class ASTCTypeName extends ASTCCompilerNode {
   constructor(
     loc: NodeLocation,
-    public readonly specifierList: ASTCSpecifiersQualifiersList,
-    public readonly abstractDeclarator?: ASTCAbstractDeclarator,
+    readonly specifierList: ASTCSpecifiersQualifiersList,
+    readonly abstractDeclarator?: ASTCAbstractDeclarator,
   ) {
     super(ASTCCompilerKind.TypeName, loc);
   }

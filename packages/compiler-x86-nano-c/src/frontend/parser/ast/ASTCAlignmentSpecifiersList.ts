@@ -15,7 +15,7 @@ import {ASTCAlignmentSpecifier} from './ASTCAlignmentSpecifier';
 export class ASTCAlignmentSpecifiersList extends ASTCCompilerNode implements IsEmpty {
   constructor(
     loc: NodeLocation,
-    public readonly items: ASTCAlignmentSpecifier[],
+    readonly items: ASTCAlignmentSpecifier[],
   ) {
     super(ASTCCompilerKind.AlignmentSpecifiersList, loc);
   }

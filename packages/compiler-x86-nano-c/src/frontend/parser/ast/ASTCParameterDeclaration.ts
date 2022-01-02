@@ -24,10 +24,10 @@ import {ASTCAbstractDeclarator} from './ASTCAbstractDeclarator';
 export class ASTCParameterDeclaration extends ASTCCompilerNode {
   constructor(
     loc: NodeLocation,
-    public readonly specifier: ASTCDeclarationSpecifier,
-    public readonly declarator?: ASTCDeclarator,
-    public readonly abstractDeclarator?: ASTCAbstractDeclarator,
-    public readonly vaList?: boolean,
+    readonly specifier: ASTCDeclarationSpecifier,
+    readonly declarator?: ASTCDeclarator,
+    readonly abstractDeclarator?: ASTCAbstractDeclarator,
+    readonly vaList?: boolean,
   ) {
     super(ASTCCompilerKind.ParameterDeclaration, loc);
   }

@@ -16,7 +16,7 @@ import {
 } from '@compiler/x86-nano-c/constants';
 
 import {CTypeCheckError, CTypeCheckErrorCode} from '../errors/CTypeCheckError';
-import {CType} from './CType';
+import {CType, CTypeDescriptor} from './CType';
 import {CSpecBitmap} from '../constants';
 
 import {
@@ -24,7 +24,7 @@ import {
   parseKeywordsToBitset,
 } from '../utils';
 
-export type CPrimitiveTypeDescriptor = {
+export type CPrimitiveTypeDescriptor = CTypeDescriptor & {
   specifiers: number,
 };
 

@@ -2,10 +2,10 @@ import {concatNonEmptyStrings} from '@compiler/core/utils';
 
 import {Identity} from '@compiler/core/monads';
 import {CCompilerArch} from '@compiler/x86-nano-c/constants';
-import {CType} from './CType';
+import {CType, CTypeDescriptor} from './CType';
 import {CPrimitiveType} from './CPrimitiveType';
 
-export type CPointerTypeDescriptor = {
+export type CPointerTypeDescriptor = CTypeDescriptor & {
   baseType: CType,
 };
 
@@ -17,11 +17,12 @@ export type CPointerTypeDescriptor = {
  * @extends {CType<CPointerTypeDescriptor>}
  */
 export class CPointerType extends CType<CPointerTypeDescriptor> {
-  static ofType(arch: CCompilerArch, baseType: CType) {
+  static ofType(arch: CCompilerArch, baseType: CType, qualifiers?: number) {
     return new CPointerType(
       {
         arch,
         baseType,
+        qualifiers,
       },
     );
   }
@@ -44,8 +45,8 @@ export class CPointerType extends CType<CPointerTypeDescriptor> {
   override getDisplayName(): string {
     return concatNonEmptyStrings(
       [
-        this.getQualifiersDisplayName(),
         `(${this.baseType.getDisplayName()})*`,
+        this.getQualifiersDisplayName(),
       ],
     );
   }

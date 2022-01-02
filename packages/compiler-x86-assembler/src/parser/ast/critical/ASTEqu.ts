@@ -19,8 +19,8 @@ export const EQU_TOKEN_NAME = 'equ';
  */
 export class ASTEqu extends KindASTAsmNode(ASTNodeKind.EQU) {
   constructor(
-    public readonly name: string,
-    public readonly expression: string,
+    readonly name: string,
+    readonly expression: string,
     loc: NodeLocation,
   ) {
     super(loc);

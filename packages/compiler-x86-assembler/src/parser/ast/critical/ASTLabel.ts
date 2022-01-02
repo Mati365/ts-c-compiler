@@ -55,11 +55,11 @@ export function resolveLocalTokenAbsName(
  * @extends {KindASTAsmNode(ASTNodeKind.LABEL)}
  */
 export class ASTLabel extends KindASTAsmNode(ASTNodeKind.LABEL) {
-  public readonly local: boolean;
+  readonly local: boolean;
 
   constructor(
-    public readonly localName: string, // .abc:
-    public readonly name: string, // parent.abc:
+    readonly localName: string, // .abc:
+    readonly name: string, // parent.abc:
     loc: NodeLocation,
   ) {
     super(loc);

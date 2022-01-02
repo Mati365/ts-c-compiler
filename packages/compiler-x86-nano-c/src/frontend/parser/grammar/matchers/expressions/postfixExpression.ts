@@ -92,8 +92,8 @@ export function postfixExpression(grammar: CGrammar): ASTCPostfixExpression {
           return new ASTCPostfixExpression(
             startLoc,
             {
-              ...postfixExpressionNode,
-              ptrExpression: new ASTCPostfixDotExpression(startLoc, identifier),
+              postfixExpression: postfixExpressionNode,
+              dotExpression: new ASTCPostfixDotExpression(startLoc, identifier),
             },
           );
         },
@@ -105,7 +105,7 @@ export function postfixExpression(grammar: CGrammar): ASTCPostfixExpression {
           return new ASTCPostfixExpression(
             startLoc,
             {
-              ...postfixExpressionNode,
+              postfixExpression: postfixExpressionNode,
               ptrExpression: new ASTCPostfixPtrExpression(startLoc, identifier),
             },
           );
@@ -124,7 +124,7 @@ export function postfixExpression(grammar: CGrammar): ASTCPostfixExpression {
           return new ASTCPostfixExpression(
             startLoc,
             {
-              ...postfixExpressionNode,
+              postfixExpression: postfixExpressionNode,
               incExpression: token.type === TokenType.INCREMENT,
               decExpression: token.type === TokenType.DECREMENT,
             },

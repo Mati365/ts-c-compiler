@@ -24,10 +24,10 @@ import {
  */
 export class CCompilerOutput {
   constructor(
-    public readonly code: string,
-    public readonly ast: ASTCCompilerNode,
-    public readonly scope: CScopeTree,
-    public readonly timings: CCompilerTimings,
+    readonly code: string,
+    readonly ast: ASTCCompilerNode,
+    readonly scope: CScopeTree,
+    readonly timings: CCompilerTimings,
   ) {}
 
   dump() {

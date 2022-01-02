@@ -17,17 +17,18 @@ import {ASTCCompilerKind, ASTCCompilerNode} from './ASTCCompilerNode';
 export class ASTCAssignmentExpression extends ASTCCompilerNode {
   constructor(
     loc: NodeLocation,
-    public readonly conditionalExpression?: ASTCCompilerNode,
-    public readonly unaryExpression?: ASTCCompilerNode,
-    public readonly operator?: CAssignOperator,
-    public readonly expression?: ASTCCompilerNode,
+    readonly conditionalExpression?: ASTCCompilerNode,
+    readonly unaryExpression?: ASTCCompilerNode,
+    readonly operator?: CAssignOperator,
+    readonly expression?: ASTCCompilerNode,
   ) {
     super(ASTCCompilerKind.AssignmentExpression, loc);
   }
 
-  isOperatorExpression() {
-    return !!this.operator;
-  }
+  isOperatorExpression() { return !!this.operator; }
+  isUnaryExpression() { return !!this.unaryExpression; }
+  isConditionalExpression() { return !!this.conditionalExpression; }
+  hasNestedExpression() { return !!this.expression; }
 
   toString() {
     const {kind, operator} = this;

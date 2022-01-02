@@ -16,7 +16,7 @@ export class ASTCPrimaryExpressionTypeCreator extends ASTCTypeCreator<ASTCPrimar
   kind = ASTCCompilerKind.PrimaryExpression;
 
   override enter(node: ASTCPrimaryExpression): void {
-    const {arch, scope} = this;
+    const {arch} = this;
     let type: CType = null;
 
     if (node.isConstant()) {
@@ -40,14 +40,6 @@ export class ASTCPrimaryExpressionTypeCreator extends ASTCTypeCreator<ASTCPrimar
             },
           );
       }
-    } else if (node.isCharLiteral()) {
-      type = CPrimitiveType.char(arch);
-    } else if (node.isIdentifier()) {
-      type = (
-        scope
-          .findVariable(node.identifier.text)
-          ?.type
-      );
     } else if (node.isStringLiteral()) {
       type = CPointerType.ofType(
         arch,
@@ -55,7 +47,10 @@ export class ASTCPrimaryExpressionTypeCreator extends ASTCTypeCreator<ASTCPrimar
           .char(arch)
           .ofQualifiers(CQualBitmap.const),
       );
-    }
+    } else if (node.isCharLiteral())
+      type = CPrimitiveType.char(arch);
+    else if (node.isIdentifier())
+      type = this.findVariableType(node.identifier.text);
 
     if (!type) {
       throw new CTypeCheckError(

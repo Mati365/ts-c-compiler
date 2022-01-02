@@ -18,8 +18,8 @@ import {ASTCStructDeclarationList} from './ASTCStructDeclarationList';
 export class ASTCStructSpecifier extends ASTCCompilerNode {
   constructor(
     loc: NodeLocation,
-    public readonly list: ASTCStructDeclarationList,
-    public readonly name?: Token<string>,
+    readonly list: ASTCStructDeclarationList,
+    readonly name?: Token<string>,
     kind: ASTCCompilerKind = ASTCCompilerKind.StructSpecifier,
   ) {
     super(kind, loc);

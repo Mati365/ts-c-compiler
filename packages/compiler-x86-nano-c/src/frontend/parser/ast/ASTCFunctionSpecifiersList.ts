@@ -11,7 +11,7 @@ import {ASTCCompilerKind, ASTCCompilerNode} from './ASTCCompilerNode';
 export class ASTCFunctionSpecifiersList extends ASTCCompilerNode implements IsEmpty {
   constructor(
     loc: NodeLocation,
-    public readonly items: CFunctionSpecifier[],
+    readonly items: CFunctionSpecifier[],
   ) {
     super(ASTCCompilerKind.FunctionSpecifiersList, loc);
   }

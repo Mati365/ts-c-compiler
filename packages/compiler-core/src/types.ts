@@ -38,12 +38,12 @@ export class Vec2D {
  * @class RGBColor
  */
 export class RGBColor {
-  public readonly hex: string;
+  readonly hex: string;
 
   constructor(
-    public readonly r: number,
-    public readonly g: number,
-    public readonly b: number,
+    readonly r: number,
+    readonly g: number,
+    readonly b: number,
   ) {
     // cache for canvas
     this.hex = `#${[r, g, b].map((str) => str.toString(16).padStart(2, '0')).join('')}`;

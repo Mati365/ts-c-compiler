@@ -11,7 +11,7 @@ import {ASTCCompilerKind, ASTCCompilerNode} from './ASTCCompilerNode';
 export class ASTCTypeQualifiersList extends ASTCCompilerNode implements IsEmpty {
   constructor(
     loc: NodeLocation,
-    public readonly items: CTypeQualifier[],
+    readonly items: CTypeQualifier[],
   ) {
     super(ASTCCompilerKind.TypeQualifiersList, loc);
   }

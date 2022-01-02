@@ -15,10 +15,10 @@ export type BinaryBlobsMap = Map<number, BinaryBlob>;
  */
 export class FirstPassResult {
   constructor(
-    public readonly tree: ASTAsmTree,
-    public readonly labels: BinaryLabelsOffsets = new Map<string, number>(),
-    public readonly equ: Map<string, BinaryEqu> = new Map,
-    public readonly nodesOffsets: BinaryBlobsMap = new Map<number, BinaryBlob>(),
+    readonly tree: ASTAsmTree,
+    readonly labels: BinaryLabelsOffsets = new Map<string, number>(),
+    readonly equ: Map<string, BinaryEqu> = new Map,
+    readonly nodesOffsets: BinaryBlobsMap = new Map<number, BinaryBlob>(),
   ) {}
 
   /**
@@ -45,7 +45,7 @@ export class FirstPassResult {
  */
 export class SecondPassResult {
   constructor(
-    public readonly offset: number = 0,
+    readonly offset: number = 0,
     public labelsOffsets: BinaryLabelsOffsets = new Map,
     public blobs: BinaryBlobsMap = new Map,
     public totalPasses: number = 0,

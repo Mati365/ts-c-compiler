@@ -24,7 +24,7 @@ export class ASTInstructionNumberArg extends ASTInstructionArg<number> {
     byteSize?: number,
     signedByteSize?: number,
     type: InstructionArgType = InstructionArgType.NUMBER,
-    public readonly assignedLabel: string = null,
+    readonly assignedLabel: string = null,
   ) {
     super(
       type,

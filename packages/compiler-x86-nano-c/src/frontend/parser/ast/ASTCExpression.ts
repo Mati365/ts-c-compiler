@@ -12,7 +12,7 @@ import {ASTCCompilerKind, ASTCCompilerNode} from './ASTCCompilerNode';
 export class ASTCExpression extends ASTCCompilerNode {
   constructor(
     loc: NodeLocation,
-    public readonly assignments: ASTCCompilerNode[],
+    readonly assignments: ASTCCompilerNode[],
     kind: ASTCCompilerKind = ASTCCompilerKind.Expression,
   ) {
     super(kind, loc);

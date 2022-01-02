@@ -16,8 +16,8 @@ import {ASTCCompilerKind, ASTCCompilerNode} from './ASTCCompilerNode';
 export class ASTCStaticAssertDeclaration extends ASTCCompilerNode {
   constructor(
     loc: NodeLocation,
-    public readonly expression: ASTCConstantExpression,
-    public readonly literal: Token<string>,
+    readonly expression: ASTCConstantExpression,
+    readonly literal: Token<string>,
   ) {
     super(ASTCCompilerKind.StaticAssertDeclaration, loc);
   }

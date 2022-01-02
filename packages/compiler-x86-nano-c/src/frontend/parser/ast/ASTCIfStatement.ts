@@ -15,9 +15,9 @@ import {ASTCCompilerKind, ASTCCompilerNode} from './ASTCCompilerNode';
 export class ASTCIfStatement extends ASTCCompilerNode {
   constructor(
     loc: NodeLocation,
-    public readonly logicalExpression: ASTCCompilerNode,
-    public readonly trueExpression: ASTCCompilerNode,
-    public readonly falseExpression?: ASTCCompilerNode,
+    readonly logicalExpression: ASTCCompilerNode,
+    readonly trueExpression: ASTCCompilerNode,
+    readonly falseExpression?: ASTCCompilerNode,
   ) {
     super(ASTCCompilerKind.IfStmt, loc);
   }

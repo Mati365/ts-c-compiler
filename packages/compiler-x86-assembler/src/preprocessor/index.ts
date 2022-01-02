@@ -18,8 +18,8 @@ export const DEFAULT_PREPROCESSOR_CONFIG: PreprocessorInterpreterConfig = {
 
 export class PreprocessorResult {
   constructor(
-    public readonly ast: ASTPreprocessorNode,
-    public readonly result: string,
+    readonly ast: ASTPreprocessorNode,
+    readonly result: string,
   ) {}
 
   dump() {

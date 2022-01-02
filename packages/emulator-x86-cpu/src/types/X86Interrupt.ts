@@ -29,11 +29,11 @@ export enum X86InterruptType {
  */
 export class X86Interrupt {
   constructor(
-    public readonly code: number,
-    public readonly type: X86InterruptType,
-    public readonly mnemonic: string,
-    public readonly errorCode: number = null,
-    public readonly maskable: boolean = true,
+    readonly code: number,
+    readonly type: X86InterruptType,
+    readonly mnemonic: string,
+    readonly errorCode: number = null,
+    readonly maskable: boolean = true,
   ) {}
 
   isTripleFault(): boolean {
