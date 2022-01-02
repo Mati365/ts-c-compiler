@@ -9,7 +9,7 @@ import {isNamedType} from '../../utils/isNamedType';
 import {
   extractInitDeclaratorTypeVariables,
   extractSpecifierType,
-} from '../resolver';
+} from '../type-extractor';
 
 /**
  * Enters variable declaration

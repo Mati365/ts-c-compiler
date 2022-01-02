@@ -1,7 +1,7 @@
 import {ASTCFunctionDefinition} from '@compiler/x86-nano-c/frontend/parser';
 import {CFunctionCallConvention} from '@compiler/x86-nano-c/constants';
 
-import {extractNamedEntryFromDeclaration} from '../resolver';
+import {extractNamedEntryFromDeclaration} from '../type-extractor';
 import {CInnerTypeTreeVisitor} from './CInnerTypeTreeVisitor';
 import {
   CFunctionNode,
