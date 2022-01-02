@@ -1,7 +1,7 @@
 import {GroupTreeVisitor} from '@compiler/grammar/tree/TreeGroupedVisitor';
-import {ASTCCompilerNode} from '../../../parser/ast/ASTCCompilerNode';
-import {CAnalyzeContext} from '../../CAnalyzeContext';
-import type {CAnalyzeVisitor} from '../../CAnalyzeVisitor';
+import {ASTCCompilerNode} from '../../parser/ast/ASTCCompilerNode';
+import {CAnalyzeContext} from '../CAnalyzeContext';
+import type {CAnalyzeVisitor} from '../CAnalyzeVisitor';
 
 export abstract class CInnerTypeTreeVisitor<
     P extends GroupTreeVisitor<ASTCCompilerNode> = CAnalyzeVisitor,

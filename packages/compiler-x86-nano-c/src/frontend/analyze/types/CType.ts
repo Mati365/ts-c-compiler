@@ -46,6 +46,20 @@ export abstract class CType<T extends {} = any>
     }));
   }
 
+  /**
+   * Appends qualifiers to type
+   *
+   * @param {number} qualifiers
+   * @return {this}
+   * @memberof CType
+   */
+  ofQualifiers(qualifiers: number): this {
+    return this.map((value) => ({
+      ...value,
+      qualifiers,
+    }));
+  }
+
   isRegistered() { return this.value.registered; }
   isIndexable() { return false; }
   isEnum() { return false; }

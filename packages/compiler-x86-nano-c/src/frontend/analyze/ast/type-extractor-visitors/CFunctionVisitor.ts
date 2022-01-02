@@ -1,8 +1,8 @@
 import {ASTCFunctionDefinition} from '@compiler/x86-nano-c/frontend/parser';
 import {CFunctionCallConvention} from '@compiler/x86-nano-c/constants';
 
-import {extractNamedEntryFromDeclaration} from '../type-extractor';
-import {CInnerTypeTreeVisitor} from './CInnerTypeTreeVisitor';
+import {extractNamedEntryFromDeclaration} from '../type-builder';
+import {CInnerTypeTreeVisitor} from '../CInnerTypeTreeVisitor';
 import {
   CFunctionNode,
   CFunctionSpecifierMonad,
@@ -10,7 +10,8 @@ import {
 } from '../../nodes/function';
 
 /**
- * Enters function definition and analyzes its content
+ * Enters function definition, analyzes its definition
+ * and assigns meta type information to scope
 
  * @export
  * @class CFunctionVisitor

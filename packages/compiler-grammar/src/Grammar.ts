@@ -18,6 +18,10 @@ export class SyntaxError extends GrammarError {
   constructor() {
     super(GrammarErrorCode.SYNTAX_ERROR);
   }
+
+  static isSyntaxError(e: any) {
+    return ('code' in e) && (e instanceof SyntaxError);
+  }
 }
 
 /** Basic type config */
@@ -199,10 +203,10 @@ export class Grammar<I, K = string> extends TokensIterator {
     } catch (e) {
       // already consumed some of instruction
       // but occurs parsing error
-      if (!('code' in e))
-        throw e;
-      else
+      if (SyntaxError.isSyntaxError(e))
         this.tokenIndex = savedIndex;
+      else
+        throw e;
     }
 
     return null;
@@ -235,8 +239,7 @@ export class Grammar<I, K = string> extends TokensIterator {
 
         // already consumed some of instruction
         // but occurs parsing error
-        if (!(e instanceof SyntaxError)
-            || !('code' in e)
+        if (!SyntaxError.isSyntaxError(e)
             || (!this.config.ignoreMatchCallNesting && matchCallingDelta > 1))
           throw e;
         else

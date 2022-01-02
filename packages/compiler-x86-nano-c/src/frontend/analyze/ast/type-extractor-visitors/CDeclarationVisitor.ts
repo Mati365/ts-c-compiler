@@ -1,5 +1,5 @@
 import {ASTCDeclaration} from '@compiler/x86-nano-c/frontend/parser/ast';
-import {CInnerTypeTreeVisitor} from './CInnerTypeTreeVisitor';
+import {CInnerTypeTreeVisitor} from '../CInnerTypeTreeVisitor';
 import {
   CTypeCheckError,
   CTypeCheckErrorCode,
@@ -9,10 +9,11 @@ import {isNamedType} from '../../utils/isNamedType';
 import {
   extractInitDeclaratorTypeVariables,
   extractSpecifierType,
-} from '../type-extractor';
+} from '../type-builder';
 
 /**
- * Enters variable declaration
+ * Enters variable declaration and saves meta info about
+ * type to scope context
  *
  * @export
  * @class CDeclarationVisitor

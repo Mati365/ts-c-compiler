@@ -3,7 +3,7 @@ import {CTypeCheckConfig} from './constants';
 import {ASTCCompilerNode} from '../parser/ast/ASTCCompilerNode';
 import {CAnalyzeContext} from './CAnalyzeContext';
 import {CScopeTree} from './scope/CScopeTree';
-import {C_TYPES_VISITORS} from './ast/type-extractor-visitors';
+import {C_TYPES_VISITORS} from './ast';
 
 type CAnalyzeVisitorAttrs = CTypeCheckConfig & {
   scope?: CScopeTree,

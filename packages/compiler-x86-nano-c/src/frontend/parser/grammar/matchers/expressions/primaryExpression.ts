@@ -1,8 +1,9 @@
 import {NodeLocation} from '@compiler/grammar/tree/NodeLocation';
-import {TokenType} from '@compiler/lexer/shared';
+import {TokenKind, TokenType} from '@compiler/lexer/shared';
 import {ASTCPrimaryExpression} from '@compiler/x86-nano-c/frontend/parser/ast';
 import {expression} from './expression';
 import {CGrammar} from '../shared';
+import {CGrammarError, CGrammarErrorCode} from '../../errors/CGrammarError';
 
 /**
  * primary_expression
@@ -52,6 +53,26 @@ export function primaryExpression(grammar: CGrammar): ASTCPrimaryExpression {
           },
         );
 
+        // handle 'a'
+        if (literal.kind === TokenKind.SINGLE_QUOTE) {
+          if (literal.text.length !== 1) {
+            throw new CGrammarError(
+              CGrammarErrorCode.INCORRECT_CHAR_LITERAL_LENGTH,
+              literal.loc,
+              {
+                text: literal.text,
+              },
+            );
+          }
+
+          return new ASTCPrimaryExpression(
+            NodeLocation.fromTokenLoc(literal.loc),
+            null, null, null,
+            literal.text,
+          );
+        }
+
+        // handle "a"
         return new ASTCPrimaryExpression(
           NodeLocation.fromTokenLoc(literal.loc),
           null, null,
@@ -66,7 +87,7 @@ export function primaryExpression(grammar: CGrammar): ASTCPrimaryExpression {
 
         return new ASTCPrimaryExpression(
           expressionNode.loc,
-          null, null, null,
+          null, null, null, null,
           expressionNode,
         );
       },

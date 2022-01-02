@@ -42,8 +42,8 @@ export type CPrimitiveTypeSourceParserAttrs = {
  * @extends {CType<CPrimitiveTypeDescriptor>}
  */
 export class CPrimitiveType extends CType<CPrimitiveTypeDescriptor> {
-  static typeGenerator = (specifier: number) => (arch: CCompilerArch) => (
-    CPrimitiveType.ofSpecifiers(arch, specifier)
+  static typeGenerator = (specifier: number, qualifiers?: number) => (arch: CCompilerArch) => (
+    CPrimitiveType.ofSpecifiers(arch, specifier, qualifiers)
   );
 
   static int = CPrimitiveType.typeGenerator(CSpecBitmap.int);

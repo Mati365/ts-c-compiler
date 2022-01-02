@@ -9,7 +9,7 @@ import {
 import {evalConstantMathExpression} from '../../../eval';
 
 import {CTypeCheckError, CTypeCheckErrorCode} from '../../../errors/CTypeCheckError';
-import {CInnerTypeTreeVisitor} from '../../type-extractor-visitors/CInnerTypeTreeVisitor';
+import {CInnerTypeTreeVisitor} from '../../CInnerTypeTreeVisitor';
 import {CNamedTypedEntry} from '../../../variables/CNamedTypedEntry';
 import {
   CType,
@@ -33,17 +33,7 @@ export class TreeTypeBuilderVisitor extends CInnerTypeTreeVisitor {
     super(
       {
         [ASTCCompilerKind.Declarator]: {
-          enter: (node: ASTCDeclarator) => {
-            // todo: typeQualifierList, check if it should be used or not
-            let pointerNode = node.pointer;
-            while (pointerNode) {
-              this.type = CPointerType.ofType(this.arch, this.type);
-              pointerNode = pointerNode.pointer;
-            }
-
-            if (this.isDone())
-              return false;
-          },
+          enter: (node: ASTCDeclarator) => this.extractDeclarator(node),
         },
 
         [ASTCCompilerKind.DirectDeclarator]: {
@@ -60,7 +50,25 @@ export class TreeTypeBuilderVisitor extends CInnerTypeTreeVisitor {
   }
 
   /**
-   * Modifices internal type
+   * Enters Declarator node
+   *
+   * @private
+   * @param {ASTCDeclarator} node
+   * @return {boolean}
+   * @memberof TreeTypeBuilderVisitor
+   */
+  private extractDeclarator(node: ASTCDeclarator): boolean {
+    let pointerNode = node.pointer;
+    while (pointerNode) {
+      this.type = CPointerType.ofType(this.arch, this.type);
+      pointerNode = pointerNode.pointer;
+    }
+
+    return !this.isDone();
+  }
+
+  /**
+   * Enters DirectDeclarator node
    *
    * @private
    * @param {ASTCDirectDeclarator} node
@@ -100,7 +108,7 @@ export class TreeTypeBuilderVisitor extends CInnerTypeTreeVisitor {
     return true;
   }
 
-  isDone() {
+  private isDone() {
     const {type, name} = this;
 
     return !!(type && name);

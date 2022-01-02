@@ -24,7 +24,9 @@ export enum CTypeCheckErrorCode {
   UNKNOWN_DECLARATOR_ENTRY_IDENTIFIER,
   UNKNOWN_DECLARATOR_ENTRY_TYPE,
   UNKNOWN_CONSTANT_EXPR_EVAL_OPERAND,
+  UNKNOWN_EXPR_TYPE,
   UNKNOWN_TYPE,
+  UNKNOWN_CONSTANT_TYPE,
   UNABLE_TO_EXTRACT_DECLARATION_TYPE,
 }
 
@@ -47,7 +49,9 @@ export const C_TYPE_CHECK_ERROR_TRANSLATIONS: Record<CTypeCheckErrorCode, string
   [CTypeCheckErrorCode.UNKNOWN_DECLARATOR_ENTRY_IDENTIFIER]: fixme('Unknown declarator entry identifier!'),
   [CTypeCheckErrorCode.UNKNOWN_DECLARATOR_ENTRY_TYPE]: fixme('Unknown declarator entry type!'),
   [CTypeCheckErrorCode.UNKNOWN_CONSTANT_EXPR_EVAL_OPERAND]: fixme('Unknown constant expression operand!'),
+  [CTypeCheckErrorCode.UNKNOWN_EXPR_TYPE]: 'Unknown expression type!',
   [CTypeCheckErrorCode.UNKNOWN_TYPE]: 'Unknown type named "%{typeName}"!',
+  [CTypeCheckErrorCode.UNKNOWN_CONSTANT_TYPE]: 'Unknown type of "%{text}" constant!',
   [CTypeCheckErrorCode.UNABLE_TO_EXTRACT_DECLARATION_TYPE]: fixme('Unable to extract declaration type!'),
 };
 

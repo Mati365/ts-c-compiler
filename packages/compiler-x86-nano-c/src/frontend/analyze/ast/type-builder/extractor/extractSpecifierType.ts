@@ -35,9 +35,11 @@ export function extractSpecifierType(
     return null;
 
   const {typeQualifiers, typeSpecifiers} = specifier;
+  if (!typeSpecifiers)
+    return null;
 
   const qualifiers: CTypeQualifier[] = typeQualifiers?.items;
-  const {primitives, structs, enums} = typeSpecifiers?.getGroupedSpecifiers();
+  const {primitives, structs, enums} = typeSpecifiers.getGroupedSpecifiers();
   const [hasPrimitives, hasStructs, hasEnums] = [
     !R.isEmpty(primitives),
     !R.isEmpty(structs),

@@ -17,10 +17,12 @@ export class ASTCPrimaryExpression extends ASTCCompilerNode {
     public readonly identifier?: Token,
     public readonly constant?: Token,
     public readonly stringLiteral?: string,
+    public readonly charLiteral?: string,
     public readonly expression?: ASTCExpression,
   ) {
     super(ASTCCompilerKind.PrimaryExpression, loc);
   }
+
   toString() {
     const {
       kind, identifier,
@@ -41,4 +43,5 @@ export class ASTCPrimaryExpression extends ASTCCompilerNode {
   isIdentifier() { return !!this.identifier; }
   isExpression() { return !!this.expression; }
   isStringLiteral() { return !!this.stringLiteral; }
+  isCharLiteral() { return !!this.charLiteral; }
 }

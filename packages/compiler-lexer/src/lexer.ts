@@ -115,7 +115,7 @@ function parseToken(
       return new Token(<any> tokenType, null, token, loc);
 
     // it might be also object without type
-    if (!result?.type)
+    if (!result.type)
       return new Token(<any> tokenType, null, token, loc, result);
 
     return result;

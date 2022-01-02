@@ -3,10 +3,8 @@ import {ccompiler} from './frontend';
 ccompiler(
   /* cpp */ `
     int main() {
-      int x, y = 0;
-      double z;
-
-      x = 5;
+      char d;
+      d = 2.5;
     }
   `,
 ).match(
