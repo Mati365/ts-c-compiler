@@ -6,11 +6,11 @@ import {
   ASTCDirectDeclarator,
 } from '@compiler/x86-nano-c/frontend/parser/ast';
 
-import {evalConstantMathExpression} from '../../../eval';
+import {evalConstantMathExpression} from '../../eval';
 
 import {CTypeCheckError, CTypeCheckErrorCode} from '../../../errors/CTypeCheckError';
 import {CInnerTypeTreeVisitor} from '../../CInnerTypeTreeVisitor';
-import {CNamedTypedEntry} from '../../../variables/CNamedTypedEntry';
+import {CNamedTypedEntry} from '../../../scope/variables/CNamedTypedEntry';
 import {
   CType,
   CPointerType,

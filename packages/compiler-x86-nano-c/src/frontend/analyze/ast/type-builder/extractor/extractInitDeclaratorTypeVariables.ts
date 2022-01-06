@@ -1,7 +1,7 @@
 import {ASTCInitDeclarator} from '@compiler/x86-nano-c/frontend/parser/ast';
 import {CAnalyzeContext} from '../../../CAnalyzeContext';
 import {CType} from '../../../types/CType';
-import {CVariable} from '../../../variables/CVariable';
+import {CVariable} from '../../../scope/variables/CVariable';
 
 import {extractNamedEntryFromDeclarator} from './extractSpecifierType';
 
@@ -15,16 +15,19 @@ export function extractInitDeclaratorTypeVariables(
   {
     context,
     type,
-    initDeclarator,
+    initDeclarator: {
+      declarator,
+      initializer,
+    },
   }: InitDeclaratorExtractorAttrs,
 ): CVariable {
   const entry = extractNamedEntryFromDeclarator(
     {
-      declarator: initDeclarator.declarator,
+      declarator,
       context,
       type,
     },
   );
 
-  return CVariable.ofInitializedEntry(entry, initDeclarator.initializer);
+  return CVariable.ofInitializedEntry(entry, initializer);
 }

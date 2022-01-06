@@ -5,7 +5,7 @@ import {dropNewLines, dumpCompilerAttrs} from '@compiler/core/utils';
 import {Identity, Result, ok, err} from '@compiler/core/monads';
 import {CCompilerArch, CStructAlign} from '@compiler/x86-nano-c/constants';
 import {CType} from '../CType';
-import {CNamedTypedEntry} from '../../variables/CNamedTypedEntry';
+import {CNamedTypedEntry} from '../../scope/variables/CNamedTypedEntry';
 import {StructFieldAligner} from './align';
 import {CTypeCheckError, CTypeCheckErrorCode} from '../../errors/CTypeCheckError';
 import {

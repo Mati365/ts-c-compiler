@@ -3,7 +3,7 @@ import {CEnumType, CPrimitiveType} from '../../../types';
 import {CTypeCheckError, CTypeCheckErrorCode} from '../../../errors/CTypeCheckError';
 import {TypeExtractorAttrs} from '../constants/types';
 
-import {evalConstantMathExpression} from '../../../eval';
+import {evalConstantMathExpression} from '../../eval';
 
 type EnumTypeExtractorAttrs = TypeExtractorAttrs & {
   enumSpecifier: ASTCEnumSpecifier,
@@ -43,7 +43,7 @@ export function extractEnumTypeFromNode(
       if (!expectedResultType.isEqual(resultType)) {
         throw new CTypeCheckError(
           CTypeCheckErrorCode.EXPECTED_RECEIVE_TYPE,
-          null,
+          enumeration.loc.start,
           {
             expected: expectedResultType.getShortestDisplayName(),
             received: resultType?.getShortestDisplayName() ?? 'unknown',

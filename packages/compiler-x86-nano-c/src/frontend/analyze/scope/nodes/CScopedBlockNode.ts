@@ -1,7 +1,7 @@
 import * as R from 'ramda';
 
 import {AbstractTreeVisitor} from '@compiler/grammar/tree/AbstractTreeVisitor';
-import {CScopeTree} from '../scope/CScopeTree';
+import {CScopeTree} from '../CScopeTree';
 import {CNode, CNodeDescriptor} from './CNode';
 
 export type IsInnerScoped = {

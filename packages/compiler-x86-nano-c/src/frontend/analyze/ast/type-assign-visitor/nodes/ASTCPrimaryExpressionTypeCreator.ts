@@ -49,8 +49,22 @@ export class ASTCPrimaryExpressionTypeCreator extends ASTCTypeCreator<ASTCPrimar
       );
     } else if (node.isCharLiteral())
       type = CPrimitiveType.char(arch);
-    else if (node.isIdentifier())
-      type = this.findVariableType(node.identifier.text);
+    else if (node.isIdentifier()) {
+      const {text} = node.identifier;
+
+      type = this.findVariableType(text) || this.findFnReturnType(text);
+    }
+
+    node.type = type;
+  }
+
+  override leave(node: ASTCPrimaryExpression): void {
+    if (node.type)
+      return;
+
+    let type: CType = null;
+    if (node.isExpression())
+      type = node.expression.type;
 
     if (!type) {
       throw new CTypeCheckError(

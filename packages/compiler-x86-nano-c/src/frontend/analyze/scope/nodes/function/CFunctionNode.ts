@@ -2,7 +2,7 @@ import * as R from 'ramda';
 import {findByName, dumpCompilerAttrs} from '@compiler/core/utils';
 
 import {CFunctionCallConvention} from '@compiler/x86-nano-c/constants';
-import {CType} from '../../types/CType';
+import {CType} from '../../../types/CType';
 import {CFunctionSpecifierMonad} from './CFunctionSpecifierMonad';
 import {CStorageClassMonad} from './CFunctionStorageClassMonad';
 import {CScopedBlockNode} from '../CScopedBlockNode';

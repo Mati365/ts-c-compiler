@@ -29,9 +29,12 @@ export enum CTypeCheckErrorCode {
   UNKNOWN_CONSTANT_TYPE,
   UNKNOWN_LEFT_DOT_EXPRESSION_TYPE,
   UNKNOWN_STRUCT_LIKE_MEMBER,
+  UNKNOWN_INITIALIZER_TYPE,
   UNABLE_TO_EXTRACT_DECLARATION_TYPE,
   PROVIDED_TYPE_DOES_NOT_CONTAIN_PROPERTIES,
   ASSIGNMENT_EXPRESSION_TYPES_MISMATCH,
+  INITIALIZER_SIDES_TYPES_MISMATCH,
+  OPERATOR_SIDES_TYPES_MISMATCH,
 }
 
 export const C_TYPE_CHECK_ERROR_TRANSLATIONS: Record<CTypeCheckErrorCode, string> = {
@@ -59,11 +62,18 @@ export const C_TYPE_CHECK_ERROR_TRANSLATIONS: Record<CTypeCheckErrorCode, string
   [CTypeCheckErrorCode.UNKNOWN_CONSTANT_TYPE]: 'Unknown type of "%{text}" constant!',
   [CTypeCheckErrorCode.UNKNOWN_LEFT_DOT_EXPRESSION_TYPE]: 'Unknown left side dot expression type!',
   [CTypeCheckErrorCode.UNKNOWN_STRUCT_LIKE_MEMBER]: 'Unknown %{typeName} type "%{fieldName}" member!',
+  [CTypeCheckErrorCode.UNKNOWN_INITIALIZER_TYPE]: 'Unknown initializer type!',
   [CTypeCheckErrorCode.PROVIDED_TYPE_DOES_NOT_CONTAIN_PROPERTIES]: (
     'Provided %{typeName} does not contain members!'
   ),
   [CTypeCheckErrorCode.ASSIGNMENT_EXPRESSION_TYPES_MISMATCH]: (
-    'Assignment expression types mismatch! Unable to assign %{right} to %{left}!'
+    'Assignment expression types mismatch! Unable assign "%{right}" to "%{left}"!'
+  ),
+  [CTypeCheckErrorCode.INITIALIZER_SIDES_TYPES_MISMATCH]: (
+    'Initializer types mismatch! Left side type "%{left}" mismatch with right side type "%{right}"!'
+  ),
+  [CTypeCheckErrorCode.OPERATOR_SIDES_TYPES_MISMATCH]: (
+    'Operator types mismatch! Left side type "%{left}" mismatch with right side "%{right}"!'
   ),
 };
 

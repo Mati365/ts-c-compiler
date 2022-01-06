@@ -13,8 +13,8 @@ import {
   ASTCBinaryOpNode,
   ASTCPrimaryExpression,
 } from '@compiler/x86-nano-c/frontend/parser/ast';
-import {CInnerTypeTreeVisitor} from '../../ast/CInnerTypeTreeVisitor';
-import {CTypeCheckError, CTypeCheckErrorCode} from '../../errors/CTypeCheckError';
+import {CInnerTypeTreeVisitor} from '../../CInnerTypeTreeVisitor';
+import {CTypeCheckError, CTypeCheckErrorCode} from '../../../errors/CTypeCheckError';
 
 export type MathOperationResult = number | boolean;
 

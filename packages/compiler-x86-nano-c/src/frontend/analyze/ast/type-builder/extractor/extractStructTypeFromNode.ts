@@ -3,7 +3,7 @@ import {CTypeCheckError, CTypeCheckErrorCode} from '../../../errors/CTypeCheckEr
 import {CStructType} from '../../../types';
 import {TypeExtractorAttrs} from '../constants/types';
 
-import {evalConstantMathExpression} from '../../../eval';
+import {evalConstantMathExpression} from '../../eval';
 
 type StructTypeExtractorAttrs = TypeExtractorAttrs & {
   structSpecifier: ASTCStructSpecifier,

@@ -2,25 +2,18 @@ import {ccompiler} from './frontend';
 
 ccompiler(
   /* cpp */ `
-    struct Rect {
-      float w, h;
+    struct Vec2 {
+      int x, y;
+    } screen;
 
-      struct Vec2 {
-        int x, y;
-      } vec;
-    };
-
-    struct OtherRect {
-      float w;
-    };
+    float sum(int x, int y) {
+      return x + y;
+    }
 
     int main() {
-      struct Rect rect;
-      struct OtherRect rect_b;
+      screen.x = 2;
 
-      rect = rect_b;
-
-      return 0;
+      float sum = 2.0 * sum(5 + 5);
     }
   `,
 ).match(

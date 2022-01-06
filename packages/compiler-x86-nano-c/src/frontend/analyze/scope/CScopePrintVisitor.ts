@@ -8,7 +8,7 @@ import {CScopeVisitor, CVisitorEntry} from './CScopeVisitor';
 import {
   isCFunctionNode,
   isInnerScoped,
-} from '../nodes';
+} from './nodes';
 
 /**
  * Iterator that walks over tree and prints it

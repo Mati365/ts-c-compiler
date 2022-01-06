@@ -1,7 +1,7 @@
 import {Result, err, ok} from '@compiler/core/monads';
-import {ASTCConstantExpression} from '../../parser/ast';
-import {CTypeCheckError} from '../errors/CTypeCheckError';
-import {CAnalyzeContext} from '../CAnalyzeContext';
+import {ASTCConstantExpression} from '../../../parser/ast';
+import {CTypeCheckError} from '../../errors/CTypeCheckError';
+import {CAnalyzeContext} from '../../CAnalyzeContext';
 import {MathExpressionEvalVisitor} from './visitors/MathExpressionEvalVisitor';
 
 type EvalMathExpressionAttrs = {

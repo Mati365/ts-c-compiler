@@ -36,6 +36,16 @@ export abstract class ASTCTypeCreator<T extends ASTCCompilerNode = ASTCCompilerN
         ?.type
     );
   }
+
+  findFnReturnType(name: string) {
+    const {scope} = this;
+
+    return (
+      scope
+        .findFunction(name)
+        ?.returnType
+    );
+  }
 }
 
 export type NewableASTCTypeCreator = {

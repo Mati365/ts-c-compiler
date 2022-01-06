@@ -1,5 +1,6 @@
 import {ASTCDeclaration} from '@compiler/x86-nano-c/frontend/parser/ast';
 import {CInnerTypeTreeVisitor} from '../CInnerTypeTreeVisitor';
+import {CTypeAssignVisitor} from '../type-assign-visitor/CTypeAssignVisitor';
 import {
   CTypeCheckError,
   CTypeCheckErrorCode,
@@ -20,7 +21,7 @@ import {
  * @extends {CInnerTypeTreeVisitor}
  */
 export class CDeclarationVisitor extends CInnerTypeTreeVisitor {
-  initForRootNode(declaration: ASTCDeclaration): this {
+  enter(declaration: ASTCDeclaration): boolean {
     const {context, scope} = this;
     const {initList} = declaration;
 
@@ -41,21 +42,40 @@ export class CDeclarationVisitor extends CInnerTypeTreeVisitor {
     }
 
     if (initList) {
-      const variables = initList.children.map(
-        (initDeclarator) => extractInitDeclaratorTypeVariables(
+      const variables = initList.children.map((initDeclarator) => {
+        const variable = extractInitDeclaratorTypeVariables(
           {
             context,
             type,
             initDeclarator,
           },
-        ),
-      );
+        );
+
+        // check if initializer type matches type
+        const {initializer} = variable;
+        if (initializer) {
+          CTypeAssignVisitor.assignTypeForNode(context, initializer);
+
+          if (!initializer.type?.isEqual(type)) {
+            throw new CTypeCheckError(
+              CTypeCheckErrorCode.INITIALIZER_SIDES_TYPES_MISMATCH,
+              initDeclarator.loc.start,
+              {
+                left: type.getShortestDisplayName() ?? '<unknown-left-expr-type>',
+                right: initializer?.type?.getShortestDisplayName() ?? '<unknown-right-expr-type>',
+              },
+            );
+          }
+        }
+
+        return variable;
+      });
 
       scope
         .defineVariables(variables)
         .unwrapOrThrow();
     }
 
-    return this;
+    return false;
   }
 }

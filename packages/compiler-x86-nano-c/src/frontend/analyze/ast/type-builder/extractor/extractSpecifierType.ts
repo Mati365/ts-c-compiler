@@ -5,7 +5,7 @@ import {CTypeQualifier} from '@compiler/x86-nano-c/constants';
 import {CTypeCheckError, CTypeCheckErrorCode} from '../../../errors/CTypeCheckError';
 import {CType, CPrimitiveType} from '../../../types';
 import {TreeTypeBuilderVisitor} from '../builder/CTreeTypeBuilderVisitor';
-import {CNamedTypedEntry} from '../../../variables/CNamedTypedEntry';
+import {CNamedTypedEntry} from '../../../scope/variables/CNamedTypedEntry';
 import {
   DeclaratorExtractorAttrs,
   SpecifierResolverAttrs,
@@ -175,8 +175,12 @@ export function extractNamedEntryFromDeclarator(
     declarator,
   }: DeclaratorExtractorAttrs,
 ): CNamedTypedEntry {
-  if (!type)
-    throw new CTypeCheckError(CTypeCheckErrorCode.UNKNOWN_DECLARATOR_ENTRY_TYPE);
+  if (!type) {
+    throw new CTypeCheckError(
+      CTypeCheckErrorCode.UNKNOWN_DECLARATOR_ENTRY_TYPE,
+      declarator.loc.start,
+    );
+  }
 
   const buildEntry = (
     new TreeTypeBuilderVisitor(type)
@@ -185,8 +189,12 @@ export function extractNamedEntryFromDeclarator(
       .getBuiltEntry()
   );
 
-  if (buildEntry.isAnonymous() || !buildEntry.unwrap()?.type)
-    throw new CTypeCheckError(CTypeCheckErrorCode.UNKNOWN_DECLARATOR_ENTRY_IDENTIFIER);
+  if (buildEntry.isAnonymous() || !buildEntry.unwrap()?.type) {
+    throw new CTypeCheckError(
+      CTypeCheckErrorCode.UNKNOWN_DECLARATOR_ENTRY_IDENTIFIER,
+      declarator.loc.start,
+    );
+  }
 
   return buildEntry;
 }

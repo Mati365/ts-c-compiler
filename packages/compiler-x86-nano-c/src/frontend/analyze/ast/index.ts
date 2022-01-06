@@ -4,10 +4,11 @@ import {CTypeAssignVisitor} from './type-assign-visitor/CTypeAssignVisitor';
 import {
   CDeclarationVisitor,
   CFunctionVisitor,
-} from './type-extractor-visitors';
+} from './type-scope-builder-visitors';
 
 export const C_TYPES_VISITORS: TreeVisitorsMap<ASTCCompilerNode> = {
   [ASTCCompilerKind.FunctionDefinition]: CFunctionVisitor,
   [ASTCCompilerKind.Declaration]: CDeclarationVisitor,
   [ASTCCompilerKind.ExpressionStmt]: CTypeAssignVisitor,
+  // [ASTCCompilerKind.ReturnStmt]: CTypeAssignVisitor,
 };

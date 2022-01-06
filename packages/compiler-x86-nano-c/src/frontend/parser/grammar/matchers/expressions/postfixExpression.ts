@@ -1,4 +1,6 @@
 /* eslint-disable no-loop-func */
+import {isNonIdentifierKeywordToken} from '@compiler/lexer/utils';
+
 import {
   ASTCPostfixArrayExpression,
   ASTCPostfixExpression,
@@ -11,8 +13,8 @@ import {
 import {TokenType} from '@compiler/lexer/shared';
 import {NodeLocation} from '@compiler/grammar/tree/NodeLocation';
 import {SyntaxError} from '@compiler/grammar/Grammar';
-import {CGrammar} from '../shared';
 
+import {CGrammar} from '../shared';
 import {primaryExpression} from './primaryExpression';
 import {expression} from './expression';
 
@@ -42,13 +44,18 @@ export function postfixExpression(grammar: CGrammar): ASTCPostfixExpression {
     // eslint-disable-next-line no-loop-func, @typescript-eslint/no-loop-func
     const newPostfixExpressionNode = g.try(() => <ASTCPostfixExpression> g.or(
       {
-        primary: () => new ASTCPostfixExpression(
-          startLoc,
-          {
-            primaryExpression: primaryExpression(grammar),
-            postfixExpression: postfixExpressionNode,
-          },
-        ),
+        primary: () => {
+          if (isNonIdentifierKeywordToken(g.prevToken()))
+            throw new SyntaxError;
+
+          return new ASTCPostfixExpression(
+            startLoc,
+            {
+              primaryExpression: primaryExpression(grammar),
+              postfixExpression: postfixExpressionNode,
+            },
+          );
+        },
 
         array() {
           g.terminal('[');

@@ -17,7 +17,6 @@ export class TokensIterator {
   get currentToken() { return this.tokens[this.tokenIndex]; }
 
   getTokens(): Token[] { return this.tokens; }
-
   getTokenIndex(): number { return this.tokenIndex; }
 
   setTokenIndex(tokenIndex: number): void {
@@ -66,6 +65,17 @@ export class TokensIterator {
    */
   nextToken(increment: boolean = false): Token {
     return this.fetchRelativeToken(1, increment);
+  }
+
+  /**
+   * Fetches previous token
+   *
+   * @param {boolean} [decrement=false]
+   * @return {Token}
+   * @memberof TokensIterator
+   */
+  prevToken(decrement: boolean = false): Token {
+    return this.fetchRelativeToken(-1, decrement);
   }
 
   /**

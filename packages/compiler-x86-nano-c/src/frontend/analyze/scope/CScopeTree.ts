@@ -2,12 +2,12 @@ import * as R from 'ramda';
 
 import {Result, ok, err, tryFold} from '@compiler/core/monads';
 import {CType} from '../types/CType';
-import {CVariable} from '../variables/CVariable';
-import {CFunctionNode} from '../nodes/function';
+import {CVariable} from './variables/CVariable';
+import {CFunctionNode} from './nodes/function';
 import {CTypeCheckError, CTypeCheckErrorCode} from '../errors/CTypeCheckError';
 import {AbstractTreeVisitor, IsWalkableNode} from '@compiler/grammar/tree/AbstractTreeVisitor';
 
-import type {IsInnerScoped} from '../nodes/CScopedBlockNode';
+import type {IsInnerScoped} from './nodes/CScopedBlockNode';
 
 type TypeFindAttrs = {
   struct?: boolean,
@@ -208,6 +208,26 @@ export class CScopeTree implements IsWalkableNode, IsInnerScoped {
 
     if (parentContext)
       return parentContext.findVariable(name);
+
+    return null;
+  }
+
+  /**
+   * Finds function by name
+   *
+   * @param {string} name
+   * @return {CFunctionNode}
+   * @memberof CScopeTree
+   */
+  findFunction(name: string): CFunctionNode {
+    const {functions, parentContext} = this;
+
+    const fn = functions[name];
+    if (fn)
+      return fn;
+
+    if (parentContext)
+      return parentContext.findFunction(name);
 
     return null;
   }

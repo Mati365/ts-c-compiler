@@ -45,6 +45,6 @@ export class TreePrintVisitor<T extends TreeNode<any>> extends TreeVisitor<T> {
    * @memberof TreePrintVisitor
    */
   static serializeToString<T extends TreeNode<any>>(node: T, config: TreePrintConfig<T> = {}): string {
-    return (new TreePrintVisitor(config)).visit(node).reduced;
+    return new TreePrintVisitor(config).visit(node).reduced;
   }
 }

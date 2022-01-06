@@ -7,7 +7,7 @@ import {
   CFunctionNode,
   CFunctionSpecifierMonad,
   CStorageClassMonad,
-} from '../../nodes/function';
+} from '../../scope/nodes/function';
 
 /**
  * Enters function definition, analyzes its definition
@@ -18,12 +18,12 @@ import {
  * @extends {CInnerTypeTreeVisitor}
  */
 export class CFunctionVisitor extends CInnerTypeTreeVisitor {
-  initForRootNode(node: ASTCFunctionDefinition): this {
+  enter(node: ASTCFunctionDefinition): boolean {
     const fn = this.extractFuncTypeFromNode(node);
     if (fn)
       this.scope.defineFunction(fn);
 
-    return this;
+    return false;
   }
 
   /**
