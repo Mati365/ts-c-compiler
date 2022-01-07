@@ -2,7 +2,7 @@ import {Result, ok, err} from '@compiler/core/monads/Result';
 import {CTypeCheckError, CTypeCheckErrorCode} from './errors/CTypeCheckError';
 import {CTypeCheckConfig} from './constants';
 import {ASTCTreeNode} from '../parser/ast';
-import {CAnalyzeVisitor} from './CAnalyzeVisitor';
+import {CTypeAnalyzeVisitor} from './ast';
 import {CScopeTree} from './scope';
 
 type ScopeTreeBuilderResult = {
@@ -23,7 +23,7 @@ export function safeBuildTypedTree(
   tree: ASTCTreeNode,
 ): Result<ScopeTreeBuilderResult, CTypeCheckError[]> {
   try {
-    const {scope} = new CAnalyzeVisitor(config).visit(tree);
+    const {scope} = new CTypeAnalyzeVisitor(config).visit(tree);
 
     return ok(
       {

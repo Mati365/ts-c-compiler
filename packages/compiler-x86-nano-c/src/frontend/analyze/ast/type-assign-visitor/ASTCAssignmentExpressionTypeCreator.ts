@@ -1,5 +1,5 @@
 import {ASTCCompilerKind, ASTCAssignmentExpression} from '@compiler/x86-nano-c/frontend/parser/ast';
-import {CTypeCheckError, CTypeCheckErrorCode} from '../../../errors/CTypeCheckError';
+import {CTypeCheckError, CTypeCheckErrorCode} from '../../errors/CTypeCheckError';
 import {ASTCTypeCreator} from './ASTCTypeCreator';
 
 /**

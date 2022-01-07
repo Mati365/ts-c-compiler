@@ -4,13 +4,17 @@ import {AbstractTreeVisitor} from '@compiler/grammar/tree/AbstractTreeVisitor';
 import {CScopeTree} from '../CScopeTree';
 import {CNode, CNodeDescriptor} from './CNode';
 
-export type IsInnerScoped = {
-  innerScope: CScopeTree,
+export type IsInnerScoped<S extends CScopeTree = CScopeTree> = {
+  innerScope: S,
 };
 
-export type CScopedBlockNodeDescriptor = IsInnerScoped & CNodeDescriptor & {
-  children?: CNode[],
-};
+export type CScopedBlockNodeDescriptor<S extends CScopeTree = CScopeTree> = (
+  IsInnerScoped<S>
+  & CNodeDescriptor
+  & {
+    children?: CNode[],
+  }
+);
 
 export function isInnerScoped(node: any): node is IsInnerScoped {
   return node?.innerScope;
@@ -24,7 +28,10 @@ export function isInnerScoped(node: any): node is IsInnerScoped {
  * @extends {CNode<D>}
  * @template D
  */
-export class CScopedBlockNode<D extends CScopedBlockNodeDescriptor = CScopedBlockNodeDescriptor>
+export class CScopedBlockNode<
+    S extends CScopeTree = CScopeTree,
+    D extends CScopedBlockNodeDescriptor<S> = CScopedBlockNodeDescriptor<S>,
+  >
   extends CNode<D> {
 
   get innerScope() { return this.value.innerScope; }

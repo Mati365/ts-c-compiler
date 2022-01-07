@@ -1,6 +1,5 @@
-import {ASTCDeclaration} from '@compiler/x86-nano-c/frontend/parser/ast';
-import {CInnerTypeTreeVisitor} from '../CInnerTypeTreeVisitor';
-import {CTypeAssignVisitor} from '../type-assign-visitor/CTypeAssignVisitor';
+import {ASTCDeclaration, ASTCCompilerKind} from '@compiler/x86-nano-c/frontend/parser/ast';
+import {ASTCTypeCreator} from './ASTCTypeCreator';
 import {
   CTypeCheckError,
   CTypeCheckErrorCode,
@@ -17,12 +16,14 @@ import {
  * type to scope context
  *
  * @export
- * @class CDeclarationVisitor
- * @extends {CInnerTypeTreeVisitor}
+ * @class ASTCDeclarationTypeCreator
+ * @extends {ASTCTypeCreator<ASTCDeclaration>}
  */
-export class CDeclarationVisitor extends CInnerTypeTreeVisitor {
+export class ASTCDeclarationTypeCreator extends ASTCTypeCreator<ASTCDeclaration> {
+  kind = ASTCCompilerKind.Declaration;
+
   enter(declaration: ASTCDeclaration): boolean {
-    const {context, scope} = this;
+    const {context, scope, analyzeVisitor} = this;
     const {initList} = declaration;
 
     const type = extractSpecifierType(
@@ -54,7 +55,7 @@ export class CDeclarationVisitor extends CInnerTypeTreeVisitor {
         // check if initializer type matches type
         const {initializer} = variable;
         if (initializer) {
-          CTypeAssignVisitor.assignTypeForNode(context, initializer);
+          analyzeVisitor.visit(initializer);
 
           if (!initializer.type?.isEqual(type)) {
             throw new CTypeCheckError(

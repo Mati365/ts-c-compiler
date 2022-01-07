@@ -1,6 +1,6 @@
 import {ASTCCompilerKind, ASTCPostfixExpression} from '@compiler/x86-nano-c/frontend/parser/ast';
-import {CStructType} from '../../../types/struct/CStructType';
-import {CTypeCheckError, CTypeCheckErrorCode} from '../../../errors/CTypeCheckError';
+import {CStructType} from '../../types/struct/CStructType';
+import {CTypeCheckError, CTypeCheckErrorCode} from '../../errors/CTypeCheckError';
 import {ASTCTypeCreator} from './ASTCTypeCreator';
 
 /**

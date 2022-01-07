@@ -1,6 +1,6 @@
 import {ASTCCompilerKind, ASTCBinaryOpNode} from '@compiler/x86-nano-c/frontend/parser/ast';
 import {ASTCTypeCreator} from './ASTCTypeCreator';
-import {CTypeCheckError, CTypeCheckErrorCode} from '../../../errors/CTypeCheckError';
+import {CTypeCheckError, CTypeCheckErrorCode} from '../../errors/CTypeCheckError';
 
 /**
  * Assigns type to ASTCBinaryOpTypeCreator

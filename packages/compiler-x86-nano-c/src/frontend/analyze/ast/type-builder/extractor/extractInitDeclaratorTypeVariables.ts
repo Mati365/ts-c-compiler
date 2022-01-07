@@ -1,12 +1,12 @@
 import {ASTCInitDeclarator} from '@compiler/x86-nano-c/frontend/parser/ast';
-import {CAnalyzeContext} from '../../../CAnalyzeContext';
 import {CType} from '../../../types/CType';
 import {CVariable} from '../../../scope/variables/CVariable';
+import {CTypeAnalyzeContext} from '../../CTypeAnalyzeContext';
 
 import {extractNamedEntryFromDeclarator} from './extractSpecifierType';
 
 type InitDeclaratorExtractorAttrs = {
-  context: CAnalyzeContext,
+  context: CTypeAnalyzeContext,
   type: CType,
   initDeclarator: ASTCInitDeclarator,
 };

@@ -1,8 +1,9 @@
-import {ASTCFunctionDefinition} from '@compiler/x86-nano-c/frontend/parser';
+import {ASTCFunctionDefinition, ASTCCompilerKind} from '@compiler/x86-nano-c/frontend/parser/ast';
 import {CFunctionCallConvention} from '@compiler/x86-nano-c/constants';
+import {ASTCTypeCreator} from './ASTCTypeCreator';
 
 import {extractNamedEntryFromDeclaration} from '../type-builder';
-import {CInnerTypeTreeVisitor} from '../CInnerTypeTreeVisitor';
+import {CVariable} from '../../scope/variables/CVariable';
 import {
   CFunctionNode,
   CFunctionSpecifierMonad,
@@ -12,16 +13,32 @@ import {
 /**
  * Enters function definition, analyzes its definition
  * and assigns meta type information to scope
-
+ *
  * @export
- * @class CFunctionVisitor
- * @extends {CInnerTypeTreeVisitor}
+ * @class ASTCFunctionTypeCreator
+ * @extends {ASTCTypeCreator<ASTCFunctionDefinition>}
  */
-export class CFunctionVisitor extends CInnerTypeTreeVisitor {
+export class ASTCFunctionTypeCreator extends ASTCTypeCreator<ASTCFunctionDefinition> {
+  kind = ASTCCompilerKind.FunctionDefinition;
+
   enter(node: ASTCFunctionDefinition): boolean {
-    const fn = this.extractFuncTypeFromNode(node);
-    if (fn)
-      this.scope.defineFunction(fn);
+    const {
+      scope,
+      analyzeVisitor,
+      context: {
+        currentAnalyzed,
+      },
+    } = this;
+
+    const fnNode = this.extractFuncTypeFromNode(node);
+
+    if (fnNode) {
+      scope.defineFunction(fnNode);
+
+      currentAnalyzed.fnNode = fnNode;
+      analyzeVisitor.initializeScopeAndWalkTo(fnNode.innerScope, fnNode.ast);
+      currentAnalyzed.fnNode = null;
+    }
 
     return false;
   }
@@ -34,7 +51,7 @@ export class CFunctionVisitor extends CInnerTypeTreeVisitor {
    * @memberof CTypeStructVisitor
    */
   extractFuncTypeFromNode(fnDefinition: ASTCFunctionDefinition): CFunctionNode {
-    const {context, parentVisitor} = this;
+    const {context} = this;
     const {fnExpression} = fnDefinition.declarator.directDeclarator;
 
     const returnTypeEntry = extractNamedEntryFromDeclaration(
@@ -44,11 +61,13 @@ export class CFunctionVisitor extends CInnerTypeTreeVisitor {
       },
     );
 
-    const args = fnExpression.argsNodes.map((argNode) => extractNamedEntryFromDeclaration(
-      {
-        declaration: argNode,
-        context,
-      },
+    const args = fnExpression.argsNodes.map((argNode) => CVariable.ofFunctionArg(
+      extractNamedEntryFromDeclaration(
+        {
+          declaration: argNode,
+          context,
+        },
+      ),
     ));
 
     const specifier = (
@@ -63,15 +82,12 @@ export class CFunctionVisitor extends CInnerTypeTreeVisitor {
         .unwrapOrThrow()
     );
 
-    const innerScope = parentVisitor.visitAndAppendScope(fnDefinition.content);
-
     return new CFunctionNode(
       {
-        ast: fnDefinition,
+        ast: fnDefinition.content,
         callConvention: CFunctionCallConvention.CDECL,
         name: returnTypeEntry.name,
         returnType: returnTypeEntry.type,
-        innerScope,
         args,
         storage,
         specifier,

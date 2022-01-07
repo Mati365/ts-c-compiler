@@ -5,7 +5,7 @@ import {
 
 import {CType} from '../../../types/CType';
 import {CNamedTypedEntry} from '../../../scope/variables/CNamedTypedEntry';
-import {CAnalyzeContext} from '../../../CAnalyzeContext';
+import {CTypeAnalyzeContext} from '../../CTypeAnalyzeContext';
 
 type ASTCDeclarationLike = {
   specifier: ASTCDeclarationSpecifier,
@@ -13,19 +13,19 @@ type ASTCDeclarationLike = {
 };
 
 export type DeclaratorExtractorAttrs = {
-  context: CAnalyzeContext,
+  context: CTypeAnalyzeContext,
   type: CType,
   declarator: ASTCDeclarator,
   bitset?: number,
 };
 
 export type SpecifierResolverAttrs = {
-  context: CAnalyzeContext,
+  context: CTypeAnalyzeContext,
   specifier: ASTCDeclarationSpecifier,
 };
 
 export type TypeResolverAttrs = {
-  context: CAnalyzeContext,
+  context: CTypeAnalyzeContext,
   declaration: ASTCDeclarationLike,
 };
 

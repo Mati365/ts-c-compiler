@@ -1,8 +1,8 @@
 import {TokenType} from '@compiler/lexer/shared';
 import {ASTCCompilerKind, ASTCPrimaryExpression} from '@compiler/x86-nano-c/frontend/parser/ast';
-import {CQualBitmap} from '../../../constants/bitmaps';
-import {CTypeCheckError, CTypeCheckErrorCode} from '../../../errors/CTypeCheckError';
-import {CType, CPrimitiveType, CPointerType} from '../../../types';
+import {CQualBitmap} from '../../constants/bitmaps';
+import {CTypeCheckError, CTypeCheckErrorCode} from '../../errors/CTypeCheckError';
+import {CType, CPrimitiveType, CPointerType} from '../../types';
 import {ASTCTypeCreator} from './ASTCTypeCreator';
 
 /**
@@ -49,11 +49,8 @@ export class ASTCPrimaryExpressionTypeCreator extends ASTCTypeCreator<ASTCPrimar
       );
     } else if (node.isCharLiteral())
       type = CPrimitiveType.char(arch);
-    else if (node.isIdentifier()) {
-      const {text} = node.identifier;
-
-      type = this.findVariableType(text) || this.findFnReturnType(text);
-    }
+    else if (node.isIdentifier())
+      type = this.findVariableType(node.identifier.text);
 
     node.type = type;
   }
@@ -62,17 +59,7 @@ export class ASTCPrimaryExpressionTypeCreator extends ASTCTypeCreator<ASTCPrimar
     if (node.type)
       return;
 
-    let type: CType = null;
     if (node.isExpression())
-      type = node.expression.type;
-
-    if (!type) {
-      throw new CTypeCheckError(
-        CTypeCheckErrorCode.UNKNOWN_EXPR_TYPE,
-        node.loc.start,
-      );
-    }
-
-    node.type = type;
+      node.type = node.expression.type;
   }
 }

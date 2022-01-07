@@ -17,4 +17,6 @@ export class ASTCReturnStatement extends ASTCCompilerNode {
   ) {
     super(ASTCCompilerKind.ReturnStmt, loc);
   }
+
+  hasExpression() { return !!this.expression; }
 }

@@ -30,15 +30,20 @@ export class CScopeTree implements IsWalkableNode, IsInnerScoped {
   private functions: Record<string, CFunctionNode> = {};
 
   constructor(
-    readonly parentContext: CScopeTree = null,
+    protected parentScope: CScopeTree = null,
   ) {}
 
   get innerScope(): CScopeTree {
     return this;
   }
 
+  setParentScope(parentScope: CScopeTree): this {
+    this.parentScope = parentScope;
+    return this;
+  }
+
   isGlobal() {
-    return R.isNil(this.parentContext);
+    return R.isNil(this.parentScope);
   }
 
   walk(visitor: AbstractTreeVisitor): void {
@@ -168,7 +173,7 @@ export class CScopeTree implements IsWalkableNode, IsInnerScoped {
    * @memberof CScopeTree
    */
   findType(name: string, attrs: TypeFindAttrs = {}): CType {
-    const {types, parentContext} = this;
+    const {types, parentScope} = this;
     const {
       findInParent = true,
       primitive,
@@ -186,8 +191,8 @@ export class CScopeTree implements IsWalkableNode, IsInnerScoped {
       return type;
     }
 
-    if (findInParent && parentContext)
-      return parentContext.findType(name, attrs);
+    if (findInParent && parentScope)
+      return parentScope.findType(name, attrs);
 
     return null;
   }
@@ -200,14 +205,14 @@ export class CScopeTree implements IsWalkableNode, IsInnerScoped {
    * @memberof CScopeTree
    */
   findVariable(name: string): CVariable {
-    const {variables, parentContext} = this;
+    const {variables, parentScope} = this;
 
     const variable = variables[name];
     if (variable)
       return variable;
 
-    if (parentContext)
-      return parentContext.findVariable(name);
+    if (parentScope)
+      return parentScope.findVariable(name);
 
     return null;
   }
@@ -220,14 +225,14 @@ export class CScopeTree implements IsWalkableNode, IsInnerScoped {
    * @memberof CScopeTree
    */
   findFunction(name: string): CFunctionNode {
-    const {functions, parentContext} = this;
+    const {functions, parentScope} = this;
 
     const fn = functions[name];
     if (fn)
       return fn;
 
-    if (parentContext)
-      return parentContext.findFunction(name);
+    if (parentScope)
+      return parentScope.findFunction(name);
 
     return null;
   }

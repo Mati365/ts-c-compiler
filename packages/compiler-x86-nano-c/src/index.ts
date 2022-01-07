@@ -4,16 +4,16 @@ ccompiler(
   /* cpp */ `
     struct Vec2 {
       int x, y;
-    } screen;
+    };
 
-    float sum(int x, int y) {
-      return x + y;
+    void print() {
+      return;
     }
 
-    int main() {
-      screen.x = 2;
+    int sum(int x, int y) {
+      float z = 2.0;
 
-      float sum = 2.0 * sum(5 + 5);
+      return 2 + 3 + x;
     }
   `,
 ).match(

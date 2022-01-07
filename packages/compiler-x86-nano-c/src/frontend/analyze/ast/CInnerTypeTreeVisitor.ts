@@ -1,11 +1,11 @@
 import {GroupTreeVisitor} from '@compiler/grammar/tree/TreeGroupedVisitor';
 import {ASTCCompilerNode} from '../../parser/ast/ASTCCompilerNode';
-import {CAnalyzeContext} from '../CAnalyzeContext';
-import type {CAnalyzeVisitor} from '../CAnalyzeVisitor';
+import {CTypeAnalyzeContext} from './CTypeAnalyzeContext';
+import type {CTypeAnalyzeVisitor} from './CTypeAnalyzeVisitor';
 
 export abstract class CInnerTypeTreeVisitor<
-    P extends GroupTreeVisitor<ASTCCompilerNode> = CAnalyzeVisitor,
-    C extends  CAnalyzeContext = CAnalyzeContext>
+    P extends GroupTreeVisitor<ASTCCompilerNode> = CTypeAnalyzeVisitor,
+    C extends  CTypeAnalyzeContext = CTypeAnalyzeContext>
   extends GroupTreeVisitor<ASTCCompilerNode, P, C> {
 
   get arch() { return this.context.config.arch; }

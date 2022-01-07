@@ -32,13 +32,15 @@ export abstract class GroupTreeVisitor<
     P extends GroupTreeVisitor<T> = any,
     C extends {} = any> extends TreeVisitor<T> {
   protected parentVisitor: P;
-  protected context: C;
+  protected _context: C;
 
   constructor(
     private visitorsMap: TreeVisitorsMap<T> = {},
   ) {
     super();
   }
+
+  get context() { return this._context; }
 
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   initForRootNode(node: T): this {
@@ -69,7 +71,7 @@ export abstract class GroupTreeVisitor<
     return (
       new Visitor()
         .setParentVisitor(this)
-        .setContext(this.context)
+        .setContext(this._context)
         .initForRootNode(node)
         .visit(node)
     );
@@ -86,7 +88,7 @@ export abstract class GroupTreeVisitor<
   }
 
   setContext(context: C): this {
-    this.context = context;
+    this._context = context;
     return this;
   }
 

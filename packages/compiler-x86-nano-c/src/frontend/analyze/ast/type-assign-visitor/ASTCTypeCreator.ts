@@ -1,13 +1,10 @@
 import {ASTCCompilerNode, ASTCCompilerKind} from '@compiler/x86-nano-c/frontend/parser/ast';
 import {InlineTreeVisitor} from '@compiler/grammar/tree/TreeGroupedVisitor';
-import type {CTypeAssignVisitor} from '../CTypeAssignVisitor';
+
+import type {CTypeAnalyzeVisitor} from '../CTypeAnalyzeVisitor';
 
 /**
  * Creator that appends type to ASTCNode
- *
- * @see
- *  It modifies ASTCCompilerNode!
- *
  *
  * @export
  * @abstract
@@ -16,11 +13,12 @@ import type {CTypeAssignVisitor} from '../CTypeAssignVisitor';
  */
 export abstract class ASTCTypeCreator<T extends ASTCCompilerNode = ASTCCompilerNode> implements InlineTreeVisitor<T> {
   constructor(
-    protected typeVisitor: CTypeAssignVisitor,
+    protected analyzeVisitor: CTypeAnalyzeVisitor,
   ) {}
 
-  get scope() { return this.typeVisitor.scope; }
-  get arch() { return this.typeVisitor.arch; }
+  get context() { return this.analyzeVisitor.context; }
+  get scope() { return this.analyzeVisitor.scope; }
+  get arch() { return this.analyzeVisitor.arch; }
 
   abstract readonly kind: ASTCCompilerKind;
 

@@ -2,8 +2,8 @@ import * as R from 'ramda';
 
 import {ASTCCompilerKind, ASTCInitializer} from '@compiler/x86-nano-c/frontend/parser/ast';
 import {ASTCTypeCreator} from './ASTCTypeCreator';
-import {CTypeCheckError, CTypeCheckErrorCode} from '../../../errors/CTypeCheckError';
-import {CType} from '../../../types/CType';
+import {CTypeCheckError, CTypeCheckErrorCode} from '../../errors/CTypeCheckError';
+import {CType} from '../../types/CType';
 
 /**
  * Assigns type to ASTCInitializer

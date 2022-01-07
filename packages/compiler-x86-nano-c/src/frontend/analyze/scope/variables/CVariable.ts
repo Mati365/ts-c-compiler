@@ -3,6 +3,7 @@ import {CNamedTypedEntry, CNamedTypedEntryDescriptor} from './CNamedTypedEntry';
 
 export type CVariableDescriptor = CNamedTypedEntryDescriptor & {
   global?: boolean,
+  fnArg?: boolean,
   initializer?: ASTCCompilerNode,
 };
 
@@ -14,6 +15,15 @@ export type CVariableDescriptor = CNamedTypedEntryDescriptor & {
  * @extends {CNamedTypedEntry<CVariableDescriptor>}
  */
 export class CVariable extends CNamedTypedEntry<CVariableDescriptor> {
+  static ofFunctionArg(entry: CNamedTypedEntry) {
+    return new CVariable(
+      {
+        ...entry.unwrap(),
+        fnArg: true,
+      },
+    );
+  }
+
   static ofInitializedEntry(entry: CNamedTypedEntry, initializer?: ASTCCompilerNode) {
     return new CVariable(
       {

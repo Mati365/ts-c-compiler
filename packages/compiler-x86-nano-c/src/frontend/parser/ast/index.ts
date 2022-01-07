@@ -39,7 +39,6 @@ export * from './ASTCParametersList';
 export * from './ASTCPointer';
 export * from './ASTCPostfixExpression';
 export * from './ASTCPrimaryExpression';
-export * from './ASTCReturn';
 export * from './ASTCReturnStatement';
 export * from './ASTCSpecifiersQualifiersList';
 export * from './ASTCStaticAssertDeclaration';

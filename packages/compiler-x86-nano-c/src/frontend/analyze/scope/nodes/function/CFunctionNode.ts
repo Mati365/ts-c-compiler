@@ -7,12 +7,13 @@ import {CFunctionSpecifierMonad} from './CFunctionSpecifierMonad';
 import {CStorageClassMonad} from './CFunctionStorageClassMonad';
 import {CScopedBlockNode} from '../CScopedBlockNode';
 import {CScopedBlockNodeDescriptor} from '../CScopedBlockNode';
-import {CNamedTypedEntry} from '../../variables/CNamedTypedEntry';
+import {CVariable} from '../../variables';
+import {CFunctionScope} from './CFunctionScope';
 
-export type CFunctionDescriptor = CScopedBlockNodeDescriptor & {
+export type CFunctionDescriptor = CScopedBlockNodeDescriptor<CFunctionScope> & {
   name?: string,
   returnType: CType,
-  args: CNamedTypedEntry[],
+  args: CVariable[],
   specifier: CFunctionSpecifierMonad,
   callConvention: CFunctionCallConvention,
   storage: CStorageClassMonad,
@@ -27,10 +28,21 @@ export function isCFunctionNode(obj: any): obj is CFunctionNode {
  *
  * @export
  * @class CFunctionNode
- * @extends {CScopedBlockNode<CFunctionDescriptor>}
+ * @extends {CScopedBlockNode<CFunctionScope, CFunctionDescriptor>}
  */
 export class CFunctionNode
-  extends CScopedBlockNode<CFunctionDescriptor> {
+  extends CScopedBlockNode<CFunctionScope, CFunctionDescriptor> {
+
+  constructor(descriptor: Omit<CFunctionDescriptor, 'innerScope'>) {
+    super(
+      {
+        innerScope: new CFunctionScope(null),
+        ...descriptor,
+      },
+    );
+
+    this.innerScope.setFunctionNode(this);
+  }
 
   get returnType() { return this.value.returnType; }
   get specifier() { return this.value.specifier; }
@@ -76,10 +88,10 @@ export class CFunctionNode
    *  It is list search not hash! It is kinda slow!
    *
    * @param {string} name
-   * @return {CNamedTypedEntry}
+   * @return {CVariable}
    * @memberof CFunction
    */
-  getArgByName(name: string): CNamedTypedEntry {
+  getArgByName(name: string): CVariable {
     const {args} = this;
 
     return findByName(name)(args);

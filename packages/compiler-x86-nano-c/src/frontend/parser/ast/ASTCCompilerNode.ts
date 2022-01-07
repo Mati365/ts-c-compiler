@@ -8,7 +8,6 @@ export enum ASTCCompilerKind {
 
   If = 'If',
   Value = 'Value',
-  Return = 'Return',
 
   EnumSpecifier = 'EnumSpecifier',
   EnumItem = 'EnumItem',
