@@ -13,6 +13,15 @@ import {ASTCTypeCreator} from './ASTCTypeCreator';
 export class ASTCPostfixExpressionTypeCreator extends ASTCTypeCreator<ASTCPostfixExpression> {
   kind = ASTCCompilerKind.PostfixExpression;
 
+  override enter(node: ASTCPostfixExpression): boolean | void {
+    const {analyzeVisitor} = this;
+
+    if (node.isFnExpression()) {
+      analyzeVisitor.visit(node.fnExpression.args);
+      return false;
+    }
+  }
+
   override leave(node: ASTCPostfixExpression): void {
     if (node.type)
       return;
@@ -54,6 +63,8 @@ export class ASTCPostfixExpressionTypeCreator extends ASTCTypeCreator<ASTCPostfi
 
         node.type = field.type;
       }
+    } else if (node.isFnExpression()) {
+      console.info('xD');
     } else if (node.isPrimaryExpression())
       node.type = node.primaryExpression.type;
     else if (node.hasNestedPostfixExpression())

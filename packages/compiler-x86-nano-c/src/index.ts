@@ -2,18 +2,12 @@ import {ccompiler} from './frontend';
 
 ccompiler(
   /* cpp */ `
-    struct Vec2 {
-      int x, y;
-    };
-
-    void print() {
-      return;
+    int sum(int x, int y) {
+      return x + y;
     }
 
-    int sum(int x, int y) {
-      float z = 2.0;
-
-      return 2 + 3 + x;
+    int main() {
+      sum(2, 4);
     }
   `,
 ).match(
