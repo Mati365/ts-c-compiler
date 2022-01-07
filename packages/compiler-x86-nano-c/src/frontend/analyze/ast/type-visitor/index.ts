@@ -7,7 +7,7 @@ import {ASTCBinaryOpTypeCreator} from './ASTCBinaryOpTypeCreator';
 import {ASTCInitializerTypeCreator} from './ASTCInitializerTypeCreator';
 import {ASTCReturnStmtTypeCreator} from './ASTCReturnStmtTypeCreator';
 import {ASTCDeclarationTypeCreator} from './ASTCDeclarationTypeCreator';
-import {ASTCFunctionTypeCreator} from './ASTCFunctionTypeCreator';
+import {ASTCFunctionDefTypeCreator} from './ASTCFunctionDefTypeCreator';
 
 export * from './ASTCTypeCreator';
 
@@ -20,5 +20,5 @@ export const ASTC_TYPE_CREATORS: NewableASTCTypeCreator[] = [
   ASTCInitializerTypeCreator,
   ASTCReturnStmtTypeCreator,
   ASTCDeclarationTypeCreator,
-  ASTCFunctionTypeCreator,
+  ASTCFunctionDefTypeCreator,
 ];

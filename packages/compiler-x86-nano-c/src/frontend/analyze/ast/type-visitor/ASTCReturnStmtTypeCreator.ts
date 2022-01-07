@@ -15,9 +15,9 @@ export class ASTCReturnStmtTypeCreator extends ASTCTypeCreator<ASTCReturnStateme
 
   override leave(node: ASTCReturnStatement): void {
     const {context, arch} = this;
-    const {fnNode} = context.currentAnalyzed;
+    const {fnType} = context.currentAnalyzed;
 
-    if (!fnNode) {
+    if (!fnType) {
       throw new CTypeCheckError(
         CTypeCheckErrorCode.RETURN_STMT_OUTSIDE_FUNCTION,
         node.loc.start,
@@ -30,12 +30,12 @@ export class ASTCReturnStmtTypeCreator extends ASTCTypeCreator<ASTCReturnStateme
     else
       returnType = CPrimitiveType.void(arch);
 
-    if (!returnType?.isEqual(fnNode.returnType)) {
+    if (!returnType?.isEqual(fnType.returnType)) {
       throw new CTypeCheckError(
         CTypeCheckErrorCode.RETURN_EXPRESSION_WRONG_TYPE,
         node.loc.start,
         {
-          expected: fnNode.returnType?.getShortestDisplayName() ?? '<unknown-fn-return-type>',
+          expected: fnType.returnType?.getShortestDisplayName() ?? '<unknown-fn-return-type>',
           received: returnType?.getShortestDisplayName() ?? '<unknown-expr-type>',
         },
       );

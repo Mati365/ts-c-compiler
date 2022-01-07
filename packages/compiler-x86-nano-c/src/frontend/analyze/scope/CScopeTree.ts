@@ -1,18 +1,20 @@
 import * as R from 'ramda';
 
 import {Result, ok, err, tryFold} from '@compiler/core/monads';
-import {CType} from '../types/CType';
-import {CVariable} from './variables/CVariable';
-import {CFunctionNode} from './nodes/function';
-import {CTypeCheckError, CTypeCheckErrorCode} from '../errors/CTypeCheckError';
 import {AbstractTreeVisitor, IsWalkableNode} from '@compiler/grammar/tree/AbstractTreeVisitor';
 
-import type {IsInnerScoped} from './nodes/CScopedBlockNode';
+import {CType} from '../types/CType';
+import {CFunctionDeclType} from '../types/function/CFunctionDeclType';
+import {CVariable} from './variables/CVariable';
+import {CTypeCheckError, CTypeCheckErrorCode} from '../errors/CTypeCheckError';
+import {ASTCCompilerNode} from '../../parser/ast/ASTCCompilerNode';
+import {CAbstractNamedType} from '../utils/isNamedType';
 
 type TypeFindAttrs = {
   struct?: boolean,
   primitive?: boolean,
   enumerator?: boolean,
+  function?: boolean,
   findInParent?: boolean,
 };
 
@@ -24,44 +26,43 @@ type TypeFindAttrs = {
  * @implements {IsWalkableNode}
  * @implements {IsInnerScoped}
  */
-export class CScopeTree implements IsWalkableNode, IsInnerScoped {
+export class CScopeTree<C extends ASTCCompilerNode = ASTCCompilerNode> implements IsWalkableNode {
   private types: Record<string, CType> = {};
   private variables: Record<string, CVariable> = {};
-  private functions: Record<string, CFunctionNode> = {};
+  private childScopes: CScopeTree[] = [];
 
   constructor(
-    protected parentScope: CScopeTree = null,
+    protected _parentAST: C = null,
+    protected _parentScope: CScopeTree = null,
   ) {}
 
-  get innerScope(): CScopeTree {
-    return this;
-  }
+  get parentAST() { return this._parentAST; }
+  get parentScope() { return this._parentScope; }
 
   setParentScope(parentScope: CScopeTree): this {
-    this.parentScope = parentScope;
+    this._parentScope = parentScope;
     return this;
   }
 
   isGlobal() {
-    return R.isNil(this.parentScope);
+    return R.isNil(this._parentScope);
   }
 
   walk(visitor: AbstractTreeVisitor): void {
-    const {functions} = this;
+    const {childScopes} = this;
 
     R.forEachObjIndexed(
       visitor.visit.bind(visitor),
-      functions,
+      childScopes,
     );
   }
 
   dump() {
-    const {types, variables, functions} = this;
+    const {types, variables} = this;
 
     return {
       types,
       variables,
-      functions,
     };
   }
 
@@ -76,7 +77,7 @@ export class CScopeTree implements IsWalkableNode, IsInnerScoped {
     const {variables} = this;
     const {name} = variable;
 
-    if (variables[name]) {
+    if (this.findVariable(name)) {
       return err(
         new CTypeCheckError(
           CTypeCheckErrorCode.REDEFINITION_OF_VARIABLE,
@@ -108,57 +109,30 @@ export class CScopeTree implements IsWalkableNode, IsInnerScoped {
   }
 
   /**
-   * Declares function
-   *
-   * @param {CFunctionNode} fn
-   * @return {Result<CFunctionNode, CTypeCheckError>}
-   * @memberof CScopeTree
-   */
-  defineFunction(fn: CFunctionNode): Result<CFunctionNode, CTypeCheckError> {
-    const {functions} = this;
-    const {name} = fn;
-
-    if (functions[name]) {
-      return err(
-        new CTypeCheckError(
-          CTypeCheckErrorCode.REDEFINITION_OF_FUNCTION,
-          null,
-          {
-            name,
-          },
-        ),
-      );
-    }
-
-    functions[name] = fn;
-    return ok(fn);
-  }
-
-  /**
    * Defines signle type in scope
    *
    * @param {string} name
-   * @param {CType} type
+   * @param {CAbstractNamedType} type
    * @return {Result<CType, CTypeCheckError>}
    * @memberof CScopeTree
    */
-  defineType(name: string, type: CType): Result<CType, CTypeCheckError> {
+  defineType(type: CAbstractNamedType): Result<CType, CTypeCheckError> {
     const {types} = this;
 
-    if (types[name]) {
+    if (types[type.name]) {
       return err(
         new CTypeCheckError(
           CTypeCheckErrorCode.REDEFINITION_OF_TYPE,
           null,
           {
-            name,
+            name: type.name,
           },
         ),
       );
     }
 
     const registeredType = type.ofRegistered(true);
-    types[name] = registeredType;
+    types[type.name] = registeredType;
 
     return ok(registeredType);
   }
@@ -167,15 +141,17 @@ export class CScopeTree implements IsWalkableNode, IsInnerScoped {
    * Perform search of type by name
    * if not found search in parent
    *
+   * @template R
    * @param {string} name
    * @param {TypeFindAttrs} [attrs={}]
-   * @return {CType}
+   * @return {R}
    * @memberof CScopeTree
    */
-  findType(name: string, attrs: TypeFindAttrs = {}): CType {
+  findType<R extends CType = CType>(name: string, attrs: TypeFindAttrs = {}): R {
     const {types, parentScope} = this;
     const {
       findInParent = true,
+      function: fn,
       primitive,
       struct,
       enumerator,
@@ -185,10 +161,11 @@ export class CScopeTree implements IsWalkableNode, IsInnerScoped {
     if (type) {
       if ((primitive && !type.isPrimitive())
           || (struct && !type.isStruct())
-          || (enumerator && !type.isEnum()))
+          || (enumerator && !type.isEnum())
+          || (fn && !type.isFunction()))
         return null;
 
-      return type;
+      return <R> type;
     }
 
     if (findInParent && parentScope)
@@ -201,49 +178,64 @@ export class CScopeTree implements IsWalkableNode, IsInnerScoped {
    * Search variable
    *
    * @param {string} name
+   * @param {boolean} [findInParent=true]
    * @return {CVariable}
    * @memberof CScopeTree
    */
-  findVariable(name: string): CVariable {
+  findVariable(name: string, findInParent: boolean = true): CVariable {
     const {variables, parentScope} = this;
 
     const variable = variables[name];
     if (variable)
       return variable;
 
-    if (parentScope)
+    if (parentScope && findInParent)
       return parentScope.findVariable(name);
 
     return null;
   }
 
   /**
-   * Finds function by name
+   * Appends scope to scope childs
    *
-   * @param {string} name
-   * @return {CFunctionNode}
-   * @memberof CScopeTree
-   */
-  findFunction(name: string): CFunctionNode {
-    const {functions, parentScope} = this;
-
-    const fn = functions[name];
-    if (fn)
-      return fn;
-
-    if (parentScope)
-      return parentScope.findFunction(name);
-
-    return null;
-  }
-
-  /**
-   * Creates new scope and sets current scope as parent
-   *
+   * @param {CScopeTree} scope
    * @return {CScopeTree}
    * @memberof CScopeTree
    */
-  createChildScope(): CScopeTree {
-    return new CScopeTree(this);
+  appendScope(scope: CScopeTree): CScopeTree {
+    scope.setParentScope(this);
+    this.childScopes.push(scope);
+
+    return scope;
+  }
+
+  /**
+   * Returns variable type by its name
+   *
+   * @param {string} name
+   * @return {CType}
+   * @memberof CScopeTree
+   */
+  findVariableType(name: string): CType {
+    return (
+      this
+        .findVariable(name)
+        ?.type
+    );
+  }
+
+  /**
+   * Returns function type
+   *
+   * @param {string} name
+   * @return {CType}
+   * @memberof CScopeTree
+   */
+  findFnReturnType(name: string): CType {
+    return (
+      this
+        .findType<CFunctionDeclType>(name, {function: true})
+        ?.returnType
+    );
   }
 }

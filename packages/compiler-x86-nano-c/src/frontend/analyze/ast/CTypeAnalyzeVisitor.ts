@@ -48,7 +48,7 @@ export class CTypeAnalyzeVisitor extends GroupTreeVisitor<ASTCCompilerNode, any,
         config,
         scope: scope ?? new CScopeTree,
         currentAnalyzed: currentAnalyzed ?? {
-          fnNode: null,
+          fnType: null,
         },
       },
     );
@@ -68,14 +68,5 @@ export class CTypeAnalyzeVisitor extends GroupTreeVisitor<ASTCCompilerNode, any,
         scope,
       },
     );
-  }
-
-  initializeScopeAndWalkTo<C extends ASTCCompilerNode>(scope: CScopeTree, node: C): C {
-    scope.setParentScope(this.scope);
-    this
-      .ofScope(scope)
-      .visit(node);
-
-    return node;
   }
 }

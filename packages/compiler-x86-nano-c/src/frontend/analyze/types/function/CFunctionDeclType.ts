@@ -1,56 +1,73 @@
-import * as R from 'ramda';
 import {findByName, dumpCompilerAttrs} from '@compiler/core/utils';
 
 import {CFunctionCallConvention} from '@compiler/x86-nano-c/constants';
-import {CType} from '../../../types/CType';
+import {Identity} from '@compiler/core/monads';
+import {ASTCCompilerNode} from '@compiler/x86-nano-c/frontend';
+
+import {CType} from '../CType';
 import {CFunctionSpecifierMonad} from './CFunctionSpecifierMonad';
 import {CStorageClassMonad} from './CFunctionStorageClassMonad';
-import {CScopedBlockNode} from '../CScopedBlockNode';
-import {CScopedBlockNodeDescriptor} from '../CScopedBlockNode';
-import {CVariable} from '../../variables';
-import {CFunctionScope} from './CFunctionScope';
+import {CVariable} from '../../scope/variables/CVariable';
+import {CTypeDescriptor} from '../CType';
 
-export type CFunctionDescriptor = CScopedBlockNodeDescriptor<CFunctionScope> & {
+export type CFunctionDescriptor = CTypeDescriptor & {
   name?: string,
   returnType: CType,
   args: CVariable[],
   specifier: CFunctionSpecifierMonad,
   callConvention: CFunctionCallConvention,
   storage: CStorageClassMonad,
+  definition?: ASTCCompilerNode,
 };
 
-export function isCFunctionNode(obj: any): obj is CFunctionNode {
-  return R.is(Object, obj) && obj.value?.returnType;
-}
-
 /**
- * Function typed node
+ * Function and argument types
  *
  * @export
- * @class CFunctionNode
- * @extends {CScopedBlockNode<CFunctionScope, CFunctionDescriptor>}
+ * @class CFunctionDeclType
+ * @extends {CType<CFunctionDescriptor>}
  */
-export class CFunctionNode
-  extends CScopedBlockNode<CFunctionScope, CFunctionDescriptor> {
-
-  constructor(descriptor: Omit<CFunctionDescriptor, 'innerScope'>) {
-    super(
-      {
-        innerScope: new CFunctionScope(null),
-        ...descriptor,
-      },
-    );
-
-    this.innerScope.setFunctionNode(this);
-  }
-
+export class CFunctionDeclType extends CType<CFunctionDescriptor> {
   get returnType() { return this.value.returnType; }
   get specifier() { return this.value.specifier; }
   get storage() { return this.value.storage; }
   get name() { return this.value.name; }
   get args() { return this.value.args; }
   get callConvention() { return this.value.callConvention; }
+  get definition() { return this.value.definition; }
 
+  hasDefinition() { return !!this.definition; }
+  override isFunction() { return true; }
+
+  /**
+   * Compares two function declarations
+   *
+   * @memberof CFunctionDeclType
+   */
+  override isEqual(value: Identity<CFunctionDescriptor>): boolean {
+    if (!(value instanceof CFunctionDeclType))
+      return false;
+
+    const {
+      returnType, storage, specifier,
+      callConvention, args,
+    } = this;
+
+    if (!value.returnType?.isEqual(returnType)
+        || !value.storage?.isEqual(storage)
+        || !value.specifier?.isEqual(specifier)
+        || value.callConvention !== callConvention
+        || value.args?.length !== args.length)
+      return false;
+
+    return !args.some((arg, index) => !value.args[index].isEqual(arg));
+  }
+
+  /**
+   * Serializes function to string
+   *
+   * @memberof CFunctionDeclType
+   */
   override getDisplayName(): string {
     const {
       returnType, args, name,
@@ -84,12 +101,9 @@ export class CFunctionNode
   /**
    * Lookups in array and returns arg by name
    *
-   * @see
-   *  It is list search not hash! It is kinda slow!
-   *
    * @param {string} name
    * @return {CVariable}
-   * @memberof CFunction
+   * @memberof CFunctionDeclType
    */
   getArgByName(name: string): CVariable {
     const {args} = this;
@@ -101,7 +115,7 @@ export class CFunctionNode
    * Returns total byte size of arguments
    *
    * @return {number}
-   * @memberof CFunction
+   * @memberof CFunctionDeclType
    */
   getArgsByteSize(): number {
     return this.args.reduce((acc, arg) => acc + arg.type.getByteSize(), 0);

@@ -1,7 +1,7 @@
 import * as R from 'ramda';
 import type {CType} from '../types/CType';
 
-type CAbstractNamedType = CType & {
+export type CAbstractNamedType = CType & {
   name: string,
 };
 

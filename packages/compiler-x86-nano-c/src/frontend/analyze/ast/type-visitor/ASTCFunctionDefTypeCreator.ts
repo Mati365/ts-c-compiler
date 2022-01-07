@@ -4,21 +4,22 @@ import {ASTCTypeCreator} from './ASTCTypeCreator';
 
 import {extractNamedEntryFromDeclaration} from '../type-builder';
 import {CVariable} from '../../scope/variables/CVariable';
+import {CFunctionScope} from '../../scope/CFunctionScope';
 import {
-  CFunctionNode,
+  CFunctionDeclType,
   CFunctionSpecifierMonad,
   CStorageClassMonad,
-} from '../../scope/nodes/function';
+} from '../../types/function';
 
 /**
  * Enters function definition, analyzes its definition
  * and assigns meta type information to scope
  *
  * @export
- * @class ASTCFunctionTypeCreator
+ * @class ASTCFunctionDefTypeCreator
  * @extends {ASTCTypeCreator<ASTCFunctionDefinition>}
  */
-export class ASTCFunctionTypeCreator extends ASTCTypeCreator<ASTCFunctionDefinition> {
+export class ASTCFunctionDefTypeCreator extends ASTCTypeCreator<ASTCFunctionDefinition> {
   kind = ASTCCompilerKind.FunctionDefinition;
 
   enter(node: ASTCFunctionDefinition): boolean {
@@ -30,28 +31,32 @@ export class ASTCFunctionTypeCreator extends ASTCTypeCreator<ASTCFunctionDefinit
       },
     } = this;
 
-    const fnNode = this.extractFuncTypeFromNode(node);
+    const fnType = this.extractFuncTypeFromNode(node);
 
-    if (fnNode) {
-      scope.defineFunction(fnNode);
+    if (fnType) {
+      scope.defineType(fnType);
+      currentAnalyzed.fnType = fnType;
 
-      currentAnalyzed.fnNode = fnNode;
-      analyzeVisitor.initializeScopeAndWalkTo(fnNode.innerScope, fnNode.ast);
-      currentAnalyzed.fnNode = null;
+      analyzeVisitor
+        .ofScope(scope.appendScope(new CFunctionScope(fnType, node)))
+        .visit(fnType.definition);
+
+      currentAnalyzed.fnType = null;
+      node.type = fnType;
     }
 
     return false;
   }
 
   /**
-   * Walks over function definition node and constructs type node
+   * Walks over function declaration type from node
    *
    * @param {ASTCStructSpecifier} structSpecifier
-   * @return {CFunctionNode}
-   * @memberof CTypeStructVisitor
+   * @return {CFunctionDeclType}
+   * @memberof ASTCFunctionDefTypeCreator
    */
-  extractFuncTypeFromNode(fnDefinition: ASTCFunctionDefinition): CFunctionNode {
-    const {context} = this;
+  extractFuncTypeFromNode(fnDefinition: ASTCFunctionDefinition): CFunctionDeclType {
+    const {context, arch} = this;
     const {fnExpression} = fnDefinition.declarator.directDeclarator;
 
     const returnTypeEntry = extractNamedEntryFromDeclaration(
@@ -82,12 +87,13 @@ export class ASTCFunctionTypeCreator extends ASTCTypeCreator<ASTCFunctionDefinit
         .unwrapOrThrow()
     );
 
-    return new CFunctionNode(
+    return new CFunctionDeclType(
       {
-        ast: fnDefinition.content,
+        definition: fnDefinition.content,
         callConvention: CFunctionCallConvention.CDECL,
         name: returnTypeEntry.name,
         returnType: returnTypeEntry.type,
+        arch,
         args,
         storage,
         specifier,

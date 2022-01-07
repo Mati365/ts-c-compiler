@@ -4,9 +4,9 @@ import {Identity, Result, ok} from '@compiler/core/monads';
 import {IsPrintable} from '@compiler/core/interfaces';
 
 import {CStorageClassSpecifier} from '@compiler/x86-nano-c/constants';
-import {CTypeCheckError, CTypeCheckErrorCode} from '../../../errors/CTypeCheckError';
-import {CStorageSpecBitmap} from '../../../constants/bitmaps';
-import {bitsetToKeywords, parseKeywordsToBitset} from '../../../utils';
+import {CTypeCheckError, CTypeCheckErrorCode} from '../../errors/CTypeCheckError';
+import {CStorageSpecBitmap} from '../../constants/bitmaps';
+import {bitsetToKeywords, parseKeywordsToBitset} from '../../utils';
 
 export type CStorageClassTypeDescriptor = {
   specifiers: number,

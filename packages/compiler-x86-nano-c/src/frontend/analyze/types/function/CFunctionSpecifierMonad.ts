@@ -1,12 +1,12 @@
-import {Identity, Result, ok} from '@compiler/core/monads';
 import {hasFlag} from '@compiler/core/utils';
 
+import {Identity, Result, ok} from '@compiler/core/monads';
 import {CFunctionSpecifier} from '@compiler/x86-nano-c/constants';
-import {CTypeCheckError, CTypeCheckErrorCode} from '../../../errors/CTypeCheckError';
-import {CFuncSpecBitmap} from '../../../constants/bitmaps';
-
 import {IsPrintable} from '@compiler/core/interfaces';
-import {bitsetToKeywords, parseKeywordsToBitset} from '../../../utils';
+
+import {CTypeCheckError, CTypeCheckErrorCode} from '../../errors/CTypeCheckError';
+import {CFuncSpecBitmap} from '../../constants/bitmaps';
+import {bitsetToKeywords, parseKeywordsToBitset} from '../../utils';
 
 export type CFunctionSpecifierTypeDescriptor = {
   specifiers: number,

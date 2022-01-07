@@ -33,12 +33,16 @@ export class ASTCDeclarationTypeCreator extends ASTCTypeCreator<ASTCDeclaration>
       },
     );
 
-    if (!type)
-      throw new CTypeCheckError(CTypeCheckErrorCode.UNABLE_TO_EXTRACT_DECLARATION_TYPE);
+    if (!type) {
+      throw new CTypeCheckError(
+        CTypeCheckErrorCode.UNABLE_TO_EXTRACT_DECLARATION_TYPE,
+        declaration.loc.start,
+      );
+    }
 
     if (isNamedType(type) && !type.isRegistered()) {
       scope
-        .defineType(type.name, type)
+        .defineType(type)
         .unwrapOrThrow();
     }
 

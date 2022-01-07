@@ -1,4 +1,3 @@
-export * from './CFunctionNode';
-export * from './CFunctionScope';
+export * from './CFunctionDeclType';
 export * from './CFunctionSpecifierMonad';
 export * from './CFunctionStorageClassMonad';

@@ -4,11 +4,7 @@ import chalk from 'chalk';
 import {padLeftLines} from '@compiler/core/utils';
 
 import {CScopeTree} from './CScopeTree';
-import {CScopeVisitor, CVisitorEntry} from './CScopeVisitor';
-import {
-  isCFunctionNode,
-  isInnerScoped,
-} from './nodes';
+import {CScopeVisitor} from './CScopeVisitor';
 
 /**
  * Iterator that walks over tree and prints it
@@ -22,22 +18,12 @@ export class CScopePrintVisitor extends CScopeVisitor {
 
   get reduced() { return this._reduced; }
 
-  override enter(entry: CVisitorEntry) {
+  override enter(tree: CScopeTree) {
     const {nesting} = this;
-    const nodeName = (() => {
-      if (isCFunctionNode(entry))
-        return entry.getDisplayName();
-
-      return '<anonymous>';
-    })();
+    const nodeName = tree.parentAST?.type?.getDisplayName() ?? '<anonymous>';
 
     const scopeLines = (() => {
-      if (!isInnerScoped(entry))
-        return [];
-
-      let innerScopeLines = [
-        ...this.dumpScopeTree(entry.innerScope).split('\n'),
-      ].filter(Boolean);
+      let innerScopeLines = this.dumpScopeTree(tree) || [];
 
       if (R.isEmpty(innerScopeLines)) {
         innerScopeLines = [
@@ -60,7 +46,7 @@ export class CScopePrintVisitor extends CScopeVisitor {
       ],
     );
 
-    this._reduced += `${lines.join('\n')}\n`;
+    this._reduced += lines.join('\n');
   }
 
   override leave() {
@@ -74,10 +60,10 @@ export class CScopePrintVisitor extends CScopeVisitor {
    *
    * @private
    * @param {CScopeTree} tree
-   * @return {string}
+   * @return {string[]}
    * @memberof CScopePrintVisitor
    */
-  private dumpScopeTree(tree: CScopeTree): string {
+  private dumpScopeTree(tree: CScopeTree): string[] {
     const {types, variables} = tree.dump();
     let lines: string[] = [];
 
@@ -107,7 +93,6 @@ export class CScopePrintVisitor extends CScopeVisitor {
               ];
             })
         ),
-        '\n',
       ];
     }
 
@@ -120,11 +105,10 @@ export class CScopePrintVisitor extends CScopeVisitor {
             .values(variables)
             .map((variable) => chalk.bold.green(`  + ${variable.getDisplayName()};`))
         ),
-        '\n',
       ];
     }
 
-    return lines.join('\n');
+    return lines;
   }
 
   /**

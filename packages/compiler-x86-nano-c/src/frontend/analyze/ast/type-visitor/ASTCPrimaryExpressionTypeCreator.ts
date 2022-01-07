@@ -16,7 +16,7 @@ export class ASTCPrimaryExpressionTypeCreator extends ASTCTypeCreator<ASTCPrimar
   kind = ASTCCompilerKind.PrimaryExpression;
 
   override enter(node: ASTCPrimaryExpression): void {
-    const {arch} = this;
+    const {arch, scope} = this;
     let type: CType = null;
 
     if (node.isConstant()) {
@@ -50,7 +50,7 @@ export class ASTCPrimaryExpressionTypeCreator extends ASTCTypeCreator<ASTCPrimar
     } else if (node.isCharLiteral())
       type = CPrimitiveType.char(arch);
     else if (node.isIdentifier())
-      type = this.findVariableType(node.identifier.text);
+      type = scope.findVariableType(node.identifier.text);
 
     node.type = type;
   }
