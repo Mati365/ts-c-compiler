@@ -49,8 +49,14 @@ export class ASTCPrimaryExpressionTypeCreator extends ASTCTypeCreator<ASTCPrimar
       );
     } else if (node.isCharLiteral())
       type = CPrimitiveType.char(arch);
-    else if (node.isIdentifier())
-      type = scope.findVariableType(node.identifier.text);
+    else if (node.isIdentifier()) {
+      const {text: name} = node.identifier;
+
+      type = (
+        scope.findVariableType(name)
+          || scope.findFunction(name)
+      );
+    }
 
     node.type = type;
   }

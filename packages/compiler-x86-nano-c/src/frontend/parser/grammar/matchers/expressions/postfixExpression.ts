@@ -75,10 +75,17 @@ export function postfixExpression(grammar: CGrammar): ASTCPostfixExpression {
         function() {
           g.terminal('(');
 
-          const fnExpression = g.try(() => new ASTCPostfixFnExpression(
+          let fnExpression = g.try(() => new ASTCPostfixFnExpression(
             startLoc,
             new ASTCArgumentsExpressionList(startLoc, expression(grammar).assignments),
           ));
+
+          if (!fnExpression) {
+            fnExpression = new ASTCPostfixFnExpression(
+              startLoc,
+              new ASTCArgumentsExpressionList(startLoc, []),
+            );
+          }
 
           const postfix = new ASTCPostfixExpression(
             startLoc,

@@ -28,8 +28,13 @@ export enum CTypeCheckErrorCode {
   UNKNOWN_LEFT_DOT_EXPRESSION_TYPE,
   UNKNOWN_STRUCT_LIKE_MEMBER,
   UNKNOWN_INITIALIZER_TYPE,
+  UNKNOWN_FUNCTION_CALL,
   UNABLE_TO_EXTRACT_DECLARATION_TYPE,
   RETURN_STMT_OUTSIDE_FUNCTION,
+  TOO_MANY_ARGS_PASSED_TO_FUNCTION,
+  WRONG_ARGS_COUNT_PASSED_TO_FUNCTION,
+  WRONG_ARG_PASSED_TO_FUNCTION,
+  CALLED_OBJECT_IS_NOT_FUNCTION,
   RETURN_EXPRESSION_WRONG_TYPE,
   PROVIDED_TYPE_DOES_NOT_CONTAIN_PROPERTIES,
   ASSIGNMENT_EXPRESSION_TYPES_MISMATCH,
@@ -61,7 +66,20 @@ export const C_TYPE_CHECK_ERROR_TRANSLATIONS: Record<CTypeCheckErrorCode, string
   [CTypeCheckErrorCode.UNKNOWN_LEFT_DOT_EXPRESSION_TYPE]: 'Unknown left side dot expression type!',
   [CTypeCheckErrorCode.UNKNOWN_STRUCT_LIKE_MEMBER]: 'Unknown %{typeName} type "%{fieldName}" member!',
   [CTypeCheckErrorCode.UNKNOWN_INITIALIZER_TYPE]: 'Unknown initializer type!',
+  [CTypeCheckErrorCode.UNKNOWN_FUNCTION_CALL]: 'Unknown function call!',
   [CTypeCheckErrorCode.RETURN_STMT_OUTSIDE_FUNCTION]: 'Return stmt should be placed in function definition!',
+  [CTypeCheckErrorCode.TOO_MANY_ARGS_PASSED_TO_FUNCTION]: (
+    'Too many args passed to function "%{typeName}"!'
+  ),
+  [CTypeCheckErrorCode.WRONG_ARGS_COUNT_PASSED_TO_FUNCTION]: (
+    'Wrong args count passed to function "%{typeName}"! Expected "%{expected}" but received "%{received}"!'
+  ),
+  [CTypeCheckErrorCode.WRONG_ARG_PASSED_TO_FUNCTION]: (
+    'Wrong #%{index} arg passed to function "%{typeName}"! Expected "%{expected}" but received "%{received}"!'
+  ),
+  [CTypeCheckErrorCode.CALLED_OBJECT_IS_NOT_FUNCTION]: (
+    'Called object of type "%{typeName}" is not a function!'
+  ),
   [CTypeCheckErrorCode.RETURN_EXPRESSION_WRONG_TYPE]: (
     'Return expression has wrong type! Expected: "%{expected}" but received "%{received}"!'
   ),

@@ -1,14 +1,17 @@
+import * as R from 'ramda';
+
 import {findByName, dumpCompilerAttrs} from '@compiler/core/utils';
 
 import {CFunctionCallConvention} from '@compiler/x86-nano-c/constants';
 import {Identity} from '@compiler/core/monads';
 import {ASTCCompilerNode} from '@compiler/x86-nano-c/frontend';
 
-import {CType} from '../CType';
+import {CType, CTypeDescriptor} from '../CType';
+import {CPrimitiveType} from '../CPrimitiveType';
 import {CFunctionSpecifierMonad} from './CFunctionSpecifierMonad';
 import {CStorageClassMonad} from './CFunctionStorageClassMonad';
 import {CVariable} from '../../scope/variables/CVariable';
-import {CTypeDescriptor} from '../CType';
+import {CSpecBitmap} from '../../constants/bitmaps';
 
 export type CFunctionDescriptor = CTypeDescriptor & {
   name?: string,
@@ -36,8 +39,42 @@ export class CFunctionDeclType extends CType<CFunctionDescriptor> {
   get callConvention() { return this.value.callConvention; }
   get definition() { return this.value.definition; }
 
-  hasDefinition() { return !!this.definition; }
   override isFunction() { return true; }
+  hasDefinition() { return !!this.definition; }
+
+  /**
+   * Handle case when function looks like this:
+   *  int main() { ... }
+   *
+   * User can pass any amount of args
+   *
+   * @return {boolean}
+   * @memberof CFunctionDeclType
+   */
+  hasUknownArgsList(): boolean {
+    return R.isEmpty(this.args);
+  }
+
+  /**
+   * Handle case when function looks like this:
+   *  int main(void) {}
+   *
+   * @return {boolean}
+   * @memberof CFunctionDeclType
+   */
+  isVoidArgsList(): boolean {
+    const {args} = this;
+    if (args.length !== 1)
+      return false;
+
+    const [firstArg] = args;
+    return (
+      firstArg.type instanceof CPrimitiveType
+        && firstArg.type.specifiers === CSpecBitmap.void
+        && !firstArg.type.qualifiers
+        && !firstArg.name
+    );
+  }
 
   /**
    * Compares two function declarations

@@ -225,17 +225,18 @@ export class CScopeTree<C extends ASTCCompilerNode = ASTCCompilerNode> implement
   }
 
   /**
-   * Returns function type
+   * Returns function by name
    *
    * @param {string} name
-   * @return {CType}
+   * @return {CFunctionDeclType}
    * @memberof CScopeTree
    */
-  findFnReturnType(name: string): CType {
-    return (
-      this
-        .findType<CFunctionDeclType>(name, {function: true})
-        ?.returnType
+  findFunction(name: string): CFunctionDeclType {
+    return this.findType<CFunctionDeclType>(
+      name,
+      {
+        function: true,
+      },
     );
   }
 }
