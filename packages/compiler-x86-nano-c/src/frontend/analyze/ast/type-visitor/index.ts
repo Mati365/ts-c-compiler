@@ -8,6 +8,7 @@ import {ASTCInitializerTypeCreator} from './ASTCInitializerTypeCreator';
 import {ASTCReturnStmtTypeCreator} from './ASTCReturnStmtTypeCreator';
 import {ASTCDeclarationTypeCreator} from './ASTCDeclarationTypeCreator';
 import {ASTCFunctionDefTypeCreator} from './ASTCFunctionDefTypeCreator';
+import {ASTCCastExpressionTypeCreator} from './ASTCCastExpressionTypeCreator';
 
 export * from './ASTCTypeCreator';
 
@@ -21,4 +22,5 @@ export const ASTC_TYPE_CREATORS: NewableASTCTypeCreator[] = [
   ASTCReturnStmtTypeCreator,
   ASTCDeclarationTypeCreator,
   ASTCFunctionDefTypeCreator,
+  ASTCCastExpressionTypeCreator,
 ];
