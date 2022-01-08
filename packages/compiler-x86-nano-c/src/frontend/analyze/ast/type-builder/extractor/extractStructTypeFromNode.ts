@@ -3,7 +3,7 @@ import {CTypeCheckError, CTypeCheckErrorCode} from '../../../errors/CTypeCheckEr
 import {CStructType} from '../../../types';
 import {TypeExtractorAttrs} from '../constants/types';
 
-import {evalConstantMathExpression} from '../../eval';
+import {evalConstantExpression} from '../../eval';
 
 type StructTypeExtractorAttrs = TypeExtractorAttrs & {
   structSpecifier: ASTCStructSpecifier,
@@ -48,7 +48,7 @@ export function extractStructTypeFromNode(
         },
       );
 
-      const bitset = evalConstantMathExpression(
+      const bitset = +evalConstantExpression(
         {
           expression: structDeclarator.expression,
           context,

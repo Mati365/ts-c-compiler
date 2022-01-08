@@ -1,3 +1,4 @@
+import * as R from 'ramda';
 import {NodeLocation} from './NodeLocation';
 
 export type IsWalkableNode  = {
@@ -5,7 +6,11 @@ export type IsWalkableNode  = {
   walk(visitor: AbstractTreeVisitor<any>): void;
 };
 
-export class AbstractTreeVisitor<T extends IsWalkableNode = any> {
+export function isWalkableNode(node: any): node is IsWalkableNode {
+  return R.is(Object, node) && ('walk' in node);
+}
+
+export class AbstractTreeVisitor<T extends any = any> {
   protected history: T[] = [];
 
   get nesting() { return this.history.length; }
@@ -24,12 +29,14 @@ export class AbstractTreeVisitor<T extends IsWalkableNode = any> {
 
     try {
       const result = this.enter?.(node, history);
-      if (result !== false)
+
+      if (result !== false && isWalkableNode(node))
         node.walk(this);
 
       this.leave?.(node, history); // eslint-disable-line no-unused-expressions
     } catch (e) {
-      e.loc = e.loc ?? node.loc?.start;
+      if (isWalkableNode(node))
+        e.loc = e.loc ?? node.loc?.start;
 
       throw e;
     }

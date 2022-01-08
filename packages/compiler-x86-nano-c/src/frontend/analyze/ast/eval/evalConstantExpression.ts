@@ -1,20 +1,20 @@
 import {Result, err, ok} from '@compiler/core/monads';
-import {ASTCConstantExpression} from '../../../parser/ast';
+import {ASTCCompilerNode} from '../../../parser/ast';
 import {CTypeCheckError} from '../../errors/CTypeCheckError';
 import {CTypeAnalyzeContext} from '../CTypeAnalyzeContext';
 import {MathExpressionEvalVisitor} from './visitors/MathExpressionEvalVisitor';
 
-type EvalMathExpressionAttrs = {
+type EvalExpressionAttrs = {
   context: CTypeAnalyzeContext,
-  expression: ASTCConstantExpression,
+  expression: ASTCCompilerNode,
 };
 
-export function evalConstantMathExpression(
+export function evalConstantExpression(
   {
     context,
     expression,
-  }: EvalMathExpressionAttrs,
-): Result<number, CTypeCheckError> {
+  }: EvalExpressionAttrs,
+): Result<number | string, CTypeCheckError> {
   if (!expression)
     return ok(null);
 

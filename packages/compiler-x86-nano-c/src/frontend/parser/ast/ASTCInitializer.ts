@@ -23,4 +23,8 @@ export class ASTCInitializer extends ASTCCompilerNode {
   ) {
     super(ASTCCompilerKind.Initializer, loc);
   }
+
+  hasDesignation() { return !!this.designation; }
+  hasAssignment() { return !!this.assignmentExpression; }
+  hasInitializerList() { return !!this.initializers; }
 }

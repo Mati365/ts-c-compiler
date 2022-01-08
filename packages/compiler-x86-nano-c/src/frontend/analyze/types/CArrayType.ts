@@ -9,6 +9,10 @@ export type CArrayTypeDescriptor = CTypeDescriptor & {
   size?: number,
 };
 
+export function isArrayLikeType(type: CType): type is CArrayType {
+  return type?.isArray();
+}
+
 /**
  * Fixed width array pointer
  *
@@ -28,6 +32,22 @@ export class CArrayType extends CType<CArrayTypeDescriptor> {
 
   get size() { return this.value.size; }
   get baseType() { return this.value.baseType; }
+
+  /**
+   * Return unrolled multidimensional array size
+   *
+   * @return {number}
+   * @memberof CArrayType
+   */
+  getFlattenSize(): number {
+    const {baseType} = this;
+
+    return this.size * (
+      isArrayLikeType(baseType)
+        ? baseType.size
+        : 1
+    );
+  }
 
   /**
    * Creates new array of given size
@@ -65,9 +85,7 @@ export class CArrayType extends CType<CArrayTypeDescriptor> {
     return R.isNil(this.size);
   }
 
-  override isIndexable() {
-    return true;
-  }
+  override isArray() { return true; }
 
   override isEqual(value: Identity<CArrayTypeDescriptor>) {
     if (!(value instanceof CArrayType))

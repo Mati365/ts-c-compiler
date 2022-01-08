@@ -1,10 +1,11 @@
-import {ASTCCompilerNode} from '@compiler/x86-nano-c/frontend/parser/ast';
+import {CVariableInitializerTree} from './CVariableInitializerTree';
 import {CNamedTypedEntry, CNamedTypedEntryDescriptor} from './CNamedTypedEntry';
+import {CVariableInitializerPrintVisitor} from '../../ast/initializer-builder/CVariableInitializerPrintVisitor';
 
 export type CVariableDescriptor = CNamedTypedEntryDescriptor & {
   global?: boolean,
   fnArg?: boolean,
-  initializer?: ASTCCompilerNode,
+  initializer?: CVariableInitializerTree,
 };
 
 /**
@@ -24,7 +25,7 @@ export class CVariable extends CNamedTypedEntry<CVariableDescriptor> {
     );
   }
 
-  static ofInitializedEntry(entry: CNamedTypedEntry, initializer?: ASTCCompilerNode) {
+  static ofInitializedEntry(entry: CNamedTypedEntry, initializer?: CVariableInitializerTree) {
     return new CVariable(
       {
         ...entry.unwrap(),
@@ -52,10 +53,24 @@ export class CVariable extends CNamedTypedEntry<CVariableDescriptor> {
     }));
   }
 
+  /**
+   * Sets initializer and returns new instance
+   *
+   * @param {CVariableInitializerTree} initializer
+   * @return {CVariable}
+   * @memberof CVariable
+   */
+  ofInitializer(initializer: CVariableInitializerTree): CVariable {
+    return this.map((value) => ({
+      ...value,
+      initializer,
+    }));
+  }
+
   override getDisplayName() {
     let str = super.getDisplayName();
     if (this.isInitialized())
-      str += ' = [[ initializer ]]';
+      str += ` = ${CVariableInitializerPrintVisitor.serializeToString(this.initializer)}`;
 
     return str;
   }

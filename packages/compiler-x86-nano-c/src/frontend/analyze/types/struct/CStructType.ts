@@ -99,7 +99,7 @@ export class CStructType extends CType<CStructTypeDescriptor> {
    * @return {CStructType}
    * @memberof CStructType
    */
-  ofName(name: string):CStructType {
+  ofName(name: string): CStructType {
     return this.map((value) => ({
       ...value,
       name,

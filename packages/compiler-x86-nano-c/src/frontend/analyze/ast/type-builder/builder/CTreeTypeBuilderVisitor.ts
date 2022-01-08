@@ -6,7 +6,7 @@ import {
   ASTCDirectDeclarator,
 } from '@compiler/x86-nano-c/frontend/parser/ast';
 
-import {evalConstantMathExpression} from '../../eval';
+import {evalConstantExpression} from '../../eval';
 
 import {CTypeCheckError, CTypeCheckErrorCode} from '../../../errors/CTypeCheckError';
 import {CInnerTypeTreeVisitor} from '../../CInnerTypeTreeVisitor';
@@ -27,9 +27,7 @@ import {
 export class TreeTypeBuilderVisitor extends CInnerTypeTreeVisitor {
   private name: string = null;
 
-  constructor(
-    private type: CType,
-  ) {
+  constructor(private type: CType) {
     super(
       {
         [ASTCCompilerKind.Declarator]: {
@@ -87,7 +85,7 @@ export class TreeTypeBuilderVisitor extends CInnerTypeTreeVisitor {
       this.name = this.name || node.identifier.text;
     else if (node.isArrayExpression()) {
       const {assignmentExpression} = node.arrayExpression;
-      const size = assignmentExpression && evalConstantMathExpression(
+      const size = assignmentExpression && +evalConstantExpression(
         {
           context: this.context,
           expression: <any> assignmentExpression,

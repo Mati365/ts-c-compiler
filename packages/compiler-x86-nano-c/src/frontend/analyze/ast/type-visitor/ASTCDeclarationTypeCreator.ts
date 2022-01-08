@@ -23,58 +23,41 @@ export class ASTCDeclarationTypeCreator extends ASTCTypeCreator<ASTCDeclaration>
   kind = ASTCCompilerKind.Declaration;
 
   enter(declaration: ASTCDeclaration): boolean {
-    const {context, scope, analyzeVisitor} = this;
+    const {context, scope} = this;
     const {initList} = declaration;
 
-    const type = extractSpecifierType(
+    // it returns only "int" from "int abc[3]"
+    const baseType = extractSpecifierType(
       {
         specifier: declaration.specifier,
         context,
       },
     );
 
-    if (!type) {
+    if (!baseType) {
       throw new CTypeCheckError(
         CTypeCheckErrorCode.UNABLE_TO_EXTRACT_DECLARATION_TYPE,
         declaration.loc.start,
       );
     }
 
-    if (isNamedType(type) && !type.isRegistered()) {
+    if (isNamedType(baseType) && !baseType.isRegistered()) {
       scope
-        .defineType(type)
+        .defineType(baseType)
         .unwrapOrThrow();
     }
 
     if (initList) {
-      const variables = initList.children.map((initDeclarator) => {
-        const variable = extractInitDeclaratorTypeVariables(
+      const variables = initList.children.map((initDeclarator) => (
+        // appends to "int" array size of "int abc[3]" stmt if present, so variable.type is "int[3]"
+        extractInitDeclaratorTypeVariables(
           {
+            type: baseType,
             context,
-            type,
             initDeclarator,
           },
-        );
-
-        // check if initializer type matches type
-        const {initializer} = variable;
-        if (initializer) {
-          analyzeVisitor.visit(initializer);
-
-          if (!initializer.type?.isEqual(type)) {
-            throw new CTypeCheckError(
-              CTypeCheckErrorCode.INITIALIZER_SIDES_TYPES_MISMATCH,
-              initDeclarator.loc.start,
-              {
-                left: type.getShortestDisplayName() ?? '<unknown-left-expr-type>',
-                right: initializer?.type?.getShortestDisplayName() ?? '<unknown-right-expr-type>',
-              },
-            );
-          }
-        }
-
-        return variable;
-      });
+        )
+      ));
 
       scope
         .defineVariables(variables)

@@ -65,7 +65,7 @@ export abstract class CType<T extends CTypeDescriptor = CTypeDescriptor>
   }
 
   isRegistered() { return this.value.registered; }
-  isIndexable() { return false; }
+  isArray() { return false; }
   isEnum() { return false; }
   isPrimitive() { return false; }
   isStruct() { return false; }

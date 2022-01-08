@@ -16,6 +16,8 @@ import {
 import {CInnerTypeTreeVisitor} from '../../CInnerTypeTreeVisitor';
 import {CTypeCheckError, CTypeCheckErrorCode} from '../../../errors/CTypeCheckError';
 
+import {charToInt} from '../../../casts';
+
 export type MathOperationResult = number | boolean;
 
 /**
@@ -62,11 +64,18 @@ export class MathExpressionEvalVisitor extends CInnerTypeTreeVisitor {
     if (node.isExpression())
       return;
 
-    if (!node.isConstant() || node.constant.type !== TokenType.NUMBER)
-      throw new CTypeCheckError(CTypeCheckErrorCode.INCORRECT_CONSTANT_EXPR_IDENTIFIER);
+    const {expressionArgs} = this;
 
-    const {value} = <NumberToken> node.constant;
-    this.expressionArgs.push(value.number);
+    if (node.isCharLiteral()) {
+      expressionArgs.push(
+        charToInt(node.charLiteral),
+      );
+    } else if (!node.isConstant() || node.constant.type !== TokenType.NUMBER) {
+      throw new CTypeCheckError(CTypeCheckErrorCode.INCORRECT_CONSTANT_EXPR_IDENTIFIER);
+    } else {
+      const {value} = <NumberToken> node.constant;
+      expressionArgs.push(value.number);
+    }
   }
 
   /**

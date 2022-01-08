@@ -7,9 +7,9 @@ ccompiler(
     };
 
     int main() {
-      struct Vec2 vec;
-
-      int character = (int) vec;
+      // int w[][] = { { 1, 2, 3 }, { 2, 3, 4 }  };
+      int w[2][3] = { 1, 2, 3, 4, 5, 6 };
+      int c = 2;
     }
   `,
 ).match(

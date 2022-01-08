@@ -4,6 +4,7 @@ import {CVariable} from '../../../scope/variables/CVariable';
 import {CTypeAnalyzeContext} from '../../CTypeAnalyzeContext';
 
 import {extractNamedEntryFromDeclarator} from './extractSpecifierType';
+import {extractInitializerTreeForType} from '../../initializer-builder';
 
 type InitDeclaratorExtractorAttrs = {
   context: CTypeAnalyzeContext,
@@ -29,5 +30,13 @@ export function extractInitDeclaratorTypeVariables(
     },
   );
 
-  return CVariable.ofInitializedEntry(entry, initializer);
+  const initializerTree = extractInitializerTreeForType(
+    {
+      node: initializer,
+      type: entry.type,
+      context,
+    },
+  );
+
+  return CVariable.ofInitializedEntry(entry, initializerTree);
 }

@@ -15,7 +15,7 @@ export class ASTCPrimaryExpression extends ASTCCompilerNode {
   constructor(
     loc: NodeLocation,
     readonly identifier?: Token,
-    readonly constant?: Token,
+    readonly constant?: Token, // number
     readonly stringLiteral?: string,
     readonly charLiteral?: string,
     readonly expression?: ASTCExpression,
@@ -25,8 +25,8 @@ export class ASTCPrimaryExpression extends ASTCCompilerNode {
 
   toString() {
     const {
-      kind, identifier,
-      constant, stringLiteral,
+      kind, identifier, constant,
+      stringLiteral, charLiteral,
     } = this;
 
     return dumpAttributesToString(
@@ -34,6 +34,7 @@ export class ASTCPrimaryExpression extends ASTCCompilerNode {
       {
         identifier: identifier?.text,
         constant: constant?.text,
+        charLiteral,
         stringLiteral,
       },
     );

@@ -4,7 +4,6 @@ import {ASTCPostfixExpressionTypeCreator} from './ASTCPostfixExpressionTypeCreat
 import {ASTCAssignmentExpressionTypeCreator} from './ASTCAssignmentExpressionTypeCreator';
 import {ASTCExpressionTypeCreator} from './ASTCExpressionTypeCreator';
 import {ASTCBinaryOpTypeCreator} from './ASTCBinaryOpTypeCreator';
-import {ASTCInitializerTypeCreator} from './ASTCInitializerTypeCreator';
 import {ASTCReturnStmtTypeCreator} from './ASTCReturnStmtTypeCreator';
 import {ASTCDeclarationTypeCreator} from './ASTCDeclarationTypeCreator';
 import {ASTCFunctionDefTypeCreator} from './ASTCFunctionDefTypeCreator';
@@ -18,7 +17,6 @@ export const ASTC_TYPE_CREATORS: NewableASTCTypeCreator[] = [
   ASTCAssignmentExpressionTypeCreator,
   ASTCExpressionTypeCreator,
   ASTCBinaryOpTypeCreator,
-  ASTCInitializerTypeCreator,
   ASTCReturnStmtTypeCreator,
   ASTCDeclarationTypeCreator,
   ASTCFunctionDefTypeCreator,

@@ -3,7 +3,7 @@ import {CEnumType, CPrimitiveType} from '../../../types';
 import {CTypeCheckError, CTypeCheckErrorCode} from '../../../errors/CTypeCheckError';
 import {TypeExtractorAttrs} from '../constants/types';
 
-import {evalConstantMathExpression} from '../../eval';
+import {evalConstantExpression} from '../../eval';
 
 type EnumTypeExtractorAttrs = TypeExtractorAttrs & {
   enumSpecifier: ASTCEnumSpecifier,
@@ -32,7 +32,7 @@ export function extractEnumTypeFromNode(
     prevEnumEntryValue = prevEnumEntryValue ?? 0;
 
     if (enumeration.expression) {
-      const exprResult = evalConstantMathExpression(
+      const exprResult = +evalConstantExpression(
         {
           expression: enumeration.expression,
           context,

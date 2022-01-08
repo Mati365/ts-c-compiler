@@ -24,7 +24,7 @@ type TypeFindAttrs = {
  * @export
  * @class CScopeTree
  * @implements {IsWalkableNode}
- * @implements {IsInnerScoped}
+ * @template C
  */
 export class CScopeTree<C extends ASTCCompilerNode = ASTCCompilerNode> implements IsWalkableNode {
   private types: Record<string, CType> = {};
