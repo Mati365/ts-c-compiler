@@ -3,7 +3,6 @@ import {walkOverFields} from '@compiler/grammar/decorators/walkOverFields';
 import {NodeLocation} from '@compiler/grammar/tree/NodeLocation';
 import {ASTCTypeName} from './ASTCTypeName';
 import {
-  ASTCTreeNode,
   ASTCCompilerKind,
   ASTCCompilerNode,
 } from './ASTCCompilerNode';
@@ -20,7 +19,7 @@ export class ASTCCastExpression extends ASTCCompilerNode {
   constructor(
     loc: NodeLocation,
     readonly typeName?: ASTCTypeName,
-    readonly expression?: ASTCTreeNode,
+    readonly expression?: ASTCCompilerNode,
   ) {
     super(ASTCCompilerKind.CastExpression, loc);
   }

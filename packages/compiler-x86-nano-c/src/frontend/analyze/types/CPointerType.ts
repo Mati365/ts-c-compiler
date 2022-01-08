@@ -31,6 +31,8 @@ export class CPointerType extends CType<CPointerTypeDescriptor> {
     return this.value.baseType;
   }
 
+  override isScalar() { return true; }
+
   override isEqual(value: Identity<CPointerTypeDescriptor>): boolean {
     if (!(value instanceof CPointerType))
       return false;

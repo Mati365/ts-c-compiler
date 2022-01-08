@@ -75,6 +75,7 @@ export class CPrimitiveType extends CType<CPrimitiveTypeDescriptor> {
     return hasFlag(types, this.specifiers);
   }
 
+  override isScalar() { return true; }
   isVoid() { return this.hasSpecifierType(CSpecBitmap.void); }
   isSigned() { return !this.hasSpecifierType(CSpecBitmap.signed); }
   isUnsigned() { return !this.isSigned(); }

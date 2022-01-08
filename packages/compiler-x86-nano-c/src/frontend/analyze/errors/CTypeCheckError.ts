@@ -31,6 +31,8 @@ export enum CTypeCheckErrorCode {
   UNKNOWN_FUNCTION_CALL,
   UNABLE_TO_EXTRACT_DECLARATION_TYPE,
   RETURN_STMT_OUTSIDE_FUNCTION,
+  CAST_TO_NON_SCALAR_TYPE,
+  UNABLE_CAST_TO_SCALAR_TYPE,
   TOO_MANY_ARGS_PASSED_TO_FUNCTION,
   WRONG_ARGS_COUNT_PASSED_TO_FUNCTION,
   WRONG_ARG_PASSED_TO_FUNCTION,
@@ -68,6 +70,13 @@ export const C_TYPE_CHECK_ERROR_TRANSLATIONS: Record<CTypeCheckErrorCode, string
   [CTypeCheckErrorCode.UNKNOWN_INITIALIZER_TYPE]: 'Unknown initializer type!',
   [CTypeCheckErrorCode.UNKNOWN_FUNCTION_CALL]: 'Unknown function call!',
   [CTypeCheckErrorCode.RETURN_STMT_OUTSIDE_FUNCTION]: 'Return stmt should be placed in function definition!',
+  [CTypeCheckErrorCode.CAST_TO_NON_SCALAR_TYPE]: (
+    // eslint-disable-next-line max-len
+    'Cast to non-scalar type "%{typeName}"! Casting to non scalar type (such as array, struct) is not possible!'
+  ),
+  [CTypeCheckErrorCode.UNABLE_CAST_TO_SCALAR_TYPE]: (
+    'Cast to scalar type "%{sourceType}" to "%{destinationType}" is not possible!'
+  ),
   [CTypeCheckErrorCode.TOO_MANY_ARGS_PASSED_TO_FUNCTION]: (
     'Too many args passed to function "%{typeName}"!'
   ),

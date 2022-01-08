@@ -2,8 +2,14 @@ import {ccompiler} from './frontend';
 
 ccompiler(
   /* cpp */ `
+    struct Vec2 {
+      int x, y;
+    };
+
     int main() {
-      char character = (char) 2;
+      struct Vec2 vec;
+
+      int character = (int) vec;
     }
   `,
 ).match(

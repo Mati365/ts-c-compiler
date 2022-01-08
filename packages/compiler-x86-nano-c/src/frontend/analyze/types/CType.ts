@@ -71,6 +71,7 @@ export abstract class CType<T extends CTypeDescriptor = CTypeDescriptor>
   isStruct() { return false; }
   isUnion() { return false; }
   isFunction() { return false; }
+  isScalar() { return false; }
 
   isStructLike() {
     return this.isEnum() || this.isStruct();
