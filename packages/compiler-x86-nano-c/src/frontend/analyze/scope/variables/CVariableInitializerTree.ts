@@ -4,11 +4,13 @@ import {AbstractTreeVisitor, IsWalkableNode} from '@compiler/grammar/tree/Abstra
 import {ASTCCompilerNode} from '../../../parser/ast/ASTCCompilerNode';
 import {CType} from '../../types/CType';
 
+import {isArrayLikeType} from '../../types/CArrayType';
+
 export type CInitializerMapKey = number | string;
 export type CVariableInitializeValue = string | number | CVariableInitializerTree;
 export type CVariableInitializerMap = Map<CInitializerMapKey, CVariableInitializeValue>;
 
-export function isInitializerTreeValue(value: CVariableInitializeValue) {
+export function isInitializerTreeValue(value: CVariableInitializeValue): value is CVariableInitializerTree {
   return R.is(Object, value) && R.has('_baseType', value);
 }
 
@@ -34,5 +36,43 @@ export class CVariableInitializerTree<C extends ASTCCompilerNode = ASTCCompilerN
   walk(visitor: AbstractTreeVisitor<any>): void {
     for (const [, value] of this.fields)
       visitor.visit(value);
+  }
+
+  /**
+   * Return maximum count of items for given base type
+   *
+   * @example
+   *  int abc[3][4] => 12
+   *
+   * @return {number}
+   * @memberof CVariableInitializerTree
+   */
+  getMaximumFlattenItemsCount(): number {
+    const {baseType} = this;
+
+    if (isArrayLikeType(baseType))
+      return baseType.getFlattenSize();
+
+    return 1;
+  }
+
+  /**
+   * Get total fields count filled by nested types
+   *
+   * @return {number}
+   * @memberof CVariableInitializerTree
+   */
+  getCurrentTypeFlattenSize(): number {
+    const {fields} = this;
+    let size: number = 0;
+
+    for (const [, value] of fields) {
+      if (isInitializerTreeValue(value))
+        size += value.getMaximumFlattenItemsCount();
+      else
+        size++;
+    }
+
+    return size;
   }
 }

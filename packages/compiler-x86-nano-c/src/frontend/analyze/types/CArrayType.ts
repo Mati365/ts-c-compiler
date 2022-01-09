@@ -13,6 +13,11 @@ export function isArrayLikeType(type: CType): type is CArrayType {
   return type?.isArray();
 }
 
+export type CArrayFlattenDescriptor = {
+  type: CType,
+  dimensions: number[],
+};
+
 /**
  * Fixed width array pointer
  *
@@ -21,6 +26,38 @@ export function isArrayLikeType(type: CType): type is CArrayType {
  * @extends {CType<CArrayTypeDescriptor>}
  */
 export class CArrayType extends CType<CArrayTypeDescriptor> {
+  /**
+   * Constructs array of given multidimensional size and type
+   *
+   * @static
+   * @param {(CArrayFlattenDescriptor & Pick<CTypeDescriptor, 'qualifiers'>)} descriptor
+   * @return {CArrayType}
+   * @memberof CArrayType
+   */
+  static ofFlattenDescriptor(
+    {
+      type,
+      dimensions,
+      qualifiers,
+    }: CArrayFlattenDescriptor & Pick<CTypeDescriptor, 'qualifiers'>,
+  ): CArrayType {
+    const rootArrayType = new CArrayType(
+      {
+        qualifiers,
+        baseType: type,
+        size: dimensions[0] ?? 1,
+      },
+    );
+
+    if (dimensions.length === 1)
+      return rootArrayType;
+
+    return R.tail(dimensions).reduce(
+      (array, dimension) => array.ofAppendedDimension(dimension),
+      rootArrayType,
+    );
+  }
+
   constructor(descriptor: Omit<CArrayTypeDescriptor, 'arch'>) {
     super(
       {
@@ -50,6 +87,30 @@ export class CArrayType extends CType<CArrayTypeDescriptor> {
   }
 
   /**
+   * Return array of dimensions for CArray and its root type
+   *
+   * @return {CArrayFlattenDescriptor}
+   * @memberof CArrayType
+   */
+  getFlattenInfo(): CArrayFlattenDescriptor {
+    const dimensions: number[] = [];
+    let currentType: CType = this;
+
+    do {
+      if (!isArrayLikeType(currentType))
+        break;
+
+      dimensions.unshift(currentType.size);
+      currentType = currentType.baseType;
+    } while (true);
+
+    return {
+      type: currentType,
+      dimensions,
+    };
+  }
+
+  /**
    * Creates new array of given size
    *
    * @param {number} size
@@ -61,6 +122,50 @@ export class CArrayType extends CType<CArrayTypeDescriptor> {
       ...value,
       size,
     }));
+  }
+
+  /**
+   * Returns array with dimensions except first
+   *
+   * @example
+   *  int abc[1][2][3] => int abc[2][3]
+   *
+   * @return {CArrayType}
+   * @memberof CArrayType
+   */
+  ofTailDimensions(): CArrayType {
+    const {qualifiers} = this;
+    const {type, dimensions} = this.getFlattenInfo();
+
+    return CArrayType.ofFlattenDescriptor(
+      {
+        dimensions: R.tail(dimensions),
+        qualifiers,
+        type,
+      },
+    );
+  }
+
+  /**
+   * Returns array with flipped dimensions
+   *
+   * @example
+   *  int abc[3][2][1] => int abc[1][2][3]
+   *
+   * @return {CArrayType}
+   * @memberof CArrayType
+   */
+  ofRevertedDimensions(): CArrayType {
+    const {qualifiers} = this;
+    const {type, dimensions} = this.getFlattenInfo();
+
+    return CArrayType.ofFlattenDescriptor(
+      {
+        dimensions: R.reverse(dimensions),
+        qualifiers,
+        type,
+      },
+    );
   }
 
   /**

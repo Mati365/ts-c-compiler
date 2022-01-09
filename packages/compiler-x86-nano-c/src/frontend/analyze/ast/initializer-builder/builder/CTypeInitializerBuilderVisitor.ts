@@ -22,8 +22,9 @@ import {evalConstantExpression} from '../../eval';
 export class CTypeInitializerBuilderVisitor extends CInnerTypeTreeVisitor {
   private tree: CVariableInitializerTree;
   private currentKey: CInitializerMapKey = null;
+  private maxSize: number = null;
 
-  constructor(private baseType: CType) {
+  constructor(private readonly baseType: CType) {
     super(
       {
         [ASTCCompilerKind.Initializer]: {
@@ -51,7 +52,11 @@ export class CTypeInitializerBuilderVisitor extends CInnerTypeTreeVisitor {
   private extractInitializer(node: ASTCInitializer) {
     const {baseType} = this;
 
-    this.tree ||= new CVariableInitializerTree(baseType, node);
+    if (!this.tree) {
+      this.tree = new CVariableInitializerTree(baseType, node);
+      this.maxSize = this.tree.getMaximumFlattenItemsCount();
+    }
+
     if (node.hasInitializerList())
       this.extractInitializerList(node);
     else
@@ -69,7 +74,7 @@ export class CTypeInitializerBuilderVisitor extends CInnerTypeTreeVisitor {
     const {context, baseType} = this;
     const nestedBaseType = (
       isArrayLikeType(baseType)
-        ? baseType.baseType
+        ? baseType.ofTailDimensions()
         : baseType
     );
 
@@ -118,12 +123,7 @@ export class CTypeInitializerBuilderVisitor extends CInnerTypeTreeVisitor {
    * @memberof CTypeInitializerBuilderVisitor
    */
   appendNextValue(entryValue: CVariableInitializeValue) {
-    const {tree, baseType} = this;
-    const maxSize: number = (
-      isArrayLikeType(baseType)
-        ? baseType.getFlattenSize()
-        : 1
-    );
+    const {tree, maxSize} = this;
 
     // handles  { 1, 2, 3 } like entries without designations
     if (Number.isInteger(this.currentKey) || R.isNil(this.currentKey)) {
@@ -132,18 +132,19 @@ export class CTypeInitializerBuilderVisitor extends CInnerTypeTreeVisitor {
           ? 0
           : (<number> this.currentKey) + 1
       );
-
-      if (!R.isNil(maxSize) && this.currentKey >= maxSize) {
-        throw new CTypeCheckError(
-          CTypeCheckErrorCode.INITIALIZER_ARRAY_OVERFLOW,
-          tree.parentAST.loc.start,
-        );
-      }
     }
 
     if (R.isNil(entryValue)) {
       throw new CTypeCheckError(
         CTypeCheckErrorCode.UNKNOWN_INITIALIZER_TYPE,
+        tree.parentAST.loc.start,
+      );
+    }
+
+    const currentSize = tree.getCurrentTypeFlattenSize();
+    if (currentSize >= maxSize) {
+      throw new CTypeCheckError(
+        CTypeCheckErrorCode.INITIALIZER_ARRAY_OVERFLOW,
         tree.parentAST.loc.start,
       );
     }
