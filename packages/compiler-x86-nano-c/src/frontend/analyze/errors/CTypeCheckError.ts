@@ -29,7 +29,7 @@ export enum CTypeCheckErrorCode {
   UNKNOWN_STRUCT_LIKE_MEMBER,
   UNKNOWN_FUNCTION_CALL,
   UNKNOWN_INITIALIZER_TYPE,
-  INCORRECT_STRING_INITIALIZED_VARIABLE_TYPE,
+  INCORRECT_INITIALIZED_VARIABLE_TYPE,
   INCOMPLETE_ARRAY_SIZE,
   INITIALIZER_ARRAY_OVERFLOW,
   UNABLE_TO_EXTRACT_DECLARATION_TYPE,
@@ -72,8 +72,8 @@ export const C_TYPE_CHECK_ERROR_TRANSLATIONS: Record<CTypeCheckErrorCode, string
   [CTypeCheckErrorCode.UNKNOWN_STRUCT_LIKE_MEMBER]: 'Unknown %{typeName} type "%{fieldName}" member!',
   [CTypeCheckErrorCode.UNKNOWN_FUNCTION_CALL]: 'Unknown function call!',
   [CTypeCheckErrorCode.UNKNOWN_INITIALIZER_TYPE]: 'Unknown initializer type!',
-  [CTypeCheckErrorCode.INCORRECT_STRING_INITIALIZED_VARIABLE_TYPE]: (
-    'Unable assign "%{sourceType}" string initializer to "%{destinationType}"!'
+  [CTypeCheckErrorCode.INCORRECT_INITIALIZED_VARIABLE_TYPE]: (
+    'Unable assign "%{sourceType}" initializer value to "%{destinationType}"!'
   ),
   [CTypeCheckErrorCode.INCOMPLETE_ARRAY_SIZE]: 'Incomplete array size "%{typeName}"!',
   [CTypeCheckErrorCode.INITIALIZER_ARRAY_OVERFLOW]: 'Initializer array overflow!',

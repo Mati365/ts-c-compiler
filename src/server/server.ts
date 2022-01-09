@@ -10,7 +10,7 @@ import {AppModule} from './app.module';
 
 ccompiler(
   /* cpp */ `
-       char* abc[] = {"ABC", "DEF"};
+    char* abc = { "ABC", "ABC 2" };
   `,
 ).match(
   {

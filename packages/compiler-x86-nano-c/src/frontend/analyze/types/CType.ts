@@ -149,7 +149,8 @@ export abstract class CType<T extends CTypeDescriptor = CTypeDescriptor>
    */
   getShortestDisplayName(): string {
     if (isNamedType(this)) {
-      let name = this.name;
+      let name = this.name ?? '<anonymous>';
+
       if (this.isStruct())
         name = `struct ${name}`;
       else if (this.isUnion())

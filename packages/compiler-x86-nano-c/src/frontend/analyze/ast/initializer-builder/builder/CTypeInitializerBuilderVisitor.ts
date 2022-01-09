@@ -7,6 +7,7 @@ import {CTypeCheckError, CTypeCheckErrorCode} from '../../../errors/CTypeCheckEr
 import {
   CArrayType,
   CType,
+  CPrimitiveType,
   isArrayLikeType,
 } from '../../../types';
 
@@ -71,6 +72,28 @@ export class CTypeInitializerBuilderVisitor extends CInnerTypeTreeVisitor {
   }
 
   /**
+   * Returns type of first nested group
+   *
+   * @example
+   *  int a[2][] = { { 1 } }
+   *                   ^
+   *              Array<int, 2>
+   *
+   * @private
+   * @return {CType}
+   * @memberof CTypeInitializerBuilderVisitor
+   */
+  private getNestedElementType(): CType {
+    const {baseType} = this;
+
+    return (
+      isArrayLikeType(baseType)
+        ? baseType.ofTailDimensions()
+        : baseType
+    );
+  }
+
+  /**
    * Appends values for nested arrays
    *
    * @private
@@ -78,12 +101,8 @@ export class CTypeInitializerBuilderVisitor extends CInnerTypeTreeVisitor {
    * @memberof CTypeInitializerBuilderVisitor
    */
   private extractInitializerList(node: ASTCInitializer) {
-    const {context, baseType} = this;
-    const nestedBaseType = (
-      isArrayLikeType(baseType)
-        ? baseType.ofTailDimensions()
-        : baseType
-    );
+    const {context} = this;
+    const nestedBaseType = this.getNestedElementType();
 
     node.initializers.forEach((initializer) => {
       if (initializer.hasAssignment())
@@ -112,48 +131,55 @@ export class CTypeInitializerBuilderVisitor extends CInnerTypeTreeVisitor {
    * @memberof CTypeInitializerBuilderVisitor
    */
   private extractAssignmentEntry(node: ASTCInitializer) {
-    const {context} = this;
-    let entryValue = evalConstantExpression(
+    const {context, arch, tree, baseType} = this;
+
+    let expectedItemType: CType = null;
+    let constExprResult = evalConstantExpression(
       {
         expression: node.assignmentExpression,
         context,
       },
     ).unwrapOrThrow();
 
-    // handle "Hello world" initializers
-    if (R.is(String, entryValue))
-      this.extractStringEntry(entryValue);
-    else
-      this.appendNextValue(+entryValue);
-  }
+    let initializedValue: CVariableInitializeValue = null;
+    let initializedType: CType = null;
 
-  /**
-   * Force cast whole tree to string and set type to char*
-   *
-   * @private
-   * @param {string} entryValue
-   * @memberof CTypeInitializerBuilderVisitor
-   */
-  private extractStringEntry(entryValue: string) {
-    const {arch, tree, baseType} = this;
-    const charArray = CArrayType.ofStringLength(arch, entryValue.length);
+    if (R.is(String, constExprResult)) {
+      // "Hello world" expression
+      expectedItemType = this.getNestedElementType();
 
-    if (!checkLeftTypeOverlapping(baseType, charArray)) {
+      // handle "Hello world" initializers
+      const nestedTree = new CVariableInitializerTree(expectedItemType, node.assignmentExpression);
+      for (let i = 0; i < constExprResult.length; ++i)
+        nestedTree.fields.set(i, constExprResult.charCodeAt(i));
+
+      initializedType = CArrayType.ofStringLength(arch, constExprResult.length);
+      initializedValue = nestedTree;
+    } else {
+      // 1, 2, 3, 4 expression
+      expectedItemType = (
+        isArrayLikeType(baseType)
+          ? baseType.getFlattenInfo().type
+          : baseType
+      );
+
+      initializedType = CPrimitiveType.typeofValue(arch, constExprResult);
+      initializedValue = +constExprResult;
+    }
+
+    // compare types
+    if (!checkLeftTypeOverlapping(expectedItemType, initializedType)) {
       throw new CTypeCheckError(
-        CTypeCheckErrorCode.INCORRECT_STRING_INITIALIZED_VARIABLE_TYPE,
+        CTypeCheckErrorCode.INCORRECT_INITIALIZED_VARIABLE_TYPE,
         tree.parentAST.loc.start,
         {
-          sourceType: charArray.getShortestDisplayName(),
-          destinationType: baseType?.getShortestDisplayName() ?? '<unknown-dest-type>',
+          sourceType: initializedType.getShortestDisplayName(),
+          destinationType: expectedItemType?.getShortestDisplayName() ?? '<unknown-dest-type>',
         },
       );
     }
 
-    if (R.isNil(this.maxSize))
-      this.maxSize = entryValue.length;
-
-    for (let i = 0; i < entryValue.length; ++i)
-      this.appendNextValue(entryValue.charCodeAt(i));
+    this.appendNextValue(initializedValue);
   }
 
   /**

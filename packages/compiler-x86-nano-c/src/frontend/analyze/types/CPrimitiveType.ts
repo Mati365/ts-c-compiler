@@ -34,6 +34,10 @@ export type CPrimitiveTypeSourceParserAttrs = {
   specifiers?: CTypeSpecifier[],
 };
 
+export function isPrimitiveLikeType(type: CType): type is CPrimitiveType {
+  return type?.isPrimitive();
+}
+
 /**
  * Returns basic C type such as void / int / short
  *
@@ -76,6 +80,8 @@ export class CPrimitiveType extends CType<CPrimitiveTypeDescriptor> {
   }
 
   override isScalar() { return true; }
+  override isPrimitive() { return true; }
+
   isVoid() { return this.hasSpecifierType(CSpecBitmap.void); }
   isSigned() { return !this.hasSpecifierType(CSpecBitmap.signed); }
   isUnsigned() { return !this.isSigned(); }

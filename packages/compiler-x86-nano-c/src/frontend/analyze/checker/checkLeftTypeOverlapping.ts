@@ -2,6 +2,7 @@ import {CType} from '../types/CType';
 import {
   isPointerLikeType,
   isArrayLikeType,
+  isPrimitiveLikeType,
 } from '../types';
 
 /**
@@ -52,6 +53,10 @@ export function checkLeftTypeOverlapping(left: CType, right: CType): boolean {
     if (isPointerLikeType(right))
       return checkLeftTypeOverlapping(left.baseType, right.baseType);
   }
+
+  // primitive types in C can be implict casted
+  if (isPrimitiveLikeType(left) && isPrimitiveLikeType(right))
+    return true;
 
   return false;
 }

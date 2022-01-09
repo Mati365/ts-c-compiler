@@ -52,7 +52,7 @@ export class CArrayType extends CType<CArrayTypeDescriptor> {
    *
    * @static
    * @param {(CArrayFlattenDescriptor & Pick<CTypeDescriptor, 'qualifiers'>)} descriptor
-   * @return {CArrayType}
+   * @return {CType}
    * @memberof CArrayType
    */
   static ofFlattenDescriptor(
@@ -61,12 +61,15 @@ export class CArrayType extends CType<CArrayTypeDescriptor> {
       dimensions,
       qualifiers,
     }: CArrayFlattenDescriptor & Pick<CTypeDescriptor, 'qualifiers'>,
-  ): CArrayType {
+  ): CType {
+    if (!dimensions.length)
+      return type;
+
     const rootArrayType = new CArrayType(
       {
         qualifiers,
         baseType: type,
-        size: dimensions[0] ?? 1,
+        size: dimensions[0],
       },
     );
 
@@ -155,10 +158,10 @@ export class CArrayType extends CType<CArrayTypeDescriptor> {
    * @example
    *  int abc[1][2][3] => int abc[2][3]
    *
-   * @return {CArrayType}
+   * @return {CType}
    * @memberof CArrayType
    */
-  ofTailDimensions(): CArrayType {
+  ofTailDimensions(): CType {
     const {qualifiers} = this;
     const {type, dimensions} = this.getFlattenInfo();
 
@@ -177,10 +180,10 @@ export class CArrayType extends CType<CArrayTypeDescriptor> {
    * @example
    *  int abc[3][2][1] => int abc[1][2][3]
    *
-   * @return {CArrayType}
+   * @return {CType}
    * @memberof CArrayType
    */
-  ofRevertedDimensions(): CArrayType {
+  ofRevertedDimensions(): CType {
     const {qualifiers} = this;
     const {type, dimensions} = this.getFlattenInfo();
 
