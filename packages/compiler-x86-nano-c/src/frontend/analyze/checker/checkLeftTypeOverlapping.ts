@@ -9,7 +9,7 @@ import {
  * Check if right type can be assigned to left type
  *
  * @see
- *  Instead of isEqual() it performs also const casts!
+ *  Instead of isEqual() it performs also implict casts!
  *
  * @example
  *  const char* cannot be assigned to char*

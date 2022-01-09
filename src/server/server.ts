@@ -10,18 +10,14 @@ import {AppModule} from './app.module';
 
 ccompiler(
   /* cpp */ `
-    struct Vec2 {
-      int x, y;
-    } vec2;
-
-    struct Vec2 sum(int x, int y) {
-      struct Vec2 vec;
-
-      return vec;
-    }
+    enum {
+      ONE = 1,
+      TWO = 2,
+    };
 
     int main() {
-      sum(4, 5);
+      int var = { ONE + TWO + (2 + 3 * TWO) };
+
       return 0;
     }
   `,

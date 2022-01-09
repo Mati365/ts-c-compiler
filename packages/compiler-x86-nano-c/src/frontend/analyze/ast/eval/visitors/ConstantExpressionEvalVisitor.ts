@@ -64,7 +64,7 @@ export class ConstantExpressionEvalVisitor extends CInnerTypeTreeVisitor {
     if (node.isExpression())
       return;
 
-    const {expressionArgs} = this;
+    const {expressionArgs, scope} = this;
 
     if (node.isStringLiteral()) {
       expressionArgs.push(
@@ -75,6 +75,15 @@ export class ConstantExpressionEvalVisitor extends CInnerTypeTreeVisitor {
         charToInt(node.charLiteral),
       );
     } else if (!node.isConstant() || node.constant.type !== TokenType.NUMBER) {
+      if (node.isIdentifier()) {
+        const compileTimeConst = scope.findCompileTimeConstant(node.identifier.text);
+
+        if (!R.isNil(compileTimeConst)) {
+          expressionArgs.push(compileTimeConst);
+          return;
+        }
+      }
+
       throw new CTypeCheckError(CTypeCheckErrorCode.INCORRECT_CONSTANT_EXPR_IDENTIFIER);
     } else {
       const {value} = <NumberToken> node.constant;
