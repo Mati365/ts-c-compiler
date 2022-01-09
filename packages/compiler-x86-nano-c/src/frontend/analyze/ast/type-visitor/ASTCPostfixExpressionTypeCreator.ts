@@ -147,5 +147,7 @@ export class ASTCPostfixExpressionTypeCreator extends ASTCTypeCreator<ASTCPostfi
         );
       }
     });
+
+    node.type = fnType.returnType;
   }
 }

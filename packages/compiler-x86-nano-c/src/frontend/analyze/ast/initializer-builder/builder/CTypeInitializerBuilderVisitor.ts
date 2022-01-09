@@ -1,6 +1,6 @@
 import * as R from 'ramda';
 
-import {ASTCCompilerKind, ASTCInitializer} from '../../../../parser/ast';
+import {ASTCCompilerKind, ASTCCompilerNode, ASTCInitializer} from '../../../../parser/ast';
 import {CInnerTypeTreeVisitor} from '../../CInnerTypeTreeVisitor';
 import {CTypeCheckError, CTypeCheckErrorCode} from '../../../errors/CTypeCheckError';
 
@@ -17,7 +17,7 @@ import {
   CVariableInitializeValue,
 } from '../../../scope/variables';
 
-import {evalConstantExpression} from '../../eval';
+import {ConstantOperationResult, evalConstantExpression} from '../../eval';
 import {checkLeftTypeOverlapping} from '../../../checker';
 
 /**
@@ -131,55 +131,82 @@ export class CTypeInitializerBuilderVisitor extends CInnerTypeTreeVisitor {
    * @memberof CTypeInitializerBuilderVisitor
    */
   private extractAssignmentEntry(node: ASTCInitializer) {
-    const {context, arch, tree, baseType} = this;
-
-    let expectedItemType: CType = null;
-    let constExprResult = evalConstantExpression(
+    const {context} = this;
+    const constExprResult = evalConstantExpression(
       {
         expression: node.assignmentExpression,
         context,
       },
     ).unwrapOrThrow();
 
-    let initializedValue: CVariableInitializeValue = null;
-    let initializedType: CType = null;
+    if (R.is(String, constExprResult))
+      this.extractAssignedStringEntry(node, constExprResult);
+    else
+      this.extractScalarEntry(node, constExprResult);
+  }
 
-    if (R.is(String, constExprResult)) {
-      // "Hello world" expression
-      expectedItemType = this.getNestedElementType();
+  /**
+   * Appends to initializer tree values such as 1, 2, 3 from { 1, 2, 3 }
+   *
+   * @private
+   * @param {ASTCCompilerNode} node
+   * @param {ConstantOperationResult} evalResult
+   * @memberof CTypeInitializerBuilderVisitor
+   */
+  private extractScalarEntry(node: ASTCCompilerNode, evalResult: ConstantOperationResult) {
+    const {baseType, arch} = this;
 
-      // handle "Hello world" initializers
-      const nestedTree = new CVariableInitializerTree(expectedItemType, node.assignmentExpression);
-      for (let i = 0; i < constExprResult.length; ++i)
-        nestedTree.fields.set(i, constExprResult.charCodeAt(i));
+    const initializedType = CPrimitiveType.typeofValue(arch, evalResult);
+    const expectedInitializerItemType = (
+      isArrayLikeType(baseType)
+        ? baseType.getFlattenInfo().type
+        : baseType
+    );
 
-      initializedType = CArrayType.ofStringLength(arch, constExprResult.length);
-      initializedValue = nestedTree;
-    } else {
-      // 1, 2, 3, 4 expression
-      expectedItemType = (
-        isArrayLikeType(baseType)
-          ? baseType.getFlattenInfo().type
-          : baseType
-      );
-
-      initializedType = CPrimitiveType.typeofValue(arch, constExprResult);
-      initializedValue = +constExprResult;
-    }
-
-    // compare types
-    if (!checkLeftTypeOverlapping(expectedItemType, initializedType)) {
+    if (!checkLeftTypeOverlapping(expectedInitializerItemType, initializedType)) {
       throw new CTypeCheckError(
         CTypeCheckErrorCode.INCORRECT_INITIALIZED_VARIABLE_TYPE,
-        tree.parentAST.loc.start,
+        node.loc.start,
         {
           sourceType: initializedType.getShortestDisplayName(),
-          destinationType: expectedItemType?.getShortestDisplayName() ?? '<unknown-dest-type>',
+          destinationType: expectedInitializerItemType?.getShortestDisplayName() ?? '<unknown-dest-type>',
         },
       );
     }
 
-    this.appendNextValue(initializedValue);
+    this.appendNextValue(+evalResult);
+  }
+
+  /**
+   * Appends to initializer values such as { "Hello", "World" }
+   *
+   * @private
+   * @param {ASTCCompilerNode} node
+   * @param {string} text
+   * @memberof CTypeInitializerBuilderVisitor
+   */
+  private extractAssignedStringEntry(node: ASTCCompilerNode, text: string) {
+    // handle "Hello world" initializers
+    const expectedInitializerItemType = this.getNestedElementType();
+    const initializedTextType = CArrayType.ofStringLength(this.arch, text.length);
+
+    if (!checkLeftTypeOverlapping(expectedInitializerItemType, initializedTextType)) {
+      throw new CTypeCheckError(
+        CTypeCheckErrorCode.INCORRECT_INITIALIZED_VARIABLE_TYPE,
+        node.loc.start,
+        {
+          sourceType: initializedTextType.getShortestDisplayName(),
+          destinationType: expectedInitializerItemType?.getShortestDisplayName() ?? '<unknown-dest-type>',
+        },
+      );
+    }
+
+    // appending to initializer list
+    const nestedTree = new CVariableInitializerTree(expectedInitializerItemType,  node);
+    for (let i = 0; i < text.length; ++i)
+      nestedTree.fields.set(i, text.charCodeAt(i));
+
+    this.appendNextValue(nestedTree);
   }
 
   /**

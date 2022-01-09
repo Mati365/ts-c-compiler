@@ -10,7 +10,20 @@ import {AppModule} from './app.module';
 
 ccompiler(
   /* cpp */ `
-    char* abc = { "ABC", "ABC 2" };
+    struct Vec2 {
+      int x, y;
+    } vec2;
+
+    struct Vec2 sum(int x, int y) {
+      struct Vec2 vec;
+
+      return vec;
+    }
+
+    int main() {
+      sum(4, 5);
+      return 0;
+    }
   `,
 ).match(
   {

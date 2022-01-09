@@ -25,6 +25,9 @@ export function extractInitializerTreeForType(
     node,
   }: InitializerExtractorAttrs,
 ): CVariableInitializerTree {
+  if (!node)
+    return null;
+
   const tree = (
     new CTypeInitializerBuilderVisitor(type)
       .setContext(context)
