@@ -28,6 +28,7 @@ export class ASTCFunctionDefTypeCreator extends ASTCTypeCreator<ASTCFunctionDefi
       analyzeVisitor,
       context: {
         currentAnalyzed,
+        config,
       },
     } = this;
 
@@ -38,7 +39,9 @@ export class ASTCFunctionDefTypeCreator extends ASTCTypeCreator<ASTCFunctionDefi
       currentAnalyzed.fnType = fnType;
 
       analyzeVisitor
-        .ofScope(scope.appendScope(new CFunctionScope(fnType, node)))
+        .ofScope(
+          scope.appendScope(new CFunctionScope(fnType, config, node)),
+        )
         .visit(fnType.definition);
 
       currentAnalyzed.fnType = null;

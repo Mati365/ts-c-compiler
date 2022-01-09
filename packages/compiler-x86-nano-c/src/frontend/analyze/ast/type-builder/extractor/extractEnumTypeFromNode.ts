@@ -24,7 +24,7 @@ export function extractEnumTypeFromNode(
   }: EnumTypeExtractorAttrs): CEnumType {
   const {arch} = context.config;
 
-  const blankEnum = CEnumType.ofBlank(arch, enumSpecifier.name.text);
+  const blankEnum = CEnumType.ofBlank(arch, enumSpecifier.name?.text);
   const expectedResultType = blankEnum.getEntryValueType();
 
   let prevEnumEntryValue = null;

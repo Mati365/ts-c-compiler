@@ -46,7 +46,7 @@ export class CTypeAnalyzeVisitor extends GroupTreeVisitor<ASTCCompilerNode, any,
     this.setContext(
       {
         config,
-        scope: scope ?? new CScopeTree,
+        scope: scope ?? new CScopeTree(config),
         currentAnalyzed: currentAnalyzed ?? {
           fnType: null,
         },

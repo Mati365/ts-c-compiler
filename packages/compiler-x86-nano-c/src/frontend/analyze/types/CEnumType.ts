@@ -14,6 +14,10 @@ export type CEnumDescriptor = CTypeDescriptor & {
   fields: CEnumFieldsMap,
 };
 
+export function isEnumLikeType(type: CType): type is CEnumType {
+  return type?.isEnum?.();
+}
+
 /**
  * Defines C-like enum with ints
  *

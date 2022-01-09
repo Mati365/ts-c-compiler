@@ -45,6 +45,7 @@ export class ASTCPrimaryExpressionTypeCreator extends ASTCTypeCreator<ASTCPrimar
       type = (
         scope.findVariableType(name)
           || scope.findFunction(name)
+          || scope.findCompileTimeConstantType(name)
       );
     } else if (node.isStringLiteral())
       type = CPointerType.ofStringLiteral(arch);

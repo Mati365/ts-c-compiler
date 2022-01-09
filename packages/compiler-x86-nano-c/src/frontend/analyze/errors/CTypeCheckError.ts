@@ -44,6 +44,7 @@ export enum CTypeCheckErrorCode {
   PROVIDED_TYPE_DOES_NOT_CONTAIN_PROPERTIES,
   ASSIGNMENT_EXPRESSION_TYPES_MISMATCH,
   OPERATOR_SIDES_TYPES_MISMATCH,
+  REDEFINITION_OF_COMPILE_CONSTANT,
 }
 
 export const C_TYPE_CHECK_ERROR_TRANSLATIONS: Record<CTypeCheckErrorCode, string> = {
@@ -107,6 +108,9 @@ export const C_TYPE_CHECK_ERROR_TRANSLATIONS: Record<CTypeCheckErrorCode, string
   ),
   [CTypeCheckErrorCode.OPERATOR_SIDES_TYPES_MISMATCH]: (
     'Operator types mismatch! Left side type "%{left}" mismatch with right side "%{right}"!'
+  ),
+  [CTypeCheckErrorCode.REDEFINITION_OF_COMPILE_CONSTANT]: (
+    'Redefinition of compile type constant "%{name}"!'
   ),
 };
 

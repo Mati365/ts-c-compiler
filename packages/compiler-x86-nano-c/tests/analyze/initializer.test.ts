@@ -121,6 +121,18 @@ describe('Initializer typecheck', () => {
       ).toHaveCompilerError();
     });
 
+    test('designation with anonymous enum', () => {
+      expect(
+        /* cpp */ `
+          enum { member_one, member_two };
+          const char *nm[] = {
+            [member_two] = "member two",
+            [member_one] = "member one",
+          };
+        `,
+      ).not.toHaveCompilerError();
+    });
+
     test('struct with designation nested items', () => {
       expect(
         /* cpp */ `

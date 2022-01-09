@@ -6,5 +6,5 @@ export type CAbstractNamedType = CType & {
 };
 
 export function isNamedType(obj: CType<any>): obj is CAbstractNamedType {
-  return R.is(String, obj.unwrap()?.name);
+  return R.has('name', obj.unwrap() || {});
 }

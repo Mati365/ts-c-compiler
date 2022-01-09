@@ -12,14 +12,14 @@ export type CArrayTypeDescriptor = CTypeDescriptor & {
   size?: number,
 };
 
-export function isArrayLikeType(type: CType): type is CArrayType {
-  return type?.isArray();
-}
-
 export type CArrayFlattenDescriptor = {
   type: CType,
   dimensions: number[],
 };
+
+export function isArrayLikeType(type: CType): type is CArrayType {
+  return type?.isArray();
+}
 
 /**
  * Fixed width array pointer

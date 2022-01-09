@@ -3,7 +3,8 @@ import * as R from 'ramda';
 import {Result, ok, err, tryFold} from '@compiler/core/monads';
 import {AbstractTreeVisitor, IsWalkableNode} from '@compiler/grammar/tree/AbstractTreeVisitor';
 
-import {CType} from '../types/CType';
+import {CTypeCheckConfig} from '../constants';
+import {CType, CPrimitiveType, isEnumLikeType} from '../types';
 import {CFunctionDeclType} from '../types/function/CFunctionDeclType';
 import {CVariable} from './variables/CVariable';
 import {CTypeCheckError, CTypeCheckErrorCode} from '../errors/CTypeCheckError';
@@ -29,13 +30,16 @@ type TypeFindAttrs = {
 export class CScopeTree<C extends ASTCCompilerNode = ASTCCompilerNode> implements IsWalkableNode {
   private types: Record<string, CType> = {};
   private variables: Record<string, CVariable> = {};
+  private compileTimeConstants: Record<string, number> = {};
   private childScopes: CScopeTree[] = [];
 
   constructor(
+    protected _checkerConfig: CTypeCheckConfig,
     protected _parentAST: C = null,
     protected _parentScope: CScopeTree = null,
   ) {}
 
+  get arch() { return this._checkerConfig.arch; }
   get parentAST() { return this._parentAST; }
   get parentScope() { return this._parentScope; }
 
@@ -64,6 +68,34 @@ export class CScopeTree<C extends ASTCCompilerNode = ASTCCompilerNode> implement
       types,
       variables,
     };
+  }
+
+  /**
+   * Define numeric constant used in enums
+   *
+   * @param {string} name
+   * @param {number} value
+   * @return {Result<void, CTypeCheckError>}
+   * @memberof CScopeTree
+   */
+  defineCompileTimeConstant(name: string, value: number): Result<number, CTypeCheckError> {
+    const {compileTimeConstants} = this;
+
+    const constant = this.findCompileTimeConstant(name);
+    if (!R.isNil(constant)) {
+      return err(
+        new CTypeCheckError(
+          CTypeCheckErrorCode.REDEFINITION_OF_COMPILE_CONSTANT,
+          null,
+          {
+            name,
+          },
+        ),
+      );
+    }
+
+    compileTimeConstants[name] = value;
+    return ok(value);
   }
 
   /**
@@ -111,6 +143,9 @@ export class CScopeTree<C extends ASTCCompilerNode = ASTCCompilerNode> implement
   /**
    * Defines signle type in scope
    *
+   * @see
+   *  If defined is enum - defines also constant compile time integers
+   *
    * @param {string} name
    * @param {CAbstractNamedType} type
    * @return {Result<CType, CTypeCheckError>}
@@ -119,7 +154,7 @@ export class CScopeTree<C extends ASTCCompilerNode = ASTCCompilerNode> implement
   defineType(type: CAbstractNamedType): Result<CType, CTypeCheckError> {
     const {types} = this;
 
-    if (types[type.name]) {
+    if (type.name && types[type.name]) {
       return err(
         new CTypeCheckError(
           CTypeCheckErrorCode.REDEFINITION_OF_TYPE,
@@ -132,7 +167,15 @@ export class CScopeTree<C extends ASTCCompilerNode = ASTCCompilerNode> implement
     }
 
     const registeredType = type.ofRegistered(true);
-    types[type.name] = registeredType;
+    if (type.name)
+      types[type.name] = registeredType;
+
+    // define constant time variables
+    if (isEnumLikeType(registeredType)) {
+      registeredType.getFieldsList().forEach(([name, value]) => {
+        this.defineCompileTimeConstant(name, value);
+      });
+    }
 
     return ok(registeredType);
   }
@@ -170,6 +213,27 @@ export class CScopeTree<C extends ASTCCompilerNode = ASTCCompilerNode> implement
 
     if (findInParent && parentScope)
       return parentScope.findType(name, attrs);
+
+    return null;
+  }
+
+  /**
+   * Finds constant that are defined by enums during compile time
+   *
+   * @param {string} name
+   * @param {boolean} [findInParent=true]
+   * @return {number}
+   * @memberof CScopeTree
+   */
+  findCompileTimeConstant(name: string, findInParent: boolean = true): number {
+    const {compileTimeConstants, parentScope} = this;
+
+    const constant = compileTimeConstants[name];
+    if (!R.isNil(constant))
+      return constant;
+
+    if (parentScope && findInParent)
+      return parentScope.findCompileTimeConstant(name);
 
     return null;
   }
@@ -222,6 +286,20 @@ export class CScopeTree<C extends ASTCCompilerNode = ASTCCompilerNode> implement
         .findVariable(name)
         ?.type
     );
+  }
+
+  /**
+   * If found compile time constant - returns integer
+   *
+   * @param {string} name
+   * @return {CType}
+   * @memberof CScopeTree
+   */
+  findCompileTimeConstantType(name: string): CType {
+    if (R.isNil(this.findCompileTimeConstant(name)))
+      return null;
+
+    return CPrimitiveType.int(this.arch);
   }
 
   /**

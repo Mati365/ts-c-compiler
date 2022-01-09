@@ -47,7 +47,7 @@ export class ASTCPostfixExpressionTypeCreator extends ASTCTypeCreator<ASTCPostfi
       );
     }
 
-    if (!baseType.isStructLike()) {
+    if (!baseType.hasInnerTypeAttributes()) {
       throw new CTypeCheckError(
         CTypeCheckErrorCode.PROVIDED_TYPE_DOES_NOT_CONTAIN_PROPERTIES,
         node.loc.start,
