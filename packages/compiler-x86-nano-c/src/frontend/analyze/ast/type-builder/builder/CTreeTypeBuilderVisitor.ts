@@ -12,6 +12,7 @@ import {CTypeCheckError, CTypeCheckErrorCode} from '../../../errors/CTypeCheckEr
 import {CInnerTypeTreeVisitor} from '../../CInnerTypeTreeVisitor';
 import {CNamedTypedEntry} from '../../../scope/variables/CNamedTypedEntry';
 import {
+  isArrayLikeType,
   CType,
   CPointerType,
   CArrayType,
@@ -84,7 +85,9 @@ export class TreeTypeBuilderVisitor extends CInnerTypeTreeVisitor {
     if (node.isIdentifier())
       this.name = this.name || node.identifier.text;
     else if (node.isArrayExpression()) {
+      const {type: baseType} = this;
       const {assignmentExpression} = node.arrayExpression;
+
       const size = assignmentExpression && +evalConstantExpression(
         {
           context: this.context,
@@ -95,12 +98,22 @@ export class TreeTypeBuilderVisitor extends CInnerTypeTreeVisitor {
       if (!R.isNil(size) && size <= 0)
         throw new CTypeCheckError(CTypeCheckErrorCode.INVALID_ARRAY_SIZE);
 
-      if (this.type instanceof CArrayType)
-        this.type = this.type.ofAppendedDimension(size);
-      else {
+      if (isArrayLikeType(baseType)) {
+        if (R.isNil(baseType.size)) {
+          throw new CTypeCheckError(
+            CTypeCheckErrorCode.INCOMPLETE_ARRAY_SIZE,
+            null,
+            {
+              typeName: baseType.getDisplayName(),
+            },
+          );
+        }
+
+        this.type = baseType.ofAppendedDimension(size);
+      } else {
         this.type = new CArrayType(
           {
-            baseType: this.type,
+            baseType,
             size,
           },
         );

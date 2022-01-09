@@ -10,7 +10,12 @@ import {fetchSplittedProductionsList} from '../utils';
  */
 export function expression(grammar: CGrammar): ASTCExpression {
   const {g, assignmentExpression} = grammar;
-  const assignments = fetchSplittedProductionsList<ASTCCompilerNode>(g, assignmentExpression);
+  const assignments = fetchSplittedProductionsList<ASTCCompilerNode>(
+    {
+      g,
+      prodFn: assignmentExpression,
+    },
+  );
 
   return new ASTCExpression(
     assignments[0].loc,

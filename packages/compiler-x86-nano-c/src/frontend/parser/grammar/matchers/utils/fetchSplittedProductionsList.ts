@@ -4,17 +4,29 @@ import {SyntaxError} from '@compiler/grammar/Grammar';
 import {TokenType} from '@compiler/lexer/shared';
 import {CGrammar} from '../shared';
 
-export function fetchSplittedProductionsList<T>(
+type SplittedProductionsListAttrs<T> = {
   g: CGrammar['g'],
   prodFn: () => T,
-  splitToken: TokenType = TokenType.COMMA,
+  splitToken?: TokenType,
+  throwIfEmpty?: boolean,
+};
+
+export function fetchSplittedProductionsList<T>(
+  {
+    g,
+    prodFn,
+    splitToken = TokenType.COMMA,
+    throwIfEmpty = true,
+  }: SplittedProductionsListAttrs<T>,
 ): T[] {
   const items: T[] = [];
 
   do {
-    items.push(
-      prodFn(),
-    );
+    const result = g.try(prodFn);
+    if (!result)
+      break;
+
+    items.push(result);
 
     if (splitToken) {
       const separator = g.match(
@@ -29,7 +41,7 @@ export function fetchSplittedProductionsList<T>(
     }
   } while (true);
 
-  if (R.isEmpty(items))
+  if (throwIfEmpty && R.isEmpty(items))
     throw new SyntaxError;
 
   return items;

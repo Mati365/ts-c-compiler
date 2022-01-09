@@ -6,11 +6,11 @@ import './utils/asmMatcher';
 
 describe('equ', () => {
   it('handle unknown labels', () => {
-    expect('test3 equ test_label + 3').toHasCompilerError(MathErrorCode.UNKNOWN_KEYWORD);
+    expect('test3 equ test_label + 3').toHaveCompilerError(MathErrorCode.UNKNOWN_KEYWORD);
   });
 
   it('provided empty args list', () => {
-    expect('test3 equ').toHasCompilerError(ParserErrorCode.INCORRECT_EQU_ARGS_COUNT);
+    expect('test3 equ').toHaveCompilerError(ParserErrorCode.INCORRECT_EQU_ARGS_COUNT);
   });
 
   it('name already defined', () => {
@@ -22,8 +22,8 @@ describe('equ', () => {
       test3 equ 2+2
     `;
 
-    expect([code, {preprocessor: false}]).toHasCompilerError(ParserErrorCode.EQU_ALREADY_DEFINED);
-    expect([code, {preprocessor: true}]).toHasCompilerError(
+    expect([code, {preprocessor: false}]).toHaveCompilerError(ParserErrorCode.EQU_ALREADY_DEFINED);
+    expect([code, {preprocessor: true}]).toHaveCompilerError(
       PreprocessorErrorCode.VARIABLE_ALREADY_EXISTS_IN_CURRENT_SCOPE,
     );
   });
@@ -33,75 +33,75 @@ describe('equ', () => {
       xor ax, ax
       mov bx, ax
       ax equ 0xFF
-    `).toHasCompilerError(ParserErrorCode.USED_RESERVED_NAME);
+    `).toHaveCompilerError(ParserErrorCode.USED_RESERVED_NAME);
   });
 });
 
 describe('times', () => {
   it('handle broken times value', () => {
-    expect('times -1 dyoa').toHasCompilerError(ParserErrorCode.MISSING_TIMES_REPEATED_INSTRUCTION);
+    expect('times -1 dyoa').toHaveCompilerError(ParserErrorCode.MISSING_TIMES_REPEATED_INSTRUCTION);
   });
 
   it('handle negative value', () => {
-    expect('times (1-10) nop').toHasCompilerError(ParserErrorCode.INCORRECT_TIMES_VALUE);
+    expect('times (1-10) nop').toHaveCompilerError(ParserErrorCode.INCORRECT_TIMES_VALUE);
   });
 
   it('handle unknown keyword value', () => {
-    expect('times dupa nop').toHasCompilerError(MathErrorCode.UNKNOWN_KEYWORD);
+    expect('times dupa nop').toHaveCompilerError(MathErrorCode.UNKNOWN_KEYWORD);
   });
 
   it('handle unknown keyword value', () => {
-    expect('times 2 db nop').toHasCompilerError(MathErrorCode.UNKNOWN_KEYWORD);
+    expect('times 2 db nop').toHaveCompilerError(MathErrorCode.UNKNOWN_KEYWORD);
   });
 });
 
 describe('mem', () => {
   it('handle overflow displacement', () => {
-    expect('mov bx, [bx:0xFFFFF]').toHasCompilerError(ParserErrorCode.DISPLACEMENT_EXCEEDING_BYTE_SIZE);
+    expect('mov bx, [bx:0xFFFFF]').toHaveCompilerError(ParserErrorCode.DISPLACEMENT_EXCEEDING_BYTE_SIZE);
   });
 
   it('handle impossible register in mem address', () => {
     expect(`
       [bits 16]
       mov bx, [es:si+bx+di]
-    `).toHasCompilerError(ParserErrorCode.IMPOSSIBLE_MEM_REG);
+    `).toHaveCompilerError(ParserErrorCode.IMPOSSIBLE_MEM_REG);
   });
 
   it('handle scale > 1 bit error in 16bit mode', () => {
     expect(`
       [bits 16]
       mov bx, [es:si*4+bx]
-    `).toHasCompilerError(ParserErrorCode.SCALE_INDEX_IS_UNSUPPORTED_IN_MODE);
+    `).toHaveCompilerError(ParserErrorCode.SCALE_INDEX_IS_UNSUPPORTED_IN_MODE);
   });
 
   it('handle unknown keyword in mem addr', () => {
-    expect('mov bx, [es:bx+si*4+0xF+dupa]').toHasCompilerError(MathErrorCode.UNKNOWN_KEYWORD);
+    expect('mov bx, [es:bx+si*4+0xF+dupa]').toHaveCompilerError(MathErrorCode.UNKNOWN_KEYWORD);
   });
 
   it('handle unspecified mem arg size', () => {
-    expect('mov [0x0], 0x1').toHasCompilerError(ParserErrorCode.MEM_OPERAND_SIZE_NOT_SPECIFIED);
+    expect('mov [0x0], 0x1').toHaveCompilerError(ParserErrorCode.MEM_OPERAND_SIZE_NOT_SPECIFIED);
   });
 });
 
 describe('instruction', () => {
   it('handle mismatch size', () => {
-    expect('mov ax, byte [ds:0xe620]').toHasCompilerError(ParserErrorCode.OPERAND_SIZES_MISMATCH);
-    expect('add di, dword 16').toHasCompilerError(ParserErrorCode.OPERAND_SIZES_MISMATCH);
+    expect('mov ax, byte [ds:0xe620]').toHaveCompilerError(ParserErrorCode.OPERAND_SIZES_MISMATCH);
+    expect('add di, dword 16').toHaveCompilerError(ParserErrorCode.OPERAND_SIZES_MISMATCH);
 
-    expect('mov word ax, [ds:0xe620]').not.toHasCompilerError(ParserErrorCode.OPERAND_SIZES_MISMATCH);
-    expect('add word di, 16').not.toHasCompilerError(ParserErrorCode.OPERAND_SIZES_MISMATCH);
-    expect('add di, 16').not.toHasCompilerError(ParserErrorCode.OPERAND_SIZES_MISMATCH);
+    expect('mov word ax, [ds:0xe620]').not.toHaveCompilerError(ParserErrorCode.OPERAND_SIZES_MISMATCH);
+    expect('add word di, 16').not.toHaveCompilerError(ParserErrorCode.OPERAND_SIZES_MISMATCH);
+    expect('add di, 16').not.toHaveCompilerError(ParserErrorCode.OPERAND_SIZES_MISMATCH);
   });
 
   it('handle unknown operation', () => {
-    expect('movasdasd 0x4, 0x4, 0x4').toHasCompilerError(ParserErrorCode.UNKNOWN_OPERATION);
+    expect('movasdasd 0x4, 0x4, 0x4').toHaveCompilerError(ParserErrorCode.UNKNOWN_OPERATION);
   });
 
   it('handle unknown instruction format', () => {
-    expect('mov 0x4, 0x4, 0x4').toHasCompilerError(ParserErrorCode.UNKNOWN_COMPILER_INSTRUCTION);
+    expect('mov 0x4, 0x4, 0x4').toHaveCompilerError(ParserErrorCode.UNKNOWN_COMPILER_INSTRUCTION);
   });
 
   it('handle doubled sreg prefix conflict', () => {
-    expect('ds lds ax, [fs:bx+0x4]').toHasCompilerError(ParserErrorCode.CONFLICT_SREG_OVERRIDE);
+    expect('ds lds ax, [fs:bx+0x4]').toHaveCompilerError(ParserErrorCode.CONFLICT_SREG_OVERRIDE);
   });
 });

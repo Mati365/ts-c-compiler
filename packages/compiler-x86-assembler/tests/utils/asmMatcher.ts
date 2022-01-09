@@ -17,7 +17,7 @@ declare global {
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     interface Matchers<R = any> {
       toOutputsBinary(match: BinaryOutputObject): MatcherResult;
-      toHasCompilerError(errorCode: number): MatcherResult;
+      toHaveCompilerError(errorCode: number): MatcherResult;
     }
   }
 }
@@ -72,7 +72,7 @@ function toOutputsBinary(received: string, binary: BinaryOutputObject): MatcherR
  * @param {number} code
  * @returns {MatcherResult}
  */
-function toHasCompilerError(received: string | [string, AssemblerConfig], code: number): MatcherResult {
+function toHaveCompilerError(received: string | [string, AssemblerConfig], code: number): MatcherResult {
   const parseResult = (
     R.is(Array, received)
       ? asm(received[0], <AssemblerConfig> received[1])
@@ -122,6 +122,6 @@ function toHasCompilerError(received: string | [string, AssemblerConfig], code: 
 expect.extend(
   {
     toOutputsBinary,
-    toHasCompilerError,
+    toHaveCompilerError,
   },
 );

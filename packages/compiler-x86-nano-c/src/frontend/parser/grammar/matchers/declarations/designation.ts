@@ -51,8 +51,12 @@ function designator(grammar: CGrammar): ASTCDesignator {
  * @return {ASTCDesignatorList}
  */
 function designatorList(grammar: CGrammar): ASTCDesignatorList {
-  const {g} = grammar;
-  const items = fetchSplittedProductionsList(g, () => designator(grammar));
+  const items = fetchSplittedProductionsList(
+    {
+      g: grammar.g,
+      prodFn: () => designator(grammar),
+    },
+  );
 
   return new ASTCDesignatorList(items[0].loc, items);
 }

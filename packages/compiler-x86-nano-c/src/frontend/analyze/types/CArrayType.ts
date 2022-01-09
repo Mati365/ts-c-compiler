@@ -1,8 +1,11 @@
 import * as R from 'ramda';
+
 import {concatNonEmptyStrings} from '@compiler/core/utils';
 
 import {Identity} from '@compiler/core/monads';
+import {CCompilerArch} from '@compiler/x86-nano-c/constants';
 import {CType, CTypeDescriptor} from './CType';
+import {CPrimitiveType} from './CPrimitiveType';
 
 export type CArrayTypeDescriptor = CTypeDescriptor & {
   baseType: CType,
@@ -26,6 +29,24 @@ export type CArrayFlattenDescriptor = {
  * @extends {CType<CArrayTypeDescriptor>}
  */
 export class CArrayType extends CType<CArrayTypeDescriptor> {
+  /**
+   * Creates char[str length] array
+   *
+   * @static
+   * @param {CCompilerArch} arch
+   * @param {number} length
+   * @return {CArrayType}
+   * @memberof CArrayType
+   */
+  static ofStringLength(arch: CCompilerArch, length: number): CArrayType {
+    return new CArrayType(
+      {
+        baseType: CPrimitiveType.char(arch),
+        size: length,
+      },
+    );
+  }
+
   /**
    * Constructs array of given multidimensional size and type
    *
@@ -77,13 +98,17 @@ export class CArrayType extends CType<CArrayTypeDescriptor> {
    * @memberof CArrayType
    */
   getFlattenSize(): number {
-    const {baseType} = this;
-
-    return this.size * (
+    const {baseType, size} = this;
+    const childSize = (
       isArrayLikeType(baseType)
-        ? baseType.size
+        ? baseType.getFlattenSize()
         : 1
     );
+
+    if (R.isNil(size) || R.isNil(childSize))
+      return null;
+
+    return size * childSize;
   }
 
   /**

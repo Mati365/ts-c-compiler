@@ -2,11 +2,26 @@ import {NestFactory, Reflector} from '@nestjs/core';
 import {NestExpressApplication} from '@nestjs/platform-express';
 import {ClassSerializerInterceptor} from '@nestjs/common';
 
-import '@compiler/x86-nano-c';
+import {ccompiler} from '@compiler/x86-nano-c';
 
 import {ENV} from './constants/env';
 import {LoggerInterceptor} from './interceptors/Logger.interceptor';
 import {AppModule} from './app.module';
+
+ccompiler(
+  /* cpp */ `
+    int number = "ABC";
+  `,
+).match(
+  {
+    ok: (result) => {
+      result.dump();
+    },
+    err: (error) => {
+      console.error(error);
+    },
+  },
+);
 
 async function bootstrap(
   {

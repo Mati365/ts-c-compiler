@@ -16,10 +16,11 @@ import {constantExpression} from '../expressions/constantExpression';
  * @return {ASTCStructDeclaratorList}
  */
 export function structDeclaratorList(grammar: CGrammar): ASTCStructDeclaratorList {
-  const {g} = grammar;
   const items = fetchSplittedProductionsList<ASTCStructDeclarator>(
-    g,
-    () => structDeclarator(grammar),
+    {
+      g: grammar.g,
+      prodFn: () => structDeclarator(grammar),
+    },
   );
 
   return new ASTCStructDeclaratorList(items[0].loc, items);

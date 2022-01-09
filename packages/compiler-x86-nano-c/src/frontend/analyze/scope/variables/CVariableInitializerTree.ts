@@ -4,7 +4,7 @@ import {AbstractTreeVisitor, IsWalkableNode} from '@compiler/grammar/tree/Abstra
 import {ASTCCompilerNode} from '../../../parser/ast/ASTCCompilerNode';
 import {CType} from '../../types/CType';
 
-import {isArrayLikeType} from '../../types/CArrayType';
+import {isArrayLikeType} from '../../types';
 
 export type CInitializerMapKey = number | string;
 export type CVariableInitializeValue = string | number | CVariableInitializerTree;
@@ -52,6 +52,9 @@ export class CVariableInitializerTree<C extends ASTCCompilerNode = ASTCCompilerN
 
     if (isArrayLikeType(baseType))
       return baseType.getFlattenSize();
+
+    if (baseType.isPointer())
+      return null;
 
     return 1;
   }

@@ -18,7 +18,7 @@ import {CTypeCheckError, CTypeCheckErrorCode} from '../../../errors/CTypeCheckEr
 
 import {charToInt} from '../../../casts';
 
-export type MathOperationResult = number | boolean;
+export type ConstantOperationResult = number | boolean | string;
 
 /**
  * Walks over tree and calculates constant math expressions
@@ -27,11 +27,11 @@ export type MathOperationResult = number | boolean;
  *  It is not constexpr! It only evaluates basic 2 + 3 etc. expressions
  *
  * @export
- * @class MathExpressionEvalVisitor
+ * @class ConstantExpressionEvalVisitor
  * @extends {CInnerTypeTreeVisitor}
  */
-export class MathExpressionEvalVisitor extends CInnerTypeTreeVisitor {
-  private expressionArgs: MathOperationResult[] = [];
+export class ConstantExpressionEvalVisitor extends CInnerTypeTreeVisitor {
+  private expressionArgs: ConstantOperationResult[] = [];
 
   constructor() {
     super(
@@ -58,7 +58,7 @@ export class MathExpressionEvalVisitor extends CInnerTypeTreeVisitor {
    *
    * @private
    * @param {ASTCPrimaryExpression} node
-   * @memberof MathExpressionEvalVisitor
+   * @memberof ConstantExpressionEvalVisitor
    */
   private pushConstant(node: ASTCPrimaryExpression) {
     if (node.isExpression())
@@ -66,7 +66,11 @@ export class MathExpressionEvalVisitor extends CInnerTypeTreeVisitor {
 
     const {expressionArgs} = this;
 
-    if (node.isCharLiteral()) {
+    if (node.isStringLiteral()) {
+      expressionArgs.push(
+        node.stringLiteral,
+      );
+    } else if (node.isCharLiteral()) {
       expressionArgs.push(
         charToInt(node.charLiteral),
       );
@@ -83,7 +87,7 @@ export class MathExpressionEvalVisitor extends CInnerTypeTreeVisitor {
    *
    * @private
    * @param {ASTCBinaryOpNode} node
-   * @memberof MathExpressionEvalVisitor
+   * @memberof ConstantExpressionEvalVisitor
    */
   private performBinaryOp(node: ASTCBinaryOpNode): number {
     const {expressionArgs} = this;
@@ -99,7 +103,8 @@ export class MathExpressionEvalVisitor extends CInnerTypeTreeVisitor {
     }
 
     const reversedArgs = [right, left];
-    let result: MathOperationResult = null;
+    let result: ConstantOperationResult = null;
+
     if (isMathOpToken(op))
       result = evalMathOp(op, <number[]> reversedArgs);
     else if (isRelationOpToken(op))

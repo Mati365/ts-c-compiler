@@ -4,6 +4,7 @@ import {CTypeCheckError, CTypeCheckErrorCode} from '../../../errors/CTypeCheckEr
 import {TypeExtractorAttrs} from '../constants/types';
 
 import {evalConstantExpression} from '../../eval';
+import {checkLeftTypeOverlapping} from '../../../checker';
 
 type EnumTypeExtractorAttrs = TypeExtractorAttrs & {
   enumSpecifier: ASTCEnumSpecifier,
@@ -40,7 +41,7 @@ export function extractEnumTypeFromNode(
       ).unwrapOrThrow();
 
       const resultType = CPrimitiveType.typeofValue(arch, exprResult);
-      if (!expectedResultType.isEqual(resultType)) {
+      if (!checkLeftTypeOverlapping(expectedResultType, resultType)) {
         throw new CTypeCheckError(
           CTypeCheckErrorCode.EXPECTED_RECEIVE_TYPE,
           enumeration.loc.start,

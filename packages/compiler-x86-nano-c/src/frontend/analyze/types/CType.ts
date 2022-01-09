@@ -64,6 +64,40 @@ export abstract class CType<T extends CTypeDescriptor = CTypeDescriptor>
     }));
   }
 
+  /**
+   * Creates const version of type
+   *
+   * @return {this}
+   * @memberof CType
+   */
+  ofConst(): this {
+    return this.ofQualifiers(CQualBitmap.const);
+  }
+
+  /**
+   * Drops specified qualifiers from type and returns new
+   *
+   * @param {number} qualifiers
+   * @return {this}
+   * @memberof CType
+   */
+  ofDropQualifiers(qualifiers: number): this {
+    return this.map((value) => ({
+      ...value,
+      qualifiers: value.qualifiers & (~qualifiers),
+    }));
+  }
+
+  /**
+   * Drops constant qualifiers and returns new types
+   *
+   * @return {this}
+   * @memberof CType
+   */
+  ofNonConstQualifiers(): this {
+    return this.ofDropQualifiers(CQualBitmap.const);
+  }
+
   isRegistered() { return this.value.registered; }
   isArray() { return false; }
   isEnum() { return false; }
@@ -72,6 +106,7 @@ export abstract class CType<T extends CTypeDescriptor = CTypeDescriptor>
   isUnion() { return false; }
   isFunction() { return false; }
   isScalar() { return false; }
+  isPointer() { return false; }
 
   isStructLike() {
     return this.isEnum() || this.isStruct();

@@ -1,6 +1,5 @@
 import {TokenType} from '@compiler/lexer/shared';
 import {ASTCCompilerKind, ASTCPrimaryExpression} from '@compiler/x86-nano-c/frontend/parser/ast';
-import {CQualBitmap} from '../../constants/bitmaps';
 import {CTypeCheckError, CTypeCheckErrorCode} from '../../errors/CTypeCheckError';
 import {CType, CPrimitiveType, CPointerType} from '../../types';
 import {ASTCTypeCreator} from './ASTCTypeCreator';
@@ -40,23 +39,17 @@ export class ASTCPrimaryExpressionTypeCreator extends ASTCTypeCreator<ASTCPrimar
             },
           );
       }
-    } else if (node.isStringLiteral()) {
-      type = CPointerType.ofType(
-        arch,
-        CPrimitiveType
-          .char(arch)
-          .ofQualifiers(CQualBitmap.const),
-      );
-    } else if (node.isCharLiteral())
-      type = CPrimitiveType.char(arch);
-    else if (node.isIdentifier()) {
+    } else if (node.isIdentifier()) {
       const {text: name} = node.identifier;
 
       type = (
         scope.findVariableType(name)
           || scope.findFunction(name)
       );
-    }
+    } else if (node.isStringLiteral())
+      type = CPointerType.ofStringLiteral(arch);
+    else if (node.isCharLiteral())
+      type = CPrimitiveType.char(arch);
 
     node.type = type;
   }

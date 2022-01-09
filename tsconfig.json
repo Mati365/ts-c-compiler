@@ -45,7 +45,6 @@
     }
   },
   "exclude": [
-    "**/*.test.ts",
     "node_modules/**/*"
   ]
 }

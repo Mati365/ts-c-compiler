@@ -15,10 +15,11 @@ import {fetchSplittedProductionsList} from '../utils';
  * @return {ASTCParametersList}
  */
 export function parameterList(grammar: CGrammar): ASTCParametersList {
-  const {g} = grammar;
   const items = fetchSplittedProductionsList<ASTCParameterDeclaration>(
-    g,
-    () => parameterDeclaration(grammar),
+    {
+      g: grammar.g,
+      prodFn: () => parameterDeclaration(grammar),
+    },
   );
 
   return new ASTCParametersList(items[0].loc, items);

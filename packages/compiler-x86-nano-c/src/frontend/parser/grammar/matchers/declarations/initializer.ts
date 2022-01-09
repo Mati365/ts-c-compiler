@@ -1,6 +1,7 @@
 /* eslint-disable no-use-before-define, @typescript-eslint/no-use-before-define */
 import {TokenType} from '@compiler/lexer/shared';
 import {ASTCInitializer} from '@compiler/x86-nano-c/frontend/parser/ast';
+import {NodeLocation} from '@compiler/grammar/tree/NodeLocation';
 import {CGrammar} from '../shared';
 
 import {assignmentExpression} from '../expressions/assignmentExpression';
@@ -20,8 +21,11 @@ import {designation} from './designation';
  */
 function initializerList(grammar: CGrammar): ASTCInitializer[] {
   return fetchSplittedProductionsList(
-    grammar.g,
-    () => initializer(grammar),
+    {
+      g: grammar.g,
+      throwIfEmpty: false,
+      prodFn: () => initializer(grammar),
+    },
   );
 }
 
@@ -54,8 +58,7 @@ export function initializer(grammar: CGrammar): ASTCInitializer {
       },
 
       initializerList() {
-        g.terminal('{');
-
+        const startToken = g.terminal('{');
         const initializers = initializerList(grammar);
 
         g.match(
@@ -69,7 +72,7 @@ export function initializer(grammar: CGrammar): ASTCInitializer {
         g.terminal('}');
 
         return new ASTCInitializer(
-          initializers[0].loc,
+          NodeLocation.fromTokenLoc(startToken.loc),
           null,
           initializers,
           designationNode,

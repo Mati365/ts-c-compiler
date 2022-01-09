@@ -1,9 +1,15 @@
 import * as R from 'ramda';
 
 import {ASTCCompilerKind, ASTCInitializer} from '../../../../parser/ast';
-import {CType, isArrayLikeType} from '../../../types';
 import {CInnerTypeTreeVisitor} from '../../CInnerTypeTreeVisitor';
 import {CTypeCheckError, CTypeCheckErrorCode} from '../../../errors/CTypeCheckError';
+
+import {
+  CArrayType,
+  CType,
+  isArrayLikeType,
+} from '../../../types';
+
 import {
   CInitializerMapKey,
   CVariableInitializerTree,
@@ -11,6 +17,7 @@ import {
 } from '../../../scope/variables';
 
 import {evalConstantExpression} from '../../eval';
+import {checkLeftTypeOverlapping} from '../../../checker';
 
 /**
  * Visitor that walks over initializer and creates hash map of values
@@ -21,10 +28,10 @@ import {evalConstantExpression} from '../../eval';
  */
 export class CTypeInitializerBuilderVisitor extends CInnerTypeTreeVisitor {
   private tree: CVariableInitializerTree;
-  private currentKey: CInitializerMapKey = null;
   private maxSize: number = null;
+  private currentKey: CInitializerMapKey = null;
 
-  constructor(private readonly baseType: CType) {
+  constructor(private baseType: CType) {
     super(
       {
         [ASTCCompilerKind.Initializer]: {
@@ -106,14 +113,47 @@ export class CTypeInitializerBuilderVisitor extends CInnerTypeTreeVisitor {
    */
   private extractAssignmentEntry(node: ASTCInitializer) {
     const {context} = this;
-    const entryValue: CVariableInitializeValue = evalConstantExpression(
+    let entryValue = evalConstantExpression(
       {
         expression: node.assignmentExpression,
         context,
       },
     ).unwrapOrThrow();
 
-    this.appendNextValue(entryValue);
+    // handle "Hello world" initializers
+    if (R.is(String, entryValue))
+      this.extractStringEntry(entryValue);
+    else
+      this.appendNextValue(+entryValue);
+  }
+
+  /**
+   * Force cast whole tree to string and set type to char*
+   *
+   * @private
+   * @param {string} entryValue
+   * @memberof CTypeInitializerBuilderVisitor
+   */
+  private extractStringEntry(entryValue: string) {
+    const {arch, tree, baseType} = this;
+    const charArray = CArrayType.ofStringLength(arch, entryValue.length);
+
+    if (!checkLeftTypeOverlapping(baseType, charArray)) {
+      throw new CTypeCheckError(
+        CTypeCheckErrorCode.INCORRECT_STRING_INITIALIZED_VARIABLE_TYPE,
+        tree.parentAST.loc.start,
+        {
+          sourceType: charArray.getShortestDisplayName(),
+          destinationType: baseType?.getShortestDisplayName() ?? '<unknown-dest-type>',
+        },
+      );
+    }
+
+    if (R.isNil(this.maxSize))
+      this.maxSize = entryValue.length;
+
+    for (let i = 0; i < entryValue.length; ++i)
+      this.appendNextValue(entryValue.charCodeAt(i));
   }
 
   /**
@@ -122,7 +162,7 @@ export class CTypeInitializerBuilderVisitor extends CInnerTypeTreeVisitor {
    * @param {CVariableInitializeValue} entryValue
    * @memberof CTypeInitializerBuilderVisitor
    */
-  appendNextValue(entryValue: CVariableInitializeValue) {
+  private appendNextValue(entryValue: CVariableInitializeValue) {
     const {tree, maxSize} = this;
 
     // handles  { 1, 2, 3 } like entries without designations
@@ -141,12 +181,14 @@ export class CTypeInitializerBuilderVisitor extends CInnerTypeTreeVisitor {
       );
     }
 
-    const currentSize = tree.getCurrentTypeFlattenSize();
-    if (currentSize >= maxSize) {
-      throw new CTypeCheckError(
-        CTypeCheckErrorCode.INITIALIZER_ARRAY_OVERFLOW,
-        tree.parentAST.loc.start,
-      );
+    if (!R.isNil(this.maxSize)) {
+      const currentSize = tree.getCurrentTypeFlattenSize();
+      if (currentSize >= maxSize) {
+        throw new CTypeCheckError(
+          CTypeCheckErrorCode.INITIALIZER_ARRAY_OVERFLOW,
+          tree.parentAST.loc.start,
+        );
+      }
     }
 
     tree.fields.set(this.currentKey, entryValue);

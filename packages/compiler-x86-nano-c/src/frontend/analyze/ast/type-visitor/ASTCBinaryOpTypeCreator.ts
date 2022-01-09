@@ -2,6 +2,8 @@ import {ASTCCompilerKind, ASTCBinaryOpNode} from '@compiler/x86-nano-c/frontend/
 import {ASTCTypeCreator} from './ASTCTypeCreator';
 import {CTypeCheckError, CTypeCheckErrorCode} from '../../errors/CTypeCheckError';
 
+import {checkLeftTypeOverlapping} from '../../checker';
+
 /**
  * Assigns type to ASTCBinaryOpTypeCreator
  *
@@ -17,7 +19,7 @@ export class ASTCBinaryOpTypeCreator extends ASTCTypeCreator<ASTCBinaryOpNode> {
       return;
 
     const {left, right} = node;
-    if (!left.type?.isEqual(right.type)) {
+    if (!checkLeftTypeOverlapping(left.type, right.type)) {
       throw new CTypeCheckError(
         CTypeCheckErrorCode.OPERATOR_SIDES_TYPES_MISMATCH,
         node.loc.start,

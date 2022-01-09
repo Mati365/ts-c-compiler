@@ -3,6 +3,8 @@ import {CType, CPrimitiveType} from '../../types';
 import {CTypeCheckError, CTypeCheckErrorCode} from '../../errors/CTypeCheckError';
 import {ASTCTypeCreator} from './ASTCTypeCreator';
 
+import {checkLeftTypeOverlapping} from '../../checker';
+
 /**
  * Assigns type to ASTCReturnStatement
  *
@@ -30,7 +32,7 @@ export class ASTCReturnStmtTypeCreator extends ASTCTypeCreator<ASTCReturnStateme
     else
       returnType = CPrimitiveType.void(arch);
 
-    if (!returnType?.isEqual(fnType.returnType)) {
+    if (!checkLeftTypeOverlapping(returnType, fnType.returnType)) {
       throw new CTypeCheckError(
         CTypeCheckErrorCode.RETURN_EXPRESSION_WRONG_TYPE,
         node.loc.start,

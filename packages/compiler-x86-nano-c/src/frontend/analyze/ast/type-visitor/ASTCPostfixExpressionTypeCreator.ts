@@ -4,6 +4,8 @@ import {CFunctionDeclType} from '../../types/function';
 import {CTypeCheckError, CTypeCheckErrorCode} from '../../errors/CTypeCheckError';
 import {ASTCTypeCreator} from './ASTCTypeCreator';
 
+import {checkLeftTypeOverlapping} from '../../checker';
+
 /**
  * Assigns type to ASTCPostfixExpression
  *
@@ -132,7 +134,7 @@ export class ASTCPostfixExpressionTypeCreator extends ASTCTypeCreator<ASTCPostfi
         assignments[index].type,
       ];
 
-      if (!leftType?.isEqual(rightType)) {
+      if (!checkLeftTypeOverlapping(leftType, rightType)) {
         throw new CTypeCheckError(
           CTypeCheckErrorCode.WRONG_ARG_PASSED_TO_FUNCTION,
           node.loc.start,

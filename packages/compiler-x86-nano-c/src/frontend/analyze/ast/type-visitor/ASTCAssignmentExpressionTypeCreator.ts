@@ -2,6 +2,8 @@ import {ASTCCompilerKind, ASTCAssignmentExpression} from '@compiler/x86-nano-c/f
 import {CTypeCheckError, CTypeCheckErrorCode} from '../../errors/CTypeCheckError';
 import {ASTCTypeCreator} from './ASTCTypeCreator';
 
+import {checkLeftTypeOverlapping} from '../../checker';
+
 /**
  * Assigns type to ASTCAssignmentExpression
  *
@@ -22,7 +24,7 @@ export class ASTCAssignmentExpressionTypeCreator extends ASTCTypeCreator<ASTCAss
         expression: right,
       } = node;
 
-      if (!left?.type?.isEqual(right?.type)) {
+      if (!checkLeftTypeOverlapping(left?.type, right?.type)) {
         throw new CTypeCheckError(
           CTypeCheckErrorCode.ASSIGNMENT_EXPRESSION_TYPES_MISMATCH,
           node.loc.start,
