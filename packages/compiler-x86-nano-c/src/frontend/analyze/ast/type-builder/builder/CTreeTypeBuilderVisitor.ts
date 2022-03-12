@@ -22,10 +22,10 @@ import {
  * Walks over declarator related types and treis to construct type
  *
  * @export
- * @class TreeTypeBuilderVisitor
+ * @class CTreeTypeBuilderVisitor
  * @extends {CInnerTypeTreeVisitor}
  */
-export class TreeTypeBuilderVisitor extends CInnerTypeTreeVisitor {
+export class CTreeTypeBuilderVisitor extends CInnerTypeTreeVisitor {
   private name: string = null;
 
   constructor(private type: CType) {
@@ -54,7 +54,7 @@ export class TreeTypeBuilderVisitor extends CInnerTypeTreeVisitor {
    * @private
    * @param {ASTCDeclarator} node
    * @return {boolean}
-   * @memberof TreeTypeBuilderVisitor
+   * @memberof CTreeTypeBuilderVisitor
    */
   private extractDeclarator(node: ASTCDeclarator): boolean {
     let pointerNode = node.pointer;
@@ -79,7 +79,7 @@ export class TreeTypeBuilderVisitor extends CInnerTypeTreeVisitor {
    * @private
    * @param {ASTCDirectDeclarator} node
    * @return {boolean}
-   * @memberof TreeTypeBuilderVisitor
+   * @memberof CTreeTypeBuilderVisitor
    */
   private extractDirectDeclarator(node: ASTCDirectDeclarator): boolean {
     if (node.isIdentifier())

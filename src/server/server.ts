@@ -10,13 +10,8 @@ import {AppModule} from './app.module';
 
 ccompiler(
   /* cpp */ `
-    enum {
-      ONE = 1,
-      TWO = 2,
-    };
-
     int main() {
-      int var = { ONE + TWO + (2 + 3 * TWO) };
+      struct { int a[3], b; } w[] = { { 1 } };
 
       return 0;
     }

@@ -25,6 +25,12 @@
         extensions: ['.js', '.ts', '.tsx', '.scss', '.json']
       }
 
+  overrides:
+    - files: ['*.test.ts', '*.test.tsx']
+      rules:
+        quotes: 0
+        '@typescript-eslint/quotes': 0
+
   env:
     browser: true
     mocha: true

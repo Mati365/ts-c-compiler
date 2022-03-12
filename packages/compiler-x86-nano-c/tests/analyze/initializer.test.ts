@@ -1,4 +1,3 @@
-/* eslint-disable quotes, @typescript-eslint/quotes */
 import {CTypeCheckErrorCode} from './utils/analyzeMatcher';
 
 describe('Initializer typecheck', () => {
@@ -96,7 +95,7 @@ describe('Initializer typecheck', () => {
       expect(/* cpp */ `char s[] = { 'a', 'b', 'c', '\0' };`).not.toHaveCompilerError();
     });
 
-    test.skip('flatten array with designation', () => {
+    test('flatten array with designation', () => {
       expect(
         /* cpp */ `
           int a[] = {
@@ -123,7 +122,7 @@ describe('Initializer typecheck', () => {
       ).not.toHaveCompilerError();
     });
 
-    test.skip('single struct with wrong designation initialization', () => {
+    test('single struct with wrong designation initialization', () => {
       expect(
         /* cpp */ `
           struct Vec2 {
@@ -149,7 +148,7 @@ describe('Initializer typecheck', () => {
       ).toHaveCompilerError();
     });
 
-    test.skip('struct with designation nested items', () => {
+    test('struct with designation nested items', () => {
       expect(
         /* cpp */ `
           struct { int a[3], b; } w[] = {

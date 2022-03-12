@@ -1,4 +1,3 @@
-/* eslint-disable quotes, @typescript-eslint/quotes */
 import './utils/analyzeMatcher';
 
 describe('Enum typecheck', () => {

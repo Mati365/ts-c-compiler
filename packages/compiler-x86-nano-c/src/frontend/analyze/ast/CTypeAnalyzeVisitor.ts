@@ -6,7 +6,7 @@ import {CTypeCheckConfig} from '../constants';
 import {ASTCCompilerNode} from '../../parser/ast/ASTCCompilerNode';
 import {CTypeAnalyzeContext} from './CTypeAnalyzeContext';
 import {CScopeTree} from '../scope/CScopeTree';
-import {ASTC_TYPE_CREATORS} from './type-visitor';
+import {ASTC_TYPE_CREATORS} from './ast-kinds-visitors';
 
 type CTypeAnalyzeVisitorAttrs = CTypeCheckConfig & {
   scope?: CScopeTree,

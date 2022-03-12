@@ -4,7 +4,7 @@ import * as R from 'ramda';
 import {CTypeQualifier} from '@compiler/x86-nano-c/constants';
 import {CTypeCheckError, CTypeCheckErrorCode} from '../../../errors/CTypeCheckError';
 import {CType, CPrimitiveType} from '../../../types';
-import {TreeTypeBuilderVisitor} from '../builder/CTreeTypeBuilderVisitor';
+import {CTreeTypeBuilderVisitor} from '../builder/CTreeTypeBuilderVisitor';
 import {CNamedTypedEntry} from '../../../scope/variables/CNamedTypedEntry';
 import {
   DeclaratorExtractorAttrs,
@@ -183,7 +183,7 @@ export function extractNamedEntryFromDeclarator(
   }
 
   const buildEntry = (
-    new TreeTypeBuilderVisitor(type)
+    new CTreeTypeBuilderVisitor(type)
       .setContext(context)
       .visit(declarator)
       .getBuiltEntry()
