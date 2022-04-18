@@ -31,7 +31,8 @@ export enum CTypeCheckErrorCode {
   UNKNOWN_INITIALIZER_TYPE,
   INCORRECT_INITIALIZED_VARIABLE_TYPE,
   INCOMPLETE_ARRAY_SIZE,
-  INITIALIZER_ARRAY_OVERFLOW,
+  EXCESS_ELEMENTS_IN_SCALAR_INITIALIZER,
+  EXCESS_ELEMENTS_IN_ARRAY_INITIALIZER,
   UNABLE_TO_EXTRACT_DECLARATION_TYPE,
   RETURN_STMT_OUTSIDE_FUNCTION,
   CAST_TO_NON_SCALAR_TYPE,
@@ -45,6 +46,12 @@ export enum CTypeCheckErrorCode {
   ASSIGNMENT_EXPRESSION_TYPES_MISMATCH,
   OPERATOR_SIDES_TYPES_MISMATCH,
   REDEFINITION_OF_COMPILE_CONSTANT,
+  INVALID_INITIALIZER,
+  UNKNOWN_INITIALIZER_VALUE_TYPE,
+  INCORRECT_NAMED_STRUCTURE_INITIALIZER_USAGE,
+  INCORRECT_INDEX_INITIALIZER_USAGE,
+  UNKNOWN_NAMED_STRUCTURE_INITIALIZER,
+  INDEX_INITIALIZER_ARRAY_OVERFLOW,
 }
 
 export const C_TYPE_CHECK_ERROR_TRANSLATIONS: Record<CTypeCheckErrorCode, string> = {
@@ -76,7 +83,9 @@ export const C_TYPE_CHECK_ERROR_TRANSLATIONS: Record<CTypeCheckErrorCode, string
     'Unable assign "%{sourceType}" initializer value to "%{destinationType}"!'
   ),
   [CTypeCheckErrorCode.INCOMPLETE_ARRAY_SIZE]: 'Incomplete array size "%{typeName}"!',
-  [CTypeCheckErrorCode.INITIALIZER_ARRAY_OVERFLOW]: 'Initializer array overflow!',
+  [CTypeCheckErrorCode.EXCESS_ELEMENTS_IN_SCALAR_INITIALIZER]: 'Excess elements in scalar initializer!',
+  [CTypeCheckErrorCode.EXCESS_ELEMENTS_IN_ARRAY_INITIALIZER]: 'Excess elements in array initializer!',
+  [CTypeCheckErrorCode.INVALID_INITIALIZER]: 'Invalid initializer!',
   [CTypeCheckErrorCode.RETURN_STMT_OUTSIDE_FUNCTION]: 'Return stmt should be placed in function definition!',
   [CTypeCheckErrorCode.CAST_TO_NON_SCALAR_TYPE]: (
     // eslint-disable-next-line max-len
@@ -109,9 +118,12 @@ export const C_TYPE_CHECK_ERROR_TRANSLATIONS: Record<CTypeCheckErrorCode, string
   [CTypeCheckErrorCode.OPERATOR_SIDES_TYPES_MISMATCH]: (
     'Operator types mismatch! Left side type "%{left}" mismatch with right side "%{right}"!'
   ),
-  [CTypeCheckErrorCode.REDEFINITION_OF_COMPILE_CONSTANT]: (
-    'Redefinition of compile type constant "%{name}"!'
-  ),
+  [CTypeCheckErrorCode.REDEFINITION_OF_COMPILE_CONSTANT]: 'Redefinition of compile type constant "%{name}"!',
+  [CTypeCheckErrorCode.UNKNOWN_INITIALIZER_VALUE_TYPE]: 'Unknown initializer value type!',
+  [CTypeCheckErrorCode.INCORRECT_NAMED_STRUCTURE_INITIALIZER_USAGE]: 'Incorrect named structure initializer usage!',
+  [CTypeCheckErrorCode.INCORRECT_INDEX_INITIALIZER_USAGE]: 'Incorrect index initializer usage!',
+  [CTypeCheckErrorCode.UNKNOWN_NAMED_STRUCTURE_INITIALIZER]: 'Unknown named structure field initializer "%{name}"!',
+  [CTypeCheckErrorCode.INDEX_INITIALIZER_ARRAY_OVERFLOW]: 'Index initializer array overflow!',
 };
 
 /**

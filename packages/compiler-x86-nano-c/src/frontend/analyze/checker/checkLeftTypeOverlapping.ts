@@ -6,7 +6,7 @@ import {
 } from '../types';
 
 /**
- * Check if right type can be assigned to left type
+ *Check if right type can be assigned to left type
  *
  * @see
  *  Instead of isEqual() it performs also implict casts!
@@ -18,9 +18,14 @@ import {
  * @export
  * @param {CType} left
  * @param {CType} right
- * @return {boolean}
+ * @param {boolean} [implicitCast=true]
+ * @return {*}  {boolean}
  */
-export function checkLeftTypeOverlapping(left: CType, right: CType): boolean {
+export function checkLeftTypeOverlapping(
+  left: CType,
+  right: CType,
+  implicitCast: boolean = true,
+): boolean {
   if (!left || !right)
     return false;
 
@@ -31,6 +36,7 @@ export function checkLeftTypeOverlapping(left: CType, right: CType): boolean {
     return checkLeftTypeOverlapping(
       left.ofNonConstQualifiers(),
       right.ofNonConstQualifiers(),
+      implicitCast,
     );
   }
 
@@ -38,24 +44,26 @@ export function checkLeftTypeOverlapping(left: CType, right: CType): boolean {
   // in C array is actually pointer
   if (isPointerLikeType(left)) {
     if (isPointerLikeType(right) || isArrayLikeType(right))
-      return checkLeftTypeOverlapping(left.baseType, right.baseType);
+      return checkLeftTypeOverlapping(left.baseType, right.baseType, implicitCast);
   }
 
   // [left ]char[4] = [right] char*
   if (isArrayLikeType(left)) {
     if (isArrayLikeType(right)) {
-      if (left.size !== right.size)
+      if (!left.isUnknownSize() && left.size !== right.size)
         return false;
 
-      return checkLeftTypeOverlapping(left.baseType, right.baseType);
+      return checkLeftTypeOverlapping(left.baseType, right.baseType, implicitCast);
     }
 
     if (isPointerLikeType(right))
-      return checkLeftTypeOverlapping(left.baseType, right.baseType);
+      return checkLeftTypeOverlapping(left.baseType, right.baseType, implicitCast);
   }
 
   // primitive types in C can be implict casted
-  if (isPrimitiveLikeType(left) && isPrimitiveLikeType(right))
+  if (implicitCast
+      && isPrimitiveLikeType(left)
+      && isPrimitiveLikeType(right))
     return true;
 
   return false;

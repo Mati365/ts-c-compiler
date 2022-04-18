@@ -11,8 +11,16 @@ import {AppModule} from './app.module';
 ccompiler(
   /* cpp */ `
     int main() {
-      struct { int a[3], b; } w[] = { { 1 } };
-
+      struct {
+        struct {
+            int x, y;
+        } c;
+      } a = {
+        .c = {
+            .x = 5,
+            .y = 2,
+        },
+      };
       return 0;
     }
   `,

@@ -53,6 +53,7 @@ function designator(grammar: CGrammar): ASTCDesignator {
 function designatorList(grammar: CGrammar): ASTCDesignatorList {
   const items = fetchSplittedProductionsList(
     {
+      splitToken: null,
       g: grammar.g,
       prodFn: () => designator(grammar),
     },

@@ -34,6 +34,7 @@ export abstract class CType<T extends CTypeDescriptor = CTypeDescriptor>
 
   get arch() { return this.value.arch; }
   get qualifiers() { return this.value.qualifiers; }
+  get scalarValuesCount() { return 1; }
 
   /**
    * Creates instance that has registered=true flag.

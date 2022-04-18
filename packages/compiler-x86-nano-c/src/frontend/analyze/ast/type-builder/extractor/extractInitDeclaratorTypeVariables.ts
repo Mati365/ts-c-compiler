@@ -32,8 +32,8 @@ export function extractInitDeclaratorTypeVariables(
 
   const initializerTree = extractInitializerTreeForType(
     {
-      node: initializer,
       type: entry.type,
+      node: initializer,
       context,
     },
   );

@@ -69,6 +69,7 @@ export class CVariable extends CNamedTypedEntry<CVariableDescriptor> {
 
   override getDisplayName() {
     let str = super.getDisplayName();
+
     if (this.isInitialized())
       str += ` = ${CVariableInitializerPrintVisitor.serializeToString(this.initializer)}`;
 

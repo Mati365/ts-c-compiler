@@ -1,4 +1,4 @@
 import {AbstractTreeVisitor} from '@compiler/grammar/tree/AbstractTreeVisitor';
-import {CVariableInitializeValue} from '../../scope/variables';
+import {CVariableInitializerTree} from '../../scope/variables';
 
-export class CVariableInitializerVisitor extends AbstractTreeVisitor<CVariableInitializeValue> {}
+export class CVariableInitializerVisitor extends AbstractTreeVisitor<CVariableInitializerTree> {}

@@ -7,11 +7,13 @@ import {
 
 export type CStructEntryDescriptor = CNamedTypedEntryDescriptor & {
   offset: number,
+  index: number;
   bitset?: number,
 };
 
 export class CStructEntry extends CNamedTypedEntry<CStructEntryDescriptor> {
   getOffset() { return this.value.offset; }
+  getIndex() { return this.value.index; }
 }
 
 export type CStructFieldsMap = Map<string, CStructEntry>;

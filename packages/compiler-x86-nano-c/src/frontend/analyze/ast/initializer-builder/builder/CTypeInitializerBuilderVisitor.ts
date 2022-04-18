@@ -1,6 +1,6 @@
 import * as R from 'ramda';
 
-import {ASTCCompilerKind, ASTCCompilerNode, ASTCInitializer} from '../../../../parser/ast';
+import {ASTCCompilerKind, ASTCCompilerNode, ASTCDesignatorList, ASTCInitializer} from '../../../../parser/ast';
 import {CInnerTypeTreeVisitor} from '../../CInnerTypeTreeVisitor';
 import {CTypeCheckError, CTypeCheckErrorCode} from '../../../errors/CTypeCheckError';
 
@@ -9,10 +9,10 @@ import {
   CType,
   CPrimitiveType,
   isArrayLikeType,
+  isStructLikeType,
 } from '../../../types';
 
 import {
-  CInitializerMapKey,
   CVariableInitializerTree,
   CVariableInitializeValue,
 } from '../../../scope/variables';
@@ -29,10 +29,12 @@ import {checkLeftTypeOverlapping} from '../../../checker';
  */
 export class CTypeInitializerBuilderVisitor extends CInnerTypeTreeVisitor {
   private tree: CVariableInitializerTree;
+  private currentOffset: number = 0;
   private maxSize: number = null;
-  private currentKey: CInitializerMapKey = null;
 
-  constructor(private baseType: CType) {
+  constructor(
+    private readonly baseType: CType,
+  ) {
     super(
       {
         [ASTCCompilerKind.Initializer]: {
@@ -45,34 +47,51 @@ export class CTypeInitializerBuilderVisitor extends CInnerTypeTreeVisitor {
     );
   }
 
-  getBuiltTree() { return this.tree; }
+  getBuiltTree() {
+    return this.tree;
+  }
 
-  /**
-   * Handles nesting of initializer
-   *
-   * int a[][] = { ... }
-   *                ^
-   *
-   * @private
-   * @param {ASTCInitializer} node
-   * @memberof CTypeInitializerBuilderVisitor
-   */
-  private extractInitializer(node: ASTCInitializer) {
-    const {baseType} = this;
-
-    if (!this.tree) {
-      this.tree = new CVariableInitializerTree(baseType, node);
-      this.maxSize = this.tree.getMaximumFlattenItemsCount();
-    }
-
-    if (node.hasInitializerList())
-      this.extractInitializerList(node);
-    else
-      this.extractAssignmentEntry(node);
+  private getNextOffset() {
+    return (
+      R.isNil(this.currentOffset)
+        ? 0
+        : this.currentOffset + 1
+    );
   }
 
   /**
-   * Returns type of first nested group
+   * Returns type at specified offset
+   *
+   * @private
+   * @return {CType}
+   * @memberof CTypeInitializerBuilderVisitor
+   */
+  private getOffsetExpectedType(): CType {
+    const {baseType} = this;
+
+    if (isStructLikeType(baseType)) {
+      return baseType.getFieldTypeByIndex(
+        this.currentOffset % baseType.getFlattenFieldsCount(),
+      );
+    }
+
+    if (isArrayLikeType(baseType)) {
+      const baseArrayType = baseType.getFlattenInfo().type;
+
+      if (isStructLikeType(baseArrayType)) {
+        return baseArrayType.getFieldTypeByIndex(
+          this.currentOffset % baseArrayType.getFlattenFieldsCount(),
+        );
+      }
+
+      return baseArrayType;
+    }
+
+    return this.getNestedElementType();
+  }
+
+  /**
+   * Returns type of nested group
    *
    * @example
    *  int a[2][] = { { 1 } }
@@ -94,6 +113,46 @@ export class CTypeInitializerBuilderVisitor extends CInnerTypeTreeVisitor {
   }
 
   /**
+   * Handles nesting of initializer
+   *
+   * int b = 2;
+   *         ^
+   *
+   * int a[][] = { ... }
+   *                ^
+   *
+   * @private
+   * @param {ASTCInitializer} node
+   * @memberof CTypeInitializerBuilderVisitor
+   */
+  private extractInitializer(node: ASTCInitializer) {
+    const {baseType, arch} = this;
+
+    if (!this.tree) {
+      this.tree = new CVariableInitializerTree(baseType, node);
+      this.maxSize = this.tree.scalarValuesCount;
+    }
+
+    if (isArrayLikeType(baseType)
+        && !node.hasInitializerList()
+        && !checkLeftTypeOverlapping(CArrayType.ofStringLiteral(arch), baseType, false)
+    ) {
+      throw new CTypeCheckError(
+        CTypeCheckErrorCode.INVALID_INITIALIZER,
+        this.tree.parentAST.loc.start,
+      );
+    }
+
+    if (node.hasInitializerList()) {
+      // handle int a[] = { ... }
+      this.extractInitializerList(node);
+    } else {
+      // handle int a = 2
+      this.extractInitializerListValue(node, false);
+    }
+  }
+
+  /**
    * Appends values for nested arrays
    *
    * @private
@@ -106,7 +165,7 @@ export class CTypeInitializerBuilderVisitor extends CInnerTypeTreeVisitor {
 
     node.initializers.forEach((initializer) => {
       if (initializer.hasAssignment())
-        this.extractAssignmentEntry(initializer);
+        this.extractInitializerListValue(initializer);
       else {
         const entryValue = (
           new CTypeInitializerBuilderVisitor(nestedBaseType)
@@ -115,7 +174,9 @@ export class CTypeInitializerBuilderVisitor extends CInnerTypeTreeVisitor {
             .getBuiltTree()
         );
 
-        this.appendNextValue(entryValue);
+        [...entryValue.fields.values()].forEach((value) => {
+          this.appendNextOffsetValue(value);
+        });
       }
     });
   }
@@ -124,14 +185,15 @@ export class CTypeInitializerBuilderVisitor extends CInnerTypeTreeVisitor {
    * Extracts single initializer item
    *
    * int a[][] = { { 1 }, { 2 } }
-   *                 ^      ^
    *
    * @private
    * @param {ASTCInitializer} node
+   * @param {boolean} [arrayItem=true]
    * @memberof CTypeInitializerBuilderVisitor
    */
-  private extractAssignmentEntry(node: ASTCInitializer) {
-    const {context} = this;
+  private extractInitializerListValue(node: ASTCInitializer, arrayItem: boolean = true) {
+    const {context, baseType} = this;
+
     const constExprResult = evalConstantExpression(
       {
         expression: node.assignmentExpression,
@@ -139,10 +201,115 @@ export class CTypeInitializerBuilderVisitor extends CInnerTypeTreeVisitor {
       },
     ).unwrapOrThrow();
 
-    if (R.is(String, constExprResult))
-      this.extractAssignedStringEntry(node, constExprResult);
-    else
-      this.extractScalarEntry(node, constExprResult);
+    const stringLiteral = R.is(String, constExprResult);
+    let expectedType: CType;
+
+    if (!arrayItem) {
+      expectedType = baseType;
+    } else if (node.hasDesignation()) {
+      const {offset, type} = this.extractDesignationOffset(node.designation);
+
+      expectedType = type;
+      this.currentOffset = offset;
+    } else {
+      expectedType = this.getOffsetExpectedType();
+
+      if (!expectedType) {
+        throw new CTypeCheckError(
+          CTypeCheckErrorCode.UNKNOWN_INITIALIZER_VALUE_TYPE,
+          node.loc.start,
+        );
+      }
+    }
+
+    const parsedValue = (
+      stringLiteral
+        ? this.parseStringValue(node, expectedType, constExprResult)
+        : this.parseScalarValue(node, expectedType, constExprResult)
+    );
+
+    this.appendNextOffsetValue(parsedValue);
+  }
+
+  /**
+   * Handle { [3] = 1, [5] = 2 } in initializers
+   *
+   * @private
+   * @param {ASTCDesignatorList} designation
+   * @memberof CTypeInitializerBuilderVisitor
+   */
+  private extractDesignationOffset(designation: ASTCDesignatorList) {
+    const {context} = this;
+    const {children} = designation;
+
+    let {baseType} = this;
+    let offset = 0;
+
+    for (let i = 0; i < children.length; ++i) {
+      const {identifier, constantExpression} = children[i];
+
+      // .x = 1
+      if (identifier) {
+        if (!isStructLikeType(baseType)) {
+          throw new CTypeCheckError(
+            CTypeCheckErrorCode.INCORRECT_NAMED_STRUCTURE_INITIALIZER_USAGE,
+            designation.loc.start,
+          );
+        }
+
+        const field = baseType.getField(identifier.text);
+        if (R.isNil(field)) {
+          throw new CTypeCheckError(
+            CTypeCheckErrorCode.UNKNOWN_NAMED_STRUCTURE_INITIALIZER,
+            designation.loc.start,
+            {
+              name: identifier.text,
+            },
+          );
+        }
+
+        offset += field.getIndex();
+        baseType = field.type;
+      }
+
+      // [10] = x
+      if (constantExpression) {
+        if (!isArrayLikeType(baseType)) {
+          throw new CTypeCheckError(
+            CTypeCheckErrorCode.INCORRECT_INDEX_INITIALIZER_USAGE,
+            designation.loc.start,
+          );
+        }
+
+        const {dimensions} = baseType.getFlattenInfo();
+        const constExprResult = evalConstantExpression(
+          {
+            expression: constantExpression,
+            context,
+          },
+        ).unwrapOrThrow();
+
+        if (!baseType.isUnknownSize() && constExprResult >= dimensions[0]) {
+          throw new CTypeCheckError(
+            CTypeCheckErrorCode.INDEX_INITIALIZER_ARRAY_OVERFLOW,
+            designation.loc.start,
+          );
+        }
+
+        const itemScalarSize = baseType.getFlattenInfo().type.scalarValuesCount;
+        baseType = baseType.ofTailDimensions();
+        offset += (
+          +constExprResult
+            * dimensions.reduce((acc, num, index) => index ? acc * num : 1, 1)
+            * itemScalarSize
+        );
+      }
+    }
+
+    return {
+      type: baseType,
+      offset,
+    };
   }
 
   /**
@@ -150,31 +317,31 @@ export class CTypeInitializerBuilderVisitor extends CInnerTypeTreeVisitor {
    *
    * @private
    * @param {ASTCCompilerNode} node
+   * @param {CType} expectedType
    * @param {ConstantOperationResult} evalResult
+   * @returns {number}
    * @memberof CTypeInitializerBuilderVisitor
    */
-  private extractScalarEntry(node: ASTCCompilerNode, evalResult: ConstantOperationResult) {
-    const {baseType, arch} = this;
-
+  private parseScalarValue(
+    node: ASTCCompilerNode,
+    expectedType: CType,
+    evalResult: ConstantOperationResult,
+  ): number {
+    const {arch} = this;
     const initializedType = CPrimitiveType.typeofValue(arch, evalResult);
-    const expectedInitializerItemType = (
-      isArrayLikeType(baseType)
-        ? baseType.getFlattenInfo().type
-        : baseType
-    );
 
-    if (!checkLeftTypeOverlapping(expectedInitializerItemType, initializedType)) {
+    if (!checkLeftTypeOverlapping(expectedType, initializedType)) {
       throw new CTypeCheckError(
         CTypeCheckErrorCode.INCORRECT_INITIALIZED_VARIABLE_TYPE,
         node.loc.start,
         {
           sourceType: initializedType.getShortestDisplayName(),
-          destinationType: expectedInitializerItemType?.getShortestDisplayName() ?? '<unknown-dest-type>',
+          destinationType: expectedType?.getShortestDisplayName() ?? '<unknown-dest-type>',
         },
       );
     }
 
-    this.appendNextValue(+evalResult);
+    return +evalResult;
   }
 
   /**
@@ -182,31 +349,36 @@ export class CTypeInitializerBuilderVisitor extends CInnerTypeTreeVisitor {
    *
    * @private
    * @param {ASTCCompilerNode} node
+   * @param {CType} expectedType
    * @param {string} text
+   * @returns {CVariableInitializerTree}
    * @memberof CTypeInitializerBuilderVisitor
    */
-  private extractAssignedStringEntry(node: ASTCCompilerNode, text: string) {
+  private parseStringValue(
+    node: ASTCCompilerNode,
+    expectedType: CType,
+    text: string,
+  ): CVariableInitializerTree {
     // handle "Hello world" initializers
-    const expectedInitializerItemType = this.getNestedElementType();
-    const initializedTextType = CArrayType.ofStringLength(this.arch, text.length);
+    const initializedTextType = CArrayType.ofStringLiteral(this.arch, text.length);
 
-    if (!checkLeftTypeOverlapping(expectedInitializerItemType, initializedTextType)) {
+    if (!checkLeftTypeOverlapping(expectedType, initializedTextType)) {
       throw new CTypeCheckError(
         CTypeCheckErrorCode.INCORRECT_INITIALIZED_VARIABLE_TYPE,
         node.loc.start,
         {
           sourceType: initializedTextType.getShortestDisplayName(),
-          destinationType: expectedInitializerItemType?.getShortestDisplayName() ?? '<unknown-dest-type>',
+          destinationType: expectedType?.getShortestDisplayName() ?? '<unknown-dest-type>',
         },
       );
     }
 
     // appending to initializer list
-    const nestedTree = new CVariableInitializerTree(expectedInitializerItemType,  node);
+    const nestedTree = new CVariableInitializerTree(expectedType,  node);
     for (let i = 0; i < text.length; ++i)
       nestedTree.fields.set(i, text.charCodeAt(i));
 
-    this.appendNextValue(nestedTree);
+    return nestedTree;
   }
 
   /**
@@ -215,35 +387,38 @@ export class CTypeInitializerBuilderVisitor extends CInnerTypeTreeVisitor {
    * @param {CVariableInitializeValue} entryValue
    * @memberof CTypeInitializerBuilderVisitor
    */
-  private appendNextValue(entryValue: CVariableInitializeValue) {
-    const {tree, maxSize} = this;
+  private appendNextOffsetValue(entryValue: CVariableInitializeValue) {
+    const {tree, maxSize, baseType} = this;
 
-    // handles  { 1, 2, 3 } like entries without designations
-    if (Number.isInteger(this.currentKey) || R.isNil(this.currentKey)) {
-      this.currentKey = (
-        R.isNil(this.currentKey)
-          ? 0
-          : (<number> this.currentKey) + 1
-      );
-    }
-
-    if (R.isNil(entryValue)) {
-      throw new CTypeCheckError(
-        CTypeCheckErrorCode.UNKNOWN_INITIALIZER_TYPE,
-        tree.parentAST.loc.start,
-      );
-    }
-
-    if (!R.isNil(this.maxSize)) {
-      const currentSize = tree.getCurrentTypeFlattenSize();
-      if (currentSize >= maxSize) {
+    if (isStructLikeType(baseType)) {
+      // increments offets, determine which field is initialized in struct and sets value
+      // used here: struct Vec2 vec = { 1, 2 };
+      tree.fields.set(this.currentOffset, entryValue);
+      this.currentOffset = this.getNextOffset();
+    } else if (isArrayLikeType(baseType)) {
+      // increments offsets and append next value to list, used in arrays
+      // used here: int abc[] = { 1, 2, 3 }
+      if (!R.isNil(this.maxSize) && this.currentOffset + 1 > maxSize) {
         throw new CTypeCheckError(
-          CTypeCheckErrorCode.INITIALIZER_ARRAY_OVERFLOW,
+          CTypeCheckErrorCode.EXCESS_ELEMENTS_IN_ARRAY_INITIALIZER,
           tree.parentAST.loc.start,
         );
       }
-    }
 
-    tree.fields.set(this.currentKey, entryValue);
+      tree.fields.set(this.currentOffset, entryValue);
+      this.currentOffset = this.getNextOffset();
+    } else {
+      // used in single value assign mode
+      // used here: int abc = 3;
+      if (!R.isNil(tree.getFirstValue())) {
+        throw new CTypeCheckError(
+          CTypeCheckErrorCode.EXCESS_ELEMENTS_IN_SCALAR_INITIALIZER,
+          tree.parentAST.loc.start,
+        );
+      }
+
+      tree.fields.set(0, entryValue);
+      this.currentOffset = 0;
+    }
   }
 }

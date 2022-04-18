@@ -30,8 +30,6 @@ export function evalConstantExpression(
 
     return ok(visitor.value);
   } catch (e) {
-    console.error(e);
-
     return err(e);
   }
 }

@@ -1,6 +1,7 @@
 import * as R from 'ramda';
 
 import {dropNewLines, dumpCompilerAttrs} from '@compiler/core/utils';
+import {memoizeMethod} from '@compiler/core/decorators';
 
 import {Identity, Result, ok, err} from '@compiler/core/monads';
 import {CCompilerArch, CStructAlign} from '@compiler/x86-nano-c/constants';
@@ -12,6 +13,12 @@ import {
   CStructTypeDescriptor,
   CStructEntry,
 } from './constants/types';
+
+import {isArrayLikeType} from '../CArrayType';
+
+export function isStructLikeType(type: CType): type is CStructType {
+  return type?.isStruct();
+}
 
 /**
  * Defines C-like structure
@@ -37,6 +44,7 @@ export class CStructType extends CType<CStructTypeDescriptor> {
   get name() { return this.value.name; }
   get fields() { return this.value.fields; }
   get align() { return this.value.align; }
+  get scalarValuesCount() { return this.getFlattenFieldsTypes().length; }
 
   /**
    * Appends new struct field
@@ -72,6 +80,7 @@ export class CStructType extends CType<CStructTypeDescriptor> {
         new CStructEntry(
           {
             ...entry.unwrap(),
+            index: this.fields.size,
             offset: alignerFn(this, entry.type),
             bitset,
           },
@@ -207,5 +216,38 @@ export class CStructType extends CType<CStructTypeDescriptor> {
 
   getField(name: string) {
     return this.fields.get(name);
+  }
+
+  @memoizeMethod
+  getFlattenFieldsTypes(): [string, CType][] {
+    return (
+      this
+        .getFieldsList()
+        .flatMap((pair) => {
+          const [name, entry] = pair;
+          const {type} = entry;
+
+          if (isStructLikeType(type)) {
+            return type.getFlattenFieldsTypes();
+          }
+
+          if (isArrayLikeType(type)) {
+            return R.times<[string, CType]>(
+              (index) => [`${name}.${index}`, type.baseType],
+              type.getFlattenSize(),
+            );
+          }
+
+          return [[name, type]];
+        })
+    );
+  }
+
+  getFlattenFieldsCount() {
+    return this.getFlattenFieldsTypes().length;
+  }
+
+  getFieldTypeByIndex(index: number): CType {
+    return this.getFlattenFieldsTypes()[index]?.[1];
   }
 }

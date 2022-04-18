@@ -34,11 +34,11 @@ export class CArrayType extends CType<CArrayTypeDescriptor> {
    *
    * @static
    * @param {CCompilerArch} arch
-   * @param {number} length
+   * @param {number} [length]
    * @return {CArrayType}
    * @memberof CArrayType
    */
-  static ofStringLength(arch: CCompilerArch, length: number): CArrayType {
+  static ofStringLiteral(arch: CCompilerArch, length: number = null): CArrayType {
     return new CArrayType(
       {
         baseType: CPrimitiveType.char(arch),
@@ -87,12 +87,19 @@ export class CArrayType extends CType<CArrayTypeDescriptor> {
       {
         ...descriptor,
         arch: descriptor.baseType.arch,
+        size: descriptor.size || null,
       },
     );
   }
 
   get size() { return this.value.size; }
   get baseType() { return this.value.baseType; }
+  get scalarValuesCount() {
+    if (this.isUnknownSize())
+      return null;
+
+    return this.size * this.baseType.scalarValuesCount;
+  }
 
   /**
    * Return unrolled multidimensional array size

@@ -4,11 +4,8 @@ import {AbstractTreeVisitor, IsWalkableNode} from '@compiler/grammar/tree/Abstra
 import {ASTCCompilerNode} from '../../../parser/ast/ASTCCompilerNode';
 import {CType} from '../../types/CType';
 
-import {isArrayLikeType} from '../../types';
-
-export type CInitializerMapKey = number | string;
 export type CVariableInitializeValue = string | number | CVariableInitializerTree;
-export type CVariableInitializerMap = Map<CInitializerMapKey, CVariableInitializeValue>;
+export type CVariableInitializerMap = Map<number, CVariableInitializeValue>;
 
 export function isInitializerTreeValue(value: CVariableInitializeValue): value is CVariableInitializerTree {
   return R.is(Object, value) && R.has('_baseType', value);
@@ -27,15 +24,35 @@ export class CVariableInitializerTree<C extends ASTCCompilerNode = ASTCCompilerN
     protected readonly _baseType: CType,
     protected readonly _parentAST: C,
     protected readonly _fields: CVariableInitializerMap = new Map,
-  ) {}
+  ) {
+    this.fill(null);
+  }
 
   get parentAST() { return this._parentAST; }
   get baseType() { return this._baseType; }
   get fields() { return this._fields; }
 
+  fill(value: CVariableInitializeValue) {
+    const {fields} = this;
+
+    fields.clear();
+    for (let i = 0; i < this.scalarValuesCount; ++i)
+      fields.set(i, value);
+  }
+
   walk(visitor: AbstractTreeVisitor<any>): void {
     for (const [, value] of this.fields)
       visitor.visit(value);
+  }
+
+  /**
+   * Used to return value for non-array type initializers
+   *
+   * @return {CVariableInitializeValue}
+   * @memberof CVariableInitializerTree
+   */
+  getFirstValue(): CVariableInitializeValue {
+    return this._fields.get(0);
   }
 
   /**
@@ -47,17 +64,10 @@ export class CVariableInitializerTree<C extends ASTCCompilerNode = ASTCCompilerN
    * @return {number}
    * @memberof CVariableInitializerTree
    */
-  getMaximumFlattenItemsCount(): number {
-    const {baseType} = this;
-
-    if (isArrayLikeType(baseType))
-      return baseType.getFlattenSize();
-
-    if (baseType.isPointer())
-      return null;
-
-    return 1;
+  get scalarValuesCount(): number {
+    return this.baseType.scalarValuesCount;
   }
+
 
   /**
    * Get total fields count filled by nested types
@@ -71,7 +81,7 @@ export class CVariableInitializerTree<C extends ASTCCompilerNode = ASTCCompilerN
 
     for (const [, value] of fields) {
       if (isInitializerTreeValue(value))
-        size += value.getMaximumFlattenItemsCount();
+        size += value.scalarValuesCount;
       else
         size++;
     }
