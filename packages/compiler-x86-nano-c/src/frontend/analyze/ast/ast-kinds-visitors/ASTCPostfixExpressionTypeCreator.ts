@@ -92,6 +92,9 @@ export class ASTCPostfixExpressionTypeCreator extends ASTCTypeCreator<ASTCPostfi
       throw new CTypeCheckError(
         CTypeCheckErrorCode.UNKNOWN_FUNCTION_CALL,
         node.loc.start,
+        {
+          name: node.getFnName() || '<unknown>',
+        },
       );
     }
 

@@ -77,7 +77,7 @@ export const C_TYPE_CHECK_ERROR_TRANSLATIONS: Record<CTypeCheckErrorCode, string
   [CTypeCheckErrorCode.UNKNOWN_CONSTANT_TYPE]: 'Unknown type of "%{text}" constant!',
   [CTypeCheckErrorCode.UNKNOWN_LEFT_DOT_EXPRESSION_TYPE]: 'Unknown left side dot expression type!',
   [CTypeCheckErrorCode.UNKNOWN_STRUCT_LIKE_MEMBER]: 'Unknown %{typeName} type "%{fieldName}" member!',
-  [CTypeCheckErrorCode.UNKNOWN_FUNCTION_CALL]: 'Unknown function call!',
+  [CTypeCheckErrorCode.UNKNOWN_FUNCTION_CALL]: 'Unknown function "%{name}"!',
   [CTypeCheckErrorCode.UNKNOWN_INITIALIZER_TYPE]: 'Unknown initializer type!',
   [CTypeCheckErrorCode.INCORRECT_INITIALIZED_VARIABLE_TYPE]: (
     'Unable assign "%{sourceType}" initializer value to "%{destinationType}"!'

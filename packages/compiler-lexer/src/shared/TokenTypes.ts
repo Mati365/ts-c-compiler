@@ -55,6 +55,7 @@ export enum TokenType {
   BIT_OR = 'BIT_OR',
   BIT_SHIFT_RIGHT = 'BIT_SHIFT_RIGHT',
   BIT_SHIFT_LEFT = 'BIT_SHIFT_LEFT',
+  BIT_NOT = 'BIT_NOT',
 
   INCREMENT = 'INCREMENT',
   DECREMENT = 'DECREMENT',
@@ -90,6 +91,5 @@ export enum TokenKind {
   BRANCH_ADDRESSING_TYPE = 'BRANCH_ADDRESSING_TYPE',
 
   // OTHER
-  // todo: register etc. move here
   IDENTIFIER = 'IDENTIFIER',
 }

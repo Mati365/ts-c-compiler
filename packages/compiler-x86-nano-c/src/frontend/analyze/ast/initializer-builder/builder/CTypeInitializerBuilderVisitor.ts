@@ -10,6 +10,7 @@ import {
   CPrimitiveType,
   isArrayLikeType,
   isStructLikeType,
+  isPointerLikeType,
 } from '../../../types';
 
 import {
@@ -87,7 +88,7 @@ export class CTypeInitializerBuilderVisitor extends CInnerTypeTreeVisitor {
       return baseArrayType;
     }
 
-    return this.getNestedElementType();
+    return this.getNestedInitializerGroupType();
   }
 
   /**
@@ -102,7 +103,7 @@ export class CTypeInitializerBuilderVisitor extends CInnerTypeTreeVisitor {
    * @return {CType}
    * @memberof CTypeInitializerBuilderVisitor
    */
-  private getNestedElementType(): CType {
+  private getNestedInitializerGroupType(): CType {
     const {baseType} = this;
 
     return (
@@ -161,12 +162,24 @@ export class CTypeInitializerBuilderVisitor extends CInnerTypeTreeVisitor {
    */
   private extractInitializerList(node: ASTCInitializer) {
     const {context} = this;
-    const nestedBaseType = this.getNestedElementType();
+    const nestedGroupType = this.getNestedInitializerGroupType();
 
     node.initializers.forEach((initializer) => {
       if (initializer.hasAssignment())
         this.extractInitializerListValue(initializer);
       else {
+        let nestedBaseType = nestedGroupType;
+        let newOffset = this.currentOffset;
+
+        if (initializer.hasDesignation()) {
+          const {type, offset} = this.extractDesignationType(initializer.designation);
+
+          if (type) {
+            nestedBaseType = type;
+            newOffset = offset;
+          }
+        }
+
         const entryValue = (
           new CTypeInitializerBuilderVisitor(nestedBaseType)
             .setContext(context)
@@ -174,9 +187,8 @@ export class CTypeInitializerBuilderVisitor extends CInnerTypeTreeVisitor {
             .getBuiltTree()
         );
 
-        [...entryValue.fields.values()].forEach((value) => {
-          this.appendNextOffsetValue(value);
-        });
+        this.currentOffset = newOffset;
+        this.appendNextSubtree(entryValue);
       }
     });
   }
@@ -207,12 +219,15 @@ export class CTypeInitializerBuilderVisitor extends CInnerTypeTreeVisitor {
     if (!arrayItem) {
       expectedType = baseType;
     } else if (node.hasDesignation()) {
-      const {offset, type} = this.extractDesignationOffset(node.designation);
+      const {type, offset} = this.extractDesignationType(node.designation);
 
       expectedType = type;
       this.currentOffset = offset;
     } else {
-      expectedType = this.getOffsetExpectedType();
+      if (stringLiteral)
+        expectedType = this.getNestedInitializerGroupType();
+      else
+        expectedType = this.getOffsetExpectedType();
 
       if (!expectedType) {
         throw new CTypeCheckError(
@@ -222,13 +237,18 @@ export class CTypeInitializerBuilderVisitor extends CInnerTypeTreeVisitor {
       }
     }
 
-    const parsedValue = (
-      stringLiteral
-        ? this.parseStringValue(node, expectedType, constExprResult)
-        : this.parseScalarValue(node, expectedType, constExprResult)
-    );
+    if (stringLiteral) {
+      const noSizeCheck = !isPointerLikeType(baseType) || !arrayItem;
 
-    this.appendNextOffsetValue(parsedValue);
+      this.appendNextSubtree(
+        this.parseStringValue(node, expectedType, constExprResult),
+        noSizeCheck,
+      );
+    } else {
+      this.appendNextOffsetValue(
+        this.parseScalarValue(node, expectedType, constExprResult),
+      );
+    }
   }
 
   /**
@@ -238,7 +258,7 @@ export class CTypeInitializerBuilderVisitor extends CInnerTypeTreeVisitor {
    * @param {ASTCDesignatorList} designation
    * @memberof CTypeInitializerBuilderVisitor
    */
-  private extractDesignationOffset(designation: ASTCDesignatorList) {
+  private extractDesignationType(designation: ASTCDesignatorList) {
     const {context} = this;
     const {children} = designation;
 
@@ -382,12 +402,28 @@ export class CTypeInitializerBuilderVisitor extends CInnerTypeTreeVisitor {
   }
 
   /**
-   * Appends next value to tree and increments currentKey if number
+   * Appends whole tree of values into current tree
    *
-   * @param {CVariableInitializeValue} entryValue
+   * @private
+   * @param {CVariableInitializerTree} entryValue
+   * @param {boolean} [noSizeCheck]
    * @memberof CTypeInitializerBuilderVisitor
    */
-  private appendNextOffsetValue(entryValue: CVariableInitializeValue) {
+  private appendNextSubtree(entryValue: CVariableInitializerTree, noSizeCheck?: boolean) {
+    [...entryValue.fields.values()].forEach((value) => {
+      this.appendNextOffsetValue(value, noSizeCheck);
+    });
+  }
+
+  /**
+   * Appends next value to tree and increments currentKey if number
+   *
+   * @private
+   * @param {CVariableInitializeValue} entryValue
+   * @param {boolean} [noSizeCheck]
+   * @memberof CTypeInitializerBuilderVisitor
+   */
+  private appendNextOffsetValue(entryValue: CVariableInitializeValue, noSizeCheck?: boolean) {
     const {tree, maxSize, baseType} = this;
 
     if (isStructLikeType(baseType)) {
@@ -395,10 +431,10 @@ export class CTypeInitializerBuilderVisitor extends CInnerTypeTreeVisitor {
       // used here: struct Vec2 vec = { 1, 2 };
       tree.fields.set(this.currentOffset, entryValue);
       this.currentOffset = this.getNextOffset();
-    } else if (isArrayLikeType(baseType)) {
+    } else if (isArrayLikeType(baseType) || isPointerLikeType(baseType)) {
       // increments offsets and append next value to list, used in arrays
       // used here: int abc[] = { 1, 2, 3 }
-      if (!R.isNil(this.maxSize) && this.currentOffset + 1 > maxSize) {
+      if (!noSizeCheck && !R.isNil(this.maxSize) && this.currentOffset + 1 > maxSize) {
         throw new CTypeCheckError(
           CTypeCheckErrorCode.EXCESS_ELEMENTS_IN_ARRAY_INITIALIZER,
           tree.parentAST.loc.start,
@@ -410,7 +446,7 @@ export class CTypeInitializerBuilderVisitor extends CInnerTypeTreeVisitor {
     } else {
       // used in single value assign mode
       // used here: int abc = 3;
-      if (!R.isNil(tree.getFirstValue())) {
+      if (!noSizeCheck && !R.isNil(tree.getFirstValue())) {
         throw new CTypeCheckError(
           CTypeCheckErrorCode.EXCESS_ELEMENTS_IN_SCALAR_INITIALIZER,
           tree.parentAST.loc.start,

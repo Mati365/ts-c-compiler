@@ -10,18 +10,9 @@ import {AppModule} from './app.module';
 
 ccompiler(
   /* cpp */ `
-    int main() {
-      struct {
-        struct {
-            int x, y;
-        } c;
-      } a = {
-        .c = {
-            .x = 5,
-            .y = 2,
-        },
-      };
-      return 0;
+    int* ptr() {
+      int a = 2;
+      return &a;
     }
   `,
 ).match(

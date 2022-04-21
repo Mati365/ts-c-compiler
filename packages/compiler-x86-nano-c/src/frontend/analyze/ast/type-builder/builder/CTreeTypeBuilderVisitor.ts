@@ -99,7 +99,7 @@ export class CTreeTypeBuilderVisitor extends CInnerTypeTreeVisitor {
         throw new CTypeCheckError(CTypeCheckErrorCode.INVALID_ARRAY_SIZE);
 
       if (isArrayLikeType(baseType)) {
-        if (R.isNil(baseType.size)) {
+        if (R.isNil(baseType.size) && R.isNil(size)) {
           throw new CTypeCheckError(
             CTypeCheckErrorCode.INCOMPLETE_ARRAY_SIZE,
             null,

@@ -75,12 +75,18 @@ export class CStructType extends CType<CStructTypeDescriptor> {
         );
       }
 
+      const fieldsList = this.getFieldsList();
+      const prevEntry = R.last(fieldsList)?.[1];
       const newEntry: [string, CStructEntry] = [
         name,
         new CStructEntry(
           {
             ...entry.unwrap(),
-            index: this.fields.size,
+            index: (
+              prevEntry
+                ? prevEntry.getIndex() + prevEntry.type.scalarValuesCount
+                : 0
+            ),
             offset: alignerFn(this, entry.type),
             bitset,
           },
@@ -92,7 +98,7 @@ export class CStructType extends CType<CStructTypeDescriptor> {
           ...value,
           fields: new Map(
             [
-              ...this.getFieldsList(),
+              ...fieldsList,
               newEntry,
             ],
           ),

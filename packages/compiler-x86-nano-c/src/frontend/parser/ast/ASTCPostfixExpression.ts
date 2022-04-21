@@ -123,4 +123,8 @@ export class ASTCPostfixExpression extends ASTCCompilerNode {
   isIncExpression() { return this.incExpression; }
   isDecExpression() { return this.decExpression; }
   hasNestedPostfixExpression() { return this.postfixExpression; }
+
+  getFnName(): string {
+    return this.postfixExpression.primaryExpression?.identifier?.text;
+  }
 }

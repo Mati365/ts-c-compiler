@@ -33,11 +33,12 @@ export class ASTCFunctionDefTypeCreator extends ASTCTypeCreator<ASTCFunctionDefi
     } = this;
 
     const fnType = this.extractFuncTypeFromNode(node);
-
     if (fnType) {
-      scope.defineType(fnType);
-      currentAnalyzed.fnType = fnType;
+      scope
+        .defineType(fnType)
+        .unwrapOrThrow();
 
+      currentAnalyzed.fnType = fnType;
       analyzeVisitor
         .ofScope(
           scope.appendScope(new CFunctionScope(fnType, config, node)),

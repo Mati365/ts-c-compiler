@@ -3,16 +3,18 @@ import * as R from 'ramda';
 import {
   evalLogicOp, evalMathOp,
   evalRelationOp, isLogicOpToken,
-  isMathOpToken, isRelationOpToken,
+  isMathOpToken, isNumericToken, isRelationOpToken,
 } from '@compiler/lexer/utils';
 
-import {TokenType} from '@compiler/lexer/shared';
 import {NumberToken} from '@compiler/lexer/tokens';
+import {CUnaryCastOperator} from '@compiler/x86-nano-c/constants';
 import {
   ASTCCompilerKind,
   ASTCBinaryOpNode,
   ASTCPrimaryExpression,
+  ASTCCastUnaryExpression,
 } from '@compiler/x86-nano-c/frontend/parser/ast';
+
 import {CInnerTypeTreeVisitor} from '../../CInnerTypeTreeVisitor';
 import {CTypeCheckError, CTypeCheckErrorCode} from '../../../errors/CTypeCheckError';
 
@@ -36,6 +38,12 @@ export class ConstantExpressionEvalVisitor extends CInnerTypeTreeVisitor {
   constructor() {
     super(
       {
+        [ASTCCompilerKind.CastUnaryExpression]: {
+          leave: (node: ASTCCastUnaryExpression) => {
+            this.performUnaryOp(node);
+          },
+        },
+
         [ASTCCompilerKind.BinaryOperator]: {
           leave: (node: ASTCBinaryOpNode) => {
             this.performBinaryOp(node);
@@ -52,6 +60,32 @@ export class ConstantExpressionEvalVisitor extends CInnerTypeTreeVisitor {
   }
 
   get value() { return R.last(this.expressionArgs); }
+
+  /**
+   * Performs cast operation on prefixes
+   *
+   * @example
+   *  ~5 => -6
+   * `!5 => 0
+   *
+   * @private
+   * @param {ASTCCastUnaryExpression} node
+   * @memberof ConstantExpressionEvalVisitor
+   */
+  private performUnaryOp(node: ASTCCastUnaryExpression) {
+    const {operator} = node;
+    const {expressionArgs} = this;
+
+    let value = expressionArgs.pop();
+
+    switch (operator) {
+      case CUnaryCastOperator.SUB: value = -value; break;
+      case CUnaryCastOperator.BITWISE_NOT: value = ~value; break;
+      case CUnaryCastOperator.LOGICAL_NOT: value = !value; break;
+    }
+
+    expressionArgs.push(value);
+  }
 
   /**
    * Pushes constants into expr args stack
@@ -74,7 +108,7 @@ export class ConstantExpressionEvalVisitor extends CInnerTypeTreeVisitor {
       expressionArgs.push(
         charToInt(node.charLiteral),
       );
-    } else if (!node.isConstant() || node.constant.type !== TokenType.NUMBER) {
+    } else if (!node.isConstant() || !isNumericToken(node.constant.type)) {
       if (node.isIdentifier()) {
         const compileTimeConst = scope.findCompileTimeConstant(node.identifier.text);
 

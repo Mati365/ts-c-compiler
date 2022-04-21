@@ -23,6 +23,7 @@ export const CCOMPILER_TERMINAL_CHARACTERS: TokenTerminalCharactersMap = {
   ...TERMINAL_CHARACTERS,
   '%': TokenType.MOD,
   '.': TokenType.DOT,
+  '~': TokenType.BIT_NOT,
 };
 
 export const CCOMPILER_TOKEN_PARSERS: TokenParsersMap = {

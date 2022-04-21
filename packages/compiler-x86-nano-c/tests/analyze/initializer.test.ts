@@ -11,6 +11,15 @@ describe('Initializer typecheck', () => {
     ).toHaveCompilerError(CTypeCheckErrorCode.INCOMPLETE_ARRAY_SIZE);
   });
 
+  test('excess array in const char* array literal initializer', () => {
+    expect(/* cpp */ `const char* dupa = { "XD", "XDD" };`).toHaveCompilerError();
+  });
+
+  test('literal string multidimensional array', () => {
+    expect(/* cpp */ `char abc[][4] = { "abcg", "defg" };`).not.toHaveCompilerError();
+    expect(/* cpp */ `char abc[][4] = { "abcgg", "defg" };`).toHaveCompilerError();
+  });
+
   test('literal pointers array', () => {
     expect(/* cpp */ `char* abc[] = {"ABC", "DEF"};`).not.toHaveCompilerError();
     expect(/* cpp */ `char* abc = "ABC";`).not.toHaveCompilerError();
@@ -127,7 +136,7 @@ describe('Initializer typecheck', () => {
   test('single struct with wrong designation initialization', () => {
     expect(
       /* cpp */ `struct Vec2 { int x, y; } screen = { .x = 5, .y = 5.0 };`,
-    ).toHaveCompilerError(CTypeCheckErrorCode.INCORRECT_CONSTANT_EXPR_IDENTIFIER);
+    ).not.toHaveCompilerError(CTypeCheckErrorCode.INCORRECT_CONSTANT_EXPR_IDENTIFIER);
   });
 
   test('single struct designation initialization', () => {
@@ -214,6 +223,31 @@ describe('Initializer typecheck', () => {
         struct { int a[3], b; } w[] = {
           [0].a = {1},
           [1].a[0] = 2
+        };
+      `,
+    ).not.toHaveCompilerError();
+  });
+
+  test('advanced nested initializers', () => {
+    expect(
+      /* cpp */ `
+        struct {
+          int x[5];
+          struct {
+            int y, x;
+
+            struct {
+              int maslo, ser;
+            } chleb;
+          } part;
+          int z;
+        } vec = {
+          1, 2, 3,
+          .part = {
+            .y = 6,
+            .chleb = { 1, 2 }
+          },
+          .z = 7,
         };
       `,
     ).not.toHaveCompilerError();
