@@ -3,7 +3,7 @@ import {CFunctionDeclType} from '../../types/function';
 import {CTypeCheckError, CTypeCheckErrorCode} from '../../errors/CTypeCheckError';
 import {ASTCTypeCreator} from './ASTCTypeCreator';
 
-import {isArrayLikeType, isStructLikeType} from '../../types';
+import {isArrayLikeType, isPointerLikeType, isStructLikeType} from '../../types';
 import {checkLeftTypeOverlapping} from '../../checker';
 
 /**
@@ -43,7 +43,11 @@ export class ASTCPostfixExpressionTypeCreator extends ASTCTypeCreator<ASTCPostfi
   private assignArrayLikeAccessType(node: ASTCPostfixExpression) {
     const {type: baseType} = node.postfixExpression;
 
-    if (!isArrayLikeType(baseType)) {
+    if (isPointerLikeType(baseType)) {
+      node.type = baseType.baseType;
+    } else if (isArrayLikeType(baseType)) {
+      node.type = baseType.ofInitDimensions();
+    } else {
       throw new CTypeCheckError(
         CTypeCheckErrorCode.WRONG_NON_ARRAY_FIELD_ACCESS,
         node.loc.start,
@@ -52,8 +56,6 @@ export class ASTCPostfixExpressionTypeCreator extends ASTCTypeCreator<ASTCPostfi
         },
       );
     }
-
-    node.type = baseType.ofInitDimensions();
   }
 
   /**
@@ -72,17 +74,17 @@ export class ASTCPostfixExpressionTypeCreator extends ASTCTypeCreator<ASTCPostfi
       );
     }
 
-    if (!baseType.hasInnerTypeAttributes()) {
-      throw new CTypeCheckError(
-        CTypeCheckErrorCode.PROVIDED_TYPE_DOES_NOT_CONTAIN_PROPERTIES,
-        node.loc.start,
-        {
-          typeName: baseType.getShortestDisplayName(),
-        },
-      );
-    }
-
     if (isStructLikeType(baseType)) {
+      if (!baseType.hasInnerTypeAttributes()) {
+        throw new CTypeCheckError(
+          CTypeCheckErrorCode.PROVIDED_TYPE_DOES_NOT_CONTAIN_PROPERTIES,
+          node.loc.start,
+          {
+            typeName: baseType.getShortestDisplayName(),
+          },
+        );
+      }
+
       const {text: fieldName} = node.dotExpression.name;
       const field = baseType.getField(fieldName);
 

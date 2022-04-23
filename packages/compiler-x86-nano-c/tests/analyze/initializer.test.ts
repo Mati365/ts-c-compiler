@@ -278,30 +278,4 @@ describe('Initializer typecheck', () => {
       `,
     ).toHaveCompilerError(CTypeCheckErrorCode.OPERATOR_SIDES_TYPES_MISMATCH);
   });
-
-  test('dynamic initializer typecheck fails if try to assign nested structure to int', () => {
-    expect(
-      /* cpp */ `
-        struct Vec2 {
-          int x, y;
-          struct Rect { int z; } nested;
-        } abc = { .x = 5 };
-
-        int acc = abc.nested + 4;
-      `,
-    ).toHaveCompilerError(CTypeCheckErrorCode.OPERATOR_SIDES_TYPES_MISMATCH);
-  });
-
-  test('dynamic initializer typecheck work if try to assign nested structure int field to int', () => {
-    expect(
-      /* cpp */ `
-        struct Vec2 {
-          int x, y;
-          struct Rect { int z; } nested[2];
-        } abc = { .x = 5 };
-
-        int acc = abc.nested[0].z + 4;
-      `,
-    ).not.toHaveCompilerError();
-  });
 });
