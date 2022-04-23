@@ -1,3 +1,5 @@
+import {isTreeNode} from '@compiler/grammar/tree/TreeNode';
+
 import {CVariableInitializerVisitor} from './CVariableInitializerVisitor';
 import {
   CVariableInitializerTree,
@@ -21,11 +23,13 @@ export class CVariableInitializerPrintVisitor extends CVariableInitializerVisito
     if (this._reduced && this._reduced[this._reduced.length - 2] !== '{')
       this._reduced += ', ';
 
-    this._reduced += (
-      isInitializerTreeValue(value)
-        ? '{ '
-        : value
-    );
+    let serializedValue = value;
+    if (isInitializerTreeValue(value))
+      serializedValue = '{ ';
+    else if (isTreeNode(value))
+      serializedValue = '<expr>';
+
+    this._reduced += serializedValue;
   }
 
   override leave(value: CVariableInitializeValue) {

@@ -17,7 +17,7 @@ import {
 
 import {CTypeCheckError, CTypeCheckErrorCode} from '../errors/CTypeCheckError';
 import {CType, CTypeDescriptor} from './CType';
-import {CSpecBitmap} from '../constants';
+import {CSpecBitmap, CCOMPILER_INTEGRAL_SPEC_BITMAP} from '../constants';
 
 import {
   bitsetToKeywords,
@@ -85,6 +85,9 @@ export class CPrimitiveType extends CType<CPrimitiveTypeDescriptor> {
   isVoid() { return this.hasSpecifierType(CSpecBitmap.void); }
   isSigned() { return !this.hasSpecifierType(CSpecBitmap.signed); }
   isUnsigned() { return !this.isSigned(); }
+  isIntegral() {
+    return (this.specifiers & CCOMPILER_INTEGRAL_SPEC_BITMAP) !== 0;
+  }
 
   /**
    * Returns value type based on provided value

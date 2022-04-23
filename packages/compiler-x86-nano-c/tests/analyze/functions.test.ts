@@ -2,6 +2,13 @@ import {GrammarErrorCode} from '@compiler/grammar/GrammarError';
 import {CTypeCheckErrorCode} from './utils/analyzeMatcher';
 
 describe('Function typecheck', () => {
+  test('semicolon at end of function is optional', () => {
+    expect(/* cpp */ `
+      void main() {};
+      void main2() {}
+    `).not.toHaveCompilerError();
+  });
+
   test('calling function without args', () => {
     expect(/* cpp */ `
       void sum() {}
@@ -56,7 +63,7 @@ describe('Function typecheck', () => {
       void main() {
         sum(2, 3, 4);
       }
-    `).toHaveCompilerError(CTypeCheckErrorCode.WRONG_ARGS_COUNT_PASSED_TO_FUNCTION);
+    `).toHaveCompilerError(CTypeCheckErrorCode.TOO_MANY_ARGS_PASSED_TO_FUNCTION);
   });
 
   test('calling function with corrects args count does not raise error', () => {
@@ -74,5 +81,56 @@ describe('Function typecheck', () => {
 
   test('returning pointer expression in function does not raise error', () => {
     expect(/* cpp */ `int* ptr() { int a = 2; return &a; }`).not.toHaveCompilerError();
+  });
+
+  test('returning struct type', () => {
+    expect(/* cpp */ `
+      struct Vec2 {
+        int x, y;
+      };
+
+      struct Vec2 main() {
+        struct Vec2 a = { .x = 5 };
+        return a;
+      }
+    `).not.toHaveCompilerError();
+  });
+
+  test('double const specifier raises error', () => {
+    expect(/* cpp */ `const const int sum() { return 2; }`).toHaveCompilerError();
+  });
+
+  test('const specifier does not raise error', () => {
+    expect(/* cpp */ `const int sum() { return 2; }`).not.toHaveCompilerError();
+  });
+
+  test('calling empty function with too many args does not raise error', () => {
+    expect(/* cpp */ `
+      int sum() {};
+      int main() {
+        sum(1, 2, 3);
+      }
+    `).not.toHaveCompilerError();
+  });
+
+  test('calling function with void args without args', () => {
+    expect(/* cpp */ `
+      int sum(void) {};
+      int main() { sum(); }
+    `).not.toHaveCompilerError();
+  });
+
+  test('calling function with void args without args', () => {
+    expect(/* cpp */ `
+      int sum(void) {};
+      int main() { sum(1, 2, 3); }
+    `).toHaveCompilerError(CTypeCheckErrorCode.TOO_MANY_ARGS_PASSED_TO_FUNCTION);
+  });
+
+  test('assign function return to variable does not throw error', () => {
+    expect(/* cpp */ `
+      int sum(void) { return 2; }
+      int main() { int acc = sum(); }
+    `).not.toHaveCompilerError();
   });
 });

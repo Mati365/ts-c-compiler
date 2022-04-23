@@ -6,7 +6,7 @@ import {
   ASTCDirectDeclarator,
 } from '@compiler/x86-nano-c/frontend/parser/ast';
 
-import {evalConstantExpression} from '../../eval';
+import {evalConstantExpression} from '../../expression-analyze';
 
 import {CTypeCheckError, CTypeCheckErrorCode} from '../../../errors/CTypeCheckError';
 import {CInnerTypeTreeVisitor} from '../../CInnerTypeTreeVisitor';

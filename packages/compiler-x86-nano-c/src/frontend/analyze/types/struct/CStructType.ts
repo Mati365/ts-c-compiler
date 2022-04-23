@@ -226,26 +226,36 @@ export class CStructType extends CType<CStructTypeDescriptor> {
 
   @memoizeMethod
   getFlattenFieldsTypes(): [string, CType][] {
+    const mapStructEntryPair = (pair: [string, CType]) => {
+      const [name, type] = pair;
+
+      if (isStructLikeType(type)) {
+        return (
+          type
+            .getFlattenFieldsTypes()
+            .map(([structName, value]) => [
+              `${name}.${structName}`,
+              value,
+            ])
+        );
+      }
+
+      if (isArrayLikeType(type)) {
+        return R.unnest(
+          R.times<[string, CType]>(
+            (index) => mapStructEntryPair([`${name}.${index}`, type.baseType]),
+            type.size,
+          ),
+        );
+      }
+
+      return [[name, type]];
+    };
+
     return (
       this
         .getFieldsList()
-        .flatMap((pair) => {
-          const [name, entry] = pair;
-          const {type} = entry;
-
-          if (isStructLikeType(type)) {
-            return type.getFlattenFieldsTypes();
-          }
-
-          if (isArrayLikeType(type)) {
-            return R.times<[string, CType]>(
-              (index) => [`${name}.${index}`, type.baseType],
-              type.getFlattenSize(),
-            );
-          }
-
-          return [[name, type]];
-        })
+        .flatMap(([name, {type}]) => mapStructEntryPair([name, type]))
     );
   }
 

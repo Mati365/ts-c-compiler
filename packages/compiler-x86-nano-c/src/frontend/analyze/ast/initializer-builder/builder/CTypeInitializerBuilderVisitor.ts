@@ -1,16 +1,24 @@
 import * as R from 'ramda';
 
-import {ASTCCompilerKind, ASTCCompilerNode, ASTCDesignatorList, ASTCInitializer} from '../../../../parser/ast';
+import {
+  ASTCCompilerKind,
+  ASTCCompilerNode,
+  ASTCDesignatorList,
+  ASTCInitializer,
+  isCompilerTreeNode,
+} from '../../../../parser/ast';
+
 import {CInnerTypeTreeVisitor} from '../../CInnerTypeTreeVisitor';
 import {CTypeCheckError, CTypeCheckErrorCode} from '../../../errors/CTypeCheckError';
 
 import {
   CArrayType,
   CType,
-  CPrimitiveType,
   isArrayLikeType,
   isStructLikeType,
   isPointerLikeType,
+  typeofValueOrNode,
+  CPrimitiveType,
 } from '../../../types';
 
 import {
@@ -18,7 +26,7 @@ import {
   CVariableInitializeValue,
 } from '../../../scope/variables';
 
-import {ConstantOperationResult, evalConstantExpression} from '../../eval';
+import {ConstantOperationResult, evalConstantExpression} from '../../expression-analyze';
 import {checkLeftTypeOverlapping} from '../../../checker';
 
 /**
@@ -205,15 +213,20 @@ export class CTypeInitializerBuilderVisitor extends CInnerTypeTreeVisitor {
    */
   private extractInitializerListValue(node: ASTCInitializer, arrayItem: boolean = true) {
     const {context, baseType} = this;
-
-    const constExprResult = evalConstantExpression(
+    const exprResult = evalConstantExpression(
       {
         expression: node.assignmentExpression,
         context,
       },
-    ).unwrapOrThrow();
+    );
 
-    const stringLiteral = R.is(String, constExprResult);
+    const exprValue = (
+      exprResult.isOk()
+        ? exprResult.unwrap()
+        : node.assignmentExpression
+    );
+
+    const stringLiteral = R.is(String, exprValue);
     let expectedType: CType;
 
     if (!arrayItem) {
@@ -241,12 +254,16 @@ export class CTypeInitializerBuilderVisitor extends CInnerTypeTreeVisitor {
       const noSizeCheck = !isPointerLikeType(baseType) || !arrayItem;
 
       this.appendNextSubtree(
-        this.parseStringValue(node, expectedType, constExprResult),
+        this.parseStringValue(node, expectedType, exprValue),
         noSizeCheck,
+      );
+    } else if (isCompilerTreeNode(exprValue)) {
+      this.appendNextOffsetValue(
+        this.parseTreeNodeExpressionValue(node, expectedType, exprValue),
       );
     } else {
       this.appendNextOffsetValue(
-        this.parseScalarValue(node, expectedType, constExprResult),
+        this.parseScalarValue(node, expectedType, exprValue),
       );
     }
   }
@@ -333,6 +350,41 @@ export class CTypeInitializerBuilderVisitor extends CInnerTypeTreeVisitor {
   }
 
   /**
+   * Parses initializer dynamic expression with variables such as:
+   *
+   * @example
+   *  b * 4;
+   *
+   * @private
+   * @param {ASTCCompilerNode} node
+   * @param {CType} expectedType
+   * @param {ASTCCompilerNode} result
+   * @return {ASTCCompilerNode}
+   * @memberof CTypeInitializerBuilderVisitor
+   */
+  private parseTreeNodeExpressionValue(
+    node: ASTCCompilerNode,
+    expectedType: CType,
+    result: ASTCCompilerNode,
+  ): ASTCCompilerNode {
+    const {arch} = this;
+    const initializedType = typeofValueOrNode(arch, result);
+
+    if (!checkLeftTypeOverlapping(expectedType, initializedType)) {
+      throw new CTypeCheckError(
+        CTypeCheckErrorCode.INCORRECT_INITIALIZED_VARIABLE_TYPE,
+        node.loc.start,
+        {
+          sourceType: initializedType.getShortestDisplayName(),
+          destinationType: expectedType?.getShortestDisplayName() ?? '<unknown-dest-type>',
+        },
+      );
+    }
+
+    return result;
+  }
+
+  /**
    * Appends to initializer tree values such as 1, 2, 3 from { 1, 2, 3 }
    *
    * @private
@@ -346,9 +398,9 @@ export class CTypeInitializerBuilderVisitor extends CInnerTypeTreeVisitor {
     node: ASTCCompilerNode,
     expectedType: CType,
     evalResult: ConstantOperationResult,
-  ): number {
+  ): number  {
     const {arch} = this;
-    const initializedType = CPrimitiveType.typeofValue(arch, evalResult);
+    const initializedType = node.type ?? CPrimitiveType.typeofValue(arch, evalResult);
 
     if (!checkLeftTypeOverlapping(expectedType, initializedType)) {
       throw new CTypeCheckError(

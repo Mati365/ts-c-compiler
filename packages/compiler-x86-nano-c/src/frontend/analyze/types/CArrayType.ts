@@ -95,10 +95,12 @@ export class CArrayType extends CType<CArrayTypeDescriptor> {
   get size() { return this.value.size; }
   get baseType() { return this.value.baseType; }
   get scalarValuesCount() {
-    if (this.isUnknownSize())
+    const {scalarValuesCount} = this.baseType;
+
+    if (this.isUnknownSize() || R.isNil(scalarValuesCount))
       return null;
 
-    return this.size * this.baseType.scalarValuesCount;
+    return this.size * scalarValuesCount;
   }
 
   /**
@@ -175,6 +177,31 @@ export class CArrayType extends CType<CArrayTypeDescriptor> {
     return CArrayType.ofFlattenDescriptor(
       {
         dimensions: R.tail(dimensions),
+        qualifiers,
+        type,
+      },
+    );
+  }
+
+  /**
+   * Returns array with dimensions except first
+   *
+   * @example
+   *  int abc[1][2][3] => int abc[1][2]
+   *
+   * @return {CType}
+   * @memberof CArrayType
+   *
+   * @return {CType}
+   * @memberof CArrayType
+   */
+  ofInitDimensions(): CType {
+    const {qualifiers} = this;
+    const {type, dimensions} = this.getFlattenInfo();
+
+    return CArrayType.ofFlattenDescriptor(
+      {
+        dimensions: R.init(dimensions),
         qualifiers,
         type,
       },

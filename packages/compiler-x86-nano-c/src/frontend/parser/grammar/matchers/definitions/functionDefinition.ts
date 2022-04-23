@@ -1,3 +1,4 @@
+import {TokenType} from '@compiler/lexer/shared/TokenTypes';
 import {ASTCFunctionDefinition} from '../../../ast';
 import {CGrammar} from '../shared';
 
@@ -22,6 +23,13 @@ export function functionDefinition(grammar: CGrammar): ASTCFunctionDefinition {
   const declaratorNode = declarator(grammar);
   const declarationListNode = g.try(() => declarationList(grammar));
   const compoundStatementNode = compoundStatement(grammar);
+
+  g.match(
+    {
+      type: TokenType.SEMICOLON,
+      optional: true,
+    },
+  );
 
   return new ASTCFunctionDefinition(
     specifier.loc,

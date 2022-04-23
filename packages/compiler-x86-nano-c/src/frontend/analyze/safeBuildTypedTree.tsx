@@ -33,6 +33,7 @@ export function safeBuildTypedTree(
     );
   } catch (e) {
     e.code = e.code ?? CTypeCheckErrorCode.TYPECHECK_ERROR;
+    e.tree = tree;
 
     return err(
       [

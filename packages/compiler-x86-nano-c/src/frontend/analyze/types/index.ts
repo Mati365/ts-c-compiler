@@ -5,3 +5,4 @@ export * from './CEnumType';
 export * from './CArrayType';
 export * from './struct';
 export * from './function';
+export * from './utils/typeofValueOrNode';

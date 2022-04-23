@@ -3,7 +3,7 @@ import {CEnumType, CPrimitiveType} from '../../../types';
 import {CTypeCheckError, CTypeCheckErrorCode} from '../../../errors/CTypeCheckError';
 import {TypeExtractorAttrs} from '../constants/types';
 
-import {evalConstantExpression} from '../../eval';
+import {evalConstantExpression} from '../../expression-analyze';
 import {checkLeftTypeOverlapping} from '../../../checker';
 
 type EnumTypeExtractorAttrs = TypeExtractorAttrs & {
@@ -41,6 +41,7 @@ export function extractEnumTypeFromNode(
       ).unwrapOrThrow();
 
       const resultType = CPrimitiveType.typeofValue(arch, exprResult);
+
       if (!checkLeftTypeOverlapping(expectedResultType, resultType)) {
         throw new CTypeCheckError(
           CTypeCheckErrorCode.EXPECTED_RECEIVE_TYPE,

@@ -4,7 +4,7 @@ import {AbstractTreeVisitor, IsWalkableNode} from '@compiler/grammar/tree/Abstra
 import {ASTCCompilerNode} from '../../../parser/ast/ASTCCompilerNode';
 import {CType} from '../../types/CType';
 
-export type CVariableInitializeValue = string | number | CVariableInitializerTree;
+export type CVariableInitializeValue = string | number | CVariableInitializerTree | ASTCCompilerNode;
 export type CVariableInitializerMap = Map<number, CVariableInitializeValue>;
 
 export function isInitializerTreeValue(value: CVariableInitializeValue): value is CVariableInitializerTree {

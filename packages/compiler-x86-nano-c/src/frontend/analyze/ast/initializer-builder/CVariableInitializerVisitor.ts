@@ -1,4 +1,10 @@
-import {AbstractTreeVisitor} from '@compiler/grammar/tree/AbstractTreeVisitor';
-import {CVariableInitializerTree} from '../../scope/variables';
+import {isCompilerTreeNode} from '@compiler/x86-nano-c/frontend/parser';
 
-export class CVariableInitializerVisitor extends AbstractTreeVisitor<CVariableInitializerTree> {}
+import {AbstractTreeVisitor} from '@compiler/grammar/tree/AbstractTreeVisitor';
+import {CVariableInitializeValue} from '../../scope/variables';
+
+export class CVariableInitializerVisitor extends AbstractTreeVisitor<CVariableInitializeValue> {
+  shouldVisitNode(node: CVariableInitializeValue): boolean {
+    return !isCompilerTreeNode(node);
+  }
+}

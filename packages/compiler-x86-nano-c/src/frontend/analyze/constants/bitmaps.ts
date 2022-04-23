@@ -3,6 +3,7 @@ import {
   CTypeQualifier,
   CFunctionSpecifier,
   CStorageClassSpecifier,
+  CCOMPILER_INTEGRAL_SPECIFIERS,
 } from '@compiler/x86-nano-c/constants/lang';
 
 export const CSpecBitmap: Record<CTypeSpecifier, number> = {
@@ -38,3 +39,7 @@ export const CStorageSpecBitmap: Record<CStorageClassSpecifier, number> = {
   [CStorageClassSpecifier.AUTO]: 1 << 3,
   [CStorageClassSpecifier.REGISTER]: 1 << 4,
 };
+
+export const CCOMPILER_INTEGRAL_SPEC_BITMAP: number = (
+  CCOMPILER_INTEGRAL_SPECIFIERS.reduce((acc, item) => acc | CSpecBitmap[item], 0)
+);

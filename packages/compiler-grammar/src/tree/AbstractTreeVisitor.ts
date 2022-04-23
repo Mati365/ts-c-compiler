@@ -29,8 +29,9 @@ export class AbstractTreeVisitor<T extends any = any> {
 
     try {
       const result = this.enter?.(node, history);
-
-      if (result !== false && isWalkableNode(node))
+      if (result !== false
+          && isWalkableNode(node)
+          && this.shouldVisitNode?.(node) !== false)
         node.walk(this);
 
       this.leave?.(node, history); // eslint-disable-line no-unused-expressions
@@ -46,6 +47,7 @@ export class AbstractTreeVisitor<T extends any = any> {
     return this;
   }
 
+  shouldVisitNode?(node: T): boolean;
   enter?(node: T, history: T[]): void | boolean;
   leave?(node: T, history: T[]): void;
 }

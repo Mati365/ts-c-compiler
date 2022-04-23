@@ -52,6 +52,9 @@ export enum CTypeCheckErrorCode {
   INCORRECT_INDEX_INITIALIZER_USAGE,
   UNKNOWN_NAMED_STRUCTURE_INITIALIZER,
   INDEX_INITIALIZER_ARRAY_OVERFLOW,
+  UNKNOWN_IDENTIFIER,
+  WRONG_NON_STRUCT_FIELD_ACCESS,
+  WRONG_NON_ARRAY_FIELD_ACCESS,
 }
 
 export const C_TYPE_CHECK_ERROR_TRANSLATIONS: Record<CTypeCheckErrorCode, string> = {
@@ -79,6 +82,7 @@ export const C_TYPE_CHECK_ERROR_TRANSLATIONS: Record<CTypeCheckErrorCode, string
   [CTypeCheckErrorCode.UNKNOWN_STRUCT_LIKE_MEMBER]: 'Unknown %{typeName} type "%{fieldName}" member!',
   [CTypeCheckErrorCode.UNKNOWN_FUNCTION_CALL]: 'Unknown function "%{name}"!',
   [CTypeCheckErrorCode.UNKNOWN_INITIALIZER_TYPE]: 'Unknown initializer type!',
+  [CTypeCheckErrorCode.UNKNOWN_IDENTIFIER]: 'Unknown identifier "%{name}"!',
   [CTypeCheckErrorCode.INCORRECT_INITIALIZED_VARIABLE_TYPE]: (
     'Unable assign "%{sourceType}" initializer value to "%{destinationType}"!'
   ),
@@ -124,6 +128,8 @@ export const C_TYPE_CHECK_ERROR_TRANSLATIONS: Record<CTypeCheckErrorCode, string
   [CTypeCheckErrorCode.INCORRECT_INDEX_INITIALIZER_USAGE]: 'Incorrect index initializer usage!',
   [CTypeCheckErrorCode.UNKNOWN_NAMED_STRUCTURE_INITIALIZER]: 'Unknown named structure field initializer "%{name}"!',
   [CTypeCheckErrorCode.INDEX_INITIALIZER_ARRAY_OVERFLOW]: 'Index initializer array overflow!',
+  [CTypeCheckErrorCode.WRONG_NON_STRUCT_FIELD_ACCESS]: 'Wrong non struct field access "%{typeName}"!',
+  [CTypeCheckErrorCode.WRONG_NON_ARRAY_FIELD_ACCESS]: 'Wrong non array field access "%{typeName}"!',
 };
 
 /**

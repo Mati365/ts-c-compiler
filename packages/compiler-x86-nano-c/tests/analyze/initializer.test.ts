@@ -27,7 +27,11 @@ describe('Initializer typecheck', () => {
 
   test('literal pointers mixed with int scalars array', () => {
     expect(/* cpp */ `char* abc[] = {"ABC", "DEF", { 1, 2, 3 }};`)
-      .toHaveCompilerError(CTypeCheckErrorCode.INCORRECT_INITIALIZED_VARIABLE_TYPE);
+      .toHaveCompilerError(CTypeCheckErrorCode.EXCESS_ELEMENTS_IN_ARRAY_INITIALIZER);
+  });
+
+  test('literal pointers mixed with int scalars array', () => {
+    expect(/* cpp */ `char* abc[] = {"ABC", "DEF", { 1 }};`).not.toHaveCompilerError();
   });
 
   test('unable to assign initializer to scalar', () => {
@@ -249,6 +253,54 @@ describe('Initializer typecheck', () => {
           },
           .z = 7,
         };
+      `,
+    ).not.toHaveCompilerError();
+  });
+
+  test('dynamic variable initializer', () => {
+    expect(
+      /* cpp */ `
+        int d = 5;
+        int acc = d + 4;
+      `,
+    ).not.toHaveCompilerError();
+  });
+
+  test('dynamic missing variable initializer', () => {
+    expect(/* cpp */ `int acc = d + 4;`).toHaveCompilerError(CTypeCheckErrorCode.UNKNOWN_IDENTIFIER);
+  });
+
+  test('dynamic initializer typecheck fails if try to assign structure to int', () => {
+    expect(
+      /* cpp */ `
+        struct Vec2 { int x, y; } abc = { .x = 5 };
+        int acc = abc + 4;
+      `,
+    ).toHaveCompilerError(CTypeCheckErrorCode.OPERATOR_SIDES_TYPES_MISMATCH);
+  });
+
+  test('dynamic initializer typecheck fails if try to assign nested structure to int', () => {
+    expect(
+      /* cpp */ `
+        struct Vec2 {
+          int x, y;
+          struct Rect { int z; } nested;
+        } abc = { .x = 5 };
+
+        int acc = abc.nested + 4;
+      `,
+    ).toHaveCompilerError(CTypeCheckErrorCode.OPERATOR_SIDES_TYPES_MISMATCH);
+  });
+
+  test('dynamic initializer typecheck work if try to assign nested structure int field to int', () => {
+    expect(
+      /* cpp */ `
+        struct Vec2 {
+          int x, y;
+          struct Rect { int z; } nested[2];
+        } abc = { .x = 5 };
+
+        int acc = abc.nested[0].z + 4;
       `,
     ).not.toHaveCompilerError();
   });

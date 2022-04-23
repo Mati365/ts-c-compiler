@@ -60,11 +60,19 @@ export function checkLeftTypeOverlapping(
       return checkLeftTypeOverlapping(left.baseType, right.baseType, implicitCast);
   }
 
-  // primitive types in C can be implict casted
-  if (implicitCast
-      && isPrimitiveLikeType(left)
-      && isPrimitiveLikeType(right))
-    return true;
+  if (implicitCast) {
+    const leftPrimitive = isPrimitiveLikeType(left);
+    const rightPrimitive = isPrimitiveLikeType(right);
+
+    // primitive types in C can be implict casted
+    if (leftPrimitive && rightPrimitive)
+      return true;
+
+    // implict cast number to pointer
+    if ((isPointerLikeType(left) && rightPrimitive && right.isIntegral())
+        || (isPointerLikeType(right) && leftPrimitive && left.isIntegral()))
+      return true;
+  }
 
   return false;
 }

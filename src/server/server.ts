@@ -2,7 +2,7 @@ import {NestFactory, Reflector} from '@nestjs/core';
 import {NestExpressApplication} from '@nestjs/platform-express';
 import {ClassSerializerInterceptor} from '@nestjs/common';
 
-import {ccompiler} from '@compiler/x86-nano-c';
+import {ccompiler, CCompilerOutput} from '@compiler/x86-nano-c';
 
 import {ENV} from './constants/env';
 import {LoggerInterceptor} from './interceptors/Logger.interceptor';
@@ -10,17 +10,20 @@ import {AppModule} from './app.module';
 
 ccompiler(
   /* cpp */ `
-    int* ptr() {
-      int a = 2;
-      return &a;
-    }
+  char* abc[] = {"ABC", "DEF", { 1 }};
   `,
 ).match(
   {
     ok: (result) => {
       result.dump();
     },
-    err: (error) => {
+    err: (error: any) => {
+      if (error?.[0]?.tree) {
+        console.info(
+          CCompilerOutput.serializeTypedTree(error[0].tree),
+        );
+      }
+
       console.error(error);
     },
   },

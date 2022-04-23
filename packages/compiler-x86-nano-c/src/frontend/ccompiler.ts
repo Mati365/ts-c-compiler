@@ -30,11 +30,8 @@ export class CCompilerOutput {
     readonly timings: CCompilerTimings,
   ) {}
 
-  dump() {
-    const {ast, scope, code, timings} = this;
-
-    const scopeTree = CScopePrintVisitor.serializeToString(scope);
-    const tree = TreePrintVisitor.serializeToString<ASTCCompilerNode>(
+  static serializeTypedTree(ast: ASTCCompilerNode): string {
+    return TreePrintVisitor.serializeToString<ASTCCompilerNode>(
       ast,
       {
         formatterFn: (node) => dumpAttributesToString(
@@ -45,6 +42,11 @@ export class CCompilerOutput {
         ),
       },
     );
+  }
+
+  dump() {
+    const {ast, scope, code, timings} = this;
+    const scopeTree = CScopePrintVisitor.serializeToString(scope);
 
     console.info(
       [
@@ -53,7 +55,7 @@ export class CCompilerOutput {
         'Source:',
         code,
         'Syntax tree:\n',
-        tree,
+        CCompilerOutput.serializeTypedTree(ast),
         'Scope tree:\n',
         scopeTree,
         '',

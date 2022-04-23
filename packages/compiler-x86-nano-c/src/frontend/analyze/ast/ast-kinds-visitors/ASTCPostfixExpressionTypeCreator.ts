@@ -1,9 +1,9 @@
 import {ASTCCompilerKind, ASTCPostfixExpression} from '@compiler/x86-nano-c/frontend/parser/ast';
-import {CStructType} from '../../types/struct/CStructType';
 import {CFunctionDeclType} from '../../types/function';
 import {CTypeCheckError, CTypeCheckErrorCode} from '../../errors/CTypeCheckError';
 import {ASTCTypeCreator} from './ASTCTypeCreator';
 
+import {isArrayLikeType, isStructLikeType} from '../../types';
 import {checkLeftTypeOverlapping} from '../../checker';
 
 /**
@@ -21,8 +21,10 @@ export class ASTCPostfixExpressionTypeCreator extends ASTCTypeCreator<ASTCPostfi
       return;
 
     // handle structs / unions members
-    if (node.isDotExpression() || node.isPtrExpression())
-      this.assignStructLikeAccessType(node);
+    if (node.isArrayExpression())
+      this.assignArrayLikeAccessType(node);
+    else if (node.isDotExpression() || node.isPtrExpression())
+      this.assignDotPtrLikeAccessType(node);
     else if (node.isFnExpression())
       this.assignFunctionCallerTypes(node);
     else if (node.isPrimaryExpression())
@@ -32,13 +34,36 @@ export class ASTCPostfixExpressionTypeCreator extends ASTCTypeCreator<ASTCPostfi
   }
 
   /**
-   * Assign type to calls like item.abc
+   * Assign type to calls like item[0].abc
    *
    * @private
    * @param {ASTCPostfixExpression} node
    * @memberof ASTCPostfixExpressionTypeCreator
    */
-  private assignStructLikeAccessType(node: ASTCPostfixExpression) {
+  private assignArrayLikeAccessType(node: ASTCPostfixExpression) {
+    const {type: baseType} = node.postfixExpression;
+
+    if (!isArrayLikeType(baseType)) {
+      throw new CTypeCheckError(
+        CTypeCheckErrorCode.WRONG_NON_ARRAY_FIELD_ACCESS,
+        node.loc.start,
+        {
+          typeName: baseType.getShortestDisplayName(),
+        },
+      );
+    }
+
+    node.type = baseType.ofInitDimensions();
+  }
+
+  /**
+   * Assign type to calls like item.abc or item->abc
+   *
+   * @private
+   * @param {ASTCPostfixExpression} node
+   * @memberof ASTCPostfixExpressionTypeCreator
+   */
+  private assignDotPtrLikeAccessType(node: ASTCPostfixExpression) {
     const baseType = (node.primaryExpression || node.postfixExpression).type;
     if (!baseType) {
       throw new CTypeCheckError(
@@ -57,9 +82,9 @@ export class ASTCPostfixExpressionTypeCreator extends ASTCTypeCreator<ASTCPostfi
       );
     }
 
-    if (baseType.isStruct()) {
+    if (isStructLikeType(baseType)) {
       const {text: fieldName} = node.dotExpression.name;
-      const field = (<CStructType> baseType).getField(fieldName);
+      const field = baseType.getField(fieldName);
 
       if (!field) {
         throw new CTypeCheckError(
@@ -73,6 +98,14 @@ export class ASTCPostfixExpressionTypeCreator extends ASTCTypeCreator<ASTCPostfi
       }
 
       node.type = field.type;
+    } else {
+      throw new CTypeCheckError(
+        CTypeCheckErrorCode.WRONG_NON_STRUCT_FIELD_ACCESS,
+        node.loc.start,
+        {
+          typeName: baseType.getShortestDisplayName(),
+        },
+      );
     }
   }
 
@@ -108,48 +141,63 @@ export class ASTCPostfixExpressionTypeCreator extends ASTCTypeCreator<ASTCPostfi
       );
     }
 
-    // handle int sum(void) call
-    if (fnType.isVoidArgsList() && assignments.length) {
-      throw new CTypeCheckError(
-        CTypeCheckErrorCode.TOO_MANY_ARGS_PASSED_TO_FUNCTION,
-        node.loc.start,
-        {
-          typeName: fnType.getShortestDisplayName(),
-        },
-      );
-    }
+    const {length: totalFnArgs} = fnType.args;
 
-    if (assignments.length !== fnType.args.length) {
-      throw new CTypeCheckError(
-        CTypeCheckErrorCode.WRONG_ARGS_COUNT_PASSED_TO_FUNCTION,
-        node.loc.start,
-        {
-          typeName: fnType.getShortestDisplayName(),
-          expected: fnType.args.length,
-          received: assignments.length,
-        },
-      );
-    }
-
-    fnType.args.forEach((arg, index) => {
-      const [leftType, rightType] = [
-        arg.type,
-        assignments[index].type,
-      ];
-
-      if (!checkLeftTypeOverlapping(leftType, rightType)) {
+    if (fnType.isVoidArgsList()) {
+      if (assignments.length) {
         throw new CTypeCheckError(
-          CTypeCheckErrorCode.WRONG_ARG_PASSED_TO_FUNCTION,
+          CTypeCheckErrorCode.TOO_MANY_ARGS_PASSED_TO_FUNCTION,
           node.loc.start,
           {
-            index: index + 1,
             typeName: fnType.getShortestDisplayName(),
-            expected: leftType ?? '<unknown-arg-type>',
-            received: rightType ?? '<unknown-passed-type>',
           },
         );
       }
-    });
+    } else {
+      if (totalFnArgs) {
+        if (assignments.length > totalFnArgs) {
+          throw new CTypeCheckError(
+            CTypeCheckErrorCode.TOO_MANY_ARGS_PASSED_TO_FUNCTION,
+            node.loc.start,
+            {
+              typeName: fnType.getShortestDisplayName(),
+            },
+          );
+        }
+
+        if (assignments.length !== totalFnArgs) {
+          throw new CTypeCheckError(
+            CTypeCheckErrorCode.WRONG_ARGS_COUNT_PASSED_TO_FUNCTION,
+            node.loc.start,
+            {
+              typeName: fnType.getShortestDisplayName(),
+              expected: totalFnArgs,
+              received: assignments.length,
+            },
+          );
+        }
+      }
+
+      fnType.args.forEach((arg, index) => {
+        const [leftType, rightType] = [
+          arg.type,
+          assignments[index].type,
+        ];
+
+        if (!checkLeftTypeOverlapping(leftType, rightType)) {
+          throw new CTypeCheckError(
+            CTypeCheckErrorCode.WRONG_ARG_PASSED_TO_FUNCTION,
+            node.loc.start,
+            {
+              index: index + 1,
+              typeName: fnType.getShortestDisplayName(),
+              expected: leftType ?? '<unknown-arg-type>',
+              received: rightType ?? '<unknown-passed-type>',
+            },
+          );
+        }
+      });
+    }
 
     node.type = fnType.returnType;
   }

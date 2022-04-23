@@ -23,7 +23,7 @@ export class ASTCDeclarationTypeCreator extends ASTCTypeCreator<ASTCDeclaration>
   kind = ASTCCompilerKind.Declaration;
 
   enter(declaration: ASTCDeclaration): boolean {
-    const {context, scope} = this;
+    const {context, scope, analyzeVisitor} = this;
     const {initList} = declaration;
 
     // it returns only "int" from "int abc[3]"
@@ -48,6 +48,8 @@ export class ASTCDeclarationTypeCreator extends ASTCTypeCreator<ASTCDeclaration>
     }
 
     if (initList) {
+      analyzeVisitor.visit(initList);
+
       const variables = initList.children.map((initDeclarator) => (
         // appends to "int" array size of "int abc[3]" stmt if present, so variable.type is "int[3]"
         extractInitDeclaratorTypeVariables(
