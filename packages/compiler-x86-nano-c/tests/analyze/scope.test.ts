@@ -26,4 +26,27 @@ describe('Variables scope', () => {
       }
     `).toHaveCompilerError(CTypeCheckErrorCode.UNKNOWN_IDENTIFIER);
   });
+
+  test('redefine of nested scope variable does not trigger error', () => {
+    expect(/* cpp */ `
+      int main() {
+        int c = 1;
+
+        if (11 > 10) {
+          int c = 7;
+        } else {
+          int c = 6;
+        }
+      }
+    `).not.toHaveCompilerError();
+  });
+
+  test('redefine of scope variable trigger error', () => {
+    expect(/* cpp */ `
+      int main() {
+        int c = 1;
+        int c = 2;
+      }
+    `).toHaveCompilerError(CTypeCheckErrorCode.REDEFINITION_OF_VARIABLE);
+  });
 });

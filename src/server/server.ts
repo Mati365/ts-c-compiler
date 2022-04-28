@@ -11,7 +11,9 @@ import {AppModule} from './app.module';
 ccompiler(
   /* cpp */ `
     int main() {
-      if (2 + 4 > 10) {
+      int c = 1;
+
+      if (11 > 10) {
         int c = 7;
       } else {
         int c = 6;

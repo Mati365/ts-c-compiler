@@ -109,7 +109,7 @@ export class CScopeTree<C extends ASTCCompilerNode = ASTCCompilerNode> implement
     const {variables} = this;
     const {name} = variable;
 
-    if (this.findVariable(name)) {
+    if (this.findVariable(name, false)) {
       return err(
         new CTypeCheckError(
           CTypeCheckErrorCode.REDEFINITION_OF_VARIABLE,

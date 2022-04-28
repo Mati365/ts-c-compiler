@@ -23,10 +23,10 @@ export class ASTCIfStmtTypeCreator extends ASTCTypeCreator<ASTCIfStatement> {
       analyzeVisitor.visit(logicalExpression);
 
     if (trueExpression)
-      analyzeVisitor.ofBlockScope(trueExpression).visit();
+      analyzeVisitor.visitBlockScope(trueExpression);
 
     if (falseExpression)
-      analyzeVisitor.ofBlockScope(falseExpression).visit();
+      analyzeVisitor.visitBlockScope(falseExpression);
 
     return false;
   }
