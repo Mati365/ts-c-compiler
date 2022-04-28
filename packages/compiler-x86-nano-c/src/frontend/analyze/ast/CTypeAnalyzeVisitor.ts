@@ -58,6 +58,11 @@ export class CTypeAnalyzeVisitor extends GroupTreeVisitor<ASTCCompilerNode, any,
   get arch() { return this.context.config.arch; }
   get currentAnalyzed() { return this.context.currentAnalyzed; }
 
+  visit(node?: ASTCCompilerNode<any>): this {
+    super.visit(node ?? this.scope.parentAST);
+    return this;
+  }
+
   ofScope(scope: CScopeTree) {
     const {context, currentAnalyzed} = this;
 
@@ -67,6 +72,14 @@ export class CTypeAnalyzeVisitor extends GroupTreeVisitor<ASTCCompilerNode, any,
         currentAnalyzed,
         scope,
       },
+    );
+  }
+
+  ofBlockScope(node?: ASTCCompilerNode) {
+    const {scope, context} = this;
+
+    return this.ofScope(
+      scope.appendScope(new CScopeTree(context.config, node)),
     );
   }
 }

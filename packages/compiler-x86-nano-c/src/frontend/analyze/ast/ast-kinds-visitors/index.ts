@@ -11,6 +11,7 @@ import {ASTCCastExpressionTypeCreator} from './ASTCCastExpressionTypeCreator';
 import {ASTCCastUnaryExpressionTypeCreator} from './ASTCCastUnaryExpressionTypeCreator';
 import {ASTCUnaryExpressionTypeCreator} from './ASTCUnaryExpressionTypeCreator';
 import {ASTCInitializerTypeCreator} from './ASTCInitializerTypeCreator';
+import {ASTCIfStmtTypeCreator} from './ASTCIfStmtExpressionTypeCreator';
 
 export * from './ASTCTypeCreator';
 
@@ -27,4 +28,5 @@ export const ASTC_TYPE_CREATORS: NewableASTCTypeCreator[] = [
   ASTCCastUnaryExpressionTypeCreator,
   ASTCUnaryExpressionTypeCreator,
   ASTCInitializerTypeCreator,
+  ASTCIfStmtTypeCreator,
 ];

@@ -10,8 +10,13 @@ import {AppModule} from './app.module';
 
 ccompiler(
   /* cpp */ `
-    struct { int a[3], b, c; } w[] =
-    { [1].a = {2}, [1].c = 3, [0].b = 6, [0].a = { 6 } };
+    int main() {
+      if (2 + 4 > 10) {
+        int c = 7;
+      } else {
+        int c = 6;
+      }
+    }
   `,
 ).match(
   {
