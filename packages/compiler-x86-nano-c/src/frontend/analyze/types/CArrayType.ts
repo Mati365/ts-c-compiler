@@ -94,6 +94,11 @@ export class CArrayType extends CType<CArrayTypeDescriptor> {
 
   get size() { return this.value.size; }
   get baseType() { return this.value.baseType; }
+
+  get itemScalarValuesCount() {
+    return this.baseType.scalarValuesCount;
+  }
+
   get scalarValuesCount() {
     const {scalarValuesCount} = this.baseType;
 

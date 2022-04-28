@@ -10,8 +10,8 @@ import {AppModule} from './app.module';
 
 ccompiler(
   /* cpp */ `
-    const char* str = "Hello world";
-    char item = str[1];
+    struct { int a[3], b, c; } w[] =
+    { [1].a = {2}, [1].c = 3, [0].b = 6, [0].a = { 6 } };
   `,
 ).match(
   {

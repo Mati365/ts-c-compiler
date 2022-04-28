@@ -142,7 +142,8 @@ export class CTypeInitializerBuilderVisitor extends CInnerTypeTreeVisitor {
       this.maxSize = this.tree.scalarValuesCount;
     }
 
-    if (isArrayLikeType(baseType)
+    const arrayType = isArrayLikeType(baseType);
+    if (arrayType
         && !node.hasInitializerList()
         && !checkLeftTypeOverlapping(CArrayType.ofStringLiteral(arch), baseType, false)
     ) {
@@ -158,6 +159,14 @@ export class CTypeInitializerBuilderVisitor extends CInnerTypeTreeVisitor {
     } else {
       // handle int a = 2
       this.extractInitializerListValue(node, false);
+    }
+
+    if (arrayType) {
+      const {itemScalarValuesCount: itemSize} = baseType;
+
+      this.tree.ensureSize(
+        Math.ceil(this.tree.fields.length / itemSize) * itemSize,
+      );
     }
   }
 
@@ -448,7 +457,7 @@ export class CTypeInitializerBuilderVisitor extends CInnerTypeTreeVisitor {
     // appending to initializer list
     const nestedTree = new CVariableInitializerTree(expectedType,  node);
     for (let i = 0; i < text.length; ++i)
-      nestedTree.fields.set(i, text.charCodeAt(i));
+      nestedTree.fields[i] = text.charCodeAt(i);
 
     return nestedTree;
   }
@@ -481,7 +490,7 @@ export class CTypeInitializerBuilderVisitor extends CInnerTypeTreeVisitor {
     if (isStructLikeType(baseType)) {
       // increments offets, determine which field is initialized in struct and sets value
       // used here: struct Vec2 vec = { 1, 2 };
-      tree.fields.set(this.currentOffset, entryValue);
+      tree.setAndExpand(this.currentOffset, entryValue);
       this.currentOffset = this.getNextOffset();
     } else if (isArrayLikeType(baseType) || isPointerLikeType(baseType)) {
       // increments offsets and append next value to list, used in arrays
@@ -493,7 +502,7 @@ export class CTypeInitializerBuilderVisitor extends CInnerTypeTreeVisitor {
         );
       }
 
-      tree.fields.set(this.currentOffset, entryValue);
+      tree.setAndExpand(this.currentOffset, entryValue);
       this.currentOffset = this.getNextOffset();
     } else {
       // used in single value assign mode
@@ -505,7 +514,7 @@ export class CTypeInitializerBuilderVisitor extends CInnerTypeTreeVisitor {
         );
       }
 
-      tree.fields.set(0, entryValue);
+      tree.setAndExpand(0, entryValue);
       this.currentOffset = 0;
     }
   }

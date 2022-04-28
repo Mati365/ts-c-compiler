@@ -5,7 +5,7 @@ import {ASTCCompilerNode} from '../../../parser/ast/ASTCCompilerNode';
 import {CType} from '../../types/CType';
 
 export type CVariableInitializeValue = string | number | CVariableInitializerTree | ASTCCompilerNode;
-export type CVariableInitializerMap = Map<number, CVariableInitializeValue>;
+export type CVariableInitializerFields = CVariableInitializeValue[];
 
 export function isInitializerTreeValue(value: CVariableInitializeValue): value is CVariableInitializerTree {
   return R.is(Object, value) && R.has('_baseType', value);
@@ -23,7 +23,7 @@ export class CVariableInitializerTree<C extends ASTCCompilerNode = ASTCCompilerN
   constructor(
     protected readonly _baseType: CType,
     protected readonly _parentAST: C,
-    protected readonly _fields: CVariableInitializerMap = new Map,
+    protected _fields: CVariableInitializerFields = [],
   ) {
     this.fill(null);
   }
@@ -33,16 +33,40 @@ export class CVariableInitializerTree<C extends ASTCCompilerNode = ASTCCompilerN
   get fields() { return this._fields; }
 
   fill(value: CVariableInitializeValue) {
-    const {fields} = this;
-
-    fields.clear();
-    for (let i = 0; i < this.scalarValuesCount; ++i)
-      fields.set(i, value);
+    this._fields = new Array(this.scalarValuesCount).fill(value);
   }
 
   walk(visitor: AbstractTreeVisitor<any>): void {
-    for (const [, value] of this.fields)
-      visitor.visit(value);
+    this._fields.forEach(visitor.visit.bind(visitor));
+  }
+
+  /**
+   * Expands fields array to given size
+   *
+   * @param {number} size
+   * @memberof CVariableInitializerTree
+   */
+  ensureSize(size: number) {
+    const {fields} = this;
+    const delta = size - fields.length;
+
+    for (let i = 0; i < delta; ++i) {
+      fields.push(null);
+    }
+  }
+
+  /**
+   * Sets values on given offset and if offset is bigger than array fills with null
+   *
+   * @param {number} offset
+   * @param {CVariableInitializeValue} value
+   * @memberof CVariableInitializerTree
+   */
+  setAndExpand(offset: number, value: CVariableInitializeValue) {
+    const {fields} = this;
+
+    this.ensureSize(offset);
+    fields[offset] = value;
   }
 
   /**
@@ -52,7 +76,7 @@ export class CVariableInitializerTree<C extends ASTCCompilerNode = ASTCCompilerN
    * @memberof CVariableInitializerTree
    */
   getFirstValue(): CVariableInitializeValue {
-    return this._fields.get(0);
+    return this._fields[0];
   }
 
   /**
@@ -66,26 +90,5 @@ export class CVariableInitializerTree<C extends ASTCCompilerNode = ASTCCompilerN
    */
   get scalarValuesCount(): number {
     return this.baseType.scalarValuesCount;
-  }
-
-
-  /**
-   * Get total fields count filled by nested types
-   *
-   * @return {number}
-   * @memberof CVariableInitializerTree
-   */
-  getCurrentTypeFlattenSize(): number {
-    const {fields} = this;
-    let size: number = 0;
-
-    for (const [, value] of fields) {
-      if (isInitializerTreeValue(value))
-        size += value.scalarValuesCount;
-      else
-        size++;
-    }
-
-    return size;
   }
 }
