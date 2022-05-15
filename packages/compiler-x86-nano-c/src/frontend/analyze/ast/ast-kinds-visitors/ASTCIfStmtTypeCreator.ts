@@ -6,7 +6,7 @@ import {ASTCTypeCreator} from './ASTCTypeCreator';
  *
  * @export
  * @class ASTCIfStmtTypeCreator
- * @extends {ASTCTypeCreator<ASTCUnaryExpression>}
+ * @extends {ASTCTypeCreator<ASTCIfStatement>}
  */
 export class ASTCIfStmtTypeCreator extends ASTCTypeCreator<ASTCIfStatement> {
   kind = ASTCCompilerKind.IfStmt;

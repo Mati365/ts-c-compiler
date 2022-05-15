@@ -70,15 +70,19 @@ export class CTypeAnalyzeVisitor extends GroupTreeVisitor<ASTCCompilerNode, any,
     );
   }
 
-  visitBlockScope(node?: ASTCCompilerNode) {
+  enterScope(
+    node: ASTCCompilerNode,
+    fn: (newScope: CTypeAnalyzeVisitor) => void,
+  ) {
     const {scope, context} = this;
-
-    return (
-      this
-        .ofScope(
-          scope.appendScope(new CScopeTree(context.config, node)),
-        )
-        .visit(node)
+    const visitor = this.ofScope(
+      scope.appendScope(new CScopeTree(context.config, node)),
     );
+
+    return fn(visitor);
+  }
+
+  visitBlockScope(node?: ASTCCompilerNode) {
+    return this.enterScope(node, (visitor) => visitor.visit(node));
   }
 }
