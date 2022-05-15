@@ -39,6 +39,7 @@ export class CCompilerOutput {
           node.toString(),
           {
             type: node.type?.toString(),
+            scoped: node.scope ? true : null,
           },
         ),
       },

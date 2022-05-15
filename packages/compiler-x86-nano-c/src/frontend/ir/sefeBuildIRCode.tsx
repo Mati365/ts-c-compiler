@@ -4,9 +4,10 @@ import {CScopeTree} from '../analyze';
 import {CIRGeneratorConfig} from './constants';
 import {CIRError, CIRErrorCode} from './errors/CIRError';
 import {CIRGeneratorVisitor} from './generator/CIRGeneratorVisitor';
+import {CIRInstruction} from './instructions';
 
 type IRCodeBuilderResult = {
-  code: any[];
+  code: CIRInstruction[];
 };
 
 export function safeBuildIRCode(

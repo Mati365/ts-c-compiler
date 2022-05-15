@@ -58,7 +58,14 @@ export class CTypeAnalyzeVisitor extends GroupTreeVisitor<ASTCCompilerNode, any,
   get arch() { return this.context.config.arch; }
   get currentAnalyzed() { return this.context.currentAnalyzed; }
 
-  ofScope(scope: CScopeTree) {
+  /**
+   * Cres new scope visitor
+   *
+   * @param {CScopeTree} scope
+   * @return {CTypeAnalyzeVisitor}
+   * @memberof CTypeAnalyzeVisitor
+   */
+  ofScopeVisitor(scope: CScopeTree): CTypeAnalyzeVisitor {
     const {context, currentAnalyzed} = this;
 
     return new CTypeAnalyzeVisitor(
@@ -70,19 +77,35 @@ export class CTypeAnalyzeVisitor extends GroupTreeVisitor<ASTCCompilerNode, any,
     );
   }
 
+  /**
+   * Creates new scope and executes fn
+   *
+   * @param {ASTCCompilerNode} node
+   * @param {(newScope: CTypeAnalyzeVisitor) => void} fn
+   * @memberof CTypeAnalyzeVisitor
+   */
   enterScope(
     node: ASTCCompilerNode,
     fn: (newScope: CTypeAnalyzeVisitor) => void,
   ) {
     const {scope, context} = this;
-    const visitor = this.ofScope(
-      scope.appendScope(new CScopeTree(context.config, node)),
+
+    const newScope = new CScopeTree(context.config, node);
+    const visitor = this.ofScopeVisitor(
+      scope.appendScope(newScope),
     );
 
-    return fn(visitor);
+    node.scope = newScope;
+    fn(visitor);
   }
 
+  /**
+   * Creates scope and enters node
+   *
+   * @param {ASTCCompilerNode} [node]
+   * @memberof CTypeAnalyzeVisitor
+   */
   visitBlockScope(node?: ASTCCompilerNode) {
-    return this.enterScope(node, (visitor) => visitor.visit(node));
+    this.enterScope(node, (visitor) => visitor.visit(node));
   }
 }

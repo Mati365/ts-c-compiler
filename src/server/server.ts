@@ -11,9 +11,7 @@ import {AppModule} from './app.module';
 ccompiler(
   /* cpp */ `
     int main() {
-      do {
-        int a = 7;
-      } while(2 > 3);
+      if (3 > 2) {}
     }
   `,
 ).match(
