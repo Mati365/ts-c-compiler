@@ -12,6 +12,7 @@ export function createCCompilerTimings() {
       lexer: 0,
       ast: 0,
       analyze: 0,
+      ir: 0,
       compiler: 0,
     },
   );

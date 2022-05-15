@@ -10,6 +10,7 @@ import {CCompilerConfig, CCompilerArch} from '../constants/config';
 
 import {ASTCCompilerNode} from './parser/ast';
 import {safeGenerateTree, clexer} from './parser';
+import {safeBuildIRCode} from './ir';
 import {
   safeBuildTypedTree,
   CScopeTree,
@@ -87,6 +88,10 @@ export function ccompiler(
   return timings.add('lexer', clexer)(ccompilerConfig.lexer, code)
     .andThen(timings.add('ast', safeGenerateTree))
     .andThen(timings.add('analyze', (tree) => safeBuildTypedTree(ccompilerConfig, tree)))
+    .andThen(timings.add('ir', (result) => ok({
+      ...result,
+      ir: safeBuildIRCode(ccompilerConfig, result.scope),
+    })))
     .andThen(timings.add('compiler', ({tree, scope}) => ok(
       new CCompilerOutput(
         code,
