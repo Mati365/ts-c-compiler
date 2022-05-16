@@ -5,6 +5,8 @@
  * @class CIRNameGenerator
  */
 export class CIRNameGenerator {
+  static readonly the = new CIRNameGenerator;
+
   private readonly counters = {
     labels: 0,
     variables: 0,

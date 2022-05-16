@@ -5,4 +5,5 @@ export enum CIROpcode {
   IF = 'IF',
   REL = 'REL',
   PHI = 'PHI',
+  DEF = 'DEF',
 }

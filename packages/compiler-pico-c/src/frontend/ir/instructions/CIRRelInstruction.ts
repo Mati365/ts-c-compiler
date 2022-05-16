@@ -1,11 +1,7 @@
 import {CIRelOperator, CIROpcode} from '../constants';
-
 import {CIROpInstruction} from './CIROpInstruction';
-import {
-  CIRInstruction,
-  CIRInstructionVarArg,
-  CIRVarName,
-} from './CIRInstruction';
+import {CIRInstruction} from './CIRInstruction';
+import {CIRInstructionVarArg} from '../variables';
 
 export function isIRRelInstruction(instruction: CIRInstruction): instruction is CIRRelInstruction {
   return instruction.opcode === CIROpcode.REL;
@@ -23,7 +19,7 @@ export class CIRRelInstruction extends CIROpInstruction<CIRelOperator> {
     operator: CIRelOperator,
     leftVar: CIRInstructionVarArg,
     rightVar: CIRInstructionVarArg,
-    outputVar?: CIRVarName,
+    outputVar?: string,
   ) {
     super(CIROpcode.REL, operator, leftVar, rightVar, outputVar);
   }

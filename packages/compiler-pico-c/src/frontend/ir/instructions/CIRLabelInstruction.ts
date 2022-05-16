@@ -1,5 +1,6 @@
 import {CIROpcode} from '../constants';
-import {CIRInstruction} from './CIRInstruction/CIRInstruction';
+import {CIRInstruction} from './CIRInstruction';
+import {IsLabeledInstruction} from '../interfaces/IsLabeledInstruction';
 
 export function isIRLabelInstruction(instruction: CIRInstruction): instruction is CIRLabelInstruction {
   return instruction.opcode === CIROpcode.LABEL;
@@ -12,7 +13,7 @@ export function isIRLabelInstruction(instruction: CIRInstruction): instruction i
  * @class CIRLabelInstruction
  * @extends {CIRInstruction}
  */
-export class CIRLabelInstruction extends CIRInstruction {
+export class CIRLabelInstruction extends CIRInstruction implements IsLabeledInstruction {
   constructor(readonly name: string) {
     super(CIROpcode.LABEL);
   }

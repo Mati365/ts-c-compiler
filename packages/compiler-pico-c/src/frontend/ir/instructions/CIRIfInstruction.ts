@@ -1,5 +1,5 @@
 import {CIROpcode} from '../constants';
-import {CIRInstruction} from './CIRInstruction/CIRInstruction';
+import {CIRInstruction} from './CIRInstruction';
 import {CIRLabelInstruction} from './CIRLabelInstruction';
 
 export interface CIRBranchRelations<R> {

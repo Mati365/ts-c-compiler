@@ -1,3 +1,4 @@
+export * from './CIRFnDefInstruction';
 export * from './CIRIfInstruction';
 export * from './CIRInstruction';
 export * from './CIRInstructionsBlock';

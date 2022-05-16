@@ -1,5 +1,5 @@
 import {IsPrintable} from '@compiler/core/interfaces';
-import {CIROpcode} from '../../constants';
+import {CIROpcode} from '../constants';
 
 /**
  * Basic IR block, contains mini operations similar to assembly

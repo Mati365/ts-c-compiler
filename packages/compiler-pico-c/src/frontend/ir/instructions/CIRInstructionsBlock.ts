@@ -1,7 +1,7 @@
 import * as R from 'ramda';
 
 import {Identity} from '@compiler/core/monads';
-import {CIRInstruction} from './CIRInstruction/CIRInstruction';
+import {CIRInstruction} from './CIRInstruction';
 import {CIRBranchRelations} from './CIRIfInstruction';
 
 export type CIRBlockJmps = Partial<CIRBranchRelations<CIRInstructionsBlock>> & {

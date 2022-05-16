@@ -1,9 +1,7 @@
+import {IsOutputInstruction} from '../interfaces';
 import {CIROpcode} from '../constants';
-import {
-  CIRInstruction,
-  CIRInstructionVarArg,
-  CIRVarName,
-} from './CIRInstruction';
+import {CIRInstructionVarArg} from '../variables';
+import {CIRInstruction} from './CIRInstruction';
 
 /**
  * Abstract operator instruction
@@ -12,13 +10,13 @@ import {
  * @class CIROpInstruction
  * @extends {CIRInstruction}
  */
-export class CIROpInstruction<O> extends CIRInstruction {
+export class CIROpInstruction<O> extends CIRInstruction implements IsOutputInstruction {
   constructor(
     opcode: CIROpcode,
     readonly operator: O,
     readonly leftVar: CIRInstructionVarArg,
     readonly rightVar: CIRInstructionVarArg,
-    readonly outputVar?: CIRVarName,
+    readonly outputVar: string = null,
   ) {
     super(opcode);
   }

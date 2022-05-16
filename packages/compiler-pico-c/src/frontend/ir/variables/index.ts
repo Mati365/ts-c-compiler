@@ -1,2 +1,2 @@
-export * from './CIRInstruction';
 export * from './CIRInstructionVarArg';
+export * from './CIRVariable';

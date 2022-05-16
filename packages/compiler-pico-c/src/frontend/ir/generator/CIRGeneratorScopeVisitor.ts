@@ -17,7 +17,6 @@ import {CIRNameGenerator} from './CIRNameGenerator';
  */
 export class CIRGeneratorScopeVisitor extends CScopeVisitor {
   private branchesBuilder = new CIRBranchesBuilder;
-  private nameGenerator = new CIRNameGenerator;
 
   constructor(
     readonly config: CIRGeneratorConfig,
@@ -42,16 +41,13 @@ export class CIRGeneratorScopeVisitor extends CScopeVisitor {
    * @memberof CIRGeneratorScopeVisitor
    */
   enter(scope: CScopeTree<ASTCCompilerNode<any>>): void {
-    const {
-      branchesBuilder,
-      nameGenerator,
-    } = this;
-
+    const {branchesBuilder} = this;
     const {parentAST} = scope;
+
     if (parentAST?.type?.isFunction()) {
       const fnType = parentAST.type as CFunctionDeclType;
       const instruction = new CIRLabelInstruction(
-        nameGenerator.genLabelName(fnType.name),
+        CIRNameGenerator.the.genLabelName(fnType.name),
       );
 
       branchesBuilder.emit(instruction);

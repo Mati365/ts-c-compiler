@@ -1,5 +1,6 @@
+import {IsOutputInstruction} from '../interfaces';
 import {CIROpcode} from '../constants';
-import {CIRInstruction, CIRVarName} from './CIRInstruction';
+import {CIRInstruction} from './CIRInstruction';
 
 /**
  * PHI instruction
@@ -7,18 +8,19 @@ import {CIRInstruction, CIRVarName} from './CIRInstruction';
  * @export
  * @class CIRPhiInstruction
  * @extends {CIRInstruction}
+ * @implements {IsOutputInstruction}
  */
-export class CIRPhiInstruction extends CIRInstruction {
+export class CIRPhiInstruction extends CIRInstruction implements IsOutputInstruction {
   constructor(
-    readonly output: CIRVarName,
-    readonly vars: CIRVarName[],
+    readonly vars: string[],
+    readonly outputVar: string,
   ) {
     super(CIROpcode.PHI);
   }
 
   override getDisplayName(): string {
-    const {output, vars} = this;
+    const {outputVar, vars} = this;
 
-    return `${output} = φ(${vars.join(', ')})`;
+    return `${outputVar} = φ(${vars.join(', ')})`;
   }
 }
