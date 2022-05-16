@@ -14,13 +14,9 @@
           ['@compiler/lexer', './packages/compiler-lexer/src/'],
           ['@compiler/grammar', './packages/compiler-grammar/src/'],
           ['@compiler/rpn', './packages/compiler-rpn/src/'],
-          ['@compiler/x86-assembler', './packages/compiler-x86-assembler/src/'],
-          ['@compiler/x86-nano-c', './packages/compiler-x86-nano-c/src/'],
-          ['@emulator/x86-cpu', './packages/emulator-x86-cpu/src'],
-          ['@ui/context-state', './packages/ui-context-state/src'],
-          ['@ui/webapp', './packages/ui-webapp/src'],
-          ['@client', './src/client'],
-          ['@server', './src/server']
+          ['@x86-toolkit/assembler', './packages/x86-toolkit/x86-assembler/src/'],
+          ['@x86-toolkit/cpu', './packages/x86-toolkit/x86-cpu/src'],
+          ['@compiler/pico-c', './packages/compiler-pico-c/src/']
         ],
         extensions: ['.js', '.ts', '.tsx', '.scss', '.json']
       }

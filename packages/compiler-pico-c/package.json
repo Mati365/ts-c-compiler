@@ -1,0 +1,4 @@
+{
+  "name": "@emulator/pico-c",
+  "main": "src/index.ts"
+}

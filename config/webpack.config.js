@@ -1,10 +1,8 @@
 const path = require('path');
 const nodeExternals = require('webpack-node-externals');
-const MiniCssExtractPlugin = require('mini-css-extract-plugin');
 const NodemonPlugin = require('nodemon-webpack-plugin');
 const CircularDependencyPlugin = require('circular-dependency-plugin');
 const ESLintPlugin = require('eslint-webpack-plugin');
-const {WebpackManifestPlugin} = require('webpack-manifest-plugin');
 
 const PRODUCTION_MODE = process.env.NODE_ENV === 'production';
 
@@ -18,7 +16,6 @@ const createConfig = (
     entryName,
     mainFile,
     outputFile,
-    outputCssFile,
     outputPath = '',
     plugins = [],
   },
@@ -44,16 +41,6 @@ const createConfig = (
       {
         test: /\.(bin|flp)/,
         use: 'arraybuffer-loader',
-      },
-      {
-        test: /\.s?css$/,
-        use: [
-          {
-            loader: MiniCssExtractPlugin.loader,
-          },
-          'css-loader',
-          'sass-loader',
-        ],
       },
       {
         test: /\.(png|jpe?g|gif|ttf|svg)$/,
@@ -96,12 +83,6 @@ const createConfig = (
       },
     ),
     new CircularDependencyPlugin,
-    new MiniCssExtractPlugin(
-      {
-        filename: outputCssFile,
-        chunkFilename: '[id].css',
-      },
-    ),
     ...plugins,
     ...(
       nodemon
@@ -122,9 +103,9 @@ const createConfig = (
       '@compiler/lexer': pkgResolve('compiler-lexer/src/'),
       '@compiler/grammar': pkgResolve('compiler-grammar/src/'),
       '@compiler/rpn': pkgResolve('compiler-rpn/src/'),
-      '@compiler/x86-assembler': pkgResolve('compiler-x86-assembler/src/'),
-      '@compiler/x86-nano-c': pkgResolve('compiler-x86-nano-c/src'),
-      '@emulator/x86-cpu': pkgResolve('emulator-x86-cpu/src'),
+      '@x86-toolkit/assembler': pkgResolve('x86-assembler/src/'),
+      '@compiler/pico-c': pkgResolve('compiler-pico-c/src'),
+      '@x86-toolkit/cpu': pkgResolve('x86-cpu/src'),
       '@ui/context-state': pkgResolve('ui-context-state/src'),
       '@ui/webapp': pkgResolve('ui-webapp/src'),
       '@client': srcResolve('client'),
@@ -133,27 +114,12 @@ const createConfig = (
   },
 });
 
-module.exports = [
-  createConfig(
-    {
-      target: 'web',
-      entryName: 'client',
-      mainFile: 'client/index.tsx',
-      outputPath: 'public',
-      outputFile: `client${PRODUCTION_MODE ? '-[hash]' : ''}.js`,
-      outputCssFile: `client${PRODUCTION_MODE ? '-[hash]' : ''}.css`,
-      plugins: [
-        new WebpackManifestPlugin,
-      ],
-    },
-  ),
-  createConfig(
-    {
-      target: 'node',
-      entryName: 'server',
-      mainFile: 'server/server.ts',
-      outputFile: 'server.js',
-      nodemon: true,
-    },
-  ),
-];
+module.exports = createConfig(
+  {
+    target: 'node',
+    entryName: 'server',
+    mainFile: 'cli.ts',
+    outputFile: 'cli.js',
+    nodemon: true,
+  },
+);
