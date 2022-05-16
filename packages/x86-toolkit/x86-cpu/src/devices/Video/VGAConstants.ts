@@ -1,4 +1,4 @@
-import {MemoryRegionRange, MemoryRegionsMap} from 'x86-toolkit/x86-cpu/src/memory/MemoryRegion';
+import {MemoryRegionRange, MemoryRegionsMap} from '@x86-toolkit/cpu/memory/MemoryRegion';
 import {Size} from '@compiler/core/types';
 
 export const VGA_BANK_SIZE = 0x10000;

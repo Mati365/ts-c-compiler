@@ -1,6 +1,6 @@
 import * as R from 'ramda';
 
-import {ParserError, ParserErrorCode} from 'x86-toolkit/x86-assembler/src/shared/ParserError';
+import {ParserError, ParserErrorCode} from '@x86-toolkit/assembler/shared/ParserError';
 import {ASTTimes} from '../../ast/critical/ASTTimes';
 import {ASTAsmTree} from '../../ast/ASTAsmParser';
 import {ASTAsmNode} from '../../ast/ASTAsmNode';

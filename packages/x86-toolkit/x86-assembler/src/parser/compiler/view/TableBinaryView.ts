@@ -5,7 +5,7 @@ import {
   mapMapValues,
 } from '@compiler/core/utils';
 
-import {MemoryRegionRange} from 'x86-toolkit/x86-cpu/src/memory/MemoryRegion';
+import {MemoryRegionRange} from '@x86-toolkit/cpu/memory/MemoryRegion';
 import {CompilerError} from '@compiler/core/shared/CompilerError';
 import {ASTInstruction} from '../../ast/instruction/ASTInstruction';
 import {BinaryView} from './BinaryView';

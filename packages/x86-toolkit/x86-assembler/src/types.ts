@@ -3,7 +3,7 @@ import {
   X86RegName,
   X86SegmentRegName,
   ExtendedX86RegName,
-} from 'x86-toolkit/x86-cpu/src/types';
+} from '@x86-toolkit/cpu/types';
 
 import {InstructionPrefix, RegisterSchema} from './constants';
 

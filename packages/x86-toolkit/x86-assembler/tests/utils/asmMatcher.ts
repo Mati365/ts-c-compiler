@@ -1,6 +1,6 @@
 import * as R from 'ramda';
 
-import {asm, AssemblerConfig} from 'x86-toolkit/x86-assembler/src/asm';
+import {asm, AssemblerConfig} from '@x86-toolkit/assembler/asm';
 import {arrayToHexString} from '@compiler/core/utils/arrayToHexString';
 
 export type BinaryOutputObject = {

@@ -3,7 +3,7 @@ import * as R from 'ramda';
 import {
   X86BitsMode,
   ExtendedX86RegName,
-} from 'x86-toolkit/x86-cpu/src/types';
+} from '@x86-toolkit/cpu/types';
 
 import {InstructionArgSize} from '../types';
 

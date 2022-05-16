@@ -1,4 +1,4 @@
-import {MemoryRegionRange} from 'x86-toolkit/x86-cpu/src/memory/MemoryRegion';
+import {MemoryRegionRange} from '@x86-toolkit/cpu/memory/MemoryRegion';
 import {VGACanvasRenderer} from './VGACanvasRenderer';
 
 /**

@@ -1,6 +1,6 @@
 import {Token, TokenType} from '@compiler/lexer/tokens';
 import {NodeLocation} from '@compiler/grammar/tree/NodeLocation';
-import {ParserError, ParserErrorCode} from 'x86-toolkit/x86-assembler/src/shared/ParserError';
+import {ParserError, ParserErrorCode} from '@x86-toolkit/assembler/shared/ParserError';
 
 import {ASTAsmParser} from '../ASTAsmParser';
 import {ASTNodeKind} from '../types';

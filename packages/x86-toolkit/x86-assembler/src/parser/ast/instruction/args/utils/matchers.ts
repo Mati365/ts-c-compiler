@@ -3,8 +3,8 @@ import * as R from 'ramda';
 import {BINARY_MASKS} from '@compiler/core/constants';
 import {roundedSignedNumberByteSize} from '@compiler/core/utils/numberByteSize';
 
-import {RegisterSchema} from 'x86-toolkit/x86-assembler/src/constants';
-import {X86BitsMode, X86AbstractCPU} from 'x86-toolkit/x86-cpu/src/types';
+import {RegisterSchema} from '@x86-toolkit/assembler/constants';
+import {X86BitsMode, X86AbstractCPU} from '@x86-toolkit/cpu/types';
 
 import {InstructionArgType, BranchAddressingType} from '../../../../../types';
 import {ASTInstruction} from '../../ASTInstruction';

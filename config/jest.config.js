@@ -61,13 +61,13 @@ module.exports = {
       ...SHARED_CONFIG,
     },
     {
-      displayName: '@x86-toolkit/assembler',
-      rootDir: resolve(__dirname, '../packages/x86-assembler/'),
+      displayName: '@compiler/pico-c',
+      rootDir: resolve(__dirname, '../packages/compiler-pico-c/'),
       ...SHARED_CONFIG,
     },
     {
-      displayName: '@emulator/pico-c',
-      rootDir: resolve(__dirname, '../packages/compiler-pico-c/'),
+      displayName: '@x86-toolkit/assembler',
+      rootDir: resolve(__dirname, '../packages/x86-toolkit/x86-assembler/'),
       ...SHARED_CONFIG,
     },
   ],

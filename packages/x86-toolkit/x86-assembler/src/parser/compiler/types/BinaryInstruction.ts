@@ -9,7 +9,7 @@ import {
   RMByte,
   RMAddressingMode,
   X86AbstractCPU,
-} from 'x86-toolkit/x86-cpu/src/types';
+} from '@x86-toolkit/cpu/types';
 
 import {ASTInstruction} from '../../ast/instruction/ASTInstruction';
 import {

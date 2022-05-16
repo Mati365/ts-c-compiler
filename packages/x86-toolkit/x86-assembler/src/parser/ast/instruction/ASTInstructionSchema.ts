@@ -1,6 +1,6 @@
 import * as R from 'ramda';
 
-import {X86TargetCPU} from 'x86-toolkit/x86-assembler/src/types';
+import {X86TargetCPU} from '@x86-toolkit/assembler/types';
 import type {ASTInstructionMatcherSchema} from './args';
 
 export class ASTInstructionSchema {

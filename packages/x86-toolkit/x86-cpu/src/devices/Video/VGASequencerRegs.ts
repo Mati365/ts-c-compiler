@@ -1,5 +1,5 @@
 import {UnionStruct, bits} from '@compiler/core/shared/UnionStruct';
-import {MemoryRegionRange} from 'x86-toolkit/x86-cpu/src/memory/MemoryRegion';
+import {MemoryRegionRange} from '@x86-toolkit/cpu/memory/MemoryRegion';
 import {CHARSET_MEMORY_MAPS, VGAIndexedReg} from './VGAConstants';
 
 /**

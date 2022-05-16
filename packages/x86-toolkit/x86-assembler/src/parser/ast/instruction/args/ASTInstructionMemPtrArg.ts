@@ -1,6 +1,6 @@
 import * as R from 'ramda';
 
-import {RegisterToken} from 'x86-toolkit/x86-assembler/src/parser/lexer/tokens';
+import {RegisterToken} from '@x86-toolkit/assembler/parser/lexer/tokens';
 import {TokenType, TokenKind, Token} from '@compiler/lexer/tokens';
 
 import {

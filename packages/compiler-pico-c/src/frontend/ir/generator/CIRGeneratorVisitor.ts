@@ -21,7 +21,7 @@ export class CIRGeneratorVisitor extends CScopeVisitor {
     super();
   }
 
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   enter(scope: CScopeTree<ASTCCompilerNode<any>>): void {
-    console.info(scope.parentAST, scope);
   }
 }

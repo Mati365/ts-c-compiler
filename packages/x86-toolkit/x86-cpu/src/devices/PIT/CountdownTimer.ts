@@ -1,5 +1,5 @@
 import {UnionStruct, bits} from '@compiler/core/shared/UnionStruct';
-import {X86AbstractCPU} from 'x86-toolkit/x86-cpu/src/types/X86AbstractCPU';
+import {X86AbstractCPU} from '@x86-toolkit/cpu/types/X86AbstractCPU';
 import {PIT} from './PIT';
 
 /**
