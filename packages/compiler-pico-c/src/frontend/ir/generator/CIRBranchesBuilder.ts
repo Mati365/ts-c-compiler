@@ -2,7 +2,10 @@ import {CIRError, CIRErrorCode} from '../errors/CIRError';
 import {CIRIfInstruction, CIRInstruction, isIRIfInstruction, isIRLabelInstruction} from '../instructions';
 import {CIRInstructionsBlock} from '../instructions/CIRInstructionsBlock';
 
-type CIRBlockLabelsMap = Record<string, CIRInstructionsBlock>;
+export type CIRBlockLabelsMap = Record<string, CIRInstructionsBlock>;
+export type CIRBranchesBuilderResult = {
+  blocks: CIRBlockLabelsMap,
+};
 
 /**
  * Constructs graph of connected by jumps code blocks
@@ -21,7 +24,7 @@ export class CIRBranchesBuilder {
    * @param {CIRInstruction} instruction
    * @memberof CIRBranchesBuilder
    */
-  appendInstruction(instruction: CIRInstruction): this {
+  emit(instruction: CIRInstruction): this {
     const {tmpBlock} = this;
 
     tmpBlock.instructions.push(instruction);
@@ -36,14 +39,13 @@ export class CIRBranchesBuilder {
   /**
    * Cleanups temp instructions stack and returns graph
    *
-   * @return {CIRBlockLabelsMap}
+   * @return {CIRBranchesBuilderResult}
    * @memberof CIRBranchesBuilder
    */
-  flush(): CIRBlockLabelsMap {
-    const {blocks, tmpBlock} = this;
-
-    this.setBlock(tmpBlock);
-    return blocks;
+  flush(): CIRBranchesBuilderResult {
+    return {
+      blocks: this.setBlock(this.tmpBlock).blocks,
+    };
   }
 
   /**
@@ -85,12 +87,13 @@ export class CIRBranchesBuilder {
    * @memberof CIRBranchesBuilder
    */
   private setBlock(block: CIRInstructionsBlock): this {
+    if (block.isEmpty())
+      return this;
+
     if (!block.name)
       throw new CIRError(CIRErrorCode.MISSING_BLOCK_NAME);
 
-    if (!block.isEmpty())
-      this.blocks[block.name] = block;
-
+    this.blocks[block.name] = block;
     return this;
   }
 }

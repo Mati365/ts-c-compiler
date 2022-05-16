@@ -3,11 +3,13 @@ import {Result, err, ok} from '@compiler/core/monads';
 import {CScopeTree} from '../analyze';
 import {CIRGeneratorConfig} from './constants';
 import {CIRError, CIRErrorCode} from './errors/CIRError';
-import {CIRGeneratorVisitor} from './generator/CIRGeneratorVisitor';
-import {CIRInstruction} from './instructions';
+import {
+  CIRGeneratorScopeVisitor,
+  CIRBranchesBuilderResult,
+} from './generator';
 
-type IRCodeBuilderResult = {
-  code: CIRInstruction[];
+export type IRCodeBuilderResult = {
+  branches: CIRBranchesBuilderResult,
 };
 
 export function safeBuildIRCode(
@@ -15,11 +17,11 @@ export function safeBuildIRCode(
   tree: CScopeTree,
 ): Result<IRCodeBuilderResult, CIRError[]> {
   try {
-    new CIRGeneratorVisitor(config).visit(tree);
+    const branches = new CIRGeneratorScopeVisitor(config).visit(tree).flush();
 
     return ok(
       {
-        code: [],
+        branches,
       },
     );
   } catch (e) {

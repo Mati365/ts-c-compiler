@@ -1,5 +1,6 @@
 import * as R from 'ramda';
-import {X86PrefixName} from '@x86-toolkit/assembler/src';
+
+import {X86PrefixName} from '@x86-toolkit/assembler';
 import {EmitterResult} from '../constants/types/emitter';
 
 /**

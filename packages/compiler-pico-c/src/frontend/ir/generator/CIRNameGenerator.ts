@@ -14,7 +14,7 @@ export class CIRNameGenerator {
     return `t${this.counters.variables++}`;
   }
 
-  genLabelName() {
-    return `L${this.counters.labels++}`;
+  genLabelName(suffix: string) {
+    return `L${this.counters.labels++}-${suffix}`;
   }
 }

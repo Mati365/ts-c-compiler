@@ -43,6 +43,14 @@ export class CScopeTree<C extends ASTCCompilerNode = ASTCCompilerNode> implement
   get parentAST() { return this._parentAST; }
   get parentScope() { return this._parentScope; }
 
+  getFunctions() {
+    return <CFunctionDeclType[]> (
+      R
+        .values(this.types)
+        .filter((type) => type.isFunction())
+    );
+  }
+
   setParentScope(parentScope: CScopeTree): this {
     this._parentScope = parentScope;
     return this;
@@ -52,6 +60,12 @@ export class CScopeTree<C extends ASTCCompilerNode = ASTCCompilerNode> implement
     return R.isNil(this._parentScope);
   }
 
+  /**
+   * Used in visitors to travel over all scope children
+   *
+   * @param {AbstractTreeVisitor} visitor
+   * @memberof CScopeTree
+   */
   walk(visitor: AbstractTreeVisitor): void {
     const {childScopes} = this;
 
@@ -61,6 +75,11 @@ export class CScopeTree<C extends ASTCCompilerNode = ASTCCompilerNode> implement
     );
   }
 
+  /**
+   * Returns types / variables
+   *
+   * @memberof CScopeTree
+   */
   dump() {
     const {types, variables} = this;
 

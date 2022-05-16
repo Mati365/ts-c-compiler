@@ -10,7 +10,7 @@ import {CCompilerConfig, CCompilerArch} from '../constants/config';
 
 import {ASTCCompilerNode} from './parser/ast';
 import {safeGenerateTree, clexer} from './parser';
-import {safeBuildIRCode} from './ir';
+import {CIRResultView, IRCodeBuilderResult, safeBuildIRCode} from './ir';
 import {
   safeBuildTypedTree,
   CScopeTree,
@@ -28,6 +28,7 @@ export class CCompilerOutput {
     readonly code: string,
     readonly ast: ASTCCompilerNode,
     readonly scope: CScopeTree,
+    readonly ir: IRCodeBuilderResult,
     readonly timings: CCompilerTimings,
   ) {}
 
@@ -47,8 +48,7 @@ export class CCompilerOutput {
   }
 
   dump() {
-    const {ast, scope, code, timings} = this;
-    const scopeTree = CScopePrintVisitor.serializeToString(scope);
+    const {ast, scope, code, ir, timings} = this;
 
     console.info(
       [
@@ -59,8 +59,11 @@ export class CCompilerOutput {
         'Syntax tree:\n',
         CCompilerOutput.serializeTypedTree(ast),
         'Scope tree:\n',
-        scopeTree,
+        CScopePrintVisitor.serializeToString(scope),
+        '\nIR:',
         '',
+        CIRResultView.serializeToString(ir),
+        '\n',
       ].join('\n'),
     );
   }
@@ -89,15 +92,19 @@ export function ccompiler(
   return timings.add('lexer', clexer)(ccompilerConfig.lexer, code)
     .andThen(timings.add('ast', safeGenerateTree))
     .andThen(timings.add('analyze', (tree) => safeBuildTypedTree(ccompilerConfig, tree)))
-    .andThen(timings.add('ir', (result) => ok({
-      ...result,
-      ir: safeBuildIRCode(ccompilerConfig, result.scope),
-    })))
-    .andThen(timings.add('compiler', ({tree, scope}) => ok(
+    .andThen(timings.add(
+      'ir',
+      (result) => safeBuildIRCode(ccompilerConfig, result.scope).andThen((ir) => ok({
+        ...result,
+        ir,
+      })),
+    ))
+    .andThen(timings.add('compiler', ({tree, scope, ir}) => ok(
       new CCompilerOutput(
         code,
         tree,
         scope,
+        ir,
         timings.unwrap(),
       ),
     )));

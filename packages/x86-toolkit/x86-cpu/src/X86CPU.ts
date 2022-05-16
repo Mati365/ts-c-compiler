@@ -1,7 +1,7 @@
 import * as R from 'ramda';
 
 import {getMSbit} from '@compiler/core/utils/bits';
-import {unsafeASM} from '@x86-toolkit/assembler/src';
+import {unsafeASM} from '@x86-toolkit/assembler';
 
 import {BINARY_MASKS} from '@compiler/core/constants';
 import {

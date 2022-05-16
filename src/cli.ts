@@ -1,12 +1,11 @@
 import {ccompiler, CCompilerOutput} from '@compiler/pico-c';
 
-ccompiler(
-  /* cpp */ `
-    int main() {
-      if (3 > 2) {}
-    }
-  `,
-).match(
+ccompiler(/* cpp */ `
+  int main() {
+    int abc = 2;
+    int d = abc + 4;
+  }
+`).match(
   {
     ok: (result) => {
       result.dump();

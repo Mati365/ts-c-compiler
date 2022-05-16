@@ -1,7 +1,7 @@
 import {
   X86SegmentRegName,
   InstructionArgSizeName,
-} from '@x86-toolkit/assembler/src';
+} from '@x86-toolkit/assembler';
 
 import {EmitterResult} from '../constants/types';
 

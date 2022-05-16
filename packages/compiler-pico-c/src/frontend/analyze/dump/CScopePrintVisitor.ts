@@ -3,8 +3,8 @@ import chalk from 'chalk';
 
 import {padLeftLines} from '@compiler/core/utils';
 
-import {CScopeTree} from './CScopeTree';
-import {CScopeVisitor} from './CScopeVisitor';
+import {CScopeTree} from '../scope/CScopeTree';
+import {CScopeVisitor} from '../scope/CScopeVisitor';
 
 /**
  * Iterator that walks over tree and prints it

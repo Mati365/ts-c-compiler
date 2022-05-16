@@ -1,2 +1,2 @@
 export * from './CIRBranchesBuilder';
-export * from './CIRGeneratorVisitor';
+export * from './CIRGeneratorScopeVisitor';
