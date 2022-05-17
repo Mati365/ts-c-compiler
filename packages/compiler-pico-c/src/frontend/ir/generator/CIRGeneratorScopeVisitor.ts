@@ -1,12 +1,12 @@
-import {CFunctionDeclType} from '../../analyze';
+import {CFunctionDeclType, CPrimitiveType} from '../../analyze';
 import {CScopeVisitor, CScopeTree} from '../../analyze/scope';
-import {ASTCCompilerNode} from '../../parser';
 
 import {CIRGeneratorConfig} from '../constants';
-import {CIRLabelInstruction} from '../instructions';
+import {CIRInitInstruction, CIRRetInstruction} from '../instructions';
+import {CIRInstructionVarArg, CIRVariable} from '../variables';
 import {CIRBranchesBuilder, CIRBranchesBuilderResult} from './CIRBranchesBuilder';
 import {CIRGeneratorASTVisitor} from './CIRGeneratorASTVisitor';
-import {CIRNameGenerator} from './CIRNameGenerator';
+import {CIRVariableAllocator} from './CIRVariableAllocator';
 
 /**
  * Root IR generator visitor
@@ -16,7 +16,8 @@ import {CIRNameGenerator} from './CIRNameGenerator';
  * @extends {CScopeVisitor}
  */
 export class CIRGeneratorScopeVisitor extends CScopeVisitor {
-  private branchesBuilder = new CIRBranchesBuilder;
+  readonly branchesBuilder = new CIRBranchesBuilder;
+  readonly allocator = new CIRVariableAllocator;
 
   constructor(
     readonly config: CIRGeneratorConfig,
@@ -37,28 +38,70 @@ export class CIRGeneratorScopeVisitor extends CScopeVisitor {
   /**
    * Iterates over scope and emits IR
    *
-   * @param {CScopeTree<ASTCCompilerNode<any>>} scope
+   * @param {CScopeTree} scope
    * @memberof CIRGeneratorScopeVisitor
    */
-  enter(scope: CScopeTree<ASTCCompilerNode<any>>): void {
-    const {branchesBuilder} = this;
+  enter(scope: CScopeTree): void | boolean {
     const {parentAST} = scope;
 
     if (parentAST?.type?.isFunction()) {
-      const fnType = parentAST.type as CFunctionDeclType;
-      const instruction = new CIRLabelInstruction(
-        CIRNameGenerator.the.genLabelName(fnType.name),
+      this.emitFunctionIR(scope, <CFunctionDeclType> parentAST.type);
+      return false;
+    }
+  }
+
+  /**
+   * Enters and compiles whole function (emits also instructions for scope)
+   *
+   * @todo
+   *  - Extract all variables from nested scopes!
+   *
+   * @private
+   * @param {CScopeTree} scope
+   * @param {CFunctionDeclType} fnType
+   * @memberof CIRGeneratorScopeVisitor
+   */
+  private emitFunctionIR(scope: CScopeTree, fnType: CFunctionDeclType) {
+    const {allocator, branchesBuilder} = this;
+    const instruction = allocator.allocFunctionType(fnType);
+
+    branchesBuilder.emit(instruction);
+    this.emitScopeVariablesIR(scope);
+
+    new CIRGeneratorASTVisitor(scope)
+      .setContext(
+        {
+          generator: this,
+          fnType,
+        },
+      )
+      .visit(fnType.definition);
+
+    branchesBuilder.emit(
+      new CIRRetInstruction,
+    );
+  }
+
+  /**
+   * Emits all local scope instructions
+   *
+   * @private
+   * @param {CScopeTree} scope
+   * @memberof CIRGeneratorScopeVisitor
+   */
+  private emitScopeVariablesIR(scope: CScopeTree) {
+    const {config, allocator, branchesBuilder} = this;
+    const {variables} = scope.dump();
+
+    for (const [, variable] of Object.entries(variables)) {
+      const instruction = new CIRInitInstruction(
+        CIRInstructionVarArg.ofConstant(CPrimitiveType.int(config.arch), 2),
+        allocator
+          .allocVariable(CIRVariable.ofScopeVariable(variable))
+          .name,
       );
 
       branchesBuilder.emit(instruction);
-      new CIRGeneratorASTVisitor(scope)
-        .setContext(
-          {
-            generator: this,
-            fnType,
-          },
-        )
-        .visit(fnType.definition);
     }
   }
 }

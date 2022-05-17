@@ -1,6 +1,11 @@
 import {CIRError, CIRErrorCode} from '../errors/CIRError';
-import {CIRIfInstruction, CIRInstruction, isIRIfInstruction, isIRLabelInstruction} from '../instructions';
+import {
+  CIRIfInstruction, CIRInstruction,
+  isIRIfInstruction, isIRRetInstruction,
+} from '../instructions';
+
 import {CIRInstructionsBlock} from '../instructions/CIRInstructionsBlock';
+import {isIRLabeledInstruction} from '../guards';
 
 export type CIRBlockLabelsMap = Record<string, CIRInstructionsBlock>;
 export type CIRBranchesBuilderResult = {
@@ -28,10 +33,13 @@ export class CIRBranchesBuilder {
     const {tmpBlock} = this;
 
     tmpBlock.instructions.push(instruction);
-    if (isIRLabelInstruction(instruction))
+
+    if (isIRLabeledInstruction(instruction))
       this.tmpBlock = tmpBlock.ofName(instruction.name);
     else if (isIRIfInstruction(instruction))
-      this.appendBranch(instruction);
+      this.appendIfBranch(instruction);
+    else if (isIRRetInstruction(instruction))
+      this.flush();
 
     return this;
   }
@@ -43,8 +51,11 @@ export class CIRBranchesBuilder {
    * @memberof CIRBranchesBuilder
    */
   flush(): CIRBranchesBuilderResult {
+    this.setBlock(this.tmpBlock);
+    this.tmpBlock = CIRInstructionsBlock.ofInstructions([]);
+
     return {
-      blocks: this.setBlock(this.tmpBlock).blocks,
+      blocks: this.blocks,
     };
   }
 
@@ -55,7 +66,7 @@ export class CIRBranchesBuilder {
    * @param {CIRIfInstruction} instruction
    * @memberof CIRBranchesBuilder
    */
-  private appendBranch(instruction: CIRIfInstruction) {
+  private appendIfBranch(instruction: CIRIfInstruction) {
     const {tmpBlock, unresolvedBlockBranches} = this;
     const {ifTrue, ifFalse} = instruction;
 

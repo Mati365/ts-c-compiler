@@ -1,9 +1,6 @@
-import {CFunctionDeclType} from '../../analyze';
-
 import {CIROpcode} from '../constants';
 import {CIRVariable} from '../variables';
 import {CIRInstruction} from './CIRInstruction';
-import {CIRNameGenerator} from '../generator/CIRNameGenerator';
 import {IsLabeledInstruction} from '../interfaces/IsLabeledInstruction';
 
 export function isIRFnDefInstruction(instruction: CIRInstruction): instruction is CIRFnDefInstruction {
@@ -29,20 +26,9 @@ export class CIRFnDefInstruction extends CIRInstruction implements IsLabeledInst
   }
 
   override getDisplayName(): string {
-    const {name, args} = this;
+    const {name, args, retByteSize} = this;
+    const argsStr = args.map((arg) => arg.getDisplayName()).join(', ');
 
-    return `def ${name}(${args.map((arg) => arg.getDisplayName()).join(', ')})`;
-  }
-
-  static ofFunctionDeclType(fn: CFunctionDeclType) {
-    const irDefArgs = fn.args.map(arg => new CIRVariable(
-      CIRNameGenerator.the.genVariableName(),
-      arg.type.getByteSize(),
-    ));
-
-    return new CIRFnDefInstruction(
-      fn.name,
-      irDefArgs,
-    );
+    return `def ${name}(${argsStr}): [ret ${retByteSize || 0}B]`;
   }
 }

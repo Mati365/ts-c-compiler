@@ -1,10 +1,12 @@
 import {ccompiler, CCompilerOutput} from '@compiler/pico-c';
 
 ccompiler(/* cpp */ `
-  int main() {
-    int abc = 2;
-    int d = abc + 4;
+  int sum(int a, int b) {
+    int d;
+    int array[3];
   }
+
+  int mul(int a, int b) {}
 `).match(
   {
     ok: (result) => {

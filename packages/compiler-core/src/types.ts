@@ -2,6 +2,7 @@
 export type UnmountCallback = () => void;
 
 /** Utils */
+export type PartialBy<T, K extends keyof T> = Omit<T, K> & Partial<Pick<T, K>>;
 export type CanBeArray<T> = T | T[];
 export type Newable<T, A extends Array<any> = any> = {
   new(...args: A): T,

@@ -1,4 +1,5 @@
 import {IsPrintable} from '@compiler/core/interfaces';
+import {CPrimitiveType} from '../../analyze';
 
 /**
  * Just wrapper for scalar or variable name
@@ -8,8 +9,22 @@ import {IsPrintable} from '@compiler/core/interfaces';
  * @implements {IsPrintable}
  */
 export class CIRInstructionVarArg implements IsPrintable {
+  /**
+   * Create literal constant value arg
+   *
+   * @static
+   * @param {CPrimitiveType} type
+   * @param {number} constant
+   * @return {CIRInstructionVarArg}
+   * @memberof CIRInstructionVarArg
+   */
+  static ofConstant(type: CPrimitiveType, constant: number): CIRInstructionVarArg {
+    return new CIRInstructionVarArg(null, type, constant);
+  }
+
   constructor(
     readonly name: string,
+    readonly type?: CPrimitiveType,
     readonly constant?: number,
   ) {}
 

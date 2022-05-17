@@ -1,7 +1,10 @@
 import * as R from 'ramda';
+import chalk from 'chalk';
 
-import {CIRInstructionsBlock, isIRLabelInstruction} from '../instructions';
+import {CIRInstructionsBlock} from '../instructions';
 import {IRCodeBuilderResult} from '../sefeBuildIRCode';
+
+import {isIRLabeledInstruction} from '../guards';
 
 /**
  * Simple IR serializer. Maybe add graph rendering?
@@ -42,7 +45,7 @@ export class CIRResultView {
         return acc;
       },
       [],
-    ).join('\n');
+    ).join('\n\n');
   }
 
   /**
@@ -55,13 +58,13 @@ export class CIRResultView {
    */
   static serializeCodeBlock(block: CIRInstructionsBlock): string {
     const lines: string[] = [
-      `; --- Block ${block.name || '<unknown>'} ---`,
+      chalk.bold.greenBright(`; --- Block ${block.name || '<unknown>'} ---`),
     ];
 
     block.instructions.forEach((instruction) => {
       let str = instruction.getDisplayName();
-      if (!isIRLabelInstruction(instruction))
-        str = str.padStart(4, ' ');
+      if (!isIRLabeledInstruction(instruction))
+        str = `  ${str}`;
 
       lines.push(str);
     });
