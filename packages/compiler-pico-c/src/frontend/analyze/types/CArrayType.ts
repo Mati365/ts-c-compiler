@@ -285,4 +285,15 @@ export class CArrayType extends CType<CArrayTypeDescriptor> {
       ],
     );
   }
+
+  override getShortestDisplayName(): string {
+    const {baseType, size} = this;
+
+    return concatNonEmptyStrings(
+      [
+        this.getQualifiersDisplayName(),
+        `${baseType.getShortestDisplayName()}[${size ?? ''}]`,
+      ],
+    );
+  }
 }

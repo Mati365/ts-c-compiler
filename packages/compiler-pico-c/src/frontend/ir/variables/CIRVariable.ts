@@ -1,20 +1,16 @@
 import * as R from 'ramda';
 
+import {getIRTypeDisplayName} from '../dump';
+
 import {IsPrintable} from '@compiler/core/interfaces';
 import {Identity} from '@compiler/core/monads';
 import {PartialBy} from '@compiler/core/types';
-
-import {
-  CArrayType, CPrimitiveType, CVariable,
-  isArrayLikeType, isPrimitiveLikeType,
-} from '../../analyze';
-
-import {CIRError, CIRErrorCode} from '../errors/CIRError';
+import {CType, CVariable} from '../../analyze';
 
 export type CIRVariableDescriptor = {
   prefix: string,
   suffix: number,
-  type: CPrimitiveType | CArrayType,
+  type: CType,
 };
 
 /**
@@ -39,15 +35,6 @@ export class CIRVariable
   static ofScopeVariable(variable: CVariable): CIRVariable {
     const {type, name} = variable;
 
-    if (!isPrimitiveLikeType(type) && !isArrayLikeType(type)) {
-      throw new CIRError(
-        CIRErrorCode.VARIABLE_MUST_BE_PRIMITIVE,
-        {
-          name: variable.getDisplayName(),
-        },
-      );
-    }
-
     return new CIRVariable(
       {
         prefix: name,
@@ -66,6 +53,7 @@ export class CIRVariable
   }
 
   get type() { return this.value.type; }
+  get prefix() { return this.value.prefix; }
   get name() {
     const {prefix, suffix} = this.value;
 
@@ -82,6 +70,19 @@ export class CIRVariable
   ofSuffix(suffix: number): CIRVariable {
     return this.map(
       R.assoc('suffix', suffix),
+    );
+  }
+
+  /**
+   * Changes original name of variable
+   *
+   * @param {string} name
+   * @return {CIRVariable}
+   * @memberof CIRVariable
+   */
+  ofPrefix(name: string): CIRVariable {
+    return this.map(
+      R.assoc('prefix', name),
     );
   }
 
@@ -103,6 +104,6 @@ export class CIRVariable
     const {type} = this.value;
     const {name} = this;
 
-    return `${name} [${type.getShortestDisplayName()} ${type.getByteSize()}B]`;
+    return `${name}${getIRTypeDisplayName(type)}`;
   }
 }

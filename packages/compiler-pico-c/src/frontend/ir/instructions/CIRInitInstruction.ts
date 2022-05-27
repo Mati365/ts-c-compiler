@@ -18,6 +18,7 @@ export class CIRInitInstruction extends CIRInstruction implements IsOutputInstru
   constructor(
     readonly value: CIRInstructionVarArg,
     readonly outputVar: string,
+    readonly offset: number = 0,
   ) {
     super(CIROpcode.INIT);
   }
@@ -27,8 +28,8 @@ export class CIRInitInstruction extends CIRInstruction implements IsOutputInstru
   }
 
   override getDisplayName(): string {
-    const {outputVar, value} = this;
+    const {outputVar, value, offset} = this;
 
-    return `${outputVar} = ${value.getDisplayName()}`;
+    return `${outputVar}[${offset}] init ${value?.getDisplayName() ?? '<uninitialized>'}`;
   }
 }

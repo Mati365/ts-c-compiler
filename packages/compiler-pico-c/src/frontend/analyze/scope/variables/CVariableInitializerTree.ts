@@ -1,5 +1,7 @@
 import * as R from 'ramda';
 
+import {isArrayLikeType, isStructLikeType} from '../../types';
+
 import {AbstractTreeVisitor, IsWalkableNode} from '@compiler/grammar/tree/AbstractTreeVisitor';
 import {ASTCCompilerNode} from '../../../parser/ast/ASTCCompilerNode';
 import {CType} from '../../types/CType';
@@ -80,7 +82,86 @@ export class CVariableInitializerTree<C extends ASTCCompilerNode = ASTCCompilerN
   }
 
   /**
+   * Returns type that always has fixed size
+   *
+   * @example
+   *  int a[] = { 1, 2, 3 }
+   *  => int[3]
+   *
+   * @return {CType}
+   * @memberof CVariableInitializerTree
+   */
+  getFixedSizeBaseType(): CType {
+    const {baseType, fields} = this;
+
+    if (isArrayLikeType(baseType) && baseType.isUnknownSize()) {
+      return baseType.ofSize(
+        Math.ceil(fields.length / baseType.baseType.scalarValuesCount),
+      );
+    }
+
+    return baseType;
+  }
+
+  /**
+   * Returns type at specified offset
+   *
+   * @param {number} offset
+   * @return {CType}
+   * @memberof CVariableInitializerTree
+   */
+  getOffsetExpectedType(offset: number): CType {
+    const {baseType} = this;
+
+    if (isStructLikeType(baseType)) {
+      return baseType.getFieldTypeByIndex(
+        offset % baseType.getFlattenFieldsCount(),
+      );
+    }
+
+    if (isArrayLikeType(baseType)) {
+      const baseArrayType = baseType.getFlattenInfo().type;
+
+      if (isStructLikeType(baseArrayType)) {
+        return baseArrayType.getFieldTypeByIndex(
+          offset % baseArrayType.getFlattenFieldsCount(),
+        );
+      }
+
+      return baseArrayType;
+    }
+
+    return this.getNestedInitializerGroupType();
+  }
+
+  /**
+   * Returns type of nested group
+   *
+   * @example
+   *  int a[2][] = { { 1 } }
+   *                   ^
+   *              Array<int, 2>
+   *
+   * @private
+   * @return {CType}
+   * @memberof CVariableInitializerTree
+   */
+  getNestedInitializerGroupType(): CType {
+    const {baseType} = this;
+
+    return (
+      isArrayLikeType(baseType)
+        ? baseType.ofTailDimensions()
+        : baseType
+    );
+  }
+
+
+  /**
    * Return maximum count of items for given base type
+   *
+   * @see
+   *  Returns null if unknown size!
    *
    * @example
    *  int abc[3][4] => 12

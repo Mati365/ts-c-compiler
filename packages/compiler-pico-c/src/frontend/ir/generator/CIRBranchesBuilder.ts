@@ -31,8 +31,9 @@ export class CIRBranchesBuilder {
    */
   emit(instruction: CIRInstruction): this {
     const {tmpBlock} = this;
+    const {instructions} = tmpBlock;
 
-    tmpBlock.instructions.push(instruction);
+    instructions.push(instruction);
 
     if (isIRLabeledInstruction(instruction))
       this.tmpBlock = tmpBlock.ofName(instruction.name);

@@ -26,9 +26,12 @@ export class CVariable extends CNamedTypedEntry<CVariableDescriptor> {
   }
 
   static ofInitializedEntry(entry: CNamedTypedEntry, initializer?: CVariableInitializerTree) {
+    const {name, type} = entry;
+
     return new CVariable(
       {
-        ...entry.unwrap(),
+        type: initializer?.getFixedSizeBaseType() ?? type,
+        name,
         initializer,
       },
     );

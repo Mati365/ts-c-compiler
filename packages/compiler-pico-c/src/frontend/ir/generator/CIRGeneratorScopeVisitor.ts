@@ -1,12 +1,14 @@
-import {CFunctionDeclType, CPrimitiveType} from '../../analyze';
+import {CFunctionDeclType} from '../../analyze';
 import {CScopeVisitor, CScopeTree} from '../../analyze/scope';
 
 import {CIRGeneratorConfig} from '../constants';
-import {CIRInitInstruction, CIRRetInstruction} from '../instructions';
-import {CIRInstructionVarArg, CIRVariable} from '../variables';
+import {CIRRetInstruction} from '../instructions';
 import {CIRBranchesBuilder, CIRBranchesBuilderResult} from './CIRBranchesBuilder';
 import {CIRGeneratorASTVisitor} from './CIRGeneratorASTVisitor';
 import {CIRVariableAllocator} from './CIRVariableAllocator';
+import {IREmitterContext} from './emitters/types';
+
+import {emitVariableInitializerIR} from './emitters';
 
 /**
  * Root IR generator visitor
@@ -23,6 +25,16 @@ export class CIRGeneratorScopeVisitor extends CScopeVisitor {
     readonly config: CIRGeneratorConfig,
   ) {
     super();
+  }
+
+  get emitterContext(): IREmitterContext {
+    const {allocator, branchesBuilder, config} = this;
+
+    return {
+      config,
+      allocator,
+      branchesBuilder,
+    };
   }
 
   /**
@@ -73,6 +85,7 @@ export class CIRGeneratorScopeVisitor extends CScopeVisitor {
         {
           generator: this,
           fnType,
+          scope,
         },
       )
       .visit(fnType.definition);
@@ -90,18 +103,17 @@ export class CIRGeneratorScopeVisitor extends CScopeVisitor {
    * @memberof CIRGeneratorScopeVisitor
    */
   private emitScopeVariablesIR(scope: CScopeTree) {
-    const {config, allocator, branchesBuilder} = this;
     const {variables} = scope.dump();
+    const {emitterContext} = this;
 
     for (const [, variable] of Object.entries(variables)) {
-      const instruction = new CIRInitInstruction(
-        CIRInstructionVarArg.ofConstant(CPrimitiveType.int(config.arch), 2),
-        allocator
-          .allocVariable(CIRVariable.ofScopeVariable(variable))
-          .name,
+      emitVariableInitializerIR(
+        {
+          context: emitterContext,
+          scope,
+          variable,
+        },
       );
-
-      branchesBuilder.emit(instruction);
     }
   }
 }

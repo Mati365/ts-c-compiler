@@ -23,7 +23,7 @@ export class CIROpInstruction<O> extends CIRInstruction implements IsOutputInstr
 
   override getDisplayName(): string {
     const {leftVar, operator, rightVar, outputVar} = this;
-    const str = `${leftVar} ${operator} ${rightVar}`;
+    const str = `${leftVar.getDisplayName()} ${operator} ${rightVar.getDisplayName()}`;
 
     return (
       outputVar

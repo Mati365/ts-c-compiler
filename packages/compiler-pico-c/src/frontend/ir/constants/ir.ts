@@ -1,6 +1,19 @@
 import {TokenType} from '@compiler/lexer/shared';
 import {CPrimitiveType} from '../../analyze';
 
+export type CIMathOperator =
+  | TokenType.PLUS
+  | TokenType.MINUS
+  | TokenType.MUL
+  | TokenType.DIV
+  | TokenType.POW
+  | TokenType.MOD
+  | TokenType.BIT_AND
+  | TokenType.BIT_OR
+  | TokenType.BIT_SHIFT_RIGHT
+  | TokenType.BIT_SHIFT_LEFT
+  | TokenType.BIT_NOT;
+
 export type CIRelOperator =
   | TokenType.GREATER_THAN
   | TokenType.GREATER_EQ_THAN
@@ -10,6 +23,7 @@ export type CIRelOperator =
   | TokenType.EQUAL;
 
 export enum CIROpcode {
+  ALLOC = 'ALLOC',
   INIT = 'INIT',
   CALL = 'CALL',
   LABEL = 'LABEL',
@@ -18,6 +32,7 @@ export enum CIROpcode {
   PHI = 'PHI',
   DEF = 'DEF',
   RET = 'RET',
+  MATH = 'MATH',
 }
 
 export type CIRType = CPrimitiveType | CPrimitiveType[];

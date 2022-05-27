@@ -48,7 +48,7 @@ export class CCompilerOutput {
   }
 
   dump() {
-    const {ast, scope, code, ir, timings} = this;
+    const {scope, code, ir, timings, ast} = this;
 
     console.info(
       [

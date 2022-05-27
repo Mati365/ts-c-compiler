@@ -4,9 +4,10 @@ import {CFunctionDeclType, CScopeTree} from '../../analyze';
 import {ASTCCompilerNode} from '../../parser';
 import type {CIRGeneratorScopeVisitor} from './CIRGeneratorScopeVisitor';
 
-type CIRGeneratorASTContext = {
+export type CIRGeneratorASTContext = {
   fnType: CFunctionDeclType;
   generator: CIRGeneratorScopeVisitor;
+  scope: CScopeTree;
 };
 
 export class CIRGeneratorASTVisitor extends GroupTreeVisitor<ASTCCompilerNode, any, CIRGeneratorASTContext> {

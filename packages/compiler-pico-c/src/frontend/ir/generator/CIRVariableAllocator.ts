@@ -1,4 +1,4 @@
-import {CFunctionDeclType} from '../../analyze';
+import {CFunctionDeclType, CVariable} from '../../analyze';
 import {CIRFnDefInstruction} from '../instructions';
 import {CIRVariable} from '../variables';
 
@@ -12,11 +12,19 @@ export class CIRVariableAllocator {
   private readonly variables: Record<string, CIRVariable> = {};
   private readonly counters = {
     labels: 0,
-    variables: 0,
+    tmpVars: 0,
   };
+
+  isAllocated(variable: string): boolean {
+    return !!this.variables[variable];
+  }
 
   genLabelName(suffix: string) {
     return `L${this.counters.labels++}-${suffix}`;
+  }
+
+  getVariable(name: string): CIRVariable {
+    return this.variables[name];
   }
 
   /**
@@ -26,8 +34,11 @@ export class CIRVariableAllocator {
    * @return {CIRVariable}
    * @memberof CIRVariableAllocator
    */
-  allocVariable(variable: CIRVariable): CIRVariable {
-    this.variables[variable.name] = variable;
+  allocVariable(variable: CIRVariable | CVariable): CIRVariable {
+    if (variable instanceof CVariable)
+      variable = CIRVariable.ofScopeVariable(variable);
+
+    this.variables[variable.prefix] = variable;
     return variable;
   }
 

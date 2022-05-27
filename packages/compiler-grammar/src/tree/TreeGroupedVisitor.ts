@@ -27,12 +27,16 @@ export function isInlineTreeVisitor(visitor: any): visitor is InlineTreeVisitor<
  * @template P parent node type
  * @template C context type
  */
-export abstract class GroupTreeVisitor<
+export class GroupTreeVisitor<
     T extends TreeNode<any> = TreeNode,
     P extends GroupTreeVisitor<T> = any,
     C extends {} = any> extends TreeVisitor<T> {
   protected parentVisitor: P;
   protected _context: C;
+
+  static ofIterator<T extends TreeNode<any>>(visitorsMap: TreeVisitorsMap<T>) {
+    return (tree: T) => new GroupTreeVisitor<T>(visitorsMap).visit(tree);
+  }
 
   constructor(
     private visitorsMap: TreeVisitorsMap<T> = {},

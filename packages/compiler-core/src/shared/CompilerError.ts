@@ -1,5 +1,9 @@
 import {CodeTranslatedError} from './CodeTranslatedError';
 
+export function fixme(str: string) {
+  return `[[ fixme ]] ${str}`;
+}
+
 /**
  * Errors thrown during compiling
  *

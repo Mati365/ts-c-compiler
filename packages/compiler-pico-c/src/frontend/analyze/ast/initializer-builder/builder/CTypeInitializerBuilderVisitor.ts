@@ -69,56 +69,14 @@ export class CTypeInitializerBuilderVisitor extends CInnerTypeTreeVisitor {
   }
 
   /**
-   * Returns type at specified offset
+   *Returns type at specified offset
    *
-   * @private
+   * @param {number} [offset=this.currentOffset]
    * @return {CType}
    * @memberof CTypeInitializerBuilderVisitor
    */
-  private getOffsetExpectedType(): CType {
-    const {baseType} = this;
-
-    if (isStructLikeType(baseType)) {
-      return baseType.getFieldTypeByIndex(
-        this.currentOffset % baseType.getFlattenFieldsCount(),
-      );
-    }
-
-    if (isArrayLikeType(baseType)) {
-      const baseArrayType = baseType.getFlattenInfo().type;
-
-      if (isStructLikeType(baseArrayType)) {
-        return baseArrayType.getFieldTypeByIndex(
-          this.currentOffset % baseArrayType.getFlattenFieldsCount(),
-        );
-      }
-
-      return baseArrayType;
-    }
-
-    return this.getNestedInitializerGroupType();
-  }
-
-  /**
-   * Returns type of nested group
-   *
-   * @example
-   *  int a[2][] = { { 1 } }
-   *                   ^
-   *              Array<int, 2>
-   *
-   * @private
-   * @return {CType}
-   * @memberof CTypeInitializerBuilderVisitor
-   */
-  private getNestedInitializerGroupType(): CType {
-    const {baseType} = this;
-
-    return (
-      isArrayLikeType(baseType)
-        ? baseType.ofTailDimensions()
-        : baseType
-    );
+  private getOffsetExpectedType(offset: number = this.currentOffset): CType {
+    return this.tree.getOffsetExpectedType(offset);
   }
 
   /**
@@ -178,8 +136,8 @@ export class CTypeInitializerBuilderVisitor extends CInnerTypeTreeVisitor {
    * @memberof CTypeInitializerBuilderVisitor
    */
   private extractInitializerList(node: ASTCInitializer) {
-    const {context} = this;
-    const nestedGroupType = this.getNestedInitializerGroupType();
+    const {context, tree} = this;
+    const nestedGroupType = tree.getNestedInitializerGroupType();
 
     node.initializers.forEach((initializer) => {
       if (initializer.hasAssignment())
@@ -221,7 +179,7 @@ export class CTypeInitializerBuilderVisitor extends CInnerTypeTreeVisitor {
    * @memberof CTypeInitializerBuilderVisitor
    */
   private extractInitializerListValue(node: ASTCInitializer, arrayItem: boolean = true) {
-    const {context, baseType} = this;
+    const {context, baseType, tree} = this;
     const exprResult = evalConstantExpression(
       {
         expression: node.assignmentExpression,
@@ -247,7 +205,7 @@ export class CTypeInitializerBuilderVisitor extends CInnerTypeTreeVisitor {
       this.currentOffset = offset;
     } else {
       if (stringLiteral)
-        expectedType = this.getNestedInitializerGroupType();
+        expectedType = tree.getNestedInitializerGroupType();
       else
         expectedType = this.getOffsetExpectedType();
 

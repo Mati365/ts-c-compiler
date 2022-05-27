@@ -1,12 +1,15 @@
 import {ccompiler, CCompilerOutput} from '@compiler/pico-c';
 
 ccompiler(/* cpp */ `
-  int sum(int a, int b) {
-    int d;
-    int array[3];
-  }
+  struct Vec2 {
+    int x, y;
+    char z;
+  };
 
-  int mul(int a, int b) {}
+  int sum(int a, int b) {
+    struct Vec2 array[2][] = { 1, 2, 230 };
+    struct Vec2 vec = { 1, 2, 'a' };
+  }
 `).match(
   {
     ok: (result) => {

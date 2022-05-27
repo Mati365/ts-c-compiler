@@ -1,9 +1,5 @@
-import {CompilerError} from '@compiler/core/shared/CompilerError';
+import {CompilerError, fixme} from '@compiler/core/shared/CompilerError';
 import {TokenLocation} from '@compiler/lexer/shared';
-
-export function fixme(str: string) {
-  return `[[ fixme ]] ${str}`;
-}
 
 export enum CTypeCheckErrorCode {
   TYPECHECK_ERROR,
