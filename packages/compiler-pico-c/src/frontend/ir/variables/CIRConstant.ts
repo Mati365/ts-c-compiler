@@ -1,8 +1,14 @@
+import * as R from 'ramda';
+
 import {getIRTypeDisplayName} from '../dump';
 
 import {IsPrintable} from '@compiler/core/interfaces';
 import {Identity} from '@compiler/core/monads';
 import {CType} from '../../analyze';
+
+export function isCIRConstant(obj: any): obj is CIRConstant {
+  return R.is(Object, obj) && ('constant' in obj);
+}
 
 export type CIRConstantDescriptor = {
   constant: number,

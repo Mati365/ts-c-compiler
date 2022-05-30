@@ -1,14 +1,8 @@
 import {ccompiler, CCompilerOutput} from '@compiler/pico-c';
 
 ccompiler(/* cpp */ `
-  struct Vec2 {
-    int x, y;
-    char z;
-  };
-
-  int sum(int a, int b) {
-    struct Vec2 array[2][] = { 1, 2, 230 };
-    struct Vec2 vec = { 1, 2, 'a' };
+  int sum(int b) {
+    int d = 2 * b + 4 * 6 / 2;
   }
 `).match(
   {

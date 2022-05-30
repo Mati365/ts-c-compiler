@@ -1,7 +1,7 @@
 import {TokenType} from '@compiler/lexer/shared';
 import {CPrimitiveType} from '../../analyze';
 
-export type CIMathOperator =
+export type CIRMathOperator =
   | TokenType.PLUS
   | TokenType.MINUS
   | TokenType.MUL

@@ -11,8 +11,10 @@ import {IREmitterContextAttrs} from './types';
 
 import {CIRError, CIRErrorCode} from '../../errors/CIRError';
 import {CIRAllocInstruction, CIRInitInstruction, CIRMathInstruction} from '../../instructions';
-import {CIMathOperator} from '../../constants';
+import {CIRMathOperator} from '../../constants';
 import {CIRConstant, CIRInstructionVarArg} from '../../variables';
+
+import {tryEvalBinaryInstruction} from '../eval/tryEvalBinaryInstruction';
 
 type InitializerIREmitAttrs = IREmitterContextAttrs & {
   variable: CVariable;
@@ -70,14 +72,31 @@ export function emitVariableInitializerIR(
             [ASTCCompilerKind.BinaryOperator]: {
               leave: (binary: ASTCBinaryOpNode) => {
                 const [a, b] = [argsVarsStack.pop(), argsVarsStack.pop()];
-
-                branchesBuilder.emit(
-                  new CIRMathInstruction(
-                    <CIMathOperator> binary.op,
-                    b, a,
-                    allocNextVariable().name,
-                  ),
+                const op = <CIRMathOperator> binary.op;
+                const evalResult = tryEvalBinaryInstruction(
+                  {
+                    op,
+                    a,
+                    b,
+                  },
                 );
+
+                evalResult.match({
+                  none() {
+                    branchesBuilder.emit(
+                      new CIRMathInstruction(
+                        op,
+                        b, a,
+                        allocNextVariable().name,
+                      ),
+                    );
+                  },
+                  some(val) {
+                    argsVarsStack.push(
+                      CIRConstant.ofConstant(rootIRVariable.type, val),
+                    );
+                  },
+                });
               },
             },
           },

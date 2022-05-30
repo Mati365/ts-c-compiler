@@ -1,4 +1,4 @@
-import {CIMathOperator, CIROpcode} from '../constants';
+import {CIRMathOperator, CIROpcode} from '../constants';
 import {CIROpInstruction} from './CIROpInstruction';
 import {CIRInstruction} from './CIRInstruction';
 import {CIRInstructionVarArg} from '../variables';
@@ -12,11 +12,11 @@ export function isIRMathInstruction(instruction: CIRInstruction): instruction is
  *
  * @export
  * @class CIRMathInstruction
- * @extends {CIROpInstruction<CIMathOperator>}
+ * @extends {CIROpInstruction<CIRMathOperator>}
  */
-export class CIRMathInstruction extends CIROpInstruction<CIMathOperator> {
+export class CIRMathInstruction extends CIROpInstruction<CIRMathOperator> {
   constructor(
-    operator: CIMathOperator,
+    operator: CIRMathOperator,
     leftVar: CIRInstructionVarArg,
     rightVar: CIRInstructionVarArg,
     outputVar?: string,

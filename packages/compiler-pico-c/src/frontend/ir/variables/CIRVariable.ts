@@ -7,6 +7,10 @@ import {Identity} from '@compiler/core/monads';
 import {PartialBy} from '@compiler/core/types';
 import {CType, CVariable} from '../../analyze';
 
+export function isCIRVariable(obj: any): obj is CIRVariable {
+  return R.is(Object, obj) && ('prefix' in obj) && ('suffix' in obj);
+}
+
 export type CIRVariableDescriptor = {
   prefix: string,
   suffix: number,
