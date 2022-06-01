@@ -278,4 +278,13 @@ describe('Initializer typecheck', () => {
       `,
     ).toHaveCompilerError(CTypeCheckErrorCode.OPERATOR_SIDES_TYPES_MISMATCH);
   });
+
+  test('assign flatten array to multidimensional array', () => {
+    expect(
+      /* cpp */ `
+        int a[3][1] = { 1, 2, 3 };
+        int b[2][3][1] = { 1, 2, 3 };
+      `,
+    ).not.toHaveCompilerError();
+  });
 });

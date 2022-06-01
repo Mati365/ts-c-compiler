@@ -2,28 +2,27 @@ import * as R from 'ramda';
 
 import {
   ASTCBinaryOpNode, ASTCCompilerKind,
-  ASTCCompilerNode, ASTCPrimaryExpression,
+  ASTCCompilerNode, ASTCPostfixExpression, ASTCPrimaryExpression,
 } from '@compiler/pico-c/frontend/parser';
 
 import {GroupTreeVisitor} from '@compiler/grammar/tree/TreeGroupedVisitor';
-import {IREmitterContextAttrs} from './types';
+import {IREmitterContextAttrs, IREmitterExpressionResult} from './types';
 
-import {CIRInstruction, CIRMathInstruction} from '../../instructions';
+import {CIRInstruction, CIRLoadInstruction, CIRMathInstruction} from '../../instructions';
 import {CIRMathOperator} from '../../constants';
-import {CIRConstant, CIRInstructionVarArg, CIRVariable, isCIRVariable} from '../../variables';
+import {CIRError, CIRErrorCode} from '../../errors/CIRError';
+import {
+  CIRConstant, CIRInstructionVarArg,
+  CIRVariable, isCIRVariable,
+} from '../../variables';
 
+import {emitExpressionIdentifierAccessorIR} from './emitExpressionIdentifierAccessorIR';
 import {
   tryConcatInstructions,
   tryEvalBinaryInstruction,
-
 } from '../optimization';
 
-type ExpressionIREmitResult = {
-  outputVar: CIRVariable;
-  instructions: CIRInstruction[];
-};
-
-type ExpressionIREmitAttrs = IREmitterContextAttrs & {
+export type ExpressionIREmitAttrs = IREmitterContextAttrs & {
   parentVar: CIRVariable;
   node: ASTCCompilerNode;
 };
@@ -33,15 +32,16 @@ export function emitExpressionIR(
     parentVar,
     context,
     node,
+    scope,
   }: ExpressionIREmitAttrs,
-): ExpressionIREmitResult {
+): IREmitterExpressionResult {
   const {allocator} = context;
   const {type} = parentVar;
 
   const getCurrentVariable = () => allocator.getVariable(parentVar.prefix);
 
   const instructions: CIRInstruction[] = [];
-  let argsVarsStack: CIRInstructionVarArg[] = [getCurrentVariable()];
+  let argsVarsStack: CIRInstructionVarArg[] = [];
 
   const deallocVariable = () => {
     getCurrentVariable().ofDecrementedSuffix();
@@ -58,6 +58,30 @@ export function emitExpressionIR(
 
   GroupTreeVisitor.ofIterator<ASTCCompilerNode>(
     {
+      [ASTCCompilerKind.PostfixExpression]: {
+        enter(expression: ASTCPostfixExpression) {
+          if (expression.isPrimaryExpression())
+            return;
+
+          const exprResult = emitExpressionIdentifierAccessorIR(
+            {
+              node: expression,
+              context,
+              scope,
+              emitExpressionIR,
+            },
+          );
+
+          if (!exprResult.output)
+            throw new CIRError(CIRErrorCode.UNRESOLVED_IDENTIFIER);
+
+          instructions.push(...exprResult.instructions);
+          argsVarsStack.push(exprResult.output);
+
+          return false;
+        },
+      },
+
       [ASTCCompilerKind.PrimaryExpression]: {
         enter(expression: ASTCPrimaryExpression) {
           if (expression.isConstant()) {
@@ -65,10 +89,13 @@ export function emitExpressionIR(
               CIRConstant.ofConstant(type, expression.constant.value.number),
             );
           } else if (expression.isIdentifier()) {
-            argsVarsStack.push(
-              allocator.getVariable(expression.identifier.text),
-            );
+            const tmpVar = allocNextVariable();
+            const srcVar = allocator.getVariable(expression.identifier.text);
+
+            instructions.push(new CIRLoadInstruction(srcVar, tmpVar.name));
           }
+
+          return false;
         },
       },
 
@@ -125,8 +152,21 @@ export function emitExpressionIR(
     },
   )(node);
 
+  // handle case: int a = b;
+  if (!R.isEmpty(argsVarsStack)) {
+    const lastArgVarStack = R.last(argsVarsStack);
+
+    if (argsVarsStack.length !== 1)
+      throw new CIRError(CIRErrorCode.UNABLE_TO_COMPILE_EXPRESSION);
+
+    return {
+      output: lastArgVarStack,
+      instructions,
+    };
+  }
+
   return {
-    outputVar: getCurrentVariable(),
+    output: getCurrentVariable(),
     instructions,
   };
 }

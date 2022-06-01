@@ -1,9 +1,10 @@
 import {ccompiler, CCompilerOutput} from '@compiler/pico-c';
 
 ccompiler(/* cpp */ `
-  int sum(int b) {
-    int a = 3;
-    int d = (9 + b * 4) + 4 * 12 - 5 * (a + 4);
+  int sum() {
+    int a[3][2] = { { 1, 2 }, { 2, 3 }, { 4, 5 } };
+    int k = 1;
+    int c = a[k + 1][1];
   }
 `).match(
   {

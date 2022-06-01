@@ -1,6 +1,8 @@
-import {CFunctionDeclType, CVariable} from '../../analyze';
+import {CFunctionDeclType, CType, CVariable} from '../../analyze';
 import {CIRFnDefInstruction} from '../instructions';
 import {CIRVariable} from '../variables';
+
+const TMP_VAR_PREFIX = '#tmp';
 
 /**
  * Registers symbols table
@@ -40,6 +42,27 @@ export class CIRVariableAllocator {
 
     this.variables[variable.prefix] = variable;
     return variable;
+  }
+
+  /**
+   * Alloc variable used for example for ptr compute
+   *
+   * @param {CType} type
+   * @return {{CIRVariable}
+   * @memberof CIRVariableAllocator
+   */
+  allocTmpVariable(type: CType): CIRVariable {
+    const tmpVar = this.getVariable(TMP_VAR_PREFIX) ?? new CIRVariable(
+      {
+        prefix: TMP_VAR_PREFIX,
+        suffix: -1,
+        type,
+      },
+    );
+
+    return this.allocVariable(
+      tmpVar.ofIncrementedSuffix(),
+    );
   }
 
   /**

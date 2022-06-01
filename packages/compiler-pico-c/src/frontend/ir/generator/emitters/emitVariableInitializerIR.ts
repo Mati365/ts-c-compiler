@@ -34,9 +34,8 @@ export function emitVariableInitializerIR(
 
   if (variable.isInitialized()) {
     variable.initializer.fields.forEach((initializer, offset) => {
-      if (isInitializerTreeValue(initializer)) {
+      if (isInitializerTreeValue(initializer))
         throw new CIRError(CIRErrorCode.INCORRECT_INITIALIZER_BLOCK);
-      }
 
       if (isCompilerTreeNode(initializer)) {
         const exprResult = emitExpressionIR(
@@ -51,7 +50,7 @@ export function emitVariableInitializerIR(
         instructions.push(
           ...exprResult.instructions,
           new CIRStoreInstruction(
-            exprResult.outputVar,
+            exprResult.output,
             rootIRVar.name,
             offset,
           ),

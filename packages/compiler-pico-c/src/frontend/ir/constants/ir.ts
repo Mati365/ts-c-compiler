@@ -33,4 +33,5 @@ export enum CIROpcode {
   DEF = 'DEF',
   RET = 'RET',
   MATH = 'MATH',
+  LEA = 'LEA',
 }

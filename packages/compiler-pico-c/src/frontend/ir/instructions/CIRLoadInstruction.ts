@@ -1,3 +1,5 @@
+import chalk from 'chalk';
+
 import {IsOutputInstruction} from '../interfaces';
 import {CIROpcode} from '../constants';
 import {CIRInstruction} from './CIRInstruction';
@@ -24,6 +26,6 @@ export class CIRLoadInstruction extends CIRInstruction implements IsOutputInstru
     const {outputVar, inputVar, offset} = this;
     const offsetSuffix = offset ? ` + ${offset}` : '';
 
-    return `${inputVar.getDisplayName()} = *(${outputVar}${offsetSuffix})`;
+    return `${chalk.blueBright(outputVar)} = *(${inputVar.getDisplayName()}${offsetSuffix})`;
   }
 }
