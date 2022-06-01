@@ -23,6 +23,20 @@ export class CIRBranchesBuilder {
   private unresolvedBlockBranches: VoidFunction[] = [];
   private tmpBlock = CIRInstructionsBlock.ofInstructions([]);
 
+  get lastInstruction() {
+    return this.tmpBlock.lastInstruction;
+  }
+
+  /**
+   * Removes last instruction from stack
+   *
+   * @return {CIRInstruction}
+   * @memberof CIRBranchesBuilder
+   */
+  pop(): CIRInstruction {
+    return this.tmpBlock.instructions.pop();
+  }
+
   /**
    * If instruction is branch - flush instruction stack and add new block
    *

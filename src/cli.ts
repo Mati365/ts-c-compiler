@@ -2,7 +2,8 @@ import {ccompiler, CCompilerOutput} from '@compiler/pico-c';
 
 ccompiler(/* cpp */ `
   int sum(int b) {
-    int d = 2 * b + 4 * 6 / 2;
+    int a = 3;
+    int d = (9 + b * 4) + 4 * 12 - 5 * (a + 4);
   }
 `).match(
   {

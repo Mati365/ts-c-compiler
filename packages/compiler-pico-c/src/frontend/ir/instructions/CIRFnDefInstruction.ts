@@ -1,3 +1,5 @@
+import chalk from 'chalk';
+
 import {CIROpcode} from '../constants';
 import {CIRVariable} from '../variables';
 import {CIRInstruction} from './CIRInstruction';
@@ -29,6 +31,6 @@ export class CIRFnDefInstruction extends CIRInstruction implements IsLabeledInst
     const {name, args, retByteSize} = this;
     const argsStr = args.map((arg) => arg.getDisplayName()).join(', ');
 
-    return `def ${name}(${argsStr}): [ret ${retByteSize || 0}B]`;
+    return `${chalk.bold.yellow('def')} ${chalk.bold.white(name)}(${argsStr}): [ret ${retByteSize || 0}B]`;
   }
 }

@@ -1,4 +1,5 @@
 import * as R from 'ramda';
+import chalk from 'chalk';
 
 import {getIRTypeDisplayName} from '../dump';
 
@@ -8,7 +9,7 @@ import {PartialBy} from '@compiler/core/types';
 import {CType, CVariable} from '../../analyze';
 
 export function isCIRVariable(obj: any): obj is CIRVariable {
-  return R.is(Object, obj) && ('prefix' in obj) && ('suffix' in obj);
+  return R.is(Object, obj) && obj.value && obj.value.prefix;
 }
 
 export type CIRVariableDescriptor = {
@@ -104,10 +105,18 @@ export class CIRVariable
     ));
   }
 
+  ofDecrementedSuffix() {
+    return this.map(R.evolve(
+      {
+        suffix: R.dec,
+      },
+    ));
+  }
+
   getDisplayName(): string {
     const {type} = this.value;
     const {name} = this;
 
-    return `${name}${getIRTypeDisplayName(type)}`;
+    return `${chalk.blueBright(name)}${getIRTypeDisplayName(type)}`;
   }
 }

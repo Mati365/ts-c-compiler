@@ -1,6 +1,8 @@
+import chalk from 'chalk';
+
 import {IsOutputInstruction} from '../interfaces';
 import {CIROpcode} from '../constants';
-import {CIRInstructionVarArg} from '../variables';
+import {CIRInstructionVarArg, isCIRConstant, isCIRVariable} from '../variables';
 import {CIRInstruction} from './CIRInstruction';
 
 /**
@@ -23,12 +25,46 @@ export class CIROpInstruction<O> extends CIRInstruction implements IsOutputInstr
 
   override getDisplayName(): string {
     const {leftVar, operator, rightVar, outputVar} = this;
-    const str = `${leftVar.getDisplayName()} ${operator} ${rightVar.getDisplayName()}`;
+    const str = `${leftVar.getDisplayName()} ${chalk.yellowBright(operator)} ${rightVar.getDisplayName()}`;
 
     return (
       outputVar
-        ? `${outputVar} = ${str}`
+        ? `${chalk.blueBright(outputVar)} = ${str}`
         : str
     );
+  }
+
+  getFirstVarArg() {
+    const {leftVar, rightVar} = this;
+
+    if (isCIRVariable(leftVar))
+      return leftVar;
+
+    if (isCIRVariable(rightVar))
+      return rightVar;
+
+    return null;
+  }
+
+  getFirstConstantArg() {
+    const {leftVar, rightVar} = this;
+
+    if (isCIRConstant(leftVar))
+      return leftVar;
+
+    if (isCIRConstant(rightVar))
+      return rightVar;
+
+    return null;
+  }
+
+  hasAnyConstantArg() {
+    return this.getFirstConstantArg() !== null;
+  }
+
+  hasBothConstantArgs() {
+    const {leftVar, rightVar} = this;
+
+    return isCIRConstant(leftVar) && isCIRConstant(rightVar);
   }
 }

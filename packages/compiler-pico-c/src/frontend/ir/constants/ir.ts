@@ -1,5 +1,4 @@
 import {TokenType} from '@compiler/lexer/shared';
-import {CPrimitiveType} from '../../analyze';
 
 export type CIRMathOperator =
   | TokenType.PLUS
@@ -24,7 +23,8 @@ export type CIRelOperator =
 
 export enum CIROpcode {
   ALLOC = 'ALLOC',
-  INIT = 'INIT',
+  STORE = 'STORE',
+  LOAD = 'LOAD',
   CALL = 'CALL',
   LABEL = 'LABEL',
   IF = 'IF',
@@ -34,5 +34,3 @@ export enum CIROpcode {
   RET = 'RET',
   MATH = 'MATH',
 }
-
-export type CIRType = CPrimitiveType | CPrimitiveType[];

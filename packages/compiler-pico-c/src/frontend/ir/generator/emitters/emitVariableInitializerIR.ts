@@ -1,20 +1,20 @@
 import * as R from 'ramda';
 
-import {
-  ASTCBinaryOpNode, ASTCCompilerKind,
-  ASTCCompilerNode, ASTCPrimaryExpression, isCompilerTreeNode,
-} from '@compiler/pico-c/frontend/parser';
+import {isCompilerTreeNode} from '@compiler/pico-c/frontend/parser';
 
 import {CVariable, isInitializerTreeValue} from '@compiler/pico-c/frontend/analyze';
-import {GroupTreeVisitor} from '@compiler/grammar/tree/TreeGroupedVisitor';
 import {IREmitterContextAttrs} from './types';
 
 import {CIRError, CIRErrorCode} from '../../errors/CIRError';
-import {CIRAllocInstruction, CIRInitInstruction, CIRMathInstruction} from '../../instructions';
-import {CIRMathOperator} from '../../constants';
-import {CIRConstant, CIRInstructionVarArg} from '../../variables';
+import {CIRAllocInstruction, CIRInstruction, CIRStoreInstruction} from '../../instructions';
+import {CIRConstant} from '../../variables';
 
-import {tryEvalBinaryInstruction} from '../eval/tryEvalBinaryInstruction';
+import {emitExpressionIR} from './emitExpressionIR';
+
+export type InitializerIREmitResult = {
+  alloc: CIRAllocInstruction;
+  initializers: CIRInstruction[];
+};
 
 type InitializerIREmitAttrs = IREmitterContextAttrs & {
   variable: CVariable;
@@ -22,29 +22,15 @@ type InitializerIREmitAttrs = IREmitterContextAttrs & {
 
 export function emitVariableInitializerIR(
   {
+    scope,
     context,
     variable,
   }: InitializerIREmitAttrs,
-) {
-  const {allocator, branchesBuilder} = context;
+): InitializerIREmitResult {
+  const {allocator} = context;
 
-  const rootIRVariable = allocator.allocVariable(variable);
-  const argsVarsStack: CIRInstructionVarArg[] = [rootIRVariable];
-
-  const allocNextVariable = () => {
-    const irVariable = allocator.allocVariable(
-      allocator
-        .getVariable(variable.name)
-        .ofIncrementedSuffix(),
-    );
-
-    argsVarsStack.push(irVariable);
-    return irVariable;
-  };
-
-  branchesBuilder.emit(
-    CIRAllocInstruction.ofIRVariable(rootIRVariable),
-  );
+  const rootIRVar = allocator.allocVariable(variable);
+  const instructions: CIRInstruction[] = [];
 
   if (variable.isInitialized()) {
     variable.initializer.fields.forEach((initializer, offset) => {
@@ -53,61 +39,30 @@ export function emitVariableInitializerIR(
       }
 
       if (isCompilerTreeNode(initializer)) {
-        GroupTreeVisitor.ofIterator<ASTCCompilerNode>(
+        const exprResult = emitExpressionIR(
           {
-            [ASTCCompilerKind.PrimaryExpression]: {
-              enter(expression: ASTCPrimaryExpression) {
-                if (expression.isConstant()) {
-                  argsVarsStack.push(
-                    CIRConstant.ofConstant(rootIRVariable.type, expression.constant.value.number),
-                  );
-                } else if (expression.isIdentifier()) {
-                  argsVarsStack.push(
-                    allocator.getVariable(expression.identifier.text),
-                  );
-                }
-              },
-            },
-
-            [ASTCCompilerKind.BinaryOperator]: {
-              leave: (binary: ASTCBinaryOpNode) => {
-                const [a, b] = [argsVarsStack.pop(), argsVarsStack.pop()];
-                const op = <CIRMathOperator> binary.op;
-                const evalResult = tryEvalBinaryInstruction(
-                  {
-                    op,
-                    a,
-                    b,
-                  },
-                );
-
-                evalResult.match({
-                  none() {
-                    branchesBuilder.emit(
-                      new CIRMathInstruction(
-                        op,
-                        b, a,
-                        allocNextVariable().name,
-                      ),
-                    );
-                  },
-                  some(val) {
-                    argsVarsStack.push(
-                      CIRConstant.ofConstant(rootIRVariable.type, val),
-                    );
-                  },
-                });
-              },
-            },
+            parentVar: rootIRVar,
+            node: initializer,
+            scope,
+            context,
           },
-        )(initializer);
+        );
+
+        instructions.push(
+          ...exprResult.instructions,
+          new CIRStoreInstruction(
+            exprResult.outputVar,
+            rootIRVar.name,
+            offset,
+          ),
+        );
       } else if (R.is(String, initializer)) {
         const argVar = allocator.getVariable(initializer);
 
-        branchesBuilder.emit(
-          new CIRInitInstruction(
+        instructions.push(
+          new CIRStoreInstruction(
             argVar,
-            rootIRVariable.name,
+            rootIRVar.name,
             offset,
           ),
         );
@@ -116,14 +71,19 @@ export function emitVariableInitializerIR(
         // constant literals are of type 1
         const type = variable.initializer.getOffsetExpectedType(offset);
 
-        branchesBuilder.emit(
-          new CIRInitInstruction(
+        instructions.push(
+          new CIRStoreInstruction(
             CIRConstant.ofConstant(type, initializer),
-            rootIRVariable.name,
+            rootIRVar.name,
             offset,
           ),
         );
       }
     });
   }
+
+  return {
+    alloc: CIRAllocInstruction.ofIRVariable(rootIRVar),
+    initializers: instructions,
+  };
 }

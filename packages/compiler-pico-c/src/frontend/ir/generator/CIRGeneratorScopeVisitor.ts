@@ -4,11 +4,9 @@ import {CScopeVisitor, CScopeTree} from '../../analyze/scope';
 import {CIRGeneratorConfig} from '../constants';
 import {CIRRetInstruction} from '../instructions';
 import {CIRBranchesBuilder, CIRBranchesBuilderResult} from './CIRBranchesBuilder';
-import {CIRGeneratorASTVisitor} from './CIRGeneratorASTVisitor';
 import {CIRVariableAllocator} from './CIRVariableAllocator';
 import {IREmitterContext} from './emitters/types';
-
-import {emitVariableInitializerIR} from './emitters';
+import {InitializerIREmitResult, emitVariableInitializerIR} from './emitters';
 
 /**
  * Root IR generator visitor
@@ -28,12 +26,11 @@ export class CIRGeneratorScopeVisitor extends CScopeVisitor {
   }
 
   get emitterContext(): IREmitterContext {
-    const {allocator, branchesBuilder, config} = this;
+    const {allocator, config} = this;
 
     return {
       config,
       allocator,
-      branchesBuilder,
     };
   }
 
@@ -75,20 +72,12 @@ export class CIRGeneratorScopeVisitor extends CScopeVisitor {
    */
   private emitFunctionIR(scope: CScopeTree, fnType: CFunctionDeclType) {
     const {allocator, branchesBuilder} = this;
-    const instruction = allocator.allocFunctionType(fnType);
 
-    branchesBuilder.emit(instruction);
+    branchesBuilder.emit(
+      allocator.allocFunctionType(fnType),
+    );
+
     this.emitScopeVariablesIR(scope);
-
-    new CIRGeneratorASTVisitor(scope)
-      .setContext(
-        {
-          generator: this,
-          fnType,
-          scope,
-        },
-      )
-      .visit(fnType.definition);
 
     branchesBuilder.emit(
       new CIRRetInstruction,
@@ -104,16 +93,25 @@ export class CIRGeneratorScopeVisitor extends CScopeVisitor {
    */
   private emitScopeVariablesIR(scope: CScopeTree) {
     const {variables} = scope.dump();
-    const {emitterContext} = this;
+    const {emitterContext, branchesBuilder} = this;
 
+    const results: InitializerIREmitResult[] = [];
     for (const [, variable] of Object.entries(variables)) {
-      emitVariableInitializerIR(
-        {
-          context: emitterContext,
-          scope,
-          variable,
-        },
+      results.push(
+        emitVariableInitializerIR(
+          {
+            context: emitterContext,
+            scope,
+            variable,
+          },
+        ),
       );
     }
+
+    for (const {alloc} of results)
+      branchesBuilder.emit(alloc);
+
+    for (const {initializers} of results)
+      initializers.forEach(branchesBuilder.emit.bind(branchesBuilder));
   }
 }

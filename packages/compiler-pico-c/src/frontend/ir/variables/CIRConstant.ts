@@ -1,4 +1,5 @@
 import * as R from 'ramda';
+import chalk from 'chalk';
 
 import {getIRTypeDisplayName} from '../dump';
 
@@ -41,6 +42,6 @@ export class CIRConstant
   getDisplayName(): string {
     const {constant, type} = this.value;
 
-    return `%${constant}${getIRTypeDisplayName(type)}`;
+    return `%${chalk.greenBright(constant)}${getIRTypeDisplayName(type)}`;
   }
 }

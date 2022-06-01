@@ -42,6 +42,7 @@ export class CIRInstructionsBlock extends Identity<CIRInstructionsBlockDescripto
   get name() { return this.value.name; }
   get jmps() { return this.value.jmps; }
   get instructions() { return this.value.instructions; }
+  get lastInstruction() { return R.last(this.instructions); }
 
   isEmpty() {
     return R.isEmpty(this.instructions);

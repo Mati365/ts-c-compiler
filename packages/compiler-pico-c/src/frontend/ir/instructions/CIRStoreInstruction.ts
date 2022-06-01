@@ -1,4 +1,5 @@
 import * as R from 'ramda';
+import chalk from 'chalk';
 
 import {IsOutputInstruction} from '../interfaces';
 
@@ -7,20 +8,20 @@ import {CIRInstruction} from './CIRInstruction';
 import {CIRInstructionVarArg} from '../variables';
 
 /**
- * Instruction that creates variable with value
+ * Instruction that saves variable to mem
  *
  * @export
- * @class CIRInitInstruction
+ * @class CIRStoreInstruction
  * @extends {CIRInstruction}
  * @implements {IsOutputInstruction}
  */
-export class CIRInitInstruction extends CIRInstruction implements IsOutputInstruction {
+export class CIRStoreInstruction extends CIRInstruction implements IsOutputInstruction {
   constructor(
     readonly value: CIRInstructionVarArg,
     readonly outputVar: string,
     readonly offset: number = 0,
   ) {
-    super(CIROpcode.INIT);
+    super(CIROpcode.STORE);
   }
 
   isUninitialized() {
@@ -29,7 +30,8 @@ export class CIRInitInstruction extends CIRInstruction implements IsOutputInstru
 
   override getDisplayName(): string {
     const {outputVar, value, offset} = this;
+    const offsetSuffix = offset ? ` + ${offset}` : '';
 
-    return `${outputVar}[${offset}] init ${value?.getDisplayName() ?? '<uninitialized>'}`;
+    return `*(${chalk.blueBright(outputVar)}${offsetSuffix}) = ${value?.getDisplayName() ?? '<uninitialized>'}`;
   }
 }

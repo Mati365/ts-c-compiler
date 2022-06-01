@@ -4,7 +4,7 @@ import {CIRInstruction} from './CIRInstruction';
 import {CIRInstructionVarArg} from '../variables';
 
 export function isIRMathInstruction(instruction: CIRInstruction): instruction is CIRMathInstruction {
-  return instruction.opcode === CIROpcode.MATH;
+  return !!instruction && instruction.opcode === CIROpcode.MATH;
 }
 
 /**
