@@ -30,7 +30,7 @@ export class CIRStoreInstruction extends CIRInstruction implements IsOutputInstr
 
   override getDisplayName(): string {
     const {outputVar, value, offset} = this;
-    const offsetSuffix = offset ? ` + ${offset}` : '';
+    const offsetSuffix = offset ? ` + %${chalk.greenBright(offset)}` : '';
 
     return `*(${chalk.blueBright(outputVar)}${offsetSuffix}) = ${value?.getDisplayName() ?? '<uninitialized>'}`;
   }

@@ -1,10 +1,14 @@
+import * as R from 'ramda';
+
 import {TokenType} from '@compiler/lexer/shared';
-import {CPrimitiveType, CType, isArrayLikeType} from '@compiler/pico-c/frontend/analyze';
+import {CPrimitiveType, isArrayLikeType, isStructLikeType} from '@compiler/pico-c/frontend/analyze';
 import {GroupTreeVisitor} from '@compiler/grammar/tree/TreeGroupedVisitor';
 import {
   ASTCCompilerKind,
   ASTCCompilerNode,
   ASTCPostfixArrayExpression,
+  ASTCPostfixDotExpression,
+  ASTCPostfixExpression,
   ASTCPrimaryExpression,
 } from '@compiler/pico-c/frontend/parser';
 
@@ -41,14 +45,24 @@ export function emitExpressionIdentifierAccessorIR(
   const instructions: (CIRInstruction & IsOutputInstruction)[] = [];
 
   let lastIRAddressVar: CIRVariable = null;
-  let reducedType: CType = null;
+  let parentNodes: ASTCPostfixExpression[] = [];
 
+  const getParentType = () => R.last(parentNodes).postfixExpression?.type;
   const allocAddressVar = () => allocator.allocTmpVariable(
     CPrimitiveType.int(config.arch),
   );
 
   GroupTreeVisitor.ofIterator<ASTCCompilerNode>(
     {
+      [ASTCCompilerKind.PostfixExpression]: {
+        enter(expr: ASTCPostfixExpression) {
+          parentNodes.push(expr);
+        },
+        leave() {
+          parentNodes.pop();
+        },
+      },
+
       [ASTCCompilerKind.PrimaryExpression]: {
         enter(expr: ASTCPrimaryExpression) {
           if (!expr.isIdentifier())
@@ -56,7 +70,6 @@ export function emitExpressionIdentifierAccessorIR(
 
           const rootIRVar = allocator.getVariable(expr.identifier.text);
 
-          reducedType = rootIRVar.type;
           lastIRAddressVar = allocAddressVar();
           instructions.push(
             new CIRLeaInstruction(lastIRAddressVar.name, rootIRVar),
@@ -64,68 +77,89 @@ export function emitExpressionIdentifierAccessorIR(
         },
       },
 
-      [ASTCCompilerKind.PostfixArrayExpression]: {
-        enter(expr: ASTCPostfixArrayExpression) {
-          if (lastIRAddressVar) {
-            if (!isArrayLikeType(reducedType))
-              throw new CIRError(CIRErrorCode.ACCESS_ARRAY_INDEX_TO_NON_ARRAY);
+      [ASTCCompilerKind.PostfixDotExpression]: {
+        enter(expr: ASTCPostfixDotExpression) {
+          if (!lastIRAddressVar)
+            return true;
 
-            const {
-              instructions: exprInstructions,
-              output: exprOutput,
-            } = emitExpressionIR(
-              {
-                parentVar: lastIRAddressVar,
-                node: expr,
-                context,
-                scope,
-              },
+          const parentType = getParentType();
+          if (!isStructLikeType(parentType))
+            throw new CIRError(CIRErrorCode.ACCESS_STRUCT_ATTR_IN_NON_STRUCT);
+
+          const offsetConstant = CIRConstant.ofConstant(
+            CPrimitiveType.int(config.arch),
+            parentType.getField(expr.name.text).getOffset(),
+          );
+
+          if (offsetConstant.constant) {
+            instructions.push(
+              new CIRMathInstruction(
+                TokenType.PLUS,
+                lastIRAddressVar, offsetConstant,
+                (lastIRAddressVar = allocAddressVar()).name,
+              ),
             );
-
-            instructions.push(...exprInstructions);
-            reducedType = reducedType.ofTailDimensions();
-
-            let offsetAddressVar: CIRInstructionVarArg = null;
-            const entryByteSize = reducedType.getByteSize();
-
-            if (isCIRVariable(exprOutput)) {
-              const constant = CIRConstant.ofConstant(
-                CPrimitiveType.int(config.arch),
-                entryByteSize,
-              );
-
-              offsetAddressVar = allocAddressVar();
-              instructions.push(
-                new CIRMathInstruction(
-                  TokenType.MUL,
-                  exprOutput, constant,
-                  offsetAddressVar.name,
-                ),
-              );
-            } else if (exprOutput.constant) {
-              offsetAddressVar = CIRConstant.ofConstant(
-                CPrimitiveType.int(config.arch),
-                exprOutput.constant * entryByteSize,
-              );
-            }
-
-            if (offsetAddressVar) {
-              instructions.push(
-                new CIRMathInstruction(
-                  TokenType.PLUS,
-                  lastIRAddressVar, offsetAddressVar,
-                  (lastIRAddressVar = allocAddressVar()).name,
-                ),
-              );
-            }
-
-            return false;
           }
         },
       },
 
-      [ASTCCompilerKind.AssignmentExpression]: {
-        enter() {
+      [ASTCCompilerKind.PostfixArrayExpression]: {
+        enter(expr: ASTCPostfixArrayExpression) {
+          if (!lastIRAddressVar)
+            return true;
+
+          const parentType = getParentType();
+          if (!isArrayLikeType(parentType))
+            throw new CIRError(CIRErrorCode.ACCESS_ARRAY_INDEX_TO_NON_ARRAY);
+
+          const {
+            instructions: exprInstructions,
+            output: exprOutput,
+          } = emitExpressionIR(
+            {
+              parentVar: lastIRAddressVar,
+              node: expr,
+              context,
+              scope,
+            },
+          );
+
+          instructions.push(...exprInstructions);
+
+          let offsetAddressVar: CIRInstructionVarArg = null;
+          const entryByteSize = parentType.ofTailDimensions().getByteSize();
+
+          if (isCIRVariable(exprOutput)) {
+            const constant = CIRConstant.ofConstant(
+              CPrimitiveType.int(config.arch),
+              entryByteSize,
+            );
+
+            offsetAddressVar = allocAddressVar();
+            instructions.push(
+              new CIRMathInstruction(
+                TokenType.MUL,
+                exprOutput, constant,
+                offsetAddressVar.name,
+              ),
+            );
+          } else if (exprOutput.constant) {
+            offsetAddressVar = CIRConstant.ofConstant(
+              CPrimitiveType.int(config.arch),
+              exprOutput.constant * entryByteSize,
+            );
+          }
+
+          if (offsetAddressVar) {
+            instructions.push(
+              new CIRMathInstruction(
+                TokenType.PLUS,
+                lastIRAddressVar, offsetAddressVar,
+                (lastIRAddressVar = allocAddressVar()).name,
+              ),
+            );
+          }
+
           return false;
         },
       },
