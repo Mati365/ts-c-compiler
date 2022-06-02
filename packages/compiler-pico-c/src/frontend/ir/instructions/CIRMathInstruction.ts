@@ -1,4 +1,6 @@
-import {CIRMathOperator, CIROpcode} from '../constants';
+import {CMathOperator} from '@compiler/pico-c/constants';
+
+import {CIROpcode} from '../constants';
 import {CIROpInstruction} from './CIROpInstruction';
 import {CIRInstruction} from './CIRInstruction';
 import {CIRInstructionVarArg} from '../variables';
@@ -12,11 +14,11 @@ export function isIRMathInstruction(instruction: CIRInstruction): instruction is
  *
  * @export
  * @class CIRMathInstruction
- * @extends {CIROpInstruction<CIRMathOperator>}
+ * @extends {CIROpInstruction<CMathOperator>}
  */
-export class CIRMathInstruction extends CIROpInstruction<CIRMathOperator> {
+export class CIRMathInstruction extends CIROpInstruction<CMathOperator> {
   constructor(
-    operator: CIRMathOperator,
+    operator: CMathOperator,
     leftVar: CIRInstructionVarArg,
     rightVar: CIRInstructionVarArg,
     outputVar?: string,

@@ -1,11 +1,11 @@
 import {Option, none, some} from '@compiler/core/monads';
 import {evalMathOp, isMathOpToken} from '@compiler/lexer/utils';
 
-import {CIRMathOperator} from '../../constants';
+import {CMathOperator} from '@compiler/pico-c/constants';
 import {CIRInstructionVarArg, isCIRConstant} from '../../variables';
 
 type InstructionEvalArgs = {
-  op: CIRMathOperator;
+  op: CMathOperator;
   a: CIRInstructionVarArg;
   b: CIRInstructionVarArg;
 };

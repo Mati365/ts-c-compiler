@@ -60,6 +60,17 @@ export class CIRBranchesBuilder {
   }
 
   /**
+   * Emits multiple instructions at once
+   *
+   * @param {CIRInstruction[]} instructions
+   * @memberof CIRBranchesBuilder
+   */
+  emitBulk(instructions: CIRInstruction[]): this {
+    instructions.forEach(this.emit.bind(this));
+    return this;
+  }
+
+  /**
    * Cleanups temp instructions stack and returns graph
    *
    * @return {CIRBranchesBuilderResult}

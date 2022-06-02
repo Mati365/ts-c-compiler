@@ -15,7 +15,14 @@ export type IREmitterContextAttrs = {
   context: IREmitterContext;
 };
 
-export type IREmitterExpressionResult = {
-  output: CIRVariable | CIRConstant;
+export type IREmitterStmtResult = {
   instructions: CIRInstruction[];
+};
+
+export type IREmitterExpressionVarResult = IREmitterStmtResult & {
+  output: CIRVariable;
+};
+
+export type IREmitterExpressionResult = IREmitterStmtResult & {
+  output: CIRVariable | CIRConstant;
 };

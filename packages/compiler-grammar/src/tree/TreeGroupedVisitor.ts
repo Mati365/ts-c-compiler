@@ -10,7 +10,7 @@ export type InlineTreeVisitor<T extends TreeNode<any>> = {
 };
 
 export type TreeVisitorsMap<T extends TreeNode<any>> = {
-  [kind: string]: Newable<GroupTreeVisitor<T>> | InlineTreeVisitor<T>,
+  [kind: string]: Newable<GroupTreeVisitor<T>> | InlineTreeVisitor<T> | false,
 };
 
 export function isInlineTreeVisitor(visitor: any): visitor is InlineTreeVisitor<any> {
@@ -53,6 +53,9 @@ export class GroupTreeVisitor<
 
   override enter(node: T) {
     const visitor = this.getNodeVisitor(node);
+    if (visitor === false)
+      return false;
+
     if (!visitor)
       return;
 

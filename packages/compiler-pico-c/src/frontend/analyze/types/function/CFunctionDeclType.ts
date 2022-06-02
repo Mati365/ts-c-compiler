@@ -4,7 +4,7 @@ import {findByName, dumpCompilerAttrs} from '@compiler/core/utils';
 
 import {CFunctionCallConvention} from '@compiler/pico-c/constants';
 import {Identity} from '@compiler/core/monads';
-import {ASTCCompilerNode} from '@compiler/pico-c/frontend';
+import {ASTCBlockItemsList} from '@compiler/pico-c/frontend';
 
 import {CType, CTypeDescriptor} from '../CType';
 import {CPrimitiveType} from '../CPrimitiveType';
@@ -13,6 +13,10 @@ import {CStorageClassMonad} from './CFunctionStorageClassMonad';
 import {CVariable} from '../../scope/variables/CVariable';
 import {CSpecBitmap} from '../../constants/bitmaps';
 
+export function isFuncDeclLikeType(type: CType): type is CFunctionDeclType {
+  return type?.isFunction();
+}
+
 export type CFunctionDescriptor = CTypeDescriptor & {
   name?: string,
   returnType: CType,
@@ -20,7 +24,7 @@ export type CFunctionDescriptor = CTypeDescriptor & {
   specifier: CFunctionSpecifierMonad,
   callConvention: CFunctionCallConvention,
   storage: CStorageClassMonad,
-  definition?: ASTCCompilerNode,
+  definition?: ASTCBlockItemsList,
 };
 
 /**

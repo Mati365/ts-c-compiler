@@ -1,6 +1,8 @@
 import * as R from 'ramda';
 import {$enum} from 'ts-enum-util';
+
 import {IdentifiersMap} from '@compiler/lexer/lexer';
+import {TokenType} from '@compiler/lexer/shared';
 
 export enum CStructAlign {
   PACKED = 'packed',
@@ -86,6 +88,29 @@ export enum CAssignOperator {
   OR_ASSIGN = '||=',
 }
 
+export type CMathOperator =
+  | TokenType.PLUS
+  | TokenType.MINUS
+  | TokenType.MUL
+  | TokenType.DIV
+  | TokenType.POW
+  | TokenType.MOD
+  | TokenType.AND
+  | TokenType.OR
+  | TokenType.BIT_AND
+  | TokenType.BIT_OR
+  | TokenType.BIT_SHIFT_RIGHT
+  | TokenType.BIT_SHIFT_LEFT
+  | TokenType.BIT_NOT;
+
+export type CRelOperator =
+  | TokenType.GREATER_THAN
+  | TokenType.GREATER_EQ_THAN
+  | TokenType.LESS_THAN
+  | TokenType.LESS_EQ_THAN
+  | TokenType.DIFFERS
+  | TokenType.EQUAL;
+
 export enum CUnaryCastOperator {
   AND = '&',
   MUL = '*',
@@ -107,6 +132,20 @@ export type CCompilerIdentifier = (
   CCompilerKeyword
   | CCompilerTypeIdentifier
 );
+
+export const CCOMPILER_ASSIGN_MATH_OPERATORS: Record<CAssignOperator, CMathOperator> = {
+  [CAssignOperator.ASSIGN]: null,
+  [CAssignOperator.MUL_ASSIGN]: TokenType.MUL,
+  [CAssignOperator.DIV_ASSIGN]: TokenType.DIV,
+  [CAssignOperator.MOD_ASSIGN]: TokenType.MOD,
+  [CAssignOperator.ADD_ASSIGN]: TokenType.PLUS,
+  [CAssignOperator.SUB_ASSIGN]: TokenType.MINUS,
+  [CAssignOperator.LEFT_ASSIGN]: TokenType.BIT_SHIFT_LEFT,
+  [CAssignOperator.RIGHT_ASSIGN]: TokenType.BIT_SHIFT_RIGHT,
+  [CAssignOperator.AND_ASSIGN]: TokenType.AND,
+  [CAssignOperator.XOR_ASSIGN]: TokenType.POW,
+  [CAssignOperator.OR_ASSIGN]: TokenType.OR,
+};
 
 export const CCOMPILER_INTEGRAL_SPECIFIERS: CTypeSpecifier[] = [
   CTypeSpecifier.CHAR,

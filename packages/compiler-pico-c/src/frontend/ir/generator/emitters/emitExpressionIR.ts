@@ -1,5 +1,6 @@
 import * as R from 'ramda';
 
+import {CMathOperator} from '@compiler/pico-c/constants';
 import {CType} from '@compiler/pico-c/frontend/analyze';
 import {
   ASTCBinaryOpNode, ASTCCompilerKind,
@@ -10,23 +11,25 @@ import {GroupTreeVisitor} from '@compiler/grammar/tree/TreeGroupedVisitor';
 import {IREmitterContextAttrs, IREmitterExpressionResult} from './types';
 
 import {CIRInstruction, CIRLoadInstruction, CIRMathInstruction} from '../../instructions';
-import {CIRMathOperator} from '../../constants';
 import {CIRError, CIRErrorCode} from '../../errors/CIRError';
 import {CIRConstant, CIRInstructionVarArg} from '../../variables';
 
 import {emitExpressionIdentifierAccessorIR} from './emitExpressionIdentifierAccessorIR';
 import {
-  tryConcatInstructions,
+  IRInstructionsOptimizationAttrs,
+  optimizeInstructionsList,
   tryEvalBinaryInstruction,
 } from '../optimization';
 
 export type ExpressionIREmitAttrs = IREmitterContextAttrs & {
+  optimization?: IRInstructionsOptimizationAttrs;
   type: CType;
   node: ASTCCompilerNode;
 };
 
 export function emitExpressionIR(
   {
+    optimization = {},
     type,
     context,
     node,
@@ -57,6 +60,9 @@ export function emitExpressionIR(
               context,
               scope,
               emitExpressionIR,
+              optimization: {
+                enabled: false,
+              },
             },
           );
 
@@ -105,7 +111,7 @@ export function emitExpressionIR(
       [ASTCCompilerKind.BinaryOperator]: {
         leave: (binary: ASTCBinaryOpNode) => {
           const [a, b] = [argsVarsStack.pop(), argsVarsStack.pop()];
-          const op = <CIRMathOperator> binary.op;
+          const op = <CMathOperator> binary.op;
           const evalResult = tryEvalBinaryInstruction(
             {
               op,
@@ -139,24 +145,9 @@ export function emitExpressionIR(
   if (argsVarsStack?.length !== 1)
     throw new CIRError(CIRErrorCode.UNABLE_TO_COMPILE_EXPRESSION);
 
-  for (let i = 1; i < instructions.length;) {
-    const concatedInstruction = tryConcatInstructions(
-      {
-        a: instructions[i - 1],
-        b: instructions[i],
-      },
-    );
-
-    if (concatedInstruction.isSome()) {
-      instructions[i - 1] = concatedInstruction.unwrap();
-      instructions.splice(i, 1);
-    } else
-      ++i;
-  }
-
   const lastArgVarStack = R.last(argsVarsStack);
   return {
     output: lastArgVarStack,
-    instructions,
+    instructions: optimizeInstructionsList(optimization, instructions),
   };
 }

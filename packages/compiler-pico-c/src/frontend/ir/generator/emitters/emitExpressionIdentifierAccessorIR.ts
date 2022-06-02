@@ -22,27 +22,37 @@ import {
   CIRVariable, isCIRVariable,
 } from '../../variables';
 
-import {IREmitterContextAttrs, IREmitterExpressionResult} from './types';
+import {
+  IREmitterContextAttrs,
+  IREmitterExpressionResult,
+  IREmitterExpressionVarResult,
+} from './types';
+
 import {IsOutputInstruction} from '../../interfaces';
 import {CIRError, CIRErrorCode} from '../../errors/CIRError';
+import {IRInstructionsOptimizationAttrs, optimizeInstructionsList} from '../optimization';
 
 import type {ExpressionIREmitAttrs} from './emitExpressionIR';
 
 type ExpressionVarAccessorIREmitAttrs = IREmitterContextAttrs & {
+  optimization?: IRInstructionsOptimizationAttrs;
+  emitLoadPtr?: boolean;
   node: ASTCCompilerNode;
   emitExpressionIR(attrs: ExpressionIREmitAttrs): IREmitterExpressionResult;
 };
 
 export function emitExpressionIdentifierAccessorIR(
   {
+    emitLoadPtr = true,
+    optimization = {},
     scope,
     context,
     node,
     emitExpressionIR,
   }: ExpressionVarAccessorIREmitAttrs,
-): IREmitterExpressionResult {
+): IREmitterExpressionVarResult {
   const {allocator, config} = context;
-  const instructions: (CIRInstruction & IsOutputInstruction)[] = [];
+  let instructions: (CIRInstruction & IsOutputInstruction)[] = [];
 
   let lastIRAddressVar: CIRVariable = null;
   let parentNodes: ASTCPostfixExpression[] = [];
@@ -166,7 +176,7 @@ export function emitExpressionIdentifierAccessorIR(
     },
   )(node);
 
-  if (lastIRAddressVar) {
+  if (emitLoadPtr && lastIRAddressVar) {
     const outputVar = allocAddressVar();
     instructions.push(
       new CIRLoadInstruction(
@@ -179,7 +189,7 @@ export function emitExpressionIdentifierAccessorIR(
   }
 
   return {
-    instructions,
+    instructions: optimizeInstructionsList(optimization, instructions),
     output: lastIRAddressVar,
   };
 }
