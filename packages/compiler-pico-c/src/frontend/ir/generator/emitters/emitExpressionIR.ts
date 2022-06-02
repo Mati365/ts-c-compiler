@@ -168,10 +168,6 @@ export function emitExpressionIR(
     },
   )(node);
 
-  // handle case: int a = b;
-  if (argsVarsStack?.length !== 1)
-    throw new CIRError(CIRErrorCode.UNABLE_TO_COMPILE_EXPRESSION);
-
   const lastArgVarStack = R.last(argsVarsStack);
   return {
     output: lastArgVarStack,
