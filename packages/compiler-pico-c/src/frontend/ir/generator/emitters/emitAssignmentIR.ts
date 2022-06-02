@@ -1,7 +1,7 @@
 import {ASTCAssignmentExpression} from '@compiler/pico-c/frontend/parser';
 import {CAssignOperator, CCOMPILER_ASSIGN_MATH_OPERATORS} from '@compiler/pico-c/constants';
 
-import {CIRInstruction, CIRMathInstruction, CIRStoreInstruction} from '../../instructions';
+import {CIRCommentInstruction, CIRInstruction, CIRMathInstruction, CIRStoreInstruction} from '../../instructions';
 import {CIRInstructionVarArg} from '../../variables';
 import {IRInstructionsOptimizationAttrs, optimizeInstructionsList} from '../optimization';
 import {IREmitterContextAttrs, IREmitterExpressionResult} from './types';
@@ -53,6 +53,9 @@ export function emitAssignmentIR(
   );
 
   instructions.push(
+    new CIRCommentInstruction(
+      `${accessorResult.rootIRVar.prefix} ${operator} <expr>`,
+    ),
     ...accessorResult.instructions,
     ...exprResult.instructions,
   );

@@ -41,6 +41,10 @@ type ExpressionVarAccessorIREmitAttrs = IREmitterContextAttrs & {
   emitExpressionIR(attrs: ExpressionIREmitAttrs): IREmitterExpressionResult;
 };
 
+type ExpressionIdentifierIREmitResult = IREmitterExpressionVarResult & {
+  rootIRVar: CIRVariable;
+};
+
 export function emitExpressionIdentifierAccessorIR(
   {
     emitLoadPtr = true,
@@ -50,10 +54,11 @@ export function emitExpressionIdentifierAccessorIR(
     node,
     emitExpressionIR,
   }: ExpressionVarAccessorIREmitAttrs,
-): IREmitterExpressionVarResult {
+): ExpressionIdentifierIREmitResult {
   const {allocator, config} = context;
   let instructions: (CIRInstruction & IsOutputInstruction)[] = [];
 
+  let rootIRVar: CIRVariable;
   let lastIRAddressVar: CIRVariable = null;
   let parentNodes: ASTCPostfixExpression[] = [];
 
@@ -78,11 +83,12 @@ export function emitExpressionIdentifierAccessorIR(
           if (!expr.isIdentifier())
             return;
 
-          const rootIRVar = allocator.getVariable(expr.identifier.text);
+          const variable = allocator.getVariable(expr.identifier.text);
+          rootIRVar ??= variable;
 
           lastIRAddressVar = allocAddressVar();
           instructions.push(
-            new CIRLeaInstruction(lastIRAddressVar.name, rootIRVar),
+            new CIRLeaInstruction(lastIRAddressVar.name, variable),
           );
         },
       },
@@ -191,5 +197,6 @@ export function emitExpressionIdentifierAccessorIR(
   return {
     instructions: optimizeInstructionsList(optimization, instructions),
     output: lastIRAddressVar,
+    rootIRVar,
   };
 }

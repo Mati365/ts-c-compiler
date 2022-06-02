@@ -11,4 +11,5 @@ export enum CIROpcode {
   RET = 'RET',
   MATH = 'MATH',
   LEA = 'LEA',
+  COMMENT = 'COMMENT',
 }
