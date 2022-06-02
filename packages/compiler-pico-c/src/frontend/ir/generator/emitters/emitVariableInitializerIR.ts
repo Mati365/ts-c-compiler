@@ -1,10 +1,9 @@
 import * as R from 'ramda';
 
 import {isCompilerTreeNode} from '@compiler/pico-c/frontend/parser';
-
 import {CVariable, isInitializerTreeValue} from '@compiler/pico-c/frontend/analyze';
-import {IREmitterContextAttrs} from './types';
 
+import {IREmitterContextAttrs} from './types';
 import {CIRError, CIRErrorCode} from '../../errors/CIRError';
 import {CIRAllocInstruction, CIRInstruction, CIRStoreInstruction} from '../../instructions';
 import {CIRConstant} from '../../variables';
@@ -29,18 +28,22 @@ export function emitVariableInitializerIR(
 ): InitializerIREmitResult {
   const {allocator} = context;
 
-  const rootIRVar = allocator.allocVariable(variable);
   const instructions: CIRInstruction[] = [];
+  const rootIRVar = allocator.allocVariable(variable);
 
   if (variable.isInitialized()) {
-    variable.initializer.fields.forEach((initializer, offset) => {
+    let offset: number = 0;
+
+    variable.initializer.fields.forEach((initializer, index) => {
       if (isInitializerTreeValue(initializer))
         throw new CIRError(CIRErrorCode.INCORRECT_INITIALIZER_BLOCK);
+
+      const initializerType = variable.initializer.getIndexExpectedType(index);
 
       if (isCompilerTreeNode(initializer)) {
         const exprResult = emitExpressionIR(
           {
-            parentVar: rootIRVar,
+            type: rootIRVar.type,
             node: initializer,
             scope,
             context,
@@ -68,16 +71,16 @@ export function emitVariableInitializerIR(
       } else if (!R.isNil(initializer)) {
         // int abc[3] = { 1, 2, 3}
         // constant literals are of type 1
-        const type = variable.initializer.getOffsetExpectedType(offset);
-
         instructions.push(
           new CIRStoreInstruction(
-            CIRConstant.ofConstant(type, initializer),
+            CIRConstant.ofConstant(initializerType, initializer),
             rootIRVar.name,
             offset,
           ),
         );
       }
+
+      offset += initializerType.getByteSize();
     });
   }
 

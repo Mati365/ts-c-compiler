@@ -117,7 +117,7 @@ export function emitExpressionIdentifierAccessorIR(
             output: exprOutput,
           } = emitExpressionIR(
             {
-              parentVar: lastIRAddressVar,
+              type: lastIRAddressVar.type,
               node: expr,
               context,
               scope,

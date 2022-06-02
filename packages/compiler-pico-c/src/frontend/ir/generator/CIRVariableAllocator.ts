@@ -2,7 +2,7 @@ import {CFunctionDeclType, CType, CVariable} from '../../analyze';
 import {CIRFnDefInstruction} from '../instructions';
 import {CIRVariable} from '../variables';
 
-const TMP_VAR_PREFIX = '#tmp';
+const TMP_VAR_PREFIX = 't';
 
 /**
  * Registers symbols table
@@ -42,6 +42,20 @@ export class CIRVariableAllocator {
 
     this.variables[variable.prefix] = variable;
     return variable;
+  }
+
+  /**
+   * Decrenebt syffix and return var
+   *
+   * @return {CIRVariable}
+   * @memberof CIRVariableAllocator
+   */
+  deallocTmpVariable(): CIRVariable {
+    return this.allocVariable(
+      this
+        .getVariable(TMP_VAR_PREFIX)
+        .ofDecrementedSuffix(),
+    );
   }
 
   /**

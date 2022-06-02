@@ -47,7 +47,7 @@ export function tryConcatInstructions(
           operator,
           a.getFirstVarArg(),
           CIRConstant.ofConstant(aArg.type, evalResult),
-          a.outputVar,
+          b.outputVar,
         ),
       );
     }

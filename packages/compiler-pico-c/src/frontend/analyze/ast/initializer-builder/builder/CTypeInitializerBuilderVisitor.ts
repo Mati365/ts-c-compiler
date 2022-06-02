@@ -75,8 +75,8 @@ export class CTypeInitializerBuilderVisitor extends CInnerTypeTreeVisitor {
    * @return {CType}
    * @memberof CTypeInitializerBuilderVisitor
    */
-  private getOffsetExpectedType(offset: number = this.currentOffset): CType {
-    return this.tree.getOffsetExpectedType(offset);
+  private getIndexExpectedType(offset: number = this.currentOffset): CType {
+    return this.tree.getIndexExpectedType(offset);
   }
 
   /**
@@ -207,7 +207,7 @@ export class CTypeInitializerBuilderVisitor extends CInnerTypeTreeVisitor {
       if (stringLiteral)
         expectedType = tree.getNestedInitializerGroupType();
       else
-        expectedType = this.getOffsetExpectedType();
+        expectedType = this.getIndexExpectedType();
 
       if (!expectedType) {
         throw new CTypeCheckError(

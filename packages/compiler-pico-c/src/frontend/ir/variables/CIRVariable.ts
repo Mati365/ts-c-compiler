@@ -62,7 +62,11 @@ export class CIRVariable
   get name() {
     const {prefix, suffix} = this.value;
 
-    return `${prefix}${suffix}`;
+    return (
+      suffix
+        ? `${prefix}{${suffix}}`
+        : prefix
+    );
   }
 
   /**

@@ -110,7 +110,7 @@ export class CVariableInitializerTree<C extends ASTCCompilerNode = ASTCCompilerN
    * @return {CType}
    * @memberof CVariableInitializerTree
    */
-  getOffsetExpectedType(offset: number): CType {
+  getIndexExpectedType(offset: number): CType {
     const {baseType} = this;
 
     if (isStructLikeType(baseType)) {

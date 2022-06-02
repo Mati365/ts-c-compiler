@@ -1,20 +1,16 @@
 import {ccompiler, CCompilerOutput} from '@compiler/pico-c';
 
 ccompiler(/* cpp */ `
-  int sum() {
-    struct Vec2 {
-      int x, y;
-      struct Color {
-        int r, g, b;
-      } color;
-    } vec2;
+  struct Vec2 {
+    int x, y;
+  };
 
-    struct Vec2 vectors[] = { { .x = 1 }, { .y = 2 } };
+  int sum(int a, int b) {
+    int array2[] = { 1, 2, 3, 4 };
+    struct Vec2 array[] = { { .x = 5 }, { .y = 3 } };
 
-    int cyferki[2][2][2] = { { { 1, 2 }, { 3, 4 } }};
-
-    int c = vectors[1].color.g + cyferki[1][1][2];
-    int cyferka = cyferki[1][c + 1][0] * 2;
+    int sum2 = array[0].x + array[1].y;
+    int sum = 3 * 4 / 2 + (sum2 + 1);
   }
 `).match(
   {
