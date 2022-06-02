@@ -24,7 +24,6 @@ import {
 
 import {
   IREmitterContextAttrs,
-  IREmitterExpressionResult,
   IREmitterExpressionVarResult,
 } from './types';
 
@@ -32,13 +31,10 @@ import {IsOutputInstruction} from '../../interfaces';
 import {CIRError, CIRErrorCode} from '../../errors/CIRError';
 import {IRInstructionsOptimizationAttrs, optimizeInstructionsList} from '../optimization';
 
-import type {ExpressionIREmitAttrs} from './emitExpressionIR';
-
 type ExpressionVarAccessorIREmitAttrs = IREmitterContextAttrs & {
   optimization?: IRInstructionsOptimizationAttrs;
   emitLoadPtr?: boolean;
   node: ASTCCompilerNode;
-  emitExpressionIR(attrs: ExpressionIREmitAttrs): IREmitterExpressionResult;
 };
 
 type ExpressionIdentifierIREmitResult = IREmitterExpressionVarResult & {
@@ -52,7 +48,6 @@ export function emitExpressionIdentifierAccessorIR(
     scope,
     context,
     node,
-    emitExpressionIR,
   }: ExpressionVarAccessorIREmitAttrs,
 ): ExpressionIdentifierIREmitResult {
   const {allocator, config} = context;
@@ -131,7 +126,7 @@ export function emitExpressionIdentifierAccessorIR(
           const {
             instructions: exprInstructions,
             output: exprOutput,
-          } = emitExpressionIR(
+          } = context.emit.expression(
             {
               type: lastIRAddressVar.type,
               node: expr,

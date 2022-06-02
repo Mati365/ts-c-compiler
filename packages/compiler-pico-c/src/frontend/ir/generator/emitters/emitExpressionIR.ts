@@ -3,8 +3,10 @@ import * as R from 'ramda';
 import {CMathOperator} from '@compiler/pico-c/constants';
 import {CType} from '@compiler/pico-c/frontend/analyze';
 import {
+  ASTCAssignmentExpression,
   ASTCBinaryOpNode, ASTCCompilerKind,
-  ASTCCompilerNode, ASTCPostfixExpression, ASTCPrimaryExpression,
+  ASTCCompilerNode, ASTCPostfixExpression,
+  ASTCPrimaryExpression,
 } from '@compiler/pico-c/frontend/parser';
 
 import {GroupTreeVisitor} from '@compiler/grammar/tree/TreeGroupedVisitor';
@@ -36,7 +38,7 @@ export function emitExpressionIR(
     scope,
   }: ExpressionIREmitAttrs,
 ): IREmitterExpressionResult {
-  const {allocator} = context;
+  const {allocator, emit} = context;
 
   const instructions: CIRInstruction[] = [];
   let argsVarsStack: CIRInstructionVarArg[] = [];
@@ -47,8 +49,37 @@ export function emitExpressionIR(
     return irVariable;
   };
 
+  const emitExprResult = (result: IREmitterExpressionResult) => {
+    instructions.push(...result.instructions);
+    argsVarsStack.push(result.output);
+  };
+
   GroupTreeVisitor.ofIterator<ASTCCompilerNode>(
     {
+      [ASTCCompilerKind.AssignmentExpression]: {
+        enter(expression: ASTCAssignmentExpression) {
+          if (!expression.isOperatorExpression())
+            return;
+
+          const assignResult = emit.assignment(
+            {
+              node: expression,
+              context,
+              scope,
+              optimization: {
+                enabled: false,
+              },
+            },
+          );
+
+          if (!assignResult.output)
+            throw new CIRError(CIRErrorCode.UNRESOLVED_ASSIGN_EXPRESSION);
+
+          emitExprResult(assignResult);
+          return false;
+        },
+      },
+
       [ASTCCompilerKind.PostfixExpression]: {
         enter(expression: ASTCPostfixExpression) {
           if (expression.isPrimaryExpression())
@@ -59,7 +90,6 @@ export function emitExpressionIR(
               node: expression,
               context,
               scope,
-              emitExpressionIR,
               optimization: {
                 enabled: false,
               },
@@ -69,9 +99,7 @@ export function emitExpressionIR(
           if (!exprResult.output)
             throw new CIRError(CIRErrorCode.UNRESOLVED_IDENTIFIER);
 
-          instructions.push(...exprResult.instructions);
-          argsVarsStack.push(exprResult.output);
-
+          emitExprResult(exprResult);
           return false;
         },
       },
@@ -100,8 +128,7 @@ export function emitExpressionIR(
             if (!exprResult.output)
               throw new CIRError(CIRErrorCode.UNRESOLVED_IDENTIFIER);
 
-            instructions.push(...exprResult.instructions);
-            argsVarsStack.push(exprResult.output);
+            emitExprResult(exprResult);
           }
 
           return false;

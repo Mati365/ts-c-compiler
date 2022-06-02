@@ -10,6 +10,7 @@ export enum CIRErrorCode {
   UNRESOLVED_IDENTIFIER = 'UNRESOLVED_IDENTIFIER',
   ACCESS_ARRAY_INDEX_TO_NON_ARRAY = 'ACCESS_ARRAY_INDEX_TO_NON_ARRAY',
   ACCESS_STRUCT_ATTR_IN_NON_STRUCT = 'ACCESS_STRUCT_ATTR_IN_NON_STRUCT',
+  UNRESOLVED_ASSIGN_EXPRESSION = 'UNRESOLVED_ASSIGN_EXPRESSION',
 }
 
 export const C_IR_ERROR_TRANSLATIONS: Record<CIRErrorCode, string> = {
@@ -22,6 +23,7 @@ export const C_IR_ERROR_TRANSLATIONS: Record<CIRErrorCode, string> = {
   [CIRErrorCode.UNRESOLVED_IDENTIFIER]: fixme('Unresolved expression IR output variable!'),
   [CIRErrorCode.ACCESS_ARRAY_INDEX_TO_NON_ARRAY]: fixme('Trying to access non array type via index!'),
   [CIRErrorCode.ACCESS_STRUCT_ATTR_IN_NON_STRUCT]: fixme('Trying to access struct field on non struct type!'),
+  [CIRErrorCode.UNRESOLVED_ASSIGN_EXPRESSION]: fixme('Unresolved assign expression!'),
 };
 
 /**

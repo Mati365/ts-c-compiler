@@ -1,11 +1,15 @@
 import {ccompiler, CCompilerOutput} from '@compiler/pico-c';
 
 ccompiler(/* cpp */ `
+  int sum(int a, int b) {
+    int abc = (a = b = a * 2 + 12 * 4 / 2), dupa = 666;
+  }
+
   struct Vec2 {
     int x, y;
   };
 
-  int sum(int a, int b) {
+  int sub(int a, int b) {
     int sum = 1;
     sum += 5;
     sum *= 4 + 5 + 1 + (a * 4) + (b / 2);

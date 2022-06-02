@@ -1,7 +1,13 @@
 import {isFuncDeclLikeType} from '../../analyze';
 
 import {CScopeVisitor, CScopeTree} from '../../analyze/scope';
-import {IREmitterContext, emitFunctionIR} from './emitters';
+import {
+  IREmitterContext,
+  emitFunctionIR,
+  emitExpressionIR,
+  emitExpressionIdentifierAccessorIR,
+  emitAssignmentIR,
+} from './emitters';
 
 import {CIRGeneratorConfig} from '../constants';
 import {CIRBranchesBuilder, CIRBranchesBuilderResult} from './CIRBranchesBuilder';
@@ -30,6 +36,11 @@ export class CIRGeneratorScopeVisitor extends CScopeVisitor {
     return {
       config,
       allocator,
+      emit: {
+        expression: emitExpressionIR,
+        expressionIdentifier: emitExpressionIdentifierAccessorIR,
+        assignment: emitAssignmentIR,
+      },
     };
   }
 

@@ -35,6 +35,7 @@ export class ASTCAssignmentExpressionTypeCreator extends ASTCTypeCreator<ASTCAss
         );
       }
 
+      node.type = left.type;
     } else if (node.hasNestedExpression())
       node.type = node.expression.type;
     else if (node.isConditionalExpression())
