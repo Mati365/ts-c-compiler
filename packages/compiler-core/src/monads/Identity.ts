@@ -32,7 +32,7 @@ export class Identity<T> implements IsEqual<Identity<T>> {
   }
 
   map(fn: (value: T) => T): this {
-    return <this> new (this.constructor as any)(
+    return new (this.constructor as any)(
       this.bind(fn),
     );
   }

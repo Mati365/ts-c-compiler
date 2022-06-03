@@ -2,6 +2,8 @@ export * from './emitAssignmentIR';
 export * from './emitExpressionIR';
 export * from './emitExpressionIdentifierAccessorIR';
 export * from './emitFunctionIR';
+export * from './emitPointerAddressExpression';
+export * from './emitPointerExpression';
 export * from './emitScopeInitIR';
 export * from './emitVariableInitializerIR';
 export * from './types';

@@ -8,6 +8,8 @@ import {CIRVariableAllocator} from '../CIRVariableAllocator';
 import type {emitAssignmentIR} from './emitAssignmentIR';
 import type {emitExpressionIR} from './emitExpressionIR';
 import type {emitExpressionIdentifierAccessorIR} from './emitExpressionIdentifierAccessorIR';
+import type {emitPointerExpression} from './emitPointerExpression';
+import type {emitPointerAddressExpression} from './emitPointerAddressExpression';
 
 export type IREmitterContext = {
   config: CIRGeneratorConfig;
@@ -15,6 +17,8 @@ export type IREmitterContext = {
   emit: {
     assignment: typeof emitAssignmentIR,
     expression: typeof emitExpressionIR;
+    pointerExpression: typeof emitPointerExpression;
+    pointerAddressExpression: typeof emitPointerAddressExpression;
     expressionIdentifier: typeof emitExpressionIdentifierAccessorIR;
   };
 };

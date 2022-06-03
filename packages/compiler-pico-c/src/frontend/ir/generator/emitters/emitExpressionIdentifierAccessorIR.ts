@@ -2,8 +2,10 @@ import * as R from 'ramda';
 
 import {TokenType} from '@compiler/lexer/shared';
 import {CPrimitiveType, isArrayLikeType, isStructLikeType} from '@compiler/pico-c/frontend/analyze';
+import {CUnaryCastOperator} from '@compiler/pico-c/constants';
 import {GroupTreeVisitor} from '@compiler/grammar/tree/TreeGroupedVisitor';
 import {
+  ASTCCastUnaryExpression,
   ASTCCompilerKind,
   ASTCCompilerNode,
   ASTCPostfixArrayExpression,
@@ -50,7 +52,7 @@ export function emitExpressionIdentifierAccessorIR(
     node,
   }: ExpressionVarAccessorIREmitAttrs,
 ): ExpressionIdentifierIREmitResult {
-  const {allocator, config} = context;
+  const {allocator, config, emit} = context;
   let instructions: (CIRInstruction & IsOutputInstruction)[] = [];
 
   let rootIRVar: CIRVariable;
@@ -64,6 +66,38 @@ export function emitExpressionIdentifierAccessorIR(
 
   GroupTreeVisitor.ofIterator<ASTCCompilerNode>(
     {
+      [ASTCCompilerKind.BinaryOperator]: {
+        enter() {
+          throw new CIRError(CIRErrorCode.INCORRECT_UNARY_EXPR);
+        },
+      },
+
+      [ASTCCompilerKind.CastUnaryExpression]: {
+        enter(expr: ASTCCastUnaryExpression) {
+          if (expr.operator !== CUnaryCastOperator.MUL)
+            throw new CIRError(CIRErrorCode.INCORRECT_UNARY_EXPR);
+
+          const pointerExprResult = emit.pointerExpression(
+            {
+              context,
+              scope,
+              emitLoadPtr: false,
+              node: expr,
+              optimization: {
+                enabled: false,
+              },
+            },
+          );
+
+          if (!isCIRVariable(pointerExprResult.output))
+            throw new CIRError(CIRErrorCode.INCORRECT_UNARY_EXPR);
+
+          instructions.push(...pointerExprResult.instructions);
+          lastIRAddressVar = pointerExprResult.output;
+          return false;
+        },
+      },
+
       [ASTCCompilerKind.PostfixExpression]: {
         enter(expr: ASTCPostfixExpression) {
           parentNodes.push(expr);

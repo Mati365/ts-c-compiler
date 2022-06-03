@@ -7,6 +7,8 @@ import {
   emitExpressionIR,
   emitExpressionIdentifierAccessorIR,
   emitAssignmentIR,
+  emitPointerExpression,
+  emitPointerAddressExpression,
 } from './emitters';
 
 import {CIRGeneratorConfig} from '../constants';
@@ -39,6 +41,8 @@ export class CIRGeneratorScopeVisitor extends CScopeVisitor {
       emit: {
         expression: emitExpressionIR,
         expressionIdentifier: emitExpressionIdentifierAccessorIR,
+        pointerExpression: emitPointerExpression,
+        pointerAddressExpression: emitPointerAddressExpression,
         assignment: emitAssignmentIR,
       },
     };

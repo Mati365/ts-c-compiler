@@ -2,7 +2,7 @@ import chalk from 'chalk';
 
 import {IsOutputInstruction} from '../interfaces';
 import {CIROpcode} from '../constants';
-import {CIRInstructionVarArg, isCIRConstant, isCIRVariable} from '../variables';
+import {CIRConstant, CIRInstructionVarArg, isCIRConstant, isCIRVariable} from '../variables';
 import {CIRInstruction} from './CIRInstruction';
 
 /**
@@ -56,6 +56,17 @@ export class CIROpInstruction<O> extends CIRInstruction implements IsOutputInstr
       return rightVar;
 
     return null;
+  }
+
+  mapConstantArg(fn: (value: CIRConstant, index: number) => CIRConstant): this {
+    const {operator, leftVar, rightVar, outputVar} = this;
+
+    return new (this.constructor as any)(
+      operator,
+      isCIRConstant(leftVar) ? fn(leftVar, 0) : leftVar,
+      isCIRConstant(rightVar) ? fn(rightVar, 1) : rightVar,
+      outputVar,
+    );
   }
 
   hasAnyConstantArg() {

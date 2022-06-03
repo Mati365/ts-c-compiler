@@ -39,6 +39,15 @@ export class CIRConstant
   get type() { return this.value.type; }
   get constant() { return this.value.constant; }
 
+  mapConstant(fn: (constant: number) => number) {
+    return new CIRConstant(
+      {
+        type: this.type,
+        constant: fn(this.constant),
+      },
+    );
+  }
+
   getDisplayName(): string {
     const {constant, type} = this.value;
 

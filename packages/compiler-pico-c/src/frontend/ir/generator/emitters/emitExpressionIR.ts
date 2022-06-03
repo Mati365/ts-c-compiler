@@ -1,12 +1,12 @@
 import * as R from 'ramda';
 
-import {CMathOperator} from '@compiler/pico-c/constants';
+import {CMathOperator, CUnaryCastOperator} from '@compiler/pico-c/constants';
 import {CType} from '@compiler/pico-c/frontend/analyze';
 import {
   ASTCAssignmentExpression,
-  ASTCBinaryOpNode, ASTCCompilerKind,
-  ASTCCompilerNode, ASTCPostfixExpression,
-  ASTCPrimaryExpression,
+  ASTCBinaryOpNode, ASTCCastUnaryExpression,
+  ASTCCompilerKind, ASTCCompilerNode,
+  ASTCPostfixExpression, ASTCPrimaryExpression,
 } from '@compiler/pico-c/frontend/parser';
 
 import {GroupTreeVisitor} from '@compiler/grammar/tree/TreeGroupedVisitor';
@@ -56,6 +56,44 @@ export function emitExpressionIR(
 
   GroupTreeVisitor.ofIterator<ASTCCompilerNode>(
     {
+      [ASTCCompilerKind.CastUnaryExpression]: {
+        enter(expr: ASTCCastUnaryExpression) {
+          switch (expr.operator) {
+            case CUnaryCastOperator.MUL: {
+              const pointerExprResult = emit.pointerExpression(
+                {
+                  context,
+                  scope,
+                  node: expr,
+                  optimization: {
+                    enabled: false,
+                  },
+                },
+              );
+
+              emitExprResult(pointerExprResult);
+              return false;
+            }
+
+            case CUnaryCastOperator.AND: {
+              const pointerAddresExprResult = emit.pointerAddressExpression(
+                {
+                  context,
+                  scope,
+                  node: expr,
+                  optimization: {
+                    enabled: false,
+                  },
+                },
+              );
+
+              emitExprResult(pointerAddresExprResult);
+              return false;
+            }
+          }
+        },
+      },
+
       [ASTCCompilerKind.AssignmentExpression]: {
         enter(expression: ASTCAssignmentExpression) {
           if (!expression.isOperatorExpression())

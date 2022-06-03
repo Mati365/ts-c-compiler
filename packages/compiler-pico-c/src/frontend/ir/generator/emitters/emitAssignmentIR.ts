@@ -31,7 +31,7 @@ export function emitAssignmentIR(
   const {operator} = node;
 
   const instructions: CIRInstruction[] = [];
-  const accessorResult = emitExpressionIdentifierAccessorIR(
+  const lvalue = emitExpressionIdentifierAccessorIR(
     {
       node: node.unaryExpression,
       emitLoadPtr: false,
@@ -43,8 +43,8 @@ export function emitAssignmentIR(
     },
   );
 
-  const {type} = accessorResult.output;
-  const exprResult = emitExpressionIR(
+  const {type} = lvalue.output;
+  const rvalue = emitExpressionIR(
     {
       node: node.expression,
       type,
@@ -57,14 +57,14 @@ export function emitAssignmentIR(
   );
 
   instructions.push(
-    ...accessorResult.instructions,
-    ...exprResult.instructions,
+    ...lvalue.instructions,
+    ...rvalue.instructions,
   );
 
   let assignResult: CIRInstructionVarArg = null;
   if (operator === CAssignOperator.ASSIGN) {
     // int abc = 5;
-    assignResult = exprResult.output;
+    assignResult = rvalue.output;
   } else {
     // load tmp ptr
     const tmpResultVar = allocator.allocTmpVariable(type);
@@ -72,8 +72,8 @@ export function emitAssignmentIR(
     instructions.push(
       new CIRMathInstruction(
         CCOMPILER_ASSIGN_MATH_OPERATORS[operator],
-        accessorResult.output,
-        exprResult.output,
+        lvalue.output,
+        rvalue.output,
         tmpResultVar.name,
       ),
     );
@@ -84,7 +84,7 @@ export function emitAssignmentIR(
   instructions.push(
     new CIRStoreInstruction(
       assignResult,
-      accessorResult.output.name,
+      lvalue.output.name,
     ),
   );
 
