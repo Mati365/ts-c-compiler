@@ -45,6 +45,9 @@ export function emitFunctionIR(
       },
       [ASTCCompilerKind.AssignmentExpression]: {
         enter(assignmentNode: ASTCAssignmentExpression) {
+          if (!assignmentNode.isOperatorExpression())
+            return;
+
           const assignResult = emitAssignmentIR(
             {
               node: assignmentNode,
