@@ -29,7 +29,10 @@ export class CIRAllocInstruction extends CIRInstruction implements IsOutputInstr
   }
 
   static ofIRVariable(variable: CIRVariable) {
-    return new CIRAllocInstruction(variable.name, variable.type);
+    return new CIRAllocInstruction(
+      variable.name,
+      variable.type,
+    );
   }
 
   override getDisplayName(): string {

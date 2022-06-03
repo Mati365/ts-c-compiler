@@ -51,6 +51,7 @@ export enum CTypeCheckErrorCode {
   UNKNOWN_IDENTIFIER,
   WRONG_NON_STRUCT_FIELD_ACCESS,
   WRONG_NON_ARRAY_FIELD_ACCESS,
+  DEREFERENCE_NON_POINTER_TYPE,
 }
 
 export const C_TYPE_CHECK_ERROR_TRANSLATIONS: Record<CTypeCheckErrorCode, string> = {
@@ -126,6 +127,7 @@ export const C_TYPE_CHECK_ERROR_TRANSLATIONS: Record<CTypeCheckErrorCode, string
   [CTypeCheckErrorCode.INDEX_INITIALIZER_ARRAY_OVERFLOW]: 'Index initializer array overflow!',
   [CTypeCheckErrorCode.WRONG_NON_STRUCT_FIELD_ACCESS]: 'Wrong non struct field access "%{typeName}"!',
   [CTypeCheckErrorCode.WRONG_NON_ARRAY_FIELD_ACCESS]: 'Wrong non array field access "%{typeName}"!',
+  [CTypeCheckErrorCode.DEREFERENCE_NON_POINTER_TYPE]: 'Dereference non pointer type "%{typeName}"!',
 };
 
 /**

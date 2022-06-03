@@ -1,7 +1,7 @@
 import * as R from 'ramda';
 
 import {CMathOperator, CUnaryCastOperator} from '@compiler/pico-c/constants';
-import {CType} from '@compiler/pico-c/frontend/analyze';
+import {CPointerType, CType, isArrayLikeType, isPointerLikeType} from '@compiler/pico-c/frontend/analyze';
 import {
   ASTCAssignmentExpression,
   ASTCBinaryOpNode, ASTCCastUnaryExpression,
@@ -12,11 +12,15 @@ import {
 import {GroupTreeVisitor} from '@compiler/grammar/tree/TreeGroupedVisitor';
 import {IREmitterContextAttrs, IREmitterExpressionResult} from './types';
 
-import {CIRInstruction, CIRLoadInstruction, CIRMathInstruction} from '../../instructions';
+import {
+  CIRInstruction, CIRLeaInstruction,
+  CIRLoadInstruction, CIRMathInstruction,
+} from '../../instructions';
+
 import {CIRError, CIRErrorCode} from '../../errors/CIRError';
 import {CIRConstant, CIRInstructionVarArg} from '../../variables';
 
-import {emitExpressionIdentifierAccessorIR} from './emitExpressionIdentifierAccessorIR';
+import {emitLvalueExpression} from './emitLvalueExpressionIR';
 import {
   IRInstructionsOptimizationAttrs,
   optimizeInstructionsList,
@@ -38,13 +42,13 @@ export function emitExpressionIR(
     scope,
   }: ExpressionIREmitAttrs,
 ): IREmitterExpressionResult {
-  const {allocator, emit} = context;
+  const {allocator, emit, config} = context;
 
   const instructions: CIRInstruction[] = [];
   let argsVarsStack: CIRInstructionVarArg[] = [];
 
-  const allocNextVariable = () => {
-    const irVariable = allocator.allocTmpVariable(type);
+  const allocNextVariable = (nextType: CType = type) => {
+    const irVariable = allocator.allocTmpVariable(nextType);
     argsVarsStack.push(irVariable);
     return irVariable;
   };
@@ -123,7 +127,7 @@ export function emitExpressionIR(
           if (expression.isPrimaryExpression())
             return;
 
-          const exprResult = emitExpressionIdentifierAccessorIR(
+          const exprResult = emitLvalueExpression(
             {
               node: expression,
               context,
@@ -149,10 +153,33 @@ export function emitExpressionIR(
               CIRConstant.ofConstant(type, expression.constant.value.number),
             );
           } else if (expression.isIdentifier()) {
-            const tmpVar = allocNextVariable();
             const srcVar = allocator.getVariable(expression.identifier.text);
 
-            instructions.push(new CIRLoadInstruction(srcVar, tmpVar.name));
+            if (isArrayLikeType(srcVar.type)) {
+              const tmpVar = allocNextVariable(
+                CPointerType.ofType(config.arch, srcVar.type),
+              );
+
+              instructions.push(
+                new CIRLeaInstruction(tmpVar.name, srcVar),
+              );
+            } else if (isPointerLikeType(srcVar.type)) {
+              const tmpVar = allocNextVariable(srcVar.type);
+
+              instructions.push(
+                new CIRLoadInstruction(srcVar, tmpVar.name),
+              );
+            } else {
+              const addressVar = allocNextVariable(
+                CPointerType.ofType(config.arch, srcVar.type),
+              );
+
+              const tmpVar = allocNextVariable(srcVar.type);
+              instructions.push(
+                new CIRLeaInstruction(addressVar.name, srcVar),
+                new CIRLoadInstruction(addressVar, tmpVar.name),
+              );
+            }
           } else if (expression.isExpression()) {
             const exprResult = emitExpressionIR(
               {

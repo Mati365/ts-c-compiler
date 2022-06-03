@@ -14,7 +14,7 @@ export function emitPointerAddressExpression(
     node,
   }: PointerAddressExpressionIREmitAttrs,
 ): IREmitterExpressionResult {
-  return context.emit.expressionIdentifier(
+  return context.emit.lvalueExpression(
     {
       emitLoadPtr: false,
       node: node.castExpression,

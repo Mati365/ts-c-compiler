@@ -24,6 +24,6 @@ export class CIRLeaInstruction extends CIRInstruction implements IsOutputInstruc
   override getDisplayName(): string {
     const {outputVar, inputVar} = this;
 
-    return `${chalk.blueBright(outputVar)} = &${inputVar.getDisplayName()}`;
+    return `${chalk.blueBright(outputVar)} = ${chalk.yellowBright('lea')} ${inputVar.getDisplayName()}`;
   }
 }

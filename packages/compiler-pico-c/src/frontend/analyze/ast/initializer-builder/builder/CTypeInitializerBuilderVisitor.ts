@@ -285,7 +285,7 @@ export class CTypeInitializerBuilderVisitor extends CInnerTypeTreeVisitor {
           );
         }
 
-        const {dimensions} = baseType.getFlattenInfo();
+        const {dimensions, type} = baseType.getFlattenInfo();
         const constExprResult = evalConstantExpression(
           {
             expression: constantExpression,
@@ -300,12 +300,11 @@ export class CTypeInitializerBuilderVisitor extends CInnerTypeTreeVisitor {
           );
         }
 
-        const itemScalarSize = baseType.getFlattenInfo().type.scalarValuesCount;
         baseType = baseType.ofTailDimensions();
         offset += (
           +constExprResult
             * dimensions.reduce((acc, num, index) => index ? acc * num : 1, 1)
-            * itemScalarSize
+            * type.scalarValuesCount
         );
       }
     }

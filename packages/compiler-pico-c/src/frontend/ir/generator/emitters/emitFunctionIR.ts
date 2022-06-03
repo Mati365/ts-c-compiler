@@ -1,46 +1,53 @@
 import {GroupTreeVisitor} from '@compiler/grammar/tree/TreeGroupedVisitor';
 import {CFunctionDeclType} from '@compiler/pico-c/frontend/analyze';
-import {ASTCAssignmentExpression, ASTCCompilerKind, ASTCCompilerNode} from '@compiler/pico-c/frontend/parser';
+import {
+  ASTCAssignmentExpression, ASTCCompilerKind,
+  ASTCCompilerNode, ASTCDeclaration, ASTCFunctionDefinition,
+} from '@compiler/pico-c/frontend/parser';
 
 import {CIRInstruction, CIRRetInstruction} from '../../instructions';
-import {IREmitterContextAttrs} from './types';
+import {IREmitterContextAttrs, IREmitterStmtResult} from './types';
 
-import {emitScopeInitIR} from './emitScopeInitIR';
 import {emitAssignmentIR} from './emitAssignmentIR';
-
-type IREmitterFunctionResult = {
-  instructions: CIRInstruction[];
-};
+import {emitDeclarationIR} from './emitDeclarationIR';
 
 type FunctionIREmitAttrs = IREmitterContextAttrs & {
-  fnType: CFunctionDeclType;
+  node: ASTCFunctionDefinition;
 };
 
 export function emitFunctionIR(
   {
     context,
     scope,
-    fnType,
+    node,
   }: FunctionIREmitAttrs,
-): IREmitterFunctionResult {
+): IREmitterStmtResult {
   const instructions: CIRInstruction[] = [
-    context.allocator.allocFunctionType(fnType),
-    ...emitScopeInitIR(
-      {
-        context,
-        scope,
-      },
-    ).instructions,
+    context.allocator.allocFunctionType(<CFunctionDeclType> node.type),
   ];
 
   GroupTreeVisitor.ofIterator<ASTCCompilerNode>(
     {
-      [ASTCCompilerKind.Declaration]: false,
+      [ASTCCompilerKind.ReturnStmt]: false,
+      [ASTCCompilerKind.Declaration]: {
+        enter(declarationNode: ASTCDeclaration) {
+          const declarationResult = emitDeclarationIR(
+            {
+              node: declarationNode,
+              scope,
+              context,
+            },
+          );
+
+          instructions.push(...declarationResult.instructions);
+          return false;
+        },
+      },
       [ASTCCompilerKind.AssignmentExpression]: {
-        enter(node: ASTCAssignmentExpression) {
+        enter(assignmentNode: ASTCAssignmentExpression) {
           const assignResult = emitAssignmentIR(
             {
-              node,
+              node: assignmentNode,
               scope,
               context,
             },
@@ -51,7 +58,7 @@ export function emitFunctionIR(
         },
       },
     },
-  )(fnType.definition);
+  )(node.content);
 
   instructions.push(new CIRRetInstruction);
   return {

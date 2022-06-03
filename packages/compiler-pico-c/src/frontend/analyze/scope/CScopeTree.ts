@@ -120,6 +120,9 @@ export class CScopeTree<C extends ASTCCompilerNode = ASTCCompilerNode> implement
   /**
    * Defines single variable
    *
+   * @see
+   *  Performs autocast
+   *
    * @param {CVariable} variable
    * @return {Result<CVariable, CTypeCheckError>}
    * @memberof CScopeTree
@@ -140,8 +143,9 @@ export class CScopeTree<C extends ASTCCompilerNode = ASTCCompilerNode> implement
       );
     }
 
-    variables[name] = variable.ofGlobalScope(this.isGlobal());
-    return ok(variable);
+    const mappedVariable = variable.ofGlobalScope(this.isGlobal());
+    variables[name] = mappedVariable;
+    return ok(mappedVariable);
   }
 
   /**

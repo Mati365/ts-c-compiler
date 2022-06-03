@@ -75,7 +75,9 @@ export class CIRVariableAllocator {
     );
 
     return this.allocVariable(
-      tmpVar.ofIncrementedSuffix(),
+      tmpVar
+        .ofType(type)
+        .ofIncrementedSuffix(),
     );
   }
 

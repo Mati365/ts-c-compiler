@@ -50,7 +50,6 @@ export class CPrimitiveType extends CType<CPrimitiveTypeDescriptor> {
     CPrimitiveType.ofSpecifiers(arch, specifier, qualifiers)
   );
 
-  static address = CPrimitiveType.typeGenerator(CSpecBitmap.int, CSpecBitmap.unsigned);
   static int = CPrimitiveType.typeGenerator(CSpecBitmap.int);
   static float = CPrimitiveType.typeGenerator(CSpecBitmap.float);
   static double = CPrimitiveType.typeGenerator(CSpecBitmap.double);

@@ -1,11 +1,20 @@
 import {ccompiler, CCompilerOutput} from '@compiler/pico-c';
 
 ccompiler(/* cpp */ `
+  struct Vec2 {
+    int x, y;
+  };
+
   int sub(int a, int b) {
-    int abc = a + b;
-    int* rootPtr = &abc;
-    int** ptr = &rootPtr;
-    (**ptr) = 5;
+    a = 5;
+    int* d = &a;
+    (*d) = 2;
+
+    int array[] = { 4 + *d, 66, 11, 21, 32, 11, 'a' };
+    struct Vec2 vec[] = { { .x = 5 }, { .y = 6 }, { .x = 1, .y = 666 }};
+    int* ptr = &vec[2].y;
+    (*ptr) = 7;
+    *(array + 2) = 77;
   }
 `).match(
   {

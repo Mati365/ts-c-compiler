@@ -33,25 +33,25 @@ import {IsOutputInstruction} from '../../interfaces';
 import {CIRError, CIRErrorCode} from '../../errors/CIRError';
 import {IRInstructionsOptimizationAttrs, optimizeInstructionsList} from '../optimization';
 
-type ExpressionVarAccessorIREmitAttrs = IREmitterContextAttrs & {
+type LvalueExpressionIREmitAttrs = IREmitterContextAttrs & {
   optimization?: IRInstructionsOptimizationAttrs;
   emitLoadPtr?: boolean;
   node: ASTCCompilerNode;
 };
 
-type ExpressionIdentifierIREmitResult = IREmitterExpressionVarResult & {
+type LvalueExpressionIREmitResult = IREmitterExpressionVarResult & {
   rootIRVar: CIRVariable;
 };
 
-export function emitExpressionIdentifierAccessorIR(
+export function emitLvalueExpression(
   {
     emitLoadPtr = true,
     optimization = {},
     scope,
     context,
     node,
-  }: ExpressionVarAccessorIREmitAttrs,
-): ExpressionIdentifierIREmitResult {
+  }: LvalueExpressionIREmitAttrs,
+): LvalueExpressionIREmitResult {
   const {allocator, config, emit} = context;
   let instructions: (CIRInstruction & IsOutputInstruction)[] = [];
 

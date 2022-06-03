@@ -3,6 +3,7 @@ import {ASTCTypeCreator} from './ASTCTypeCreator';
 import {CTypeCheckError, CTypeCheckErrorCode} from '../../errors/CTypeCheckError';
 
 import {checkLeftTypeOverlapping} from '../../checker';
+import {castToPointerIfArray} from '../../casts';
 
 /**
  * Assigns type to ASTCBinaryOpTypeCreator
@@ -15,11 +16,15 @@ export class ASTCBinaryOpTypeCreator extends ASTCTypeCreator<ASTCBinaryOpNode> {
   kind = ASTCCompilerKind.BinaryOperator;
 
   override leave(node: ASTCBinaryOpNode): void {
+    const {arch} = this;
     if (node.hasSingleSide())
       return;
 
     const {left, right} = node;
-    if (!checkLeftTypeOverlapping(left.type, right.type)) {
+    const leftType = castToPointerIfArray(arch, left.type);
+    const rightType = castToPointerIfArray(arch, right.type);
+
+    if (!checkLeftTypeOverlapping(leftType, rightType)) {
       throw new CTypeCheckError(
         CTypeCheckErrorCode.OPERATOR_SIDES_TYPES_MISMATCH,
         node.loc.start,
@@ -30,6 +35,6 @@ export class ASTCBinaryOpTypeCreator extends ASTCTypeCreator<ASTCBinaryOpNode> {
       );
     }
 
-    node.type = left.type;
+    node.type = leftType;
   }
 }

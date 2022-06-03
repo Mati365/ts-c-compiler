@@ -11,7 +11,7 @@ import {CIRInstructionVarArg} from '../../variables';
 import {IRInstructionsOptimizationAttrs, optimizeInstructionsList} from '../optimization';
 import {IREmitterContextAttrs, IREmitterExpressionResult} from './types';
 
-import {emitExpressionIdentifierAccessorIR} from './emitExpressionIdentifierAccessorIR';
+import {emitLvalueExpression} from './emitLvalueExpressionIR';
 import {emitExpressionIR} from './emitExpressionIR';
 
 export type AssignmentIREmitAttrs = IREmitterContextAttrs & {
@@ -31,7 +31,7 @@ export function emitAssignmentIR(
   const {operator} = node;
 
   const instructions: CIRInstruction[] = [];
-  const lvalue = emitExpressionIdentifierAccessorIR(
+  const lvalue = emitLvalueExpression(
     {
       node: node.unaryExpression,
       emitLoadPtr: false,

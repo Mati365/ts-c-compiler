@@ -2,6 +2,7 @@ import {concatNonEmptyStrings} from '@compiler/core/utils';
 
 import {Identity} from '@compiler/core/monads';
 import {CCompilerArch} from '@compiler/pico-c/constants';
+
 import {CType, CTypeDescriptor} from './CType';
 import {CPrimitiveType} from './CPrimitiveType';
 
@@ -79,7 +80,7 @@ export class CPointerType extends CType<CPointerTypeDescriptor> {
   override getDisplayName(): string {
     return concatNonEmptyStrings(
       [
-        `${this.baseType.getDisplayName()}*`,
+        `${this.baseType.getShortestDisplayName()}*`,
         this.getQualifiersDisplayName(),
       ],
     );

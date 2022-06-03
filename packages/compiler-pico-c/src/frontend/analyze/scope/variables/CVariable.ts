@@ -1,6 +1,7 @@
 import {CVariableInitializerTree} from './CVariableInitializerTree';
 import {CNamedTypedEntry, CNamedTypedEntryDescriptor} from './CNamedTypedEntry';
 import {CVariableInitializerPrintVisitor} from '../../ast/initializer-builder/CVariableInitializerPrintVisitor';
+import {CType} from '../../types';
 
 export type CVariableDescriptor = CNamedTypedEntryDescriptor & {
   global?: boolean,
@@ -41,6 +42,22 @@ export class CVariable extends CNamedTypedEntry<CVariableDescriptor> {
 
   isGlobal() { return this.value.global; }
   isInitialized() { return !!this.initializer; }
+
+  /**
+   * Maps provided type
+   *
+   * @param {(type: CType) => CType} fn
+   * @return {CVariable}
+   * @memberof CVariable
+   */
+  ofMappedType(fn: (type: CType) => CType): CVariable {
+    return this.map(
+      ({type, ...attrs}) => ({
+        ...attrs,
+        type: fn(type),
+      }),
+    );
+  }
 
   /**
    * Sets global flag and return new instance

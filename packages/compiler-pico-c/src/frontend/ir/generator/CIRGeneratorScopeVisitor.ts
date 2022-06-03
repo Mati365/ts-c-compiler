@@ -1,11 +1,12 @@
 import {isFuncDeclLikeType} from '../../analyze';
 
 import {CScopeVisitor, CScopeTree} from '../../analyze/scope';
+import {ASTCFunctionDefinition} from '../../parser';
 import {
   IREmitterContext,
   emitFunctionIR,
   emitExpressionIR,
-  emitExpressionIdentifierAccessorIR,
+  emitLvalueExpression,
   emitAssignmentIR,
   emitPointerExpression,
   emitPointerAddressExpression,
@@ -40,7 +41,7 @@ export class CIRGeneratorScopeVisitor extends CScopeVisitor {
       allocator,
       emit: {
         expression: emitExpressionIR,
-        expressionIdentifier: emitExpressionIdentifierAccessorIR,
+        lvalueExpression: emitLvalueExpression,
         pointerExpression: emitPointerExpression,
         pointerAddressExpression: emitPointerAddressExpression,
         assignment: emitAssignmentIR,
@@ -71,7 +72,7 @@ export class CIRGeneratorScopeVisitor extends CScopeVisitor {
     if (isFuncDeclLikeType(parentAST?.type)) {
       const {instructions} = emitFunctionIR(
         {
-          fnType: parentAST.type,
+          node: <ASTCFunctionDefinition> parentAST,
           context: this.emitterContext,
           scope,
         },

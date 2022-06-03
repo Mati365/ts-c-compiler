@@ -108,6 +108,10 @@ export class CArrayType extends CType<CArrayTypeDescriptor> {
     return this.size * scalarValuesCount;
   }
 
+  getBaseType() {
+    return this.getFlattenInfo().type;
+  }
+
   /**
    * Return unrolled multidimensional array size
    *

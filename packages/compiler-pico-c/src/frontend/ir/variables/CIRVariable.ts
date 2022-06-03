@@ -113,6 +113,12 @@ export class CIRVariable
     ));
   }
 
+  ofType(type: CType) {
+    return this.map(
+      R.assoc('type', type),
+    );
+  }
+
   getDisplayName(): string {
     const {type} = this.value;
     const {name} = this;
