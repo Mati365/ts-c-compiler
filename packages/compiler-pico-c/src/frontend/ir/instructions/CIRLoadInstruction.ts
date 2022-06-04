@@ -27,7 +27,7 @@ export class CIRLoadInstruction extends CIRInstruction implements IsOutputInstru
     const offsetSuffix = offset ? ` + ${offset}` : '';
 
     return (
-      `${outputVar.getDisplayName(false)} = ${chalk.yellowBright('load')} ${inputVar.getDisplayName()}${offsetSuffix}`
+      `${outputVar.getDisplayName()} = ${chalk.yellowBright('load')} ${inputVar.getDisplayName()}${offsetSuffix}`
     );
   }
 }

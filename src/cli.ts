@@ -2,11 +2,9 @@ import {ccompiler, CCompilerOutput} from '@compiler/pico-c';
 
 ccompiler(/* cpp */ `
   int sub(int a, int b) {
-    int arr[] = { 1, 2, 3 };
-    *(3 * 2 + arr + 2 - 1) = 3;
-    *(arr + 3) = 3;
-    a = 5 * 1 - 10;
-    b -= a;
+    int sum = a + 2.21 * 4;
+    int* ptr = &sum;
+    (*ptr) = 2;
   }
 `).match(
   {

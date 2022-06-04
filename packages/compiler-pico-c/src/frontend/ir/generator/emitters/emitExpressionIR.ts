@@ -156,7 +156,7 @@ export function emitExpressionIR(
                 new CIRLoadInstruction(srcVar, tmpVar),
               );
             } else {
-              const addressVar = allocNextVariable();
+              const addressVar = allocNextVariable(srcVar.type);
 
               instructions.push(
                 new CIRLoadInstruction(srcVar, addressVar),
