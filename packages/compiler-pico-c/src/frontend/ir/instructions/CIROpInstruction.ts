@@ -2,7 +2,7 @@ import chalk from 'chalk';
 
 import {IsOutputInstruction} from '../interfaces';
 import {CIROpcode} from '../constants';
-import {CIRConstant, CIRInstructionVarArg, isCIRConstant, isCIRVariable} from '../variables';
+import {CIRConstant, CIRInstructionVarArg, CIRVariable, isCIRConstant, isCIRVariable} from '../variables';
 import {CIRInstruction} from './CIRInstruction';
 
 /**
@@ -18,7 +18,7 @@ export class CIROpInstruction<O> extends CIRInstruction implements IsOutputInstr
     readonly operator: O,
     readonly leftVar: CIRInstructionVarArg,
     readonly rightVar: CIRInstructionVarArg,
-    readonly outputVar: string = null,
+    readonly outputVar: CIRVariable = null,
   ) {
     super(opcode);
   }
@@ -29,7 +29,7 @@ export class CIROpInstruction<O> extends CIRInstruction implements IsOutputInstr
 
     return (
       outputVar
-        ? `${chalk.blueBright(outputVar)} = ${str}`
+        ? `${outputVar.getDisplayName(false)} = ${str}`
         : str
     );
   }

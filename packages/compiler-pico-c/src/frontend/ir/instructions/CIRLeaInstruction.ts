@@ -3,7 +3,7 @@ import chalk from 'chalk';
 import {IsOutputInstruction} from '../interfaces';
 import {CIROpcode} from '../constants';
 import {CIRInstruction} from './CIRInstruction';
-import {CIRInstructionVarArg} from '../variables';
+import {CIRInstructionVarArg, CIRVariable} from '../variables';
 
 /**
  * Instruction that loads mem address of variable
@@ -15,7 +15,7 @@ import {CIRInstructionVarArg} from '../variables';
  */
 export class CIRLeaInstruction extends CIRInstruction implements IsOutputInstruction {
   constructor(
-    readonly outputVar: string,
+    readonly outputVar: CIRVariable,
     readonly inputVar: CIRInstructionVarArg,
   ) {
     super(CIROpcode.LEA);
@@ -24,6 +24,6 @@ export class CIRLeaInstruction extends CIRInstruction implements IsOutputInstruc
   override getDisplayName(): string {
     const {outputVar, inputVar} = this;
 
-    return `${chalk.blueBright(outputVar)} = ${chalk.yellowBright('lea')} ${inputVar.getDisplayName()}`;
+    return `${outputVar.getDisplayName(false)} = ${chalk.yellowBright('lea')} ${inputVar.getDisplayName()}`;
   }
 }

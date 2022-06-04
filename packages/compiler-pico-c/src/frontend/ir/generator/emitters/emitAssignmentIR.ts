@@ -8,20 +8,17 @@ import {
 } from '../../instructions';
 
 import {CIRInstructionVarArg} from '../../variables';
-import {IRInstructionsOptimizationAttrs, optimizeInstructionsList} from '../optimization';
 import {IREmitterContextAttrs, IREmitterExpressionResult} from './types';
 
 import {emitLvalueExpression} from './emitLvalueExpressionIR';
 import {emitExpressionIR} from './emitExpressionIR';
 
 export type AssignmentIREmitAttrs = IREmitterContextAttrs & {
-  optimization?: IRInstructionsOptimizationAttrs;
   node: ASTCAssignmentExpression;
 };
 
 export function emitAssignmentIR(
   {
-    optimization = {},
     scope,
     context,
     node,
@@ -37,22 +34,16 @@ export function emitAssignmentIR(
       emitLoadPtr: false,
       scope,
       context,
-      optimization: {
-        enabled: false,
-      },
     },
   );
 
-  const {type} = lvalue.output;
+  const rvalueType = node.expression.type;
   const rvalue = emitExpressionIR(
     {
       node: node.expression,
-      type,
+      type: rvalueType,
       scope,
       context,
-      optimization: {
-        enabled: false,
-      },
     },
   );
 
@@ -67,14 +58,14 @@ export function emitAssignmentIR(
     assignResult = rvalue.output;
   } else {
     // load tmp ptr
-    const tmpResultVar = allocator.allocTmpVariable(type);
+    const tmpResultVar = allocator.allocTmpVariable(rvalueType);
 
     instructions.push(
       new CIRMathInstruction(
         CCOMPILER_ASSIGN_MATH_OPERATORS[operator],
         lvalue.output,
         rvalue.output,
-        tmpResultVar.name,
+        tmpResultVar,
       ),
     );
 
@@ -82,14 +73,11 @@ export function emitAssignmentIR(
   }
 
   instructions.push(
-    new CIRStoreInstruction(
-      assignResult,
-      lvalue.output.name,
-    ),
+    new CIRStoreInstruction(assignResult, lvalue.output),
   );
 
   return {
     output: assignResult,
-    instructions: optimizeInstructionsList(optimization, instructions),
+    instructions,
   };
 }

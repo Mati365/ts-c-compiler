@@ -3,7 +3,7 @@ import {CRelOperator} from '@compiler/pico-c/constants';
 import {CIROpcode} from '../constants';
 import {CIROpInstruction} from './CIROpInstruction';
 import {CIRInstruction} from './CIRInstruction';
-import {CIRInstructionVarArg} from '../variables';
+import {CIRInstructionVarArg, CIRVariable} from '../variables';
 
 export function isIRRelInstruction(instruction: CIRInstruction): instruction is CIRRelInstruction {
   return instruction.opcode === CIROpcode.REL;
@@ -21,7 +21,7 @@ export class CIRRelInstruction extends CIROpInstruction<CRelOperator> {
     operator: CRelOperator,
     leftVar: CIRInstructionVarArg,
     rightVar: CIRInstructionVarArg,
-    outputVar?: string,
+    outputVar?: CIRVariable,
   ) {
     super(CIROpcode.REL, operator, leftVar, rightVar, outputVar);
   }

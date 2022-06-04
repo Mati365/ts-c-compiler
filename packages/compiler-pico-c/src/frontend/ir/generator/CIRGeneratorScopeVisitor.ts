@@ -1,4 +1,5 @@
 import {isFuncDeclLikeType} from '../../analyze';
+import {optimizeInstructionsList} from './optimization';
 
 import {CScopeVisitor, CScopeTree} from '../../analyze/scope';
 import {ASTCFunctionDefinition} from '../../parser';
@@ -78,7 +79,10 @@ export class CIRGeneratorScopeVisitor extends CScopeVisitor {
         },
       );
 
-      branchesBuilder.emitBulk(instructions);
+      branchesBuilder.emitBulk(
+        optimizeInstructionsList({}, instructions),
+      );
+
       return false;
     }
   }

@@ -5,5 +5,5 @@ export function castToPointerIfArray(arch: CCompilerArch, type: CType) {
   if (!isArrayLikeType(type))
     return type;
 
-  return CPointerType.ofType(arch, type.getBaseType());
+  return CPointerType.ofType(arch, type.getSourceType());
 }

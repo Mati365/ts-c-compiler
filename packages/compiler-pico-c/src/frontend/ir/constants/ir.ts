@@ -1,4 +1,5 @@
 export enum CIROpcode {
+  ASSIGN = 'ASSIGN',
   ALLOC = 'ALLOC',
   STORE = 'STORE',
   LOAD = 'LOAD',

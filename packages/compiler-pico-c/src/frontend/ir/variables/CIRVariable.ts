@@ -119,10 +119,10 @@ export class CIRVariable
     );
   }
 
-  getDisplayName(): string {
+  getDisplayName(withType: boolean = true): string {
     const {type} = this.value;
     const {name} = this;
 
-    return `${chalk.blueBright(name)}${getIRTypeDisplayName(type)}`;
+    return `${chalk.blueBright(name)}${withType ? getIRTypeDisplayName(type) : ''}`;
   }
 }

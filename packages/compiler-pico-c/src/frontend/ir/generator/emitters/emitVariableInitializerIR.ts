@@ -1,11 +1,11 @@
 import * as R from 'ramda';
 
 import {isCompilerTreeNode} from '@compiler/pico-c/frontend/parser';
-import {CPointerType, CVariable, isInitializerTreeValue} from '@compiler/pico-c/frontend/analyze';
+import {CVariable, isInitializerTreeValue} from '@compiler/pico-c/frontend/analyze';
 
 import {IREmitterContextAttrs} from './types';
 import {CIRError, CIRErrorCode} from '../../errors/CIRError';
-import {CIRAllocInstruction, CIRInstruction, CIRLeaInstruction, CIRStoreInstruction} from '../../instructions';
+import {CIRAllocInstruction, CIRInstruction, CIRStoreInstruction} from '../../instructions';
 import {CIRConstant} from '../../variables';
 
 import {emitExpressionIR} from './emitExpressionIR';
@@ -18,6 +18,16 @@ type InitializerIREmitAttrs = IREmitterContextAttrs & {
   variable: CVariable;
 };
 
+/**
+ * Emit initializers for arrays with <= 3 directly.
+ * If there is >= 3 emit only pointer to labeled value such as:
+ *
+ * array = &(label)
+ * label:
+ *  db 5
+ *  db 8
+ *  db 9
+ */
 export function emitVariableInitializerIR(
   {
     scope,
@@ -25,26 +35,16 @@ export function emitVariableInitializerIR(
     variable,
   }: InitializerIREmitAttrs,
 ): InitializerIREmitResult {
-  const {allocator, config} = context;
+  const {allocator} = context;
   const instructions: CIRInstruction[] = [];
   const rootIRVar = allocator.allocVariable(variable);
 
   instructions.push(
-    CIRAllocInstruction.ofIRVariable(rootIRVar),
+    new CIRAllocInstruction(rootIRVar),
   );
 
   if (variable.isInitialized()) {
     let offset: number = 0;
-    const outputVarAddress = allocator.allocTmpVariable(
-      CPointerType.ofType(config.arch, rootIRVar.type),
-    );
-
-    instructions.push(
-      new CIRLeaInstruction(
-        outputVarAddress.name,
-        rootIRVar,
-      ),
-    );
 
     variable.initializer.fields.forEach((initializer, index) => {
       if (isInitializerTreeValue(initializer))
@@ -65,7 +65,7 @@ export function emitVariableInitializerIR(
           ...exprResult.instructions,
           new CIRStoreInstruction(
             exprResult.output,
-            outputVarAddress.name,
+            rootIRVar,
             offset,
           ),
         );
@@ -75,7 +75,7 @@ export function emitVariableInitializerIR(
         instructions.push(
           new CIRStoreInstruction(
             argVar,
-            outputVarAddress.name,
+            rootIRVar,
             offset,
           ),
         );
@@ -85,7 +85,7 @@ export function emitVariableInitializerIR(
         instructions.push(
           new CIRStoreInstruction(
             CIRConstant.ofConstant(initializerType, initializer),
-            outputVarAddress.name,
+            rootIRVar,
             offset,
           ),
         );

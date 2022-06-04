@@ -20,9 +20,6 @@ export function emitPointerAddressExpression(
       node: node.castExpression,
       context,
       scope,
-      optimization: {
-        enabled: false,
-      },
     },
   );
 }

@@ -3,7 +3,7 @@ import chalk from 'chalk';
 import {IsOutputInstruction} from '../interfaces';
 import {CIROpcode} from '../constants';
 import {CIRInstruction} from './CIRInstruction';
-import {CIRInstructionVarArg} from '../variables';
+import {CIRInstructionVarArg, CIRVariable} from '../variables';
 
 /**
  * Instruction that loads variable from mem
@@ -16,7 +16,7 @@ import {CIRInstructionVarArg} from '../variables';
 export class CIRLoadInstruction extends CIRInstruction implements IsOutputInstruction {
   constructor(
     readonly inputVar: CIRInstructionVarArg,
-    readonly outputVar: string,
+    readonly outputVar: CIRVariable,
     readonly offset: number = 0,
   ) {
     super(CIROpcode.LOAD);
@@ -26,6 +26,8 @@ export class CIRLoadInstruction extends CIRInstruction implements IsOutputInstru
     const {outputVar, inputVar, offset} = this;
     const offsetSuffix = offset ? ` + ${offset}` : '';
 
-    return `${chalk.blueBright(outputVar)} = ${chalk.yellowBright('load')} ${inputVar.getDisplayName()}${offsetSuffix}`;
+    return (
+      `${outputVar.getDisplayName(false)} = ${chalk.yellowBright('load')} ${inputVar.getDisplayName()}${offsetSuffix}`
+    );
   }
 }

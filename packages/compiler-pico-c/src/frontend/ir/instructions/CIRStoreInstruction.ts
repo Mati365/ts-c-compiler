@@ -5,7 +5,11 @@ import {IsOutputInstruction} from '../interfaces';
 
 import {CIROpcode} from '../constants';
 import {CIRInstruction} from './CIRInstruction';
-import {CIRInstructionVarArg} from '../variables';
+import {CIRInstructionVarArg, CIRVariable} from '../variables';
+
+export function isIRStoreInstruction(instruction: CIRInstruction): instruction is CIRStoreInstruction {
+  return instruction.opcode === CIROpcode.STORE;
+}
 
 /**
  * Instruction that saves variable to mem
@@ -18,7 +22,7 @@ import {CIRInstructionVarArg} from '../variables';
 export class CIRStoreInstruction extends CIRInstruction implements IsOutputInstruction {
   constructor(
     readonly value: CIRInstructionVarArg,
-    readonly outputVar: string,
+    readonly outputVar: CIRVariable,
     readonly offset: number = 0,
   ) {
     super(CIROpcode.STORE);
@@ -32,6 +36,6 @@ export class CIRStoreInstruction extends CIRInstruction implements IsOutputInstr
     const {outputVar, value, offset} = this;
     const offsetSuffix = offset ? ` + %${chalk.greenBright(offset)}` : '';
 
-    return `*(${chalk.blueBright(outputVar)}${offsetSuffix}) = ${value?.getDisplayName() ?? '<uninitialized>'}`;
+    return `*(${outputVar.getDisplayName(false)}${offsetSuffix}) = ${value?.getDisplayName() ?? '<uninitialized>'}`;
   }
 }

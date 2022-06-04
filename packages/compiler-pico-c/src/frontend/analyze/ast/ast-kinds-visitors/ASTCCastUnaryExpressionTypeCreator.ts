@@ -1,6 +1,5 @@
 import {CUnaryCastOperator} from '@compiler/pico-c/constants';
 import {ASTCCompilerKind, ASTCCastUnaryExpression} from '@compiler/pico-c/frontend/parser/ast';
-import {CTypeCheckError, CTypeCheckErrorCode} from '../../errors/CTypeCheckError';
 
 import {CPointerType, isArrayLikeType, isPointerLikeType} from '../../types';
 import {ASTCTypeCreator} from './ASTCTypeCreator';
@@ -28,19 +27,10 @@ export class ASTCCastUnaryExpressionTypeCreator extends ASTCTypeCreator<ASTCCast
           break;
 
         case CUnaryCastOperator.MUL:
-          if (isArrayLikeType(type)) {
-            type = type.getBaseType();
-          } else if (isPointerLikeType(type)) {
+          if (isArrayLikeType(type))
+            type = type.getSourceType();
+          else if (isPointerLikeType(type))
             type = type.baseType;
-          } else {
-            throw new CTypeCheckError(
-              CTypeCheckErrorCode.DEREFERENCE_NON_POINTER_TYPE,
-              node.loc.start,
-              {
-                typeName: type.getDisplayName(),
-              },
-            );
-          }
       }
 
       node.type = type;

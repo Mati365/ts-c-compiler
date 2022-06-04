@@ -1,7 +1,12 @@
 import * as R from 'ramda';
 
+import {TokenType} from '@compiler/lexer/shared';
 import {CMathOperator, CUnaryCastOperator} from '@compiler/pico-c/constants';
-import {CPointerType, CType, isArrayLikeType, isPointerLikeType} from '@compiler/pico-c/frontend/analyze';
+import {
+  CPointerType, CPrimitiveType, CType,
+  isArrayLikeType, isPointerLikeType,
+} from '@compiler/pico-c/frontend/analyze';
+
 import {
   ASTCAssignmentExpression,
   ASTCBinaryOpNode, ASTCCastUnaryExpression,
@@ -18,24 +23,17 @@ import {
 } from '../../instructions';
 
 import {CIRError, CIRErrorCode} from '../../errors/CIRError';
-import {CIRConstant, CIRInstructionVarArg} from '../../variables';
+import {CIRConstant, CIRInstructionVarArg, CIRVariable} from '../../variables';
 
 import {emitLvalueExpression} from './emitLvalueExpressionIR';
-import {
-  IRInstructionsOptimizationAttrs,
-  optimizeInstructionsList,
-  tryEvalBinaryInstruction,
-} from '../optimization';
 
 export type ExpressionIREmitAttrs = IREmitterContextAttrs & {
-  optimization?: IRInstructionsOptimizationAttrs;
   type: CType;
   node: ASTCCompilerNode;
 };
 
 export function emitExpressionIR(
   {
-    optimization = {},
     type,
     context,
     node,
@@ -69,9 +67,6 @@ export function emitExpressionIR(
                   context,
                   scope,
                   node: expr,
-                  optimization: {
-                    enabled: false,
-                  },
                 },
               );
 
@@ -85,9 +80,6 @@ export function emitExpressionIR(
                   context,
                   scope,
                   node: expr,
-                  optimization: {
-                    enabled: false,
-                  },
                 },
               );
 
@@ -108,9 +100,6 @@ export function emitExpressionIR(
               node: expression,
               context,
               scope,
-              optimization: {
-                enabled: false,
-              },
             },
           );
 
@@ -132,9 +121,6 @@ export function emitExpressionIR(
               node: expression,
               context,
               scope,
-              optimization: {
-                enabled: false,
-              },
             },
           );
 
@@ -161,23 +147,19 @@ export function emitExpressionIR(
               );
 
               instructions.push(
-                new CIRLeaInstruction(tmpVar.name, srcVar),
+                new CIRLeaInstruction(tmpVar, srcVar),
               );
             } else if (isPointerLikeType(srcVar.type)) {
               const tmpVar = allocNextVariable(srcVar.type);
 
               instructions.push(
-                new CIRLoadInstruction(srcVar, tmpVar.name),
+                new CIRLoadInstruction(srcVar, tmpVar),
               );
             } else {
-              const addressVar = allocNextVariable(
-                CPointerType.ofType(config.arch, srcVar.type),
-              );
+              const addressVar = allocNextVariable();
 
-              const tmpVar = allocNextVariable(srcVar.type);
               instructions.push(
-                new CIRLeaInstruction(addressVar.name, srcVar),
-                new CIRLoadInstruction(addressVar, tmpVar.name),
+                new CIRLoadInstruction(srcVar, addressVar),
               );
             }
           } else if (expression.isExpression()) {
@@ -202,32 +184,47 @@ export function emitExpressionIR(
 
       [ASTCCompilerKind.BinaryOperator]: {
         leave: (binary: ASTCBinaryOpNode) => {
-          const [a, b] = [argsVarsStack.pop(), argsVarsStack.pop()];
-          const op = <CMathOperator> binary.op;
-          const evalResult = tryEvalBinaryInstruction(
-            {
-              op,
-              a,
-              b,
-            },
-          );
+          let [a, b] = [argsVarsStack.pop(), argsVarsStack.pop()];
+          let output: CIRVariable = null;
 
-          evalResult.match({
-            none() {
-              instructions.push(
-                new CIRMathInstruction(
-                  op,
-                  b, a,
-                  allocNextVariable().name,
-                ),
-              );
-            },
-            some(val) {
-              argsVarsStack.push(
-                CIRConstant.ofConstant(type, val),
-              );
-            },
-          });
+          if (isPointerLikeType(a.type)) {
+            const mulPtrInstruction = new CIRMathInstruction(
+              TokenType.MUL,
+              b,
+              CIRConstant.ofConstant(
+                CPrimitiveType.int(config.arch),
+                a.type.getSourceType().getByteSize(),
+              ),
+              b = allocNextVariable(),
+            );
+
+            instructions.push(mulPtrInstruction);
+            output = allocNextVariable(a.type);
+          }
+
+          if (isPointerLikeType(b.type)) {
+            const mulPtrInstruction = new CIRMathInstruction(
+              TokenType.MUL,
+              a,
+              CIRConstant.ofConstant(
+                CPrimitiveType.int(config.arch),
+                b.type.getSourceType().getByteSize(),
+              ),
+              a = allocNextVariable(),
+            );
+
+            instructions.push(mulPtrInstruction);
+            output = allocNextVariable(b.type);
+          }
+
+          output ||= allocNextVariable();
+          instructions.push(
+            new CIRMathInstruction(
+              <CMathOperator> binary.op,
+              b, a,
+              output,
+            ),
+          );
         },
       },
     },
@@ -236,6 +233,6 @@ export function emitExpressionIR(
   const lastArgVarStack = R.last(argsVarsStack);
   return {
     output: lastArgVarStack,
-    instructions: optimizeInstructionsList(optimization, instructions),
+    instructions,
   };
 }

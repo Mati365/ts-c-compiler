@@ -120,7 +120,7 @@ export class CVariableInitializerTree<C extends ASTCCompilerNode = ASTCCompilerN
     }
 
     if (isArrayLikeType(baseType)) {
-      const baseArrayType = baseType.getBaseType();
+      const baseArrayType = baseType.getSourceType();
 
       if (isStructLikeType(baseArrayType)) {
         return baseArrayType.getFieldTypeByIndex(

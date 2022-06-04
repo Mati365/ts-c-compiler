@@ -64,6 +64,7 @@ export function emitFunctionIR(
   )(node.content);
 
   instructions.push(new CIRRetInstruction);
+
   return {
     instructions,
   };

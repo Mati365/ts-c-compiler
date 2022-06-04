@@ -31,10 +31,8 @@ import {
 
 import {IsOutputInstruction} from '../../interfaces';
 import {CIRError, CIRErrorCode} from '../../errors/CIRError';
-import {IRInstructionsOptimizationAttrs, optimizeInstructionsList} from '../optimization';
 
 type LvalueExpressionIREmitAttrs = IREmitterContextAttrs & {
-  optimization?: IRInstructionsOptimizationAttrs;
   emitLoadPtr?: boolean;
   node: ASTCCompilerNode;
 };
@@ -46,7 +44,6 @@ type LvalueExpressionIREmitResult = IREmitterExpressionVarResult & {
 export function emitLvalueExpression(
   {
     emitLoadPtr = true,
-    optimization = {},
     scope,
     context,
     node,
@@ -83,9 +80,6 @@ export function emitLvalueExpression(
               scope,
               emitLoadPtr: false,
               node: expr,
-              optimization: {
-                enabled: false,
-              },
             },
           );
 
@@ -117,7 +111,7 @@ export function emitLvalueExpression(
 
           lastIRAddressVar = allocAddressVar();
           instructions.push(
-            new CIRLeaInstruction(lastIRAddressVar.name, variable),
+            new CIRLeaInstruction(lastIRAddressVar, variable),
           );
         },
       },
@@ -141,7 +135,7 @@ export function emitLvalueExpression(
               new CIRMathInstruction(
                 TokenType.PLUS,
                 lastIRAddressVar, offsetConstant,
-                (lastIRAddressVar = allocAddressVar()).name,
+                lastIRAddressVar = allocAddressVar(),
               ),
             );
           }
@@ -185,7 +179,7 @@ export function emitLvalueExpression(
               new CIRMathInstruction(
                 TokenType.MUL,
                 exprOutput, constant,
-                offsetAddressVar.name,
+                offsetAddressVar,
               ),
             );
           } else if (exprOutput.constant) {
@@ -200,7 +194,7 @@ export function emitLvalueExpression(
               new CIRMathInstruction(
                 TokenType.PLUS,
                 lastIRAddressVar, offsetAddressVar,
-                (lastIRAddressVar = allocAddressVar()).name,
+                lastIRAddressVar = allocAddressVar(),
               ),
             );
           }
@@ -214,18 +208,15 @@ export function emitLvalueExpression(
   if (emitLoadPtr && lastIRAddressVar) {
     const outputVar = allocAddressVar();
     instructions.push(
-      new CIRLoadInstruction(
-        lastIRAddressVar,
-        outputVar.name,
-      ),
+      new CIRLoadInstruction(lastIRAddressVar, outputVar),
     );
 
     lastIRAddressVar = outputVar;
   }
 
   return {
-    instructions: optimizeInstructionsList(optimization, instructions),
     output: lastIRAddressVar,
     rootIRVar,
+    instructions,
   };
 }

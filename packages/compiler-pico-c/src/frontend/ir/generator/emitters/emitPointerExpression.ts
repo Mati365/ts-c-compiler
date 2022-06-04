@@ -1,9 +1,5 @@
-import * as R from 'ramda';
-
-import {TokenType} from '@compiler/lexer/shared';
 import {ASTCCastUnaryExpression} from '@compiler/pico-c/frontend/parser';
-
-import {isIRMathInstruction, CIRLoadInstruction} from '../../instructions';
+import {CIRLoadInstruction} from '../../instructions';
 
 import {IREmitterContextAttrs, IREmitterExpressionResult} from './types';
 import {IRInstructionsOptimizationAttrs} from '../optimization';
@@ -14,6 +10,10 @@ export type PointerExpressionIREmitAttrs = IREmitterContextAttrs & {
   emitLoadPtr?: boolean;
 };
 
+/**
+ * @see
+ *  This function assumes that last operations
+ */
 export function emitPointerExpression(
   {
     context,
@@ -25,11 +25,8 @@ export function emitPointerExpression(
   const {type} = node;
   const {allocator, emit} = context;
 
-  const {instructions, output} = emit.expression(
+  const exprResult = emit.expression(
     {
-      optimization: {
-        enabled: false,
-      },
       type: node.type,
       node: node.castExpression,
       context,
@@ -37,26 +34,12 @@ export function emitPointerExpression(
     },
   );
 
-  const lastInstruction = R.last(instructions);
-  if (isIRMathInstruction(lastInstruction)
-      && [TokenType.PLUS, TokenType.MINUS].includes(lastInstruction.operator)
-      && !lastInstruction.hasBothConstantArgs()) {
-    const multipler = type.getByteSize();
-
-    instructions[instructions.length - 1] = lastInstruction.mapConstantArg(
-      (constVar) => constVar.mapConstant(
-        R.multiply(multipler),
-      ),
-    );
-  }
-
   if (emitLoadPtr) {
+    const {instructions} = exprResult;
     const resultPtrOutput = allocator.allocTmpVariable(type);
+
     instructions.push(
-      new CIRLoadInstruction(
-        output,
-        resultPtrOutput.name,
-      ),
+      new CIRLoadInstruction(exprResult.output, resultPtrOutput),
     );
 
     return {
@@ -65,8 +48,5 @@ export function emitPointerExpression(
     };
   }
 
-  return {
-    output,
-    instructions,
-  };
+  return exprResult;
 }

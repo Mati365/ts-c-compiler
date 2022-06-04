@@ -6,7 +6,9 @@ type OptionMatch<T, O> = {
 export interface Option<T> {
   isNone(): boolean;
   isSome(): boolean;
+
   unwrap(): T;
+  unwrapOr<D>(defaultValue: D): T | D;
 
   map<O>(fn: (value: T) => O): Option<O>;
   match<O>(match: OptionMatch<T, O>): O;
@@ -40,6 +42,10 @@ export class Some<T> implements Option<T> {
   unwrap(): T {
     return this.value;
   }
+
+  unwrapOr() {
+    return this.value;
+  }
 }
 
 export class None implements Option<never> {
@@ -52,6 +58,10 @@ export class None implements Option<never> {
 
   map(): None {
     return new None;
+  }
+
+  unwrapOr<D>(defaultValue: D) {
+    return defaultValue;
   }
 
   match<O>(match: OptionMatch<never, O>): O {

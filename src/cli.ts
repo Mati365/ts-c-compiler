@@ -1,16 +1,12 @@
 import {ccompiler, CCompilerOutput} from '@compiler/pico-c';
 
 ccompiler(/* cpp */ `
-  struct Vec2 {
-    int x, y;
-  };
-
-  void print() {}
-
   int sub(int a, int b) {
-    int* ptr_a = &a;
-    int** ptr_b = &ptr_a;
-    (*ptr_b) = 3;
+    int arr[] = { 1, 2, 3 };
+    *(3 * 2 + arr + 2 - 1) = 3;
+    *(arr + 3) = 3;
+    a = 5 * 1 - 10;
+    b -= a;
   }
 `).match(
   {

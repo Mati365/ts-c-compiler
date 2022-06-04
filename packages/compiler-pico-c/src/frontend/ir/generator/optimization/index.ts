@@ -1,3 +1,3 @@
 export * from './optimizeInstructionsList';
-export * from './tryConcatInstructions';
-export * from './tryEvalBinaryInstruction';
+export * from './tryConcatMathInstructions';
+export * from './tryEvalConstArgsBinaryInstruction';

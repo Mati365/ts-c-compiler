@@ -36,6 +36,10 @@ export abstract class CType<T extends CTypeDescriptor = CTypeDescriptor>
   get qualifiers() { return this.value.qualifiers; }
   get scalarValuesCount() { return 1; }
 
+  getSourceType(): CType {
+    return this;
+  }
+
   /**
    * Creates instance that has registered=true flag.
    * Registered flag indicates that type is present in registry

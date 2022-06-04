@@ -1,12 +1,10 @@
-import {getIRTypeDisplayName} from '../dump';
+import chalk from 'chalk';
 
 import {IsOutputInstruction} from '../interfaces';
-import {CType} from '../../analyze';
 
 import {CIROpcode} from '../constants';
 import {CIRInstruction} from './CIRInstruction';
 import {CIRVariable} from '../variables/CIRVariable';
-import chalk from 'chalk';
 
 export function isIRAllocInstruction(instruction: CIRInstruction): instruction is CIRAllocInstruction {
   return instruction.opcode === CIROpcode.ALLOC;
@@ -22,22 +20,18 @@ export function isIRAllocInstruction(instruction: CIRInstruction): instruction i
  */
 export class CIRAllocInstruction extends CIRInstruction implements IsOutputInstruction {
   constructor(
-    readonly outputVar: string,
-    readonly type: CType,
+    readonly outputVar: CIRVariable,
   ) {
     super(CIROpcode.ALLOC);
   }
 
-  static ofIRVariable(variable: CIRVariable) {
-    return new CIRAllocInstruction(
-      variable.name,
-      variable.type,
-    );
+  get type() {
+    return this.outputVar.type;
   }
 
   override getDisplayName(): string {
-    const {type, outputVar} = this;
+    const {outputVar} = this;
 
-    return `${chalk.magentaBright('alloc')} ${chalk.blueBright(outputVar)}${getIRTypeDisplayName(type)}`;
+    return `${chalk.magentaBright('alloc')} ${outputVar.getDisplayName()}`;
   }
 }

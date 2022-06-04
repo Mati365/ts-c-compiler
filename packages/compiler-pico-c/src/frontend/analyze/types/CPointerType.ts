@@ -3,6 +3,8 @@ import {concatNonEmptyStrings} from '@compiler/core/utils';
 import {Identity} from '@compiler/core/monads';
 import {CCompilerArch} from '@compiler/pico-c/constants';
 
+import {isArrayLikeType} from './CArrayType';
+
 import {CType, CTypeDescriptor} from './CType';
 import {CPrimitiveType} from './CPrimitiveType';
 
@@ -61,6 +63,18 @@ export class CPointerType extends CType<CPointerTypeDescriptor> {
 
   get baseType() {
     return this.value.baseType;
+  }
+
+  override getSourceType() {
+    const {baseType} = this;
+
+    if (isArrayLikeType(baseType))
+      return baseType.getSourceType();
+
+    if (isPointerLikeType(baseType))
+      return baseType.getSourceType();
+
+    return baseType;
   }
 
   override isScalar() { return true; }

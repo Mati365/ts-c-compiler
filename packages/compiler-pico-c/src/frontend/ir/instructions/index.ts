@@ -1,4 +1,5 @@
 export * from './CIRAllocInstruction';
+export * from './CIRAssignInstruction';
 export * from './CIRCommentInstruction';
 export * from './CIRFnDefInstruction';
 export * from './CIRIfInstruction';

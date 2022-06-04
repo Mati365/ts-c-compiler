@@ -1,6 +1,8 @@
 import {IsOutputInstruction} from '../interfaces';
+
 import {CIROpcode} from '../constants';
 import {CIRInstruction} from './CIRInstruction';
+import {CIRVariable} from '../variables';
 
 /**
  * PHI instruction
@@ -13,7 +15,7 @@ import {CIRInstruction} from './CIRInstruction';
 export class CIRPhiInstruction extends CIRInstruction implements IsOutputInstruction {
   constructor(
     readonly vars: string[],
-    readonly outputVar: string,
+    readonly outputVar: CIRVariable,
   ) {
     super(CIROpcode.PHI);
   }
