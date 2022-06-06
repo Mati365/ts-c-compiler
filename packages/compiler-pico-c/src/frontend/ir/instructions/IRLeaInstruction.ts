@@ -24,6 +24,6 @@ export class IRLeaInstruction extends IRInstruction implements IsOutputInstructi
   override getDisplayName(): string {
     const {outputVar, inputVar} = this;
 
-    return `${outputVar.getDisplayName(false)} = ${chalk.yellowBright('lea')} ${inputVar.getDisplayName()}`;
+    return `${outputVar.getDisplayName()} = ${chalk.yellowBright('lea')} ${inputVar.getDisplayName()}`;
   }
 }

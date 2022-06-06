@@ -13,9 +13,11 @@ export function isIRVariable(obj: any): obj is IRVariable {
 }
 
 export type IRVariableDescriptor = {
-  prefix: string,
-  suffix: number,
-  type: CType,
+  prefix: string;
+  suffix: number;
+  type: CType;
+  volatile?: boolean;
+  virtualArrayPtr?: boolean;
 };
 
 /**
@@ -59,6 +61,8 @@ export class IRVariable
 
   get type() { return this.value.type; }
   get prefix() { return this.value.prefix; }
+  get virtualArrayPtr() { return this.value.virtualArrayPtr; }
+  get volatile() { return !!this.value.volatile; }
   get name() {
     const {prefix, suffix} = this.value;
 
@@ -105,6 +109,12 @@ export class IRVariable
     ));
   }
 
+  ofVirtualArrayPtr() {
+    return this.map(
+      R.assoc('virtualArrayPtr', true),
+    );
+  }
+
   ofDecrementedSuffix() {
     return this.map(R.evolve(
       {
@@ -116,6 +126,12 @@ export class IRVariable
   ofType(type: CType) {
     return this.map(
       R.assoc('type', type),
+    );
+  }
+
+  ofVolatile() {
+    return this.map(
+      R.assoc('volatile', true),
     );
   }
 

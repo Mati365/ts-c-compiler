@@ -35,7 +35,7 @@ export class IRGeneratorScopeVisitor extends CScopeVisitor {
     data: new IRDataSegmentBuilder,
   };
 
-  readonly allocator = new IRVariableAllocator;
+  readonly allocator: IRVariableAllocator;
   readonly context: IREmitterContext;
 
   constructor(
@@ -43,6 +43,7 @@ export class IRGeneratorScopeVisitor extends CScopeVisitor {
   ) {
     super();
 
+    this.allocator = new IRVariableAllocator(config);
     this.context = {
       config,
       segments: this.segments,

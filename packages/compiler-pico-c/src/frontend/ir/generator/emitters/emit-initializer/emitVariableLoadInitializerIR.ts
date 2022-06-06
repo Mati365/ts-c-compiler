@@ -1,7 +1,10 @@
 import * as R from 'ramda';
 
 import {isCompilerTreeNode} from '@compiler/pico-c/frontend/parser';
-import {CVariable, isInitializerTreeValue} from '@compiler/pico-c/frontend/analyze';
+import {
+  CVariableInitializerTree,
+  isInitializerTreeValue,
+} from '@compiler/pico-c/frontend/analyze';
 
 import {IREmitterContextAttrs} from '../types';
 import {IRError, IRErrorCode} from '../../../errors/IRError';
@@ -11,8 +14,8 @@ import {IRConstant, IRVariable} from '../../../variables';
 import {emitExpressionIR} from '../emitExpressionIR';
 
 type LoadInitializerIREmitAttrs = IREmitterContextAttrs & {
-  rootIRVar: IRVariable;
-  variable: CVariable;
+  initializerTree: CVariableInitializerTree;
+  destVariable: IRVariable;
 };
 
 /**
@@ -20,26 +23,26 @@ type LoadInitializerIREmitAttrs = IREmitterContextAttrs & {
  */
 export function emitVariableLoadInitializerIR(
   {
-    rootIRVar,
-    variable,
+    destVariable,
+    initializerTree,
     scope,
     context,
   }: LoadInitializerIREmitAttrs,
 ): IRInstruction[] {
   const {allocator} = context;
-  const instructions: IRInstruction[] = [];
 
+  const instructions: IRInstruction[] = [];
   let offset: number = 0;
 
-  variable.initializer.fields.forEach((initializer, index) => {
+  initializerTree.fields.forEach((initializer, index) => {
     if (isInitializerTreeValue(initializer))
       throw new IRError(IRErrorCode.INCORRECT_INITIALIZER_BLOCK);
 
-    const initializerType = variable.initializer.getIndexExpectedType(index);
+    const initializerType = initializerTree.getIndexExpectedType(index);
     if (isCompilerTreeNode(initializer)) {
       const exprResult = emitExpressionIR(
         {
-          type: rootIRVar.type,
+          type: destVariable.type.getSourceType(),
           node: initializer,
           scope,
           context,
@@ -50,7 +53,7 @@ export function emitVariableLoadInitializerIR(
         ...exprResult.instructions,
         new IRStoreInstruction(
           exprResult.output,
-          rootIRVar,
+          destVariable,
           offset,
         ),
       );
@@ -60,7 +63,7 @@ export function emitVariableLoadInitializerIR(
       instructions.push(
         new IRStoreInstruction(
           argVar,
-          rootIRVar,
+          destVariable,
           offset,
         ),
       );
@@ -70,7 +73,7 @@ export function emitVariableLoadInitializerIR(
       instructions.push(
         new IRStoreInstruction(
           IRConstant.ofConstant(initializerType, initializer),
-          rootIRVar,
+          destVariable,
           offset,
         ),
       );

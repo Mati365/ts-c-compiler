@@ -3,8 +3,7 @@ import {concatNonEmptyStrings} from '@compiler/core/utils';
 import {Identity} from '@compiler/core/monads';
 import {CCompilerArch} from '@compiler/pico-c/constants';
 
-import {isArrayLikeType} from './CArrayType';
-
+import {CArrayType, isArrayLikeType} from './CArrayType';
 import {CType, CTypeDescriptor} from './CType';
 import {CPrimitiveType} from './CPrimitiveType';
 
@@ -14,6 +13,10 @@ export type CPointerTypeDescriptor = CTypeDescriptor & {
 
 export function isPointerLikeType(type: CType): type is CPointerType {
   return type?.isPointer?.();
+}
+
+export function isPointerArithmeticType(type: CType): boolean {
+  return isPointerLikeType(type) || isArrayLikeType(type);
 }
 
 /**
@@ -59,6 +62,10 @@ export class CPointerType extends CType<CPointerTypeDescriptor> {
         qualifiers,
       },
     );
+  }
+
+  static ofArray(arch: CCompilerArch, array: CArrayType): CPointerType {
+    return CPointerType.ofType(arch, array.getSourceType());
   }
 
   get baseType() {

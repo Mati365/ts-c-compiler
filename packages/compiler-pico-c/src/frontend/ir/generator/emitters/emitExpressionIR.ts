@@ -1,10 +1,12 @@
 import * as R from 'ramda';
 
+import {castToPointerIfArray} from '@compiler/pico-c/frontend/analyze/casts';
+
 import {TokenType} from '@compiler/lexer/shared';
 import {CMathOperator, CUnaryCastOperator} from '@compiler/pico-c/constants';
 import {
   CPointerType, CPrimitiveType, CType,
-  isArrayLikeType, isPointerLikeType,
+  isArrayLikeType, isPointerArithmeticType, isPointerLikeType,
 } from '@compiler/pico-c/frontend/analyze';
 
 import {
@@ -150,16 +152,16 @@ export function emitExpressionIR(
                 new IRLeaInstruction(srcVar, tmpVar),
               );
             } else if (isPointerLikeType(srcVar.type)) {
-              const tmpVar = allocNextVariable(srcVar.type);
+              const tmpVar = allocNextVariable(srcVar.type.baseType);
 
               instructions.push(
                 new IRLoadInstruction(srcVar, tmpVar),
               );
             } else {
-              const addressVar = allocNextVariable(srcVar.type);
+              const tmpVar = allocNextVariable(srcVar.type);
 
               instructions.push(
-                new IRLoadInstruction(srcVar, addressVar),
+                new IRLoadInstruction(srcVar, tmpVar),
               );
             }
           } else if (expression.isExpression()) {
@@ -187,34 +189,40 @@ export function emitExpressionIR(
           let [a, b] = [argsVarsStack.pop(), argsVarsStack.pop()];
           let output: IRVariable = null;
 
-          if (isPointerLikeType(a.type)) {
+          if (isPointerArithmeticType(a.type)) {
+            const sourceType = a.type.getSourceType();
             const mulPtrInstruction = new IRMathInstruction(
               TokenType.MUL,
               b,
               IRConstant.ofConstant(
                 CPrimitiveType.int(config.arch),
-                a.type.getSourceType().getByteSize(),
+                sourceType.getByteSize(),
               ),
               b = allocNextVariable(),
             );
 
             instructions.push(mulPtrInstruction);
-            output = allocNextVariable(a.type);
+            output = allocNextVariable(
+              castToPointerIfArray(config.arch, a.type),
+            );
           }
 
-          if (isPointerLikeType(b.type)) {
+          if (isPointerArithmeticType(b.type)) {
+            const sourceType = b.type.getSourceType();
             const mulPtrInstruction = new IRMathInstruction(
               TokenType.MUL,
               a,
               IRConstant.ofConstant(
                 CPrimitiveType.int(config.arch),
-                b.type.getSourceType().getByteSize(),
+                sourceType.getByteSize(),
               ),
               a = allocNextVariable(),
             );
 
             instructions.push(mulPtrInstruction);
-            output = allocNextVariable(b.type);
+            output = allocNextVariable(
+              castToPointerIfArray(config.arch, b.type),
+            );
           }
 
           output ||= allocNextVariable();

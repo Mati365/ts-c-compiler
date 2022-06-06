@@ -1,10 +1,12 @@
 import chalk from 'chalk';
 
+import {getIRTypeDisplayName} from '../dump/getIRTypeDisplayName';
 import {IsOutputInstruction} from '../interfaces';
 
 import {IROpcode} from '../constants';
 import {IRInstruction} from './IRInstruction';
 import {IRVariable} from '../variables/IRVariable';
+import {CPointerType, CType} from '../../analyze';
 
 export function isIRAllocInstruction(instruction: IRInstruction): instruction is IRAllocInstruction {
   return instruction.opcode === IROpcode.ALLOC;
@@ -19,19 +21,25 @@ export function isIRAllocInstruction(instruction: IRInstruction): instruction is
  * @implements {IsOutputInstruction}
  */
 export class IRAllocInstruction extends IRInstruction implements IsOutputInstruction {
+  static ofDestPtrVariable(variable: IRVariable) {
+    return new IRAllocInstruction(
+      (<CPointerType> variable.type).baseType,
+      variable,
+    );
+  }
+
   constructor(
+    readonly type: CType,
     readonly outputVar: IRVariable,
   ) {
     super(IROpcode.ALLOC);
   }
 
-  get type() {
-    return this.outputVar.type;
-  }
-
   override getDisplayName(): string {
-    const {outputVar} = this;
+    const {type, outputVar} = this;
 
-    return `${chalk.magentaBright('alloc')} ${outputVar.getDisplayName()}`;
+    return (
+      `${outputVar.getDisplayName()} = ${chalk.magentaBright('alloca')} ${getIRTypeDisplayName(type, false)}`
+    );
   }
 }

@@ -4,8 +4,8 @@ import {Identity} from '@compiler/core/monads';
 import {CType} from '../../types/CType';
 
 export type CNamedTypedEntryDescriptor = {
-  type: CType,
-  name: string,
+  type: CType;
+  name: string;
 };
 
 export function isNamedTypeEntry(obj: any): obj is CNamedTypedEntry {

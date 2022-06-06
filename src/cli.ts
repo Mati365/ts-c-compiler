@@ -2,9 +2,8 @@ import {ccompiler, CCompilerOutput} from '@compiler/pico-c';
 
 ccompiler(/* cpp */ `
   int sub(int a, int b) {
-    char dynamicArray[] = { a + b, 2 };
-    char array[10] = { 1, 2 };
-    char array2[10] = { 1, 2, 3, 4, 5, 6 };
+    int array[] = { 1, 2, 3, 4, 5, 6 };
+    *(array + 1) = 2;
   }
 `).match(
   {

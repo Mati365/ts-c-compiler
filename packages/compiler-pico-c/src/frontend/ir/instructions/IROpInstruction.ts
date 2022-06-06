@@ -29,7 +29,7 @@ export class IROpInstruction<O> extends IRInstruction implements IsOutputInstruc
 
     return (
       outputVar
-        ? `${outputVar.getDisplayName(false)} = ${str}`
+        ? `${outputVar.getDisplayName()} = ${str}`
         : str
     );
   }

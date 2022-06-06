@@ -1,4 +1,5 @@
-import {CFunctionDeclType, CType, CVariable} from '../../analyze';
+import {CCompilerConfig} from '@compiler/pico-c/constants';
+import {CFunctionDeclType, CPointerType, CPrimitiveType, CType, CVariable} from '../../analyze';
 import {IRFnDefInstruction} from '../instructions';
 import {IRVariable} from '../variables';
 
@@ -17,6 +18,10 @@ export class IRVariableAllocator {
     labels: 0,
     tmpVars: 0,
   };
+
+  constructor(
+    readonly config: CCompilerConfig,
+  ) {}
 
   isAllocated(variable: string): boolean {
     return !!this.variables[variable];
@@ -46,6 +51,28 @@ export class IRVariableAllocator {
   }
 
   /**
+   * Allocates pointer to variable
+   *
+   * @param {IRVariable} variable
+   * @return {IRVariable}
+   * @memberof IRVariableAllocator
+   */
+  allocVariablePointer(variable: IRVariable | CVariable): IRVariable {
+    const {arch} = this.config;
+    if (variable instanceof CVariable)
+      variable = IRVariable.ofScopeVariable(variable);
+
+    const mappedVariable = variable.map(
+      (value) => ({
+        ...value,
+        type: CPointerType.ofType(arch, value.type),
+      }),
+    );
+
+    return this.allocVariable(mappedVariable);
+  }
+
+  /**
    * Decrenebt syffix and return var
    *
    * @return {IRVariable}
@@ -70,8 +97,9 @@ export class IRVariableAllocator {
   allocTmpVariable(type: CType, prefix: string = TMP_VAR_PREFIX): IRVariable {
     const tmpVar = this.getVariable(prefix) ?? new IRVariable(
       {
-        prefix,
+        volatile: true,
         suffix: -1,
+        prefix,
         type,
       },
     );
@@ -80,6 +108,25 @@ export class IRVariableAllocator {
       tmpVar
         .ofType(type)
         .ofIncrementedSuffix(),
+    );
+  }
+
+  /**
+   * Define variable to LEA output
+   *
+   * @param {string} [prefix=TMP_VAR_PREFIX]
+   * @return {IRVariable}
+   * @memberof IRVariableAllocator
+   */
+  allocAddressVariable(prefix: string = TMP_VAR_PREFIX): IRVariable {
+    const {arch} = this.config;
+
+    return this.allocTmpVariable(
+      CPointerType.ofType(
+        arch,
+        CPrimitiveType.address(arch),
+      ),
+      prefix,
     );
   }
 
@@ -103,7 +150,7 @@ export class IRVariableAllocator {
    */
   allocFunctionType(fn: CFunctionDeclType): IRFnDefInstruction {
     const irDefArgs = fn.args.map(
-      (arg) => this.allocVariable(IRVariable.ofScopeVariable(arg)),
+      (arg) => this.allocVariablePointer(IRVariable.ofScopeVariable(arg)),
     );
 
     return new IRFnDefInstruction(

@@ -36,6 +36,9 @@ export class IRStoreInstruction extends IRInstruction implements IsOutputInstruc
     const {outputVar, value, offset} = this;
     const offsetSuffix = offset ? ` + %${chalk.greenBright(offset)}` : '';
 
-    return `*(${outputVar.getDisplayName(false)}${offsetSuffix}) = ${value?.getDisplayName() ?? '<uninitialized>'}`;
+    return (
+      // eslint-disable-next-line max-len
+      `*(${outputVar.getDisplayName()}${offsetSuffix}) = ${chalk.yellowBright('store')} ${value?.getDisplayName() ?? '<uninitialized>'}`
+    );
   }
 }

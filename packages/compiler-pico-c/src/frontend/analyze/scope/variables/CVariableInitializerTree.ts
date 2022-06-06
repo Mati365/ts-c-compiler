@@ -62,13 +62,14 @@ export class CVariableInitializerTree<C extends ASTCCompilerNode = ASTCCompilerN
    */
   getInitializedFieldsCount(): number {
     const {fields} = this;
+    let i = 0;
 
-    for (let i = 0; i < fields.length; ++i) {
+    for (; i < fields.length; ++i) {
       if (fields[i] === null)
-        return i;
+        break;
     }
 
-    return 0;
+    return i;
   }
 
   /**

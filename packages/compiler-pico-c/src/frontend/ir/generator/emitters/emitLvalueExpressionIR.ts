@@ -1,7 +1,12 @@
 import * as R from 'ramda';
 
 import {TokenType} from '@compiler/lexer/shared';
-import {CPrimitiveType, isArrayLikeType, isStructLikeType} from '@compiler/pico-c/frontend/analyze';
+import {
+  CPrimitiveType,
+  isArrayLikeType,
+  isStructLikeType,
+} from '@compiler/pico-c/frontend/analyze';
+
 import {CUnaryCastOperator} from '@compiler/pico-c/constants';
 import {GroupTreeVisitor} from '@compiler/grammar/tree/TreeGroupedVisitor';
 import {
@@ -15,8 +20,9 @@ import {
 } from '@compiler/pico-c/frontend/parser';
 
 import {
-  IRInstruction, IRLeaInstruction,
-  IRLoadInstruction, IRMathInstruction,
+  IRInstruction,
+  IRLoadInstruction,
+  IRMathInstruction,
 } from '../../instructions';
 
 import {
@@ -57,12 +63,18 @@ export function emitLvalueExpression(
   let parentNodes: ASTCPostfixExpression[] = [];
 
   const getParentType = () => R.last(parentNodes).postfixExpression?.type;
-  const allocAddressVar = () => allocator.allocTmpVariable(
-    CPrimitiveType.int(config.arch),
-  );
 
   GroupTreeVisitor.ofIterator<ASTCCompilerNode>(
     {
+      [ASTCCompilerKind.PostfixExpression]: {
+        enter(expr: ASTCPostfixExpression) {
+          parentNodes.push(expr);
+        },
+        leave() {
+          parentNodes.pop();
+        },
+      },
+
       [ASTCCompilerKind.BinaryOperator]: {
         enter() {
           throw new IRError(IRErrorCode.INCORRECT_UNARY_EXPR);
@@ -92,27 +104,32 @@ export function emitLvalueExpression(
         },
       },
 
-      [ASTCCompilerKind.PostfixExpression]: {
-        enter(expr: ASTCPostfixExpression) {
-          parentNodes.push(expr);
-        },
-        leave() {
-          parentNodes.pop();
-        },
-      },
-
       [ASTCCompilerKind.PrimaryExpression]: {
         enter(expr: ASTCPrimaryExpression) {
           if (!expr.isIdentifier())
             return;
 
-          const variable = allocator.getVariable(expr.identifier.text);
-          rootIRVar ??= variable;
+          const name = expr.identifier.text;
+          const irVariable = allocator.getVariable(name);
 
-          lastIRAddressVar = allocAddressVar();
-          instructions.push(
-            new IRLeaInstruction(variable, lastIRAddressVar),
-          );
+          rootIRVar ??= irVariable;
+
+          /**
+           * detect this case:
+           *  char array[10] = { 1, 2, 3, 4, 5, 6 };
+           *  array[1] = 2;
+           *
+           * which is transformed into pointer that is pointing
+           * not into te stack but somewhere else
+           */
+          if (irVariable.virtualArrayPtr) {
+            lastIRAddressVar = allocator.allocAddressVariable();
+            instructions.push(
+              new IRLoadInstruction(irVariable, lastIRAddressVar),
+            );
+          } else {
+            lastIRAddressVar = irVariable;
+          }
         },
       },
 
@@ -135,7 +152,7 @@ export function emitLvalueExpression(
               new IRMathInstruction(
                 TokenType.PLUS,
                 lastIRAddressVar, offsetConstant,
-                lastIRAddressVar = allocAddressVar(),
+                lastIRAddressVar = allocator.allocAddressVariable(),
               ),
             );
           }
@@ -174,7 +191,7 @@ export function emitLvalueExpression(
               entryByteSize,
             );
 
-            offsetAddressVar = allocAddressVar();
+            offsetAddressVar = allocator.allocAddressVariable();
             instructions.push(
               new IRMathInstruction(
                 TokenType.MUL,
@@ -194,7 +211,7 @@ export function emitLvalueExpression(
               new IRMathInstruction(
                 TokenType.PLUS,
                 lastIRAddressVar, offsetAddressVar,
-                lastIRAddressVar = allocAddressVar(),
+                lastIRAddressVar = allocator.allocAddressVariable(),
               ),
             );
           }
@@ -206,7 +223,7 @@ export function emitLvalueExpression(
   )(node);
 
   if (emitLoadPtr && lastIRAddressVar) {
-    const outputVar = allocAddressVar();
+    const outputVar = allocator.allocAddressVariable();
     instructions.push(
       new IRLoadInstruction(lastIRAddressVar, outputVar),
     );

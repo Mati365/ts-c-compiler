@@ -28,6 +28,6 @@ export class IRAssignInstruction extends IRInstruction implements IsOutputInstru
   override getDisplayName(): string {
     const {outputVar, inputVar} = this;
 
-    return `${outputVar.getDisplayName(false)} = ${chalk.yellowBright('assign')} ${inputVar.getDisplayName()}`;
+    return `${outputVar.getDisplayName()} = ${chalk.yellowBright('assign')} ${inputVar.getDisplayName()}`;
   }
 }

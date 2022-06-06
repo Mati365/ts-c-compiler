@@ -1,6 +1,11 @@
 import {checkLeftTypeOverlapping} from '@compiler/pico-c/frontend/analyze/checker';
 
-import {CArrayType, CVariable, isArrayLikeType} from '@compiler/pico-c/frontend/analyze';
+import {
+  CArrayType, CPointerType,
+  CVariable, isArrayLikeType,
+} from '@compiler/pico-c/frontend/analyze';
+
+import {IRVariable} from '../../../variables';
 import {
   IRAllocInstruction,
   IRDefConstInstruction,
@@ -45,11 +50,6 @@ export function emitVariableInitializerIR(
 
   const {instructions, data} = result;
   const {type, initializer} = variable;
-  const rootIRVar = allocator.allocVariable(variable);
-
-  instructions.push(
-    new IRAllocInstruction(rootIRVar),
-  );
 
   if (variable.isInitialized()) {
     const isArrayType = isArrayLikeType(type);
@@ -65,6 +65,8 @@ export function emitVariableInitializerIR(
     if ((isStringType || isArrayType)
         && initializer.hasOnlyConstantExpressions()
         && initializer.getInitializedFieldsCount() > MIN_PTR_ARRAY_INITIALIZED_FIELDS_COUNT) {
+      // initializer with const expressions
+      const ptrType = CPointerType.ofArray(config.arch, <CArrayType> type);
       const dataType = CArrayType.ofFlattenDescriptor(
         {
           type: type.getSourceType(),
@@ -72,29 +74,47 @@ export function emitVariableInitializerIR(
         },
       );
 
+      const rootIRVar = allocator.allocVariablePointer(
+        IRVariable
+          .ofScopeVariable(variable.ofType(ptrType))
+          .ofVirtualArrayPtr(),
+      );
+
       const constArrayVar = allocator.allocConstDataVariable(dataType);
-      const tmpLeaAddressVar = allocator.allocTmpVariable(type);
+      const tmpLeaAddressVar = allocator.allocAddressVariable();
 
       data.push(
         new IRDefConstInstruction(initializer, constArrayVar),
       );
 
       instructions.push(
+        IRAllocInstruction.ofDestPtrVariable(rootIRVar),
         new IRLeaInstruction(constArrayVar, tmpLeaAddressVar),
         new IRStoreInstruction(tmpLeaAddressVar, rootIRVar),
       );
     } else {
+      // initializer with expressions
+      const rootIRVar = allocator.allocVariablePointer(variable);
+
       instructions.push(
+        IRAllocInstruction.ofDestPtrVariable(rootIRVar),
         ...emitVariableLoadInitializerIR(
           {
             scope,
             context,
-            variable,
-            rootIRVar,
+            initializerTree: initializer,
+            destVariable: rootIRVar,
           },
         ),
       );
     }
+  } else {
+    // uninitialized variable
+    const rootIRVar = allocator.allocVariablePointer(variable);
+
+    instructions.push(
+      IRAllocInstruction.ofDestPtrVariable(rootIRVar),
+    );
   }
 
   return result;
