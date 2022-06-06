@@ -1,6 +1,7 @@
 export * from './IRAllocInstruction';
 export * from './IRAssignInstruction';
 export * from './IRCommentInstruction';
+export * from './IRDefConstInstruction';
 export * from './IRFnDefInstruction';
 export * from './IRIfInstruction';
 export * from './IRInstruction';

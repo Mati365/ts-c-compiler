@@ -1,2 +1,2 @@
-export * from './sefeBuildIRCode';
+export * from './safeBuildIRCode';
 export * from './dump/IRResultView';

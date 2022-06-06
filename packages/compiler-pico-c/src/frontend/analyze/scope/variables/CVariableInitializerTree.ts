@@ -1,13 +1,21 @@
 import * as R from 'ramda';
 
-import {isArrayLikeType, isStructLikeType} from '../../types';
-
 import {AbstractTreeVisitor, IsWalkableNode} from '@compiler/grammar/tree/AbstractTreeVisitor';
+
+import {isArrayLikeType, isStructLikeType} from '../../types';
 import {ASTCCompilerNode} from '../../../parser/ast/ASTCCompilerNode';
 import {CType} from '../../types/CType';
 
 export type CVariableInitializeValue = string | number | CVariableInitializerTree | ASTCCompilerNode;
 export type CVariableInitializerFields = CVariableInitializeValue[];
+
+export function isConstantVariableInitializer(value: CVariableInitializeValue) {
+  if (!value)
+    return true;
+
+  const type = typeof value;
+  return type === 'string' || type === 'number';
+}
 
 export function isInitializerTreeValue(value: CVariableInitializeValue): value is CVariableInitializerTree {
   return R.is(Object, value) && R.has('_baseType', value);
@@ -40,6 +48,27 @@ export class CVariableInitializerTree<C extends ASTCCompilerNode = ASTCCompilerN
 
   walk(visitor: AbstractTreeVisitor<any>): void {
     this._fields.forEach(visitor.visit.bind(visitor));
+  }
+
+  hasOnlyConstantExpressions() {
+    return this._fields.every(isConstantVariableInitializer);
+  }
+
+  /**
+   * Returns total count of non null (initialized) fields
+   *
+   * @return {number}
+   * @memberof CVariableInitializerTree
+   */
+  getInitializedFieldsCount(): number {
+    const {fields} = this;
+
+    for (let i = 0; i < fields.length; ++i) {
+      if (fields[i] === null)
+        return i;
+    }
+
+    return 0;
   }
 
   /**
@@ -155,7 +184,6 @@ export class CVariableInitializerTree<C extends ASTCCompilerNode = ASTCCompilerN
         : baseType
     );
   }
-
 
   /**
    * Return maximum count of items for given base type

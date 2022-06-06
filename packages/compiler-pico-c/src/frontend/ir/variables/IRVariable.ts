@@ -1,7 +1,7 @@
 import * as R from 'ramda';
 import chalk from 'chalk';
 
-import {getIRTypeDisplayName} from '../dump';
+import {getIRTypeDisplayName} from '../dump/getIRTypeDisplayName';
 
 import {IsPrintable} from '@compiler/core/interfaces';
 import {Identity} from '@compiler/core/monads';

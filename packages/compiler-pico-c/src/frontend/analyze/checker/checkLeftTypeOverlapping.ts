@@ -5,6 +5,11 @@ import {
   isPrimitiveLikeType,
 } from '../types';
 
+type CastOverlapCheck = {
+  ignoreConstChecks?: boolean,
+  implicitCast?: boolean,
+};
+
 /**
  *Check if right type can be assigned to left type
  *
@@ -18,25 +23,31 @@ import {
  * @export
  * @param {CType} left
  * @param {CType} right
- * @param {boolean} [implicitCast=true]
- * @return {*}  {boolean}
+ * @param {CastOverlapCheck} attrs
+ * @return {boolean}
  */
 export function checkLeftTypeOverlapping(
   left: CType,
   right: CType,
-  implicitCast: boolean = true,
+  attrs: CastOverlapCheck = {},
 ): boolean {
+  const {
+    ignoreConstChecks,
+    implicitCast = true,
+  } = attrs;
+
   if (!left || !right)
     return false;
 
   if (left.isEqual(right))
     return true;
 
-  if (left.isConst() && !right.isConst()) {
+  if ((left.isConst() && !right.isConst())
+      || (ignoreConstChecks && (left.isConst() || right.isConst()))) {
     return checkLeftTypeOverlapping(
       left.ofNonConstQualifiers(),
       right.ofNonConstQualifiers(),
-      implicitCast,
+      attrs,
     );
   }
 
@@ -44,7 +55,7 @@ export function checkLeftTypeOverlapping(
   // in C array is actually pointer
   if (isPointerLikeType(left)) {
     if (isPointerLikeType(right) || isArrayLikeType(right))
-      return checkLeftTypeOverlapping(left.baseType, right.baseType, implicitCast);
+      return checkLeftTypeOverlapping(left.baseType, right.baseType, attrs);
   }
 
   // [left ]char[4] = [right] char*
@@ -53,11 +64,11 @@ export function checkLeftTypeOverlapping(
       if (!left.isUnknownSize() && left.size !== right.size)
         return false;
 
-      return checkLeftTypeOverlapping(left.baseType, right.baseType, implicitCast);
+      return checkLeftTypeOverlapping(left.baseType, right.baseType, attrs);
     }
 
     if (isPointerLikeType(right))
-      return checkLeftTypeOverlapping(left.baseType, right.baseType, implicitCast);
+      return checkLeftTypeOverlapping(left.baseType, right.baseType, attrs);
   }
 
   if (implicitCast) {

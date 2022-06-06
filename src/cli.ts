@@ -1,10 +1,10 @@
 import {ccompiler, CCompilerOutput} from '@compiler/pico-c';
 
 ccompiler(/* cpp */ `
-  struct Vec2 { int x, y; };
-
   int sub(int a, int b) {
-    struct Vec2 vec[] = { { .x = 5 }, 7, { .y = 6 } };
+    char dynamicArray[] = { a + b, 2 };
+    char array[10] = { 1, 2 };
+    char array2[10] = { 1, 2, 3, 4, 5, 6 };
   }
 `).match(
   {

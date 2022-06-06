@@ -1,3 +1,5 @@
+import chalk from 'chalk';
+
 import {IsOutputInstruction} from '../interfaces';
 import {IROpcode} from '../constants';
 import {IRInstruction} from './IRInstruction';
@@ -26,6 +28,6 @@ export class IRAssignInstruction extends IRInstruction implements IsOutputInstru
   override getDisplayName(): string {
     const {outputVar, inputVar} = this;
 
-    return `${outputVar.getDisplayName(false)} = ${inputVar.getDisplayName()}`;
+    return `${outputVar.getDisplayName(false)} = ${chalk.yellowBright('assign')} ${inputVar.getDisplayName()}`;
   }
 }

@@ -5,13 +5,22 @@ import {IRInstruction} from '../../instructions';
 import {IRConstant, IRVariable} from '../../variables';
 import {IRVariableAllocator} from '../IRVariableAllocator';
 
+import type {IRCodeSegmentBuilder, IRCodeSegmentBuilderResult} from '../segments/IRCodeSegmentBuilder';
+import type {IRDataSegmentBuilder, IRDataSegmentBuilderResult} from '../segments';
+
 import type {emitAssignmentIR} from './emitAssignmentIR';
 import type {emitExpressionIR} from './emitExpressionIR';
 import type {emitLvalueExpression} from './emitLvalueExpressionIR';
 import type {emitPointerExpression} from './emitPointerExpression';
 import type {emitPointerAddressExpression} from './emitPointerAddressExpression';
 
+export type IRGeneratorSegments = {
+  code: IRCodeSegmentBuilder;
+  data: IRDataSegmentBuilder;
+};
+
 export type IREmitterContext = {
+  segments: IRGeneratorSegments;
   config: IRGeneratorConfig;
   allocator: IRVariableAllocator;
   emit: {
@@ -30,6 +39,7 @@ export type IREmitterContextAttrs = {
 
 export type IREmitterStmtResult = {
   instructions: IRInstruction[];
+  data?: IRInstruction[];
 };
 
 export type IREmitterExpressionVarResult = IREmitterStmtResult & {
@@ -39,3 +49,24 @@ export type IREmitterExpressionVarResult = IREmitterStmtResult & {
 export type IREmitterExpressionResult = IREmitterStmtResult & {
   output: IRVariable | IRConstant;
 };
+
+export type IRScopeGeneratorResult = {
+  segments: {
+    code: IRCodeSegmentBuilderResult;
+    data: IRDataSegmentBuilderResult;
+  },
+};
+
+export function createBlankStmtResult(instructions?: IRInstruction[]): IREmitterStmtResult {
+  return {
+    instructions: instructions || [],
+    data: [],
+  };
+}
+
+export function appendStmtResults(src: IREmitterStmtResult, target: IREmitterStmtResult) {
+  target.instructions.push(...(src.instructions || []));
+  (target.data ||= []).push(...(src.data || []));
+
+  return target;
+}

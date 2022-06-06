@@ -103,7 +103,7 @@ export class CTypeInitializerBuilderVisitor extends CInnerTypeTreeVisitor {
     const arrayType = isArrayLikeType(baseType);
     if (arrayType
         && !node.hasInitializerList()
-        && !checkLeftTypeOverlapping(CArrayType.ofStringLiteral(arch), baseType, false)
+        && !checkLeftTypeOverlapping(CArrayType.ofStringLiteral(arch), baseType, {implicitCast: false})
     ) {
       throw new CTypeCheckError(
         CTypeCheckErrorCode.INVALID_INITIALIZER,

@@ -12,5 +12,6 @@ export enum IROpcode {
   RET = 'RET',
   MATH = 'MATH',
   LEA = 'LEA',
+  DEF_CONST = 'DEF_CONST',
   COMMENT = 'COMMENT',
 }

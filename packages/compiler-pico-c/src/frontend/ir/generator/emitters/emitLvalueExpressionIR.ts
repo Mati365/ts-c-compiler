@@ -111,7 +111,7 @@ export function emitLvalueExpression(
 
           lastIRAddressVar = allocAddressVar();
           instructions.push(
-            new IRLeaInstruction(lastIRAddressVar, variable),
+            new IRLeaInstruction(variable, lastIRAddressVar),
           );
         },
       },

@@ -3,6 +3,7 @@ import {IRFnDefInstruction} from '../instructions';
 import {IRVariable} from '../variables';
 
 const TMP_VAR_PREFIX = 't';
+const CONST_VAR_PREFIX = 'c';
 
 /**
  * Registers symbols table
@@ -62,13 +63,14 @@ export class IRVariableAllocator {
    * Alloc variable used for example for ptr compute
    *
    * @param {CType} type
-   * @return {{IRVariable}
+   * @param {string} [prefix=TMP_VAR_PREFIX]
+   * @return {IRVariable}
    * @memberof IRVariableAllocator
    */
-  allocTmpVariable(type: CType): IRVariable {
-    const tmpVar = this.getVariable(TMP_VAR_PREFIX) ?? new IRVariable(
+  allocTmpVariable(type: CType, prefix: string = TMP_VAR_PREFIX): IRVariable {
+    const tmpVar = this.getVariable(prefix) ?? new IRVariable(
       {
-        prefix: TMP_VAR_PREFIX,
+        prefix,
         suffix: -1,
         type,
       },
@@ -79,6 +81,17 @@ export class IRVariableAllocator {
         .ofType(type)
         .ofIncrementedSuffix(),
     );
+  }
+
+  /**
+   * Alloc variable for data segment
+   *
+   * @param {CType} type
+   * @return {IRVariable}
+   * @memberof IRVariableAllocator
+   */
+  allocConstDataVariable(type: CType): IRVariable {
+    return this.allocTmpVariable(type, CONST_VAR_PREFIX);
   }
 
   /**

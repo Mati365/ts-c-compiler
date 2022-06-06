@@ -15,8 +15,8 @@ import {IRInstructionVarArg, IRVariable} from '../variables';
  */
 export class IRLeaInstruction extends IRInstruction implements IsOutputInstruction {
   constructor(
-    readonly outputVar: IRVariable,
     readonly inputVar: IRInstructionVarArg,
+    readonly outputVar: IRVariable,
   ) {
     super(IROpcode.LEA);
   }

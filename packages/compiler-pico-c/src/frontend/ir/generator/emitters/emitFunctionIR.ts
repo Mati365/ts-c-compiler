@@ -5,8 +5,13 @@ import {
   ASTCCompilerNode, ASTCDeclaration, ASTCFunctionDefinition,
 } from '@compiler/pico-c/frontend/parser';
 
-import {IRInstruction, IRRetInstruction} from '../../instructions';
-import {IREmitterContextAttrs, IREmitterStmtResult} from './types';
+import {IRRetInstruction} from '../../instructions';
+import {
+  appendStmtResults,
+  createBlankStmtResult,
+  IREmitterContextAttrs,
+  IREmitterStmtResult,
+} from './types';
 
 import {emitAssignmentIR} from './emitAssignmentIR';
 import {emitDeclarationIR} from './emitDeclarationIR';
@@ -22,10 +27,13 @@ export function emitFunctionIR(
     node,
   }: FunctionIREmitAttrs,
 ): IREmitterStmtResult {
-  const instructions: IRInstruction[] = [
-    context.allocator.allocFunctionType(<CFunctionDeclType> node.type),
-  ];
+  const result = createBlankStmtResult(
+    [
+      context.allocator.allocFunctionType(<CFunctionDeclType> node.type),
+    ],
+  );
 
+  const {instructions} = result;
   GroupTreeVisitor.ofIterator<ASTCCompilerNode>(
     {
       [ASTCCompilerKind.ReturnStmt]: false,
@@ -39,7 +47,7 @@ export function emitFunctionIR(
             },
           );
 
-          instructions.push(...declarationResult.instructions);
+          appendStmtResults(declarationResult, result);
           return false;
         },
       },
@@ -56,7 +64,7 @@ export function emitFunctionIR(
             },
           );
 
-          instructions.push(...assignResult.instructions);
+          appendStmtResults(assignResult, result);
           return false;
         },
       },
@@ -65,7 +73,5 @@ export function emitFunctionIR(
 
   instructions.push(new IRRetInstruction);
 
-  return {
-    instructions,
-  };
+  return result;
 }

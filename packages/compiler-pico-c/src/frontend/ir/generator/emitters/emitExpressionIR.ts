@@ -147,7 +147,7 @@ export function emitExpressionIR(
               );
 
               instructions.push(
-                new IRLeaInstruction(tmpVar, srcVar),
+                new IRLeaInstruction(srcVar, tmpVar),
               );
             } else if (isPointerLikeType(srcVar.type)) {
               const tmpVar = allocNextVariable(srcVar.type);

@@ -1,14 +1,16 @@
-import {IRError, IRErrorCode} from '../errors/IRError';
+import {IRError, IRErrorCode} from '../../errors/IRError';
 import {
   IRIfInstruction, IRInstruction,
   isIRIfInstruction, isIRRetInstruction,
-} from '../instructions';
+} from '../../instructions';
 
-import {IRInstructionsBlock} from '../instructions/IRInstructionsBlock';
-import {isIRLabeledInstruction} from '../guards';
+import {IRInstructionsBlock} from '../../instructions/IRInstructionsBlock';
+import {IRSegmentBuilder} from './IRSegmentBuilder';
+
+import {isIRLabeledInstruction} from '../../guards';
 
 export type IRBlockLabelsMap = Record<string, IRInstructionsBlock>;
-export type IRBranchesBuilderResult = {
+export type IRCodeSegmentBuilderResult = {
   blocks: IRBlockLabelsMap,
 };
 
@@ -16,9 +18,9 @@ export type IRBranchesBuilderResult = {
  * Constructs graph of connected by jumps code blocks
  *
  * @export
- * @class IRBranchesBuilder
+ * @class IRSegmentBuilder
  */
-export class IRBranchesBuilder {
+export class IRCodeSegmentBuilder extends IRSegmentBuilder<IRCodeSegmentBuilderResult> {
   private blocks: IRBlockLabelsMap = {};
   private unresolvedBlockBranches: VoidFunction[] = [];
   private tmpBlock = IRInstructionsBlock.ofInstructions([]);
@@ -31,7 +33,7 @@ export class IRBranchesBuilder {
    * Removes last instruction from stack
    *
    * @return {IRInstruction}
-   * @memberof IRBranchesBuilder
+   * @memberof IRSegmentBuilder
    */
   pop(): IRInstruction {
     return this.tmpBlock.instructions.pop();
@@ -41,7 +43,7 @@ export class IRBranchesBuilder {
    * If instruction is branch - flush instruction stack and add new block
    *
    * @param {IRInstruction} instruction
-   * @memberof IRBranchesBuilder
+   * @memberof IRSegmentBuilder
    */
   emit(instruction: IRInstruction): this {
     const {tmpBlock} = this;
@@ -60,23 +62,12 @@ export class IRBranchesBuilder {
   }
 
   /**
-   * Emits multiple instructions at once
-   *
-   * @param {IRInstruction[]} instructions
-   * @memberof IRBranchesBuilder
-   */
-  emitBulk(instructions: IRInstruction[]): this {
-    instructions.forEach(this.emit.bind(this));
-    return this;
-  }
-
-  /**
    * Cleanups temp instructions stack and returns graph
    *
-   * @return {IRBranchesBuilderResult}
-   * @memberof IRBranchesBuilder
+   * @return {IRCodeSegmentBuilderResult}
+   * @memberof IRSegmentBuilder
    */
-  flush(): IRBranchesBuilderResult {
+  flush(): IRCodeSegmentBuilderResult {
     this.setBlock(this.tmpBlock);
     this.tmpBlock = IRInstructionsBlock.ofInstructions([]);
 
@@ -90,7 +81,7 @@ export class IRBranchesBuilder {
    *
    * @private
    * @param {IRIfInstruction} instruction
-   * @memberof IRBranchesBuilder
+   * @memberof IRSegmentBuilder
    */
   private appendIfBranch(instruction: IRIfInstruction) {
     const {tmpBlock, unresolvedBlockBranches} = this;
@@ -121,7 +112,7 @@ export class IRBranchesBuilder {
    * @private
    * @param {IRInstructionsBlock} block
    * @return  {this}
-   * @memberof IRBranchesBuilder
+   * @memberof IRSegmentBuilder
    */
   private setBlock(block: IRInstructionsBlock): this {
     if (block.isEmpty())

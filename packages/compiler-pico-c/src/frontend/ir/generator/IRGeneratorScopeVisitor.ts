@@ -5,17 +5,22 @@ import {CScopeVisitor, CScopeTree} from '../../analyze/scope';
 import {ASTCFunctionDefinition} from '../../parser';
 import {
   IREmitterContext,
+  IRGeneratorSegments,
   emitFunctionIR,
   emitExpressionIR,
   emitLvalueExpression,
   emitAssignmentIR,
   emitPointerExpression,
   emitPointerAddressExpression,
+  IRScopeGeneratorResult,
 } from './emitters';
 
 import {IRGeneratorConfig} from '../constants';
-import {IRBranchesBuilder, IRBranchesBuilderResult} from './IRBranchesBuilder';
 import {IRVariableAllocator} from './IRVariableAllocator';
+import {
+  IRCodeSegmentBuilder,
+  IRDataSegmentBuilder,
+} from './segments';
 
 /**
  * Root IR generator visitor
@@ -25,7 +30,11 @@ import {IRVariableAllocator} from './IRVariableAllocator';
  * @extends {CScopeVisitor}
  */
 export class IRGeneratorScopeVisitor extends CScopeVisitor {
-  readonly branchesBuilder = new IRBranchesBuilder;
+  readonly segments: IRGeneratorSegments = {
+    code: new IRCodeSegmentBuilder,
+    data: new IRDataSegmentBuilder,
+  };
+
   readonly allocator = new IRVariableAllocator;
   readonly context: IREmitterContext;
 
@@ -36,6 +45,7 @@ export class IRGeneratorScopeVisitor extends CScopeVisitor {
 
     this.context = {
       config,
+      segments: this.segments,
       allocator: this.allocator,
       emit: {
         expression: emitExpressionIR,
@@ -50,11 +60,23 @@ export class IRGeneratorScopeVisitor extends CScopeVisitor {
   /**
    * Returns output of IR generator
    *
-   * @return {IRBranchesBuilderResult}
+   * @return {IRScopeGeneratorResult}
    * @memberof IRGeneratorScopeVisitor
    */
-  flush(): IRBranchesBuilderResult {
-    return this.branchesBuilder.flush();
+  flush(): IRScopeGeneratorResult {
+    const {
+      segments: {
+        code,
+        data,
+      },
+    } = this;
+
+    return {
+      segments: {
+        code: code.flush(),
+        data: data.flush(),
+      },
+    };
   }
 
   /**
@@ -64,11 +86,14 @@ export class IRGeneratorScopeVisitor extends CScopeVisitor {
    * @memberof IRGeneratorScopeVisitor
    */
   enter(scope: CScopeTree): void | boolean {
-    const {branchesBuilder, context} = this;
+    const {segments, context} = this;
     const {parentAST} = scope;
 
     if (isFuncDeclLikeType(parentAST?.type)) {
-      const {instructions} = emitFunctionIR(
+      const {
+        instructions,
+        data,
+      } = emitFunctionIR(
         {
           node: <ASTCFunctionDefinition> parentAST,
           context,
@@ -76,9 +101,12 @@ export class IRGeneratorScopeVisitor extends CScopeVisitor {
         },
       );
 
-      branchesBuilder.emitBulk(
+      segments.code.emitBulk(
         optimizeInstructionsList({}, instructions),
       );
+
+      if (data)
+        segments.data.emitBulk(data);
 
       return false;
     }

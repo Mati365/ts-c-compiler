@@ -6,10 +6,13 @@ import {
   ASTCDirectDeclarator,
 } from '@compiler/pico-c/frontend/parser';
 
-import {IREmitterContextAttrs, IREmitterStmtResult} from './types';
-import {IRInstruction} from '../../instructions';
-
-import {emitVariableInitializerIR} from './emitVariableInitializerIR';
+import {emitVariableInitializerIR} from './emit-initializer/emitVariableInitializerIR';
+import {
+  IREmitterContextAttrs,
+  IREmitterStmtResult,
+  createBlankStmtResult,
+  appendStmtResults,
+} from './types';
 
 type FunctionIREmitAttrs = IREmitterContextAttrs & {
   node: ASTCDeclaration;
@@ -22,7 +25,7 @@ export function emitDeclarationIR(
     node,
   }: FunctionIREmitAttrs,
 ): IREmitterStmtResult {
-  const instructions: IRInstruction[] = [];
+  const result = createBlankStmtResult();
 
   GroupTreeVisitor.ofIterator<ASTCCompilerNode>(
     {
@@ -40,13 +43,11 @@ export function emitDeclarationIR(
             },
           );
 
-          instructions.push(...initializerResult.instructions);
+          appendStmtResults(initializerResult, result);
         },
       },
     },
   )(node);
 
-  return {
-    instructions,
-  };
+  return result;
 }

@@ -1,10 +1,9 @@
 import * as R from 'ramda';
 import chalk from 'chalk';
 
-import {IRInstructionsBlock} from '../instructions';
-import {IRCodeBuilderResult} from '../sefeBuildIRCode';
-
-import {isIRLabeledInstruction} from '../guards';
+import {IRInstructionsBlock, isIRFnDefInstruction} from '../instructions';
+import {IRCodeBuilderResult} from '../safeBuildIRCode';
+import {IRCodeSegmentBuilderResult} from '../generator';
 
 /**
  * Simple IR serializer. Maybe add graph rendering?
@@ -31,12 +30,39 @@ export class IRResultView {
    */
   serialize(): string {
     const {
-      branches: {
-        blocks,
+      segments: {
+        code,
+        data,
       },
     } = this.ir;
 
-    return R.values(blocks).reduce(
+    const dataStr = IRResultView.serializeCodeBlock(
+      new IRInstructionsBlock(
+        {
+          name: 'Data',
+          instructions: data.instructions,
+        },
+      ),
+    );
+
+    return [
+      ...IRResultView.serializeCodeSegment(code),
+      dataStr && `\n${dataStr}`,
+    ]
+      .filter(Boolean)
+      .join('\n');
+  }
+
+  /**
+   * Serializes code segment with branches
+   *
+   * @static
+   * @param {IRCodeSegmentBuilderResult} code
+   * @return {string[]}
+   * @memberof IRResultView
+   */
+  static serializeCodeSegment(code: IRCodeSegmentBuilderResult): string[] {
+    return R.values(code.blocks).reduce(
       (acc, block) => {
         acc.push(
           IRResultView.serializeCodeBlock(block),
@@ -45,7 +71,7 @@ export class IRResultView {
         return acc;
       },
       [],
-    ).join('\n\n');
+    );
   }
 
   /**
@@ -57,13 +83,17 @@ export class IRResultView {
    * @memberof IRResultView
    */
   static serializeCodeBlock(block: IRInstructionsBlock): string {
+    const {name, instructions} = block;
+    if (R.isEmpty(instructions))
+      return null;
+
     const lines: string[] = [
-      chalk.bold.greenBright(`; --- Block ${block.name || '<unknown>'} ---`),
+      chalk.bold.greenBright(`; --- Block ${name || '<unknown>'} ---`),
     ];
 
-    block.instructions.forEach((instruction) => {
+    instructions.forEach((instruction) => {
       let str = instruction.getDisplayName();
-      if (!isIRLabeledInstruction(instruction))
+      if (!isIRFnDefInstruction(instruction))
         str = `  ${str}`;
 
       lines.push(str);
