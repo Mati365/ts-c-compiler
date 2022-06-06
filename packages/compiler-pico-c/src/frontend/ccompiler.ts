@@ -10,7 +10,7 @@ import {CCompilerConfig, CCompilerArch} from '../constants/config';
 
 import {ASTCCompilerNode} from './parser/ast';
 import {safeGenerateTree, clexer} from './parser';
-import {CIRResultView, IRCodeBuilderResult, safeBuildIRCode} from './ir';
+import {IRResultView, IRCodeBuilderResult, safeBuildIRCode} from './ir';
 import {
   safeBuildTypedTree,
   CScopeTree,
@@ -62,7 +62,7 @@ export class CCompilerOutput {
         CScopePrintVisitor.serializeToString(scope),
         '\nIR:',
         '',
-        CIRResultView.serializeToString(ir),
+        IRResultView.serializeToString(ir),
         '\n',
       ].join('\n'),
     );

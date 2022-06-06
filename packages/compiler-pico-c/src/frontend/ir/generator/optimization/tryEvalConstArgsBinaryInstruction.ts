@@ -1,17 +1,17 @@
 import {Option, none, some} from '@compiler/core/monads';
 import {evalMathOp, isMathOpToken} from '@compiler/lexer/utils';
 
-import {CIRMathInstruction} from '../../instructions';
-import {isCIRConstant} from '../../variables';
+import {IRMathInstruction} from '../../instructions';
+import {isIRConstant} from '../../variables';
 
 export function tryEvalConstArgsBinaryInstruction(
   {
     operator,
     leftVar,
     rightVar,
-  }: CIRMathInstruction,
+  }: IRMathInstruction,
 ): Option<number> {
-  if (!isCIRConstant(leftVar) || !isCIRConstant(rightVar))
+  if (!isIRConstant(leftVar) || !isIRConstant(rightVar))
     return none();
 
   if (isMathOpToken(operator)) {

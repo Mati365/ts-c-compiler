@@ -7,11 +7,11 @@ import {IsPrintable} from '@compiler/core/interfaces';
 import {Identity} from '@compiler/core/monads';
 import {CType} from '../../analyze';
 
-export function isCIRConstant(obj: any): obj is CIRConstant {
+export function isIRConstant(obj: any): obj is IRConstant {
   return R.is(Object, obj) && ('constant' in obj);
 }
 
-export type CIRConstantDescriptor = {
+export type IRConstantDescriptor = {
   constant: number,
   type: CType,
 };
@@ -20,15 +20,15 @@ export type CIRConstantDescriptor = {
  * Constant literal used in expressions generators
  *
  * @export
- * @class CIRConstantDescriptor
+ * @class IRConstantDescriptor
  * @implements {IsPrintable}
  */
-export class CIRConstant
-  extends Identity<CIRConstantDescriptor>
+export class IRConstant
+  extends Identity<IRConstantDescriptor>
   implements IsPrintable {
 
   static ofConstant(type: CType, constant: number) {
-    return new CIRConstant(
+    return new IRConstant(
       {
         type,
         constant,
@@ -40,7 +40,7 @@ export class CIRConstant
   get constant() { return this.value.constant; }
 
   mapConstant(fn: (constant: number) => number) {
-    return new CIRConstant(
+    return new IRConstant(
       {
         type: this.type,
         constant: fn(this.constant),

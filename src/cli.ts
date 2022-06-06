@@ -1,10 +1,10 @@
 import {ccompiler, CCompilerOutput} from '@compiler/pico-c';
 
 ccompiler(/* cpp */ `
+  struct Vec2 { int x, y; };
+
   int sub(int a, int b) {
-    int sum = a + 2.21 * 4;
-    int* ptr = &sum;
-    (*ptr) = 2;
+    struct Vec2 vec[] = { { .x = 5 }, 7, { .y = 6 } };
   }
 `).match(
   {

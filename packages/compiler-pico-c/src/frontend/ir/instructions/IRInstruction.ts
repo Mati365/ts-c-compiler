@@ -1,17 +1,17 @@
 import {IsPrintable} from '@compiler/core/interfaces';
-import {CIROpcode} from '../constants';
+import {IROpcode} from '../constants';
 
 /**
  * Basic IR block, contains mini operations similar to assembly
  *
  * @export
  * @abstract
- * @class CIRInstruction
+ * @class IRInstruction
  * @implements {IsPrintable}
  */
-export abstract class CIRInstruction implements IsPrintable {
+export abstract class IRInstruction implements IsPrintable {
   constructor(
-    readonly opcode: CIROpcode,
+    readonly opcode: IROpcode,
   ) {}
 
   abstract getDisplayName(): string;

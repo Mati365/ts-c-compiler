@@ -1,17 +1,17 @@
 import * as R from 'ramda';
 
 import {Identity} from '@compiler/core/monads';
-import {CIRInstruction} from './CIRInstruction';
-import {CIRBranchRelations} from './CIRIfInstruction';
+import {IRInstruction} from './IRInstruction';
+import {IRBranchRelations} from './IRIfInstruction';
 
-export type CIRBlockJmps = Partial<CIRBranchRelations<CIRInstructionsBlock>> & {
-  always?: CIRInstructionsBlock;
+export type IRBlockJmps = Partial<IRBranchRelations<IRInstructionsBlock>> & {
+  always?: IRInstructionsBlock;
 };
 
-type CIRInstructionsBlockDescriptor = {
+type IRInstructionsBlockDescriptor = {
   name?: string;
-  instructions: CIRInstruction[],
-  jmps?: CIRBlockJmps,
+  instructions: IRInstruction[],
+  jmps?: IRBlockJmps,
 };
 
 /**
@@ -19,20 +19,20 @@ type CIRInstructionsBlockDescriptor = {
  * by any jmp or label. Something like IDA "instructions block"
  *
  * @export
- * @class CIRInstructionsBlock
- * @extends {Identity<CIRInstructionsBlockDescriptor>}
+ * @class IRInstructionsBlock
+ * @extends {Identity<IRInstructionsBlockDescriptor>}
  */
-export class CIRInstructionsBlock extends Identity<CIRInstructionsBlockDescriptor> {
+export class IRInstructionsBlock extends Identity<IRInstructionsBlockDescriptor> {
   /**
    * Creates branchless block monad
    *
    * @static
-   * @param {CIRInstruction[]} instructions
-   * @return {CIRInstructionsBlock}
-   * @memberof CIRInstructionsBlock
+   * @param {IRInstruction[]} instructions
+   * @return {IRInstructionsBlock}
+   * @memberof IRInstructionsBlock
    */
-  static ofInstructions(instructions: CIRInstruction[]): CIRInstructionsBlock {
-    return new CIRInstructionsBlock(
+  static ofInstructions(instructions: IRInstruction[]): IRInstructionsBlock {
+    return new IRInstructionsBlock(
       {
         instructions,
       },
@@ -48,7 +48,7 @@ export class CIRInstructionsBlock extends Identity<CIRInstructionsBlockDescripto
     return R.isEmpty(this.instructions);
   }
 
-  hasSatisfiedRelations(relations: CIRBranchRelations<unknown>) {
+  hasSatisfiedRelations(relations: IRBranchRelations<unknown>) {
     const {jmps} = this;
 
     return (
@@ -60,11 +60,11 @@ export class CIRInstructionsBlock extends Identity<CIRInstructionsBlockDescripto
   /**
    * Appends jmps map to instructions block
    *
-   * @param {CIRBlockJmps} jmps
+   * @param {IRBlockJmps} jmps
    * @return {this}
-   * @memberof CIRInstructionsBlock
+   * @memberof IRInstructionsBlock
    */
-  ofJmps(jmps: CIRBlockJmps): this {
+  ofJmps(jmps: IRBlockJmps): this {
     return this.map((value) => ({
       ...value,
       jmps,
@@ -76,7 +76,7 @@ export class CIRInstructionsBlock extends Identity<CIRInstructionsBlockDescripto
    *
    * @param {string} name
    * @return {this}
-   * @memberof CIRInstructionsBlock
+   * @memberof IRInstructionsBlock
    */
   ofName(name: string): this {
     return this.map((value) => ({

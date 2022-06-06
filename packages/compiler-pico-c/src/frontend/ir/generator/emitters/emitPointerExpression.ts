@@ -1,5 +1,5 @@
 import {ASTCCastUnaryExpression} from '@compiler/pico-c/frontend/parser';
-import {CIRLoadInstruction} from '../../instructions';
+import {IRLoadInstruction} from '../../instructions';
 
 import {IREmitterContextAttrs, IREmitterExpressionResult} from './types';
 import {IRInstructionsOptimizationAttrs} from '../optimization';
@@ -39,7 +39,7 @@ export function emitPointerExpression(
     const resultPtrOutput = allocator.allocTmpVariable(type);
 
     instructions.push(
-      new CIRLoadInstruction(exprResult.output, resultPtrOutput),
+      new IRLoadInstruction(exprResult.output, resultPtrOutput),
     );
 
     return {

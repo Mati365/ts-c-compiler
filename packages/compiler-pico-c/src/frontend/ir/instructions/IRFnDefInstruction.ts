@@ -1,30 +1,30 @@
 import chalk from 'chalk';
 
-import {CIROpcode} from '../constants';
-import {CIRVariable} from '../variables';
-import {CIRInstruction} from './CIRInstruction';
+import {IROpcode} from '../constants';
+import {IRVariable} from '../variables';
+import {IRInstruction} from './IRInstruction';
 import {IsLabeledInstruction} from '../interfaces/IsLabeledInstruction';
 
-export function isIRFnDefInstruction(instruction: CIRInstruction): instruction is CIRFnDefInstruction {
-  return instruction.opcode === CIROpcode.DEF;
+export function isIRFnDefInstruction(instruction: IRInstruction): instruction is IRFnDefInstruction {
+  return instruction.opcode === IROpcode.DEF;
 }
 
 /**
  * Definition of function
  *
  * @export
- * @class CIRFnDefInstruction
- * @extends {CIRInstruction}
+ * @class IRFnDefInstruction
+ * @extends {IRInstruction}
  * @implements {IsLabeledInstruction}
  */
-export class CIRFnDefInstruction extends CIRInstruction implements IsLabeledInstruction {
+export class IRFnDefInstruction extends IRInstruction implements IsLabeledInstruction {
   constructor(
     readonly name: string,
-    readonly args: CIRVariable[] = [],
+    readonly args: IRVariable[] = [],
     readonly retByteSize: number = null,
     readonly variadic: boolean = false,
   ) {
-    super(CIROpcode.DEF);
+    super(IROpcode.DEF);
   }
 
   override getDisplayName(): string {

@@ -1,2 +1,2 @@
-export * from './CIRBranchesBuilder';
-export * from './CIRGeneratorScopeVisitor';
+export * from './IRBranchesBuilder';
+export * from './IRGeneratorScopeVisitor';

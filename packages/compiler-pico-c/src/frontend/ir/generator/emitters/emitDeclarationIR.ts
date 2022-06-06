@@ -7,7 +7,7 @@ import {
 } from '@compiler/pico-c/frontend/parser';
 
 import {IREmitterContextAttrs, IREmitterStmtResult} from './types';
-import {CIRInstruction} from '../../instructions';
+import {IRInstruction} from '../../instructions';
 
 import {emitVariableInitializerIR} from './emitVariableInitializerIR';
 
@@ -22,7 +22,7 @@ export function emitDeclarationIR(
     node,
   }: FunctionIREmitAttrs,
 ): IREmitterStmtResult {
-  const instructions: CIRInstruction[] = [];
+  const instructions: IRInstruction[] = [];
 
   GroupTreeVisitor.ofIterator<ASTCCompilerNode>(
     {

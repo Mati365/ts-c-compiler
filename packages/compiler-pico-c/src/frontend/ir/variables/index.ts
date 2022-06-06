@@ -1,3 +1,3 @@
-export * from './CIRConstant';
-export * from './CIRVariable';
-export * from './CIRInstructionVarArg';
+export * from './IRConstant';
+export * from './IRVariable';
+export * from './IRInstructionVarArg';

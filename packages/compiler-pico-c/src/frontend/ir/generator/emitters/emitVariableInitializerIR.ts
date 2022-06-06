@@ -4,14 +4,14 @@ import {isCompilerTreeNode} from '@compiler/pico-c/frontend/parser';
 import {CVariable, isInitializerTreeValue} from '@compiler/pico-c/frontend/analyze';
 
 import {IREmitterContextAttrs} from './types';
-import {CIRError, CIRErrorCode} from '../../errors/CIRError';
-import {CIRAllocInstruction, CIRInstruction, CIRStoreInstruction} from '../../instructions';
-import {CIRConstant} from '../../variables';
+import {IRError, IRErrorCode} from '../../errors/IRError';
+import {IRAllocInstruction, IRInstruction, IRStoreInstruction} from '../../instructions';
+import {IRConstant} from '../../variables';
 
 import {emitExpressionIR} from './emitExpressionIR';
 
 export type InitializerIREmitResult = {
-  instructions: CIRInstruction[];
+  instructions: IRInstruction[];
 };
 
 type InitializerIREmitAttrs = IREmitterContextAttrs & {
@@ -19,6 +19,7 @@ type InitializerIREmitAttrs = IREmitterContextAttrs & {
 };
 
 /**
+ * @todo
  * Emit initializers for arrays with <= 3 directly.
  * If there is >= 3 emit only pointer to labeled value such as:
  *
@@ -36,11 +37,11 @@ export function emitVariableInitializerIR(
   }: InitializerIREmitAttrs,
 ): InitializerIREmitResult {
   const {allocator} = context;
-  const instructions: CIRInstruction[] = [];
+  const instructions: IRInstruction[] = [];
   const rootIRVar = allocator.allocVariable(variable);
 
   instructions.push(
-    new CIRAllocInstruction(rootIRVar),
+    new IRAllocInstruction(rootIRVar),
   );
 
   if (variable.isInitialized()) {
@@ -48,7 +49,7 @@ export function emitVariableInitializerIR(
 
     variable.initializer.fields.forEach((initializer, index) => {
       if (isInitializerTreeValue(initializer))
-        throw new CIRError(CIRErrorCode.INCORRECT_INITIALIZER_BLOCK);
+        throw new IRError(IRErrorCode.INCORRECT_INITIALIZER_BLOCK);
 
       const initializerType = variable.initializer.getIndexExpectedType(index);
       if (isCompilerTreeNode(initializer)) {
@@ -63,7 +64,7 @@ export function emitVariableInitializerIR(
 
         instructions.push(
           ...exprResult.instructions,
-          new CIRStoreInstruction(
+          new IRStoreInstruction(
             exprResult.output,
             rootIRVar,
             offset,
@@ -73,7 +74,7 @@ export function emitVariableInitializerIR(
         const argVar = allocator.getVariable(initializer);
 
         instructions.push(
-          new CIRStoreInstruction(
+          new IRStoreInstruction(
             argVar,
             rootIRVar,
             offset,
@@ -83,8 +84,8 @@ export function emitVariableInitializerIR(
         // int abc[3] = { 1, 2, 3}
         // constant literals are of type 1
         instructions.push(
-          new CIRStoreInstruction(
-            CIRConstant.ofConstant(initializerType, initializer),
+          new IRStoreInstruction(
+            IRConstant.ofConstant(initializerType, initializer),
             rootIRVar,
             offset,
           ),

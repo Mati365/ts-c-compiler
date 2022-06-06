@@ -1,27 +1,27 @@
-import {CIRError, CIRErrorCode} from '../errors/CIRError';
+import {IRError, IRErrorCode} from '../errors/IRError';
 import {
-  CIRIfInstruction, CIRInstruction,
+  IRIfInstruction, IRInstruction,
   isIRIfInstruction, isIRRetInstruction,
 } from '../instructions';
 
-import {CIRInstructionsBlock} from '../instructions/CIRInstructionsBlock';
+import {IRInstructionsBlock} from '../instructions/IRInstructionsBlock';
 import {isIRLabeledInstruction} from '../guards';
 
-export type CIRBlockLabelsMap = Record<string, CIRInstructionsBlock>;
-export type CIRBranchesBuilderResult = {
-  blocks: CIRBlockLabelsMap,
+export type IRBlockLabelsMap = Record<string, IRInstructionsBlock>;
+export type IRBranchesBuilderResult = {
+  blocks: IRBlockLabelsMap,
 };
 
 /**
  * Constructs graph of connected by jumps code blocks
  *
  * @export
- * @class CIRBranchesBuilder
+ * @class IRBranchesBuilder
  */
-export class CIRBranchesBuilder {
-  private blocks: CIRBlockLabelsMap = {};
+export class IRBranchesBuilder {
+  private blocks: IRBlockLabelsMap = {};
   private unresolvedBlockBranches: VoidFunction[] = [];
-  private tmpBlock = CIRInstructionsBlock.ofInstructions([]);
+  private tmpBlock = IRInstructionsBlock.ofInstructions([]);
 
   get lastInstruction() {
     return this.tmpBlock.lastInstruction;
@@ -30,20 +30,20 @@ export class CIRBranchesBuilder {
   /**
    * Removes last instruction from stack
    *
-   * @return {CIRInstruction}
-   * @memberof CIRBranchesBuilder
+   * @return {IRInstruction}
+   * @memberof IRBranchesBuilder
    */
-  pop(): CIRInstruction {
+  pop(): IRInstruction {
     return this.tmpBlock.instructions.pop();
   }
 
   /**
    * If instruction is branch - flush instruction stack and add new block
    *
-   * @param {CIRInstruction} instruction
-   * @memberof CIRBranchesBuilder
+   * @param {IRInstruction} instruction
+   * @memberof IRBranchesBuilder
    */
-  emit(instruction: CIRInstruction): this {
+  emit(instruction: IRInstruction): this {
     const {tmpBlock} = this;
     const {instructions} = tmpBlock;
 
@@ -62,10 +62,10 @@ export class CIRBranchesBuilder {
   /**
    * Emits multiple instructions at once
    *
-   * @param {CIRInstruction[]} instructions
-   * @memberof CIRBranchesBuilder
+   * @param {IRInstruction[]} instructions
+   * @memberof IRBranchesBuilder
    */
-  emitBulk(instructions: CIRInstruction[]): this {
+  emitBulk(instructions: IRInstruction[]): this {
     instructions.forEach(this.emit.bind(this));
     return this;
   }
@@ -73,12 +73,12 @@ export class CIRBranchesBuilder {
   /**
    * Cleanups temp instructions stack and returns graph
    *
-   * @return {CIRBranchesBuilderResult}
-   * @memberof CIRBranchesBuilder
+   * @return {IRBranchesBuilderResult}
+   * @memberof IRBranchesBuilder
    */
-  flush(): CIRBranchesBuilderResult {
+  flush(): IRBranchesBuilderResult {
     this.setBlock(this.tmpBlock);
-    this.tmpBlock = CIRInstructionsBlock.ofInstructions([]);
+    this.tmpBlock = IRInstructionsBlock.ofInstructions([]);
 
     return {
       blocks: this.blocks,
@@ -89,15 +89,15 @@ export class CIRBranchesBuilder {
    * Creates new code block of tmp and resets actual tmpBlock
    *
    * @private
-   * @param {CIRIfInstruction} instruction
-   * @memberof CIRBranchesBuilder
+   * @param {IRIfInstruction} instruction
+   * @memberof IRBranchesBuilder
    */
-  private appendIfBranch(instruction: CIRIfInstruction) {
+  private appendIfBranch(instruction: IRIfInstruction) {
     const {tmpBlock, unresolvedBlockBranches} = this;
     const {ifTrue, ifFalse} = instruction;
 
     if (!tmpBlock.name)
-      throw new CIRError(CIRErrorCode.MISSING_BLOCK_NAME);
+      throw new IRError(IRErrorCode.MISSING_BLOCK_NAME);
 
     const tryResolveJmps = () => ({
       ifTrue: this.blocks[ifTrue.name],
@@ -112,23 +112,23 @@ export class CIRBranchesBuilder {
     }
 
     this.setBlock(newBlock);
-    this.tmpBlock = CIRInstructionsBlock.ofInstructions([]);
+    this.tmpBlock = IRInstructionsBlock.ofInstructions([]);
   }
 
   /**
    * Appends new block to blocks map, raises errors if fails
    *
    * @private
-   * @param {CIRInstructionsBlock} block
+   * @param {IRInstructionsBlock} block
    * @return  {this}
-   * @memberof CIRBranchesBuilder
+   * @memberof IRBranchesBuilder
    */
-  private setBlock(block: CIRInstructionsBlock): this {
+  private setBlock(block: IRInstructionsBlock): this {
     if (block.isEmpty())
       return this;
 
     if (!block.name)
-      throw new CIRError(CIRErrorCode.MISSING_BLOCK_NAME);
+      throw new IRError(IRErrorCode.MISSING_BLOCK_NAME);
 
     this.blocks[block.name] = block;
     return this;

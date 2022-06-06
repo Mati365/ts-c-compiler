@@ -1,6 +1,6 @@
-import type {CIRInstruction} from '../instructions/CIRInstruction';
-import type {CIRVariable} from '../variables';
+import type {IRInstruction} from '../instructions/IRInstruction';
+import type {IRVariable} from '../variables';
 
-export type IsOutputInstruction = CIRInstruction & {
-  outputVar?: CIRVariable;
+export type IsOutputInstruction = IRInstruction & {
+  outputVar?: IRVariable;
 };

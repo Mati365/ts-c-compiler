@@ -1,4 +1,4 @@
-export enum CIROpcode {
+export enum IROpcode {
   ASSIGN = 'ASSIGN',
   ALLOC = 'ALLOC',
   STORE = 'STORE',

@@ -1,5 +1,5 @@
 import {CCompilerArch} from '@compiler/pico-c/constants';
 
-export type CIRGeneratorConfig = {
+export type IRGeneratorConfig = {
   arch: CCompilerArch,
 };

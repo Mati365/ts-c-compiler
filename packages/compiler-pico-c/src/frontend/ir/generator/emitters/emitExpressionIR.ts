@@ -18,12 +18,12 @@ import {GroupTreeVisitor} from '@compiler/grammar/tree/TreeGroupedVisitor';
 import {IREmitterContextAttrs, IREmitterExpressionResult} from './types';
 
 import {
-  CIRInstruction, CIRLeaInstruction,
-  CIRLoadInstruction, CIRMathInstruction,
+  IRInstruction, IRLeaInstruction,
+  IRLoadInstruction, IRMathInstruction,
 } from '../../instructions';
 
-import {CIRError, CIRErrorCode} from '../../errors/CIRError';
-import {CIRConstant, CIRInstructionVarArg, CIRVariable} from '../../variables';
+import {IRError, IRErrorCode} from '../../errors/IRError';
+import {IRConstant, IRInstructionVarArg, IRVariable} from '../../variables';
 
 import {emitLvalueExpression} from './emitLvalueExpressionIR';
 
@@ -42,8 +42,8 @@ export function emitExpressionIR(
 ): IREmitterExpressionResult {
   const {allocator, emit, config} = context;
 
-  const instructions: CIRInstruction[] = [];
-  let argsVarsStack: CIRInstructionVarArg[] = [];
+  const instructions: IRInstruction[] = [];
+  let argsVarsStack: IRInstructionVarArg[] = [];
 
   const allocNextVariable = (nextType: CType = type) => {
     const irVariable = allocator.allocTmpVariable(nextType);
@@ -104,7 +104,7 @@ export function emitExpressionIR(
           );
 
           if (!assignResult.output)
-            throw new CIRError(CIRErrorCode.UNRESOLVED_ASSIGN_EXPRESSION);
+            throw new IRError(IRErrorCode.UNRESOLVED_ASSIGN_EXPRESSION);
 
           emitExprResult(assignResult);
           return false;
@@ -125,7 +125,7 @@ export function emitExpressionIR(
           );
 
           if (!exprResult.output)
-            throw new CIRError(CIRErrorCode.UNRESOLVED_IDENTIFIER);
+            throw new IRError(IRErrorCode.UNRESOLVED_IDENTIFIER);
 
           emitExprResult(exprResult);
           return false;
@@ -136,7 +136,7 @@ export function emitExpressionIR(
         enter(expression: ASTCPrimaryExpression) {
           if (expression.isConstant()) {
             argsVarsStack.push(
-              CIRConstant.ofConstant(type, expression.constant.value.number),
+              IRConstant.ofConstant(type, expression.constant.value.number),
             );
           } else if (expression.isIdentifier()) {
             const srcVar = allocator.getVariable(expression.identifier.text);
@@ -147,19 +147,19 @@ export function emitExpressionIR(
               );
 
               instructions.push(
-                new CIRLeaInstruction(tmpVar, srcVar),
+                new IRLeaInstruction(tmpVar, srcVar),
               );
             } else if (isPointerLikeType(srcVar.type)) {
               const tmpVar = allocNextVariable(srcVar.type);
 
               instructions.push(
-                new CIRLoadInstruction(srcVar, tmpVar),
+                new IRLoadInstruction(srcVar, tmpVar),
               );
             } else {
               const addressVar = allocNextVariable(srcVar.type);
 
               instructions.push(
-                new CIRLoadInstruction(srcVar, addressVar),
+                new IRLoadInstruction(srcVar, addressVar),
               );
             }
           } else if (expression.isExpression()) {
@@ -173,7 +173,7 @@ export function emitExpressionIR(
             );
 
             if (!exprResult.output)
-              throw new CIRError(CIRErrorCode.UNRESOLVED_IDENTIFIER);
+              throw new IRError(IRErrorCode.UNRESOLVED_IDENTIFIER);
 
             emitExprResult(exprResult);
           }
@@ -185,13 +185,13 @@ export function emitExpressionIR(
       [ASTCCompilerKind.BinaryOperator]: {
         leave: (binary: ASTCBinaryOpNode) => {
           let [a, b] = [argsVarsStack.pop(), argsVarsStack.pop()];
-          let output: CIRVariable = null;
+          let output: IRVariable = null;
 
           if (isPointerLikeType(a.type)) {
-            const mulPtrInstruction = new CIRMathInstruction(
+            const mulPtrInstruction = new IRMathInstruction(
               TokenType.MUL,
               b,
-              CIRConstant.ofConstant(
+              IRConstant.ofConstant(
                 CPrimitiveType.int(config.arch),
                 a.type.getSourceType().getByteSize(),
               ),
@@ -203,10 +203,10 @@ export function emitExpressionIR(
           }
 
           if (isPointerLikeType(b.type)) {
-            const mulPtrInstruction = new CIRMathInstruction(
+            const mulPtrInstruction = new IRMathInstruction(
               TokenType.MUL,
               a,
-              CIRConstant.ofConstant(
+              IRConstant.ofConstant(
                 CPrimitiveType.int(config.arch),
                 b.type.getSourceType().getByteSize(),
               ),
@@ -219,7 +219,7 @@ export function emitExpressionIR(
 
           output ||= allocNextVariable();
           instructions.push(
-            new CIRMathInstruction(
+            new IRMathInstruction(
               <CMathOperator> binary.op,
               b, a,
               output,

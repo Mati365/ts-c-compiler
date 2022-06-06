@@ -1,24 +1,24 @@
 import chalk from 'chalk';
 
 import {IsOutputInstruction} from '../interfaces';
-import {CIROpcode} from '../constants';
-import {CIRConstant, CIRInstructionVarArg, CIRVariable, isCIRConstant, isCIRVariable} from '../variables';
-import {CIRInstruction} from './CIRInstruction';
+import {IROpcode} from '../constants';
+import {IRConstant, IRInstructionVarArg, IRVariable, isIRConstant, isIRVariable} from '../variables';
+import {IRInstruction} from './IRInstruction';
 
 /**
  * Abstract operator instruction
  *
  * @export
- * @class CIROpInstruction
- * @extends {CIRInstruction}
+ * @class IROpInstruction
+ * @extends {IRInstruction}
  */
-export class CIROpInstruction<O> extends CIRInstruction implements IsOutputInstruction {
+export class IROpInstruction<O> extends IRInstruction implements IsOutputInstruction {
   constructor(
-    opcode: CIROpcode,
+    opcode: IROpcode,
     readonly operator: O,
-    readonly leftVar: CIRInstructionVarArg,
-    readonly rightVar: CIRInstructionVarArg,
-    readonly outputVar: CIRVariable = null,
+    readonly leftVar: IRInstructionVarArg,
+    readonly rightVar: IRInstructionVarArg,
+    readonly outputVar: IRVariable = null,
   ) {
     super(opcode);
   }
@@ -37,10 +37,10 @@ export class CIROpInstruction<O> extends CIRInstruction implements IsOutputInstr
   getFirstVarArg() {
     const {leftVar, rightVar} = this;
 
-    if (isCIRVariable(leftVar))
+    if (isIRVariable(leftVar))
       return leftVar;
 
-    if (isCIRVariable(rightVar))
+    if (isIRVariable(rightVar))
       return rightVar;
 
     return null;
@@ -49,22 +49,22 @@ export class CIROpInstruction<O> extends CIRInstruction implements IsOutputInstr
   getFirstConstantArg() {
     const {leftVar, rightVar} = this;
 
-    if (isCIRConstant(leftVar))
+    if (isIRConstant(leftVar))
       return leftVar;
 
-    if (isCIRConstant(rightVar))
+    if (isIRConstant(rightVar))
       return rightVar;
 
     return null;
   }
 
-  mapConstantArg(fn: (value: CIRConstant, index: number) => CIRConstant): this {
+  mapConstantArg(fn: (value: IRConstant, index: number) => IRConstant): this {
     const {operator, leftVar, rightVar, outputVar} = this;
 
     return new (this.constructor as any)(
       operator,
-      isCIRConstant(leftVar) ? fn(leftVar, 0) : leftVar,
-      isCIRConstant(rightVar) ? fn(rightVar, 1) : rightVar,
+      isIRConstant(leftVar) ? fn(leftVar, 0) : leftVar,
+      isIRConstant(rightVar) ? fn(rightVar, 1) : rightVar,
       outputVar,
     );
   }
@@ -76,6 +76,6 @@ export class CIROpInstruction<O> extends CIRInstruction implements IsOutputInstr
   hasBothConstantArgs() {
     const {leftVar, rightVar} = this;
 
-    return isCIRConstant(leftVar) && isCIRConstant(rightVar);
+    return isIRConstant(leftVar) && isIRConstant(rightVar);
   }
 }

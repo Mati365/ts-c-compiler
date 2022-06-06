@@ -1,2 +1,2 @@
-export * from './CIRResultView';
+export * from './IRResultView';
 export * from './getIRTypeDisplayName';

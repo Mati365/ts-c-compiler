@@ -8,11 +8,11 @@ import {Identity} from '@compiler/core/monads';
 import {PartialBy} from '@compiler/core/types';
 import {CType, CVariable} from '../../analyze';
 
-export function isCIRVariable(obj: any): obj is CIRVariable {
+export function isIRVariable(obj: any): obj is IRVariable {
   return R.is(Object, obj) && obj.value && obj.value.prefix;
 }
 
-export type CIRVariableDescriptor = {
+export type IRVariableDescriptor = {
   prefix: string,
   suffix: number,
   type: CType,
@@ -22,11 +22,11 @@ export type CIRVariableDescriptor = {
  * Single register variable
  *
  * @export
- * @class CIRVariable
+ * @class IRVariable
  * @implements {IsPrintable}
  */
-export class CIRVariable
-  extends Identity<CIRVariableDescriptor>
+export class IRVariable
+  extends Identity<IRVariableDescriptor>
   implements IsPrintable {
 
   /**
@@ -34,13 +34,13 @@ export class CIRVariable
    *
    * @static
    * @param {CVariable} variable
-   * @return {CIRVariable}
-   * @memberof CIRVariable
+   * @return {IRVariable}
+   * @memberof IRVariable
    */
-  static ofScopeVariable(variable: CVariable): CIRVariable {
+  static ofScopeVariable(variable: CVariable): IRVariable {
     const {type, name} = variable;
 
-    return new CIRVariable(
+    return new IRVariable(
       {
         prefix: name,
         type,
@@ -48,7 +48,7 @@ export class CIRVariable
     );
   }
 
-  constructor(value: PartialBy<CIRVariableDescriptor, 'suffix'>) {
+  constructor(value: PartialBy<IRVariableDescriptor, 'suffix'>) {
     super(
       {
         suffix: 0,
@@ -69,10 +69,10 @@ export class CIRVariable
    * Creates new temp copy variable
    *
    * @param {number} suffix
-   * @return {CIRVariable}
-   * @memberof CIRVariable
+   * @return {IRVariable}
+   * @memberof IRVariable
    */
-  ofSuffix(suffix: number): CIRVariable {
+  ofSuffix(suffix: number): IRVariable {
     return this.map(
       R.assoc('suffix', suffix),
     );
@@ -82,10 +82,10 @@ export class CIRVariable
    * Changes original name of variable
    *
    * @param {string} name
-   * @return {CIRVariable}
-   * @memberof CIRVariable
+   * @return {IRVariable}
+   * @memberof IRVariable
    */
-  ofPrefix(name: string): CIRVariable {
+  ofPrefix(name: string): IRVariable {
     return this.map(
       R.assoc('prefix', name),
     );
@@ -94,10 +94,10 @@ export class CIRVariable
   /**
    * Creates new cir variable of incremented suffix
    *
-   * @return {CIRVariable}
-   * @memberof CIRVariable
+   * @return {IRVariable}
+   * @memberof IRVariable
    */
-  ofIncrementedSuffix(): CIRVariable {
+  ofIncrementedSuffix(): IRVariable {
     return this.map(R.evolve(
       {
         suffix: R.inc,

@@ -1,7 +1,7 @@
 import * as R from 'ramda';
 import chalk from 'chalk';
 
-import {CIRInstructionsBlock} from '../instructions';
+import {IRInstructionsBlock} from '../instructions';
 import {IRCodeBuilderResult} from '../sefeBuildIRCode';
 
 import {isIRLabeledInstruction} from '../guards';
@@ -10,9 +10,9 @@ import {isIRLabeledInstruction} from '../guards';
  * Simple IR serializer. Maybe add graph rendering?
  *
  * @export
- * @class CIRResultView
+ * @class IRResultView
  */
-export class CIRResultView {
+export class IRResultView {
   constructor(
     private readonly _ir: IRCodeBuilderResult,
   ) {}
@@ -20,14 +20,14 @@ export class CIRResultView {
   get ir() { return this._ir; }
 
   static serializeToString(ir: IRCodeBuilderResult): string {
-    return new CIRResultView(ir).serialize();
+    return new IRResultView(ir).serialize();
   }
 
   /**
    * Iterates branch by branch and transforms branches to string
    *
    * @return {string}
-   * @memberof CIRResultView
+   * @memberof IRResultView
    */
   serialize(): string {
     const {
@@ -39,7 +39,7 @@ export class CIRResultView {
     return R.values(blocks).reduce(
       (acc, block) => {
         acc.push(
-          CIRResultView.serializeCodeBlock(block),
+          IRResultView.serializeCodeBlock(block),
         );
 
         return acc;
@@ -52,11 +52,11 @@ export class CIRResultView {
    * Serialize code block to multiline string
    *
    * @static
-   * @param {CIRInstructionsBlock} block
+   * @param {IRInstructionsBlock} block
    * @return {string}
-   * @memberof CIRResultView
+   * @memberof IRResultView
    */
-  static serializeCodeBlock(block: CIRInstructionsBlock): string {
+  static serializeCodeBlock(block: IRInstructionsBlock): string {
     const lines: string[] = [
       chalk.bold.greenBright(`; --- Block ${block.name || '<unknown>'} ---`),
     ];

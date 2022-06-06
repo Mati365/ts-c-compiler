@@ -1,14 +1,14 @@
 import {
-  CIRAssignInstruction,
-  CIRInstruction,
-  CIRMathInstruction,
-  CIRStoreInstruction,
+  IRAssignInstruction,
+  IRInstruction,
+  IRMathInstruction,
+  IRStoreInstruction,
   isIRAssignInstruction,
   isIRMathInstruction,
   isIRStoreInstruction,
 } from '../../instructions';
 
-import {CIRConstant, isCIRConstant, isCIRVariable} from '../../variables';
+import {IRConstant, isIRConstant, isIRVariable} from '../../variables';
 
 import {tryConcatMathInstructions} from './tryConcatMathInstructions';
 import {tryEvalConstArgsBinaryInstruction} from './tryEvalConstArgsBinaryInstruction';
@@ -27,19 +27,19 @@ export function optimizeInstructionsList(
   {
     enabled = true,
   }: IRInstructionsOptimizationAttrs,
-  instructions: CIRInstruction[],
+  instructions: IRInstruction[],
 ) {
   if (!enabled)
     return instructions;
 
   const newInstructions = [...instructions];
-  const constantArgs: Record<string, CIRConstant> = {};
+  const constantArgs: Record<string, IRConstant> = {};
 
   for (let i = 0; i < newInstructions.length;) {
     const instruction = newInstructions[i];
 
     // remove constant assigns from code
-    if (isIRAssignInstruction(instruction) && isCIRConstant(instruction.inputVar)) {
+    if (isIRAssignInstruction(instruction) && isIRConstant(instruction.inputVar)) {
       constantArgs[instruction.outputVar.name] = instruction.inputVar;
       newInstructions.splice(i, 1);
       --i;
@@ -48,11 +48,11 @@ export function optimizeInstructionsList(
 
     // replace constants in store instruction
     if (isIRStoreInstruction(instruction)
-        && isCIRVariable(instruction.value)
+        && isIRVariable(instruction.value)
         && instruction.value.name in constantArgs) {
       newInstructions[i] = (
-        new CIRStoreInstruction(
-          CIRConstant.ofConstant(
+        new IRStoreInstruction(
+          IRConstant.ofConstant(
             instruction.value.type,
             constantArgs[instruction.value.name].constant,
           ),
@@ -64,20 +64,20 @@ export function optimizeInstructionsList(
 
     // try replace args with constant dumps
     if (isIRMathInstruction(instruction)) {
-      let newInstruction: CIRInstruction;
+      let newInstruction: IRInstruction;
 
-      if (isCIRVariable(instruction.leftVar) && instruction.leftVar.name in constantArgs) {
+      if (isIRVariable(instruction.leftVar) && instruction.leftVar.name in constantArgs) {
         newInstruction = (
-          new CIRMathInstruction(
+          new IRMathInstruction(
             instruction.operator,
             constantArgs[instruction.leftVar.name],
             instruction.rightVar,
             instruction.outputVar,
           )
         );
-      } else if (isCIRVariable(instruction.rightVar) && instruction.rightVar.name in constantArgs) {
+      } else if (isIRVariable(instruction.rightVar) && instruction.rightVar.name in constantArgs) {
         newInstruction = (
-          new CIRMathInstruction(
+          new IRMathInstruction(
             instruction.operator,
             instruction.leftVar,
             constantArgs[instruction.rightVar.name],
@@ -98,8 +98,8 @@ export function optimizeInstructionsList(
       const evalResult = tryEvalConstArgsBinaryInstruction(instruction);
 
       if (evalResult.isSome()) {
-        newInstructions[i] = new CIRAssignInstruction(
-          CIRConstant.ofConstant(
+        newInstructions[i] = new IRAssignInstruction(
+          IRConstant.ofConstant(
             instruction.leftVar.type,
             evalResult.unwrap(),
           ),

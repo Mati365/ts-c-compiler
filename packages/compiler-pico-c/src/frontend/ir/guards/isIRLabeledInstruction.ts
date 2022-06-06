@@ -1,6 +1,6 @@
-import {CIRInstruction} from '../instructions';
+import {IRInstruction} from '../instructions';
 import {IsLabeledInstruction} from '../interfaces';
 
-export function isIRLabeledInstruction(instruction: CIRInstruction): instruction is IsLabeledInstruction {
+export function isIRLabeledInstruction(instruction: IRInstruction): instruction is IsLabeledInstruction {
   return 'name' in instruction;
 }

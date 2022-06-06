@@ -1,23 +1,23 @@
 import {Result, err, ok} from '@compiler/core/monads';
 
 import {CScopeTree} from '../analyze';
-import {CIRGeneratorConfig} from './constants';
-import {CIRError, CIRErrorCode} from './errors/CIRError';
+import {IRGeneratorConfig} from './constants';
+import {IRError, IRErrorCode} from './errors/IRError';
 import {
-  CIRGeneratorScopeVisitor,
-  CIRBranchesBuilderResult,
+  IRGeneratorScopeVisitor,
+  IRBranchesBuilderResult,
 } from './generator';
 
 export type IRCodeBuilderResult = {
-  branches: CIRBranchesBuilderResult,
+  branches: IRBranchesBuilderResult,
 };
 
 export function safeBuildIRCode(
-  config: CIRGeneratorConfig,
+  config: IRGeneratorConfig,
   tree: CScopeTree,
-): Result<IRCodeBuilderResult, CIRError[]> {
+): Result<IRCodeBuilderResult, IRError[]> {
   try {
-    const branches = new CIRGeneratorScopeVisitor(config).visit(tree).flush();
+    const branches = new IRGeneratorScopeVisitor(config).visit(tree).flush();
 
     return ok(
       {
@@ -25,7 +25,7 @@ export function safeBuildIRCode(
       },
     );
   } catch (e) {
-    e.code = e.code ?? CIRErrorCode.GENERATOR_ERROR;
+    e.code = e.code ?? IRErrorCode.GENERATOR_ERROR;
 
     return err(
       [

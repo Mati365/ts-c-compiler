@@ -5,7 +5,7 @@ import {
   ASTCCompilerNode, ASTCDeclaration, ASTCFunctionDefinition,
 } from '@compiler/pico-c/frontend/parser';
 
-import {CIRInstruction, CIRRetInstruction} from '../../instructions';
+import {IRInstruction, IRRetInstruction} from '../../instructions';
 import {IREmitterContextAttrs, IREmitterStmtResult} from './types';
 
 import {emitAssignmentIR} from './emitAssignmentIR';
@@ -22,7 +22,7 @@ export function emitFunctionIR(
     node,
   }: FunctionIREmitAttrs,
 ): IREmitterStmtResult {
-  const instructions: CIRInstruction[] = [
+  const instructions: IRInstruction[] = [
     context.allocator.allocFunctionType(<CFunctionDeclType> node.type),
   ];
 
@@ -63,7 +63,7 @@ export function emitFunctionIR(
     },
   )(node.content);
 
-  instructions.push(new CIRRetInstruction);
+  instructions.push(new IRRetInstruction);
 
   return {
     instructions,

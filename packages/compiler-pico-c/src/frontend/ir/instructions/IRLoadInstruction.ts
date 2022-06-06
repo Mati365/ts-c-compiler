@@ -1,25 +1,25 @@
 import chalk from 'chalk';
 
 import {IsOutputInstruction} from '../interfaces';
-import {CIROpcode} from '../constants';
-import {CIRInstruction} from './CIRInstruction';
-import {CIRInstructionVarArg, CIRVariable} from '../variables';
+import {IROpcode} from '../constants';
+import {IRInstruction} from './IRInstruction';
+import {IRInstructionVarArg, IRVariable} from '../variables';
 
 /**
  * Instruction that loads variable from mem
  *
  * @export
- * @class CIRLoadInstruction
- * @extends {CIRInstruction}
+ * @class IRLoadInstruction
+ * @extends {IRInstruction}
  * @implements {IsOutputInstruction}
  */
-export class CIRLoadInstruction extends CIRInstruction implements IsOutputInstruction {
+export class IRLoadInstruction extends IRInstruction implements IsOutputInstruction {
   constructor(
-    readonly inputVar: CIRInstructionVarArg,
-    readonly outputVar: CIRVariable,
+    readonly inputVar: IRInstructionVarArg,
+    readonly outputVar: IRVariable,
     readonly offset: number = 0,
   ) {
-    super(CIROpcode.LOAD);
+    super(IROpcode.LOAD);
   }
 
   override getDisplayName(): string {

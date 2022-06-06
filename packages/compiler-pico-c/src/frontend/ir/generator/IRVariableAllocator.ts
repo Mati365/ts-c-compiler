@@ -1,6 +1,6 @@
 import {CFunctionDeclType, CType, CVariable} from '../../analyze';
-import {CIRFnDefInstruction} from '../instructions';
-import {CIRVariable} from '../variables';
+import {IRFnDefInstruction} from '../instructions';
+import {IRVariable} from '../variables';
 
 const TMP_VAR_PREFIX = 't';
 
@@ -8,10 +8,10 @@ const TMP_VAR_PREFIX = 't';
  * Registers symbols table
  *
  * @export
- * @class CIRVariableAllocator
+ * @class IRVariableAllocator
  */
-export class CIRVariableAllocator {
-  private readonly variables: Record<string, CIRVariable> = {};
+export class IRVariableAllocator {
+  private readonly variables: Record<string, IRVariable> = {};
   private readonly counters = {
     labels: 0,
     tmpVars: 0,
@@ -25,20 +25,20 @@ export class CIRVariableAllocator {
     return `L${this.counters.labels++}-${suffix}`;
   }
 
-  getVariable(name: string): CIRVariable {
+  getVariable(name: string): IRVariable {
     return this.variables[name];
   }
 
   /**
    * Just assigns variable by its name to map
    *
-   * @param {CIRVariable} variable
-   * @return {CIRVariable}
-   * @memberof CIRVariableAllocator
+   * @param {IRVariable} variable
+   * @return {IRVariable}
+   * @memberof IRVariableAllocator
    */
-  allocVariable(variable: CIRVariable | CVariable): CIRVariable {
+  allocVariable(variable: IRVariable | CVariable): IRVariable {
     if (variable instanceof CVariable)
-      variable = CIRVariable.ofScopeVariable(variable);
+      variable = IRVariable.ofScopeVariable(variable);
 
     this.variables[variable.prefix] = variable;
     return variable;
@@ -47,10 +47,10 @@ export class CIRVariableAllocator {
   /**
    * Decrenebt syffix and return var
    *
-   * @return {CIRVariable}
-   * @memberof CIRVariableAllocator
+   * @return {IRVariable}
+   * @memberof IRVariableAllocator
    */
-  deallocTmpVariable(): CIRVariable {
+  deallocTmpVariable(): IRVariable {
     return this.allocVariable(
       this
         .getVariable(TMP_VAR_PREFIX)
@@ -62,11 +62,11 @@ export class CIRVariableAllocator {
    * Alloc variable used for example for ptr compute
    *
    * @param {CType} type
-   * @return {{CIRVariable}
-   * @memberof CIRVariableAllocator
+   * @return {{IRVariable}
+   * @memberof IRVariableAllocator
    */
-  allocTmpVariable(type: CType): CIRVariable {
-    const tmpVar = this.getVariable(TMP_VAR_PREFIX) ?? new CIRVariable(
+  allocTmpVariable(type: CType): IRVariable {
+    const tmpVar = this.getVariable(TMP_VAR_PREFIX) ?? new IRVariable(
       {
         prefix: TMP_VAR_PREFIX,
         suffix: -1,
@@ -85,15 +85,15 @@ export class CIRVariableAllocator {
    * Allocates arg temp variables for function
    *
    * @param {CFunctionDeclType} fn
-   * @return {CIRFnDefInstruction}
-   * @memberof CIRVariableAllocator
+   * @return {IRFnDefInstruction}
+   * @memberof IRVariableAllocator
    */
-  allocFunctionType(fn: CFunctionDeclType): CIRFnDefInstruction {
+  allocFunctionType(fn: CFunctionDeclType): IRFnDefInstruction {
     const irDefArgs = fn.args.map(
-      (arg) => this.allocVariable(CIRVariable.ofScopeVariable(arg)),
+      (arg) => this.allocVariable(IRVariable.ofScopeVariable(arg)),
     );
 
-    return new CIRFnDefInstruction(
+    return new IRFnDefInstruction(
       fn.name,
       irDefArgs,
     );

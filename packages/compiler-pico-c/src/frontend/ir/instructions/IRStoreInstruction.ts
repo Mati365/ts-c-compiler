@@ -3,29 +3,29 @@ import chalk from 'chalk';
 
 import {IsOutputInstruction} from '../interfaces';
 
-import {CIROpcode} from '../constants';
-import {CIRInstruction} from './CIRInstruction';
-import {CIRInstructionVarArg, CIRVariable} from '../variables';
+import {IROpcode} from '../constants';
+import {IRInstruction} from './IRInstruction';
+import {IRInstructionVarArg, IRVariable} from '../variables';
 
-export function isIRStoreInstruction(instruction: CIRInstruction): instruction is CIRStoreInstruction {
-  return instruction.opcode === CIROpcode.STORE;
+export function isIRStoreInstruction(instruction: IRInstruction): instruction is IRStoreInstruction {
+  return instruction.opcode === IROpcode.STORE;
 }
 
 /**
  * Instruction that saves variable to mem
  *
  * @export
- * @class CIRStoreInstruction
- * @extends {CIRInstruction}
+ * @class IRStoreInstruction
+ * @extends {IRInstruction}
  * @implements {IsOutputInstruction}
  */
-export class CIRStoreInstruction extends CIRInstruction implements IsOutputInstruction {
+export class IRStoreInstruction extends IRInstruction implements IsOutputInstruction {
   constructor(
-    readonly value: CIRInstructionVarArg,
-    readonly outputVar: CIRVariable,
+    readonly value: IRInstructionVarArg,
+    readonly outputVar: IRVariable,
     readonly offset: number = 0,
   ) {
-    super(CIROpcode.STORE);
+    super(IROpcode.STORE);
   }
 
   isUninitialized() {

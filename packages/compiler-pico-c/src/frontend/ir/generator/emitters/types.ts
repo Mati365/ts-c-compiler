@@ -1,9 +1,9 @@
 import {CScopeTree} from '@compiler/pico-c/frontend/analyze';
 
-import {CIRGeneratorConfig} from '../../constants';
-import {CIRInstruction} from '../../instructions';
-import {CIRConstant, CIRVariable} from '../../variables';
-import {CIRVariableAllocator} from '../CIRVariableAllocator';
+import {IRGeneratorConfig} from '../../constants';
+import {IRInstruction} from '../../instructions';
+import {IRConstant, IRVariable} from '../../variables';
+import {IRVariableAllocator} from '../IRVariableAllocator';
 
 import type {emitAssignmentIR} from './emitAssignmentIR';
 import type {emitExpressionIR} from './emitExpressionIR';
@@ -12,8 +12,8 @@ import type {emitPointerExpression} from './emitPointerExpression';
 import type {emitPointerAddressExpression} from './emitPointerAddressExpression';
 
 export type IREmitterContext = {
-  config: CIRGeneratorConfig;
-  allocator: CIRVariableAllocator;
+  config: IRGeneratorConfig;
+  allocator: IRVariableAllocator;
   emit: {
     assignment: typeof emitAssignmentIR,
     expression: typeof emitExpressionIR;
@@ -29,13 +29,13 @@ export type IREmitterContextAttrs = {
 };
 
 export type IREmitterStmtResult = {
-  instructions: CIRInstruction[];
+  instructions: IRInstruction[];
 };
 
 export type IREmitterExpressionVarResult = IREmitterStmtResult & {
-  output: CIRVariable;
+  output: IRVariable;
 };
 
 export type IREmitterExpressionResult = IREmitterStmtResult & {
-  output: CIRVariable | CIRConstant;
+  output: IRVariable | IRConstant;
 };
