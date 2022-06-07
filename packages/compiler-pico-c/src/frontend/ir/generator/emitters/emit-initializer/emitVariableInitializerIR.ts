@@ -28,15 +28,13 @@ type InitializerIREmitAttrs = IREmitterContextAttrs & {
 };
 
 /**
- * @todo
- * Emit initializers for arrays with <= 3 directly.
- * If there is >= 3 emit only pointer to labeled value such as:
+ * Emits array initializer and when array size is bigger
+ * than specified in constant emits pointer to data segment
  *
- * array = &(label)
- * label:
- *  db 5
- *  db 8
- *  db 9
+ * @example
+ *  array = &(label)
+ *  label:
+ *    db 1, 2, 3, 4
  */
 export function emitVariableInitializerIR(
   {
@@ -66,7 +64,7 @@ export function emitVariableInitializerIR(
         && initializer.hasOnlyConstantExpressions()
         && initializer.getInitializedFieldsCount() > MIN_PTR_ARRAY_INITIALIZED_FIELDS_COUNT) {
       // initializer with const expressions
-      const ptrType = CPointerType.ofArray(config.arch, <CArrayType> type);
+      const arrayPtrType = CPointerType.ofArray(config.arch, <CArrayType> type);
       const dataType = CArrayType.ofFlattenDescriptor(
         {
           type: type.getSourceType(),
@@ -76,12 +74,12 @@ export function emitVariableInitializerIR(
 
       const rootIRVar = allocator.allocVariablePointer(
         IRVariable
-          .ofScopeVariable(variable.ofType(ptrType))
+          .ofScopeVariable(variable.ofType(arrayPtrType))
           .ofVirtualArrayPtr(),
       );
 
       const constArrayVar = allocator.allocConstDataVariable(dataType);
-      const tmpLeaAddressVar = allocator.allocAddressVariable();
+      const tmpLeaAddressVar = allocator.allocTmpVariable(arrayPtrType);
 
       data.push(
         new IRDefConstInstruction(initializer, constArrayVar),

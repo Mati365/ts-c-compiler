@@ -1,9 +1,9 @@
 import {ccompiler, CCompilerOutput} from '@compiler/pico-c';
 
 ccompiler(/* cpp */ `
-  int sub(int a, int b) {
-    int array[] = { 1, 2, 3, 4, 5, 6 };
-    *(array + 1) = 2;
+  int main() {
+    const char* title = "Hello world!";
+    int monkey = 5;
   }
 `).match(
   {

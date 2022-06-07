@@ -27,16 +27,29 @@ import {
  */
 export class CTreeTypeBuilderVisitor extends CInnerTypeTreeVisitor {
   private name: string = null;
+  private lvalueTypeExtract: boolean = false;
 
   constructor(private type: CType) {
     super(
       {
         [ASTCCompilerKind.Declarator]: {
-          enter: (node: ASTCDeclarator) => this.extractDeclarator(node),
+          enter: (node: ASTCDeclarator) => {
+            if (!this.lvalueTypeExtract) {
+              this.lvalueTypeExtract = true;
+
+              this.extractDeclaratorPointers(node);
+              this.visit(node.directDeclarator);
+            } else {
+              this.visit(node.directDeclarator);
+              this.extractDeclaratorPointers(node);
+            }
+
+            return false;
+          },
         },
 
         [ASTCCompilerKind.DirectDeclarator]: {
-          leave: (node: ASTCDirectDeclarator) => this.extractDirectDeclarator(node),
+          enter: (node: ASTCDirectDeclarator) => this.extractDirectDeclarator(node),
         },
 
         [ASTCCompilerKind.DirectDeclaratorFnExpression]: {
@@ -53,10 +66,9 @@ export class CTreeTypeBuilderVisitor extends CInnerTypeTreeVisitor {
    *
    * @private
    * @param {ASTCDeclarator} node
-   * @return {boolean}
    * @memberof CTreeTypeBuilderVisitor
    */
-  private extractDeclarator(node: ASTCDeclarator): boolean {
+  private extractDeclaratorPointers(node: ASTCDeclarator) {
     let pointerNode = node.pointer;
     while (pointerNode) {
       this.type = CPointerType.ofType(
@@ -69,8 +81,6 @@ export class CTreeTypeBuilderVisitor extends CInnerTypeTreeVisitor {
 
       pointerNode = pointerNode.pointer;
     }
-
-    return !this.isDone();
   }
 
   /**
@@ -78,10 +88,9 @@ export class CTreeTypeBuilderVisitor extends CInnerTypeTreeVisitor {
    *
    * @private
    * @param {ASTCDirectDeclarator} node
-   * @return {boolean}
    * @memberof CTreeTypeBuilderVisitor
    */
-  private extractDirectDeclarator(node: ASTCDirectDeclarator): boolean {
+  private extractDirectDeclarator(node: ASTCDirectDeclarator) {
     if (node.isIdentifier())
       this.name = this.name || node.identifier.text;
     else if (node.isArrayExpression()) {
@@ -119,18 +128,8 @@ export class CTreeTypeBuilderVisitor extends CInnerTypeTreeVisitor {
         );
       }
     }
-
-    if (this.isDone())
-      return false;
-
-    return true;
   }
 
-  private isDone() {
-    const {type, name} = this;
-
-    return !!(type && name);
-  }
 
   getBuiltEntry() {
     const {type, name} = this;
