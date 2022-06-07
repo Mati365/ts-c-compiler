@@ -2,7 +2,7 @@ import {GroupTreeVisitor} from '@compiler/grammar/tree/TreeGroupedVisitor';
 import {CFunctionDeclType} from '@compiler/pico-c/frontend/analyze';
 import {
   ASTCAssignmentExpression, ASTCCompilerKind,
-  ASTCCompilerNode, ASTCDeclaration, ASTCFunctionDefinition,
+  ASTCCompilerNode, ASTCDeclaration, ASTCExpressionStatement, ASTCFunctionDefinition,
 } from '@compiler/pico-c/frontend/parser';
 
 import {IRRetInstruction} from '../../instructions';
@@ -15,6 +15,7 @@ import {
 
 import {emitAssignmentIR} from './emitAssignmentIR';
 import {emitDeclarationIR} from './emitDeclarationIR';
+import {emitExpressionStmtIR} from './emitExpressionStmtIR';
 
 type FunctionIREmitAttrs = IREmitterContextAttrs & {
   node: ASTCFunctionDefinition;
@@ -59,6 +60,20 @@ export function emitFunctionIR(
           const assignResult = emitAssignmentIR(
             {
               node: assignmentNode,
+              scope,
+              context,
+            },
+          );
+
+          appendStmtResults(assignResult, result);
+          return false;
+        },
+      },
+      [ASTCCompilerKind.ExpressionStmt]: {
+        enter(expressionNode: ASTCExpressionStatement) {
+          const assignResult = emitExpressionStmtIR(
+            {
+              node: expressionNode,
               scope,
               context,
             },

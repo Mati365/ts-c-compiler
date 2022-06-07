@@ -28,9 +28,10 @@ import {IRError, IRErrorCode} from '../../errors/IRError';
 import {IRConstant, IRInstructionVarArg, IRVariable} from '../../variables';
 
 import {emitLvalueExpression} from './emitLvalueExpressionIR';
+import {emitIncExpressionIR} from './emitIncExpressionIR';
 
 export type ExpressionIREmitAttrs = IREmitterContextAttrs & {
-  type: CType;
+  type?: CType;
   node: ASTCCompilerNode;
 };
 
@@ -42,8 +43,9 @@ export function emitExpressionIR(
     scope,
   }: ExpressionIREmitAttrs,
 ): IREmitterExpressionResult {
-  const {allocator, emit, config} = context;
+  type ??= node.type;
 
+  const {allocator, emit, config} = context;
   const instructions: IRInstruction[] = [];
   let argsVarsStack: IRInstructionVarArg[] = [];
 
@@ -53,7 +55,7 @@ export function emitExpressionIR(
     return irVariable;
   };
 
-  const emitExprResult = (result: IREmitterExpressionResult) => {
+  const emitExprResultToStack = (result: IREmitterExpressionResult) => {
     instructions.push(...result.instructions);
     argsVarsStack.push(result.output);
   };
@@ -63,6 +65,7 @@ export function emitExpressionIR(
       [ASTCCompilerKind.CastUnaryExpression]: {
         enter(expr: ASTCCastUnaryExpression) {
           switch (expr.operator) {
+            // *a
             case CUnaryCastOperator.MUL: {
               const pointerExprResult = emit.pointerExpression(
                 {
@@ -72,10 +75,11 @@ export function emitExpressionIR(
                 },
               );
 
-              emitExprResult(pointerExprResult);
+              emitExprResultToStack(pointerExprResult);
               return false;
             }
 
+            // &a
             case CUnaryCastOperator.AND: {
               const pointerAddresExprResult = emit.pointerAddressExpression(
                 {
@@ -85,7 +89,7 @@ export function emitExpressionIR(
                 },
               );
 
-              emitExprResult(pointerAddresExprResult);
+              emitExprResultToStack(pointerAddresExprResult);
               return false;
             }
           }
@@ -97,6 +101,7 @@ export function emitExpressionIR(
           if (!expression.isOperatorExpression())
             return;
 
+          // a = xyz
           const assignResult = emit.assignment(
             {
               node: expression,
@@ -108,39 +113,71 @@ export function emitExpressionIR(
           if (!assignResult.output)
             throw new IRError(IRErrorCode.UNRESOLVED_ASSIGN_EXPRESSION);
 
-          emitExprResult(assignResult);
+          emitExprResultToStack(assignResult);
           return false;
         },
       },
 
       [ASTCCompilerKind.PostfixExpression]: {
         enter(expression: ASTCPostfixExpression) {
-          if (expression.isPrimaryExpression())
-            return;
+          if (expression.isPostIncExpression() || expression.isPreIncExpression()) {
+            const isPreInc = expression.isPreIncExpression();
 
-          const exprResult = emitLvalueExpression(
-            {
-              node: expression,
-              context,
-              scope,
-            },
-          );
+            // handle i++ / ++i
+            const sign = expression.getIncSign();
+            const irSrcVarExprResult = emitLvalueExpression(
+              {
+                emitLoadPtr: false,
+                node: (
+                  isPreInc
+                    ? expression.primaryExpression
+                    : expression.postfixExpression
+                ),
+                context,
+                scope,
+              },
+            );
 
-          if (!exprResult.output)
-            throw new IRError(IRErrorCode.UNRESOLVED_IDENTIFIER);
+            const exprResult = emitIncExpressionIR(
+              {
+                pre: isPreInc,
+                rootIRVar: irSrcVarExprResult.output,
+                context,
+                sign,
+              },
+            );
 
-          emitExprResult(exprResult);
-          return false;
+            instructions.push(...irSrcVarExprResult.instructions);
+            emitExprResultToStack(exprResult);
+            return false;
+          } else if (!expression.isPrimaryExpression()) {
+            // handle (a + 2)
+            const exprResult = emitLvalueExpression(
+              {
+                node: expression,
+                context,
+                scope,
+              },
+            );
+
+            if (!exprResult.output)
+              throw new IRError(IRErrorCode.UNRESOLVED_IDENTIFIER);
+
+            emitExprResultToStack(exprResult);
+            return false;
+          }
         },
       },
 
       [ASTCCompilerKind.PrimaryExpression]: {
         enter(expression: ASTCPrimaryExpression) {
           if (expression.isConstant()) {
+            // handle "a"
             argsVarsStack.push(
               IRConstant.ofConstant(type, expression.constant.value.number),
             );
           } else if (expression.isIdentifier()) {
+            // handle a[2] / *a
             const srcVar = allocator.getVariable(expression.identifier.text);
 
             if (isArrayLikeType(srcVar.type)) {
@@ -165,6 +202,7 @@ export function emitExpressionIR(
               );
             }
           } else if (expression.isExpression()) {
+            // handle "2 + (a + 2)"
             const exprResult = emitExpressionIR(
               {
                 node: expression.expression,
@@ -177,7 +215,7 @@ export function emitExpressionIR(
             if (!exprResult.output)
               throw new IRError(IRErrorCode.UNRESOLVED_IDENTIFIER);
 
-            emitExprResult(exprResult);
+            emitExprResultToStack(exprResult);
           }
 
           return false;

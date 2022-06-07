@@ -3,6 +3,7 @@ import {CAssignOperator, CCOMPILER_ASSIGN_MATH_OPERATORS} from '@compiler/pico-c
 
 import {
   IRInstruction,
+  IRLoadInstruction,
   IRMathInstruction,
   IRStoreInstruction,
 } from '../../instructions';
@@ -58,12 +59,14 @@ export function emitAssignmentIR(
     assignResult = rvalue.output;
   } else {
     // load tmp ptr
+    const irSrcVar = allocator.allocTmpVariable(rvalueType);
     const tmpResultVar = allocator.allocTmpVariable(rvalueType);
 
     instructions.push(
+      new IRLoadInstruction(lvalue.output, irSrcVar),
       new IRMathInstruction(
         CCOMPILER_ASSIGN_MATH_OPERATORS[operator],
-        lvalue.output,
+        irSrcVar,
         rvalue.output,
         tmpResultVar,
       ),

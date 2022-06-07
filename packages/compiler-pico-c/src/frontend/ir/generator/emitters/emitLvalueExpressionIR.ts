@@ -4,6 +4,7 @@ import {TokenType} from '@compiler/lexer/shared';
 import {
   CPrimitiveType,
   isArrayLikeType,
+  isPointerLikeType,
   isStructLikeType,
 } from '@compiler/pico-c/frontend/analyze';
 
@@ -59,7 +60,7 @@ export function emitLvalueExpression(
   let instructions: (IRInstruction & IsOutputInstruction)[] = [];
 
   let rootIRVar: IRVariable;
-  let lastIRAddressVar: IRVariable = null;
+  let lastIRVar: IRVariable = null;
   let parentNodes: ASTCPostfixExpression[] = [];
 
   const getParentType = () => R.last(parentNodes).postfixExpression?.type;
@@ -99,7 +100,7 @@ export function emitLvalueExpression(
             throw new IRError(IRErrorCode.INCORRECT_UNARY_EXPR);
 
           instructions.push(...pointerExprResult.instructions);
-          lastIRAddressVar = pointerExprResult.output;
+          lastIRVar = pointerExprResult.output;
           return false;
         },
       },
@@ -123,19 +124,19 @@ export function emitLvalueExpression(
            * not into te stack but somewhere else
            */
           if (irVariable.virtualArrayPtr) {
-            lastIRAddressVar = allocator.allocAddressVariable();
+            lastIRVar = allocator.allocAddressVariable();
             instructions.push(
-              new IRLoadInstruction(irVariable, lastIRAddressVar),
+              new IRLoadInstruction(irVariable, lastIRVar),
             );
           } else {
-            lastIRAddressVar = irVariable;
+            lastIRVar = irVariable;
           }
         },
       },
 
       [ASTCCompilerKind.PostfixDotExpression]: {
         enter(expr: ASTCPostfixDotExpression) {
-          if (!lastIRAddressVar)
+          if (!lastIRVar)
             return true;
 
           const parentType = getParentType();
@@ -151,8 +152,9 @@ export function emitLvalueExpression(
             instructions.push(
               new IRMathInstruction(
                 TokenType.PLUS,
-                lastIRAddressVar, offsetConstant,
-                lastIRAddressVar = allocator.allocAddressVariable(),
+                lastIRVar,
+                offsetConstant,
+                lastIRVar = allocator.allocAddressVariable(),
               ),
             );
           }
@@ -161,7 +163,7 @@ export function emitLvalueExpression(
 
       [ASTCCompilerKind.PostfixArrayExpression]: {
         enter(expr: ASTCPostfixArrayExpression) {
-          if (!lastIRAddressVar)
+          if (!lastIRVar)
             return true;
 
           const parentType = getParentType();
@@ -173,7 +175,7 @@ export function emitLvalueExpression(
             output: exprOutput,
           } = context.emit.expression(
             {
-              type: lastIRAddressVar.type,
+              type: lastIRVar.type.getSourceType(),
               node: expr,
               context,
               scope,
@@ -186,19 +188,24 @@ export function emitLvalueExpression(
           const entryByteSize = parentType.ofTailDimensions().getByteSize();
 
           if (isIRVariable(exprOutput)) {
-            const constant = IRConstant.ofConstant(
-              CPrimitiveType.int(config.arch),
-              entryByteSize,
-            );
+            if (isPointerLikeType(exprOutput.type)) {
+              offsetAddressVar = exprOutput;
+            } else {
+              const constant = IRConstant.ofConstant(
+                CPrimitiveType.int(config.arch),
+                entryByteSize,
+              );
 
-            offsetAddressVar = allocator.allocAddressVariable();
-            instructions.push(
-              new IRMathInstruction(
-                TokenType.MUL,
-                exprOutput, constant,
-                offsetAddressVar,
-              ),
-            );
+              offsetAddressVar = allocator.allocAddressVariable();
+              instructions.push(
+                new IRMathInstruction(
+                  TokenType.MUL,
+                  exprOutput,
+                  constant,
+                  offsetAddressVar,
+                ),
+              );
+            }
           } else if (exprOutput.constant) {
             offsetAddressVar = IRConstant.ofConstant(
               CPrimitiveType.int(config.arch),
@@ -210,8 +217,9 @@ export function emitLvalueExpression(
             instructions.push(
               new IRMathInstruction(
                 TokenType.PLUS,
-                lastIRAddressVar, offsetAddressVar,
-                lastIRAddressVar = allocator.allocAddressVariable(),
+                lastIRVar,
+                offsetAddressVar,
+                lastIRVar = allocator.allocAddressVariable(),
               ),
             );
           }
@@ -222,17 +230,24 @@ export function emitLvalueExpression(
     },
   )(node);
 
-  if (emitLoadPtr && lastIRAddressVar) {
-    const outputVar = allocator.allocAddressVariable();
+  if (emitLoadPtr && lastIRVar) {
+    const outputVar = allocator.allocTmpVariable(rootIRVar.type.getSourceType());
     instructions.push(
-      new IRLoadInstruction(lastIRAddressVar, outputVar),
+      new IRLoadInstruction(
+        lastIRVar,
+        outputVar,
+      ),
     );
 
-    lastIRAddressVar = outputVar;
+    return {
+      output: outputVar,
+      rootIRVar,
+      instructions,
+    };
   }
 
   return {
-    output: lastIRAddressVar,
+    output: lastIRVar,
     rootIRVar,
     instructions,
   };

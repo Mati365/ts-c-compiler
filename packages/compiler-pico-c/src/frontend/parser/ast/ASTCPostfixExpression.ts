@@ -1,3 +1,5 @@
+import * as R from 'ramda';
+
 import {dumpAttributesToString} from '@compiler/core/utils';
 import {walkOverFields} from '@compiler/grammar/decorators/walkOverFields';
 
@@ -126,5 +128,44 @@ export class ASTCPostfixExpression extends ASTCCompilerNode {
 
   getFnName(): string {
     return this.postfixExpression.primaryExpression?.identifier?.text;
+  }
+
+  getPreIncSign() {
+    const {postfixExpression} = this;
+
+    if (!postfixExpression)
+      return null;
+
+    if (postfixExpression.isDecExpression())
+      return -1;
+
+    if (postfixExpression.isIncExpression())
+      return 1;
+
+    return null;
+  }
+
+  getPostIncSign() {
+    const {incExpression, decExpression} = this;
+
+    if (incExpression)
+      return 1;
+
+    if (decExpression)
+      return -1;
+
+    return null;
+  }
+
+  getIncSign() {
+    return this.getPreIncSign() ?? this.getPostIncSign();
+  }
+
+  isPreIncExpression() {
+    return !R.isNil(this.getPreIncSign());
+  }
+
+  isPostIncExpression() {
+    return !R.isNil(this.getPostIncSign());
   }
 }

@@ -12,10 +12,10 @@ import {
 } from '../../instructions';
 
 const canConcatOperators = (a: TokenType, b: TokenType) => {
-  if ([a, b].every((arg) => arg === TokenType.PLUS || TokenType.MINUS))
+  if ([a, b].every((arg) => arg === TokenType.PLUS || arg === TokenType.MINUS))
     return true;
 
-  if ([a, b].every((arg) => arg === TokenType.MUL || TokenType.DIV))
+  if ([a, b].every((arg) => arg === TokenType.MUL || arg === TokenType.DIV))
     return true;
 
   return false;

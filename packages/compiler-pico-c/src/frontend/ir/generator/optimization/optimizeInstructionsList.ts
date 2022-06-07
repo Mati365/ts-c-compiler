@@ -24,10 +24,10 @@ export type IRInstructionsOptimizationAttrs = {
  *  Input and output on first and last instructions must be preserved!
  */
 export function optimizeInstructionsList(
+  instructions: IRInstruction[],
   {
     enabled = true,
-  }: IRInstructionsOptimizationAttrs,
-  instructions: IRInstruction[],
+  }: IRInstructionsOptimizationAttrs = {},
 ) {
   if (!enabled)
     return instructions;
@@ -64,24 +64,30 @@ export function optimizeInstructionsList(
 
     // try replace args with constant dumps
     if (isIRMathInstruction(instruction)) {
-      let newInstruction: IRInstruction;
+      const {
+        operator,
+        leftVar,
+        rightVar,
+        outputVar,
+      } = instruction;
 
-      if (isIRVariable(instruction.leftVar) && instruction.leftVar.name in constantArgs) {
+      let newInstruction: IRInstruction;
+      if (isIRVariable(leftVar) && leftVar.name in constantArgs) {
         newInstruction = (
           new IRMathInstruction(
-            instruction.operator,
-            constantArgs[instruction.leftVar.name],
-            instruction.rightVar,
-            instruction.outputVar,
+            operator,
+            constantArgs[leftVar.name],
+            rightVar,
+            outputVar,
           )
         );
-      } else if (isIRVariable(instruction.rightVar) && instruction.rightVar.name in constantArgs) {
+      } else if (isIRVariable(rightVar) && rightVar.name in constantArgs) {
         newInstruction = (
           new IRMathInstruction(
-            instruction.operator,
-            instruction.leftVar,
-            constantArgs[instruction.rightVar.name],
-            instruction.outputVar,
+            operator,
+            leftVar,
+            constantArgs[rightVar.name],
+            outputVar,
           )
         );
       }

@@ -103,7 +103,7 @@ export class IRGeneratorScopeVisitor extends CScopeVisitor {
       );
 
       segments.code.emitBulk(
-        optimizeInstructionsList({}, instructions),
+        optimizeInstructionsList(instructions),
       );
 
       if (data)

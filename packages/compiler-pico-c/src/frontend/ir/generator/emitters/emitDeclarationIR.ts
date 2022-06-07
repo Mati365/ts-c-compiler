@@ -29,6 +29,7 @@ export function emitDeclarationIR(
 
   GroupTreeVisitor.ofIterator<ASTCCompilerNode>(
     {
+      [ASTCCompilerKind.TypeSpecifier]: false,
       [ASTCCompilerKind.DirectDeclarator]: {
         enter(declaratorNode: ASTCDirectDeclarator) {
           if (!declaratorNode.isIdentifier())
@@ -44,6 +45,7 @@ export function emitDeclarationIR(
           );
 
           appendStmtResults(initializerResult, result);
+          return false;
         },
       },
     },

@@ -2,8 +2,8 @@ import {ccompiler, CCompilerOutput} from '@compiler/pico-c';
 
 ccompiler(/* cpp */ `
   int main() {
-    const char* title = "Hello world!";
-    int monkey = 5;
+    int d = 2;
+    d = ++d + d++;
   }
 `).match(
   {
