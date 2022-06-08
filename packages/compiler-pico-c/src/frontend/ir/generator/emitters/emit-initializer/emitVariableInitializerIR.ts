@@ -21,7 +21,7 @@ import {
 
 import {emitVariableLoadInitializerIR} from './emitVariableLoadInitializerIR';
 
-const MIN_PTR_ARRAY_INITIALIZED_FIELDS_COUNT = 2;
+const MIN_PTR_ARRAY_INITIALIZED_FIELDS_COUNT = 4;
 
 type InitializerIREmitAttrs = IREmitterContextAttrs & {
   variable: CVariable;

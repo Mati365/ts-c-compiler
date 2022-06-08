@@ -2,8 +2,12 @@ import {ccompiler, CCompilerOutput} from '@compiler/pico-c';
 
 ccompiler(/* cpp */ `
   int main() {
-    int d = 2;
-    d = ++d + d++;
+    int a = 2;
+    int* ptr = &a;
+
+    a++;
+    ptr++;
+    (*ptr)++;
   }
 `).match(
   {

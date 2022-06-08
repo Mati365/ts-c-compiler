@@ -10,7 +10,7 @@ import type {IRDataSegmentBuilder, IRDataSegmentBuilderResult} from '../segments
 
 import type {emitAssignmentIR} from './emitAssignmentIR';
 import type {emitExpressionIR} from './emitExpressionIR';
-import type {emitLvalueExpression} from './emitLvalueExpressionIR';
+import type {emitIdentifierGetterIR} from './emitIdentifierGetterIR';
 import type {emitPointerExpression} from './emitPointerExpression';
 import type {emitPointerAddressExpression} from './emitPointerAddressExpression';
 
@@ -28,7 +28,7 @@ export type IREmitterContext = {
     expression: typeof emitExpressionIR;
     pointerExpression: typeof emitPointerExpression;
     pointerAddressExpression: typeof emitPointerAddressExpression;
-    lvalueExpression: typeof emitLvalueExpression;
+    emitIdentifierGetter: typeof emitIdentifierGetterIR;
   };
 };
 

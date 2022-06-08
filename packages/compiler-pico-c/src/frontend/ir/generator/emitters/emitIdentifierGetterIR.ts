@@ -22,6 +22,7 @@ import {
 
 import {
   IRInstruction,
+  IRLeaInstruction,
   IRLoadInstruction,
   IRMathInstruction,
 } from '../../instructions';
@@ -48,7 +49,7 @@ type LvalueExpressionIREmitResult = IREmitterExpressionVarResult & {
   rootIRVar: IRVariable;
 };
 
-export function emitLvalueExpression(
+export function emitIdentifierGetterIR(
   {
     emitLoadPtr = true,
     scope,
@@ -127,6 +128,12 @@ export function emitLvalueExpression(
             lastIRVar = allocator.allocAddressVariable();
             instructions.push(
               new IRLoadInstruction(irVariable, lastIRVar),
+            );
+          } else if (isPointerLikeType(irVariable.type) && isArrayLikeType(irVariable.type.baseType)) {
+            // emits LEA before array[1][2] like expressions
+            lastIRVar = allocator.allocAddressVariable();
+            instructions.push(
+              new IRLeaInstruction(irVariable, lastIRVar),
             );
           } else {
             lastIRVar = irVariable;
@@ -230,13 +237,10 @@ export function emitLvalueExpression(
     },
   )(node);
 
-  if (emitLoadPtr && lastIRVar) {
-    const outputVar = allocator.allocTmpVariable(rootIRVar.type.getSourceType());
+  if (emitLoadPtr && lastIRVar && isPointerLikeType(rootIRVar.type)) {
+    const outputVar = allocator.allocTmpVariable(rootIRVar.type.baseType);
     instructions.push(
-      new IRLoadInstruction(
-        lastIRVar,
-        outputVar,
-      ),
+      new IRLeaInstruction(lastIRVar, outputVar),
     );
 
     return {

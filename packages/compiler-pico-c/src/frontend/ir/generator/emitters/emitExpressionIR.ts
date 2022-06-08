@@ -27,16 +27,18 @@ import {
 import {IRError, IRErrorCode} from '../../errors/IRError';
 import {IRConstant, IRInstructionVarArg, IRVariable} from '../../variables';
 
-import {emitLvalueExpression} from './emitLvalueExpressionIR';
+import {emitIdentifierGetterIR} from './emitIdentifierGetterIR';
 import {emitIncExpressionIR} from './emitIncExpressionIR';
 
 export type ExpressionIREmitAttrs = IREmitterContextAttrs & {
   type?: CType;
   node: ASTCCompilerNode;
+  loadPtrValue?: boolean;
 };
 
 export function emitExpressionIR(
   {
+    loadPtrValue,
     type,
     context,
     node,
@@ -125,7 +127,7 @@ export function emitExpressionIR(
 
             // handle i++ / ++i
             const sign = expression.getIncSign();
-            const irSrcVarExprResult = emitLvalueExpression(
+            const irSrcVarExprResult = emitIdentifierGetterIR(
               {
                 emitLoadPtr: false,
                 node: (
@@ -152,7 +154,7 @@ export function emitExpressionIR(
             return false;
           } else if (!expression.isPrimaryExpression()) {
             // handle (a + 2)
-            const exprResult = emitLvalueExpression(
+            const exprResult = emitIdentifierGetterIR(
               {
                 node: expression,
                 context,
@@ -191,9 +193,17 @@ export function emitExpressionIR(
             } else if (isPointerLikeType(srcVar.type)) {
               const tmpVar = allocNextVariable(srcVar.type.baseType);
 
-              instructions.push(
-                new IRLoadInstruction(srcVar, tmpVar),
-              );
+              // handle if array is defined as reference to data segment
+              // or if array if on stack like other pointers
+              if (loadPtrValue || srcVar.virtualArrayPtr) {
+                instructions.push(
+                  new IRLoadInstruction(srcVar, tmpVar),
+                );
+              } else {
+                instructions.push(
+                  new IRLeaInstruction(srcVar, tmpVar),
+                );
+              }
             } else {
               const tmpVar = allocNextVariable(srcVar.type);
 
@@ -206,6 +216,7 @@ export function emitExpressionIR(
             const exprResult = emitExpressionIR(
               {
                 node: expression.expression,
+                loadPtrValue,
                 type,
                 context,
                 scope,

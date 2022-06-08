@@ -11,7 +11,7 @@ import {
 import {IRInstructionVarArg} from '../../variables';
 import {IREmitterContextAttrs, IREmitterExpressionResult} from './types';
 
-import {emitLvalueExpression} from './emitLvalueExpressionIR';
+import {emitIdentifierGetterIR} from './emitIdentifierGetterIR';
 import {emitExpressionIR} from './emitExpressionIR';
 
 export type AssignmentIREmitAttrs = IREmitterContextAttrs & {
@@ -29,7 +29,7 @@ export function emitAssignmentIR(
   const {operator} = node;
 
   const instructions: IRInstruction[] = [];
-  const lvalue = emitLvalueExpression(
+  const lvalue = emitIdentifierGetterIR(
     {
       node: node.unaryExpression,
       emitLoadPtr: false,

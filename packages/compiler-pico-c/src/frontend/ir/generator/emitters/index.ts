@@ -4,7 +4,7 @@ export * from './emitDeclarationIR';
 export * from './emitExpressionIR';
 export * from './emitExpressionStmtIR';
 export * from './emitFunctionIR';
-export * from './emitLvalueExpressionIR';
+export * from './emitIdentifierGetterIR';
 export * from './emitPointerAddressExpression';
 export * from './emitPointerExpression';
 export * from './emitIncExpressionIR';

@@ -95,7 +95,7 @@ export class CPointerType extends CType<CPointerTypeDescriptor> {
   }
 
   override getByteSize(): number {
-    return CPrimitiveType.int(this.arch).getByteSize();
+    return CPrimitiveType.address(this.arch).getByteSize();
   }
 
   override getDisplayName(): string {

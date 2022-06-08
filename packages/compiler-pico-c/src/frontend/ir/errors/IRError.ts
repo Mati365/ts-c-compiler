@@ -13,6 +13,7 @@ export enum IRErrorCode {
   UNRESOLVED_ASSIGN_EXPRESSION = 'UNRESOLVED_ASSIGN_EXPRESSION',
   INCORRECT_POINTER_EXPR = 'INCORRECT_POINTER_EXPR',
   INCORRECT_UNARY_EXPR = 'INCORRECT_UNARY_EXPR',
+  UNABLE_INC_NON_PTR_TYPE = 'UNABLE_INC_NON_PTR_TYPE',
 }
 
 export const C_IR_ERROR_TRANSLATIONS: Record<IRErrorCode, string> = {
@@ -28,6 +29,7 @@ export const C_IR_ERROR_TRANSLATIONS: Record<IRErrorCode, string> = {
   [IRErrorCode.UNRESOLVED_ASSIGN_EXPRESSION]: fixme('Unresolved assign expression!'),
   [IRErrorCode.INCORRECT_POINTER_EXPR]: fixme('Incorrect pointer expression!'),
   [IRErrorCode.INCORRECT_UNARY_EXPR]: fixme('Incorrect unary expression!'),
+  [IRErrorCode.UNABLE_INC_NON_PTR_TYPE]: fixme('Unable increment non pointer type!'),
 };
 
 /**

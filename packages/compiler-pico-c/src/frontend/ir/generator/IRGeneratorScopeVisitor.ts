@@ -8,7 +8,7 @@ import {
   IRGeneratorSegments,
   emitFunctionIR,
   emitExpressionIR,
-  emitLvalueExpression,
+  emitIdentifierGetterIR,
   emitAssignmentIR,
   emitPointerExpression,
   emitPointerAddressExpression,
@@ -50,7 +50,7 @@ export class IRGeneratorScopeVisitor extends CScopeVisitor {
       allocator: this.allocator,
       emit: {
         expression: emitExpressionIR,
-        lvalueExpression: emitLvalueExpression,
+        emitIdentifierGetter: emitIdentifierGetterIR,
         pointerExpression: emitPointerExpression,
         pointerAddressExpression: emitPointerAddressExpression,
         assignment: emitAssignmentIR,
