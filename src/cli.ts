@@ -3,27 +3,12 @@ import {ccompiler, CCompilerOutput} from '@compiler/pico-c';
 ccompiler(/* cpp */ `
   struct Point {
     int x, y;
-
-    struct Nested {
-      int w;
-    } nested;
+    int dupa[10];
   };
 
   void main() {
-    const char* str = "hello world";
-    int numbers[] = { 1, 2, 3 };
-
-    struct Point points[] = {
-      {
-        .x = 4,
-        .nested = {
-          .w = 6
-        },
-      },
-    };
-
-    int* a = &points[0].x;
-    (*a)++;
+    struct Point point[] = { { .y = 6 }, { .x = 2 } };
+    point[1].dupa[2]++;
   }
 `).match(
   {

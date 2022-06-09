@@ -128,8 +128,11 @@ export function emitIdentifierGetterIR(
             instructions.push(
               new IRLoadInstruction(irVariable, lastIRVar),
             );
-          } else if (isPointerLikeType(irVariable.type) && isArrayLikeType(irVariable.type.baseType)) {
-            // emits LEA before array[1][2] like expressions
+          } else if (
+            isPointerLikeType(irVariable.type)
+              && (isArrayLikeType(irVariable.type.baseType) || isStructLikeType(irVariable.type.baseType))
+          ) {
+            // emits LEA before array[1][2], struct. like expressions
             lastIRVar = allocator.allocAddressVariable();
             instructions.push(
               new IRLeaInstruction(irVariable, lastIRVar),
