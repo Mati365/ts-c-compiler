@@ -42,7 +42,6 @@ export function emitVariableLoadInitializerIR(
     if (isCompilerTreeNode(initializer)) {
       const exprResult = emitExpressionIR(
         {
-          loadPtrValue: true,
           type: destVariable.type.getSourceType(),
           node: initializer,
           scope,

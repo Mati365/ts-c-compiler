@@ -14,6 +14,8 @@ export enum IRErrorCode {
   INCORRECT_POINTER_EXPR = 'INCORRECT_POINTER_EXPR',
   INCORRECT_UNARY_EXPR = 'INCORRECT_UNARY_EXPR',
   UNABLE_INC_NON_PTR_TYPE = 'UNABLE_INC_NON_PTR_TYPE',
+  CANNOT_DEREFERENCE_NON_PTR_TYPE = 'CANNOT_DEREFERENCE_NON_PTR_TYPE',
+  CANNOT_LOAD_PRIMARY_EXPRESSION = 'CANNOT_LOAD_PRIMARY_EXPRESSION',
 }
 
 export const C_IR_ERROR_TRANSLATIONS: Record<IRErrorCode, string> = {
@@ -30,6 +32,8 @@ export const C_IR_ERROR_TRANSLATIONS: Record<IRErrorCode, string> = {
   [IRErrorCode.INCORRECT_POINTER_EXPR]: fixme('Incorrect pointer expression!'),
   [IRErrorCode.INCORRECT_UNARY_EXPR]: fixme('Incorrect unary expression!'),
   [IRErrorCode.UNABLE_INC_NON_PTR_TYPE]: fixme('Unable increment non pointer type!'),
+  [IRErrorCode.CANNOT_DEREFERENCE_NON_PTR_TYPE]: fixme('Cannot dereference non ptr type!'),
+  [IRErrorCode.CANNOT_LOAD_PRIMARY_EXPRESSION]: fixme('Cannot load primary expression!'),
 };
 
 /**

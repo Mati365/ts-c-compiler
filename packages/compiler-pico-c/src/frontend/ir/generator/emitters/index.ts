@@ -6,6 +6,5 @@ export * from './emitExpressionStmtIR';
 export * from './emitFunctionIR';
 export * from './emitIdentifierGetterIR';
 export * from './emitPointerAddressExpression';
-export * from './emitPointerExpression';
 export * from './emitIncExpressionIR';
 export * from './types';

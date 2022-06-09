@@ -88,12 +88,11 @@ export function emitIdentifierGetterIR(
           if (expr.operator !== CUnaryCastOperator.MUL)
             throw new IRError(IRErrorCode.INCORRECT_UNARY_EXPR);
 
-          const pointerExprResult = emit.pointerExpression(
+          const pointerExprResult = emit.expression(
             {
+              node: expr.castExpression,
               context,
               scope,
-              emitLoadPtr: false,
-              node: expr,
             },
           );
 

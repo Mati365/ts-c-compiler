@@ -10,7 +10,6 @@ import {
   emitExpressionIR,
   emitIdentifierGetterIR,
   emitAssignmentIR,
-  emitPointerExpression,
   emitPointerAddressExpression,
   IRScopeGeneratorResult,
 } from './emitters';
@@ -51,7 +50,6 @@ export class IRGeneratorScopeVisitor extends CScopeVisitor {
       emit: {
         expression: emitExpressionIR,
         emitIdentifierGetter: emitIdentifierGetterIR,
-        pointerExpression: emitPointerExpression,
         pointerAddressExpression: emitPointerAddressExpression,
         assignment: emitAssignmentIR,
       },
