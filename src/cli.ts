@@ -1,13 +1,14 @@
 import {ccompiler, CCompilerOutput} from '@compiler/pico-c';
 
 ccompiler(/* cpp */ `
-  int main() {
-    int a = 2;
-    int* ptr = &a;
-
-    a++;
-    ptr++;
-    (*ptr)++;
+  void main() {
+    // int** (*(*abc[3])[2])[4][5];
+    // int* dupa[] = { 1, 2, 3, 4, 5 };
+    // int (*p[3])[5];
+    // int a[5][4][2];
+    int a = 123;
+    int* b = &a;
+    int c = *b + 4;
   }
 `).match(
   {

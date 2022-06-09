@@ -253,6 +253,19 @@ export class CArrayType extends CType<CArrayTypeDescriptor> {
     }));
   }
 
+  ofPrependedDimension(size: number): CArrayType {
+    const {qualifiers} = this;
+    const {type, dimensions} = this.getFlattenInfo();
+
+    return <CArrayType> CArrayType.ofFlattenDescriptor(
+      {
+        dimensions: [size, ...dimensions],
+        qualifiers,
+        type,
+      },
+    );
+  }
+
   isUnknownSize() {
     return R.isNil(this.size);
   }

@@ -88,7 +88,7 @@ export class IRResultView {
       return null;
 
     const lines: string[] = [
-      chalk.bold.greenBright(`; --- Block ${name || '<unknown>'} ---`),
+      chalk.bold.greenBright(`# --- Block ${name || '<unknown>'} ---`),
     ];
 
     instructions.forEach((instruction) => {

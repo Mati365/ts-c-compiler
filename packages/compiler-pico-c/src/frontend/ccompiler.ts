@@ -5,17 +5,17 @@ import {
 } from '@compiler/core/utils';
 
 import {TreePrintVisitor} from '@compiler/grammar/tree/TreePrintVisitor';
-import {CCompilerTimings, createCCompilerTimings} from './utils/createCCompilerTimings';
+import {CCompilerTimings} from './utils/createCCompilerTimings';
 import {CCompilerConfig, CCompilerArch} from '../constants/config';
 
 import {ASTCCompilerNode} from './parser/ast';
-import {safeGenerateTree, clexer} from './parser';
-import {IRResultView, IRCodeBuilderResult, safeBuildIRCode} from './ir';
+import {IRResultView, IRCodeBuilderResult} from './ir';
 import {
-  safeBuildTypedTree,
   CScopeTree,
   CScopePrintVisitor,
 } from './analyze';
+
+import {cIRCompiler} from './cIRcompiler';
 
 /**
  * Output of compilation
@@ -87,25 +87,17 @@ export function ccompiler(
     arch: CCompilerArch.X86_16,
   },
 ) {
-  const timings = createCCompilerTimings();
-
-  return timings.add('lexer', clexer)(ccompilerConfig.lexer, code)
-    .andThen(timings.add('ast', safeGenerateTree))
-    .andThen(timings.add('analyze', (tree) => safeBuildTypedTree(ccompilerConfig, tree)))
-    .andThen(timings.add(
-      'ir',
-      (result) => safeBuildIRCode(ccompilerConfig, result.scope).andThen((ir) => ok({
-        ...result,
-        ir,
-      })),
-    ))
-    .andThen(timings.add('compiler', ({tree, scope, ir}) => ok(
-      new CCompilerOutput(
-        code,
-        tree,
-        scope,
-        ir,
-        timings.unwrap(),
-      ),
-    )));
+  return (
+    cIRCompiler(code, ccompilerConfig).andThen(({timings, ...result}) =>
+      timings.add('compiler', ({tree, scope, ir}: typeof result) => ok(
+        new CCompilerOutput(
+          code,
+          tree,
+          scope,
+          ir,
+          timings.unwrap(),
+        ),
+      ))(result),
+    )
+  );
 }

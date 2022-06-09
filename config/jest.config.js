@@ -1,6 +1,5 @@
 const {resolve} = require('path');
 const {pathsToModuleNameMapper} = require('ts-jest');
-
 const {compilerOptions} = require('../tsconfig.json');
 
 const SHARED_CONFIG = {
@@ -18,8 +17,9 @@ const SHARED_CONFIG = {
     '<rootDir>/dist/*',
   ],
   moduleFileExtensions: ['ts', 'tsx', 'js', 'jsx', 'json', 'node'],
+  transformIgnorePatterns: [],
   transform: {
-    '^.+\\.tsx?$': ['@swc/jest', {
+    '^.+\\.(jsx?|tsx?)$': ['@swc/jest', {
       sourceMaps: true,
       jsc: {
         parser: {

@@ -27,23 +27,14 @@ import {
  */
 export class CTreeTypeBuilderVisitor extends CInnerTypeTreeVisitor {
   private name: string = null;
-  private lvalueTypeExtract: boolean = false;
 
   constructor(private type: CType) {
     super(
       {
         [ASTCCompilerKind.Declarator]: {
           enter: (node: ASTCDeclarator) => {
-            if (!this.lvalueTypeExtract) {
-              this.lvalueTypeExtract = true;
-
-              this.extractDeclaratorPointers(node);
-              this.visit(node.directDeclarator);
-            } else {
-              this.visit(node.directDeclarator);
-              this.extractDeclaratorPointers(node);
-            }
-
+            this.extractDeclaratorPointers(node);
+            this.visit(node.directDeclarator);
             return false;
           },
         },
@@ -118,7 +109,7 @@ export class CTreeTypeBuilderVisitor extends CInnerTypeTreeVisitor {
           );
         }
 
-        this.type = baseType.ofAppendedDimension(size);
+        this.type = baseType.ofPrependedDimension(size);
       } else {
         this.type = new CArrayType(
           {

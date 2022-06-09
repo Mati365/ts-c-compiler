@@ -59,6 +59,7 @@
     "react-dom": "^17.0.2",
     "reflect-metadata": "^0.1.13",
     "rxjs": "^7.4.0",
+    "strip-ansi": "^7.0.1",
     "ts-enum-util": "^4.0.2",
     "tslib": "^2.3.1",
     "typescript": "^4.5.4"
