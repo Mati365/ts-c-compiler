@@ -34,7 +34,6 @@ import {emitIdentifierGetterIR} from './emitIdentifierGetterIR';
 import {emitIncExpressionIR} from './emitIncExpressionIR';
 
 export type ExpressionIREmitAttrs = IREmitterContextAttrs & {
-  type?: CType;
   node: ASTCCompilerNode;
 };
 
@@ -139,7 +138,7 @@ export function emitExpressionIR(
             const sign = expression.getIncSign();
             const irSrcVarExprResult = emitIdentifierGetterIR(
               {
-                emitLoadPtr: false,
+                emitValueAtAddress: false,
                 node: (
                   isPreInc
                     ? expression.primaryExpression
@@ -219,7 +218,6 @@ export function emitExpressionIR(
             const exprResult = emitExpressionIR(
               {
                 node: expression.expression,
-                type: expression.type,
                 context,
                 scope,
               },
@@ -276,7 +274,7 @@ export function emitExpressionIR(
             );
           }
 
-          output ||= allocNextVariable();
+          output ||= allocNextVariable(a.type);
           instructions.push(
             new IRMathInstruction(
               <CMathOperator> binary.op,

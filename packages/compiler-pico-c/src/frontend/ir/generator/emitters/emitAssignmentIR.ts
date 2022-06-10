@@ -32,7 +32,7 @@ export function emitAssignmentIR(
   const lvalue = emitIdentifierGetterIR(
     {
       node: node.unaryExpression,
-      emitLoadPtr: false,
+      emitValueAtAddress: false,
       scope,
       context,
     },
@@ -42,7 +42,6 @@ export function emitAssignmentIR(
   const rvalue = emitExpressionIR(
     {
       node: node.expression,
-      type: rvalueType,
       scope,
       context,
     },

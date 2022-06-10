@@ -19,7 +19,7 @@ export function emitPointerAddressExpression(
   const {allocator} = context;
   const {instructions, output, ...result} = context.emit.emitIdentifierGetter(
     {
-      emitLoadPtr: false,
+      emitValueAtAddress: false,
       node: node.castExpression,
       context,
       scope,

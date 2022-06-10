@@ -1,14 +1,9 @@
 import {ccompiler, CCompilerOutput} from '@compiler/pico-c';
 
 ccompiler(/* cpp */ `
-  struct Point {
-    int x, y;
-    int dupa[10];
-  };
-
   void main() {
-    struct Point point[] = { { .y = 6 }, { .x = 2 } };
-    point[1].dupa[2]++;
+    struct Vec2 { int x, y; } vec = { .y = 5 };
+    vec.y = 7;
   }
 `).match(
   {

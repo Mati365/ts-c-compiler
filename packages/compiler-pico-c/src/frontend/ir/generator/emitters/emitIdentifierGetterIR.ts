@@ -41,8 +41,8 @@ import {IsOutputInstruction} from '../../interfaces';
 import {IRError, IRErrorCode} from '../../errors/IRError';
 
 type LvalueExpressionIREmitAttrs = IREmitterContextAttrs & {
-  emitLoadPtr?: boolean;
   node: ASTCCompilerNode;
+  emitValueAtAddress?: boolean;
 };
 
 type LvalueExpressionIREmitResult = IREmitterExpressionVarResult & {
@@ -51,7 +51,7 @@ type LvalueExpressionIREmitResult = IREmitterExpressionVarResult & {
 
 export function emitIdentifierGetterIR(
   {
-    emitLoadPtr = true,
+    emitValueAtAddress = true,
     scope,
     context,
     node,
@@ -184,7 +184,6 @@ export function emitIdentifierGetterIR(
             output: exprOutput,
           } = context.emit.expression(
             {
-              type: lastIRVar.type.getSourceType(),
               node: expr,
               context,
               scope,
@@ -239,10 +238,10 @@ export function emitIdentifierGetterIR(
     },
   )(node);
 
-  if (emitLoadPtr && lastIRVar && isPointerLikeType(rootIRVar.type)) {
-    const outputVar = allocator.allocTmpVariable(rootIRVar.type.baseType);
+  if (emitValueAtAddress && lastIRVar && isPointerLikeType(lastIRVar.type)) {
+    const outputVar = allocator.allocTmpVariable(lastIRVar.type.baseType);
     instructions.push(
-      new IRLeaInstruction(lastIRVar, outputVar),
+      new IRLoadInstruction(lastIRVar, outputVar),
     );
 
     return {
