@@ -41,7 +41,14 @@ function toCompiledIRBeEqual(source: string, expectedIR: string): MatcherResult 
 
   return {
     pass: formattedIRCode === formattedExpectedCode,
-    message: () => `Expected:\n\n${formattedExpectedCode}\n\nbut received:\n\n${formattedIRCode}`,
+    message: () => [
+      'Code:',
+      trimLines(source),
+      'Expected:',
+      formattedExpectedCode,
+      'but received:',
+      formattedIRCode,
+    ].join('\n\n'),
   };
 }
 

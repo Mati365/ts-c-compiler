@@ -5,6 +5,10 @@ import {IROpcode} from '../constants';
 import {IRInstruction} from './IRInstruction';
 import {IRInstructionVarArg, IRVariable} from '../variables';
 
+export function isIRLeaInstruction(instruction: IRInstruction): instruction is IRLeaInstruction {
+  return instruction?.opcode === IROpcode.LEA;
+}
+
 /**
  * Instruction that loads mem address of variable
  *

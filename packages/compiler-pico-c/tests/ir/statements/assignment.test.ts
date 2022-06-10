@@ -325,5 +325,106 @@ describe('Assignment IR', () => {
           ret
       `);
     });
+
+    test('assign nested values', () => {
+      expect(/* cpp */`
+        void main() {
+          struct Vec2 { int x, y; struct Rect { int s, w; } k; } vec = { .y = 5 };
+          vec.y = 7;
+          vec.k.w = 2;
+        }
+      `).toCompiledIRBeEqual(/* ruby */`
+        # --- Block main ---
+        def main(): [ret 0B]
+          vec{0}: struct Vec2*2B = alloca struct Vec28B
+          *(vec{0}: struct Vec2*2B + %2) = store %5: int2B
+          t{0}: int*2B = lea vec{0}: struct Vec2*2B
+          t{1}: int*2B = t{0}: int*2B PLUS %2: int2B
+          *(t{1}: int*2B) = store %7: int2B
+          t{2}: int*2B = lea vec{0}: struct Vec2*2B
+          t{4}: int*2B = t{2}: int*2B PLUS %6: int2B
+          *(t{4}: int*2B) = store %2: int2B
+          ret
+      `);
+    });
+
+    test('pointer assign field access', () => {
+      expect(/* cpp */`
+        struct Vec2 { int x, y; };
+
+        void main() {
+          struct Vec2 vec = { .y = 5 };
+          struct Vec2* ptr = &vec;
+          ptr->y = 5;
+        }
+      `).toCompiledIRBeEqual(/* ruby */`
+        # --- Block main ---
+        def main(): [ret 0B]
+          vec{0}: struct Vec2*2B = alloca struct Vec24B
+          *(vec{0}: struct Vec2*2B + %2) = store %5: int2B
+          ptr{0}: struct Vec2**2B = alloca struct Vec2*2B
+          t{0}: int*2B = lea vec{0}: struct Vec2*2B
+          *(ptr{0}: struct Vec2**2B) = store t{0}: int*2B
+          t{1}: int*2B = load ptr{0}: struct Vec2**2B
+          t{2}: int*2B = t{1}: int*2B PLUS %2: int2B
+          *(t{2}: int*2B) = store %5: int2B
+          ret
+      `);
+    });
+
+    test('loads pointer field data', () => {
+      expect(/* cpp */`
+        struct Vec2 { int x, y; };
+
+        void main() {
+          struct Vec2 vec = { .y = 5 };
+          struct Vec2* ptr = &vec;
+          ptr->y = 5;
+
+          int d = ptr->y;
+        }
+      `).toCompiledIRBeEqual(/* ruby */`
+        # --- Block main ---
+        def main(): [ret 0B]
+          vec{0}: struct Vec2*2B = alloca struct Vec24B
+          *(vec{0}: struct Vec2*2B + %2) = store %5: int2B
+          ptr{0}: struct Vec2**2B = alloca struct Vec2*2B
+          t{0}: int*2B = lea vec{0}: struct Vec2*2B
+          *(ptr{0}: struct Vec2**2B) = store t{0}: int*2B
+          t{1}: int*2B = load ptr{0}: struct Vec2**2B
+          t{2}: int*2B = t{1}: int*2B PLUS %2: int2B
+          *(t{2}: int*2B) = store %5: int2B
+          d{0}: int*2B = alloca int2B
+          t{3}: int*2B = load ptr{0}: struct Vec2**2B
+          t{4}: int*2B = t{3}: int*2B PLUS %2: int2B
+          t{5}: int2B = load t{4}: int*2B
+          *(d{0}: int*2B) = store t{5}: int2B
+          ret
+      `);
+    });
+
+    test('loads pointer to array of structs', () => {
+      expect(/* cpp */`
+        struct Vec2 {
+          int x, y;
+          struct Rect { int s, w; } k;
+        };
+
+        void main() {
+          struct Vec2 vec[] = { { .y = 5 }, { .x = 2 } };
+          struct Vec2 (*ptr)[] = &vec;
+        }
+      `).toCompiledIRBeEqual(/* ruby */`
+        # --- Block main ---
+        def main(): [ret 0B]
+          vec{0}: struct Vec2[2]*2B = alloca struct Vec2[2]16B
+          *(vec{0}: struct Vec2[2]*2B + %2) = store %5: int2B
+          *(vec{0}: struct Vec2[2]*2B + %8) = store %2: int2B
+          ptr{0}: struct Vec2[]**2B = alloca struct Vec2[]*2B
+          t{0}: int*2B = lea vec{0}: struct Vec2[2]*2B
+          *(ptr{0}: struct Vec2[]**2B) = store t{0}: int*2B
+          ret
+      `);
+    });
   });
 });

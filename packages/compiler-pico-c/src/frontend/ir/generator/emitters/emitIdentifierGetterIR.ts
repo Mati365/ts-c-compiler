@@ -17,6 +17,7 @@ import {
   ASTCPostfixArrayExpression,
   ASTCPostfixDotExpression,
   ASTCPostfixExpression,
+  ASTCPostfixPtrExpression,
   ASTCPrimaryExpression,
 } from '@compiler/pico-c/frontend/parser';
 
@@ -130,7 +131,7 @@ export function emitIdentifierGetterIR(
             );
           } else if (
             isPointerLikeType(irVariable.type)
-              && (isArrayLikeType(irVariable.type.baseType) || isStructLikeType(irVariable.type.baseType))
+              && isArrayLikeType(irVariable.type.baseType)
           ) {
             // emits LEA before array[1][2], struct. like expressions
             lastIRVar = allocator.allocAddressVariable();
@@ -143,6 +144,42 @@ export function emitIdentifierGetterIR(
         },
       },
 
+      [ASTCCompilerKind.PostfixPtrExpression]: {
+        enter(expr: ASTCPostfixPtrExpression) {
+          if (!lastIRVar)
+            return true;
+
+          const parentType = getParentType();
+          if (!isPointerLikeType(parentType) || !isStructLikeType(parentType.baseType))
+            throw new IRError(IRErrorCode.ACCESS_STRUCT_ATTR_IN_NON_STRUCT);
+
+          instructions.push(
+            new IRLoadInstruction(
+              lastIRVar,
+              lastIRVar = allocator.allocAddressVariable(),
+            ),
+          );
+
+          const offsetConstant = IRConstant.ofConstant(
+            CPrimitiveType.int(config.arch),
+            parentType.baseType.getField(expr.name.text).getOffset(),
+          );
+
+          if (offsetConstant.constant) {
+            instructions.push(
+              new IRMathInstruction(
+                TokenType.PLUS,
+                lastIRVar,
+                offsetConstant,
+                lastIRVar = allocator.allocAddressVariable(),
+              ),
+            );
+          }
+
+          return false;
+        },
+      },
+
       [ASTCCompilerKind.PostfixDotExpression]: {
         enter(expr: ASTCPostfixDotExpression) {
           if (!lastIRVar)
@@ -151,6 +188,16 @@ export function emitIdentifierGetterIR(
           const parentType = getParentType();
           if (!isStructLikeType(parentType))
             throw new IRError(IRErrorCode.ACCESS_STRUCT_ATTR_IN_NON_STRUCT);
+
+          if (isPointerLikeType(lastIRVar.type)
+              && isStructLikeType(lastIRVar.type.baseType)) {
+            instructions.push(
+              new IRLeaInstruction(
+                lastIRVar,
+                lastIRVar = allocator.allocAddressVariable(),
+              ),
+            );
+          }
 
           const offsetConstant = IRConstant.ofConstant(
             CPrimitiveType.int(config.arch),
@@ -167,6 +214,8 @@ export function emitIdentifierGetterIR(
               ),
             );
           }
+
+          return false;
         },
       },
 

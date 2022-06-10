@@ -66,12 +66,26 @@ export class ASTCPostfixExpressionTypeCreator extends ASTCTypeCreator<ASTCPostfi
    * @memberof ASTCPostfixExpressionTypeCreator
    */
   private assignDotPtrLikeAccessType(node: ASTCPostfixExpression) {
-    const baseType = (node.primaryExpression || node.postfixExpression).type;
+    let baseType = (node.primaryExpression || node.postfixExpression).type;
     if (!baseType) {
       throw new CTypeCheckError(
         CTypeCheckErrorCode.UNKNOWN_LEFT_DOT_EXPRESSION_TYPE,
         node.loc.start,
       );
+    }
+
+    if (node.isPtrExpression()) {
+      if (!isPointerLikeType(baseType)) {
+        throw new CTypeCheckError(
+          CTypeCheckErrorCode.PROVIDED_TYPE_MUST_BE_POINTER,
+          node.loc.start,
+          {
+            typeName: baseType.getShortestDisplayName(),
+          },
+        );
+      }
+
+      baseType = baseType.baseType;
     }
 
     if (isStructLikeType(baseType)) {
@@ -85,7 +99,7 @@ export class ASTCPostfixExpressionTypeCreator extends ASTCTypeCreator<ASTCPostfi
         );
       }
 
-      const {text: fieldName} = node.dotExpression.name;
+      const {text: fieldName} = (node.dotExpression || node.ptrExpression).name;
       const field = baseType.getField(fieldName);
 
       if (!field) {

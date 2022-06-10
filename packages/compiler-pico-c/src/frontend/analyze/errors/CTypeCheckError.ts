@@ -53,6 +53,7 @@ export enum CTypeCheckErrorCode {
   WRONG_NON_ARRAY_FIELD_ACCESS,
   WRONG_POINTER_MATH_OPERATOR,
   INCORRECT_POINTER_SIDES_TYPES,
+  PROVIDED_TYPE_MUST_BE_POINTER,
 }
 
 export const C_TYPE_CHECK_ERROR_TRANSLATIONS: Record<CTypeCheckErrorCode, string> = {
@@ -131,6 +132,7 @@ export const C_TYPE_CHECK_ERROR_TRANSLATIONS: Record<CTypeCheckErrorCode, string
   [CTypeCheckErrorCode.WRONG_POINTER_MATH_OPERATOR]: 'Cannot perform "%{operator}" operation on pointer type!',
   [CTypeCheckErrorCode.INCORRECT_POINTER_SIDES_TYPES]:
     'Incorrect pointer operator types! Cannot perform "%{operator}" operation between "%{left}" and "%{right}"!',
+  [CTypeCheckErrorCode.PROVIDED_TYPE_MUST_BE_POINTER]: 'Provided type must be pointer "%{typeName}"!',
 };
 
 /**
