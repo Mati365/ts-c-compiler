@@ -100,5 +100,28 @@ describe('Pointer declarations IR', () => {
           ret
       `);
     });
+
+    test('loads array pointer as primitive', () => {
+      expect(/* cpp */ `
+        void main() {
+          int arr[] = { 1, 2, 3, 4, 5, 6 };
+          int ptr = *arr;
+        }
+      `).toCompiledIRBeEqual(/* ruby */`
+        # --- Block main ---
+        def main(): [ret 0B]
+          arr{0}: int**2B = alloca int*2B
+          t{0}: int*2B = lea c{0}: int[6]12B
+          *(arr{0}: int**2B) = store t{0}: int*2B
+          ptr{0}: int*2B = alloca int2B
+          t{1}: int*2B = load arr{0}: int**2B
+          t{2}: int2B = load t{1}: int*2B
+          *(ptr{0}: int*2B) = store t{2}: int2B
+          ret
+
+        # --- Block Data ---
+          c{0}: int[6]12B = const { 1, 2, 3, 4, 5, 6 }
+      `);
+    });
   });
 });
