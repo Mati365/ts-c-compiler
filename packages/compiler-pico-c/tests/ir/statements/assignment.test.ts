@@ -347,6 +347,32 @@ describe('Assignment IR', () => {
           ret
       `);
     });
+
+    test('array like access assign to pointers', () => {
+      expect(/* cpp */ `
+        void main() {
+          int arr[] = { 1, 2, 3, 4, 5, 6 };
+          int* ptr = arr;
+          ptr[2] = 2 *4;
+        }
+      `).toCompiledIRBeEqual(/* ruby */`
+        # --- Block main ---
+        def main(): [ret 0B]
+          arr{0}: int**2B = alloca int*2B
+          t{0}: int*2B = lea c{0}: int[6]12B
+          *(arr{0}: int**2B) = store t{0}: int*2B
+          ptr{0}: int**2B = alloca int*2B
+          t{1}: int*2B = load arr{0}: int**2B
+          *(ptr{0}: int**2B) = store t{1}: int*2B
+          t{2}: int*2B = load ptr{0}: int**2B
+          t{3}: int*2B = t{2}: int*2B PLUS %4: int2B
+          *(t{3}: int*2B) = store %8: int2B
+          ret
+
+        # --- Block Data ---
+          c{0}: int[6]12B = const { 1, 2, 3, 4, 5, 6 }
+      `);
+    });
   });
 
   describe('Structures', () => {

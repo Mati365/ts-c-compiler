@@ -225,7 +225,22 @@ export function emitIdentifierGetterIR(
             return true;
 
           const parentType = getParentType();
-          if (!isArrayLikeType(parentType))
+          let entryByteSize: number = null;
+
+          if (!lastIRVar.volatile) {
+            instructions.push(
+              new IRLoadInstruction(
+                lastIRVar,
+                lastIRVar = allocator.allocAddressVariable(),
+              ),
+            );
+          }
+
+          if (isArrayLikeType(parentType))
+            entryByteSize = parentType.ofTailDimensions().getByteSize();
+          else if (isPointerLikeType(parentType))
+            entryByteSize = parentType.baseType.getByteSize();
+          else
             throw new IRError(IRErrorCode.ACCESS_ARRAY_INDEX_TO_NON_ARRAY);
 
           const {
@@ -240,9 +255,7 @@ export function emitIdentifierGetterIR(
           );
 
           instructions.push(...exprInstructions);
-
           let offsetAddressVar: IRInstructionVarArg = null;
-          const entryByteSize = parentType.ofTailDimensions().getByteSize();
 
           if (isIRVariable(exprOutput)) {
             if (isPointerLikeType(exprOutput.type)) {
