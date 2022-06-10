@@ -1,9 +1,12 @@
 import {ccompiler, CCompilerOutput} from '@compiler/pico-c';
 
 ccompiler(/* cpp */ `
+  struct Vec2 { int x, y; };
+
   void main() {
-    struct Vec2 { int x, y; } vec = { .y = 5 };
-    vec.y = 7;
+    struct Vec2 vec = { .y = 5 };
+    struct Vec2* ptr = &vec;
+    ptr->y = 5;
   }
 `).match(
   {

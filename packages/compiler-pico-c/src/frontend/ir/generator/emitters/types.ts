@@ -12,6 +12,7 @@ import type {emitAssignmentIR} from './emitAssignmentIR';
 import type {emitExpressionIR} from './emitExpressionIR';
 import type {emitIdentifierGetterIR} from './emitIdentifierGetterIR';
 import type {emitPointerAddressExpression} from './emitPointerAddressExpression';
+import type {emitUnaryLoadPtrValueIR} from './emitUnaryLoadPointerValueIR';
 
 export type IRGeneratorSegments = {
   code: IRCodeSegmentBuilder;
@@ -27,6 +28,7 @@ export type IREmitterContext = {
     expression: typeof emitExpressionIR;
     pointerAddressExpression: typeof emitPointerAddressExpression;
     emitIdentifierGetter: typeof emitIdentifierGetterIR;
+    unaryLoadPtrValueIR: typeof emitUnaryLoadPtrValueIR;
   };
 };
 

@@ -66,27 +66,15 @@ export function emitExpressionIR(
           switch (expr.operator) {
             // *a
             case CUnaryCastOperator.MUL: {
-              const exprResult = emit.expression(
+              const unaryExprResult = emit.unaryLoadPtrValueIR(
                 {
-                  node: expr.castExpression,
+                  castExpression: expr.castExpression,
                   context,
                   scope,
                 },
               );
 
-              instructions.push(...exprResult.instructions);
-
-              // load pointer pointing
-              if (isPointerLikeType(exprResult.output.type)) {
-                const tmpVar = allocNextVariable(exprResult.output.type.baseType);
-
-                argsVarsStack.push(tmpVar);
-                instructions.push(
-                  new IRLoadInstruction(exprResult.output, tmpVar),
-                );
-              } else
-                throw new IRError(IRErrorCode.CANNOT_DEREFERENCE_NON_PTR_TYPE);
-
+              emitExprResultToStack(unaryExprResult);
               return false;
             }
 

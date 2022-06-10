@@ -6,6 +6,7 @@ import {ASTCFunctionDefinition} from '../../parser';
 import {
   IREmitterContext,
   IRGeneratorSegments,
+  emitUnaryLoadPtrValueIR,
   emitFunctionIR,
   emitExpressionIR,
   emitIdentifierGetterIR,
@@ -52,6 +53,7 @@ export class IRGeneratorScopeVisitor extends CScopeVisitor {
         emitIdentifierGetter: emitIdentifierGetterIR,
         pointerAddressExpression: emitPointerAddressExpression,
         assignment: emitAssignmentIR,
+        unaryLoadPtrValueIR: emitUnaryLoadPtrValueIR,
       },
     };
   }
