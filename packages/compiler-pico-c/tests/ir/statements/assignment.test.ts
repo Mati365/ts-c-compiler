@@ -53,6 +53,48 @@ describe('Assignment IR', () => {
   });
 
   describe('Arrays', () => {
+    test('assignment array to pointer', () => {
+      expect(/* cpp */ `
+          void main() {
+            int arr[] = { 1, 2, 3 };
+            int* ptr = arr;
+          }
+      `).toCompiledIRBeEqual(/* ruby */`
+        # --- Block main ---
+        def main(): [ret 0B]
+          arr{0}: int[3]*2B = alloca int[3]6B
+          *(arr{0}: int[3]*2B) = store %1: int2B
+          *(arr{0}: int[3]*2B + %2) = store %2: int2B
+          *(arr{0}: int[3]*2B + %4) = store %3: int2B
+          ptr{0}: int**2B = alloca int*2B
+          t{0}: int[3]*2B = lea arr{0}: int[3]*2B
+          *(ptr{0}: int**2B) = store t{0}: int[3]*2B
+          ret
+      `);
+    });
+
+    test('assignment realocated array to pointer', () => {
+      expect(/* cpp */ `
+          void main() {
+            int arr[] = { 1, 2, 3, 4, 5, 6 };
+            int* ptr = arr;
+          }
+      `).toCompiledIRBeEqual(/* ruby */`
+        # --- Block main ---
+        def main(): [ret 0B]
+          arr{0}: int**2B = alloca int*2B
+          t{0}: int*2B = lea c{0}: int[6]12B
+          *(arr{0}: int**2B) = store t{0}: int*2B
+          ptr{0}: int**2B = alloca int*2B
+          t{1}: int*2B = load arr{0}: int**2B
+          *(ptr{0}: int**2B) = store t{1}: int*2B
+          ret
+
+        # --- Block Data ---
+          c{0}: int[6]12B = const { 1, 2, 3, 4, 5, 6 }
+      `);
+    });
+
     test('assignment 1-dimension array', () => {
       expect(/* cpp */ `
         void main() {
