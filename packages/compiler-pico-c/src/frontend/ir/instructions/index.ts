@@ -6,6 +6,7 @@ export * from './IRFnDefInstruction';
 export * from './IRIfInstruction';
 export * from './IRInstruction';
 export * from './IRInstructionsBlock';
+export * from './IRLabelOffsetInstruction';
 export * from './IRLabelInstruction';
 export * from './IRLeaInstruction';
 export * from './IRLoadInstruction';

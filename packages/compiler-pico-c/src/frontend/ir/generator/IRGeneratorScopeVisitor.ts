@@ -50,7 +50,7 @@ export class IRGeneratorScopeVisitor extends CScopeVisitor {
       allocator: this.allocator,
       emit: {
         expression: emitExpressionIR,
-        emitIdentifierGetter: emitIdentifierGetterIR,
+        identifierGetter: emitIdentifierGetterIR,
         pointerAddressExpression: emitPointerAddressExpression,
         assignment: emitAssignmentIR,
         unaryLoadPtrValueIR: emitUnaryLoadPtrValueIR,

@@ -5,7 +5,7 @@ import {ASTCTypeCreator} from './ASTCTypeCreator';
 import {CTypeCheckError, CTypeCheckErrorCode} from '../../errors/CTypeCheckError';
 
 import {checkLeftTypeOverlapping, isPointerArithmeticOperator} from '../../checker';
-import {castToPointerIfArray} from '../../casts';
+import {tryCastToPointer} from '../../casts';
 import {isPointerLikeType} from '../../types';
 
 /**
@@ -23,8 +23,8 @@ export class ASTCBinaryOpTypeCreator extends ASTCTypeCreator<ASTCBinaryOpNode> {
       return;
 
     const {left, right, op} = node;
-    const leftType = castToPointerIfArray(left.type);
-    const rightType = castToPointerIfArray(right.type);
+    const leftType = tryCastToPointer(left.type);
+    const rightType = tryCastToPointer(right.type);
 
     if (!checkLeftTypeOverlapping(leftType, rightType)) {
       throw new CTypeCheckError(

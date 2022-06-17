@@ -23,7 +23,7 @@ const createConfig = (
   target,
   mode: PRODUCTION_MODE ? 'production' : 'development',
   watch: !PRODUCTION_MODE,
-  devtool: PRODUCTION_MODE ? 'source-map' : 'cheap-source-map',
+  devtool: PRODUCTION_MODE ? 'cheap-source-map' : 'eval-source-map',
   entry: {
     [entryName]: srcResolve(mainFile),
   },

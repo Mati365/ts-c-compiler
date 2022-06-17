@@ -20,7 +20,7 @@ export function emitPointerAddressExpression(
   }: PointerAddressExpressionIREmitAttrs,
 ): IREmitterExpressionResult {
   const {allocator} = context;
-  const {instructions, output, ...result} = context.emit.emitIdentifierGetter(
+  const {instructions, output, ...result} = context.emit.identifierGetter(
     {
       emitValueAtAddress: false,
       node: node.castExpression,

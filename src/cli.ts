@@ -1,10 +1,16 @@
+import 'source-map-support/register';
 import {ccompiler, CCompilerOutput} from '@compiler/pico-c';
 
 ccompiler(/* cpp */ `
+  int sum(int a, int b) {
+    return a + b;
+  }
+
   void main() {
-  struct Vec2 { int x, y; struct Rect { int s, w; } k; } vec = { .y = 5 };
-  vec.y = 7;
-  vec.k.w = 2;
+    // (sum + 3)(2, 3);
+    sum(2, 3);
+    // int* ptr = 0;
+    // (*ptr)(2, 3);
   }
 `).match(
   {

@@ -39,6 +39,7 @@
     "jest-raw-loader": "^1.0.1",
     "nodemon-webpack-plugin": "^4.7.0",
     "raw-loader": "^4.0.0",
+    "source-map-support": "^0.5.21",
     "ts-jest": "^27.1.2",
     "ts-loader": "^9.2.6",
     "webpack": "^5.65.0",

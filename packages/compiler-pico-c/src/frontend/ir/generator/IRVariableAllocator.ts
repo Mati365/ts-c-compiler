@@ -161,12 +161,13 @@ export class IRVariableAllocator {
 
     const irFn = (() => {
       if (returnType.isVoid())
-        return new IRFnDefInstruction(name, irDefArgs);
+        return new IRFnDefInstruction(fn, name, irDefArgs);
 
       if (returnType.canBeStoredInReg())
-        return new IRFnDefInstruction(name, irDefArgs, returnType);
+        return new IRFnDefInstruction(fn, name, irDefArgs, returnType);
 
       return new IRFnDefInstruction(
+        fn,
         name,
         irDefArgs,
         null,

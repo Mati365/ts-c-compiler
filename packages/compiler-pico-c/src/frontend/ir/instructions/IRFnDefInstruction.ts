@@ -2,7 +2,7 @@ import chalk from 'chalk';
 
 import {getIRTypeDisplayName} from '../dump/getIRTypeDisplayName';
 
-import {CType} from '../../analyze';
+import {CFunctionDeclType, CType} from '../../analyze';
 import {IROpcode} from '../constants';
 import {IRVariable} from '../variables';
 import {IRInstruction} from './IRInstruction';
@@ -22,10 +22,11 @@ export function isIRFnDefInstruction(instruction: IRInstruction): instruction is
  */
 export class IRFnDefInstruction extends IRInstruction implements IsLabeledInstruction {
   constructor(
+    readonly type: CFunctionDeclType,
     readonly name: string,
     readonly args: IRVariable[],
     readonly returnRegType?: CType,
-    readonly outputVarPtr?: IRVariable,
+    readonly outputVarPtr: IRVariable = null,
     readonly variadic: boolean = false,
   ) {
     super(IROpcode.DEF);

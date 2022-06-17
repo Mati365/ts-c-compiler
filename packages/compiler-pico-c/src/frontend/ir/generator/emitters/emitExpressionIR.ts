@@ -1,10 +1,11 @@
 import * as R from 'ramda';
 
-import {castToPointerIfArray} from '@compiler/pico-c/frontend/analyze/casts';
+import {tryCastToPointer} from '@compiler/pico-c/frontend/analyze/casts';
 
 import {TokenType} from '@compiler/lexer/shared';
 import {CMathOperator, CUnaryCastOperator} from '@compiler/pico-c/constants';
 import {
+  CPointerType,
   CPrimitiveType,
   CType,
   isArrayLikeType,
@@ -23,7 +24,7 @@ import {GroupTreeVisitor} from '@compiler/grammar/tree/TreeGroupedVisitor';
 import {IREmitterContextAttrs, IREmitterExpressionResult} from './types';
 
 import {
-  IRInstruction, IRLeaInstruction,
+  IRInstruction, IRLabelOffsetInstruction, IRLeaInstruction,
   IRLoadInstruction, IRMathInstruction,
   isIRLoadInstruction,
 } from '../../instructions';
@@ -33,6 +34,7 @@ import {IRConstant, IRInstructionVarArg, IRVariable} from '../../variables';
 
 import {emitIdentifierGetterIR} from './emitIdentifierGetterIR';
 import {emitIncExpressionIR} from './emitIncExpressionIR';
+import {emitFnCallExpressionIR} from './emitFnCallExpressionIR';
 
 export type ExpressionIREmitAttrs = IREmitterContextAttrs & {
   dropLeadingLoads?: boolean;
@@ -152,6 +154,18 @@ export function emitExpressionIR(
             instructions.push(...irSrcVarExprResult.instructions);
             emitExprResultToStack(exprResult);
             return false;
+          } else if (expression.isFnExpression()) {
+            // handle a(1, 2)
+            const exprResult = emitFnCallExpressionIR(
+              {
+                node: expression,
+                context,
+                scope,
+              },
+            );
+
+            emitExprResultToStack(exprResult);
+            return false;
           } else if (!expression.isPrimaryExpression()) {
             // handle (a + 2)
             const exprResult = emitIdentifierGetterIR(
@@ -182,27 +196,39 @@ export function emitExpressionIR(
               ),
             );
           } else if (expression.isIdentifier()) {
-            // handle a[2] / *a
-            const srcVar = allocator.getVariable(expression.identifier.text);
-            if (!isPointerLikeType(srcVar.type))
-              throw new IRError(IRErrorCode.CANNOT_LOAD_PRIMARY_EXPRESSION);
+            const srcFn = allocator.getFunction(expression.identifier.text);
 
-            if (isArrayLikeType(srcVar.type.baseType)) {
-              // handle "array" variable, it is not really pointer
-              // so if we treat arrays like pointer ... loads its
-              // first element address
-              const tmpVar = allocNextVariable(srcVar.type);
+            if (srcFn) {
+              const tmpVar = allocNextVariable(
+                CPointerType.ofType(srcFn.type),
+              );
 
               instructions.push(
-                new IRLeaInstruction(srcVar, tmpVar),
+                new IRLabelOffsetInstruction(srcFn, tmpVar),
               );
             } else {
-              // handle normal "ptr" variable, loads its pointing value
-              const tmpVar = allocNextVariable(srcVar.type.baseType);
+              // handle a[2] / *a
+              const srcVar = allocator.getVariable(expression.identifier.text);
+              if (!isPointerLikeType(srcVar.type))
+                throw new IRError(IRErrorCode.CANNOT_LOAD_PRIMARY_EXPRESSION);
 
-              instructions.push(
-                new IRLoadInstruction(srcVar, tmpVar),
-              );
+              if (isArrayLikeType(srcVar.type.baseType)) {
+                // handle "array" variable, it is not really pointer
+                // so if we treat arrays like pointer ... loads its
+                // first element address
+                const tmpVar = allocNextVariable(srcVar.type);
+
+                instructions.push(
+                  new IRLeaInstruction(srcVar, tmpVar),
+                );
+              } else {
+                // handle normal "ptr" variable, loads its pointing value
+                const tmpVar = allocNextVariable(srcVar.type.baseType);
+
+                instructions.push(
+                  new IRLoadInstruction(srcVar, tmpVar),
+                );
+              }
             }
           } else if (expression.isExpression()) {
             // handle "2 + (a + 2)"
@@ -230,39 +256,45 @@ export function emitExpressionIR(
           let output: IRVariable = null;
 
           if (!isPointerArithmeticType(b.type) && isPointerArithmeticType(a.type)) {
-            const sourceType = a.type.getSourceType();
-            const mulPtrInstruction = new IRMathInstruction(
-              TokenType.MUL,
-              b,
-              IRConstant.ofConstant(
-                CPrimitiveType.int(config.arch),
-                sourceType.getByteSize(),
-              ),
-              b = allocNextVariable(),
-            );
+            const mulBy = a.type.getSourceType().getByteSize();
 
-            instructions.push(mulPtrInstruction);
-            output = allocNextVariable(
-              castToPointerIfArray(a.type),
-            );
+            if (mulBy) {
+              const mulPtrInstruction = new IRMathInstruction(
+                TokenType.MUL,
+                b,
+                IRConstant.ofConstant(
+                  CPrimitiveType.int(config.arch),
+                  mulBy,
+                ),
+                b = allocNextVariable(),
+              );
+
+              instructions.push(mulPtrInstruction);
+              output = allocNextVariable(
+                tryCastToPointer(a.type),
+              );
+            }
           }
 
           if (isPointerArithmeticType(b.type) && !isPointerArithmeticType(a.type)) {
-            const sourceType = b.type.getSourceType();
-            const mulPtrInstruction = new IRMathInstruction(
-              TokenType.MUL,
-              a,
-              IRConstant.ofConstant(
-                CPrimitiveType.int(config.arch),
-                sourceType.getByteSize(),
-              ),
-              a = allocNextVariable(),
-            );
+            const mulBy = b.type.getSourceType().getByteSize();
 
-            instructions.push(mulPtrInstruction);
-            output = allocNextVariable(
-              castToPointerIfArray(b.type),
-            );
+            if (mulBy) {
+              const mulPtrInstruction = new IRMathInstruction(
+                TokenType.MUL,
+                a,
+                IRConstant.ofConstant(
+                  CPrimitiveType.int(config.arch),
+                  mulBy,
+                ),
+                a = allocNextVariable(),
+              );
+
+              instructions.push(mulPtrInstruction);
+              output = allocNextVariable(
+                tryCastToPointer(b.type),
+              );
+            }
           }
 
           output ||= allocNextVariable(a.type);

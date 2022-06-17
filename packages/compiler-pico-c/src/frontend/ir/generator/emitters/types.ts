@@ -27,7 +27,7 @@ export type IREmitterContext = {
     assignment: typeof emitAssignmentIR,
     expression: typeof emitExpressionIR;
     pointerAddressExpression: typeof emitPointerAddressExpression;
-    emitIdentifierGetter: typeof emitIdentifierGetterIR;
+    identifierGetter: typeof emitIdentifierGetterIR;
     unaryLoadPtrValueIR: typeof emitUnaryLoadPtrValueIR;
   };
 };
@@ -61,6 +61,16 @@ export function createBlankStmtResult(instructions?: IRInstruction[]): IREmitter
   return {
     instructions: instructions || [],
     data: [],
+  };
+}
+
+export function createBlankExprResult(
+  instructions?: IRInstruction[],
+  output: IRVariable = null,
+): IREmitterExpressionResult {
+  return {
+    ...createBlankStmtResult(instructions),
+    output,
   };
 }
 
