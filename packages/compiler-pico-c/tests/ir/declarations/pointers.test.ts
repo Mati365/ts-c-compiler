@@ -5,7 +5,7 @@ describe('Pointer declarations IR', () => {
     test('should generate alloc for int* type', () => {
       expect(/* cpp */ `void main() { int* a; }`).toCompiledIRBeEqual(/* ruby */`
         # --- Block main ---
-        def main(): [ret 0B]
+        def main():
           a{0}: int**2B = alloca int*2B
           ret
       `);
@@ -14,7 +14,7 @@ describe('Pointer declarations IR', () => {
     test('should generate alloc for int* var[5] type', () => {
       expect(/* cpp */ `void main() { int* var[5]; }`).toCompiledIRBeEqual(/* ruby */`
         # --- Block main ---
-        def main(): [ret 0B]
+        def main():
           var{0}: int*[5]*2B = alloca int*[5]10B
           ret
       `);
@@ -23,7 +23,7 @@ describe('Pointer declarations IR', () => {
     test('should generate alloc for int (*var)[5] type', () => {
       expect(/* cpp */ `void main() { int (*var)[5]; }`).toCompiledIRBeEqual(/* ruby */`
         # --- Block main ---
-        def main(): [ret 0B]
+        def main():
           var{0}: int[5]**2B = alloca int[5]*2B
           ret
       `);
@@ -32,7 +32,7 @@ describe('Pointer declarations IR', () => {
     test('should generate alloc for int** (*var)[5] type', () => {
       expect(/* cpp */ `void main() { int** (*var)[5]; }`).toCompiledIRBeEqual(/* ruby */`
         # --- Block main ---
-        def main(): [ret 0B]
+        def main():
           var{0}: int**[5]**2B = alloca int**[5]*2B
           ret
       `);
@@ -41,7 +41,7 @@ describe('Pointer declarations IR', () => {
     test('should generate alloc for int** (*var)[3][5] type', () => {
       expect(/* cpp */ `void main() { int** (*var)[3][5]; }`).toCompiledIRBeEqual(/* ruby */`
         # --- Block main ---
-        def main(): [ret 0B]
+        def main():
           var{0}: int**[3][5]**2B = alloca int**[3][5]*2B
           ret
       `);
@@ -50,7 +50,7 @@ describe('Pointer declarations IR', () => {
     test('should generate alloc for int** (*var[1][2])[3][5] type', () => {
       expect(/* cpp */ `void main() { int** (*var[1][2])[3][5]; }`).toCompiledIRBeEqual(/* ruby */`
         # --- Block main ---
-        def main(): [ret 0B]
+        def main():
           var{0}: int**[3][5]*[1][2]*2B = alloca int**[3][5]*[1][2]4B
           ret
       `);
@@ -66,13 +66,13 @@ describe('Pointer declarations IR', () => {
         }
       `).toCompiledIRBeEqual(/* ruby */`
         # --- Block main ---
-        def main(): [ret 0B]
+        def main():
           a{0}: int*2B = alloca int2B
           *(a{0}: int*2B) = store %123: int2B
           b{0}: int**2B = alloca int*2B
-          t{0}: int2B = load a{0}: int*2B
-          t{1}: int2B = t{0}: int2B PLUS %2: int2B
-          *(b{0}: int**2B) = store t{1}: int2B
+          %t{0}: int2B = load a{0}: int*2B
+          %t{1}: int2B = %t{0}: int2B plus %2: int2B
+          *(b{0}: int**2B) = store %t{1}: int2B
           ret
       `);
     });
@@ -86,17 +86,17 @@ describe('Pointer declarations IR', () => {
         }
       `).toCompiledIRBeEqual(/* ruby */`
         # --- Block main ---
-        def main(): [ret 0B]
+        def main():
           a{0}: int*2B = alloca int2B
           *(a{0}: int*2B) = store %123: int2B
           b{0}: int**2B = alloca int*2B
-          t{0}: int*2B = lea a{0}: int*2B
-          *(b{0}: int**2B) = store t{0}: int*2B
+          %t{0}: int*2B = lea a{0}: int*2B
+          *(b{0}: int**2B) = store %t{0}: int*2B
           c{0}: int*2B = alloca int2B
-          t{1}: int*2B = load b{0}: int**2B
-          t{2}: int2B = load t{1}: int*2B
-          t{3}: int2B = t{2}: int2B PLUS %4: int2B
-          *(c{0}: int*2B) = store t{3}: int2B
+          %t{1}: int*2B = load b{0}: int**2B
+          %t{2}: int2B = load %t{1}: int*2B
+          %t{3}: int2B = %t{2}: int2B plus %4: int2B
+          *(c{0}: int*2B) = store %t{3}: int2B
           ret
       `);
     });
@@ -109,14 +109,14 @@ describe('Pointer declarations IR', () => {
         }
       `).toCompiledIRBeEqual(/* ruby */`
         # --- Block main ---
-        def main(): [ret 0B]
+        def main():
           arr{0}: int**2B = alloca int*2B
-          t{0}: int*2B = lea c{0}: int[6]12B
-          *(arr{0}: int**2B) = store t{0}: int*2B
+          %t{0}: int*2B = lea c{0}: int[6]12B
+          *(arr{0}: int**2B) = store %t{0}: int*2B
           ptr{0}: int*2B = alloca int2B
-          t{1}: int*2B = load arr{0}: int**2B
-          t{2}: int2B = load t{1}: int*2B
-          *(ptr{0}: int*2B) = store t{2}: int2B
+          %t{1}: int*2B = load arr{0}: int**2B
+          %t{2}: int2B = load %t{1}: int*2B
+          *(ptr{0}: int*2B) = store %t{2}: int2B
           ret
 
         # --- Block Data ---

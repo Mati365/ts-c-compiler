@@ -1,8 +1,19 @@
 import * as X86_16 from '@x86-toolkit/codegen';
 
 import {CCompilerArch} from '../constants';
-import {SizeofPrimitiveTypeFn} from './utils';
+import {CArchDescriptor} from './types';
 
-export const SIZEOF_PRIMITIVE_TYPE: Record<CCompilerArch, SizeofPrimitiveTypeFn> = {
-  [CCompilerArch.X86_16]: X86_16.sizeofPrimitiveType,
+const COMPILER_ARCH_DESCRIPTORS: Record<CCompilerArch, Readonly<CArchDescriptor>> = {
+  [CCompilerArch.X86_16]: {
+    sizeofPrimitiveType: X86_16.sizeofPrimitiveType,
+    regs: {
+      integral: {
+        maxRegSize: 2,
+      },
+    },
+  },
 };
+
+export function getCompilerArchDescriptor(arch: CCompilerArch) {
+  return COMPILER_ARCH_DESCRIPTORS[arch];
+}

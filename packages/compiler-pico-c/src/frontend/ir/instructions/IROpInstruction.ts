@@ -1,9 +1,13 @@
+import * as R from 'ramda';
 import chalk from 'chalk';
 
 import {IsOutputInstruction} from '../interfaces';
 import {IROpcode} from '../constants';
-import {IRConstant, IRInstructionVarArg, IRVariable, isIRConstant, isIRVariable} from '../variables';
-import {IRInstruction} from './IRInstruction';
+import {IRInstruction, IRInstructionArgs} from './IRInstruction';
+import {
+  IRConstant, IRInstructionVarArg,
+  IRVariable, isIRConstant, isIRVariable,
+} from '../variables';
 
 /**
  * Abstract operator instruction
@@ -23,9 +27,39 @@ export class IROpInstruction<O> extends IRInstruction implements IsOutputInstruc
     super(opcode);
   }
 
+  override ofArgs(
+    {
+      input = [this.leftVar, this.rightVar],
+      output = this.outputVar,
+    }: IRInstructionArgs,
+  ) {
+    const {opcode, operator} = this;
+
+    return new IROpInstruction(
+      opcode,
+      operator,
+      <IRVariable> input[0],
+      <IRVariable> input[1],
+      output,
+    );
+  }
+
+  override getArgs(): IRInstructionArgs {
+    const {leftVar, rightVar, outputVar} = this;
+
+    return {
+      input: [leftVar, rightVar],
+      output: outputVar,
+    };
+  }
+
   override getDisplayName(): string {
     const {leftVar, operator, rightVar, outputVar} = this;
-    const str = `${leftVar?.getDisplayName()} ${chalk.yellowBright(operator)} ${rightVar.getDisplayName()}`;
+    const str = [
+      leftVar?.getDisplayName(),
+      chalk.yellowBright(R.toLower(operator as any)),
+      rightVar.getDisplayName(),
+    ].join(' ');
 
     return (
       outputVar

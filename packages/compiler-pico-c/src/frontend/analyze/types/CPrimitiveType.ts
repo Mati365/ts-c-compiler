@@ -1,6 +1,6 @@
 import * as R from 'ramda';
 
-import {SIZEOF_PRIMITIVE_TYPE} from '@compiler/pico-c/arch';
+import {getCompilerArchDescriptor} from '@compiler/pico-c/arch';
 
 import {
   concatNonEmptyStrings,
@@ -17,7 +17,7 @@ import {
 
 import {CTypeCheckError, CTypeCheckErrorCode} from '../errors/CTypeCheckError';
 import {CType, CTypeDescriptor} from './CType';
-import {CSpecBitmap, CCOMPILER_INTEGRAL_SPEC_BITMAP} from '../constants';
+import {CSpecBitmap, CCOMPILER_INTEGRAL_SPEC_BITMAP, CCOMPILER_FLOATING_SPEC_BITMAP} from '../constants';
 
 import {
   bitsetToKeywords,
@@ -82,12 +82,27 @@ export class CPrimitiveType extends CType<CPrimitiveTypeDescriptor> {
 
   override isScalar() { return true; }
   override isPrimitive() { return true; }
+  override isVoid() { return this.hasSpecifierType(CSpecBitmap.void); }
 
-  isVoid() { return this.hasSpecifierType(CSpecBitmap.void); }
   isSigned() { return !this.hasSpecifierType(CSpecBitmap.signed); }
-  isUnsigned() { return !this.isSigned(); }
+  isUnsigned() {
+    return !this.isSigned() && !this.isFloating();
+  }
+
   isIntegral() {
     return (this.specifiers & CCOMPILER_INTEGRAL_SPEC_BITMAP) !== 0;
+  }
+
+  isFloating() {
+    return (this.specifiers & CCOMPILER_FLOATING_SPEC_BITMAP) !== 0;
+  }
+
+  override canBeStoredInIntegralReg() {
+    return this.isIntegral() && super.canBeStoredInIntegralReg();
+  }
+
+  override canBeStoredInFloatReg() {
+    return this.isFloating() && super.canBeStoredInFloatReg();
   }
 
   /**
@@ -138,7 +153,10 @@ export class CPrimitiveType extends CType<CPrimitiveTypeDescriptor> {
    * @memberof CPrimitiveType
    */
   static sizeOf(arch: CCompilerArch, specifiers: number): number {
-    return SIZEOF_PRIMITIVE_TYPE[arch](specifiers);
+    return (
+      getCompilerArchDescriptor(arch)
+        .sizeofPrimitiveType(specifiers)
+    );
   }
 
   /**

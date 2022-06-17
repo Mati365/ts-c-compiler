@@ -25,6 +25,7 @@ import {IREmitterContextAttrs, IREmitterExpressionResult} from './types';
 import {
   IRInstruction, IRLeaInstruction,
   IRLoadInstruction, IRMathInstruction,
+  isIRLoadInstruction,
 } from '../../instructions';
 
 import {IRError, IRErrorCode} from '../../errors/IRError';
@@ -34,11 +35,13 @@ import {emitIdentifierGetterIR} from './emitIdentifierGetterIR';
 import {emitIncExpressionIR} from './emitIncExpressionIR';
 
 export type ExpressionIREmitAttrs = IREmitterContextAttrs & {
+  dropLeadingLoads?: boolean;
   node: ASTCCompilerNode;
 };
 
 export function emitExpressionIR(
   {
+    dropLeadingLoads,
     context,
     node,
     scope,
@@ -240,7 +243,7 @@ export function emitExpressionIR(
 
             instructions.push(mulPtrInstruction);
             output = allocNextVariable(
-              castToPointerIfArray(config.arch, a.type),
+              castToPointerIfArray(a.type),
             );
           }
 
@@ -258,7 +261,7 @@ export function emitExpressionIR(
 
             instructions.push(mulPtrInstruction);
             output = allocNextVariable(
-              castToPointerIfArray(config.arch, b.type),
+              castToPointerIfArray(b.type),
             );
           }
 
@@ -274,6 +277,13 @@ export function emitExpressionIR(
       },
     },
   )(node);
+
+  if (dropLeadingLoads) {
+    while (isIRLoadInstruction(R.last(instructions))) {
+      instructions.pop();
+      argsVarsStack.pop();
+    }
+  }
 
   const lastArgVarStack = R.last(argsVarsStack);
   return {

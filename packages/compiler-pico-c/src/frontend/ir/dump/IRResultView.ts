@@ -63,10 +63,13 @@ export class IRResultView {
    */
   static serializeCodeSegment(code: IRCodeSegmentBuilderResult): string[] {
     return R.values(code.blocks).reduce(
-      (acc, block) => {
+      (acc, block, index, array) => {
         acc.push(
           IRResultView.serializeCodeBlock(block),
         );
+
+        if (index + 1 < array.length)
+          acc.push('\n');
 
         return acc;
       },

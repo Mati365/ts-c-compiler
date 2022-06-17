@@ -19,13 +19,12 @@ export class ASTCBinaryOpTypeCreator extends ASTCTypeCreator<ASTCBinaryOpNode> {
   kind = ASTCCompilerKind.BinaryOperator;
 
   override leave(node: ASTCBinaryOpNode): void {
-    const {arch} = this;
     if (node.hasSingleSide())
       return;
 
     const {left, right, op} = node;
-    const leftType = castToPointerIfArray(arch, left.type);
-    const rightType = castToPointerIfArray(arch, right.type);
+    const leftType = castToPointerIfArray(left.type);
+    const rightType = castToPointerIfArray(right.type);
 
     if (!checkLeftTypeOverlapping(leftType, rightType)) {
       throw new CTypeCheckError(

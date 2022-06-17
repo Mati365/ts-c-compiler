@@ -2,10 +2,10 @@ import * as R from 'ramda';
 
 import {IROpcode} from '../constants';
 import {IRInstructionVarArg} from '../variables';
-import {IRInstruction} from './IRInstruction';
+import {IRInstruction, IRInstructionArgs} from './IRInstruction';
 
 export function isIRRetInstruction(instruction: IRInstruction): instruction is IRRetInstruction {
-  return instruction.opcode === IROpcode.RET;
+  return instruction?.opcode === IROpcode.RET;
 }
 
 /**
@@ -24,6 +24,22 @@ export class IRRetInstruction extends IRInstruction {
 
   isVoid() {
     return R.isNil(this.value);
+  }
+
+  override ofArgs(
+    {
+      input = [this.value],
+    }: IRInstructionArgs,
+  ) {
+    return new IRRetInstruction(input[0]);
+  }
+
+  override getArgs(): IRInstructionArgs {
+    const {value} = this;
+
+    return {
+      input: this.isVoid() ? [] : [value],
+    };
   }
 
   override getDisplayName(): string {

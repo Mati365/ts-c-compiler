@@ -4,7 +4,7 @@ import chalk from 'chalk';
 import {IsOutputInstruction} from '../interfaces';
 
 import {IROpcode} from '../constants';
-import {IRInstruction} from './IRInstruction';
+import {IRInstruction, IRInstructionArgs} from './IRInstruction';
 import {IRInstructionVarArg, IRVariable} from '../variables';
 
 export function isIRStoreInstruction(instruction: IRInstruction): instruction is IRStoreInstruction {
@@ -30,6 +30,28 @@ export class IRStoreInstruction extends IRInstruction implements IsOutputInstruc
 
   isUninitialized() {
     return R.isNil(this.value);
+  }
+
+  override ofArgs(
+    {
+      input = [this.value],
+      output = this.outputVar,
+    }: IRInstructionArgs,
+  ) {
+    return new IRStoreInstruction(
+      <IRVariable> input[0],
+      output,
+      this.offset,
+    );
+  }
+
+  override getArgs(): IRInstructionArgs {
+    const {value, outputVar} = this;
+
+    return {
+      input: [value],
+      output: outputVar,
+    };
   }
 
   override getDisplayName(): string {

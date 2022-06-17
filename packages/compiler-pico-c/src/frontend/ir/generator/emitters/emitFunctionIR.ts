@@ -1,11 +1,14 @@
+import * as R from 'ramda';
+
 import {GroupTreeVisitor} from '@compiler/grammar/tree/TreeGroupedVisitor';
 import {CFunctionDeclType} from '@compiler/pico-c/frontend/analyze';
 import {
   ASTCAssignmentExpression, ASTCCompilerKind,
-  ASTCCompilerNode, ASTCDeclaration, ASTCExpressionStatement, ASTCFunctionDefinition,
+  ASTCCompilerNode, ASTCDeclaration, ASTCExpression,
+  ASTCExpressionStatement, ASTCFunctionDefinition,
 } from '@compiler/pico-c/frontend/parser';
 
-import {IRRetInstruction} from '../../instructions';
+import {IRRetInstruction, isIRRetInstruction} from '../../instructions';
 import {
   appendStmtResults,
   createBlankStmtResult,
@@ -16,6 +19,7 @@ import {
 import {emitAssignmentIR} from './emitAssignmentIR';
 import {emitDeclarationIR} from './emitDeclarationIR';
 import {emitExpressionStmtIR} from './emitExpressionStmtIR';
+import {emitExpressionIR} from './emitExpressionIR';
 
 type FunctionIREmitAttrs = IREmitterContextAttrs & {
   node: ASTCFunctionDefinition;
@@ -34,10 +38,27 @@ export function emitFunctionIR(
     ],
   );
 
-  const {instructions} = result;
   GroupTreeVisitor.ofIterator<ASTCCompilerNode>(
     {
-      [ASTCCompilerKind.ReturnStmt]: false,
+      [ASTCCompilerKind.ReturnStmt]: {
+        enter(expr: ASTCExpression) {
+          const assignResult = emitExpressionIR(
+            {
+              dropLeadingLoads: true,
+              node: expr,
+              scope,
+              context,
+            },
+          );
+
+          appendStmtResults(assignResult, result).instructions.push(
+            new IRRetInstruction(assignResult.output),
+          );
+
+          return false;
+        },
+      },
+
       [ASTCCompilerKind.Declaration]: {
         enter(declarationNode: ASTCDeclaration) {
           const declarationResult = emitDeclarationIR(
@@ -86,7 +107,8 @@ export function emitFunctionIR(
     },
   )(node.content);
 
-  instructions.push(new IRRetInstruction);
+  if (!isIRRetInstruction(R.last(result.instructions)))
+    result.instructions.push(new IRRetInstruction);
 
   return result;
 }

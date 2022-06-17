@@ -63,7 +63,6 @@ export class CTreeTypeBuilderVisitor extends CInnerTypeTreeVisitor {
     let pointerNode = node.pointer;
     while (pointerNode) {
       this.type = CPointerType.ofType(
-        this.arch,
         this.type,
         CType
           .qualifiersToBitset(pointerNode.typeQualifierList?.items)

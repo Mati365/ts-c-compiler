@@ -126,6 +126,7 @@ export class CFunctionDeclType extends CType<CFunctionDescriptor> {
       {
         callConvention,
         argsSizeof: this.getArgsByteSize(),
+        returnSizeof: this.returnType?.getByteSize() ?? 0,
       },
     );
 

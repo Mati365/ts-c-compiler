@@ -4,7 +4,7 @@ import {getIRTypeDisplayName} from '../dump/getIRTypeDisplayName';
 import {IsOutputInstruction} from '../interfaces';
 
 import {IROpcode} from '../constants';
-import {IRInstruction} from './IRInstruction';
+import {IRInstruction, IRInstructionArgs} from './IRInstruction';
 import {IRVariable} from '../variables/IRVariable';
 import {CPointerType, CType} from '../../analyze';
 
@@ -33,6 +33,21 @@ export class IRAllocInstruction extends IRInstruction implements IsOutputInstruc
     readonly outputVar: IRVariable,
   ) {
     super(IROpcode.ALLOC);
+  }
+
+  override ofArgs(
+    {
+      output = this.outputVar,
+    }: IRInstructionArgs,
+  ) {
+    return new IRAllocInstruction(this.type, output);
+  }
+
+  override getArgs(): IRInstructionArgs {
+    return {
+      input: [],
+      output: this.outputVar,
+    };
   }
 
   override getDisplayName(): string {

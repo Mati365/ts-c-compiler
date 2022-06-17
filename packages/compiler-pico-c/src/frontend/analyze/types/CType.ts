@@ -1,4 +1,5 @@
 import {hasFlag} from '@compiler/core/utils';
+import {getCompilerArchDescriptor} from '@compiler/pico-c/arch';
 
 import {IsPrintable} from '@compiler/core/interfaces';
 import {Identity, Result, ok} from '@compiler/core/monads';
@@ -33,6 +34,8 @@ export abstract class CType<T extends CTypeDescriptor = CTypeDescriptor>
   implements IsPrintable {
 
   get arch() { return this.value.arch; }
+  get archDescriptor() { return getCompilerArchDescriptor(this.arch); }
+
   get qualifiers() { return this.value.qualifiers; }
   get scalarValuesCount() { return 1; }
 
@@ -112,6 +115,7 @@ export abstract class CType<T extends CTypeDescriptor = CTypeDescriptor>
   isFunction() { return false; }
   isScalar() { return false; }
   isPointer() { return false; }
+  isVoid() { return false; }
 
   hasInnerTypeAttributes() {
     return this.isEnum() || this.isStruct();
@@ -175,6 +179,42 @@ export abstract class CType<T extends CTypeDescriptor = CTypeDescriptor>
    */
   getByteSize(): number {
     return null;
+  }
+
+  /**
+   * Checks if size matches regs like ax / bx / etc
+   *
+   * @return {boolean}
+   * @memberof CType
+   */
+  canBeStoredInIntegralReg(): boolean {
+    if (this.isFunction() || this.isVoid())
+      return false;
+
+    const {archDescriptor} = this;
+    const returnByteSize = this.getByteSize();
+
+    return returnByteSize <= archDescriptor.regs.integral.maxRegSize;
+  }
+
+  /**
+   * Checks if size matches regs like xmm0, xmm1
+   *
+   * @return {boolean}
+   * @memberof CType
+   */
+  canBeStoredInFloatReg(): boolean {
+    return false;
+  }
+
+  /**
+   * Returns true if can be stored in any kind of reg
+   *
+   * @return {boolean}
+   * @memberof CType
+   */
+  canBeStoredInReg(): boolean {
+    return this.canBeStoredInFloatReg() || this.canBeStoredInIntegralReg();
   }
 
   /**

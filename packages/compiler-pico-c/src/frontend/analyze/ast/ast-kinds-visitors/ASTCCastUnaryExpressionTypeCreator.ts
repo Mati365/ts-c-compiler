@@ -15,7 +15,6 @@ export class ASTCCastUnaryExpressionTypeCreator extends ASTCTypeCreator<ASTCCast
   kind = ASTCCompilerKind.CastUnaryExpression;
 
   override leave(node: ASTCCastUnaryExpression): void {
-    const {arch} = this;
     const {castExpression} = node;
 
     if (castExpression) {
@@ -23,7 +22,7 @@ export class ASTCCastUnaryExpressionTypeCreator extends ASTCTypeCreator<ASTCCast
 
       switch (node.operator) {
         case CUnaryCastOperator.AND:
-          type = CPointerType.ofType(arch, type);
+          type = CPointerType.ofType(type);
           break;
 
         case CUnaryCastOperator.MUL:

@@ -27,6 +27,15 @@ export function isPointerArithmeticType(type: CType): boolean {
  * @extends {CType<CPointerTypeDescriptor>}
  */
 export class CPointerType extends CType<CPointerTypeDescriptor> {
+  constructor(attrs: Omit<CPointerTypeDescriptor, 'arch'>) {
+    super(
+      {
+        ...attrs,
+        arch: attrs.baseType.arch,
+      },
+    );
+  }
+
   /**
    * Creates const char*
    *
@@ -37,7 +46,6 @@ export class CPointerType extends CType<CPointerTypeDescriptor> {
    */
   static ofStringLiteral(arch: CCompilerArch): CPointerType {
     return CPointerType.ofType(
-      arch,
       CPrimitiveType
         .char(arch)
         .ofConst(),
@@ -54,18 +62,17 @@ export class CPointerType extends CType<CPointerTypeDescriptor> {
    * @return {CPointerType}
    * @memberof CPointerType
    */
-  static ofType(arch: CCompilerArch, baseType: CType, qualifiers?: number): CPointerType {
+  static ofType(baseType: CType, qualifiers?: number): CPointerType {
     return new CPointerType(
       {
-        arch,
         baseType,
         qualifiers,
       },
     );
   }
 
-  static ofArray(arch: CCompilerArch, array: CArrayType): CPointerType {
-    return CPointerType.ofType(arch, array.getSourceType());
+  static ofArray(array: CArrayType): CPointerType {
+    return CPointerType.ofType(array.getSourceType());
   }
 
   get baseType() {

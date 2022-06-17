@@ -157,6 +157,11 @@ export const CCOMPILER_INTEGRAL_SPECIFIERS: CTypeSpecifier[] = [
   CTypeSpecifier.UNSIGNED,
 ];
 
+export const CCOMPILER_FLOATING_SPECIFIERS: CTypeSpecifier[] = [
+  CTypeSpecifier.FLOAT,
+  CTypeSpecifier.DOUBLE,
+];
+
 export const CCOMPILER_STRUCT_LIKE_SPECIFIERS = $enum(CStructLikeSpecifiers).getValues();
 export const CCOMPILER_FUNCTION_SPECIFIERS = $enum(CFunctionSpecifier).getValues();
 export const CCOMPILER_TYPE_SPECIFIERS = $enum(CTypeSpecifier).getValues();

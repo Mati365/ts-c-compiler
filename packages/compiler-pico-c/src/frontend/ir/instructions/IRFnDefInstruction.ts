@@ -1,5 +1,8 @@
 import chalk from 'chalk';
 
+import {getIRTypeDisplayName} from '../dump/getIRTypeDisplayName';
+
+import {CType} from '../../analyze';
 import {IROpcode} from '../constants';
 import {IRVariable} from '../variables';
 import {IRInstruction} from './IRInstruction';
@@ -20,17 +23,39 @@ export function isIRFnDefInstruction(instruction: IRInstruction): instruction is
 export class IRFnDefInstruction extends IRInstruction implements IsLabeledInstruction {
   constructor(
     readonly name: string,
-    readonly args: IRVariable[] = [],
-    readonly retByteSize: number = null,
+    readonly args: IRVariable[],
+    readonly returnRegType?: CType,
+    readonly outputVarPtr?: IRVariable,
     readonly variadic: boolean = false,
   ) {
     super(IROpcode.DEF);
   }
 
-  override getDisplayName(): string {
-    const {name, args, retByteSize} = this;
-    const argsStr = args.map((arg) => arg.getDisplayName()).join(', ');
+  isVoid() {
+    const {returnRegType, outputVarPtr} = this;
 
-    return `${chalk.bold.yellow('def')} ${chalk.bold.white(name)}(${argsStr}): [ret ${retByteSize || 0}B]`;
+    return !returnRegType && !outputVarPtr;
+  }
+
+  override getDisplayName(): string {
+    const {
+      name,
+      args,
+      returnRegType,
+      outputVarPtr,
+    } = this;
+
+    const serializedArgs = args.map((arg) => arg.getDisplayName());
+    const retStr = returnRegType ? `: [ret${getIRTypeDisplayName(returnRegType)}]` : ':';
+
+    if (outputVarPtr) {
+      serializedArgs.push(
+        outputVarPtr.getDisplayName(),
+      );
+    }
+
+    return (
+      `${chalk.bold.yellow('def')} ${chalk.bold.white(name)}(${serializedArgs.join(', ')})${retStr}`
+    );
   }
 }

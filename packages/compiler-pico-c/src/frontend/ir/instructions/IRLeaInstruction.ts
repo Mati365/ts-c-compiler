@@ -2,8 +2,8 @@ import chalk from 'chalk';
 
 import {IsOutputInstruction} from '../interfaces';
 import {IROpcode} from '../constants';
-import {IRInstruction} from './IRInstruction';
-import {IRInstructionVarArg, IRVariable} from '../variables';
+import {IRInstruction, IRInstructionArgs} from './IRInstruction';
+import {IRVariable} from '../variables';
 
 export function isIRLeaInstruction(instruction: IRInstruction): instruction is IRLeaInstruction {
   return instruction?.opcode === IROpcode.LEA;
@@ -19,10 +19,28 @@ export function isIRLeaInstruction(instruction: IRInstruction): instruction is I
  */
 export class IRLeaInstruction extends IRInstruction implements IsOutputInstruction {
   constructor(
-    readonly inputVar: IRInstructionVarArg,
+    readonly inputVar: IRVariable,
     readonly outputVar: IRVariable,
   ) {
     super(IROpcode.LEA);
+  }
+
+  override ofArgs(
+    {
+      input = [this.inputVar],
+      output = this.outputVar,
+    }: IRInstructionArgs,
+  ) {
+    return new IRLeaInstruction(<IRVariable> input[0], output);
+  }
+
+  override getArgs(): IRInstructionArgs {
+    const {inputVar, outputVar} = this;
+
+    return {
+      input: [inputVar],
+      output: outputVar,
+    };
   }
 
   override getDisplayName(): string {

@@ -64,6 +64,9 @@ export function createBlankStmtResult(instructions?: IRInstruction[]): IREmitter
   };
 }
 
+/**
+ * Do not change instructions reference!
+ */
 export function appendStmtResults(src: IREmitterStmtResult, target: IREmitterStmtResult) {
   target.instructions.push(...(src.instructions || []));
   (target.data ||= []).push(...(src.data || []));

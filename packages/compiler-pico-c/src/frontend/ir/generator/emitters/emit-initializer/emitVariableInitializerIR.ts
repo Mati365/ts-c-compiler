@@ -64,7 +64,7 @@ export function emitVariableInitializerIR(
         && initializer.hasOnlyConstantExpressions()
         && initializer.getInitializedFieldsCount() > MIN_PTR_ARRAY_INITIALIZED_FIELDS_COUNT) {
       // initializer with const expressions
-      const arrayPtrType = CPointerType.ofArray(config.arch, <CArrayType> type);
+      const arrayPtrType = CPointerType.ofArray(<CArrayType> type);
       const dataType = CArrayType.ofFlattenDescriptor(
         {
           type: type.getSourceType(),

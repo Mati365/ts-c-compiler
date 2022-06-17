@@ -3,7 +3,8 @@ import {CFunctionDeclType, CPointerType, CPrimitiveType, CType, CVariable} from 
 import {IRFnDefInstruction} from '../instructions';
 import {IRVariable} from '../variables';
 
-const TMP_VAR_PREFIX = 't';
+const TMP_VAR_PREFIX = '%t';
+const TMP_FN_RETURN_VAR_PREFIX = '%out';
 const CONST_VAR_PREFIX = 'c';
 
 /**
@@ -14,6 +15,8 @@ const CONST_VAR_PREFIX = 'c';
  */
 export class IRVariableAllocator {
   private readonly variables: Record<string, IRVariable> = {};
+  private readonly functions: Record<string, IRFnDefInstruction> = {};
+
   private readonly counters = {
     labels: 0,
     tmpVars: 0,
@@ -33,6 +36,10 @@ export class IRVariableAllocator {
 
   getVariable(name: string): IRVariable {
     return this.variables[name];
+  }
+
+  getFunction(name: string): IRFnDefInstruction {
+    return this.functions[name];
   }
 
   /**
@@ -58,14 +65,13 @@ export class IRVariableAllocator {
    * @memberof IRVariableAllocator
    */
   allocVariablePointer(variable: IRVariable | CVariable): IRVariable {
-    const {arch} = this.config;
     if (variable instanceof CVariable)
       variable = IRVariable.ofScopeVariable(variable);
 
     const mappedVariable = variable.map(
       (value) => ({
         ...value,
-        type: CPointerType.ofType(arch, value.type),
+        type: CPointerType.ofType(value.type),
       }),
     );
 
@@ -123,7 +129,6 @@ export class IRVariableAllocator {
 
     return this.allocTmpVariable(
       CPointerType.ofType(
-        arch,
         CPrimitiveType.address(arch),
       ),
       prefix,
@@ -149,13 +154,30 @@ export class IRVariableAllocator {
    * @memberof IRVariableAllocator
    */
   allocFunctionType(fn: CFunctionDeclType): IRFnDefInstruction {
-    const irDefArgs = fn.args.map(
+    const {name, returnType, args} = fn;
+    const irDefArgs = args.map(
       (arg) => this.allocVariablePointer(IRVariable.ofScopeVariable(arg)),
     );
 
-    return new IRFnDefInstruction(
-      fn.name,
-      irDefArgs,
-    );
+    const irFn = (() => {
+      if (returnType.isVoid())
+        return new IRFnDefInstruction(name, irDefArgs);
+
+      if (returnType.canBeStoredInReg())
+        return new IRFnDefInstruction(name, irDefArgs, returnType);
+
+      return new IRFnDefInstruction(
+        name,
+        irDefArgs,
+        null,
+        this.allocTmpVariable(
+          CPointerType.ofType(returnType),
+          TMP_FN_RETURN_VAR_PREFIX,
+        ),
+      );
+    })();
+
+    this.functions[fn.name] = irFn;
+    return irFn;
   }
 }
