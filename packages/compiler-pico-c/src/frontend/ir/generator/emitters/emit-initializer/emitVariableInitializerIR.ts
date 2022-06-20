@@ -101,7 +101,7 @@ export function emitVariableInitializerIR(
             scope,
             context,
             initializerTree: initializer,
-            destVariable: rootIRVar,
+            destVar: rootIRVar,
           },
         ),
       );

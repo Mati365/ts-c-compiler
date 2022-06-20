@@ -2,15 +2,9 @@ import 'source-map-support/register';
 import {ccompiler, CCompilerOutput} from '@compiler/pico-c';
 
 ccompiler(/* cpp */ `
-  int sum(int a, int b) {
-    return a + b;
-  }
-
+  int sum(int x, int y) { return x + y; }
   void main() {
-    // (sum + 3)(2, 3);
-    sum(2, 3);
-    // int* ptr = 0;
-    // (*ptr)(2, 3);
+    int out = sum(1, 2) + 3;
   }
 `).match(
   {

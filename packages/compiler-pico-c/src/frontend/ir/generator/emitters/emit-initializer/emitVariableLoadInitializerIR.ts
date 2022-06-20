@@ -9,13 +9,13 @@ import {
 import {IREmitterContextAttrs} from '../types';
 import {IRError, IRErrorCode} from '../../../errors/IRError';
 import {IRInstruction, IRStoreInstruction} from '../../../instructions';
-import {IRConstant, IRVariable} from '../../../variables';
+import {IRConstant, IRVariable, isIRVariable} from '../../../variables';
 
 import {emitExpressionIR} from '../emitExpressionIR';
 
 type LoadInitializerIREmitAttrs = IREmitterContextAttrs & {
   initializerTree: CVariableInitializerTree;
-  destVariable: IRVariable;
+  destVar: IRVariable;
 };
 
 /**
@@ -23,7 +23,7 @@ type LoadInitializerIREmitAttrs = IREmitterContextAttrs & {
  */
 export function emitVariableLoadInitializerIR(
   {
-    destVariable,
+    destVar,
     initializerTree,
     scope,
     context,
@@ -39,30 +39,36 @@ export function emitVariableLoadInitializerIR(
       throw new IRError(IRErrorCode.INCORRECT_INITIALIZER_BLOCK);
 
     const initializerType = initializerTree.getIndexExpectedType(index);
+
     if (isCompilerTreeNode(initializer)) {
       const exprResult = emitExpressionIR(
         {
-          node: initializer,
           scope,
           context,
+          node: initializer,
+          initializerMeta: {
+            offset,
+            destVar,
+            index,
+          },
         },
       );
 
-      instructions.push(
-        ...exprResult.instructions,
-        new IRStoreInstruction(
-          exprResult.output,
-          destVariable,
-          offset,
-        ),
-      );
+      instructions.push(...exprResult.instructions);
+
+      // do not emit store if RVO optimized fn call result is present
+      if (!isIRVariable(exprResult.output) || !destVar.isShallowEqual(exprResult.output)) {
+        instructions.push(
+          new IRStoreInstruction(exprResult.output, destVar, offset),
+        );
+      }
     } else if (R.is(String, initializer)) {
       const argVar = allocator.getVariable(initializer);
 
       instructions.push(
         new IRStoreInstruction(
           argVar,
-          destVariable,
+          destVar,
           offset,
         ),
       );
@@ -72,7 +78,7 @@ export function emitVariableLoadInitializerIR(
       instructions.push(
         new IRStoreInstruction(
           IRConstant.ofConstant(initializerType, initializer),
-          destVariable,
+          destVar,
           offset,
         ),
       );

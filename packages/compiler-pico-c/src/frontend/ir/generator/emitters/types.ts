@@ -32,9 +32,16 @@ export type IREmitterContext = {
   };
 };
 
+export type IREmiiterInitializerMeta = {
+  destVar: IRVariable;
+  index: number;
+  offset: number;
+};
+
 export type IREmitterContextAttrs = {
   scope: CScopeTree;
   context: IREmitterContext;
+  initializerMeta?: IREmiiterInitializerMeta;
 };
 
 export type IREmitterStmtResult = {

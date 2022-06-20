@@ -1,7 +1,7 @@
 import * as R from 'ramda';
 import chalk from 'chalk';
 
-import {IRInstructionsBlock, isIRFnDefInstruction} from '../instructions';
+import {IRInstructionsBlock, isIRFnDeclInstruction} from '../instructions';
 import {IRCodeBuilderResult} from '../safeBuildIRCode';
 import {IRCodeSegmentBuilderResult} from '../generator';
 
@@ -96,7 +96,7 @@ export class IRResultView {
 
     instructions.forEach((instruction) => {
       let str = instruction.getDisplayName();
-      if (!isIRFnDefInstruction(instruction))
+      if (!isIRFnDeclInstruction(instruction))
         str = `  ${str}`;
 
       lines.push(str);

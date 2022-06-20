@@ -1,6 +1,6 @@
 import {CCompilerConfig} from '@compiler/pico-c/constants';
 import {CFunctionDeclType, CPointerType, CPrimitiveType, CType, CVariable} from '../../analyze';
-import {IRFnDefInstruction} from '../instructions';
+import {IRFnDeclInstruction} from '../instructions';
 import {IRVariable} from '../variables';
 
 const TMP_VAR_PREFIX = '%t';
@@ -15,7 +15,7 @@ const CONST_VAR_PREFIX = 'c';
  */
 export class IRVariableAllocator {
   private readonly variables: Record<string, IRVariable> = {};
-  private readonly functions: Record<string, IRFnDefInstruction> = {};
+  private readonly functions: Record<string, IRFnDeclInstruction> = {};
 
   private readonly counters = {
     labels: 0,
@@ -38,7 +38,7 @@ export class IRVariableAllocator {
     return this.variables[name];
   }
 
-  getFunction(name: string): IRFnDefInstruction {
+  getFunction(name: string): IRFnDeclInstruction {
     return this.functions[name];
   }
 
@@ -150,10 +150,10 @@ export class IRVariableAllocator {
    * Allocates arg temp variables for function
    *
    * @param {CFunctionDeclType} fn
-   * @return {IRFnDefInstruction}
+   * @return {IRFnDeclInstruction}
    * @memberof IRVariableAllocator
    */
-  allocFunctionType(fn: CFunctionDeclType): IRFnDefInstruction {
+  allocFunctionType(fn: CFunctionDeclType): IRFnDeclInstruction {
     const {name, returnType, args} = fn;
     const irDefArgs = args.map(
       (arg) => this.allocVariablePointer(IRVariable.ofScopeVariable(arg)),
@@ -161,18 +161,20 @@ export class IRVariableAllocator {
 
     const irFn = (() => {
       if (returnType.isVoid())
-        return new IRFnDefInstruction(fn, name, irDefArgs);
+        return new IRFnDeclInstruction(fn, name, irDefArgs);
 
       if (returnType.canBeStoredInReg())
-        return new IRFnDefInstruction(fn, name, irDefArgs, returnType);
+        return new IRFnDeclInstruction(fn, name, irDefArgs, returnType);
 
-      return new IRFnDefInstruction(
+      return new IRFnDeclInstruction(
         fn,
         name,
         irDefArgs,
         null,
         this.allocTmpVariable(
-          CPointerType.ofType(returnType),
+          CPointerType.ofType(
+            CPointerType.ofType(returnType),
+          ),
           TMP_FN_RETURN_VAR_PREFIX,
         ),
       );

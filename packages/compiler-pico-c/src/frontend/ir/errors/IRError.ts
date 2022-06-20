@@ -16,6 +16,10 @@ export enum IRErrorCode {
   UNABLE_INC_NON_PTR_TYPE = 'UNABLE_INC_NON_PTR_TYPE',
   CANNOT_DEREFERENCE_NON_PTR_TYPE = 'CANNOT_DEREFERENCE_NON_PTR_TYPE',
   CANNOT_LOAD_PRIMARY_EXPRESSION = 'CANNOT_LOAD_PRIMARY_EXPRESSION',
+  PROVIDED_TYPE_IS_NOT_CALLABLE = 'PROVIDED_TYPE_IS_NOT_CALLABLE',
+  MISSING_FUNC_DECL_IN_ALLOCATOR = 'MISSING_FUNC_DECL_IN_ALLOCATOR',
+  RVO_RETURN_CONSTANT = 'RVO_RETURNED_CONSTANT',
+  RVO_OPTIMIZATION_FAIL = 'RVO_OPTIMIZATION_FAIL',
 }
 
 export const C_IR_ERROR_TRANSLATIONS: Record<IRErrorCode, string> = {
@@ -34,6 +38,10 @@ export const C_IR_ERROR_TRANSLATIONS: Record<IRErrorCode, string> = {
   [IRErrorCode.UNABLE_INC_NON_PTR_TYPE]: fixme('Unable increment non pointer type!'),
   [IRErrorCode.CANNOT_DEREFERENCE_NON_PTR_TYPE]: fixme('Cannot dereference non ptr type!'),
   [IRErrorCode.CANNOT_LOAD_PRIMARY_EXPRESSION]: fixme('Cannot load primary expression!'),
+  [IRErrorCode.PROVIDED_TYPE_IS_NOT_CALLABLE]: 'Provided type "%{typeName}" is not callable!',
+  [IRErrorCode.MISSING_FUNC_DECL_IN_ALLOCATOR]: fixme('Missing function "%{name}" declaration in allocator!'),
+  [IRErrorCode.RVO_RETURN_CONSTANT]: fixme('RVO should not return constant!'),
+  [IRErrorCode.RVO_OPTIMIZATION_FAIL]: fixme('RVO optimization failed!'),
 };
 
 /**

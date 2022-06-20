@@ -9,7 +9,7 @@ import {IRVariable} from '../variables/IRVariable';
 import {CPointerType, CType} from '../../analyze';
 
 export function isIRAllocInstruction(instruction: IRInstruction): instruction is IRAllocInstruction {
-  return instruction.opcode === IROpcode.ALLOC;
+  return instruction?.opcode === IROpcode.ALLOC;
 }
 
 /**

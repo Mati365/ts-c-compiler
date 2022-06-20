@@ -8,19 +8,19 @@ import {IRVariable} from '../variables';
 import {IRInstruction} from './IRInstruction';
 import {IsLabeledInstruction} from '../interfaces/IsLabeledInstruction';
 
-export function isIRFnDefInstruction(instruction: IRInstruction): instruction is IRFnDefInstruction {
-  return instruction.opcode === IROpcode.DEF;
+export function isIRFnDeclInstruction(instruction: IRInstruction): instruction is IRFnDeclInstruction {
+  return instruction.opcode === IROpcode.FN_DECL;
 }
 
 /**
- * Definition of function
+ * Declaration of function
  *
  * @export
- * @class IRFnDefInstruction
+ * @class IRFnDeclInstruction
  * @extends {IRInstruction}
  * @implements {IsLabeledInstruction}
  */
-export class IRFnDefInstruction extends IRInstruction implements IsLabeledInstruction {
+export class IRFnDeclInstruction extends IRInstruction implements IsLabeledInstruction {
   constructor(
     readonly type: CFunctionDeclType,
     readonly name: string,
@@ -29,7 +29,7 @@ export class IRFnDefInstruction extends IRInstruction implements IsLabeledInstru
     readonly outputVarPtr: IRVariable = null,
     readonly variadic: boolean = false,
   ) {
-    super(IROpcode.DEF);
+    super(IROpcode.FN_DECL);
   }
 
   isVoid() {

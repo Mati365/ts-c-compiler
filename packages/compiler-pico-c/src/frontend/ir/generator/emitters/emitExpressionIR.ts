@@ -26,7 +26,6 @@ import {IREmitterContextAttrs, IREmitterExpressionResult} from './types';
 import {
   IRInstruction, IRLabelOffsetInstruction, IRLeaInstruction,
   IRLoadInstruction, IRMathInstruction,
-  isIRLoadInstruction,
 } from '../../instructions';
 
 import {IRError, IRErrorCode} from '../../errors/IRError';
@@ -34,16 +33,15 @@ import {IRConstant, IRInstructionVarArg, IRVariable} from '../../variables';
 
 import {emitIdentifierGetterIR} from './emitIdentifierGetterIR';
 import {emitIncExpressionIR} from './emitIncExpressionIR';
-import {emitFnCallExpressionIR} from './emitFnCallExpressionIR';
+import {emitFnCallExpressionIR} from './emit-fn-call-expression';
 
 export type ExpressionIREmitAttrs = IREmitterContextAttrs & {
-  dropLeadingLoads?: boolean;
   node: ASTCCompilerNode;
 };
 
 export function emitExpressionIR(
   {
-    dropLeadingLoads,
+    initializerMeta,
     context,
     node,
     scope,
@@ -159,6 +157,7 @@ export function emitExpressionIR(
             const exprResult = emitFnCallExpressionIR(
               {
                 node: expression,
+                initializerMeta,
                 context,
                 scope,
               },
@@ -309,13 +308,6 @@ export function emitExpressionIR(
       },
     },
   )(node);
-
-  if (dropLeadingLoads) {
-    while (isIRLoadInstruction(R.last(instructions))) {
-      instructions.pop();
-      argsVarsStack.pop();
-    }
-  }
 
   const lastArgVarStack = R.last(argsVarsStack);
   return {

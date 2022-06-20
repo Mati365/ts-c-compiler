@@ -8,7 +8,7 @@ export enum IROpcode {
   IF = 'IF',
   REL = 'REL',
   PHI = 'PHI',
-  DEF = 'DEF',
+  FN_DECL = 'FN_DECL',
   RET = 'RET',
   MATH = 'MATH',
   LABEL_OFFSET = 'LABEL_OFFSET',

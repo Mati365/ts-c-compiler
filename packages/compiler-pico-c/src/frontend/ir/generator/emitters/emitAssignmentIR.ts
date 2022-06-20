@@ -8,7 +8,7 @@ import {
   IRStoreInstruction,
 } from '../../instructions';
 
-import {IRInstructionVarArg} from '../../variables';
+import {IRInstructionVarArg, isIRVariable} from '../../variables';
 import {IREmitterContextAttrs, IREmitterExpressionResult} from './types';
 
 import {emitIdentifierGetterIR} from './emitIdentifierGetterIR';
@@ -74,9 +74,12 @@ export function emitAssignmentIR(
     assignResult = tmpResultVar;
   }
 
-  instructions.push(
-    new IRStoreInstruction(assignResult, lvalue.output),
-  );
+  // prevent assign like a = a
+  if (!isIRVariable(assignResult) || !assignResult.isShallowEqual(lvalue.output)) {
+    instructions.push(
+      new IRStoreInstruction(assignResult, lvalue.output),
+    );
+  }
 
   return {
     output: assignResult,

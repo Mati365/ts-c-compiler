@@ -76,7 +76,7 @@ export function tryConcatMathInstructions(
     if (!aArg
         || !bArg
         || !isIRVariable(flippedB.leftVar)
-        || flippedB.leftVar.name !== flippedA.outputVar?.name
+        || !flippedB.leftVar.isShallowEqual(flippedA.outputVar)
         || !canConcatOperators(flippedA.operator, flippedB.operator)) {
       return none();
     }

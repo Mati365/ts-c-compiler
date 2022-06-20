@@ -141,4 +141,8 @@ export class IRVariable
 
     return `${chalk.blueBright(name)}${withType ? getIRTypeDisplayName(type) : ''}`;
   }
+
+  isShallowEqual(variable: IRVariable) {
+    return this.name === variable?.name;
+  }
 }

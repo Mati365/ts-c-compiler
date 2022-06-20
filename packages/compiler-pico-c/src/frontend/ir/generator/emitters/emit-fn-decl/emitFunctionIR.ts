@@ -8,18 +8,23 @@ import {
   ASTCExpressionStatement, ASTCFunctionDefinition,
 } from '@compiler/pico-c/frontend/parser';
 
-import {IRRetInstruction, isIRRetInstruction} from '../../instructions';
+import {IRRetInstruction, isIRRetInstruction} from '../../../instructions';
+import {IRError, IRErrorCode} from '../../../errors/IRError';
+
 import {
   appendStmtResults,
   createBlankStmtResult,
   IREmitterContextAttrs,
   IREmitterStmtResult,
-} from './types';
+} from '../types';
 
-import {emitAssignmentIR} from './emitAssignmentIR';
-import {emitDeclarationIR} from './emitDeclarationIR';
-import {emitExpressionStmtIR} from './emitExpressionStmtIR';
-import {emitExpressionIR} from './emitExpressionIR';
+import {functionRvoStmtTransformer} from './functionRvoStmtTransformer';
+import {isIRVariable} from '../../../variables';
+
+import {emitAssignmentIR} from '../emitAssignmentIR';
+import {emitDeclarationIR} from '../emitDeclarationIR';
+import {emitExpressionStmtIR} from '../emitExpressionStmtIR';
+import {emitExpressionIR} from '../emitExpressionIR';
 
 type FunctionIREmitAttrs = IREmitterContextAttrs & {
   node: ASTCFunctionDefinition;
@@ -32,28 +37,42 @@ export function emitFunctionIR(
     node,
   }: FunctionIREmitAttrs,
 ): IREmitterStmtResult {
-  const result = createBlankStmtResult(
-    [
-      context.allocator.allocFunctionType(<CFunctionDeclType> node.type),
-    ],
-  );
+  const fnType = <CFunctionDeclType> node.type;
+  const fnDecl = context.allocator.allocFunctionType(fnType);
+  let result = createBlankStmtResult([fnDecl]);
 
   GroupTreeVisitor.ofIterator<ASTCCompilerNode>(
     {
       [ASTCCompilerKind.ReturnStmt]: {
         enter(expr: ASTCExpression) {
-          const assignResult = emitExpressionIR(
+          const canBeStoredInReg = fnType.returnType.canBeStoredInIntegralReg();
+          let assignResult = emitExpressionIR(
             {
-              dropLeadingLoads: true,
               node: expr,
               scope,
               context,
             },
           );
 
-          appendStmtResults(assignResult, result).instructions.push(
-            new IRRetInstruction(assignResult.output),
-          );
+          appendStmtResults(assignResult, result);
+
+          if (canBeStoredInReg) {
+            result.instructions.push(
+              new IRRetInstruction(assignResult.output),
+            );
+          } else {
+            if (!isIRVariable(assignResult.output))
+              throw new IRError(IRErrorCode.RVO_RETURN_CONSTANT);
+
+            result = functionRvoStmtTransformer(
+              {
+                stmtResult: result,
+                returnedVar: assignResult.output,
+                rvoOutputVar: fnDecl.outputVarPtr,
+              },
+            );
+            result.instructions.push(new IRRetInstruction);
+          }
 
           return false;
         },
