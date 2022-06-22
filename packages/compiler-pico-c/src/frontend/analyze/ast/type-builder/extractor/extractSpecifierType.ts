@@ -65,6 +65,11 @@ export function extractSpecifierType(
 
   if (hasEnums || hasStructs) {
     let typeName: string = null;
+    const extractors = {
+      extractNamedEntryFromDeclaration,
+      extractNamedEntryFromDeclarator,
+      extractSpecifierType,
+    };
 
     if (hasStructs) {
       const structSpecifier = structs[0].structOrUnionSpecifier;
@@ -73,8 +78,7 @@ export function extractSpecifierType(
       if (structSpecifier.hasDeclarationList()) {
         return extractStructTypeFromNode(
           {
-            extractNamedEntryFromDeclarator,
-            extractSpecifierType,
+            ...extractors,
             structSpecifier,
             context,
           },
@@ -90,8 +94,7 @@ export function extractSpecifierType(
       if (enumSpecifier.hasEnumerations()) {
         return extractEnumTypeFromNode(
           {
-            extractNamedEntryFromDeclarator,
-            extractSpecifierType,
+            ...extractors,
             enumSpecifier,
             context,
           },
@@ -138,6 +141,8 @@ export function extractNamedEntryFromDeclaration(
   {
     context,
     declaration,
+    canBeAnonymous,
+    skipFnExpressions,
   }: TypeResolverAttrs,
 ): CNamedTypedEntry {
   const {specifier, declarator} = declaration;
@@ -157,6 +162,8 @@ export function extractNamedEntryFromDeclaration(
       context,
       declarator,
       type,
+      skipFnExpressions,
+      canBeAnonymous,
     },
   );
 }
@@ -173,6 +180,8 @@ export function extractNamedEntryFromDeclarator(
     context,
     type,
     declarator,
+    canBeAnonymous,
+    skipFnExpressions,
   }: DeclaratorExtractorAttrs,
 ): CNamedTypedEntry {
   if (!type) {
@@ -183,13 +192,21 @@ export function extractNamedEntryFromDeclarator(
   }
 
   const buildEntry = (
-    new CTreeTypeBuilderVisitor(type)
+    new CTreeTypeBuilderVisitor(
+      type,
+      {
+        skipFnExpressions,
+        extractNamedEntryFromDeclaration,
+        extractNamedEntryFromDeclarator,
+        extractSpecifierType,
+      },
+    )
       .setContext(context)
       .visit(declarator)
       .getBuiltEntry()
   );
 
-  if (buildEntry.isAnonymous() || !buildEntry.unwrap()?.type) {
+  if ((!canBeAnonymous && buildEntry.isAnonymous()) || !buildEntry.unwrap()?.type) {
     throw new CTypeCheckError(
       CTypeCheckErrorCode.UNKNOWN_DECLARATOR_ENTRY_IDENTIFIER,
       declarator.loc.start,

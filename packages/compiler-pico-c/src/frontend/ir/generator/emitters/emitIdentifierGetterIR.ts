@@ -2,6 +2,7 @@ import * as R from 'ramda';
 
 import {TokenType} from '@compiler/lexer/shared';
 import {
+  CPointerType,
   CPrimitiveType,
   isArrayLikeType,
   isPointerLikeType,
@@ -23,6 +24,7 @@ import {
 
 import {
   IRInstruction,
+  IRLabelOffsetInstruction,
   IRLeaInstruction,
   IRLoadInstruction,
   IRMathInstruction,
@@ -112,34 +114,49 @@ export function emitIdentifierGetterIR(
             return;
 
           const name = expr.identifier.text;
-          const irVariable = allocator.getVariable(name);
-
-          rootIRVar ??= irVariable;
+          const irFunction = allocator.getFunction(name);
 
           /**
-           * detect this case:
-           *  char array[10] = { 1, 2, 3, 4, 5, 6 };
-           *  array[1] = 2;
-           *
-           * which is transformed into pointer that is pointing
-           * not into te stack but somewhere else
+           * Detect case:
+           * int* ptr = fn_name;
            */
-          if (irVariable.virtualArrayPtr) {
-            lastIRVar = allocator.allocAddressVariable();
-            instructions.push(
-              new IRLoadInstruction(irVariable, lastIRVar),
+          if (irFunction) {
+            lastIRVar = allocator.allocTmpVariable(
+              CPointerType.ofType(irFunction.type),
             );
-          } else if (
-            isPointerLikeType(irVariable.type)
-              && isArrayLikeType(irVariable.type.baseType)
-          ) {
-            // emits LEA before array[1][2], struct. like expressions
-            lastIRVar = allocator.allocAddressVariable();
+
             instructions.push(
-              new IRLeaInstruction(irVariable, lastIRVar),
+              new IRLabelOffsetInstruction(irFunction, lastIRVar),
             );
           } else {
-            lastIRVar = irVariable;
+            const irVariable = allocator.getVariable(name);
+            rootIRVar ??= irVariable;
+
+            /**
+             * detect this case:
+             *  char array[10] = { 1, 2, 3, 4, 5, 6 };
+             *  array[1] = 2;
+             *
+             * which is transformed into pointer that is pointing
+             * not into te stack but somewhere else
+             */
+            if (irVariable.virtualArrayPtr) {
+              lastIRVar = allocator.allocAddressVariable();
+              instructions.push(
+                new IRLoadInstruction(irVariable, lastIRVar),
+              );
+            } else if (
+              isPointerLikeType(irVariable.type)
+                && isArrayLikeType(irVariable.type.baseType)
+            ) {
+              // emits LEA before array[1][2], struct. like expressions
+              lastIRVar = allocator.allocAddressVariable();
+              instructions.push(
+                new IRLeaInstruction(irVariable, lastIRVar),
+              );
+            } else {
+              lastIRVar = irVariable;
+            }
           }
         },
       },

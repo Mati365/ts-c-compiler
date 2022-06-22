@@ -16,8 +16,8 @@ describe('Functions IR', () => {
 
       # --- Block main ---
       def main():
-        %t{3}: sum*2B = offset sum
-        %t{4}: int2B = call %t{3}: sum*2B :: (%1: int2B, %2: int2B)
+        %t{3}: int sum(int, int)*2B = offset sum
+        %t{4}: int2B = call %t{3}: int sum(int, int)*2B :: (%1: int2B, %2: int2B)
         ret
     `);
   });
@@ -43,8 +43,8 @@ describe('Functions IR', () => {
 
       # --- Block main ---
       def main():
-        %t{4}: sum*2B = offset sum
-        %t{5}: int2B = call %t{4}: sum*2B :: (%1: int2B, %2: int2B)
+        %t{4}: int sum(int, int)*2B = offset sum
+        %t{5}: int2B = call %t{4}: int sum(int, int)*2B :: (%1: int2B, %2: int2B)
         ret
     `);
   });
@@ -68,8 +68,8 @@ describe('Functions IR', () => {
 
       # --- Block main ---
       def main():
-        %t{1}: sum*2B = offset sum
-        %t{2}: struct Vec22B = call %t{1}: sum*2B :: ()
+        %t{1}: struct Vec2 sum()*2B = offset sum
+        %t{2}: struct Vec22B = call %t{1}: struct Vec2 sum()*2B :: ()
         ret
     `);
   });
@@ -85,19 +85,19 @@ describe('Functions IR', () => {
         sum();
       }
     `).toCompiledIRBeEqual(/* ruby */`
-        # --- Block sum ---
-        def sum(%out{0}: struct Vec2**2B):
-          out{0}: struct Vec2*2B = load %out{0}: struct Vec2**2B
-          *(out{0}: struct Vec2*2B) = store %6: int2B
-          ret
+      # --- Block sum ---
+      def sum(%out{0}: struct Vec2**2B):
+        out{0}: struct Vec2*2B = load %out{0}: struct Vec2**2B
+        *(out{0}: struct Vec2*2B) = store %6: int2B
+        ret
 
 
-        # --- Block main ---
-        def main():
-          %t{1}: sum*2B = offset sum
-          %t{2}: struct Vec2*2B = alloca struct Vec24B
-          call %t{1}: sum*2B :: (%t{2}: struct Vec2*2B)
-          ret
+      # --- Block main ---
+      def main():
+        %t{1}: struct Vec2 sum()*2B = offset sum
+        %t{2}: struct Vec2*2B = alloca struct Vec24B
+        call %t{1}: struct Vec2 sum()*2B :: (%t{2}: struct Vec2*2B)
+        ret
     `);
   });
 
@@ -119,8 +119,8 @@ describe('Functions IR', () => {
       # --- Block main ---
       def main():
         out{0}: int*2B = alloca int2B
-        %t{3}: sum*2B = offset sum
-        %t{4}: int2B = call %t{3}: sum*2B :: (%1: int2B, %2: int2B)
+        %t{3}: int sum(int, int)*2B = offset sum
+        %t{4}: int2B = call %t{3}: int sum(int, int)*2B :: (%1: int2B, %2: int2B)
         %t{5}: int2B = %t{4}: int2B plus %3: int2B
         *(out{0}: int*2B) = store %t{5}: int2B
         ret

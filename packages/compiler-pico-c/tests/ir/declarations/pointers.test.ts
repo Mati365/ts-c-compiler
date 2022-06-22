@@ -123,5 +123,61 @@ describe('Pointer declarations IR', () => {
           c{0}: int[6]12B = const { 1, 2, 3, 4, 5, 6 }
       `);
     });
+
+    test('function pointer declaration without initialize', () => {
+      expect(/* cpp */ `
+        int sum(int x, int y) {
+          return x + y;
+        }
+        void main() {
+          float* (*fun_ptr)(int**, const char* s);
+        }
+      `).toCompiledIRBeEqual(/* ruby */`
+        # --- Block sum ---
+        def sum(x{0}: int*2B, y{0}: int*2B): [ret: int2B]
+          %t{0}: int2B = load x{0}: int*2B
+          %t{1}: int2B = load y{0}: int*2B
+          %t{2}: int2B = %t{0}: int2B plus %t{1}: int2B
+          ret %t{2}: int2B
+
+        # --- Block main ---
+        def main():
+          fun_ptr{0}: float*(int**, const char*)**2B = alloca float*(int**, const char*)*2B
+          ret
+      `);
+    });
+
+    test('function pointer declaration with initializer', () => {
+      expect(/* cpp */ `
+        int sum(int x, int y) {
+          return x + y;
+        }
+        void main() {
+          int (*fun_ptr)(int, int) = sum;
+          int (*fun_ptr2)(int, int) = &sum;
+          fun_ptr2 = sum;
+        }
+      `).toCompiledIRBeEqual(/* ruby */`
+        # --- Block sum ---
+        def sum(x{0}: int*2B, y{0}: int*2B): [ret: int2B]
+          %t{0}: int2B = load x{0}: int*2B
+          %t{1}: int2B = load y{0}: int*2B
+          %t{2}: int2B = %t{0}: int2B plus %t{1}: int2B
+          ret %t{2}: int2B
+
+
+        # --- Block main ---
+        def main():
+          fun_ptr{0}: int(int, int)**2B = alloca int(int, int)*2B
+          %t{3}: int sum(int, int)*2B = offset sum
+          *(fun_ptr{0}: int(int, int)**2B) = store %t{3}: int sum(int, int)*2B
+          fun_ptr2{0}: int(int, int)**2B = alloca int(int, int)*2B
+          %t{4}: int sum(int, int)*2B = offset sum
+          *(fun_ptr2{0}: int(int, int)**2B) = store %t{4}: int sum(int, int)*2B
+          %t{5}: int sum(int, int)*2B = offset sum
+          *(fun_ptr2{0}: int(int, int)**2B) = store %t{5}: int sum(int, int)*2B
+          ret
+      `);
+    });
   });
 });

@@ -141,6 +141,18 @@ export class CFunctionDeclType extends CType<CFunctionDescriptor> {
   }
 
   /**
+   * Serializes type to shortest string
+   *
+   * @memberof CFunctionDeclType
+   */
+  override getShortestDisplayName(): string {
+    const {name, args, returnType} = this;
+    const argsStr = args.map((arg) => arg.type.getShortestDisplayName()).join(', ');
+
+    return `${returnType.getShortestDisplayName()}${name ? ` ${name}` : ''}(${argsStr})`;
+  }
+
+  /**
    * Lookups in array and returns arg by name
    *
    * @param {string} name

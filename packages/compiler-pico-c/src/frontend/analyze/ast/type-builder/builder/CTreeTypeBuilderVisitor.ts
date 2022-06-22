@@ -1,22 +1,35 @@
 import * as R from 'ramda';
 
+import {CFunctionCallConvention} from '@compiler/pico-c/constants';
 import {
+  ASTCAbstractDeclarator,
   ASTCCompilerKind,
   ASTCDeclarator,
   ASTCDirectDeclarator,
+  ASTCDirectDeclaratorFnExpression,
 } from '@compiler/pico-c/frontend/parser/ast';
 
+import type {TypeExtractorFns} from '../constants/types';
 import {evalConstantExpression} from '../../expression-analyze';
 
 import {CTypeCheckError, CTypeCheckErrorCode} from '../../../errors/CTypeCheckError';
 import {CInnerTypeTreeVisitor} from '../../CInnerTypeTreeVisitor';
 import {CNamedTypedEntry} from '../../../scope/variables/CNamedTypedEntry';
+import {CVariable} from '../../../scope';
+import {CTypeAnalyzeContext} from '../../CTypeAnalyzeContext';
 import {
   isArrayLikeType,
   CType,
   CPointerType,
   CArrayType,
+  CFunctionDeclType,
+  CStorageClassMonad,
+  CFunctionSpecifierMonad,
 } from '../../../types';
+
+export type CTypeBuilderAttrs = TypeExtractorFns & {
+  skipFnExpressions?: boolean,
+};
 
 /**
  * Walks over declarator related types and treis to construct type
@@ -28,9 +41,20 @@ import {
 export class CTreeTypeBuilderVisitor extends CInnerTypeTreeVisitor {
   private name: string = null;
 
-  constructor(private type: CType) {
+  constructor(
+    private type: CType,
+    private readonly attrs: CTypeBuilderAttrs,
+  ) {
     super(
       {
+        [ASTCCompilerKind.AbstractDeclarator]: {
+          enter: (node: ASTCAbstractDeclarator) => {
+            this.extractDeclaratorPointers(node);
+            this.visit(node.directAbstractDeclarator);
+            return false;
+          },
+        },
+
         [ASTCCompilerKind.Declarator]: {
           enter: (node: ASTCDeclarator) => {
             this.extractDeclaratorPointers(node);
@@ -81,9 +105,15 @@ export class CTreeTypeBuilderVisitor extends CInnerTypeTreeVisitor {
    * @memberof CTreeTypeBuilderVisitor
    */
   private extractDirectDeclarator(node: ASTCDirectDeclarator) {
+    const {skipFnExpressions} = this.attrs;
+
     if (node.isIdentifier())
       this.name = this.name || node.identifier.text;
-    else if (node.isArrayExpression()) {
+    else if (!skipFnExpressions && node.isFnExpression()) {
+      this.extractFnExpression(node.fnExpression);
+      this.visit(node.directDeclarator);
+      return false;
+    } else if (node.isArrayExpression()) {
       const {type: baseType} = this;
       const {assignmentExpression} = node.arrayExpression;
 
@@ -120,6 +150,50 @@ export class CTreeTypeBuilderVisitor extends CInnerTypeTreeVisitor {
     }
   }
 
+  /**
+   * Reads args list for for example function pointer
+   *
+   * @example
+   *  int (*abc)(int, int);
+   *
+   * @private
+   * @param {ASTCDirectDeclaratorFnExpression} node
+   * @memberof CTreeTypeBuilderVisitor
+   */
+  private extractFnExpression(node: ASTCDirectDeclaratorFnExpression) {
+    const {config} = this.context;
+    const {extractNamedEntryFromDeclaration} = this.attrs;
+
+    const abstractContext: CTypeAnalyzeContext = {
+      ...this.context,
+      abstract: true,
+    };
+
+    const args = node.argsNodes.map(
+      (argNode) => CVariable.ofFunctionArg(
+        extractNamedEntryFromDeclaration(
+          {
+            declaration: argNode,
+            context: abstractContext,
+            canBeAnonymous: true,
+          },
+        ),
+      ),
+    );
+
+    this.type = new CFunctionDeclType(
+      {
+        callConvention: CFunctionCallConvention.CDECL,
+        name: null,
+        definition: null,
+        returnType: this.type,
+        arch: config.arch,
+        storage: CStorageClassMonad.ofBlank(),
+        specifier: CFunctionSpecifierMonad.ofBlank(),
+        args,
+      },
+    );
+  }
 
   getBuiltEntry() {
     const {type, name} = this;

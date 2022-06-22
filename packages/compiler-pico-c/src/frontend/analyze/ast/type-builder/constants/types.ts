@@ -12,13 +12,6 @@ type ASTCDeclarationLike = {
   declarator?: ASTCDeclarator,
 };
 
-export type DeclaratorExtractorAttrs = {
-  context: CTypeAnalyzeContext,
-  type: CType,
-  declarator: ASTCDeclarator,
-  bitset?: number,
-};
-
 export type SpecifierResolverAttrs = {
   context: CTypeAnalyzeContext,
   specifier: ASTCDeclarationSpecifier,
@@ -27,9 +20,21 @@ export type SpecifierResolverAttrs = {
 export type TypeResolverAttrs = {
   context: CTypeAnalyzeContext,
   declaration: ASTCDeclarationLike,
+  skipFnExpressions?: boolean,
+  canBeAnonymous?: boolean;
 };
 
-export type TypeExtractorAttrs = Pick<TypeResolverAttrs, 'context'> & {
+
+export type DeclaratorExtractorAttrs = Omit<TypeResolverAttrs, 'declaration'> & {
+  type: CType,
+  declarator: ASTCDeclarator,
+  bitset?: number,
+};
+
+export type TypeExtractorFns = {
   extractSpecifierType(attrs: SpecifierResolverAttrs): CType,
+  extractNamedEntryFromDeclaration(attrs: TypeResolverAttrs): CNamedTypedEntry;
   extractNamedEntryFromDeclarator(attrs: DeclaratorExtractorAttrs): CNamedTypedEntry,
 };
+
+export type TypeExtractorAttrs = Pick<TypeResolverAttrs, 'context'> & TypeExtractorFns;

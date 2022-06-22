@@ -1,6 +1,7 @@
 import * as R from 'ramda';
 
 import {tryCastToPointer} from '@compiler/pico-c/frontend/analyze/casts';
+import {isImplicitPtrType} from '@compiler/pico-c/frontend/analyze/types/utils';
 
 import {TokenType} from '@compiler/lexer/shared';
 import {CMathOperator, CUnaryCastOperator} from '@compiler/pico-c/constants';
@@ -8,7 +9,6 @@ import {
   CPointerType,
   CPrimitiveType,
   CType,
-  isArrayLikeType,
   isPointerArithmeticType,
   isPointerLikeType,
 } from '@compiler/pico-c/frontend/analyze';
@@ -211,7 +211,7 @@ export function emitExpressionIR(
               if (!isPointerLikeType(srcVar.type))
                 throw new IRError(IRErrorCode.CANNOT_LOAD_PRIMARY_EXPRESSION);
 
-              if (isArrayLikeType(srcVar.type.baseType)) {
+              if (isImplicitPtrType(srcVar.type.baseType)) {
                 // handle "array" variable, it is not really pointer
                 // so if we treat arrays like pointer ... loads its
                 // first element address

@@ -30,6 +30,7 @@ export function emitDeclarationIR(
   GroupTreeVisitor.ofIterator<ASTCCompilerNode>(
     {
       [ASTCCompilerKind.TypeSpecifier]: false,
+      [ASTCCompilerKind.DirectDeclaratorFnExpression]: false,
       [ASTCCompilerKind.DirectDeclarator]: {
         enter(declaratorNode: ASTCDirectDeclarator) {
           if (!declaratorNode.isIdentifier())

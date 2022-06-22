@@ -69,6 +69,7 @@ export class ASTCFunctionDefTypeCreator extends ASTCTypeCreator<ASTCFunctionDefi
 
     const returnTypeEntry = extractNamedEntryFromDeclaration(
       {
+        skipFnExpressions: true,
         declaration: fnDefinition,
         context,
       },

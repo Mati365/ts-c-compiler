@@ -91,10 +91,7 @@ export class IRGeneratorScopeVisitor extends CScopeVisitor {
     const {parentAST} = scope;
 
     if (isFuncDeclLikeType(parentAST?.type)) {
-      const {
-        instructions,
-        data,
-      } = emitFunctionIR(
+      const {instructions, data} = emitFunctionIR(
         {
           node: <ASTCFunctionDefinition> parentAST,
           context,

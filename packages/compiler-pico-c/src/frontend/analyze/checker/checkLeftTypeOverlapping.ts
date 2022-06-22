@@ -1,4 +1,6 @@
 import {CType} from '../types/CType';
+
+import {isImplicitPtrType} from '../types/utils';
 import {
   isPointerLikeType,
   isArrayLikeType,
@@ -54,6 +56,9 @@ export function checkLeftTypeOverlapping(
   // [left] char* = [right] char[4] is being transformed to char and char
   // in C array is actually pointer
   if (isPointerLikeType(left)) {
+    if (isImplicitPtrType(right))
+      return true;
+
     if (isPointerLikeType(right) || isArrayLikeType(right))
       return checkLeftTypeOverlapping(left.baseType, right.baseType, attrs);
   }

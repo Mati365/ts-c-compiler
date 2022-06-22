@@ -1,6 +1,8 @@
 import {CUnaryCastOperator} from '@compiler/pico-c/constants';
 import {ASTCCompilerKind, ASTCCastUnaryExpression} from '@compiler/pico-c/frontend/parser/ast';
 
+import {isImplicitPtrType} from '../../types/utils';
+
 import {CPointerType, isArrayLikeType, isPointerLikeType} from '../../types';
 import {ASTCTypeCreator} from './ASTCTypeCreator';
 
@@ -22,7 +24,9 @@ export class ASTCCastUnaryExpressionTypeCreator extends ASTCTypeCreator<ASTCCast
 
       switch (node.operator) {
         case CUnaryCastOperator.AND:
-          type = CPointerType.ofType(type);
+          // treat &arr the same way as arr
+          if (!isImplicitPtrType(type))
+            type = CPointerType.ofType(type);
           break;
 
         case CUnaryCastOperator.MUL:

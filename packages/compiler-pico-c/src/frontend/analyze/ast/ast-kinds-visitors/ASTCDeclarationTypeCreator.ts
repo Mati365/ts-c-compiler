@@ -23,6 +23,9 @@ export class ASTCDeclarationTypeCreator extends ASTCTypeCreator<ASTCDeclaration>
   kind = ASTCCompilerKind.Declaration;
 
   enter(declaration: ASTCDeclaration): boolean {
+    if (this.context.abstract)
+      return false;
+
     const {context, scope, analyzeVisitor} = this;
     const {initList} = declaration;
 
