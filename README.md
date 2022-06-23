@@ -39,7 +39,7 @@ yarn run test
     - [x] Typechecker
     - [x] IR code generator
   - [ ] Backend
-    - [~] IR optimizer
+    - [ ] IR optimizer
     - [ ] X86-16 Code generator
 - [x] ASM Compiler
   - [x] NASM syntax instruction compiler matcher with expression eval `mov ax, byte [ds:label+bx+12+(1/3)]`
