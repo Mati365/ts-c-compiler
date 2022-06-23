@@ -33,6 +33,14 @@ yarn run test
 
 ## Status
 
+- [ ] C compiler
+  - [ ] Frontend
+    - [x] Syntax parser
+    - [x] Typechecker
+    - [x] IR code generator
+  - [ ] Backend
+    - [~] IR optimizer
+    - [ ] X86-16 Code generator
 - [x] ASM Compiler
   - [x] NASM syntax instruction compiler matcher with expression eval `mov ax, byte [ds:label+bx+12+(1/3)]`
   - [x] Instruction prefix support `rep movsw`
@@ -73,15 +81,6 @@ yarn run test
 - [ ] App frontend
   - [ ] Basic front CSS UI
   - [ ] Debugger
-- [ ] Nano C compiler
-  - [ ] Frontend
-    - [x] Syntax parser
-    - [ ] Typechecker
-    - [ ] Tree optimizer
-    - [ ] IR code generator
-  - [ ] Backend
-    - [ ] IR optimizer
-    - [ ] X86-16 Code generator
 
 ## Screens
 
