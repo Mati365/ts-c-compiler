@@ -19,6 +19,7 @@ import {
   isPointerLikeType,
   typeofValueOrNode,
   CPrimitiveType,
+  isPrimitiveLikeType,
 } from '../../../types';
 
 import {
@@ -60,11 +61,11 @@ export class CTypeInitializerBuilderVisitor extends CInnerTypeTreeVisitor {
     return this.tree;
   }
 
-  private getNextOffset() {
+  private getNextOffset(delta: number = 1) {
     return (
       R.isNil(this.currentOffset)
         ? 0
-        : this.currentOffset + 1
+        : this.currentOffset + delta
     );
   }
 
@@ -140,9 +141,9 @@ export class CTypeInitializerBuilderVisitor extends CInnerTypeTreeVisitor {
     const nestedGroupType = tree.getNestedInitializerGroupType();
 
     node.initializers.forEach((initializer) => {
-      if (initializer.hasAssignment())
+      if (initializer.hasAssignment()) {
         this.extractInitializerListValue(initializer);
-      else {
+      } else {
         let nestedBaseType = nestedGroupType;
         let newOffset = this.currentOffset;
 
@@ -206,8 +207,10 @@ export class CTypeInitializerBuilderVisitor extends CInnerTypeTreeVisitor {
     } else {
       if (stringLiteral)
         expectedType = tree.getNestedInitializerGroupType();
-      else
+      else if (isPrimitiveLikeType(node.type))
         expectedType = this.getIndexExpectedType();
+      else
+        expectedType = node.type;
 
       if (!expectedType) {
         throw new CTypeCheckError(
@@ -443,12 +446,14 @@ export class CTypeInitializerBuilderVisitor extends CInnerTypeTreeVisitor {
    */
   private appendNextOffsetValue(entryValue: CVariableInitializeValue, noSizeCheck?: boolean) {
     const {tree, maxSize, baseType} = this;
+    // handle struct Vec2 vec[] = { of_vector(), of_vector() }; initializers
+    const delta = isCompilerTreeNode(entryValue) ? entryValue.type.scalarValuesCount : 1;
 
     if (isStructLikeType(baseType)) {
       // increments offets, determine which field is initialized in struct and sets value
       // used here: struct Vec2 vec = { 1, 2 };
       tree.setAndExpand(this.currentOffset, entryValue);
-      this.currentOffset = this.getNextOffset();
+      this.currentOffset = this.getNextOffset(delta);
     } else if (isArrayLikeType(baseType) || isPointerLikeType(baseType)) {
       // increments offsets and append next value to list, used in arrays
       // used here: int abc[] = { 1, 2, 3 }
@@ -460,7 +465,7 @@ export class CTypeInitializerBuilderVisitor extends CInnerTypeTreeVisitor {
       }
 
       tree.setAndExpand(this.currentOffset, entryValue);
-      this.currentOffset = this.getNextOffset();
+      this.currentOffset = this.getNextOffset(delta);
     } else {
       // used in single value assign mode
       // used here: int abc = 3;

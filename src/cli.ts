@@ -2,13 +2,13 @@ import 'source-map-support/register';
 import {ccompiler, CCompilerOutput} from '@compiler/pico-c';
 
 ccompiler(/* cpp */ `
-  int sum(int x, int y) {
-    return x + y;
-  }
-  void main() {
-    int (*fun_ptr)(int, int) = sum;
-    int (*fun_ptr2)(int, int) = &sum;
-    fun_ptr2 = sum;
+  enum {
+    ONE = 1,
+    TWO = 2,
+  };
+
+  int sum() {
+    return ONE + TWO;
   }
 `).match(
   {

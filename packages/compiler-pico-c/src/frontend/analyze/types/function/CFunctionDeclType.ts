@@ -134,7 +134,7 @@ export class CFunctionDeclType extends CType<CFunctionDescriptor> {
       attrs,
       specifier.getDisplayName(),
       storage.getDisplayName(),
-      returnType.getDisplayName(),
+      returnType.getShortestDisplayName(),
       name || '<anonymous>',
       `(${serializedArgs}) { ... }`,
     ].filter(Boolean).join(' ');

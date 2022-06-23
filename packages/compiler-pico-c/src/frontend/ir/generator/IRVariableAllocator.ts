@@ -64,7 +64,7 @@ export class IRVariableAllocator {
    * @return {IRVariable}
    * @memberof IRVariableAllocator
    */
-  allocVariablePointer(variable: IRVariable | CVariable): IRVariable {
+  allocAsPointer(variable: IRVariable | CVariable): IRVariable {
     if (variable instanceof CVariable)
       variable = IRVariable.ofScopeVariable(variable);
 
@@ -76,6 +76,12 @@ export class IRVariableAllocator {
     );
 
     return this.allocVariable(mappedVariable);
+  }
+
+  allocTmpPointer(type: CType) {
+    return this.allocTmpVariable(
+      CPointerType.ofType(type),
+    );
   }
 
   /**
@@ -156,7 +162,7 @@ export class IRVariableAllocator {
   allocFunctionType(fn: CFunctionDeclType): IRFnDeclInstruction {
     const {name, returnType, args} = fn;
     const irDefArgs = args.map(
-      (arg) => this.allocVariablePointer(IRVariable.ofScopeVariable(arg)),
+      (arg) => this.allocAsPointer(IRVariable.ofScopeVariable(arg)),
     );
 
     const irFn = (() => {

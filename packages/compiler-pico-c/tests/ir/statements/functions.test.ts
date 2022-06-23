@@ -90,13 +90,12 @@ describe('Functions IR', () => {
         out{0}: struct Vec2*2B = load %out{0}: struct Vec2**2B
         *(out{0}: struct Vec2*2B) = store %6: int2B
         ret
-
-
       # --- Block main ---
       def main():
         %t{1}: struct Vec2 sum()*2B = offset sum
-        %t{2}: struct Vec2*2B = alloca struct Vec24B
-        call %t{1}: struct Vec2 sum()*2B :: (%t{2}: struct Vec2*2B)
+        %t{2}: struct Vec24B = alloca struct Vec24B
+        %t{3}: struct Vec2*2B = lea %t{2}: struct Vec24B
+        call %t{1}: struct Vec2 sum()*2B :: (%t{3}: struct Vec2*2B)
         ret
     `);
   });

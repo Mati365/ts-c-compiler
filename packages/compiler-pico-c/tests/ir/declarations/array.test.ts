@@ -104,5 +104,38 @@ describe('Arrays declarations IR', () => {
           c{0}: const char[12]12B = const { 72, 101, 108, 108, 111, 32, 119, 111, 114, 108, 100, 33 }
       `);
     });
+
+    test('assign array of structures that are return value', () => {
+      expect(/* cpp */ `
+        struct Vec2 { int x, y, z, d; };
+        struct Vec2 of_vector() {
+          struct Vec2 vec = { .x = 0, .d = 0 };
+          return vec;
+        }
+
+        void main() {
+          struct Vec2 vec[] = { of_vector(), of_vector() };
+        }
+      `).toCompiledIRBeEqual(/* ruby */`
+        # --- Block of_vector ---
+        def of_vector(%out{0}: struct Vec2**2B):
+          vec{0}: struct Vec2*2B = load %out{0}: struct Vec2**2B
+          *(vec{0}: struct Vec2*2B) = store %0: int2B
+          *(vec{0}: struct Vec2*2B + %6) = store %0: int2B
+          ret
+
+
+        # --- Block main ---
+        def main():
+          vec{0}: struct Vec2[2]*2B = alloca struct Vec2[2]16B
+          %t{1}: struct Vec2 of_vector()*2B = offset of_vector
+          %t{2}: struct Vec2[2]**2B = lea vec{0}: struct Vec2[2]*2B
+          call %t{1}: struct Vec2 of_vector()*2B :: (%t{2}: struct Vec2[2]**2B)
+          %t{3}: struct Vec2 of_vector()*2B = offset of_vector
+          %t{5}: int*2B = %t{2}: struct Vec2[2]**2B plus %8: int2B
+          call %t{3}: struct Vec2 of_vector()*2B :: (%t{5}: int*2B)
+          ret
+      `);
+    });
   });
 });

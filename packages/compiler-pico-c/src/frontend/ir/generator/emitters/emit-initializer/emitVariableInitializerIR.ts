@@ -72,7 +72,7 @@ export function emitVariableInitializerIR(
         },
       );
 
-      const rootIRVar = allocator.allocVariablePointer(
+      const rootIRVar = allocator.allocAsPointer(
         IRVariable
           .ofScopeVariable(variable.ofType(arrayPtrType))
           .ofVirtualArrayPtr(),
@@ -92,7 +92,7 @@ export function emitVariableInitializerIR(
       );
     } else {
       // initializer with expressions
-      const rootIRVar = allocator.allocVariablePointer(variable);
+      const rootIRVar = allocator.allocAsPointer(variable);
 
       instructions.push(
         IRAllocInstruction.ofDestPtrVariable(rootIRVar),
@@ -108,7 +108,7 @@ export function emitVariableInitializerIR(
     }
   } else {
     // uninitialized variable
-    const rootIRVar = allocator.allocVariablePointer(variable);
+    const rootIRVar = allocator.allocAsPointer(variable);
 
     instructions.push(
       IRAllocInstruction.ofDestPtrVariable(rootIRVar),

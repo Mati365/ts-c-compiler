@@ -1,10 +1,9 @@
-import {CPointerType, CPrimitiveType, isFuncDeclLikeType, isPointerLikeType} from '@compiler/pico-c/frontend/analyze';
+import {CPrimitiveType, isFuncDeclLikeType, isPointerLikeType} from '@compiler/pico-c/frontend/analyze';
 import {ASTCPostfixExpression} from '@compiler/pico-c/frontend/parser';
 import {TokenType} from '@compiler/lexer/shared';
 
 import {IRError, IRErrorCode} from '../../../errors/IRError';
 import {IRAllocInstruction, IRCallInstruction, IRLeaInstruction, IRMathInstruction} from '../../../instructions';
-
 import {IRConstant, IRVariable, isIRVariable} from '../../../variables';
 
 import {emitFnArgsLoadIR} from './emitFnArgsLoadIR';
@@ -119,29 +118,32 @@ export function emitFnCallExpressionIR(
         ),
       );
     } else {
+      const outputPtr = allocator.allocTmpPointer(output.type);
+
       // non array or index = 0 initializer
       result.instructions.push(
+        new IRLeaInstruction(output, outputPtr),
         new IRCallInstruction(
           fnPtrOutput,
           [
             ...fnArgsExprResult.args,
-            output,
+            outputPtr,
           ],
         ),
       );
     }
   } else {
-    output = allocator.allocTmpVariable(
-      CPointerType.ofType(fnType.returnType),
-    );
+    output = allocator.allocTmpVariable(fnType.returnType);
+    const outputPtr = allocator.allocTmpPointer(output.type);
 
     result.instructions.push(
       new IRAllocInstruction(fnType.returnType, output),
+      new IRLeaInstruction(output, outputPtr),
       new IRCallInstruction(
         fnPtrOutput,
         [
           ...fnArgsExprResult.args,
-          output,
+          outputPtr,
         ],
       ),
     );
