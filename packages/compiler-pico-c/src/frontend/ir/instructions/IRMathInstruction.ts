@@ -4,7 +4,7 @@ import {TokenType} from '@compiler/lexer/shared';
 
 import {IROpcode} from '../constants';
 import {IROpInstruction} from './IROpInstruction';
-import {IRInstruction} from './IRInstruction';
+import {IRInstruction, IRInstructionArgs} from './IRInstruction';
 import {IRInstructionVarArg, IRVariable} from '../variables';
 
 export function isIRMathInstruction(instruction: IRInstruction): instruction is IRMathInstruction {
@@ -26,6 +26,22 @@ export class IRMathInstruction extends IROpInstruction<CMathOperator> {
     outputVar?: IRVariable,
   ) {
     super(IROpcode.MATH, operator, leftVar, rightVar, outputVar);
+  }
+
+  override ofArgs(
+    {
+      input = [this.leftVar, this.rightVar],
+      output = this.outputVar,
+    }: IRInstructionArgs,
+  ) {
+    const {operator} = this;
+
+    return new IRMathInstruction(
+      operator,
+      <IRVariable> input[0],
+      <IRVariable> input[1],
+      output,
+    );
   }
 
   tryFlipConstantsToRight(): Option<IRMathInstruction> {

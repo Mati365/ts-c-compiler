@@ -1,12 +1,12 @@
 import {IRInstruction, isIRLeaInstruction} from '../../instructions';
-import {IRVariable, isIRVariable} from '../../variables';
+import {IRVariable} from '../../variables';
+import {dropConstantInstructionArgs} from './dropConstantInstructionArgs';
 
 export function dropRedundantLeaInstructions(instructions: IRInstruction[]) {
   let hasCache = false;
 
   const cachedLea: {[inputVar: string]: IRVariable} = {};
   const replacedLea: {[outputVar: string]: IRVariable} = {};
-
   const newInstructions = [...instructions];
 
   for (let i = 0; i < newInstructions.length;) {
@@ -25,30 +25,9 @@ export function dropRedundantLeaInstructions(instructions: IRInstruction[]) {
         cachedLea[inputName] = instruction.outputVar;
       }
     } else if (hasCache) {
-      const {input, output} = instruction.getArgs();
-      let modifiedArgs = false;
-
-      for (let j = 0; j < input.length; ++j) {
-        const arg = input[j];
-
-        if (isIRVariable(arg)) {
-          const cachedArg = replacedLea[arg.name];
-
-          if (cachedArg) {
-            input[j] = cachedArg;
-            modifiedArgs = true;
-          }
-        }
-      }
-
-      if (modifiedArgs) {
-        newInstructions[i] = instruction.ofArgs(
-          {
-            input,
-            output,
-          },
-        );
-      }
+      const optimizedInstruction = dropConstantInstructionArgs(replacedLea, instruction);
+      if (optimizedInstruction)
+        newInstructions[i] = optimizedInstruction;
     }
 
     ++i;

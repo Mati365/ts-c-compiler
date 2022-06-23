@@ -1,7 +1,6 @@
 import {
   IRAssignInstruction,
   IRInstruction,
-  IRMathInstruction,
   IRStoreInstruction,
   isIRAssignInstruction,
   isIRMathInstruction,
@@ -10,6 +9,7 @@ import {
 
 import {IRConstant, isIRConstant, isIRVariable} from '../../variables';
 
+import {dropConstantInstructionArgs} from './dropConstantInstructionArgs';
 import {tryConcatMathInstructions} from './tryConcatMathInstructions';
 import {tryEvalConstArgsBinaryInstruction} from './tryEvalConstArgsBinaryInstruction';
 
@@ -22,14 +22,25 @@ import {tryEvalConstArgsBinaryInstruction} from './tryEvalConstArgsBinaryInstruc
 export function dropOrConcatConstantInstructions(instructions: IRInstruction[]) {
   const newInstructions = [...instructions];
   const constantArgs: Record<string, IRConstant> = {};
+  let totalConstants = 0;
 
   for (let i = 0; i < newInstructions.length;) {
     const instruction = newInstructions[i];
+
+    if (totalConstants) {
+      const optimizedInstruction = dropConstantInstructionArgs(constantArgs, instruction);
+
+      if (optimizedInstruction) {
+        newInstructions[i] = optimizedInstruction;
+        continue;
+      }
+    }
 
     // remove constant assigns from code
     if (isIRAssignInstruction(instruction) && isIRConstant(instruction.inputVar)) {
       constantArgs[instruction.outputVar.name] = instruction.inputVar;
       newInstructions.splice(i, 1);
+      ++totalConstants;
       --i;
       continue;
     }
@@ -48,43 +59,6 @@ export function dropOrConcatConstantInstructions(instructions: IRInstruction[]) 
         )
       );
       continue;
-    }
-
-    // try replace args with constant dumps
-    if (isIRMathInstruction(instruction)) {
-      const {
-        operator,
-        leftVar,
-        rightVar,
-        outputVar,
-      } = instruction;
-
-      let newInstruction: IRInstruction;
-      if (isIRVariable(leftVar) && leftVar.name in constantArgs) {
-        newInstruction = (
-          new IRMathInstruction(
-            operator,
-            constantArgs[leftVar.name],
-            rightVar,
-            outputVar,
-          )
-        );
-      } else if (isIRVariable(rightVar) && rightVar.name in constantArgs) {
-        newInstruction = (
-          new IRMathInstruction(
-            operator,
-            leftVar,
-            constantArgs[rightVar.name],
-            outputVar,
-          )
-        );
-      }
-
-      if (newInstruction) {
-        newInstructions[i] = newInstruction;
-        --i;
-        continue;
-      }
     }
 
     // compile time calc

@@ -195,7 +195,10 @@ export function emitExpressionIR(
               ),
             );
           } else if (expression.isIdentifier()) {
-            const srcFn = allocator.getFunction(expression.identifier.text);
+            const {text: name} = expression.identifier;
+
+            const srcFn = allocator.getFunction(name);
+            const srcVar = allocator.getVariable(name);
 
             if (srcFn) {
               const tmpVar = allocNextVariable(
@@ -205,9 +208,8 @@ export function emitExpressionIR(
               instructions.push(
                 new IRLabelOffsetInstruction(srcFn, tmpVar),
               );
-            } else {
+            } else if (srcVar) {
               // handle a[2] / *a
-              const srcVar = allocator.getVariable(expression.identifier.text);
               if (!isPointerLikeType(srcVar.type))
                 throw new IRError(IRErrorCode.CANNOT_LOAD_PRIMARY_EXPRESSION);
 
@@ -228,6 +230,18 @@ export function emitExpressionIR(
                   new IRLoadInstruction(srcVar, tmpVar),
                 );
               }
+            } else {
+              // handle compile time constant like enum { A = 1, B = 2 }
+              const constant = scope.findCompileTimeConstant(name);
+              if (!constant)
+                throw new IRError(IRErrorCode.CANNOT_LOAD_PRIMARY_EXPRESSION);
+
+              argsVarsStack.push(
+                IRConstant.ofConstant(
+                  scope.findCompileTimeConstantType(name),
+                  constant,
+                ),
+              );
             }
           } else if (expression.isExpression()) {
             // handle "2 + (a + 2)"

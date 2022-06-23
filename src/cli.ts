@@ -2,13 +2,10 @@ import 'source-map-support/register';
 import {ccompiler, CCompilerOutput} from '@compiler/pico-c';
 
 ccompiler(/* cpp */ `
-  enum {
-    ONE = 1,
-    TWO = 2,
-  };
-
-  int sum() {
-    return ONE + TWO;
+  int main() {
+    for (int i = 0; i < 10; ++i) {
+      int a = i + 5;
+    }
   }
 `).match(
   {
