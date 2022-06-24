@@ -3,7 +3,7 @@ import {ASTCCompilerKind, ASTCCastUnaryExpression} from '@compiler/pico-c/fronte
 
 import {isImplicitPtrType} from '../../types/utils';
 
-import {CPointerType, isArrayLikeType, isPointerLikeType} from '../../types';
+import {CPointerType, isArrayLikeType, isFuncDeclLikeType, isPointerLikeType} from '../../types';
 import {ASTCTypeCreator} from './ASTCTypeCreator';
 
 /**
@@ -32,7 +32,9 @@ export class ASTCCastUnaryExpressionTypeCreator extends ASTCTypeCreator<ASTCCast
         case CUnaryCastOperator.MUL:
           if (isArrayLikeType(type))
             type = type.getSourceType();
-          else if (isPointerLikeType(type))
+
+          // do not load pointer value type of function such like (*fn)(1, 2, 3)
+          else if (isPointerLikeType(type) && !isFuncDeclLikeType(type.baseType))
             type = type.baseType;
       }
 

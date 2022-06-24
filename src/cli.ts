@@ -2,10 +2,18 @@ import 'source-map-support/register';
 import {ccompiler, CCompilerOutput} from '@compiler/pico-c';
 
 ccompiler(/* cpp */ `
+  struct Vec2 {
+    int x, y;
+  };
+
+  struct Vec2 of_vec(int x, int y) {
+    struct Vec2 v = { .x = x, .y = y };
+    return v;
+  }
+
   int main() {
-    for (int i = 0; i < 10; ++i) {
-      int a = i + 5;
-    }
+    struct Vec2 (*ptr)(int, int) = of_vec;
+    struct Vec2 vec = (*ptr + 1)(1, 2);
   }
 `).match(
   {

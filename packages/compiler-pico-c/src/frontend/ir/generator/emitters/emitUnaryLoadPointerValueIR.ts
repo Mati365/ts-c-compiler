@@ -1,4 +1,4 @@
-import {isPointerLikeType} from '@compiler/pico-c/frontend/analyze';
+import {isFuncDeclLikeType, isPointerLikeType} from '@compiler/pico-c/frontend/analyze';
 import {ASTCCastExpression} from '@compiler/pico-c/frontend/parser';
 
 import {
@@ -36,8 +36,17 @@ export function emitUnaryLoadPtrValueIR(
 
   // load pointer pointing
   if (isPointerLikeType(exprResult.output.type)) {
-    const tmpVar = allocator.allocTmpVariable(exprResult.output.type.baseType);
+    const baseType = exprResult.output.type.baseType;
 
+    // prevent load pointers to functions
+    if (isFuncDeclLikeType(baseType)) {
+      return {
+        ...result,
+        output: exprResult.output,
+      };
+    }
+
+    const tmpVar = allocator.allocTmpVariable(exprResult.output.type.baseType);
     result.instructions.push(
       new IRLoadInstruction(exprResult.output, tmpVar),
     );

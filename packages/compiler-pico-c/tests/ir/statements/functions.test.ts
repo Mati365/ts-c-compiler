@@ -125,4 +125,78 @@ describe('Functions IR', () => {
         ret
     `);
   });
+
+  test('should be possible to call function expressions by ptr', () => {
+    expect(/* cpp*/ `
+      int sum(int x, int y) { return x + y; }
+      int main() {
+        int (*ptr)(int, int) = sum;
+        (*ptr + 1)(1, 2);
+        ptr(1, 2);
+        (*ptr)(4, 5);
+      }
+    `).toCompiledIRBeEqual(/* ruby */`
+      # --- Block sum ---
+      def sum(x{0}: int*2B, y{0}: int*2B): [ret: int2B]
+        %t{0}: int2B = load x{0}: int*2B
+        %t{1}: int2B = load y{0}: int*2B
+        %t{2}: int2B = %t{0}: int2B plus %t{1}: int2B
+        ret %t{2}: int2B
+
+
+      # --- Block main ---
+      def main(): [ret: int2B]
+        ptr{0}: int(int, int)**2B = alloca int(int, int)*2B
+        %t{3}: int sum(int, int)*2B = offset sum
+        *(ptr{0}: int(int, int)**2B) = store %t{3}: int sum(int, int)*2B
+        %t{4}: int(int, int)*2B = load ptr{0}: int(int, int)**2B
+        %t{5}: int(int, int)*2B = %t{4}: int(int, int)*2B plus %1: int2B
+        %t{6}: int2B = call %t{5}: int(int, int)*2B :: (%1: int2B, %2: int2B)
+        %t{7}: int(int, int)*2B = load ptr{0}: int(int, int)**2B
+        %t{8}: int2B = call %t{7}: int(int, int)*2B :: (%1: int2B, %2: int2B)
+        %t{9}: int(int, int)*2B = load ptr{0}: int(int, int)**2B
+        %t{10}: int2B = call %t{9}: int(int, int)*2B :: (%4: int2B, %5: int2B)
+        ret
+    `);
+  });
+
+  test('should be possible to call function with RVO expressions by ptr', () => {
+    expect(/* cpp*/ `
+      struct Vec2 {
+        int x, y;
+      };
+
+      struct Vec2 of_vec(int x, int y) {
+        struct Vec2 v = { .x = x, .y = y };
+        return v;
+      }
+
+      int main() {
+        struct Vec2 (*ptr)(int, int) = of_vec;
+        struct Vec2 vec = (*ptr + 1)(1, 2);
+      }
+    `).toCompiledIRBeEqual(/* ruby */`
+      # --- Block of_vec ---
+      def of_vec(x{0}: int*2B, y{0}: int*2B, %out{0}: struct Vec2**2B):
+        v{0}: struct Vec2*2B = load %out{0}: struct Vec2**2B
+        %t{0}: int2B = load x{0}: int*2B
+        *(v{0}: struct Vec2*2B) = store %t{0}: int2B
+        %t{1}: int2B = load y{0}: int*2B
+        *(v{0}: struct Vec2*2B + %2) = store %t{1}: int2B
+        ret
+
+
+      # --- Block main ---
+      def main(): [ret: int2B]
+        ptr{0}: struct Vec2(int, int)**2B = alloca struct Vec2(int, int)*2B
+        %t{3}: struct Vec2 of_vec(int, int)*2B = offset of_vec
+        *(ptr{0}: struct Vec2(int, int)**2B) = store %t{3}: struct Vec2 of_vec(int, int)*2B
+        vec{0}: struct Vec2*2B = alloca struct Vec24B
+        %t{4}: struct Vec2(int, int)*2B = load ptr{0}: struct Vec2(int, int)**2B
+        %t{5}: struct Vec2(int, int)*2B = %t{4}: struct Vec2(int, int)*2B plus %1: int2B
+        %t{6}: struct Vec2**2B = lea vec{0}: struct Vec2*2B
+        call %t{5}: struct Vec2(int, int)*2B :: (%1: int2B, %2: int2B, %t{6}: struct Vec2**2B)
+        ret
+    `);
+  });
 });

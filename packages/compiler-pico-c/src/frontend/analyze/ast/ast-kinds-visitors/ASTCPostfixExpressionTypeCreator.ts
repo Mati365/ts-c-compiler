@@ -1,9 +1,9 @@
 import {ASTCCompilerKind, ASTCPostfixExpression} from '@compiler/pico-c/frontend/parser/ast';
-import {CFunctionDeclType} from '../../types/function';
+import {CFunctionDeclType, isFuncDeclLikeType} from '../../types/function';
 import {CTypeCheckError, CTypeCheckErrorCode} from '../../errors/CTypeCheckError';
 import {ASTCTypeCreator} from './ASTCTypeCreator';
 
-import {isArrayLikeType, isPointerLikeType, isStructLikeType} from '../../types';
+import {CPointerType, isArrayLikeType, isPointerLikeType, isStructLikeType} from '../../types';
 import {checkLeftTypeOverlapping} from '../../checker';
 
 /**
@@ -27,6 +27,8 @@ export class ASTCPostfixExpressionTypeCreator extends ASTCTypeCreator<ASTCPostfi
       this.assignDotPtrLikeAccessType(node);
     else if (node.isFnExpression())
       this.assignFunctionCallerTypes(node);
+    else if (node.isFnPtrCallExpression())
+      this.assignFnPtrCallType(node);
     else if (node.isPrimaryExpression())
       node.type = node.primaryExpression.type;
     else if (node.hasNestedPostfixExpression())
@@ -56,6 +58,19 @@ export class ASTCPostfixExpressionTypeCreator extends ASTCTypeCreator<ASTCPostfi
         },
       );
     }
+  }
+
+  /**
+   * Assign type to expressions such like it: (*ptr)(1, 2, 3)
+   *
+   * @private
+   * @param {ASTCPostfixExpression} node
+   * @memberof ASTCPostfixExpressionTypeCreator
+   */
+  private assignFnPtrCallType(node: ASTCPostfixExpression) {
+    const ptr = <CPointerType> node.postfixExpression.type;
+
+    node.type = (<CFunctionDeclType> ptr.baseType).returnType;
   }
 
   /**
@@ -135,7 +150,7 @@ export class ASTCPostfixExpressionTypeCreator extends ASTCTypeCreator<ASTCPostfi
   private assignFunctionCallerTypes(node: ASTCPostfixExpression) {
     const {fnExpression} = node;
     const {assignments} = fnExpression.args;
-    const fnType = <CFunctionDeclType> node.postfixExpression.type;
+    let fnType = node.postfixExpression.type;
 
     if (!fnType) {
       throw new CTypeCheckError(
@@ -147,7 +162,10 @@ export class ASTCPostfixExpressionTypeCreator extends ASTCTypeCreator<ASTCPostfi
       );
     }
 
-    if (!fnType.isFunction()) {
+    if (isPointerLikeType(fnType))
+      fnType = fnType.baseType;
+
+    if (!isFuncDeclLikeType(fnType)) {
       throw new CTypeCheckError(
         CTypeCheckErrorCode.CALLED_OBJECT_IS_NOT_FUNCTION,
         node.loc.start,

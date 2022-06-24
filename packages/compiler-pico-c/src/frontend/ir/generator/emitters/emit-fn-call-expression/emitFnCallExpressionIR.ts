@@ -50,20 +50,9 @@ export function emitFnCallExpressionIR(
 
   const {baseType: fnType} = fnPtrOutput.type;
   const {returnType} = fnType;
-  const declaration = allocator.getFunction(fnType.name);
-
-  if (!declaration) {
-    throw new IRError(
-      IRErrorCode.PROVIDED_TYPE_IS_NOT_CALLABLE,
-      {
-        name: fnType.name,
-      },
-    );
-  }
-
   const fnArgsExprResult = emitFnArgsLoadIR(
     {
-      node: node.fnExpression,
+      node: node.fnExpression || node.primaryExpression,
       context,
       scope,
     },

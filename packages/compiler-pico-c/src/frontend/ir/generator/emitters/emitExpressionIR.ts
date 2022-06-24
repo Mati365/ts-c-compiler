@@ -152,7 +152,7 @@ export function emitExpressionIR(
             instructions.push(...irSrcVarExprResult.instructions);
             emitExprResultToStack(exprResult);
             return false;
-          } else if (expression.isFnExpression()) {
+          } else if (expression.isFnExpression() || expression.isFnPtrCallExpression()) {
             // handle a(1, 2)
             const exprResult = emitFnCallExpressionIR(
               {
@@ -267,6 +267,7 @@ export function emitExpressionIR(
         leave: (binary: ASTCBinaryOpNode) => {
           let [a, b] = [argsVarsStack.pop(), argsVarsStack.pop()];
           let output: IRVariable = null;
+          let defaultOutputType = a.type;
 
           if (!isPointerArithmeticType(b.type) && isPointerArithmeticType(a.type)) {
             const mulBy = a.type.getSourceType().getByteSize();
@@ -286,7 +287,8 @@ export function emitExpressionIR(
               output = allocNextVariable(
                 tryCastToPointer(a.type),
               );
-            }
+            } else
+              defaultOutputType = a.type;
           }
 
           if (isPointerArithmeticType(b.type) && !isPointerArithmeticType(a.type)) {
@@ -307,10 +309,11 @@ export function emitExpressionIR(
               output = allocNextVariable(
                 tryCastToPointer(b.type),
               );
-            }
+            } else
+              defaultOutputType = b.type;
           }
 
-          output ||= allocNextVariable(a.type);
+          output ||= allocNextVariable(defaultOutputType);
           instructions.push(
             new IRMathInstruction(
               <CMathOperator> binary.op,

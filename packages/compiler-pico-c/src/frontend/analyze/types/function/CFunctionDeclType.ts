@@ -6,6 +6,8 @@ import {CFunctionCallConvention} from '@compiler/pico-c/constants';
 import {Identity} from '@compiler/core/monads';
 import {ASTCBlockItemsList} from '@compiler/pico-c/frontend';
 
+import {isPointerLikeType} from '../CPointerType';
+
 import {CType, CTypeDescriptor} from '../CType';
 import {CPrimitiveType} from '../CPrimitiveType';
 import {CFunctionSpecifierMonad} from './CFunctionSpecifierMonad';
@@ -15,6 +17,10 @@ import {CSpecBitmap} from '../../constants/bitmaps';
 
 export function isFuncDeclLikeType(type: CType): type is CFunctionDeclType {
   return type?.isFunction();
+}
+
+export function isFuncPtrDeclLikeType(type: CType) {
+  return isPointerLikeType(type) && isFuncDeclLikeType(type.baseType);
 }
 
 export type CFunctionDescriptor = CTypeDescriptor & {

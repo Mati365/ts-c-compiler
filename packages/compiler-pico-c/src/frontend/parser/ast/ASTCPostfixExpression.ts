@@ -9,6 +9,7 @@ import {ASTCCompilerNode, ASTCCompilerKind} from './ASTCCompilerNode';
 import {ASTCPrimaryExpression} from './ASTCPrimaryExpression';
 import {ASTCExpression} from './ASTCExpression';
 import {ASTCArgumentsExpressionList} from './ASTCArgumentsExpressionList';
+import {isFuncPtrDeclLikeType} from '../../analyze/types/function/CFunctionDeclType';
 
 @walkOverFields(
   {
@@ -124,6 +125,11 @@ export class ASTCPostfixExpression extends ASTCCompilerNode {
   isPtrExpression() { return !!this.ptrExpression; }
   isIncExpression() { return this.incExpression; }
   isDecExpression() { return this.decExpression; }
+
+  isFnPtrCallExpression() {
+    return isFuncPtrDeclLikeType(this.postfixExpression?.type) && this.isPrimaryExpression();
+  }
+
   hasNestedPostfixExpression() { return this.postfixExpression; }
 
   getFnName(): string {

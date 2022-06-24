@@ -1,8 +1,9 @@
 import {GroupTreeVisitor} from '@compiler/grammar/tree/TreeGroupedVisitor';
 
 import {
-  ASTCAssignmentExpression, ASTCCompilerKind,
-  ASTCCompilerNode, ASTCPostfixFnExpression,
+  ASTCAssignmentExpression,
+  ASTCCompilerKind,
+  ASTCCompilerNode,
 } from '@compiler/pico-c/frontend/parser';
 
 import {IRInstructionVarArg} from '../../../variables';
@@ -13,7 +14,7 @@ import {
 } from '../types';
 
 type FnArgsLoadIREmitAttrs = IREmitterContextAttrs & {
-  node: ASTCPostfixFnExpression;
+  node: ASTCCompilerNode;
 };
 
 export function emitFnArgsLoadIR(
