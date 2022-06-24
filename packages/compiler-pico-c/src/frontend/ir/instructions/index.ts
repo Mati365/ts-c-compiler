@@ -7,6 +7,7 @@ export * from './IRFnDeclInstruction';
 export * from './IRIfInstruction';
 export * from './IRInstruction';
 export * from './IRInstructionsBlock';
+export * from './IRJmpInstruction';
 export * from './IRLabelInstruction';
 export * from './IRLabelOffsetInstruction';
 export * from './IRLeaInstruction';

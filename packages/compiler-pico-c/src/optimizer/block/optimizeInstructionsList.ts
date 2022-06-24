@@ -1,12 +1,14 @@
 import {IRInstruction} from '../../frontend/ir/instructions';
+import {
+  dropOrConcatConstantInstructions,
+  dropDeadStoreInstructions,
+  dropRedundantLeaInstructions,
+} from './phases';
 
-import {dropOrConcatConstantInstructions} from './phases/dropOrConcatConstantInstructions';
-import {dropRedundantLeaInstructions} from './phases/dropRedundantLeaInstructions';
-
-export function optimizeInstructionsList(
-  instructions: IRInstruction[],
-) {
-  return dropOrConcatConstantInstructions(
-    dropRedundantLeaInstructions(instructions),
+export function optimizeInstructionsList(instructions: IRInstruction[]) {
+  return dropDeadStoreInstructions(
+    dropOrConcatConstantInstructions(
+      dropRedundantLeaInstructions(instructions),
+    ),
   );
 }

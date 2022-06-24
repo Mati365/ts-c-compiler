@@ -50,6 +50,28 @@ describe('Assignment IR', () => {
           ret
       `);
     });
+
+    test('Assign using initializer variable', () => {
+      expect(/* cpp */ `
+        int sum() {
+          int a = 10;
+          a = a * (a - 1) + a;
+        }
+      `).toCompiledIRBeEqual(/* ruby */`
+        # --- Block sum ---
+        def sum(): [ret: int2B]
+          a{0}: int*2B = alloca int2B
+          *(a{0}: int*2B) = store %10: int2B
+          %t{0}: int2B = load a{0}: int*2B
+          %t{1}: int2B = load a{0}: int*2B
+          %t{2}: int2B = %t{1}: int2B minus %1: int2B
+          %t{3}: int2B = %t{0}: int2B mul %t{2}: int2B
+          %t{4}: int2B = load a{0}: int*2B
+          %t{5}: int2B = %t{3}: int2B plus %t{4}: int2B
+          *(a{0}: int*2B) = store %t{5}: int2B
+          ret
+      `);
+    });
   });
 
   describe('Arrays', () => {

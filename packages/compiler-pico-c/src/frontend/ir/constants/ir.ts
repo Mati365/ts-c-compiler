@@ -8,6 +8,7 @@ export enum IROpcode {
   IF = 'IF',
   REL = 'REL',
   PHI = 'PHI',
+  JMP = 'JMP',
   FN_DECL = 'FN_DECL',
   RET = 'RET',
   MATH = 'MATH',
