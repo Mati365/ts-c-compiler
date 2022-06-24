@@ -1,6 +1,6 @@
-import {IRInstruction, isIRLeaInstruction} from '../../instructions';
-import {IRVariable} from '../../variables';
-import {dropConstantInstructionArgs} from './dropConstantInstructionArgs';
+import {IRInstruction, isIRLeaInstruction} from '../../../frontend/ir/instructions';
+import {IRVariable} from '../../../frontend/ir/variables';
+import {dropConstantInstructionArgs} from '../utils/dropConstantInstructionArgs';
 
 export function dropRedundantLeaInstructions(instructions: IRInstruction[]) {
   let hasCache = false;

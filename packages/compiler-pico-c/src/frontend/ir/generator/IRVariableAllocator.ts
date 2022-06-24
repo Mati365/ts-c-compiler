@@ -1,5 +1,5 @@
-import {CCompilerConfig} from '@compiler/pico-c/constants';
 import {CFunctionDeclType, CPointerType, CPrimitiveType, CType, CVariable} from '../../analyze';
+import {IRGeneratorConfig} from '../constants';
 import {IRFnDeclInstruction} from '../instructions';
 import {IRVariable} from '../variables';
 
@@ -23,7 +23,7 @@ export class IRVariableAllocator {
   };
 
   constructor(
-    readonly config: CCompilerConfig,
+    readonly config: IRGeneratorConfig,
   ) {}
 
   isAllocated(variable: string): boolean {

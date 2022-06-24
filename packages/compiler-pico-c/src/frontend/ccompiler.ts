@@ -85,6 +85,9 @@ export function ccompiler(
   code: string,
   ccompilerConfig: CCompilerConfig = {
     arch: CCompilerArch.X86_16,
+    optimization: {
+      enabled: true,
+    },
   },
 ) {
   return (

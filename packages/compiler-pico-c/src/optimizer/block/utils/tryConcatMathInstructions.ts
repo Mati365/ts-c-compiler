@@ -1,15 +1,15 @@
 import {fixme} from '@compiler/core/shared';
 
-import {IRError, IRErrorCode} from '../../errors/IRError';
 import {Option, none, some} from '@compiler/core/monads';
 import {TokenType} from '@compiler/lexer/shared';
 
-import {IRConstant, isIRConstant, isIRVariable} from '../../variables';
+import {IRError, IRErrorCode} from '../../../frontend/ir/errors/IRError';
+import {IRConstant, isIRConstant, isIRVariable} from '../../../frontend/ir/variables';
 import {
   IRInstruction,
   IRMathInstruction,
   isIRMathInstruction,
-} from '../../instructions';
+} from '../../../frontend/ir/instructions';
 
 const canConcatOperators = (a: TokenType, b: TokenType) => {
   if ([a, b].every((arg) => arg === TokenType.PLUS || arg === TokenType.MINUS))

@@ -6,11 +6,15 @@ import {CCompilerConfig, CCompilerArch} from '../constants/config';
 import {safeGenerateTree, clexer} from './parser';
 import {safeBuildIRCode} from './ir';
 import {safeBuildTypedTree} from './analyze';
+import {optimizeIRGenResult} from '../optimizer';
 
 export function cIRCompiler(
   code: string,
   ccompilerConfig: CCompilerConfig = {
     arch: CCompilerArch.X86_16,
+    optimization: {
+      enabled: true,
+    },
   },
 ) {
   const timings = createCCompilerTimings();
@@ -22,10 +26,16 @@ export function cIRCompiler(
       .andThen(timings.add(
         'ir',
         (result) => safeBuildIRCode(ccompilerConfig, result.scope).andThen((ir) => ok({
-          ...result,
-          timings,
           ir,
+          ...result,
         })),
       ))
+      .andThen(timings.add('optimizer', ({ir, ...result}) => ok(
+        {
+          ...result,
+          timings,
+          ir: optimizeIRGenResult(ccompilerConfig.optimization, ir),
+        },
+      )))
   );
 }

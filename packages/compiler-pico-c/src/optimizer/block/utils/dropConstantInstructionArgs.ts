@@ -1,5 +1,5 @@
-import {IRInstruction} from '../../instructions';
-import {IRInstructionVarArg, isIRVariable} from '../../variables';
+import {IRInstruction} from '../../../frontend/ir/instructions';
+import {IRInstructionVarArg, isIRVariable} from '../../../frontend/ir/variables';
 
 export function dropConstantInstructionArgs(
   constantArgs: Record<string, IRInstructionVarArg>,

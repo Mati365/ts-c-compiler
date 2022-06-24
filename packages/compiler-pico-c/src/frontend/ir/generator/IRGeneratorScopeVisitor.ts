@@ -1,5 +1,4 @@
 import {isFuncDeclLikeType} from '../../analyze';
-import {optimizeInstructionsList} from './optimization';
 
 import {CScopeVisitor, CScopeTree} from '../../analyze/scope';
 import {ASTCFunctionDefinition} from '../../parser';
@@ -99,10 +98,7 @@ export class IRGeneratorScopeVisitor extends CScopeVisitor {
         },
       );
 
-      segments.code.emitBulk(
-        optimizeInstructionsList(instructions),
-      );
-
+      segments.code.emitBulk(instructions);
       if (data)
         segments.data.emitBulk(data);
 

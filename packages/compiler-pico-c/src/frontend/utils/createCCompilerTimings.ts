@@ -13,6 +13,7 @@ export function createCCompilerTimings() {
       ast: 0,
       analyze: 0,
       ir: 0,
+      optimizer: 0,
       compiler: 0,
     },
   );

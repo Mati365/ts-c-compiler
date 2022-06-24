@@ -5,13 +5,13 @@ import {
   isIRAssignInstruction,
   isIRMathInstruction,
   isIRStoreInstruction,
-} from '../../instructions';
+} from '../../../frontend/ir/instructions';
 
-import {IRConstant, isIRConstant, isIRVariable} from '../../variables';
+import {IRConstant, isIRConstant, isIRVariable} from '../../../frontend/ir/variables';
 
-import {dropConstantInstructionArgs} from './dropConstantInstructionArgs';
-import {tryConcatMathInstructions} from './tryConcatMathInstructions';
-import {tryEvalConstArgsBinaryInstruction} from './tryEvalConstArgsBinaryInstruction';
+import {dropConstantInstructionArgs} from '../utils/dropConstantInstructionArgs';
+import {tryConcatMathInstructions} from '../utils/tryConcatMathInstructions';
+import {tryEvalConstArgsBinaryInstruction} from '../utils/tryEvalConstArgsBinaryInstruction';
 
 /**
  * Optimizes instructions list by eliminate const expr.

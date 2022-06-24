@@ -57,6 +57,13 @@ export class IRInstructionsBlock extends Identity<IRInstructionsBlockDescriptor>
     );
   }
 
+  mapInstructions(mapperFn: (instructions: IRInstruction[]) => IRInstruction[]) {
+    return this.map((value) => ({
+      ...value,
+      instructions: mapperFn(value.instructions),
+    }));
+  }
+
   /**
    * Appends jmps map to instructions block
    *

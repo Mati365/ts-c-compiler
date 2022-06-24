@@ -5,11 +5,9 @@ import {isPointerLikeType} from '@compiler/pico-c/frontend/analyze';
 
 import {ASTCCastUnaryExpression} from '@compiler/pico-c/frontend/parser';
 import {IRLeaInstruction, isIRLabelOffsetInstruction, isIRLeaInstruction} from '../../instructions';
-import {IRInstructionsOptimizationAttrs} from '../optimization';
 import {IREmitterContextAttrs, IREmitterExpressionResult} from './types';
 
 export type PointerAddressExpressionIREmitAttrs = IREmitterContextAttrs & {
-  optimization?: IRInstructionsOptimizationAttrs;
   node: ASTCCastUnaryExpression;
 };
 

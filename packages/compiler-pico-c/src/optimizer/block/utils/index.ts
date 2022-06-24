@@ -1,4 +1,3 @@
-export * from './dropRedundantLeaInstructions';
-export * from './optimizeInstructionsList';
+export * from './dropConstantInstructionArgs';
 export * from './tryConcatMathInstructions';
 export * from './tryEvalConstArgsBinaryInstruction';
