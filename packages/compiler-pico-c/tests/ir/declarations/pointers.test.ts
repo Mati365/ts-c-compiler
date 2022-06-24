@@ -172,10 +172,7 @@ describe('Pointer declarations IR', () => {
           %t{3}: int sum(int, int)*2B = offset sum
           *(fun_ptr{0}: int(int, int)**2B) = store %t{3}: int sum(int, int)*2B
           fun_ptr2{0}: int(int, int)**2B = alloca int(int, int)*2B
-          %t{4}: int sum(int, int)*2B = offset sum
-          *(fun_ptr2{0}: int(int, int)**2B) = store %t{4}: int sum(int, int)*2B
-          %t{5}: int sum(int, int)*2B = offset sum
-          *(fun_ptr2{0}: int(int, int)**2B) = store %t{5}: int sum(int, int)*2B
+          *(fun_ptr2{0}: int(int, int)**2B) = store %t{3}: int sum(int, int)*2B
           ret
       `);
     });

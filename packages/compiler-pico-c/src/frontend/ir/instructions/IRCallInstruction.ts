@@ -28,18 +28,16 @@ export class IRCallInstruction extends IRInstruction implements IsOutputInstruct
 
   override ofArgs(
     {
-      input,
+      input: [fnPtr, ...restInput],
       output = this.outputVar,
     }: IRInstructionArgs,
   ) {
-    const {fnPtr} = this;
-
-    return new IRCallInstruction(fnPtr, input, output);
+    return new IRCallInstruction(<IRVariable> fnPtr, restInput, output);
   }
 
   override getArgs(): IRInstructionArgs {
     return {
-      input: this.args,
+      input: [this.fnPtr, ...this.args],
       output: this.outputVar,
     };
   }

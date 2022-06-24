@@ -9,7 +9,7 @@ ccompiler(/* cpp */ `
     int (*fun_ptr)(int, int) = sum;
     int (*fun_ptr2)(int, int) = &sum;
     fun_ptr2 = sum;
-  }
+    }
 `).match(
   {
     ok: (result) => {

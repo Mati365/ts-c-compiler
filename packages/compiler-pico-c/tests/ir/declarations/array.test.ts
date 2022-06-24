@@ -131,9 +131,8 @@ describe('Arrays declarations IR', () => {
           %t{1}: struct Vec2 of_vector()*2B = offset of_vector
           %t{2}: struct Vec2[2]**2B = lea vec{0}: struct Vec2[2]*2B
           call %t{1}: struct Vec2 of_vector()*2B :: (%t{2}: struct Vec2[2]**2B)
-          %t{3}: struct Vec2 of_vector()*2B = offset of_vector
           %t{5}: int*2B = %t{2}: struct Vec2[2]**2B plus %8: int2B
-          call %t{3}: struct Vec2 of_vector()*2B :: (%t{5}: int*2B)
+          call %t{1}: struct Vec2 of_vector()*2B :: (%t{5}: int*2B)
           ret
       `);
     });
