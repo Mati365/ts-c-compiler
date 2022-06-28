@@ -199,4 +199,16 @@ describe('Functions IR', () => {
         ret
     `);
   });
+
+  test('should be possible to return value even with void function', () => {
+    expect(/* cpp*/ `
+      void main() {
+        return 2 + 3;
+      }
+    `).toCompiledIRBeEqual(/* ruby */`
+      # --- Block main ---
+      def main():
+        ret
+    `);
+  });
 });

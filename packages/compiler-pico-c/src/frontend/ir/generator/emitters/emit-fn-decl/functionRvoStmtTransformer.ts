@@ -48,7 +48,7 @@ export function functionRvoStmtTransformer(
     }
   }
 
-  if (!optimized)
+  if (!optimized && rvoOutputVar)
     throw new IRError(IRErrorCode.RVO_OPTIMIZATION_FAIL);
 
   return {

@@ -97,6 +97,7 @@ export function emitBlockItemIR(
                 rvoOutputVar: fnDecl.outputVarPtr,
               },
             );
+
             result.instructions.push(new IRRetInstruction);
           }
 
