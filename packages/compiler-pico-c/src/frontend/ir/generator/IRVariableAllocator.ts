@@ -13,8 +13,9 @@ const genScopePrefix = (() => {
   return () => ++prefix;
 })();
 
-const TMP_VAR_PREFIX = '%t';
-const TMP_FN_RETURN_VAR_PREFIX = '%out';
+const COMPILER_GEN_PREFIX = '%';
+const TMP_VAR_PREFIX = `${COMPILER_GEN_PREFIX}t`;
+const TMP_FN_RETURN_VAR_PREFIX = `${COMPILER_GEN_PREFIX}out`;
 const CONST_VAR_PREFIX = 'c';
 
 type IRAllocatorConfig = IRGeneratorConfig & {
@@ -62,6 +63,12 @@ export class IRVariableAllocator {
     );
   }
 
+  assignIRAllocatorData(allocator: IRVariableAllocator): this {
+    Object.assign(this.variables, allocator.variables);
+    Object.assign(this.functions, allocator.functions);
+    return this;
+  }
+
   isAllocated(variable: string): boolean {
     return !!this.variables[variable];
   }
@@ -101,7 +108,7 @@ export class IRVariableAllocator {
     const oldPrefix = variable.prefix;
     const mappedVariable = (
       parent?.isAllocated(oldPrefix)
-        ? variable.ofPrefix(`$${prefix}_${oldPrefix}`)
+        ? variable.ofPrefix(`${COMPILER_GEN_PREFIX}${prefix}_${oldPrefix}`)
         : variable
     );
 

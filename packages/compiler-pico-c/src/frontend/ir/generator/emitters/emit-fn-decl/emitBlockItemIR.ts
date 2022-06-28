@@ -64,6 +64,7 @@ export function emitBlockItemIR(
             );
           });
 
+          context.allocator.assignIRAllocatorData(nestedContext.allocator);
           return false;
         },
       },
