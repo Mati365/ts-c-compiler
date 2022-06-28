@@ -91,20 +91,19 @@ export function emitVariableInitializerIR(
         new IRStoreInstruction(tmpLeaAddressVar, rootIRVar),
       );
     } else {
-      // initializer with expressions
-      const rootIRVar = allocator.allocAsPointer(variable);
-
-      instructions.push(
-        IRAllocInstruction.ofDestPtrVariable(rootIRVar),
-        ...emitVariableLoadInitializerIR(
-          {
-            scope,
-            context,
-            initializerTree: initializer,
-            destVar: rootIRVar,
-          },
-        ),
-      );
+      allocator.allocAsPointer(variable, (allocatedVar) => {
+        instructions.push(
+          IRAllocInstruction.ofDestPtrVariable(allocatedVar),
+          ...emitVariableLoadInitializerIR(
+            {
+              scope,
+              context,
+              initializerTree: initializer,
+              destVar: allocatedVar,
+            },
+          ),
+        );
+      });
     }
   } else {
     // uninitialized variable

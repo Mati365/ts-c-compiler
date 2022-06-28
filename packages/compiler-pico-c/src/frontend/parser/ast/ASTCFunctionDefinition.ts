@@ -6,6 +6,8 @@ import {ASTCDeclarationSpecifier} from './ASTCDeclarationSpecifier';
 import {ASTCDeclarator} from './ASTCDeclarator';
 import {ASTCBlockItemsList} from './ASTCBlockItemsList';
 import {ASTCDeclarationsList} from './ASTCDeclarationsList';
+import {CScopeTree} from '../../analyze';
+import {IsNewScopeASTNode} from '../../analyze/interfaces';
 
 /**
  * int main() {}
@@ -24,7 +26,9 @@ import {ASTCDeclarationsList} from './ASTCDeclarationsList';
     ],
   },
 )
-export class ASTCFunctionDefinition extends ASTCCompilerNode {
+export class ASTCFunctionDefinition extends ASTCCompilerNode implements IsNewScopeASTNode {
+  scope?: CScopeTree;
+
   constructor(
     loc: NodeLocation,
     readonly specifier: ASTCDeclarationSpecifier,

@@ -8,7 +8,6 @@ import {
 } from './types';
 
 import {IRLoadInstruction} from '../../instructions';
-import {IRError, IRErrorCode} from '../../errors/IRError';
 
 export type UnaryLoadPtrValueIREmitAttrs = IREmitterContextAttrs & {
   castExpression: ASTCCastExpression;
@@ -35,27 +34,29 @@ export function emitUnaryLoadPtrValueIR(
   result.instructions.push(...exprResult.instructions);
 
   // load pointer pointing
-  if (isPointerLikeType(exprResult.output.type)) {
-    const baseType = exprResult.output.type.baseType;
+  // todo: Add warn about dereferencing ptr!
+  const exprType = exprResult.output.type;
+  const baseType = (
+    isPointerLikeType(exprType)
+      ? exprType.baseType
+      : exprType
+  );
 
-    // prevent load pointers to functions
-    if (isFuncDeclLikeType(baseType)) {
-      return {
-        ...result,
-        output: exprResult.output,
-      };
-    }
-
-    const tmpVar = allocator.allocTmpVariable(exprResult.output.type.baseType);
-    result.instructions.push(
-      new IRLoadInstruction(exprResult.output, tmpVar),
-    );
-
+  // prevent load pointers to functions
+  if (isFuncDeclLikeType(baseType)) {
     return {
       ...result,
-      output: tmpVar,
+      output: exprResult.output,
     };
   }
 
-  throw new IRError(IRErrorCode.CANNOT_DEREFERENCE_NON_PTR_TYPE);
+  const tmpVar = allocator.allocTmpVariable(baseType);
+  result.instructions.push(
+    new IRLoadInstruction(exprResult.output, tmpVar),
+  );
+
+  return {
+    ...result,
+    output: tmpVar,
+  };
 }

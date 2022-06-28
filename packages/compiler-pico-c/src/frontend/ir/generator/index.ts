@@ -1,2 +1,2 @@
 export * from './segments/IRCodeSegmentBuilder';
-export * from './IRGeneratorScopeVisitor';
+export * from './IRGeneratorGlobalVisitor';

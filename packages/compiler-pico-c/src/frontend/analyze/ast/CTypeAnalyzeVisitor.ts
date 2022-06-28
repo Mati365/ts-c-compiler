@@ -6,6 +6,7 @@ import {CTypeCheckConfig} from '../constants';
 import {ASTCCompilerNode} from '../../parser/ast/ASTCCompilerNode';
 import {CTypeAnalyzeContext} from './CTypeAnalyzeContext';
 import {CScopeTree} from '../scope/CScopeTree';
+import {IsNewScopeASTNode} from '../interfaces';
 import {ASTC_TYPE_CREATORS} from './ast-kinds-visitors';
 
 type CTypeAnalyzeVisitorAttrs = CTypeCheckConfig & {
@@ -95,7 +96,7 @@ export class CTypeAnalyzeVisitor extends GroupTreeVisitor<ASTCCompilerNode, any,
       scope.appendScope(newScope),
     );
 
-    node.scope = newScope;
+    (<IsNewScopeASTNode> node).scope = newScope;
     fn(visitor);
   }
 

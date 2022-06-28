@@ -30,8 +30,8 @@ export function emitVariableLoadInitializerIR(
   }: LoadInitializerIREmitAttrs,
 ): IRInstruction[] {
   const {allocator} = context;
-
   const instructions: IRInstruction[] = [];
+
   let offset: number = 0;
 
   initializerTree.fields.forEach((initializer, index) => {
@@ -66,11 +66,7 @@ export function emitVariableLoadInitializerIR(
       const argVar = allocator.getVariable(initializer);
 
       instructions.push(
-        new IRStoreInstruction(
-          argVar,
-          destVar,
-          offset,
-        ),
+        new IRStoreInstruction(argVar, destVar, offset),
       );
     } else if (!R.isNil(initializer)) {
       // int abc[3] = { 1, 2, 3}

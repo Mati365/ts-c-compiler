@@ -2,7 +2,6 @@ import {Grammar} from '@compiler/grammar/Grammar';
 import {TreeNode} from '@compiler/grammar/tree/TreeNode';
 import {CCompilerIdentifier} from '@compiler/pico-c/constants';
 
-import type {CScopeTree} from '../../analyze/scope/CScopeTree';
 import type {CType} from '../../analyze/types/CType';
 
 export enum ASTCCompilerKind {
@@ -105,7 +104,6 @@ export class CCompilerGrammar extends Grammar<CCompilerIdentifier, ASTCCompilerK
 
 export class ASTCCompilerNode<C extends TreeNode<ASTCCompilerKind> = any> extends TreeNode<ASTCCompilerKind, C> {
   type?: CType;
-  scope?: CScopeTree;
 }
 
 export function isCompilerTreeNode(node: any): node is ASTCCompilerNode {

@@ -1,11 +1,28 @@
-import {CFunctionDeclType, CPointerType, CPrimitiveType, CType, CVariable} from '../../analyze';
+import {
+  CFunctionDeclType, CPointerType,
+  CPrimitiveType, CType, CVariable,
+} from '../../analyze';
+
 import {IRGeneratorConfig} from '../constants';
 import {IRFnDeclInstruction} from '../instructions';
 import {IRVariable} from '../variables';
 
+const genScopePrefix = (() => {
+  let prefix = 0;
+
+  return () => ++prefix;
+})();
+
 const TMP_VAR_PREFIX = '%t';
 const TMP_FN_RETURN_VAR_PREFIX = '%out';
 const CONST_VAR_PREFIX = 'c';
+
+type IRAllocatorConfig = IRGeneratorConfig & {
+  parent?: IRVariableAllocator;
+  prefix?: number;
+};
+
+type IRVariableInitializerFn = (variable: IRVariable) => IRVariable | void;
 
 /**
  * Registers symbols table
@@ -23,8 +40,27 @@ export class IRVariableAllocator {
   };
 
   constructor(
-    readonly config: IRGeneratorConfig,
+    readonly config: IRAllocatorConfig,
   ) {}
+
+  get parent() {
+    return this.config.parent;
+  }
+
+  get prefix() {
+    return this.config.prefix || '';
+  }
+
+  ofNestedScopePrefix(config?: Partial<IRAllocatorConfig>) {
+    return new IRVariableAllocator(
+      {
+        ...this.config,
+        ...config,
+        parent: this,
+        prefix: genScopePrefix(),
+      },
+    );
+  }
 
   isAllocated(variable: string): boolean {
     return !!this.variables[variable];
@@ -35,66 +71,76 @@ export class IRVariableAllocator {
   }
 
   getVariable(name: string): IRVariable {
-    return this.variables[name];
+    return this.variables[name] || this.parent?.getVariable(name);
   }
 
   getFunction(name: string): IRFnDeclInstruction {
-    return this.functions[name];
+    return this.functions[name] || this.parent?.getFunction(name);
   }
 
   /**
    * Just assigns variable by its name to map
    *
-   * @param {IRVariable} variable
+   * @param {(IRVariable | CVariable)} variable
+   * @param {IRVariableInitializerFn} [initializer]
    * @return {IRVariable}
    * @memberof IRVariableAllocator
    */
-  allocVariable(variable: IRVariable | CVariable): IRVariable {
+  allocVariable(
+    variable: IRVariable | CVariable,
+    initializer?: IRVariableInitializerFn,
+  ): IRVariable {
     if (variable instanceof CVariable)
       variable = IRVariable.ofScopeVariable(variable);
 
-    this.variables[variable.prefix] = variable;
-    return variable;
+    const {
+      prefix,
+      parent,
+    } = this;
+
+    const oldPrefix = variable.prefix;
+    const mappedVariable = (
+      parent?.isAllocated(oldPrefix)
+        ? variable.ofPrefix(`$${prefix}_${oldPrefix}`)
+        : variable
+    );
+
+    this.variables[oldPrefix] = initializer?.(mappedVariable) || mappedVariable;
+    return mappedVariable;
   }
 
   /**
    * Allocates pointer to variable
    *
-   * @param {IRVariable} variable
+   * @param {(IRVariable | CVariable)} variable
+   * @param {IRVariableInitializerFn} [initializer]
    * @return {IRVariable}
    * @memberof IRVariableAllocator
    */
-  allocAsPointer(variable: IRVariable | CVariable): IRVariable {
+  allocAsPointer(
+    variable: IRVariable | CVariable,
+    initializer?: IRVariableInitializerFn,
+  ): IRVariable {
     if (variable instanceof CVariable)
       variable = IRVariable.ofScopeVariable(variable);
 
-    const mappedVariable = variable.map(
-      (value) => ({
-        ...value,
-        type: CPointerType.ofType(value.type),
-      }),
-    );
-
-    return this.allocVariable(mappedVariable);
-  }
-
-  allocTmpPointer(type: CType) {
-    return this.allocTmpVariable(
-      CPointerType.ofType(type),
-    );
+    return this.allocVariable(variable.ofPointerType(), initializer);
   }
 
   /**
-   * Decrenebt syffix and return var
+   * Alloc variable used to calculate ptr address
    *
+   * @param {CType} type
    * @return {IRVariable}
    * @memberof IRVariableAllocator
    */
-  deallocTmpVariable(): IRVariable {
-    return this.allocVariable(
-      this
-        .getVariable(TMP_VAR_PREFIX)
-        .ofDecrementedSuffix(),
+  allocTmpPointer(type: CType): IRVariable {
+    const {parent} = this;
+    if (parent)
+      return parent.allocTmpPointer(type);
+
+    return this.allocTmpVariable(
+      CPointerType.ofType(type),
     );
   }
 
@@ -107,6 +153,10 @@ export class IRVariableAllocator {
    * @memberof IRVariableAllocator
    */
   allocTmpVariable(type: CType, prefix: string = TMP_VAR_PREFIX): IRVariable {
+    const {parent} = this;
+    if (parent)
+      return parent.allocTmpVariable(type, prefix);
+
     const tmpVar = this.getVariable(prefix) ?? new IRVariable(
       {
         volatile: true,
@@ -186,7 +236,7 @@ export class IRVariableAllocator {
       );
     })();
 
-    this.functions[fn.name] = irFn;
+    this.functions[`${this.prefix}${fn.name}`] = irFn;
     return irFn;
   }
 }

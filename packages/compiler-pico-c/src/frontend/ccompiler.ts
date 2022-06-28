@@ -10,6 +10,8 @@ import {CCompilerConfig, CCompilerArch} from '../constants/config';
 
 import {ASTCCompilerNode} from './parser/ast';
 import {IRResultView, IRCodeBuilderResult} from './ir';
+
+import {isNewScopeASTNode} from './analyze/interfaces';
 import {
   CScopeTree,
   CScopePrintVisitor,
@@ -40,7 +42,7 @@ export class CCompilerOutput {
           node.toString(),
           {
             type: node.type?.toString(),
-            scoped: node.scope ? true : null,
+            scoped: isNewScopeASTNode(node) || null,
           },
         ),
       },

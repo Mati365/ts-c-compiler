@@ -25,10 +25,10 @@ import {
  * Root IR generator visitor
  *
  * @export
- * @class IRGeneratorScopeVisitor
+ * @class IRGeneratorGlobalVisitor
  * @extends {CScopeVisitor}
  */
-export class IRGeneratorScopeVisitor extends CScopeVisitor {
+export class IRGeneratorGlobalVisitor extends CScopeVisitor {
   readonly segments: IRGeneratorSegments = {
     code: new IRCodeSegmentBuilder,
     data: new IRDataSegmentBuilder,
@@ -61,7 +61,7 @@ export class IRGeneratorScopeVisitor extends CScopeVisitor {
    * Returns output of IR generator
    *
    * @return {IRScopeGeneratorResult}
-   * @memberof IRGeneratorScopeVisitor
+   * @memberof IRGeneratorGlobalVisitor
    */
   flush(): IRScopeGeneratorResult {
     const {
@@ -83,7 +83,7 @@ export class IRGeneratorScopeVisitor extends CScopeVisitor {
    * Iterates over scope and emits IR
    *
    * @param {CScopeTree} scope
-   * @memberof IRGeneratorScopeVisitor
+   * @memberof IRGeneratorGlobalVisitor
    */
   enter(scope: CScopeTree): void | boolean {
     const {segments, context} = this;

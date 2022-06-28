@@ -6,7 +6,7 @@ import {getIRTypeDisplayName} from '../dump/getIRTypeDisplayName';
 import {IsPrintable} from '@compiler/core/interfaces';
 import {Identity} from '@compiler/core/monads';
 import {PartialBy} from '@compiler/core/types';
-import {CType, CVariable} from '../../analyze';
+import {CPointerType, CType, CVariable} from '../../analyze';
 
 export function isIRVariable(obj: any): obj is IRVariable {
   return R.is(Object, obj) && obj.value && obj.value.prefix;
@@ -67,6 +67,21 @@ export class IRVariable
     const {prefix, suffix} = this.value;
 
     return `${prefix}{${suffix}}`;
+  }
+
+  /**
+   * Transform internal type to pointer
+   *
+   * @return {IRVariable}
+   * @memberof IRVariable
+   */
+  ofPointerType(): IRVariable {
+    return this.map(
+      (value) => ({
+        ...value,
+        type: CPointerType.ofType(value.type),
+      }),
+    );
   }
 
   /**
