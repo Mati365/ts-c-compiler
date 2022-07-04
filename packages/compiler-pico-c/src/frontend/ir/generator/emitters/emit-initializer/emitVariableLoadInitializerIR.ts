@@ -11,7 +11,7 @@ import {IRError, IRErrorCode} from '../../../errors/IRError';
 import {IRInstruction, IRStoreInstruction} from '../../../instructions';
 import {IRConstant, IRVariable, isIRVariable} from '../../../variables';
 
-import {emitExpressionIR} from '../emitExpressionIR';
+import {emitExpressionIR} from '../emit-expr';
 
 type LoadInitializerIREmitAttrs = IREmitterContextAttrs & {
   initializerTree: CVariableInitializerTree;

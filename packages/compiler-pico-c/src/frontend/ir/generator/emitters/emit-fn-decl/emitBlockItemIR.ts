@@ -21,7 +21,7 @@ import {isIRVariable} from '../../../variables';
 import {emitAssignmentIR} from '../emitAssignmentIR';
 import {emitDeclarationIR} from '../emitDeclarationIR';
 import {emitExpressionStmtIR} from '../emitExpressionStmtIR';
-import {emitExpressionIR} from '../emitExpressionIR';
+import {emitExpressionIR} from '../emit-expr';
 
 type BlockItemIREmitAttrs = IREmitterContextAttrs & {
   node: ASTCCompilerNode;

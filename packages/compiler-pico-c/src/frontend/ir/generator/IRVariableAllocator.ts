@@ -35,11 +35,6 @@ export class IRVariableAllocator {
   private readonly variables: Record<string, IRVariable> = {};
   private readonly functions: Record<string, IRFnDeclInstruction> = {};
 
-  private readonly counters = {
-    labels: 0,
-    tmpVars: 0,
-  };
-
   constructor(
     readonly config: IRAllocatorConfig,
   ) {}
@@ -71,10 +66,6 @@ export class IRVariableAllocator {
 
   isAllocated(variable: string): boolean {
     return !!this.variables[variable];
-  }
-
-  genLabelName(suffix: string) {
-    return `L${this.counters.labels++}-${suffix}`;
   }
 
   getVariable(name: string): IRVariable {

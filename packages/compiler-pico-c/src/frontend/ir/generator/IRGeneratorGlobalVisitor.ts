@@ -16,6 +16,7 @@ import {
 
 import {IRGeneratorConfig} from '../constants';
 import {IRVariableAllocator} from './IRVariableAllocator';
+import {IRInstructionFactory} from './IRInstructionFactory';
 import {
   IRCodeSegmentBuilder,
   IRDataSegmentBuilder,
@@ -47,6 +48,7 @@ export class IRGeneratorGlobalVisitor extends CScopeVisitor {
       config,
       segments: this.segments,
       allocator: this.allocator,
+      factory: new IRInstructionFactory,
       emit: {
         expression: emitExpressionIR,
         identifierGetter: emitIdentifierGetterIR,

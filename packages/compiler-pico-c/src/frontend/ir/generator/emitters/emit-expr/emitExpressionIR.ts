@@ -1,7 +1,8 @@
 import * as R from 'ramda';
 
-import {tryCastToPointer} from '@compiler/pico-c/frontend/analyze/casts';
+import {isLogicOpToken} from '@compiler/lexer/utils';
 import {isImplicitPtrType} from '@compiler/pico-c/frontend/analyze/types/utils';
+import {tryCastToPointer} from '@compiler/pico-c/frontend/analyze/casts';
 
 import {TokenType} from '@compiler/lexer/shared';
 import {CMathOperator, CUnaryCastOperator} from '@compiler/pico-c/constants';
@@ -21,19 +22,20 @@ import {
 } from '@compiler/pico-c/frontend/parser';
 
 import {GroupTreeVisitor} from '@compiler/grammar/tree/TreeGroupedVisitor';
-import {IREmitterContextAttrs, IREmitterExpressionResult} from './types';
+import {IREmitterContextAttrs, IREmitterExpressionResult} from '../types';
 
 import {
-  IRInstruction, IRLabelOffsetInstruction, IRLeaInstruction,
-  IRLoadInstruction, IRMathInstruction,
-} from '../../instructions';
+  IRInstruction, IRLabelOffsetInstruction,
+  IRLeaInstruction, IRLoadInstruction, IRMathInstruction,
+} from '../../../instructions';
 
-import {IRError, IRErrorCode} from '../../errors/IRError';
-import {IRConstant, IRInstructionVarArg, IRVariable} from '../../variables';
+import {IRError, IRErrorCode} from '../../../errors/IRError';
+import {IRConstant, IRInstructionVarArg, IRVariable} from '../../../variables';
 
-import {emitIdentifierGetterIR} from './emitIdentifierGetterIR';
-import {emitIncExpressionIR} from './emitIncExpressionIR';
-import {emitFnCallExpressionIR} from './emit-fn-call-expression';
+import {emitIdentifierGetterIR} from '../emitIdentifierGetterIR';
+import {emitIncExpressionIR} from '../emitIncExpressionIR';
+import {emitFnCallExpressionIR} from '../emit-fn-call-expression';
+import {emitLogicExpressionIR} from './emitLogicExpressionIR';
 
 export type ExpressionIREmitAttrs = IREmitterContextAttrs & {
   node: ASTCCompilerNode;
@@ -48,6 +50,8 @@ export function emitExpressionIR(
   }: ExpressionIREmitAttrs,
 ): IREmitterExpressionResult {
   const {allocator, emit, config} = context;
+  const {arch} = config;
+
   const instructions: IRInstruction[] = [];
   let argsVarsStack: IRInstructionVarArg[] = [];
 
@@ -264,7 +268,26 @@ export function emitExpressionIR(
       },
 
       [ASTCCompilerKind.BinaryOperator]: {
+        enter: (binary: ASTCBinaryOpNode) => {
+          // handle logic jmp instructions such like this: a > 2 && b;
+          if (!isLogicOpToken(binary.op))
+            return;
+
+
+          const exprResult = emitLogicExpressionIR(
+            {
+              node: binary,
+              context,
+              scope,
+            },
+          );
+
+          emitExprResultToStack(exprResult);
+          return false;
+        },
+
         leave: (binary: ASTCBinaryOpNode) => {
+          // handle math instruction such like this: 2 * a
           let [a, b] = [argsVarsStack.pop(), argsVarsStack.pop()];
           let output: IRVariable = null;
           let defaultOutputType = a.type;
@@ -277,7 +300,7 @@ export function emitExpressionIR(
                 TokenType.MUL,
                 b,
                 IRConstant.ofConstant(
-                  CPrimitiveType.int(config.arch),
+                  CPrimitiveType.int(arch),
                   mulBy,
                 ),
                 b = allocNextVariable(),
@@ -299,7 +322,7 @@ export function emitExpressionIR(
                 TokenType.MUL,
                 a,
                 IRConstant.ofConstant(
-                  CPrimitiveType.int(config.arch),
+                  CPrimitiveType.int(arch),
                   mulBy,
                 ),
                 a = allocNextVariable(),

@@ -9,10 +9,11 @@ import type {IRCodeSegmentBuilder, IRCodeSegmentBuilderResult} from '../segments
 import type {IRDataSegmentBuilder, IRDataSegmentBuilderResult} from '../segments';
 
 import type {emitAssignmentIR} from './emitAssignmentIR';
-import type {emitExpressionIR} from './emitExpressionIR';
+import type {emitExpressionIR} from './emit-expr';
 import type {emitIdentifierGetterIR} from './emitIdentifierGetterIR';
 import type {emitPointerAddressExpression} from './emitPointerAddressExpression';
 import type {emitUnaryLoadPtrValueIR} from './emitUnaryLoadPointerValueIR';
+import type {IRInstructionFactory} from '../IRInstructionFactory';
 
 export type IRGeneratorSegments = {
   code: IRCodeSegmentBuilder;
@@ -23,6 +24,7 @@ export type IREmitterContext = {
   segments: IRGeneratorSegments;
   config: IRGeneratorConfig;
   allocator: IRVariableAllocator;
+  factory: IRInstructionFactory;
   emit: {
     assignment: typeof emitAssignmentIR,
     expression: typeof emitExpressionIR;

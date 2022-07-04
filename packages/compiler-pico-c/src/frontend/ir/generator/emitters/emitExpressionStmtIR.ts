@@ -6,7 +6,7 @@ import {
   ASTCExpressionStatement,
 } from '@compiler/pico-c/frontend/parser';
 
-import {emitExpressionIR} from './emitExpressionIR';
+import {emitExpressionIR} from './emit-expr';
 import {
   appendStmtResults,
   createBlankStmtResult,

@@ -95,13 +95,15 @@ export type CMathOperator =
   | TokenType.DIV
   | TokenType.POW
   | TokenType.MOD
-  | TokenType.AND
-  | TokenType.OR
   | TokenType.BIT_AND
   | TokenType.BIT_OR
   | TokenType.BIT_SHIFT_RIGHT
   | TokenType.BIT_SHIFT_LEFT
   | TokenType.BIT_NOT;
+
+export type CLogicOperator =
+  | TokenType.AND
+  | TokenType.OR;
 
 export type CRelOperator =
   | TokenType.GREATER_THAN
@@ -142,9 +144,9 @@ export const CCOMPILER_ASSIGN_MATH_OPERATORS: Record<CAssignOperator, CMathOpera
   [CAssignOperator.SUB_ASSIGN]: TokenType.MINUS,
   [CAssignOperator.LEFT_ASSIGN]: TokenType.BIT_SHIFT_LEFT,
   [CAssignOperator.RIGHT_ASSIGN]: TokenType.BIT_SHIFT_RIGHT,
-  [CAssignOperator.AND_ASSIGN]: TokenType.AND,
+  [CAssignOperator.AND_ASSIGN]: TokenType.BIT_AND,
   [CAssignOperator.XOR_ASSIGN]: TokenType.POW,
-  [CAssignOperator.OR_ASSIGN]: TokenType.OR,
+  [CAssignOperator.OR_ASSIGN]: TokenType.BIT_OR,
 };
 
 export const CCOMPILER_INTEGRAL_SPECIFIERS: CTypeSpecifier[] = [

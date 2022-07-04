@@ -1,3 +1,4 @@
+import chalk from 'chalk';
 import {IROpcode} from '../constants';
 import {IRInstruction} from './IRInstruction';
 import {IRLabelInstruction} from './IRLabelInstruction';
@@ -35,10 +36,16 @@ export class IRIfInstruction extends IRInstruction implements IRBranchRelations<
       ifFalse,
     } = this;
 
-    const str = `if: ${expression.getDisplayName()} then: ${ifTrue.name}`;
+    const str = [
+      chalk.yellowBright('if:'),
+      expression.getDisplayName(),
+      chalk.yellowBright('then'),
+      chalk.white.bold(ifTrue.name),
+    ].join(' ');
+
     return (
       ifFalse
-        ? `${str} else ${ifFalse.name}`
+        ? `${str} ${chalk.yellowBright('else')} ${chalk.white.bold(ifFalse.name)}`
         : str
     );
   }

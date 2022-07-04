@@ -12,7 +12,7 @@ import {IRInstructionVarArg, isIRVariable} from '../../variables';
 import {IREmitterContextAttrs, IREmitterExpressionResult} from './types';
 
 import {emitIdentifierGetterIR} from './emitIdentifierGetterIR';
-import {emitExpressionIR} from './emitExpressionIR';
+import {emitExpressionIR} from './emit-expr';
 
 export type AssignmentIREmitAttrs = IREmitterContextAttrs & {
   node: ASTCAssignmentExpression;
@@ -56,8 +56,8 @@ export function emitAssignmentIR(
   if (operator === CAssignOperator.ASSIGN) {
     // int abc = 5;
     assignResult = rvalue.output;
-  } else {
-    // load tmp ptr
+  } else  {
+    // other operators such like: abc *= 2;
     const irSrcVar = allocator.allocTmpVariable(rvalueType);
     const tmpResultVar = allocator.allocTmpVariable(rvalueType);
 

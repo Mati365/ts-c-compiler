@@ -1,3 +1,5 @@
+import chalk from 'chalk';
+
 import {IROpcode} from '../constants';
 import {IRInstruction} from './IRInstruction';
 import {IsLabeledInstruction} from '../interfaces/IsLabeledInstruction';
@@ -19,6 +21,6 @@ export class IRLabelInstruction extends IRInstruction implements IsLabeledInstru
   }
 
   override getDisplayName(): string {
-    return `${this.name}:`;
+    return chalk.white.bold(`${this.name}:`);
   }
 }

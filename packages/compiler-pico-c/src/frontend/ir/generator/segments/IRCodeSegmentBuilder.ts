@@ -102,8 +102,7 @@ export class IRCodeSegmentBuilder extends IRSegmentBuilder<IRCodeSegmentBuilderR
       });
     }
 
-    this.setBlock(newBlock);
-    this.tmpBlock = IRInstructionsBlock.ofInstructions([]);
+    this.tmpBlock = newBlock;
   }
 
   /**

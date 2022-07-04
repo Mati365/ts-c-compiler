@@ -1,8 +1,9 @@
-import {IsOutputInstruction} from '../interfaces';
+import chalk from 'chalk';
 
+import {IsOutputInstruction} from '../interfaces';
 import {IROpcode} from '../constants';
 import {IRInstruction, IRInstructionArgs} from './IRInstruction';
-import {IRVariable} from '../variables';
+import {IRInstructionVarArg, IRVariable} from '../variables';
 
 /**
  * PHI instruction
@@ -14,7 +15,7 @@ import {IRVariable} from '../variables';
  */
 export class IRPhiInstruction extends IRInstruction implements IsOutputInstruction {
   constructor(
-    readonly vars: IRVariable[],
+    readonly vars: IRInstructionVarArg[],
     readonly outputVar: IRVariable,
   ) {
     super(IROpcode.PHI);
@@ -26,7 +27,7 @@ export class IRPhiInstruction extends IRInstruction implements IsOutputInstructi
       output = this.outputVar,
     }: IRInstructionArgs,
   ) {
-    return new IRPhiInstruction(<IRVariable[]> input, output);
+    return new IRPhiInstruction(input, output);
   }
 
   override getArgs(): IRInstructionArgs {
@@ -40,7 +41,8 @@ export class IRPhiInstruction extends IRInstruction implements IsOutputInstructi
 
   override getDisplayName(): string {
     const {outputVar, vars} = this;
+    const argsStr = vars.map((v) => v.getDisplayName()).join(', ');
 
-    return `${outputVar} = φ(${vars.join(', ')})`;
+    return `${outputVar.getDisplayName()} = ${chalk.greenBright('φ(')}${argsStr}${chalk.greenBright(')')}`;
   }
 }

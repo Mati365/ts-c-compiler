@@ -2,8 +2,8 @@ import chalk from 'chalk';
 
 import {IsOutputInstruction} from '../interfaces';
 import {IROpcode} from '../constants';
-import {IRInstruction, IRInstructionArgs} from './IRInstruction';
-import {IRVariable, IRInstructionVarArg} from '../variables';
+import {IRInstruction} from './IRInstruction';
+import {IRLabelInstruction} from './IRLabelInstruction';
 
 export function isIRJmpInstruction(instruction: IRInstruction): instruction is IRJmpInstruction {
   return instruction?.opcode === IROpcode.JMP;
@@ -19,30 +19,12 @@ export function isIRJmpInstruction(instruction: IRInstruction): instruction is I
  */
 export class IRJmpInstruction extends IRInstruction implements IsOutputInstruction {
   constructor(
-    readonly fnPtr: IRVariable,
-    readonly input: IRInstructionVarArg,
+    readonly label: IRLabelInstruction,
   ) {
     super(IROpcode.JMP);
   }
 
-  override ofArgs(
-    {
-      input,
-    }: IRInstructionArgs,
-  ) {
-    const {fnPtr} = this;
-
-    return new IRJmpInstruction(fnPtr, input[0]);
-  }
-
-  override getArgs(): IRInstructionArgs {
-    return {
-      input: [this.input],
-    };
-  }
-
   override getDisplayName(): string {
-    const {input} = this;
-    return `${chalk.magentaBright('jmp')} ${input.getDisplayName()}`;
+    return `${chalk.magentaBright('jmp')} ${this.label.getDisplayName()}`;
   }
 }

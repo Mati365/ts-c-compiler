@@ -29,12 +29,12 @@ export class AbstractTreeVisitor<T extends any = any> {
 
     try {
       const result = this.enter?.(node, history);
-      if (result !== false
-          && isWalkableNode(node)
-          && this.shouldVisitNode?.(node) !== false)
-        node.walk(this);
+      if (result !== false) {
+        if (isWalkableNode(node) && this.shouldVisitNode?.(node) !== false)
+          node.walk(this);
 
-      this.leave?.(node, history); // eslint-disable-line no-unused-expressions
+        this.leave?.(node, history); // eslint-disable-line no-unused-expressions
+      }
     } catch (e) {
       if (isWalkableNode(node))
         e.loc = e.loc ?? node.loc?.start;
