@@ -2,7 +2,7 @@ import {GroupTreeVisitor} from '@compiler/grammar/tree/TreeGroupedVisitor';
 import {
   ASTCAssignmentExpression, ASTCBlockItemsList, ASTCCompilerKind,
   ASTCCompilerNode, ASTCDeclaration, ASTCExpression,
-  ASTCExpressionStatement, ASTCIfStatement,
+  ASTCExpressionStatement, ASTCIfStatement, ASTCWhileStatement,
 } from '@compiler/pico-c/frontend/parser';
 
 import {IRFnDeclInstruction, IRRetInstruction} from '../../../instructions';
@@ -23,6 +23,7 @@ import {emitDeclarationIR} from '../emitDeclarationIR';
 import {emitExpressionStmtIR} from '../emitExpressionStmtIR';
 import {emitExpressionIR} from '../emit-expr';
 import {emitIfStmtIR} from '../emitIfStmtIR';
+import {emitWhileStmtIR} from '../emitWhileStmtIR';
 
 type BlockItemIREmitAttrs = IREmitterContextAttrs & {
   node: ASTCCompilerNode;
@@ -41,6 +42,22 @@ export function emitBlockItemIR(
 
   GroupTreeVisitor.ofIterator<ASTCCompilerNode>(
     {
+      [ASTCCompilerKind.WhileStmt]: {
+        enter(whileStmt: ASTCWhileStatement) {
+          const whileStmtResult = emitWhileStmtIR(
+            {
+              node: whileStmt,
+              scope,
+              context,
+              fnDecl,
+            },
+          );
+
+          appendStmtResults(whileStmtResult, result);
+          return false;
+        },
+      },
+
       [ASTCCompilerKind.IfStmt]: {
         enter(ifStmtNode: ASTCIfStatement) {
           const ifStmtResult = emitIfStmtIR(

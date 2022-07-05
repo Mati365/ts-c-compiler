@@ -2,7 +2,11 @@ import {TokenType} from '@compiler/lexer/shared';
 import {CPrimitiveType} from '@compiler/pico-c/frontend/analyze';
 import {ASTCIfStatement} from '@compiler/pico-c/frontend/parser';
 
-import {IRFnDeclInstruction, IRIfInstruction, IRRelInstruction} from '../../instructions';
+import {
+  IRFnDeclInstruction, IRIfInstruction,
+  IRJmpInstruction, IRRelInstruction,
+} from '../../instructions';
+
 import {IRConstant} from '../../variables';
 import {
   appendStmtResults,
@@ -68,10 +72,10 @@ export function emitIfStmtIR(
         logicResult.output,
         IRConstant.ofConstant(CPrimitiveType.int(arch), 0),
       ),
-      labels.finally,
       labels.else,
     ),
     ...blocksResults.true.instructions,
+    new IRJmpInstruction(labels.finally),
     labels.else,
     ...blocksResults.false.instructions,
     labels.finally,

@@ -7,12 +7,6 @@ import {IRGeneratorConfig} from '../constants';
 import {IRFnDeclInstruction} from '../instructions';
 import {IRVariable} from '../variables';
 
-const genScopePrefix = (() => {
-  let prefix = 0;
-
-  return () => ++prefix;
-})();
-
 const COMPILER_GEN_PREFIX = '%';
 const TMP_VAR_PREFIX = `${COMPILER_GEN_PREFIX}t`;
 const TMP_FN_RETURN_VAR_PREFIX = `${COMPILER_GEN_PREFIX}out`;
@@ -53,7 +47,7 @@ export class IRVariableAllocator {
         ...this.config,
         ...config,
         parent: this,
-        prefix: genScopePrefix(),
+        prefix: (this.prefix || 0) + 1,
       },
     );
   }
