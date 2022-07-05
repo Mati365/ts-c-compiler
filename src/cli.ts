@@ -2,10 +2,14 @@ import 'source-map-support/register';
 import {ccompiler, CCompilerOutput} from '@compiler/pico-c';
 
 ccompiler(/* cpp */ `
-  void main() {
-    for (int i = 0; i < 10; ++i) {
-      int a = 3;
+  int strlen(const char* str) {
+    for (int i = 0;;++i) {
+      if (*(str + i) == '0') {
+        return i;
+      }
     }
+
+    return -1;
   }
 `).match(
   {

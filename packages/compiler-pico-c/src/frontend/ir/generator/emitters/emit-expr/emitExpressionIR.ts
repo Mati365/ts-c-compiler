@@ -2,7 +2,7 @@ import * as R from 'ramda';
 
 import {isLogicOpToken} from '@compiler/lexer/utils';
 import {isImplicitPtrType} from '@compiler/pico-c/frontend/analyze/types/utils';
-import {tryCastToPointer} from '@compiler/pico-c/frontend/analyze/casts';
+import {charToInt, tryCastToPointer} from '@compiler/pico-c/frontend/analyze/casts';
 
 import {TokenType} from '@compiler/lexer/shared';
 import {CMathOperator, CUnaryCastOperator} from '@compiler/pico-c/constants';
@@ -70,7 +70,31 @@ export function emitExpressionIR(
     {
       [ASTCCompilerKind.CastUnaryExpression]: {
         enter(expr: ASTCCastUnaryExpression) {
+          // -a
           switch (expr.operator) {
+            case CUnaryCastOperator.SUB: {
+              emitExprResultToStack(
+                emit.expression(
+                  {
+                    scope,
+                    node: expr.castExpression,
+                    context,
+                  },
+                ),
+              );
+
+              instructions.push(
+                new IRMathInstruction(
+                  TokenType.MUL,
+                  argsVarsStack.pop(),
+                  IRConstant.ofConstant(CPrimitiveType.int(arch), -1),
+                  allocNextVariable(expr.type),
+                ),
+              );
+
+              return false;
+            }
+
             // *a
             case CUnaryCastOperator.MUL: {
               const unaryExprResult = emit.unaryLoadPtrValueIR(
@@ -190,8 +214,16 @@ export function emitExpressionIR(
 
       [ASTCCompilerKind.PrimaryExpression]: {
         enter(expression: ASTCPrimaryExpression) {
-          if (expression.isConstant()) {
-            // handle "a"
+          if (expression.isCharLiteral()) {
+            // handle 'a'
+            argsVarsStack.push(
+              IRConstant.ofConstant(
+                expression.type,
+                charToInt(expression.charLiteral),
+              ),
+            );
+          } else if (expression.isConstant()) {
+            // handle 2
             argsVarsStack.push(
               IRConstant.ofConstant(
                 expression.type,
@@ -294,7 +326,7 @@ export function emitExpressionIR(
           if (!isPointerArithmeticType(b.type) && isPointerArithmeticType(a.type)) {
             const mulBy = a.type.getSourceType().getByteSize();
 
-            if (mulBy) {
+            if (mulBy > 1) {
               const mulPtrInstruction = new IRMathInstruction(
                 TokenType.MUL,
                 b,
@@ -316,7 +348,7 @@ export function emitExpressionIR(
           if (isPointerArithmeticType(b.type) && !isPointerArithmeticType(a.type)) {
             const mulBy = b.type.getSourceType().getByteSize();
 
-            if (mulBy) {
+            if (mulBy > 1) {
               const mulPtrInstruction = new IRMathInstruction(
                 TokenType.MUL,
                 a,
