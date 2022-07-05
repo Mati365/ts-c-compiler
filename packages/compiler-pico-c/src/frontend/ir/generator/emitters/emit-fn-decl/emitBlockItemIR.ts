@@ -1,8 +1,8 @@
 import {GroupTreeVisitor} from '@compiler/grammar/tree/TreeGroupedVisitor';
 import {
   ASTCAssignmentExpression, ASTCBlockItemsList, ASTCCompilerKind,
-  ASTCCompilerNode, ASTCDeclaration, ASTCExpression,
-  ASTCExpressionStatement, ASTCIfStatement, ASTCWhileStatement,
+  ASTCCompilerNode, ASTCDeclaration, ASTCDoWhileStatement, ASTCExpression,
+  ASTCExpressionStatement, ASTCIfStatement,
 } from '@compiler/pico-c/frontend/parser';
 
 import {IRFnDeclInstruction, IRRetInstruction} from '../../../instructions';
@@ -23,7 +23,7 @@ import {emitDeclarationIR} from '../emitDeclarationIR';
 import {emitExpressionStmtIR} from '../emitExpressionStmtIR';
 import {emitExpressionIR} from '../emit-expr';
 import {emitIfStmtIR} from '../emitIfStmtIR';
-import {emitWhileStmtIR} from '../emitWhileStmtIR';
+import {emitWhileStmtIR, emitDoWhileStmtIR} from '../emit-while-stmt';
 
 type BlockItemIREmitAttrs = IREmitterContextAttrs & {
   node: ASTCCompilerNode;
@@ -42,18 +42,36 @@ export function emitBlockItemIR(
 
   GroupTreeVisitor.ofIterator<ASTCCompilerNode>(
     {
-      [ASTCCompilerKind.WhileStmt]: {
-        enter(whileStmt: ASTCWhileStatement) {
-          const whileStmtResult = emitWhileStmtIR(
-            {
-              node: whileStmt,
-              scope,
-              context,
-              fnDecl,
-            },
+      [ASTCCompilerKind.DoWhileStmt]: {
+        enter: (whileStmt: ASTCDoWhileStatement) => {
+          appendStmtResults(
+            emitDoWhileStmtIR(
+              {
+                node: whileStmt,
+                scope,
+                context,
+                fnDecl,
+              },
+            ),
+            result,
           );
+          return false;
+        },
+      },
 
-          appendStmtResults(whileStmtResult, result);
+      [ASTCCompilerKind.WhileStmt]: {
+        enter: (whileStmt: ASTCDoWhileStatement) => {
+          appendStmtResults(
+            emitWhileStmtIR(
+              {
+                node: whileStmt,
+                scope,
+                context,
+                fnDecl,
+              },
+            ),
+            result,
+          );
           return false;
         },
       },

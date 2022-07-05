@@ -4,7 +4,7 @@ import {ccompiler, CCompilerOutput} from '@compiler/pico-c';
 ccompiler(/* cpp */ `
   void main() {
     while(2 > 1) {
-      int a = 2;
+      int a;
     }
   }
 `).match(

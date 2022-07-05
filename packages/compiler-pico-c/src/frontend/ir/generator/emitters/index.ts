@@ -10,5 +10,5 @@ export * from './emitIfStmtIR';
 export * from './emitIncExpressionIR';
 export * from './emitPointerAddressExpression';
 export * from './emitUnaryLoadPointerValueIR';
-export * from './emitWhileStmtIR';
+export * from './emit-while-stmt';
 export * from './types';

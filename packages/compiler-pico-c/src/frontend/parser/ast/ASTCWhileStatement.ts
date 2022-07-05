@@ -42,6 +42,6 @@ export class ASTCDoWhileStatement extends ASTCWhileStatement {
     expression: ASTCCompilerNode,
     statement: ASTCCompilerNode,
   ) {
-    super(loc, expression, statement, ASTCCompilerKind.WhileStmt);
+    super(loc, expression, statement, ASTCCompilerKind.DoWhileStmt);
   }
 }

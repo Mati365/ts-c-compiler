@@ -2,15 +2,15 @@ import {TokenType} from '@compiler/lexer/shared';
 import {CPrimitiveType} from '@compiler/pico-c/frontend/analyze';
 import {ASTCWhileStatement} from '@compiler/pico-c/frontend/parser';
 
-import {IRFnDeclInstruction, IRIfInstruction, IRJmpInstruction, IRRelInstruction} from '../../instructions';
-import {IRConstant} from '../../variables';
+import {IRFnDeclInstruction, IRIfInstruction, IRJmpInstruction, IRRelInstruction} from '../../../instructions';
+import {IRConstant} from '../../../variables';
 import {
   createBlankStmtResult,
   IREmitterContextAttrs,
   IREmitterStmtResult,
-} from './types';
+} from '../types';
 
-export type WhilteStmtIRAttrs = IREmitterContextAttrs & {
+export type WhileStmtIRAttrs = IREmitterContextAttrs & {
   node: ASTCWhileStatement;
   fnDecl: IRFnDeclInstruction;
 };
@@ -21,7 +21,7 @@ export function emitWhileStmtIR(
     context,
     node,
     fnDecl,
-  }: WhilteStmtIRAttrs,
+  }: WhileStmtIRAttrs,
 ): IREmitterStmtResult {
   const {emit, config, factory} = context;
   const {arch} = config;
@@ -52,6 +52,7 @@ export function emitWhileStmtIR(
   result.instructions.push(
     labels.start,
     ...result.instructions,
+    ...logicResult.instructions,
     new IRIfInstruction(
       new IRRelInstruction(
         TokenType.EQUAL,
