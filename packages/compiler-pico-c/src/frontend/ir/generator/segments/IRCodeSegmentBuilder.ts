@@ -1,13 +1,12 @@
 import {IRError, IRErrorCode} from '../../errors/IRError';
 import {
-  IRIfInstruction, IRInstruction,
-  isIRIfInstruction, isIRRetInstruction,
+  IRInstruction,
+  isIRFnDeclInstruction,
+  isIRLabelInstruction,
 } from '../../instructions';
 
 import {IRInstructionsBlock} from '../../instructions/IRInstructionsBlock';
 import {IRSegmentBuilder} from './IRSegmentBuilder';
-
-import {isIRLabeledInstruction} from '../../guards';
 
 export type IRBlockLabelsMap = Record<string, IRInstructionsBlock>;
 export type IRCodeSegmentBuilderResult = {
@@ -22,8 +21,11 @@ export type IRCodeSegmentBuilderResult = {
  */
 export class IRCodeSegmentBuilder extends IRSegmentBuilder<IRCodeSegmentBuilderResult> {
   private blocks: IRBlockLabelsMap = {};
-  private unresolvedBlockBranches: VoidFunction[] = [];
   private tmpBlock = IRInstructionsBlock.ofInstructions([]);
+
+  get instructions() {
+    return this.tmpBlock.instructions;
+  }
 
   get lastInstruction() {
     return this.tmpBlock.lastInstruction;
@@ -46,18 +48,13 @@ export class IRCodeSegmentBuilder extends IRSegmentBuilder<IRCodeSegmentBuilderR
    * @memberof IRSegmentBuilder
    */
   emit(instruction: IRInstruction): this {
-    const {tmpBlock} = this;
-    const {instructions} = tmpBlock;
-
-    instructions.push(instruction);
-
-    if (isIRLabeledInstruction(instruction))
-      this.tmpBlock = tmpBlock.ofName(instruction.name);
-    else if (isIRIfInstruction(instruction))
-      this.appendIfBranch(instruction);
-    else if (isIRRetInstruction(instruction))
+    if (isIRFnDeclInstruction(instruction)
+        || isIRLabelInstruction(instruction)) {
       this.flush();
+      this.tmpBlock = this.tmpBlock.ofName(instruction.name);
+    }
 
+    this.instructions.push(instruction);
     return this;
   }
 
@@ -74,35 +71,6 @@ export class IRCodeSegmentBuilder extends IRSegmentBuilder<IRCodeSegmentBuilderR
     return {
       blocks: this.blocks,
     };
-  }
-
-  /**
-   * Creates new code block of tmp and resets actual tmpBlock
-   *
-   * @private
-   * @param {IRIfInstruction} instruction
-   * @memberof IRSegmentBuilder
-   */
-  private appendIfBranch(instruction: IRIfInstruction) {
-    const {tmpBlock, unresolvedBlockBranches} = this;
-    const {ifTrue, ifFalse} = instruction;
-
-    if (!tmpBlock.name)
-      throw new IRError(IRErrorCode.MISSING_BLOCK_NAME);
-
-    const tryResolveJmps = () => ({
-      ifTrue: this.blocks[ifTrue.name],
-      ifFalse: this.blocks[ifFalse?.name],
-    });
-
-    const newBlock = tmpBlock.ofJmps(tryResolveJmps());
-    if (newBlock.hasSatisfiedRelations(instruction)) {
-      unresolvedBlockBranches.push(() => {
-        this.setBlock(newBlock.ofJmps(tryResolveJmps()));
-      });
-    }
-
-    this.tmpBlock = newBlock;
   }
 
   /**
