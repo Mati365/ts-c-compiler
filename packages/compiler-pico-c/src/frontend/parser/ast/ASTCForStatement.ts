@@ -1,15 +1,10 @@
 import {walkOverFields} from '@compiler/grammar/decorators/walkOverFields';
 
 import {NodeLocation} from '@compiler/grammar/tree/NodeLocation';
+import {CScopeTree} from '../../analyze';
 import {ASTCCompilerKind, ASTCCompilerNode} from './ASTCCompilerNode';
+import {IsNewScopeASTNode} from '../../analyze/interfaces';
 
-/**
- * for (...) {}
- *
- * @export
- * @class ASTCWhileStatement
- * @extends {ASTCCompilerNode}
- */
 @walkOverFields(
   {
     fields: [
@@ -20,7 +15,9 @@ import {ASTCCompilerKind, ASTCCompilerNode} from './ASTCCompilerNode';
     ],
   },
 )
-export class ASTCForStatement extends ASTCCompilerNode {
+export class ASTCForStatement extends ASTCCompilerNode implements IsNewScopeASTNode {
+  scope?: CScopeTree;
+
   constructor(
     loc: NodeLocation,
     readonly statement: ASTCCompilerNode,

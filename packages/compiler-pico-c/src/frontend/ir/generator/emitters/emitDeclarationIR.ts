@@ -2,7 +2,6 @@ import {GroupTreeVisitor} from '@compiler/grammar/tree/TreeGroupedVisitor';
 import {
   ASTCCompilerKind,
   ASTCCompilerNode,
-  ASTCDeclaration,
   ASTCDirectDeclarator,
 } from '@compiler/pico-c/frontend/parser';
 
@@ -15,7 +14,7 @@ import {
 } from './types';
 
 type FunctionIREmitAttrs = IREmitterContextAttrs & {
-  node: ASTCDeclaration;
+  node: ASTCCompilerNode;
 };
 
 export function emitDeclarationIR(

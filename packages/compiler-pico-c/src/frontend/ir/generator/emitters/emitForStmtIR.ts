@@ -1,37 +1,55 @@
 import {TokenType} from '@compiler/lexer/shared';
 import {CPrimitiveType} from '@compiler/pico-c/frontend/analyze';
-import {ASTCWhileStatement} from '@compiler/pico-c/frontend/parser';
+import {ASTCForStatement} from '@compiler/pico-c/frontend/parser';
 
 import {
   IRFnDeclInstruction, IRIfInstruction,
   IRJmpInstruction, IRRelInstruction,
-} from '../../../instructions';
+} from '../../instructions';
 
-import {IRConstant} from '../../../variables';
+import {IRConstant} from '../../variables';
 import {
   createBlankStmtResult,
   IREmitterContextAttrs,
   IREmitterStmtResult,
-} from '../types';
+} from './types';
 
-export type WhileStmtIRAttrs = IREmitterContextAttrs & {
-  node: ASTCWhileStatement;
+import {emitDeclarationIR} from './emitDeclarationIR';
+
+export type ForStmtIRAttrs = IREmitterContextAttrs & {
+  node: ASTCForStatement;
   fnDecl: IRFnDeclInstruction;
 };
 
-export function emitWhileStmtIR(
+export function emitForStmtIR(
   {
     scope,
     context,
     node,
     fnDecl,
-  }: WhileStmtIRAttrs,
+  }: ForStmtIRAttrs,
 ): IREmitterStmtResult {
   const {emit, config, factory} = context;
   const {arch} = config;
 
   const result = createBlankStmtResult();
+  const declResult = emitDeclarationIR(
+    {
+      node: node.declaration,
+      scope,
+      context,
+    },
+  );
+
   const logicResult = emit.logicExpression(
+    {
+      scope,
+      context,
+      node: node.condition,
+    },
+  );
+
+  const exprResult = emit.expression(
     {
       scope,
       context,
@@ -54,6 +72,7 @@ export function emitWhileStmtIR(
   );
 
   result.instructions.push(
+    ...declResult.instructions,
     labels.start,
     ...result.instructions,
     ...logicResult.instructions,
@@ -66,6 +85,7 @@ export function emitWhileStmtIR(
       labels.end,
     ),
     ...contentResult.instructions,
+    ...exprResult.instructions,
     new IRJmpInstruction(labels.start),
     labels.end,
   );

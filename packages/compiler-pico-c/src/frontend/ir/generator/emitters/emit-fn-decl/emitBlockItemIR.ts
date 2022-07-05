@@ -2,7 +2,7 @@ import {GroupTreeVisitor} from '@compiler/grammar/tree/TreeGroupedVisitor';
 import {
   ASTCAssignmentExpression, ASTCBlockItemsList, ASTCCompilerKind,
   ASTCCompilerNode, ASTCDeclaration, ASTCDoWhileStatement, ASTCExpression,
-  ASTCExpressionStatement, ASTCIfStatement,
+  ASTCExpressionStatement, ASTCForStatement, ASTCIfStatement,
 } from '@compiler/pico-c/frontend/parser';
 
 import {IRFnDeclInstruction, IRRetInstruction} from '../../../instructions';
@@ -24,6 +24,7 @@ import {emitExpressionStmtIR} from '../emitExpressionStmtIR';
 import {emitExpressionIR} from '../emit-expr';
 import {emitIfStmtIR} from '../emitIfStmtIR';
 import {emitWhileStmtIR, emitDoWhileStmtIR} from '../emit-while-stmt';
+import {emitForStmtIR} from '../emitForStmtIR';
 
 type BlockItemIREmitAttrs = IREmitterContextAttrs & {
   node: ASTCCompilerNode;
@@ -42,6 +43,29 @@ export function emitBlockItemIR(
 
   GroupTreeVisitor.ofIterator<ASTCCompilerNode>(
     {
+      [ASTCCompilerKind.ForStmt]: {
+        enter: (forStmt: ASTCForStatement) => {
+          const nestedContext = {
+            ...context,
+            allocator: context.allocator.ofNestedScopePrefix(),
+          };
+
+          appendStmtResults(
+            emitForStmtIR(
+              {
+                node: forStmt,
+                scope: forStmt.scope,
+                context: nestedContext,
+                fnDecl,
+              },
+            ),
+            result,
+          );
+
+          return false;
+        },
+      },
+
       [ASTCCompilerKind.DoWhileStmt]: {
         enter: (whileStmt: ASTCDoWhileStatement) => {
           appendStmtResults(
@@ -55,6 +79,7 @@ export function emitBlockItemIR(
             ),
             result,
           );
+
           return false;
         },
       },
@@ -72,22 +97,25 @@ export function emitBlockItemIR(
             ),
             result,
           );
+
           return false;
         },
       },
 
       [ASTCCompilerKind.IfStmt]: {
         enter(ifStmtNode: ASTCIfStatement) {
-          const ifStmtResult = emitIfStmtIR(
-            {
-              node: ifStmtNode,
-              scope,
-              context,
-              fnDecl,
-            },
+          appendStmtResults(
+            emitIfStmtIR(
+              {
+                node: ifStmtNode,
+                scope,
+                context,
+                fnDecl,
+              },
+            ),
+            result,
           );
 
-          appendStmtResults(ifStmtResult, result);
           return false;
         },
       },

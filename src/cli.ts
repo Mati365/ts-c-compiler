@@ -3,8 +3,8 @@ import {ccompiler, CCompilerOutput} from '@compiler/pico-c';
 
 ccompiler(/* cpp */ `
   void main() {
-    while(2 > 1) {
-      int a;
+    for (int i = 0; i < 10; ++i) {
+      int a = 3;
     }
   }
 `).match(
