@@ -5,7 +5,7 @@ import {
   ASTCExpressionStatement, ASTCForStatement, ASTCIfStatement,
 } from '@compiler/pico-c/frontend/parser';
 
-import {IRFnDeclInstruction, IRRetInstruction} from '../../../instructions';
+import {IRRetInstruction} from '../../../instructions';
 import {IRError, IRErrorCode} from '../../../errors/IRError';
 
 import {
@@ -28,12 +28,10 @@ import {emitForStmtIR} from '../emitForStmtIR';
 
 type BlockItemIREmitAttrs = IREmitterContextAttrs & {
   node: ASTCCompilerNode;
-  fnDecl: IRFnDeclInstruction;
 };
 
 export function emitBlockItemIR(
   {
-    fnDecl,
     context,
     scope,
     node,
@@ -56,7 +54,6 @@ export function emitBlockItemIR(
                 node: forStmt,
                 scope: forStmt.scope,
                 context: nestedContext,
-                fnDecl,
               },
             ),
             result,
@@ -74,7 +71,6 @@ export function emitBlockItemIR(
                 node: whileStmt,
                 scope,
                 context,
-                fnDecl,
               },
             ),
             result,
@@ -92,7 +88,6 @@ export function emitBlockItemIR(
                 node: whileStmt,
                 scope,
                 context,
-                fnDecl,
               },
             ),
             result,
@@ -110,7 +105,6 @@ export function emitBlockItemIR(
                 node: ifStmtNode,
                 scope,
                 context,
-                fnDecl,
               },
             ),
             result,
@@ -134,7 +128,6 @@ export function emitBlockItemIR(
             appendStmtResults(
               emitBlockItemIR(
                 {
-                  fnDecl,
                   context: nestedContext,
                   scope: blockItemNode.scope,
                   node: child,
@@ -151,7 +144,12 @@ export function emitBlockItemIR(
 
       [ASTCCompilerKind.ReturnStmt]: {
         enter(expr: ASTCExpression) {
-          const canBeStoredInReg = fnDecl.type.returnType.canBeStoredInIntegralReg();
+          const canBeStoredInReg = (
+            context
+              .parent.fnDecl.type.returnType
+              .canBeStoredInIntegralReg()
+          );
+
           let assignResult = emitExpressionIR(
             {
               node: expr,
@@ -174,7 +172,7 @@ export function emitBlockItemIR(
               {
                 stmtResult: result,
                 returnedVar: assignResult.output,
-                rvoOutputVar: fnDecl.outputVarPtr,
+                rvoOutputVar: context.parent.fnDecl.outputVarPtr,
               },
             );
 

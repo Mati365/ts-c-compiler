@@ -14,7 +14,6 @@ export function emitDoWhileStmtIR(
     scope,
     context,
     node,
-    fnDecl,
   }: WhileStmtIRAttrs,
 ): IREmitterStmtResult {
   const {emit, config, factory} = context;
@@ -33,7 +32,6 @@ export function emitDoWhileStmtIR(
   const contentResult = emit.block(
     {
       node: node.statement,
-      fnDecl,
       scope,
       context,
     },

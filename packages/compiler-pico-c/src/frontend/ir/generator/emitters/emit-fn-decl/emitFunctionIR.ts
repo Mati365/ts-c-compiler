@@ -30,8 +30,12 @@ export function emitFunctionIR(
   appendStmtResults(
     emitBlockItemIR(
       {
-        fnDecl,
-        context,
+        context: {
+          ...context,
+          parent: {
+            fnDecl,
+          },
+        },
         scope,
         node: node.content,
       },

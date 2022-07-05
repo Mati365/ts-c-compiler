@@ -1,7 +1,7 @@
 import {CScopeTree} from '@compiler/pico-c/frontend/analyze';
 
 import {IRGeneratorConfig} from '../../constants';
-import {IRInstruction} from '../../instructions';
+import {IRFnDeclInstruction, IRInstruction} from '../../instructions';
 import {IRConstant, IRVariable} from '../../variables';
 import {IRVariableAllocator} from '../IRVariableAllocator';
 
@@ -35,6 +35,9 @@ export type IREmitterContext = {
     identifierGetter: typeof emitIdentifierGetterIR;
     unaryLoadPtrValueIR: typeof emitUnaryLoadPtrValueIR;
     block: typeof emitBlockItemIR;
+  };
+  parent?: {
+    fnDecl?: IRFnDeclInstruction;
   };
 };
 

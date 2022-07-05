@@ -3,8 +3,9 @@ import {CPrimitiveType} from '@compiler/pico-c/frontend/analyze';
 import {ASTCForStatement} from '@compiler/pico-c/frontend/parser';
 
 import {
-  IRFnDeclInstruction, IRIfInstruction,
-  IRJmpInstruction, IRRelInstruction,
+  IRIfInstruction,
+  IRJmpInstruction,
+  IRRelInstruction,
 } from '../../instructions';
 
 import {IRConstant} from '../../variables';
@@ -18,7 +19,6 @@ import {emitDeclarationIR} from './emitDeclarationIR';
 
 export type ForStmtIRAttrs = IREmitterContextAttrs & {
   node: ASTCForStatement;
-  fnDecl: IRFnDeclInstruction;
 };
 
 export function emitForStmtIR(
@@ -26,7 +26,6 @@ export function emitForStmtIR(
     scope,
     context,
     node,
-    fnDecl,
   }: ForStmtIRAttrs,
 ): IREmitterStmtResult {
   const {emit, config, factory} = context;
@@ -65,7 +64,6 @@ export function emitForStmtIR(
   const contentResult = emit.block(
     {
       node: node.statement,
-      fnDecl,
       scope,
       context,
     },

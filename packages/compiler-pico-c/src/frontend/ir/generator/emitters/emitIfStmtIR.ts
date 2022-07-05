@@ -3,8 +3,9 @@ import {CPrimitiveType} from '@compiler/pico-c/frontend/analyze';
 import {ASTCIfStatement} from '@compiler/pico-c/frontend/parser';
 
 import {
-  IRFnDeclInstruction, IRIfInstruction,
-  IRJmpInstruction, IRRelInstruction,
+  IRIfInstruction,
+  IRJmpInstruction,
+  IRRelInstruction,
 } from '../../instructions';
 
 import {IRConstant} from '../../variables';
@@ -17,7 +18,6 @@ import {
 
 export type IfStmtIRAttrs = IREmitterContextAttrs & {
   node: ASTCIfStatement;
-  fnDecl: IRFnDeclInstruction;
 };
 
 export function emitIfStmtIR(
@@ -25,7 +25,6 @@ export function emitIfStmtIR(
     scope,
     context,
     node,
-    fnDecl,
   }: IfStmtIRAttrs,
 ): IREmitterStmtResult {
   const {emit, config, factory} = context;
@@ -49,7 +48,6 @@ export function emitIfStmtIR(
     true: emit.block(
       {
         node: node.trueExpression,
-        fnDecl,
         scope,
         context,
       },
@@ -57,7 +55,6 @@ export function emitIfStmtIR(
     false: emit.block(
       {
         node: node.falseExpression,
-        fnDecl,
         scope,
         context,
       },

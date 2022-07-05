@@ -3,8 +3,9 @@ import {CPrimitiveType} from '@compiler/pico-c/frontend/analyze';
 import {ASTCWhileStatement} from '@compiler/pico-c/frontend/parser';
 
 import {
-  IRFnDeclInstruction, IRIfInstruction,
-  IRJmpInstruction, IRRelInstruction,
+  IRIfInstruction,
+  IRJmpInstruction,
+  IRRelInstruction,
 } from '../../../instructions';
 
 import {IRConstant} from '../../../variables';
@@ -16,7 +17,6 @@ import {
 
 export type WhileStmtIRAttrs = IREmitterContextAttrs & {
   node: ASTCWhileStatement;
-  fnDecl: IRFnDeclInstruction;
 };
 
 export function emitWhileStmtIR(
@@ -24,7 +24,6 @@ export function emitWhileStmtIR(
     scope,
     context,
     node,
-    fnDecl,
   }: WhileStmtIRAttrs,
 ): IREmitterStmtResult {
   const {emit, config, factory} = context;
@@ -47,7 +46,6 @@ export function emitWhileStmtIR(
   const contentResult = emit.block(
     {
       node: node.statement,
-      fnDecl,
       scope,
       context,
     },
