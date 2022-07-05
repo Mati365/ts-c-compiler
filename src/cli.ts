@@ -4,7 +4,14 @@ import {ccompiler, CCompilerOutput} from '@compiler/pico-c';
 ccompiler(/* cpp */ `
   void main() {
     int a = 2;
-    int b = a > 0 && (a > 3 || a > 4);
+
+    if (a > 2 || a > 4) {
+      a = 4;
+    } else if (a > 5) {
+      a = 6;
+    } else {
+      a = 7;
+    }
   }
 `).match(
   {

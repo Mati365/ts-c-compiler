@@ -35,7 +35,7 @@ export function emitUnaryLoadPtrValueIR(
 
   // load pointer pointing
   // todo: Add warn about dereferencing ptr!
-  const exprType = exprResult.output.type;
+  const {type: exprType} = exprResult.output;
   const baseType = (
     isPointerLikeType(exprType)
       ? exprType.baseType

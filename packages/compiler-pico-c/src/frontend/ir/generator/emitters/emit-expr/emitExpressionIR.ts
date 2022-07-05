@@ -35,7 +35,7 @@ import {IRConstant, IRInstructionVarArg, IRVariable} from '../../../variables';
 import {emitIdentifierGetterIR} from '../emitIdentifierGetterIR';
 import {emitIncExpressionIR} from '../emitIncExpressionIR';
 import {emitFnCallExpressionIR} from '../emit-fn-call-expression';
-import {emitLogicExpressionIR} from './emitLogicExpressionIR';
+import {emitLogicBinaryExpressionIR} from './emitLogicBinaryExpressionIR';
 
 export type ExpressionIREmitAttrs = IREmitterContextAttrs & {
   node: ASTCCompilerNode;
@@ -273,8 +273,7 @@ export function emitExpressionIR(
           if (!isLogicOpToken(binary.op))
             return;
 
-
-          const exprResult = emitLogicExpressionIR(
+          const exprResult = emitLogicBinaryExpressionIR(
             {
               node: binary,
               context,

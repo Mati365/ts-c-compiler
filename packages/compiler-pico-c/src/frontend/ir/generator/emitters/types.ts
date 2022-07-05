@@ -14,6 +14,8 @@ import type {emitIdentifierGetterIR} from './emitIdentifierGetterIR';
 import type {emitPointerAddressExpression} from './emitPointerAddressExpression';
 import type {emitUnaryLoadPtrValueIR} from './emitUnaryLoadPointerValueIR';
 import type {IRInstructionFactory} from '../IRInstructionFactory';
+import type {emitLogicExpressionIR} from './emit-expr/emitLogicExpressionIR';
+import type {emitBlockItemIR} from './emit-fn-decl';
 
 export type IRGeneratorSegments = {
   code: IRCodeSegmentBuilder;
@@ -28,9 +30,11 @@ export type IREmitterContext = {
   emit: {
     assignment: typeof emitAssignmentIR,
     expression: typeof emitExpressionIR;
+    logicExpression: typeof emitLogicExpressionIR;
     pointerAddressExpression: typeof emitPointerAddressExpression;
     identifierGetter: typeof emitIdentifierGetterIR;
     unaryLoadPtrValueIR: typeof emitUnaryLoadPtrValueIR;
+    block: typeof emitBlockItemIR;
   };
 };
 

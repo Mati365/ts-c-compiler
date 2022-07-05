@@ -7,10 +7,12 @@ import {
   IRGeneratorSegments,
   emitUnaryLoadPtrValueIR,
   emitFunctionIR,
+  emitLogicExpressionIR,
   emitExpressionIR,
   emitIdentifierGetterIR,
   emitAssignmentIR,
   emitPointerAddressExpression,
+  emitBlockItemIR,
   IRScopeGeneratorResult,
 } from './emitters';
 
@@ -51,10 +53,12 @@ export class IRGeneratorGlobalVisitor extends CScopeVisitor {
       factory: new IRInstructionFactory,
       emit: {
         expression: emitExpressionIR,
+        logicExpression: emitLogicExpressionIR,
         identifierGetter: emitIdentifierGetterIR,
         pointerAddressExpression: emitPointerAddressExpression,
         assignment: emitAssignmentIR,
         unaryLoadPtrValueIR: emitUnaryLoadPtrValueIR,
+        block: emitBlockItemIR,
       },
     };
   }
