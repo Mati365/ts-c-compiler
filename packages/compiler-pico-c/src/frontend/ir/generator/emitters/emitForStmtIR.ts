@@ -76,18 +76,30 @@ export function emitForStmtIR(
     labels.start,
     ...result.instructions,
     ...logicResult.instructions,
-    new IRIfInstruction(
-      new IRRelInstruction(
-        TokenType.EQUAL,
-        logicResult.output,
-        IRConstant.ofConstant(CPrimitiveType.int(arch), 0),
-      ),
-      labels.end,
+    ...(
+      logicResult.output
+        ? [
+          new IRIfInstruction(
+            new IRRelInstruction(
+              TokenType.EQUAL,
+              logicResult.output,
+              IRConstant.ofConstant(CPrimitiveType.int(arch), 0),
+            ),
+            labels.end,
+          ),
+        ]
+        : []
     ),
     ...contentResult.instructions,
     ...exprResult.instructions,
     new IRJmpInstruction(labels.start),
-    labels.end,
+    ...(
+      logicResult.output
+        ? [
+          labels.end,
+        ]
+        : []
+    ),
   );
 
   return result;
