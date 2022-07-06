@@ -13,12 +13,8 @@ describe('If stmt', () => {
       def main():
         if: %2: int2B equal %0: int2B then L1
         a{0}: int*2B = alloca int2B
-        jmp L2:
-        # --- Block L1 ---
-          L1:
-        # --- Block L2 ---
-          L2:
-          ret
+        L1:
+        ret
     `);
   });
 
@@ -44,22 +40,16 @@ describe('If stmt', () => {
         %t{2}: int2B = load a{0}: int*2B
         %t{3}: int2B = load b{0}: int*2B
         %t{4}: int2B = %t{2}: int2B greater_than %t{3}: int2B
-        # --- Block L1 ---
-          L1:
-          if: %t{4}: int2B differs %0: int2B then L2
-          %t{5}: int2B = load b{0}: int*2B
-          %t{6}: int2B = %t{5}: int2B greater_than %1: int2B
-        # --- Block L2 ---
-          L2:
-          %t{7}: int2B = φ(%t{4}: int2B, %t{6}: int2B)
-          if: %t{7}: int2B equal %0: int2B then L3
-          %1_a{0}: int*2B = alloca int2B
-          jmp L4:
-        # --- Block L3 ---
-          L3:
-        # --- Block L4 ---
-          L4:
-          ret
+        L1:
+        if: %t{4}: int2B differs %0: int2B then L2
+        %t{5}: int2B = load b{0}: int*2B
+        %t{6}: int2B = %t{5}: int2B greater_than %1: int2B
+        L2:
+        %t{7}: int2B = φ(%t{4}: int2B, %t{6}: int2B)
+        if: %t{7}: int2B equal %0: int2B then L3
+        %1_a{0}: int*2B = alloca int2B
+        L3:
+        ret
     `);
   });
 
@@ -87,21 +77,16 @@ describe('If stmt', () => {
         %t{1}: int2B = %t{0}: int2B greater_than %2: int2B
         if: %t{1}: int2B equal %0: int2B then L1
         %1_a{0}: int*2B = alloca int2B
-        jmp L2:
-      # --- Block L1 ---
+        jmp L4:
         L1:
         %t{2}: int2B = load b{0}: int*2B
         %t{3}: int2B = %t{2}: int2B greater_than %2: int2B
         if: %t{3}: int2B equal %0: int2B then L3
         %1_b{0}: int*2B = alloca int2B
         jmp L4:
-      # --- Block L3 ---
         L3:
         c{0}: int*2B = alloca int2B
-      # --- Block L4 ---
         L4:
-      # --- Block L2 ---
-        L2:
         ret
     `);
   });

@@ -3,9 +3,8 @@ import {ccompiler, CCompilerOutput} from '@compiler/pico-c';
 
 ccompiler(/* cpp */ `
   void main() {
-    int x = 2;
-    int y = 4;
-    int c = x + y;
+    int a = 2;
+    int b = a > 0 || a*2 > 0;
   }
 `).match(
   {

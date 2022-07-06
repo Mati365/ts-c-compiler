@@ -17,7 +17,6 @@ describe('Example: Strlen', () => {
       def strlen(str{0}: const char**2B): [ret: int2B]
         i{0}: int*2B = alloca int2B
         *(i{0}: int*2B) = store %0: int2B
-      # --- Block L1 ---
         L1:
         %t{2}: const char*2B = load str{0}: const char**2B
         %t{3}: int2B = load i{0}: int*2B
@@ -27,11 +26,7 @@ describe('Example: Strlen', () => {
         if: %t{6}: char1B equal %0: int2B then L3
         %t{7}: int2B = load i{0}: int*2B
         ret %t{7}: int2B
-        jmp L4:
-      # --- Block L3 ---
         L3:
-      # --- Block L4 ---
-        L4:
         %t{0}: int2B = load i{0}: int*2B
         %t{1}: int2B = %t{0}: int2B plus %1: int2B
         *(i{0}: int*2B) = store %t{1}: int2B

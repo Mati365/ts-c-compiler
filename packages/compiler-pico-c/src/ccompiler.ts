@@ -93,16 +93,17 @@ export function ccompiler(
   },
 ) {
   return (
-    cIRCompiler(code, ccompilerConfig).andThen(({timings, ...result}) =>
-      timings.add('compiler', ({tree, scope, ir}: typeof result) => ok(
-        new CCompilerOutput(
-          code,
-          tree,
-          scope,
-          ir,
-          timings.unwrap(),
-        ),
-      ))(result),
-    )
+    cIRCompiler(code, ccompilerConfig)
+      .andThen(({timings, ...result}) =>
+        timings.add('compiler', ({tree, scope, ir}: typeof result) => ok(
+          new CCompilerOutput(
+            code,
+            tree,
+            scope,
+            ir,
+            timings.unwrap(),
+          ),
+        ))(result),
+      )
   );
 }

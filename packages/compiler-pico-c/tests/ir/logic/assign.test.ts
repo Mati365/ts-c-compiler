@@ -19,9 +19,6 @@ describe('Logic assign', () => {
         %t{2}: int2B = load a{0}: int*2B
         %t{3}: int2B = %t{2}: int2B mul %2: int2B
         %t{4}: int2B = %t{3}: int2B greater_than %0: int2B
-
-
-      # --- Block L1 ---
         L1:
         %t{5}: int2B = φ(%t{1}: int2B, %t{4}: int2B)
         *(b{0}: int*2B) = store %t{5}: int2B
@@ -47,7 +44,6 @@ describe('Logic assign', () => {
         %t{2}: int2B = load a{0}: int*2B
         %t{3}: int2B = %t{2}: int2B mul %2: int2B
         %t{4}: int2B = %t{3}: int2B greater_than %0: int2B
-        # --- Block L1 ---
         L1:
         *(b{0}: int*2B) = store %t{4}: int2B
         ret
@@ -74,10 +70,8 @@ describe('Logic assign', () => {
         if: %t{3}: int2B differs %0: int2B then L1
         %t{4}: int2B = load a{0}: int*2B
         %t{5}: int2B = %t{4}: int2B greater_than %4: int2B
-        # --- Block L1 ---
         L1:
         %t{6}: int2B = φ(%t{3}: int2B, %t{5}: int2B)
-        # --- Block L2 ---
         L2:
         *(b{0}: int*2B) = store %t{6}: int2B
         ret

@@ -5,7 +5,7 @@ import {IRInstruction} from './IRInstruction';
 import {IsLabeledInstruction} from '../interfaces/IsLabeledInstruction';
 
 export function isIRLabelInstruction(instruction: IRInstruction): instruction is IRLabelInstruction {
-  return instruction.opcode === IROpcode.LABEL;
+  return instruction?.opcode === IROpcode.LABEL;
 }
 
 /**

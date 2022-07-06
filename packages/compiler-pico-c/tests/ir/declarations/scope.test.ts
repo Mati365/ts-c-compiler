@@ -29,12 +29,8 @@ describe('Declaration scope', () => {
         %t{5}: int2B = load %t{4}: int*2B
         %t{6}: int2B = %t{5}: int2B plus %5: int2B
         *(d{0}: int*2B) = store %t{6}: int2B
-        jmp L2:
-        # --- Block L1 ---
-          L1:
-        # --- Block L2 ---
-          L2:
-          ret
+        L1:
+        ret
     `);
   });
 });

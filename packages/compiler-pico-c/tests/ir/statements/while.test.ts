@@ -11,13 +11,11 @@ describe('While stmt', () => {
     `).toCompiledIRBeEqual(/* ruby */`
       # --- Block main ---
       def main():
-      # --- Block L1 ---
         L1:
         %t{0}: int2B = %2: int2B greater_than %1: int2B
         if: %t{0}: int2B equal %0: int2B then L2
         a{0}: int*2B = alloca int2B
         jmp L1:
-      # --- Block L2 ---
         L2:
         ret
     `);
@@ -33,7 +31,6 @@ describe('While stmt', () => {
     `).toCompiledIRBeEqual(/* ruby */`
       # --- Block main ---
       def main():
-      # --- Block L1 ---
         L1:
         a{0}: int*2B = alloca int2B
         %t{0}: int2B = %2: int2B greater_than %1: int2B

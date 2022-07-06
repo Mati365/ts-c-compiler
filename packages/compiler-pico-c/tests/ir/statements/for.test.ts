@@ -13,7 +13,6 @@ describe('For stmt', () => {
       def main():
         i{0}: int*2B = alloca int2B
         *(i{0}: int*2B) = store %0: int2B
-      # --- Block L1 ---
         L1:
         %t{0}: int2B = load i{0}: int*2B
         %t{1}: int2B = %t{0}: int2B less_than %10: int2B
@@ -24,7 +23,6 @@ describe('For stmt', () => {
         %t{3}: int2B = %t{2}: int2B plus %1: int2B
         *(i{0}: int*2B) = store %t{3}: int2B
         jmp L1:
-      # --- Block L2 ---
         L2:
         ret
     `);

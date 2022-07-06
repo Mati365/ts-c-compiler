@@ -1,5 +1,6 @@
 import chalk from 'chalk';
 import {IROpcode} from '../constants';
+import {HasLabeledBranches} from '../interfaces';
 import {IRInstruction} from './IRInstruction';
 import {IRLabelInstruction} from './IRLabelInstruction';
 
@@ -19,14 +20,32 @@ export function isIRIfInstruction(instruction: IRInstruction): instruction is IR
  * @class IRIfInstruction
  * @extends {IRInstruction}
  * @implements {IRBranchRelations<IRLabelInstruction>}
+ * @implements {HasLabeledBranches}
  */
-export class IRIfInstruction extends IRInstruction implements IRBranchRelations<IRLabelInstruction> {
+export class IRIfInstruction
+  extends IRInstruction
+  implements IRBranchRelations<IRLabelInstruction>, HasLabeledBranches {
+
   constructor(
     readonly expression: IRInstruction,
     readonly ifTrue: IRLabelInstruction,
     readonly ifFalse?: IRLabelInstruction,
   ) {
     super(IROpcode.IF);
+  }
+
+  ofLabels([ifTrue, ifFalse]: IRLabelInstruction[]) {
+    return <this> new IRIfInstruction(
+      this.expression,
+      ifTrue,
+      ifFalse,
+    );
+  }
+
+  getLabels(): IRLabelInstruction[] {
+    const {ifTrue, ifFalse} = this;
+
+    return [ifTrue, ifFalse];
   }
 
   getDisplayName(): string {

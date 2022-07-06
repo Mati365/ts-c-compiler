@@ -2,7 +2,6 @@ import {IRError, IRErrorCode} from '../../errors/IRError';
 import {
   IRInstruction,
   isIRFnDeclInstruction,
-  isIRLabelInstruction,
 } from '../../instructions';
 
 import {IRInstructionsBlock} from '../../instructions/IRInstructionsBlock';
@@ -48,8 +47,7 @@ export class IRCodeSegmentBuilder extends IRSegmentBuilder<IRCodeSegmentBuilderR
    * @memberof IRSegmentBuilder
    */
   emit(instruction: IRInstruction): this {
-    if (isIRFnDeclInstruction(instruction)
-        || isIRLabelInstruction(instruction)) {
+    if (isIRFnDeclInstruction(instruction)) {
       this.flush();
       this.tmpBlock = this.tmpBlock.ofName(instruction.name);
     }
