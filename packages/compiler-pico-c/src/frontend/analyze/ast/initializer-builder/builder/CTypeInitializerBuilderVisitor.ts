@@ -415,11 +415,13 @@ export class CTypeInitializerBuilderVisitor extends CInnerTypeTreeVisitor {
     }
 
     // appending to initializer list
-    const nestedTree = new CVariableInitializerTree(expectedType,  node);
-    for (let i = 0; i < text.length; ++i)
-      nestedTree.fields[i] = text.charCodeAt(i);
-
-    return nestedTree;
+    return CVariableInitializerTree.ofStringLiteral(
+      {
+        baseType: expectedType,
+        parentAST: node,
+        text,
+      },
+    );
   }
 
   /**

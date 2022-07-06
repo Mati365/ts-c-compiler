@@ -49,7 +49,7 @@ export class IRCallInstruction extends IRInstruction implements IsOutputInstruct
       outputVar,
     } = this;
 
-    const argsStr = args.map((arg) => arg.getDisplayName()).join(', ');
+    const argsStr = args.map((arg) => arg?.getDisplayName()).join(', ');
     const str = `${chalk.magentaBright('call')} ${fnPtr.getDisplayName()} :: (${argsStr})`;
 
     if (outputVar)

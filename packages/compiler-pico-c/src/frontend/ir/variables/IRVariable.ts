@@ -69,6 +69,10 @@ export class IRVariable
     return `${prefix}{${suffix}}`;
   }
 
+  isAnonymous() {
+    return R.isNil(this.prefix);
+  }
+
   /**
    * Transform internal type to pointer
    *

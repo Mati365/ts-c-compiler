@@ -38,6 +38,16 @@ export class CVariable extends CNamedTypedEntry<CVariableDescriptor> {
     );
   }
 
+  static ofAnonymousInitializer(initializer: CVariableInitializerTree) {
+    return new CVariable(
+      {
+        type: initializer.getFixedSizeBaseType(),
+        name: null,
+        initializer,
+      },
+    );
+  }
+
   get initializer() { return this.value.initializer; }
 
   isGlobal() { return this.value.global; }

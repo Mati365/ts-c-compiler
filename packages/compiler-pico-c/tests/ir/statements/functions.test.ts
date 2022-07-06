@@ -200,6 +200,29 @@ describe('Functions IR', () => {
     `);
   });
 
+  test('RVO should be applied to literal string arguments', () => {
+    expect(/* cpp*/ `
+      void print(const char* str) {}
+      void main() {
+        print("hello world!");
+      }
+    `).toCompiledIRBeEqual(/* ruby */`
+      # --- Block print ---
+      def print(str{0}: const char**2B):
+        ret
+      # --- Block main ---
+      def main():
+        %t{0}: void print(const char*)*2B = offset print
+        %t{1}: const char**2B = alloca const char*2B
+        %t{2}: const char*2B = lea c{0}: const char[12]12B
+        *(%t{1}: const char**2B) = store %t{2}: const char*2B
+        call %t{0}: void print(const char*)*2B :: (%t{1}: const char**2B)
+        ret
+      # --- Block Data ---
+        c{0}: const char[12]12B = const { 104, 101, 108, 108, 111, 32, 119, 111, 114, 108, 100, 33 }
+    `);
+  });
+
   test('should be possible to return value even with void function', () => {
     expect(/* cpp*/ `
       void main() {

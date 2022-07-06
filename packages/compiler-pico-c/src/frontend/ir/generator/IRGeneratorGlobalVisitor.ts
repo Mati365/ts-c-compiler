@@ -5,6 +5,7 @@ import {ASTCFunctionDefinition} from '../../parser';
 import {
   IREmitterContext,
   IRGeneratorSegments,
+  IRScopeGeneratorResult,
   emitUnaryLoadPtrValueIR,
   emitFunctionIR,
   emitLogicExpressionIR,
@@ -13,7 +14,7 @@ import {
   emitAssignmentIR,
   emitPointerAddressExpression,
   emitBlockItemIR,
-  IRScopeGeneratorResult,
+  emitVariableInitializerIR,
 } from './emitters';
 
 import {IRGeneratorConfig} from '../constants';
@@ -59,6 +60,7 @@ export class IRGeneratorGlobalVisitor extends CScopeVisitor {
         assignment: emitAssignmentIR,
         unaryLoadPtrValueIR: emitUnaryLoadPtrValueIR,
         block: emitBlockItemIR,
+        initializer: emitVariableInitializerIR,
       },
     };
   }

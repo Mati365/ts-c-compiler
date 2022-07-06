@@ -6,9 +6,9 @@ import {
   isInitializerTreeValue,
 } from '@compiler/pico-c/frontend/analyze';
 
-import {IREmitterContextAttrs} from '../types';
+import {appendStmtResults, createBlankStmtResult, IREmitterContextAttrs, IREmitterStmtResult} from '../types';
 import {IRError, IRErrorCode} from '../../../errors/IRError';
-import {IRInstruction, IRStoreInstruction} from '../../../instructions';
+import {IRStoreInstruction} from '../../../instructions';
 import {IRConstant, IRVariable, isIRVariable} from '../../../variables';
 
 import {emitExpressionIR} from '../emit-expr';
@@ -28,9 +28,9 @@ export function emitVariableLoadInitializerIR(
     scope,
     context,
   }: LoadInitializerIREmitAttrs,
-): IRInstruction[] {
+): IREmitterStmtResult {
   const {allocator} = context;
-  const instructions: IRInstruction[] = [];
+  const result = createBlankStmtResult();
 
   let offset: number = 0;
 
@@ -54,24 +54,24 @@ export function emitVariableLoadInitializerIR(
         },
       );
 
-      instructions.push(...exprResult.instructions);
+      appendStmtResults(exprResult, result);
 
       // do not emit store if RVO optimized fn call result is present
       if (!isIRVariable(exprResult.output) || !destVar.isShallowEqual(exprResult.output)) {
-        instructions.push(
+        result.instructions.push(
           new IRStoreInstruction(exprResult.output, destVar, offset),
         );
       }
     } else if (R.is(String, initializer)) {
       const argVar = allocator.getVariable(initializer);
 
-      instructions.push(
+      result.instructions.push(
         new IRStoreInstruction(argVar, destVar, offset),
       );
     } else if (!R.isNil(initializer)) {
       // int abc[3] = { 1, 2, 3}
       // constant literals are of type 1
-      instructions.push(
+      result.instructions.push(
         new IRStoreInstruction(
           IRConstant.ofConstant(initializerType, initializer),
           destVar,
@@ -83,5 +83,5 @@ export function emitVariableLoadInitializerIR(
     offset += initializerType.getByteSize();
   });
 
-  return instructions;
+  return result;
 }

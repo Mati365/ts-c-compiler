@@ -15,8 +15,9 @@ import {
 
 import {
   IREmitterContextAttrs,
-  IREmitterStmtResult,
-  createBlankStmtResult,
+  IREmitterExpressionResult,
+  appendStmtResults,
+  createBlankExprResult,
 } from '../types';
 
 import {emitVariableLoadInitializerIR} from './emitVariableLoadInitializerIR';
@@ -42,9 +43,9 @@ export function emitVariableInitializerIR(
     context,
     variable,
   }: InitializerIREmitAttrs,
-): IREmitterStmtResult {
+): IREmitterExpressionResult {
   const {allocator, config} = context;
-  const result: IREmitterStmtResult = createBlankStmtResult();
+  const result = createBlankExprResult();
 
   const {instructions, data} = result;
   const {type, initializer} = variable;
@@ -90,11 +91,16 @@ export function emitVariableInitializerIR(
         new IRLeaInstruction(constArrayVar, tmpLeaAddressVar),
         new IRStoreInstruction(tmpLeaAddressVar, rootIRVar),
       );
+
+      result.output = rootIRVar;
     } else {
-      allocator.allocAsPointer(variable, (allocatedVar) => {
+      result.output = allocator.allocAsPointer(variable, (allocatedVar) => {
         instructions.push(
           IRAllocInstruction.ofDestPtrVariable(allocatedVar),
-          ...emitVariableLoadInitializerIR(
+        );
+
+        appendStmtResults(
+          emitVariableLoadInitializerIR(
             {
               scope,
               context,
@@ -102,15 +108,15 @@ export function emitVariableInitializerIR(
               destVar: allocatedVar,
             },
           ),
+          result,
         );
       });
     }
   } else {
     // uninitialized variable
-    const rootIRVar = allocator.allocAsPointer(variable);
-
+    result.output = allocator.allocAsPointer(variable);
     instructions.push(
-      IRAllocInstruction.ofDestPtrVariable(rootIRVar),
+      IRAllocInstruction.ofDestPtrVariable(result.output),
     );
   }
 

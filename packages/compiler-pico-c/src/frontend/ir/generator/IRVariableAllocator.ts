@@ -116,6 +116,14 @@ export class IRVariableAllocator {
     if (variable instanceof CVariable)
       variable = IRVariable.ofScopeVariable(variable);
 
+    if (variable.isAnonymous()) {
+      return this.allocTmpVariable(
+        variable.ofPointerType().type,
+        TMP_VAR_PREFIX,
+        initializer,
+      );
+    }
+
     return this.allocVariable(variable.ofPointerType(), initializer);
   }
 
@@ -144,7 +152,11 @@ export class IRVariableAllocator {
    * @return {IRVariable}
    * @memberof IRVariableAllocator
    */
-  allocTmpVariable(type: CType, prefix: string = TMP_VAR_PREFIX): IRVariable {
+  allocTmpVariable(
+    type: CType,
+    prefix: string = TMP_VAR_PREFIX,
+    initializer?: IRVariableInitializerFn,
+  ): IRVariable {
     const {parent} = this;
     if (parent)
       return parent.allocTmpVariable(type, prefix);
@@ -162,6 +174,7 @@ export class IRVariableAllocator {
       tmpVar
         .ofType(type)
         .ofIncrementedSuffix(),
+      initializer,
     );
   }
 

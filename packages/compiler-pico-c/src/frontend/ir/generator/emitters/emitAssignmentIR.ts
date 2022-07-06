@@ -2,14 +2,16 @@ import {ASTCAssignmentExpression} from '@compiler/pico-c/frontend/parser';
 import {CAssignOperator, CCOMPILER_ASSIGN_MATH_OPERATORS} from '@compiler/pico-c/constants';
 
 import {
-  IRInstruction,
   IRLoadInstruction,
   IRMathInstruction,
   IRStoreInstruction,
 } from '../../instructions';
 
-import {IRInstructionVarArg, isIRVariable} from '../../variables';
-import {IREmitterContextAttrs, IREmitterExpressionResult} from './types';
+import {isIRVariable} from '../../variables';
+import {
+  appendStmtResults, createBlankExprResult,
+  IREmitterContextAttrs, IREmitterExpressionResult,
+} from './types';
 
 import {emitIdentifierGetterIR} from './emitIdentifierGetterIR';
 import {emitExpressionIR} from './emit-expr';
@@ -28,7 +30,8 @@ export function emitAssignmentIR(
   const {allocator} = context;
   const {operator} = node;
 
-  const instructions: IRInstruction[] = [];
+  // const instructions: IRInstruction[] = [];
+  const result = createBlankExprResult();
   const lvalue = emitIdentifierGetterIR(
     {
       node: node.unaryExpression,
@@ -47,21 +50,18 @@ export function emitAssignmentIR(
     },
   );
 
-  instructions.push(
-    ...lvalue.instructions,
-    ...rvalue.instructions,
-  );
+  appendStmtResults(lvalue, result);
+  appendStmtResults(rvalue, result);
 
-  let assignResult: IRInstructionVarArg = null;
   if (operator === CAssignOperator.ASSIGN) {
     // int abc = 5;
-    assignResult = rvalue.output;
+    result.output = rvalue.output;
   } else  {
     // other operators such like: abc *= 2;
     const irSrcVar = allocator.allocTmpVariable(rvalueType);
     const tmpResultVar = allocator.allocTmpVariable(rvalueType);
 
-    instructions.push(
+    result.instructions.push(
       new IRLoadInstruction(lvalue.output, irSrcVar),
       new IRMathInstruction(
         CCOMPILER_ASSIGN_MATH_OPERATORS[operator],
@@ -71,18 +71,15 @@ export function emitAssignmentIR(
       ),
     );
 
-    assignResult = tmpResultVar;
+    result.output = tmpResultVar;
   }
 
   // prevent assign like a = a
-  if (!isIRVariable(assignResult) || !assignResult.isShallowEqual(lvalue.output)) {
-    instructions.push(
-      new IRStoreInstruction(assignResult, lvalue.output),
+  if (!isIRVariable(result.output) || !result.output.isShallowEqual(lvalue.output)) {
+    result.instructions.push(
+      new IRStoreInstruction(result.output, lvalue.output),
     );
   }
 
-  return {
-    output: assignResult,
-    instructions,
-  };
+  return result;
 }

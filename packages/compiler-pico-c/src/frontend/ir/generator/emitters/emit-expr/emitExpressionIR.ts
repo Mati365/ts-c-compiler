@@ -10,6 +10,8 @@ import {
   CPointerType,
   CPrimitiveType,
   CType,
+  CVariable,
+  CVariableInitializerTree,
   isPointerArithmeticType,
   isPointerLikeType,
 } from '@compiler/pico-c/frontend/analyze';
@@ -22,11 +24,13 @@ import {
 } from '@compiler/pico-c/frontend/parser';
 
 import {GroupTreeVisitor} from '@compiler/grammar/tree/TreeGroupedVisitor';
-import {IREmitterContextAttrs, IREmitterExpressionResult} from '../types';
+import {appendStmtResults, createBlankExprResult, IREmitterContextAttrs, IREmitterExpressionResult} from '../types';
 
 import {
-  IRInstruction, IRLabelOffsetInstruction,
-  IRLeaInstruction, IRLoadInstruction, IRMathInstruction,
+  IRLabelOffsetInstruction,
+  IRLeaInstruction,
+  IRLoadInstruction,
+  IRMathInstruction,
 } from '../../../instructions';
 
 import {IRError, IRErrorCode} from '../../../errors/IRError';
@@ -52,7 +56,8 @@ export function emitExpressionIR(
   const {allocator, emit, config} = context;
   const {arch} = config;
 
-  const instructions: IRInstruction[] = [];
+  const result = createBlankExprResult();
+  const {instructions} = result;
   let argsVarsStack: IRInstructionVarArg[] = [];
 
   const allocNextVariable = (nextType: CType = node.type) => {
@@ -61,9 +66,9 @@ export function emitExpressionIR(
     return irVariable;
   };
 
-  const emitExprResultToStack = (result: IREmitterExpressionResult) => {
-    instructions.push(...result.instructions);
-    argsVarsStack.push(result.output);
+  const emitExprResultToStack = (exprResult: IREmitterExpressionResult) => {
+    appendStmtResults(exprResult, result);
+    argsVarsStack.push(exprResult.output);
   };
 
   GroupTreeVisitor.ofIterator<ASTCCompilerNode>(
@@ -214,7 +219,29 @@ export function emitExpressionIR(
 
       [ASTCCompilerKind.PrimaryExpression]: {
         enter(expression: ASTCPrimaryExpression) {
-          if (expression.isCharLiteral()) {
+          if (expression.isStringLiteral()) {
+            // handle "hello world" passed as arg to function
+            const variable = CVariable.ofAnonymousInitializer(
+              CVariableInitializerTree.ofStringLiteral(
+                {
+                  baseType: expression.type,
+                  parentAST: expression,
+                  text: expression.stringLiteral,
+                },
+              ),
+            );
+
+            const initializerResult = emit.initializer(
+              {
+                scope,
+                context,
+                variable,
+              },
+            );
+
+            appendStmtResults(initializerResult, result);
+            argsVarsStack.push(initializerResult.output);
+          } else if (expression.isCharLiteral()) {
             // handle 'a'
             argsVarsStack.push(
               IRConstant.ofConstant(
@@ -382,7 +409,7 @@ export function emitExpressionIR(
 
   const lastArgVarStack = R.last(argsVarsStack);
   return {
+    ...result,
     output: lastArgVarStack,
-    instructions,
   };
 }

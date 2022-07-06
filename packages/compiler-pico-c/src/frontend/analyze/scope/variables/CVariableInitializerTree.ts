@@ -21,6 +21,12 @@ export function isInitializerTreeValue(value: CVariableInitializeValue): value i
   return R.is(Object, value) && R.has('_baseType', value);
 }
 
+type CVariableStringInitializerAttrs<C> = {
+  baseType: CType,
+  parentAST: C,
+  text: string,
+};
+
 /**
  * Recursive map structure of type initializer
  *
@@ -33,14 +39,33 @@ export class CVariableInitializerTree<C extends ASTCCompilerNode = ASTCCompilerN
   constructor(
     protected readonly _baseType: CType,
     protected readonly _parentAST: C,
-    protected _fields: CVariableInitializerFields = [],
+    protected _fields: CVariableInitializerFields = null,
   ) {
-    this.fill(null);
+    if (!_fields)
+      this.fill(null);
   }
 
   get parentAST() { return this._parentAST; }
   get baseType() { return this._baseType; }
   get fields() { return this._fields; }
+
+  static ofStringLiteral<C extends ASTCCompilerNode>(
+    {
+      baseType,
+      parentAST,
+      text,
+    }: CVariableStringInitializerAttrs<C>,
+  ) {
+    const fields: CVariableInitializerFields = [];
+    for (let i = 0; i < text.length; ++i)
+      fields[i] = text.charCodeAt(i);
+
+    return new CVariableInitializerTree(
+      baseType,
+      parentAST,
+      fields,
+    );
+  }
 
   fill(value: CVariableInitializeValue) {
     this._fields = new Array(this.scalarValuesCount).fill(value);

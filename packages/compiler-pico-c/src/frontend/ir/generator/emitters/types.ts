@@ -16,6 +16,7 @@ import type {emitUnaryLoadPtrValueIR} from './emitUnaryLoadPointerValueIR';
 import type {IRInstructionFactory} from '../IRInstructionFactory';
 import type {emitLogicExpressionIR} from './emit-expr/emitLogicExpressionIR';
 import type {emitBlockItemIR} from './emit-fn-decl';
+import type {emitVariableInitializerIR} from './emit-initializer';
 
 export type IRGeneratorSegments = {
   code: IRCodeSegmentBuilder;
@@ -35,6 +36,7 @@ export type IREmitterContext = {
     identifierGetter: typeof emitIdentifierGetterIR;
     unaryLoadPtrValueIR: typeof emitUnaryLoadPtrValueIR;
     block: typeof emitBlockItemIR;
+    initializer: typeof emitVariableInitializerIR;
   };
   parent?: {
     fnDecl?: IRFnDeclInstruction;
