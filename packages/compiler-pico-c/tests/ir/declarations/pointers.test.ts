@@ -169,7 +169,7 @@ describe('Pointer declarations IR', () => {
         # --- Block main ---
         def main():
           fun_ptr{0}: int(int, int)**2B = alloca int(int, int)*2B
-          %t{3}: int sum(int, int)*2B = offset sum
+          %t{3}: int sum(int, int)*2B = label-offset sum
           *(fun_ptr{0}: int(int, int)**2B) = store %t{3}: int sum(int, int)*2B
           fun_ptr2{0}: int(int, int)**2B = alloca int(int, int)*2B
           *(fun_ptr2{0}: int(int, int)**2B) = store %t{3}: int sum(int, int)*2B

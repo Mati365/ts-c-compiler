@@ -50,6 +50,6 @@ export class IRLabelOffsetInstruction extends IRInstruction implements IsOutputI
       outputVar,
     } = this;
 
-    return `${outputVar.getDisplayName()} = ${chalk.yellowBright('offset')} ${labelInstruction.name}`;
+    return `${outputVar.getDisplayName()} = ${chalk.yellowBright('label-offset')} ${labelInstruction.name}`;
   }
 }

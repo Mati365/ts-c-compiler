@@ -17,6 +17,7 @@ export type IRVariableDescriptor = {
   suffix: number;
   type: CType;
   volatile?: boolean;
+  constInitialized?: boolean;
   virtualArrayPtr?: boolean;
 };
 
@@ -59,6 +60,7 @@ export class IRVariable
     );
   }
 
+  get constInitialized() { return this.value.constInitialized; }
   get type() { return this.value.type; }
   get prefix() { return this.value.prefix; }
   get virtualArrayPtr() { return this.value.virtualArrayPtr; }
@@ -71,6 +73,18 @@ export class IRVariable
 
   isAnonymous() {
     return R.isNil(this.prefix);
+  }
+
+  /**
+   * Indicates that variable is initialized .data
+   *
+   * @return {IRVariable}
+   * @memberof IRVariable
+   */
+  ofConstInitialized(): IRVariable {
+    return this.map(
+      R.assoc('constInitialized', true),
+    );
   }
 
   /**
