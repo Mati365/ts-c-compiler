@@ -5,19 +5,19 @@ import {
 } from '@compiler/core/utils';
 
 import {TreePrintVisitor} from '@compiler/grammar/tree/TreePrintVisitor';
-import {CCompilerTimings} from './utils/createCCompilerTimings';
-import {CCompilerConfig, CCompilerArch} from '../constants/config';
+import {CCompilerTimings} from './frontend/utils/createCCompilerTimings';
+import {CCompilerConfig, CCompilerArch} from './constants/config';
 
-import {ASTCCompilerNode} from './parser/ast';
-import {IRResultView, IRCodeBuilderResult} from './ir';
+import {ASTCCompilerNode} from './frontend/parser/ast';
+import {IRResultView, IRCodeBuilderResult} from './frontend/ir';
 
-import {isNewScopeASTNode} from './analyze/interfaces';
+import {isNewScopeASTNode} from './frontend/analyze/interfaces';
 import {
   CScopeTree,
   CScopePrintVisitor,
-} from './analyze';
+} from './frontend/analyze';
 
-import {cIRCompiler} from './cIRcompiler';
+import {cIRCompiler} from './frontend/cIRcompiler';
 
 /**
  * Output of compilation

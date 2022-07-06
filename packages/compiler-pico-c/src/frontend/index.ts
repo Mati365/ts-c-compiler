@@ -1,2 +1,2 @@
 export * from './parser/ast';
-export * from './ccompiler';
+export * from './cIRcompiler';
