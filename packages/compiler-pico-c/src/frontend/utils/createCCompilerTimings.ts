@@ -14,9 +14,10 @@ export function createCCompilerTimings() {
       analyze: 0,
       ir: 0,
       optimizer: 0,
-      compiler: 0,
+      codegen: 0,
     },
   );
 }
 
+export type CCompilerTimer = ReturnType<typeof createCCompilerTimings>;
 export type CCompilerTimings = ReturnType<ReturnType<typeof createCCompilerTimings>['unwrap']>;

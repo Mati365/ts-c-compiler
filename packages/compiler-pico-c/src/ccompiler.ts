@@ -5,7 +5,7 @@ import {
 } from '@compiler/core/utils';
 
 import {TreePrintVisitor} from '@compiler/grammar/tree/TreePrintVisitor';
-import {CCompilerTimings} from './frontend/utils/createCCompilerTimings';
+import {CCompilerTimings, createCCompilerTimings} from './frontend/utils/createCCompilerTimings';
 import {CCompilerConfig, CCompilerArch} from './constants/config';
 
 import {ASTCCompilerNode} from './frontend/parser/ast';
@@ -17,7 +17,8 @@ import {
   CScopePrintVisitor,
 } from './frontend/analyze';
 
-import {cIRCompiler} from './frontend/cIRcompiler';
+import {cIRCompiler} from './frontend';
+import {CBackendCompilerResult, genASMIRCode} from './backend';
 
 /**
  * Output of compilation
@@ -31,6 +32,7 @@ export class CCompilerOutput {
     readonly ast: ASTCCompilerNode,
     readonly scope: CScopeTree,
     readonly ir: IRCodeBuilderResult,
+    readonly codegen: CBackendCompilerResult,
     readonly timings: CCompilerTimings,
   ) {}
 
@@ -92,18 +94,34 @@ export function ccompiler(
     },
   },
 ) {
+  const timings = createCCompilerTimings();
+
   return (
-    cIRCompiler(code, ccompilerConfig)
-      .andThen(({timings, ...result}) =>
-        timings.add('compiler', ({tree, scope, ir}: typeof result) => ok(
-          new CCompilerOutput(
-            code,
-            tree,
-            scope,
+    cIRCompiler(
+      code,
+      {
+        ...ccompilerConfig,
+        timings,
+      },
+    )
+      .andThen(
+        timings.add(
+          'codegen',
+          ({ir, ...result}) => genASMIRCode(ccompilerConfig, ir).andThen((codegen) => ok({
+            ...result,
+            codegen,
             ir,
-            timings.unwrap(),
-          ),
-        ))(result),
+          }))),
       )
+      .andThen(({tree, scope, ir, codegen}) => ok(
+        new CCompilerOutput(
+          code,
+          tree,
+          scope,
+          ir,
+          codegen,
+          timings.unwrap(),
+        ),
+      ))
   );
 }

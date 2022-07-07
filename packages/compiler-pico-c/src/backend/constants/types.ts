@@ -1,3 +1,3 @@
-export type CBackendCompileResult = {
+export type CBackendCompilerResult = {
   asm: string;
 };

@@ -4,8 +4,8 @@ import {X86ArchBackend} from '../arch/x86';
 import {CCompilerArch, CCompilerConfig} from '../constants';
 import {IRScopeGeneratorResult} from '../frontend/ir/generator';
 import {CAbstractArchBackend} from './abstract/CAbstractArchBackend';
-import {CBackendCompileResult} from './constants/types';
-import {CBackendErrorCode} from './errors/CBackendError';
+import {CBackendCompilerResult} from './constants/types';
+import {CBackendError, CBackendErrorCode} from './errors/CBackendError';
 
 type CAbstractBackendConstructor = {
   new (config: CCompilerConfig): CAbstractArchBackend,
@@ -18,7 +18,7 @@ const CCOMPILER_ARCH_BACKENDS: Record<CCompilerArch, CAbstractBackendConstructor
 export function genASMIRCode(
   config: CCompilerConfig,
   ir: IRScopeGeneratorResult,
-): Result<CBackendCompileResult, CBackendErrorCode[]> {
+): Result<CBackendCompilerResult, CBackendError[]> {
   try {
     const CompilerBackend = CCOMPILER_ARCH_BACKENDS[config.arch];
 
