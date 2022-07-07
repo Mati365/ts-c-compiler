@@ -24,7 +24,10 @@ import {
 } from '@compiler/pico-c/frontend/parser';
 
 import {GroupTreeVisitor} from '@compiler/grammar/tree/TreeGroupedVisitor';
-import {appendStmtResults, createBlankExprResult, IREmitterContextAttrs, IREmitterExpressionResult} from '../types';
+import {
+  appendStmtResults, createBlankExprResult,
+  IREmitterContextAttrs, IREmitterExpressionResult,
+} from '../types';
 
 import {
   IRLabelOffsetInstruction,

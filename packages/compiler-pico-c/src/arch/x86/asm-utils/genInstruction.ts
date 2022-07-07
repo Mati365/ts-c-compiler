@@ -1,17 +1,9 @@
 import * as R from 'ramda';
 
 import {X86PrefixName} from '@x86-toolkit/assembler';
-import {EmitterResult} from '../constants/types/emitter';
+import {EmitterResult} from '../constants/types';
 
-/**
- * Emits single instruction
- *
- * @export
- * @param {([X86PrefixName, string] | string)} mnemonic
- * @param {(...(number | string | EmitterResult)[])} args
- * @returns {EmitterResult}
- */
-export function emitInstruction(
+export function genInstruction(
   mnemonic: [X86PrefixName, string] | string,
   ...args: (number | string | EmitterResult)[]
 ): EmitterResult {

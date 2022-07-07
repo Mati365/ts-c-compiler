@@ -1,19 +1,12 @@
 import {EmitterResult} from '../constants/types';
 
-/**
- * Merges multiple instructions into block
- *
- * @export
- * @param {InstructionsBlockEmitterConfig} config
- * @param {EmitterResult[]} results
- */
-type InstructionsBlockEmitterConfig = {
+type InstructionsBlockGeneratorConfig = {
   padLeft?: number,
   separator?: string,
 };
 
-export function emitInstructionsBlock(
-  config: InstructionsBlockEmitterConfig,
+export function genInstructionsBlock(
+  config: InstructionsBlockGeneratorConfig,
   results: EmitterResult[],
 ) {
   const {

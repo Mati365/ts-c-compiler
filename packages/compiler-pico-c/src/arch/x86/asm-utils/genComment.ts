@@ -7,7 +7,7 @@ import {EmitterResult} from '../constants/types';
  * @param {string} msg
  * @returns {EmitterResult}
  */
-export function emitComment(msg: string): EmitterResult {
+export function genComment(msg: string): EmitterResult {
   return {
     code: `; ${msg}`,
   };

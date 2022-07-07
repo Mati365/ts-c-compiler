@@ -5,29 +5,18 @@ import {
 
 import {EmitterResult} from '../constants/types';
 
-/**
- * Emits single address instruction
- *
- * @export
- * @param {AddressEmitterConfig} {
- *     size,
- *     segment,
- *     expression,
- *   }
- * @returns {EmitterResult}
- */
-type AddressEmitterConfig = {
+type GenMemAddressConfig = {
   size?: InstructionArgSizeName,
   segment?: X86SegmentRegName,
   expression: string,
 };
 
-export function emitMemAddress(
+export function genMemAddress(
   {
     size,
     segment,
     expression,
-  }: AddressEmitterConfig,
+  }: GenMemAddressConfig,
 ): EmitterResult {
   let output = expression;
 

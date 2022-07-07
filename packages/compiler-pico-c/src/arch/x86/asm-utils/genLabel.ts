@@ -1,5 +1,5 @@
 import {genUUID} from '@compiler/core/utils';
-import {EmitterResult} from '../constants/types/emitter';
+import {EmitterResult} from '../constants/types';
 
 export type EmitterLabelResult = EmitterResult & {
   uuid: string,

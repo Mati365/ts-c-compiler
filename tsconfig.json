@@ -28,9 +28,6 @@
       "@x86-toolkit/cpu": ["x86-toolkit/x86-cpu/src/"],
       "@x86-toolkit/cpu/*": ["x86-toolkit/x86-cpu/src/*"],
 
-      "@x86-toolkit/codegen": ["x86-toolkit/x86-codegen/src/"],
-      "@x86-toolkit/codegen/*": ["x86-toolkit/x86-codegen/src/*"],
-
       "@compiler/pico-c": ["compiler-pico-c/src/"],
       "@compiler/pico-c/*": ["compiler-pico-c/src/*"]
     }

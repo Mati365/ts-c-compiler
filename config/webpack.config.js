@@ -106,7 +106,6 @@ const createConfig = (
       '@compiler/pico-c': pkgResolve('compiler-pico-c/src'),
       '@x86-toolkit/cpu': pkgResolve('x86-toolkit/x86-cpu/src'),
       '@x86-toolkit/assembler': pkgResolve('x86-toolkit/x86-assembler/src/'),
-      '@x86-toolkit/codegen': pkgResolve('x86-toolkit/x86-codegen/src/'),
       '@ui/context-state': pkgResolve('ui-context-state/src'),
       '@ui/webapp': pkgResolve('ui-webapp/src'),
       '@client': srcResolve('client'),

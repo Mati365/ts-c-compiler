@@ -1,4 +1,4 @@
-import {SizeofPrimitiveTypeFn} from './utils';
+export type SizeofPrimitiveTypeFn = (specifiers: number) => number;
 
 export type CArchRegsInfo = {
   integral: {

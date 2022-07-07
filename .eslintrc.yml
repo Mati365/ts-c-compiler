@@ -16,7 +16,6 @@
           ['@compiler/rpn', './packages/compiler-rpn/src/'],
           ['@x86-toolkit/assembler', './packages/x86-toolkit/x86-assembler/src/'],
           ['@x86-toolkit/cpu', './packages/x86-toolkit/x86-cpu/src'],
-          ['@x86-toolkit/codegen', './packages/x86-toolkit/x86-codegen/src'],
           ['@compiler/pico-c', './packages/compiler-pico-c/src/']
         ],
         extensions: ['.js', '.ts', '.tsx', '.scss', '.json']
