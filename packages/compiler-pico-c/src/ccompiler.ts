@@ -1,9 +1,12 @@
 import {ok} from '@compiler/core/monads/Result';
+import {asm} from '@x86-toolkit/assembler/asm';
+
 import {
   dumpAttributesToString,
   timingsToString,
 } from '@compiler/core/utils';
 
+import {TableBinaryView} from '@x86-toolkit/assembler/parser/compiler/view/TableBinaryView';
 import {TreePrintVisitor} from '@compiler/grammar/tree/TreePrintVisitor';
 import {CCompilerTimings, createCCompilerTimings} from './frontend/utils/createCCompilerTimings';
 import {CCompilerConfig, CCompilerArch} from './constants/config';
@@ -52,7 +55,10 @@ export class CCompilerOutput {
   }
 
   dump() {
-    const {scope, code, ir, timings, ast} = this;
+    const {
+      scope, code, ir,
+      timings, ast, codegen,
+    } = this;
 
     console.info(
       [
@@ -67,7 +73,15 @@ export class CCompilerOutput {
         '\nIR:',
         '',
         IRResultView.serializeToString(ir),
-        '\n',
+        '\nCodegen:',
+        '',
+        codegen.asm,
+        '\nAssembly:',
+        '',
+        TableBinaryView.serializeToString(
+          asm(codegen.asm, {preprocessor: false}),
+        ),
+        '',
       ].join('\n'),
     );
   }

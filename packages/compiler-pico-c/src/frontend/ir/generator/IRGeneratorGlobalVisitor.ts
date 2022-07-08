@@ -73,6 +73,7 @@ export class IRGeneratorGlobalVisitor extends CScopeVisitor {
    */
   flush(): IRScopeGeneratorResult {
     const {
+      allocator,
       segments: {
         code,
         data,
@@ -80,6 +81,7 @@ export class IRGeneratorGlobalVisitor extends CScopeVisitor {
     } = this;
 
     return {
+      allocator,
       segments: {
         code: code.flush(),
         data: data.flush(),

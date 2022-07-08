@@ -82,6 +82,39 @@ export class TableBinaryView extends BinaryView<JMPTableEntry[]> {
   }
 
   /**
+   * Compile whole instructions graph into string
+   *
+   * @static
+   * @param {CompilerFinalResult} result
+   * @return {string}
+   * @memberof TableBinaryView
+   */
+  static serializeToString(result: CompilerFinalResult): string {
+    return (
+      new TableBinaryView(result)
+        .serialize()
+        .map(
+          ({jmpGraph, blob, offset}) => {
+            const prefix = `0x${offset.toString(16).padStart(6, '0')}${jmpGraph}  `;
+            const binary = (
+              blob
+                .toString()
+                .map((str, index) => (
+                  index > 0
+                    ? new Array(prefix.length + 1).join(' ') + str
+                    : str
+                ))
+                .join('\n')
+            );
+
+            return `${prefix}${binary}`;
+          },
+        )
+        .join('\n')
+    );
+  }
+
+  /**
    * Draws lines over map
    *
    * @param {SerializedBlobsOffsets} serializedOffsets

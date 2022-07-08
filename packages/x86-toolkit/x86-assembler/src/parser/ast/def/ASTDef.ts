@@ -35,7 +35,7 @@ export function tokenDefSize(token: string | Token): number {
     return DefTokenNames[token.upperText];
   }
 
-  return DefTokenNames[R.toUpper(token)] ?? null;
+  return DefTokenNames[token.toUpperCase()] ?? null;
 }
 
 /**

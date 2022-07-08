@@ -69,6 +69,7 @@ export type IREmitterExpressionResult = IREmitterStmtResult & {
 };
 
 export type IRScopeGeneratorResult = {
+  allocator: IRVariableAllocator;
   segments: {
     code: IRCodeSegmentBuilderResult;
     data: IRDataSegmentBuilderResult;
