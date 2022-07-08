@@ -26,3 +26,4 @@ export * from './serializers';
 export * from './dropNewLines';
 export * from './padLeftLines';
 export * from './trimLines';
+export * from './assertUnreachable';

@@ -1,5 +1,9 @@
-export type EmitterResult = {
-  code: string,
+import type {X86Allocator} from '../backend/X86Allocator';
+
+export type BackendCompilerContext = {
+  allocator: X86Allocator;
 };
 
-export type EmitterListResult = EmitterResult | EmitterResult[];
+export type CompilerFnAttrs = {
+  context: BackendCompilerContext;
+};

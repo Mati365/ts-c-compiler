@@ -3,8 +3,6 @@ import {
   InstructionArgSizeName,
 } from '@x86-toolkit/assembler';
 
-import {EmitterResult} from '../constants/types';
-
 type GenMemAddressConfig = {
   size?: InstructionArgSizeName,
   segment?: X86SegmentRegName,
@@ -17,7 +15,7 @@ export function genMemAddress(
     segment,
     expression,
   }: GenMemAddressConfig,
-): EmitterResult {
+): string {
   let output = expression;
 
   if (segment)
@@ -28,7 +26,5 @@ export function genMemAddress(
   if (size)
     output = `${size} ${output}`;
 
-  return {
-    code: output,
-  };
+  return output;
 }
