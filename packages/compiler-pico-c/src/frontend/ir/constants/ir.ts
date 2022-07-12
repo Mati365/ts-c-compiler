@@ -10,6 +10,7 @@ export enum IROpcode {
   PHI = 'PHI',
   JMP = 'JMP',
   FN_DECL = 'FN_DECL',
+  FN_DECL_END = 'FN_DECL_END',
   RET = 'RET',
   MATH = 'MATH',
   LABEL_OFFSET = 'LABEL_OFFSET',

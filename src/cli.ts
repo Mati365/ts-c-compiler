@@ -2,9 +2,12 @@ import 'source-map-support/register';
 import {ccompiler, CCompilerOutput} from '@compiler/pico-c';
 
 ccompiler(/* cpp */ `
-  void print(const char* str) {}
-  void main() {
-    print("hello world!");
+  void sum() {
+    int i = 0;
+
+    do {
+      --i;
+    } while(i > 0);
   }
 `).match(
   {

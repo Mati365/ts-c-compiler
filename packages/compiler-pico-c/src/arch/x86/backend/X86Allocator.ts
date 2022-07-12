@@ -2,18 +2,23 @@ import {assertUnreachable} from '@compiler/core/utils';
 
 import {CCompilerArch, CCompilerConfig} from '@compiler/pico-c/constants';
 import {X86StackFrame} from './X86StackFrame';
-import {X86Label} from './variables';
 import {genInstruction, genLabel} from '../asm-utils';
 
 export class X86Allocator {
-  readonly labels: {[id: string]: string} = {};
-  readonly tmpVars: {[id: string]: X86Label | X86StackFrame} = {};
-
+  private readonly labels: {[id: string]: string} = {};
   protected stackFrame: X86StackFrame;
 
   constructor(
     readonly config: CCompilerConfig,
   ) {}
+
+  getCurrentStackFrame() {
+    return this.stackFrame;
+  }
+
+  getLabel(id: string) {
+    return this.labels[id];
+  }
 
   allocLabelInstruction(type: 'fn', id: string) {
     const instruction = genLabel(`${type}_${id}`);
@@ -23,9 +28,10 @@ export class X86Allocator {
   }
 
   allocStackFrameInstructions(content: () => string[]): string[] {
-    const {arch} = this.config;
+    const {config} = this;
+    const {arch} = config;
 
-    this.stackFrame = new X86StackFrame;
+    this.stackFrame = new X86StackFrame(config);
 
     switch (arch) {
       case CCompilerArch.X86_16:

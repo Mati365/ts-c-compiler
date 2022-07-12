@@ -4,6 +4,7 @@ export * from './IRCallInstruction';
 export * from './IRCommentInstruction';
 export * from './IRDefConstInstruction';
 export * from './IRFnDeclInstruction';
+export * from './IRFnEndDeclInstruction';
 export * from './IRIfInstruction';
 export * from './IRInstruction';
 export * from './IRInstructionsBlock';

@@ -2,7 +2,11 @@ import * as R from 'ramda';
 
 import {CFunctionDeclType} from '@compiler/pico-c/frontend/analyze';
 import {ASTCFunctionDefinition} from '@compiler/pico-c/frontend/parser';
-import {IRRetInstruction, isIRRetInstruction} from '../../../instructions';
+import {
+  IRFnEndDeclInstruction,
+  IRRetInstruction,
+  isIRRetInstruction,
+} from '../../../instructions';
 
 import {emitBlockItemIR} from './emitBlockItemIR';
 import {
@@ -30,14 +34,14 @@ export function emitFunctionIR(
   appendStmtResults(
     emitBlockItemIR(
       {
+        scope,
+        node: node.content,
         context: {
           ...context,
           parent: {
             fnDecl,
           },
         },
-        scope,
-        node: node.content,
       },
     ),
     result,
@@ -46,5 +50,6 @@ export function emitFunctionIR(
   if (!isIRRetInstruction(R.last(result.instructions)))
     result.instructions.push(new IRRetInstruction);
 
+  result.instructions.push(new IRFnEndDeclInstruction);
   return result;
 }
