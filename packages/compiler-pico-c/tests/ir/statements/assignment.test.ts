@@ -14,6 +14,7 @@ describe('Assignment IR', () => {
           *(i{0}: int*2B) = store %t{1}: int2B
           *(a{0}: int*2B) = store %t{1}: int2B
           ret
+          end-decl
       `);
     });
 
@@ -29,6 +30,7 @@ describe('Assignment IR', () => {
           *(i{0}: int*2B) = store %t{1}: int2B
           *(a{0}: int*2B) = store %t{0}: int2B
           ret
+          end-decl
       `);
     });
 
@@ -48,6 +50,7 @@ describe('Assignment IR', () => {
           %t{4}: int2B = %t{0}: int2B plus %t{3}: int2B
           *(a{0}: int*2B) = store %t{4}: int2B
           ret
+          end-decl
       `);
     });
 
@@ -70,6 +73,7 @@ describe('Assignment IR', () => {
           %t{5}: int2B = %t{3}: int2B plus %t{4}: int2B
           *(a{0}: int*2B) = store %t{5}: int2B
           ret
+          end-decl
       `);
     });
   });
@@ -92,6 +96,7 @@ describe('Assignment IR', () => {
           %t{0}: int[3]*2B = lea arr{0}: int[3]*2B
           *(ptr{0}: int**2B) = store %t{0}: int[3]*2B
           ret
+          end-decl
       `);
     });
 
@@ -111,6 +116,7 @@ describe('Assignment IR', () => {
           %t{1}: int*2B = load arr{0}: int**2B
           *(ptr{0}: int**2B) = store %t{1}: int*2B
           ret
+          end-decl
 
         # --- Block Data ---
           c{0}: int[6]12B = const { 1, 2, 3, 4, 5, 6 }
@@ -136,6 +142,7 @@ describe('Assignment IR', () => {
           %t{4}: int2B = %t{2}: int2B plus %12: int2B
           *(sum{0}: int*2B) = store %t{4}: int2B
           ret
+          end-decl
       `);
     });
 
@@ -158,6 +165,7 @@ describe('Assignment IR', () => {
           %t{5}: int2B = %t{3}: int2B minus %12: int2B
           *(sum{0}: int*2B) = store %t{5}: int2B
           ret
+          end-decl
 
         # --- Block Data ---
           c{0}: int[5]10B = const { 1, 2, 3, 4, 5 }
@@ -183,6 +191,7 @@ describe('Assignment IR', () => {
           %t{5}: int2B = %t{3}: int2B plus %12: int2B
           *(sum{0}: int*2B) = store %t{5}: int2B
           ret
+          end-decl
 
         # --- Block Data ---
           c{0}: int[12]24B = const { 1, 2, 3, 4, 5, null, null, null, null, null, null, null }
@@ -208,6 +217,7 @@ describe('Assignment IR', () => {
           %t{5}: int2B = %t{3}: int2B plus %12: int2B
           *(sum{0}: int*2B) = store %t{5}: int2B
           ret
+          end-decl
 
         # --- Block Data ---
           c{0}: int[12]24B = const { 1, 2, 3, 4, 5, null, null, null, null, null, null, null }
@@ -235,6 +245,7 @@ describe('Assignment IR', () => {
           %t{6}: int2B = %t{2}: int2B plus %t{5}: int2B
           *(sum{0}: int*2B) = store %t{6}: int2B
           ret
+          end-decl
       `);
     });
 
@@ -254,6 +265,7 @@ describe('Assignment IR', () => {
           %t{6}: int*2B = %t{1}: int*2B plus %14: int2B
           *(%t{6}: int*2B) = store %4: int2B
           ret
+          end-decl
 
         # --- Block Data ---
           c{0}: int[5]10B = const { 1, 2, 3, 4, 5 }
@@ -277,6 +289,7 @@ describe('Assignment IR', () => {
           %t{5}: int[3]*2B = %t{0}: int[3]*2B plus %14: int2B
           *(%t{5}: int[3]*2B) = store %4: int2B
           ret
+          end-decl
       `);
     });
   });
@@ -298,6 +311,7 @@ describe('Assignment IR', () => {
           %t{0}: int*2B = lea b{0}: int*2B
           *(a{0}: int**2B) = store %t{0}: int*2B
           ret
+          end-decl
       `);
     });
 
@@ -319,6 +333,7 @@ describe('Assignment IR', () => {
           %t{1}: int*2B = load a{0}: int**2B
           *(%t{1}: int*2B) = store %5: int2B
           ret
+          end-decl
       `);
     });
 
@@ -342,6 +357,7 @@ describe('Assignment IR', () => {
           %t{3}: int*2B = %t{1}: int*2B plus %10: int2B
           *(c{0}: int*2B) = store %t{3}: int*2B
           ret
+          end-decl
       `);
     });
 
@@ -366,6 +382,7 @@ describe('Assignment IR', () => {
           %t{3}: int2B = %t{2}: int2B plus %5: int2B
           *(c{0}: int*2B) = store %t{3}: int2B
           ret
+          end-decl
       `);
     });
 
@@ -389,6 +406,7 @@ describe('Assignment IR', () => {
           %t{3}: int*2B = %t{2}: int*2B plus %4: int2B
           *(%t{3}: int*2B) = store %8: int2B
           ret
+          end-decl
 
         # --- Block Data ---
           c{0}: int[6]12B = const { 1, 2, 3, 4, 5, 6 }
@@ -412,6 +430,7 @@ describe('Assignment IR', () => {
           %t{1}: int*2B = %t{0}: int*2B plus %2: int2B
           *(%t{1}: int*2B) = store %7: int2B
           ret
+          end-decl
       `);
     });
 
@@ -433,6 +452,7 @@ describe('Assignment IR', () => {
           %t{4}: int*2B = %t{0}: int*2B plus %6: int2B
           *(%t{4}: int*2B) = store %2: int2B
           ret
+          end-decl
       `);
     });
 
@@ -457,6 +477,7 @@ describe('Assignment IR', () => {
           %t{2}: int*2B = %t{1}: int*2B plus %2: int2B
           *(%t{2}: int*2B) = store %5: int2B
           ret
+          end-decl
       `);
     });
 
@@ -488,6 +509,7 @@ describe('Assignment IR', () => {
           %t{5}: int2B = load %t{4}: int*2B
           *(d{0}: int*2B) = store %t{5}: int2B
           ret
+          end-decl
       `);
     });
 
@@ -512,6 +534,7 @@ describe('Assignment IR', () => {
           %t{0}: int*2B = lea vec{0}: struct Vec2[2]*2B
           *(ptr{0}: struct Vec2[]**2B) = store %t{0}: int*2B
           ret
+          end-decl
       `);
     });
   });

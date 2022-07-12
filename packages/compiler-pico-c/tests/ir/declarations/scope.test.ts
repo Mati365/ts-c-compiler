@@ -31,6 +31,7 @@ describe('Declaration scope', () => {
         *(d{0}: int*2B) = store %t{6}: int2B
         L1:
         ret
+        end-decl
     `);
   });
 });

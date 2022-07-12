@@ -11,6 +11,7 @@ describe('Increment stmt IR', () => {
           %t{1}: int2B = %t{0}: int2B plus %1: int2B
           *(a{0}: int*2B) = store %t{1}: int2B
           ret
+          end-decl
       `);
     });
 
@@ -24,6 +25,7 @@ describe('Increment stmt IR', () => {
           *(a{0}: int**2B) = store %t{1}: int*2B
           %t{2}: int2B = load %t{0}: int*2B
           ret
+          end-decl
       `);
     });
 
@@ -37,6 +39,7 @@ describe('Increment stmt IR', () => {
           *(a{0}: int**2B) = store %t{1}: int*2B
           %t{2}: int2B = load %t{0}: int*2B
           ret
+          end-decl
       `);
     });
 
@@ -50,6 +53,7 @@ describe('Increment stmt IR', () => {
           %t{2}: int2B = %t{1}: int2B plus %1: int2B
           *(%t{0}: int*2B) = store %t{2}: int2B
           ret
+          end-decl
       `);
     });
   });
@@ -64,6 +68,7 @@ describe('Increment stmt IR', () => {
           %t{1}: int2B = %t{0}: int2B plus %1: int2B
           *(a{0}: int*2B) = store %t{1}: int2B
           ret
+          end-decl
       `);
     });
 
@@ -77,6 +82,7 @@ describe('Increment stmt IR', () => {
           %t{2}: int2B = %t{1}: int2B plus %1: int2B
           *(%t{0}: int*2B) = store %t{2}: int2B
           ret
+          end-decl
       `);
     });
 
@@ -90,6 +96,7 @@ describe('Increment stmt IR', () => {
           *(ptr{0}: int**2B) = store %t{1}: int*2B
           %t{2}: int2B = load %t{1}: int*2B
           ret
+          end-decl
       `);
     });
   });
@@ -118,6 +125,7 @@ describe('Increment stmt IR', () => {
           %t{5}: int2B = %t{4}: int2B plus %1: int2B
           *(%t{3}: int*2B) = store %t{5}: int2B
           ret
+          end-decl
       `);
     });
   });

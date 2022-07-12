@@ -25,6 +25,7 @@ describe('For stmt', () => {
         jmp L1:
         L2:
         ret
+        end-decl
     `);
   });
 });

@@ -23,6 +23,7 @@ describe('Logic assign', () => {
         %t{5}: int2B = φ(%t{1}: int2B, %t{4}: int2B)
         *(b{0}: int*2B) = store %t{5}: int2B
         ret
+        end-decl
     `);
   });
 
@@ -47,6 +48,7 @@ describe('Logic assign', () => {
         L1:
         *(b{0}: int*2B) = store %t{4}: int2B
         ret
+        end-decl
     `);
   });
 
@@ -75,6 +77,7 @@ describe('Logic assign', () => {
         L2:
         *(b{0}: int*2B) = store %t{6}: int2B
         ret
+        end-decl
     `);
   });
 });

@@ -8,6 +8,7 @@ describe('Arrays declarations IR', () => {
         def main():
           a{0}: int[5]*2B = alloca int[5]10B
           ret
+          end-decl
       `);
     });
 
@@ -17,6 +18,7 @@ describe('Arrays declarations IR', () => {
         def main():
           a{0}: int[5][2]*2B = alloca int[5][2]20B
           ret
+          end-decl
       `);
     });
 
@@ -26,6 +28,7 @@ describe('Arrays declarations IR', () => {
         def main():
           a{0}: int[5][4][2]*2B = alloca int[5][4][2]80B
           ret
+          end-decl
       `);
     });
   });
@@ -40,6 +43,7 @@ describe('Arrays declarations IR', () => {
           *(a{0}: int[3]*2B + %2) = store %2: int2B
           *(a{0}: int[3]*2B + %4) = store %3: int2B
           ret
+          end-decl
       `);
     });
 
@@ -51,7 +55,7 @@ describe('Arrays declarations IR', () => {
           *(a{0}: int[2]*2B) = store %1: int2B
           *(a{0}: int[2]*2B + %2) = store %2: int2B
           ret
-
+          end-decl
       `);
     });
 
@@ -63,7 +67,7 @@ describe('Arrays declarations IR', () => {
           %t{0}: int*2B = lea c{0}: int[5]10B
           *(a{0}: int**2B) = store %t{0}: int*2B
           ret
-
+          end-decl
         # --- Block Data ---
           c{0}: int[5]10B = const { 1, 2, 3, 4, 5 }
       `);
@@ -88,6 +92,7 @@ describe('Arrays declarations IR', () => {
           %t{0}: int2B = load d{0}: int*2B
           *(a{0}: int[5]*2B + %8) = store %t{0}: int2B
           ret
+          end-decl
       `);
     });
 
@@ -99,6 +104,7 @@ describe('Arrays declarations IR', () => {
           %t{0}: const char*2B = lea c{0}: const char[12]12B
           *(str{0}: const char**2B) = store %t{0}: const char*2B
           ret
+          end-decl
 
         # --- Block Data ---
           c{0}: const char[12]12B = const { 72, 101, 108, 108, 111, 32, 119, 111, 114, 108, 100, 33 }
@@ -123,7 +129,7 @@ describe('Arrays declarations IR', () => {
           *(vec{0}: struct Vec2*2B) = store %0: int2B
           *(vec{0}: struct Vec2*2B + %6) = store %0: int2B
           ret
-
+          end-decl
 
         # --- Block main ---
         def main():
@@ -134,6 +140,7 @@ describe('Arrays declarations IR', () => {
           %t{5}: int*2B = %t{2}: struct Vec2[2]**2B plus %8: int2B
           call %t{1}: struct Vec2 of_vector()*2B :: (%t{5}: int*2B)
           ret
+          end-decl
       `);
     });
   });
