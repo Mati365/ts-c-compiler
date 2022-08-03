@@ -23,6 +23,7 @@ export class IROpInstruction<O> extends IRInstruction implements IsOutputInstruc
     readonly leftVar: IRInstructionVarArg,
     readonly rightVar: IRInstructionVarArg,
     readonly outputVar: IRVariable = null,
+    readonly serializerPrefix: string = null,
   ) {
     super(opcode);
   }
@@ -54,12 +55,21 @@ export class IROpInstruction<O> extends IRInstruction implements IsOutputInstruc
   }
 
   override getDisplayName(): string {
-    const {leftVar, operator, rightVar, outputVar} = this;
-    const str = [
+    const {
+      leftVar, operator,
+      rightVar, outputVar,
+      serializerPrefix,
+    } = this;
+
+    let str = [
       leftVar?.getDisplayName(),
       chalk.yellowBright(R.toLower(operator as any)),
       rightVar.getDisplayName(),
     ].join(' ');
+
+    if (serializerPrefix) {
+      str = `${chalk.yellowBright(serializerPrefix)} ${str}`;
+    }
 
     return (
       outputVar

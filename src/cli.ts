@@ -5,9 +5,9 @@ ccompiler(/* cpp */ `
   void sum() {
     int i = 0;
 
-    do {
-      --i;
-    } while(i > 0);
+    while (i < 10) {
+      ++i;
+    }
   }
 `).match(
   {

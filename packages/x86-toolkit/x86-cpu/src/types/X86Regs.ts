@@ -7,7 +7,9 @@ import {
 
 import {X87StackRegName} from '../x87/X87Regs';
 
-export type X86BitsMode = 0x1 | 0x2 | 0x4 | 0x8 | 0xA;
+export type X86IntBitsMode = 0x1 | 0x2 | 0x4 | 0x8;
+
+export type X86BitsMode = X86IntBitsMode | 0xA;
 
 export type X86RegsSet = {[index: number]: X86RegName};
 

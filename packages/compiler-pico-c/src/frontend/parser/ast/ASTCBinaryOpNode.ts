@@ -5,6 +5,10 @@ import {ASTCCompilerKind, ASTCCompilerNode} from './ASTCCompilerNode';
 
 export {createBinOpIfBothSidesPresent} from '@compiler/grammar/utils';
 
+export function isASTCBinaryOpNode(node: ASTCCompilerNode): node is ASTCBinaryOpNode {
+  return node.kind === ASTCCompilerKind.BinaryOperator;
+}
+
 /**
  * Stores tree node containing left or right tree node
  *

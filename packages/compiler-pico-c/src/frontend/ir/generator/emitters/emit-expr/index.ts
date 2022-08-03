@@ -1,3 +1,3 @@
 export * from './emitExpressionIR';
-export * from './emitLogicBinaryExpressionIR';
+export * from './emitLogicBinaryJmpExpressionIR';
 export * from './emitLogicExpressionIR';

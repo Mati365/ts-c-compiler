@@ -1,4 +1,5 @@
 import {
+  X86IntBitsMode,
   X86BitsMode,
   X86RegName,
   X86SegmentRegName,
@@ -8,6 +9,7 @@ import {
 import {InstructionPrefix, RegisterSchema} from './constants';
 
 export {
+  X86IntBitsMode,
   X86BitsMode,
   X86RegName,
   X86SegmentRegName,

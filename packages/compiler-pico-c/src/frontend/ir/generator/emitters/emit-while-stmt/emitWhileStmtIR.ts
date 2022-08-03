@@ -3,9 +3,9 @@ import {CPrimitiveType} from '@compiler/pico-c/frontend/analyze';
 import {ASTCWhileStatement} from '@compiler/pico-c/frontend/parser';
 
 import {
-  IRIfInstruction,
+  IRBrInstruction,
   IRJmpInstruction,
-  IRRelInstruction,
+  IRICmpInstruction,
 } from '../../../instructions';
 
 import {IRConstant} from '../../../variables';
@@ -55,14 +55,12 @@ export function emitWhileStmtIR(
     labels.start,
     ...result.instructions,
     ...logicResult.instructions,
-    new IRIfInstruction(
-      new IRRelInstruction(
-        TokenType.EQUAL,
-        logicResult.output,
-        IRConstant.ofConstant(CPrimitiveType.int(arch), 0),
-      ),
-      labels.end,
+    new IRICmpInstruction(
+      TokenType.EQUAL,
+      logicResult.output,
+      IRConstant.ofConstant(CPrimitiveType.int(arch), 0),
     ),
+    new IRBrInstruction(logicResult.output, labels.end),
     ...contentResult.instructions,
     new IRJmpInstruction(labels.start),
     labels.end,

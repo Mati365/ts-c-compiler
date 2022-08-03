@@ -15,6 +15,6 @@ export function compileAllocInstruction(
   const {outputVar} = instruction;
 
   allocator
-    .getCurrentStackFrame()
+    .stackFrame
     .allocLocalVariable(outputVar.name, outputVar.type.getByteSize());
 }

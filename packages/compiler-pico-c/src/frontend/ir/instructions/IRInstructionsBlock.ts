@@ -2,7 +2,7 @@ import * as R from 'ramda';
 
 import {Identity} from '@compiler/core/monads';
 import {IRInstruction} from './IRInstruction';
-import {IRBranchRelations} from './IRIfInstruction';
+import {IRBranchRelations} from './IRBrInstruction';
 
 export type IRBlockJmps = Partial<IRBranchRelations<IRInstructionsBlock>> & {
   always?: IRInstructionsBlock;

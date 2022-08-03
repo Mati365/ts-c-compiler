@@ -1,11 +1,11 @@
 import * as R from 'ramda';
 
-import {isLogicOpToken} from '@compiler/lexer/utils';
+import {isLogicOpToken, isRelationOpToken} from '@compiler/lexer/utils';
 import {isImplicitPtrType} from '@compiler/pico-c/frontend/analyze/types/utils';
 import {charToInt, tryCastToPointer} from '@compiler/pico-c/frontend/analyze/casts';
 
 import {TokenType} from '@compiler/lexer/shared';
-import {CMathOperator, CUnaryCastOperator} from '@compiler/pico-c/constants';
+import {CMathOperator, CRelOperator, CUnaryCastOperator} from '@compiler/pico-c/constants';
 import {
   CPointerType,
   CPrimitiveType,
@@ -30,6 +30,7 @@ import {
 } from '../types';
 
 import {
+  IRICmpInstruction,
   IRLabelOffsetInstruction,
   IRLeaInstruction,
   IRLoadInstruction,
@@ -42,7 +43,7 @@ import {IRConstant, IRInstructionVarArg, IRVariable} from '../../../variables';
 import {emitIdentifierGetterIR} from '../emitIdentifierGetterIR';
 import {emitIncExpressionIR} from '../emitIncExpressionIR';
 import {emitFnCallExpressionIR} from '../emit-fn-call-expression';
-import {emitLogicBinaryExpressionIR} from './emitLogicBinaryExpressionIR';
+import {emitLogicBinaryJmpExpressionIR} from './emitLogicBinaryJmpExpressionIR';
 
 export type ExpressionIREmitAttrs = IREmitterContextAttrs & {
   node: ASTCCompilerNode;
@@ -63,15 +64,20 @@ export function emitExpressionIR(
   const {instructions} = result;
   let argsVarsStack: IRInstructionVarArg[] = [];
 
-  const allocNextVariable = (nextType: CType = node.type) => {
-    const irVariable = allocator.allocTmpVariable(nextType);
-    argsVarsStack.push(irVariable);
-    return irVariable;
+  const pushNextVariable = (variable: IRVariable) => {
+    argsVarsStack.push(variable);
+    return variable;
   };
+
+  const allocNextVariable = (nextType: CType = node.type) => (
+    pushNextVariable(allocator.allocTmpVariable(nextType))
+  );
 
   const emitExprResultToStack = (exprResult: IREmitterExpressionResult) => {
     appendStmtResults(exprResult, result);
-    argsVarsStack.push(exprResult.output);
+
+    if (exprResult.output)
+      argsVarsStack.push(exprResult.output);
   };
 
   GroupTreeVisitor.ofIterator<ASTCCompilerNode>(
@@ -319,7 +325,7 @@ export function emitExpressionIR(
               },
             );
 
-            if (!exprResult.output)
+            if (!exprResult.output && !context.conditionStmt?.labels)
               throw new IRError(IRErrorCode.UNRESOLVED_IDENTIFIER);
 
             emitExprResultToStack(exprResult);
@@ -335,7 +341,7 @@ export function emitExpressionIR(
           if (!isLogicOpToken(binary.op))
             return;
 
-          const exprResult = emitLogicBinaryExpressionIR(
+          const exprResult = emitLogicBinaryJmpExpressionIR(
             {
               node: binary,
               context,
@@ -397,14 +403,25 @@ export function emitExpressionIR(
               defaultOutputType = b.type;
           }
 
-          output ||= allocNextVariable(defaultOutputType);
-          instructions.push(
-            new IRMathInstruction(
-              <CMathOperator> binary.op,
-              b, a,
-              output,
-            ),
-          );
+          if (isRelationOpToken(binary.op)) {
+            output ||= pushNextVariable(allocator.allocFlagResult());
+            instructions.push(
+              new IRICmpInstruction(
+                <CRelOperator> binary.op,
+                b, a,
+                output,
+              ),
+            );
+          } else {
+            output ||= allocNextVariable(defaultOutputType);
+            instructions.push(
+              new IRMathInstruction(
+                <CMathOperator> binary.op,
+                b, a,
+                output,
+              ),
+            );
+          }
         },
       },
     },

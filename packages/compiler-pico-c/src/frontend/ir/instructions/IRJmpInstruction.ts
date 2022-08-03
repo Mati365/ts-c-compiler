@@ -37,6 +37,6 @@ export class IRJmpInstruction
   }
 
   override getDisplayName(): string {
-    return `${chalk.magentaBright('jmp')} ${this.label.getDisplayName()}`;
+    return `${chalk.magentaBright('jmp')} ${chalk.bold.whiteBright(this.label.name)}`;
   }
 }

@@ -1,6 +1,8 @@
 import chalk from 'chalk';
+
 import {IROpcode} from '../constants';
 import {HasLabeledBranches} from '../interfaces';
+import {IRInstructionVarArg} from '../variables';
 import {IRInstruction} from './IRInstruction';
 import {IRLabelInstruction} from './IRLabelInstruction';
 
@@ -9,34 +11,41 @@ export interface IRBranchRelations<R> {
   ifFalse?: R,
 }
 
-export function isIRIfInstruction(instruction: IRInstruction): instruction is IRIfInstruction {
-  return instruction.opcode === IROpcode.IF;
+export function isIRBrInstruction(instruction: IRInstruction): instruction is IRBrInstruction {
+  return instruction.opcode === IROpcode.BR;
 }
 
 /**
  * If else branch instruction, "else" is optional
  *
  * @export
- * @class IRIfInstruction
+ * @class IRBrInstruction
  * @extends {IRInstruction}
  * @implements {IRBranchRelations<IRLabelInstruction>}
  * @implements {HasLabeledBranches}
  */
-export class IRIfInstruction
+export class IRBrInstruction
   extends IRInstruction
   implements IRBranchRelations<IRLabelInstruction>, HasLabeledBranches {
 
   constructor(
-    readonly expression: IRInstruction,
+    readonly variable: IRInstructionVarArg,
     readonly ifTrue: IRLabelInstruction,
     readonly ifFalse?: IRLabelInstruction,
   ) {
-    super(IROpcode.IF);
+    super(IROpcode.BR);
   }
 
-  ofLabels([ifTrue, ifFalse]: IRLabelInstruction[]) {
-    return <this> new IRIfInstruction(
-      this.expression,
+  ofLabels(
+    [
+      ifTrue,
+      ifFalse,
+    ]: IRLabelInstruction[],
+  ) {
+    const {variable} = this;
+
+    return <this> new IRBrInstruction(
+      variable,
       ifTrue,
       ifFalse,
     );
@@ -50,22 +59,19 @@ export class IRIfInstruction
 
   getDisplayName(): string {
     const {
-      expression,
+      variable,
       ifTrue,
       ifFalse,
     } = this;
 
-    const str = [
-      chalk.yellowBright('if:'),
-      expression.getDisplayName(),
-      chalk.yellowBright('then'),
-      chalk.white.bold(ifTrue.name),
-    ].join(' ');
+    const argsStr = [
+      variable.getDisplayName(),
+      ifTrue && `true: ${chalk.white.bold(ifTrue.name)}`,
+      ifFalse && `false: ${chalk.white.bold(ifFalse.name)}`,
+    ]
+      .filter(Boolean)
+      .join(', ');
 
-    return (
-      ifFalse
-        ? `${str} ${chalk.yellowBright('else')} ${chalk.white.bold(ifFalse.name)}`
-        : str
-    );
+    return `${chalk.yellowBright('br')} ${argsStr}`;
   }
 }

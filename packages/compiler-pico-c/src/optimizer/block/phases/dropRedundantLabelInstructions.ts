@@ -41,8 +41,10 @@ export function dropRedundantLabelInstructions(instructions: IRInstruction[]) {
 
       for (let j = 0; j < newLabels.length; ++j) {
         const label = newLabels[j];
-        const cachedLabel = label && cachedLabels[label.name];
+        if (!label)
+          continue;
 
+        const cachedLabel = label && cachedLabels[label.name];
         if (cachedLabel && cachedLabel !== label) {
           newLabels[j] = cachedLabel;
           modified = true;

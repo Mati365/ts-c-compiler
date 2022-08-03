@@ -1,7 +1,7 @@
 import {TokenType} from '@compiler/lexer/shared';
 import {CPrimitiveType} from '@compiler/pico-c/frontend/analyze';
 
-import {IRIfInstruction, IRRelInstruction} from '../../../instructions';
+import {IRBrInstruction, IRICmpInstruction} from '../../../instructions';
 import {IRConstant} from '../../../variables';
 import {WhileStmtIRAttrs} from './emitWhileStmtIR';
 import {
@@ -42,14 +42,12 @@ export function emitDoWhileStmtIR(
     ...result.instructions,
     ...contentResult.instructions,
     ...logicResult.instructions,
-    new IRIfInstruction(
-      new IRRelInstruction(
-        TokenType.DIFFERS,
-        logicResult.output,
-        IRConstant.ofConstant(CPrimitiveType.int(arch), 0),
-      ),
-      startLabel,
+    new IRICmpInstruction(
+      TokenType.DIFFERS,
+      logicResult.output,
+      IRConstant.ofConstant(CPrimitiveType.int(arch), 0),
     ),
+    new IRBrInstruction(logicResult.output, startLabel),
   );
 
   return result;

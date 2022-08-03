@@ -3,5 +3,5 @@ export function genComment(msg: string): string {
 }
 
 export function withInlineComment(line: string, msg: string) {
-  return `${line} ${genComment(msg)}`;
+  return `${line.padEnd(25)} ${genComment(msg)}`;
 }

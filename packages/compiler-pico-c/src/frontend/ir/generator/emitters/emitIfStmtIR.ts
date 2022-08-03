@@ -2,13 +2,10 @@ import {TokenType} from '@compiler/lexer/shared';
 import {CPrimitiveType} from '@compiler/pico-c/frontend/analyze';
 import {ASTCIfStatement} from '@compiler/pico-c/frontend/parser';
 
-import {
-  IRIfInstruction,
-  IRJmpInstruction,
-  IRRelInstruction,
-} from '../../instructions';
-
+import {IRBrInstruction, IRICmpInstruction, IRJmpInstruction} from '../../instructions';
 import {IRConstant} from '../../variables';
+import {LogicBinaryExpressionLabels} from './emit-expr';
+
 import {
   appendStmtResults,
   createBlankStmtResult,
@@ -27,56 +24,91 @@ export function emitIfStmtIR(
     node,
   }: IfStmtIRAttrs,
 ): IREmitterStmtResult {
-  const {emit, config, factory} = context;
+  const {emit, factory, allocator, config} = context;
   const {arch} = config;
 
   const result = createBlankStmtResult();
-  const logicResult = emit.logicExpression(
+  const {instructions} = result;
+
+  const finallyLabel = factory.genTmpLabelInstruction();
+  const labels: LogicBinaryExpressionLabels = {
+    ifTrueLabel: factory.genTmpLabelInstruction(),
+    ifFalseLabel: (
+      node.falseExpression
+        ? factory.genTmpLabelInstruction()
+        : finallyLabel
+    ),
+  };
+
+  // compile if (a > 1 && b > 2) { ... }
+  const logicResult = emit.expression(
     {
       scope,
-      context,
       node: node.logicalExpression,
+      context: {
+        ...context,
+        conditionStmt: {
+          labels,
+        },
+      },
     },
   );
 
-  const labels = {
-    else: factory.genTmpLabelInstruction(),
-    finally: factory.genTmpLabelInstruction(),
-  };
+  const {output} = logicResult;
+  appendStmtResults(logicResult, result);
 
-  const blocksResults = {
-    true: emit.block(
+  if (output) {
+    // if (a > 2)
+    if (output?.type.isFlag()) {
+      instructions.push(
+        new IRBrInstruction(output, null, labels.ifFalseLabel),
+      );
+    } else {
+      // if (a)
+      const tmpFlagResult = allocator.allocFlagResult();
+
+      instructions.push(
+        new IRICmpInstruction(
+          TokenType.DIFFERS,
+          output,
+          IRConstant.ofConstant(CPrimitiveType.int(arch), 0x0),
+          tmpFlagResult,
+        ),
+        new IRBrInstruction(tmpFlagResult, null, labels.ifFalseLabel),
+      );
+    }
+  }
+
+  instructions.push(labels.ifTrueLabel);
+  appendStmtResults(
+    emit.block(
       {
         node: node.trueExpression,
         scope,
         context,
       },
     ),
-    false: emit.block(
-      {
-        node: node.falseExpression,
-        scope,
-        context,
-      },
-    ),
-  };
-
-  appendStmtResults(logicResult, result);
-  result.instructions.push(
-    new IRIfInstruction(
-      new IRRelInstruction(
-        TokenType.EQUAL,
-        logicResult.output,
-        IRConstant.ofConstant(CPrimitiveType.int(arch), 0),
-      ),
-      labels.else,
-    ),
-    ...blocksResults.true.instructions,
-    new IRJmpInstruction(labels.finally),
-    labels.else,
-    ...blocksResults.false.instructions,
-    labels.finally,
+    result,
   );
 
+  if (labels.ifFalseLabel) {
+    instructions.push(
+      new IRJmpInstruction(finallyLabel),
+      labels.ifFalseLabel,
+    );
+
+    appendStmtResults(
+      emit.block(
+        {
+          node: node.falseExpression,
+          scope,
+          context,
+        },
+      ),
+      result,
+    );
+  }
+
+  instructions.push(finallyLabel);
   return result;
 }

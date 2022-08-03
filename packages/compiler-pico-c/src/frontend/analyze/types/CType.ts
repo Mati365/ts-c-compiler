@@ -116,6 +116,7 @@ export abstract class CType<T extends CTypeDescriptor = CTypeDescriptor>
   isScalar() { return false; }
   isPointer() { return false; }
   isVoid() { return false; }
+  isFlag() { return false; }
 
   hasInnerTypeAttributes() {
     return this.isEnum() || this.isStruct();

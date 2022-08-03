@@ -5,24 +5,28 @@ import {IROpInstruction} from './IROpInstruction';
 import {IRInstruction} from './IRInstruction';
 import {IRInstructionVarArg, IRVariable} from '../variables';
 
-export function isIRRelInstruction(instruction: IRInstruction): instruction is IRRelInstruction {
-  return instruction.opcode === IROpcode.REL;
+export function isIRICmpInstruction(instruction: IRInstruction): instruction is IRICmpInstruction {
+  return instruction.opcode === IROpcode.ICMP;
 }
 
 /**
  * Relationship instruction
  *
  * @export
- * @class IRRelInstruction
+ * @class IRICmpInstruction
  * @extends {IROpInstruction<CRelOperator>}
  */
-export class IRRelInstruction extends IROpInstruction<CRelOperator> {
+export class IRICmpInstruction extends IROpInstruction<CRelOperator> {
   constructor(
     operator: CRelOperator,
     leftVar: IRInstructionVarArg,
     rightVar: IRInstructionVarArg,
     outputVar?: IRVariable,
   ) {
-    super(IROpcode.REL, operator, leftVar, rightVar, outputVar);
+    super(
+      IROpcode.ICMP,
+      operator, leftVar, rightVar, outputVar,
+      'icmp',
+    );
   }
 }

@@ -1,7 +1,7 @@
 import {
   IRInstruction,
   isIRCallInstruction,
-  isIRIfInstruction,
+  isIRBrInstruction,
   isIRJmpInstruction,
   isIRLabelInstruction,
   isIRRetInstruction,
@@ -12,7 +12,7 @@ export function isIRBranchInstruction(instruction: IRInstruction): boolean {
     isIRCallInstruction(instruction)
       || isIRJmpInstruction(instruction)
       || isIRRetInstruction(instruction)
-      || isIRIfInstruction(instruction)
+      || isIRBrInstruction(instruction)
       || isIRLabelInstruction(instruction)
   );
 }

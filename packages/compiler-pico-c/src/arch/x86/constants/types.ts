@@ -1,4 +1,5 @@
 import type {IRInstruction} from '@compiler/pico-c/frontend/ir/instructions';
+import type {IRBlockIterator} from '../backend/iterators/IRBlockIterator';
 import type {X86Allocator} from '../backend/X86Allocator';
 
 export type BackendCompilerContext = {
@@ -6,15 +7,14 @@ export type BackendCompilerContext = {
 };
 
 export type CompilerFnAttrs = {
+  iterator: IRBlockIterator;
   context: BackendCompilerContext;
 };
 
 export type CompilerBlockFnAttrs = CompilerFnAttrs & {
-  offset: number;
   instructions: IRInstruction[];
 };
 
 export type CompiledBlockOutput = {
   asm: string[];
-  offset: number;
 };

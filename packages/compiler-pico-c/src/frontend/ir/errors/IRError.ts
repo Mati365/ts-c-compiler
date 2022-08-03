@@ -20,6 +20,7 @@ export enum IRErrorCode {
   MISSING_FUNC_DECL_IN_ALLOCATOR = 'MISSING_FUNC_DECL_IN_ALLOCATOR',
   RVO_RETURN_CONSTANT = 'RVO_RETURNED_CONSTANT',
   RVO_OPTIMIZATION_FAIL = 'RVO_OPTIMIZATION_FAIL',
+  EXPECTED_CONDITION_FLAG_RESULT = 'EXPECTED_CONDITION_FLAG_RESULT',
 }
 
 export const C_IR_ERROR_TRANSLATIONS: Record<IRErrorCode, string> = {
@@ -42,6 +43,7 @@ export const C_IR_ERROR_TRANSLATIONS: Record<IRErrorCode, string> = {
   [IRErrorCode.MISSING_FUNC_DECL_IN_ALLOCATOR]: fixme('Missing function "%{name}" declaration in allocator!'),
   [IRErrorCode.RVO_RETURN_CONSTANT]: fixme('RVO should not return constant!'),
   [IRErrorCode.RVO_OPTIMIZATION_FAIL]: fixme('RVO optimization failed!'),
+  [IRErrorCode.EXPECTED_CONDITION_FLAG_RESULT]: fixme('Logic expression should return flag type!'),
 };
 
 /**

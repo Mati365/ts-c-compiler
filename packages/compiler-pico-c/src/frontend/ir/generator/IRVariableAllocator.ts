@@ -1,4 +1,5 @@
 import {
+  CFlag, CFlagType,
   CFunctionDeclType, CPointerType,
   CPrimitiveType, CType, CVariable,
 } from '../../analyze';
@@ -91,11 +92,16 @@ export class IRVariableAllocator {
     } = this;
 
     const oldPrefix = variable.prefix;
-    const mappedVariable = (
+    let mappedVariable = (
       parent?.isAllocated(oldPrefix)
         ? variable.ofPrefix(`${COMPILER_GEN_PREFIX}${prefix}_${oldPrefix}`)
         : variable
     );
+
+    // it happens if we merge together two scopes
+    // with the same variable name
+    if (this.isAllocated(mappedVariable.prefix))
+      mappedVariable = mappedVariable.ofIncrementedSuffix();
 
     this.variables[oldPrefix] = initializer?.(mappedVariable) || mappedVariable;
     return mappedVariable;
@@ -141,6 +147,19 @@ export class IRVariableAllocator {
 
     return this.allocTmpVariable(
       CPointerType.ofType(type),
+    );
+  }
+
+  /**
+   * Generate fake variable for CPU flags result
+   *
+   * @param {CFlag} [flag=CFlag.ZF]
+   * @return {IRVariable}
+   * @memberof IRVariableAllocator
+   */
+  allocFlagResult(flag: CFlag = CFlag.ZF): IRVariable {
+    return  this.allocTmpVariable(
+      CFlagType.ofBlank(this.config.arch, flag),
     );
   }
 

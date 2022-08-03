@@ -1,14 +1,16 @@
 import {IROpcode} from '@compiler/pico-c/frontend/ir/constants';
 import {
   IRCommentInstruction,
+  IRFnDeclInstruction,
   IRInstructionsBlock,
 } from '@compiler/pico-c/frontend/ir/instructions';
 
 import {CompilerFnAttrs} from '../../constants/types';
 import {genComment} from '../../asm-utils';
 import {compileFnDeclInstructionsBlock} from './compileFnDeclInstructionsBlock';
+import {IRBlockIterator} from '../iterators/IRBlockIterator';
 
-type InstructionBlockCompilerAttrs = CompilerFnAttrs & {
+type InstructionBlockCompilerAttrs = Omit<CompilerFnAttrs, 'iterator'> & {
   block: IRInstructionsBlock;
 };
 
@@ -21,10 +23,7 @@ export function compileInstructionsBlock(
   const {instructions} = block;
   const asm: string[] = [];
 
-  for (let offset = 0; offset < instructions.length;) {
-    const instruction = instructions[offset];
-    let blockInstruction = false;
-
+  IRBlockIterator.of(instructions).walk((instruction, iterator) => {
     switch (instruction.opcode) {
       case IROpcode.COMMENT:
         asm.push(
@@ -35,22 +34,17 @@ export function compileInstructionsBlock(
       case IROpcode.FN_DECL: {
         const result = compileFnDeclInstructionsBlock(
           {
+            instruction: <IRFnDeclInstruction> instruction,
+            iterator,
             instructions,
             context,
-            offset,
           },
         );
 
-        blockInstruction = true;
-        offset = result.offset;
         asm.push(...result.asm, '');
-      } break;
+      }
     }
-
-    if (!blockInstruction) {
-      ++offset;
-    }
-  }
+  });
 
   return asm;
 }

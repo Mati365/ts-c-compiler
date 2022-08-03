@@ -9,7 +9,7 @@ import type {IRCodeSegmentBuilder, IRCodeSegmentBuilderResult} from '../segments
 import type {IRDataSegmentBuilder, IRDataSegmentBuilderResult} from '../segments';
 
 import type {emitAssignmentIR} from './emitAssignmentIR';
-import type {emitExpressionIR} from './emit-expr';
+import type {emitExpressionIR, LogicBinaryExpressionLabels} from './emit-expr';
 import type {emitIdentifierGetterIR} from './emitIdentifierGetterIR';
 import type {emitPointerAddressExpression} from './emitPointerAddressExpression';
 import type {emitUnaryLoadPtrValueIR} from './emitUnaryLoadPointerValueIR';
@@ -40,6 +40,9 @@ export type IREmitterContext = {
   };
   parent?: {
     fnDecl?: IRFnDeclInstruction;
+  };
+  conditionStmt?: {
+    labels: LogicBinaryExpressionLabels;
   };
 };
 
@@ -97,6 +100,10 @@ export function createBlankExprResult(
  * Do not change instructions reference!
  */
 export function appendStmtResults(src: IREmitterStmtResult, target: IREmitterStmtResult) {
+  if (!src) {
+    return target;
+  }
+
   target.instructions.push(...(src.instructions || []));
   (target.data ||= []).push(...(src.data || []));
 
