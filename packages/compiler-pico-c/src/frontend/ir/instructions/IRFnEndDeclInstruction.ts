@@ -20,6 +20,6 @@ export class IRFnEndDeclInstruction extends IRInstruction {
   }
 
   override getDisplayName(): string {
-    return chalk.bold.yellowBright('end-decl');
+    return chalk.bold.yellowBright('end-def');
   }
 }

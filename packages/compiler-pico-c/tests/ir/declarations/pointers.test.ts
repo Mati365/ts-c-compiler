@@ -8,7 +8,7 @@ describe('Pointer declarations IR', () => {
         def main():
           a{0}: int**2B = alloca int*2B
           ret
-          end-decl
+          end-def
       `);
     });
 
@@ -18,7 +18,7 @@ describe('Pointer declarations IR', () => {
         def main():
           var{0}: int*[5]*2B = alloca int*[5]10B
           ret
-          end-decl
+          end-def
       `);
     });
 
@@ -28,7 +28,7 @@ describe('Pointer declarations IR', () => {
         def main():
           var{0}: int[5]**2B = alloca int[5]*2B
           ret
-          end-decl
+          end-def
       `);
     });
 
@@ -38,7 +38,7 @@ describe('Pointer declarations IR', () => {
         def main():
           var{0}: int**[5]**2B = alloca int**[5]*2B
           ret
-          end-decl
+          end-def
       `);
     });
 
@@ -48,7 +48,7 @@ describe('Pointer declarations IR', () => {
         def main():
           var{0}: int**[3][5]**2B = alloca int**[3][5]*2B
           ret
-          end-decl
+          end-def
       `);
     });
 
@@ -58,7 +58,7 @@ describe('Pointer declarations IR', () => {
         def main():
           var{0}: int**[3][5]*[1][2]*2B = alloca int**[3][5]*[1][2]4B
           ret
-          end-decl
+          end-def
       `);
     });
   });
@@ -80,7 +80,7 @@ describe('Pointer declarations IR', () => {
           %t{1}: int2B = %t{0}: int2B plus %2: int2B
           *(b{0}: int**2B) = store %t{1}: int2B
           ret
-          end-decl
+          end-def
       `);
     });
 
@@ -105,7 +105,7 @@ describe('Pointer declarations IR', () => {
           %t{3}: int2B = %t{2}: int2B plus %4: int2B
           *(c{0}: int*2B) = store %t{3}: int2B
           ret
-          end-decl
+          end-def
       `);
     });
 
@@ -126,7 +126,7 @@ describe('Pointer declarations IR', () => {
           %t{2}: int2B = load %t{1}: int*2B
           *(ptr{0}: int*2B) = store %t{2}: int2B
           ret
-          end-decl
+          end-def
 
         # --- Block Data ---
           c{0}: int[6]12B = const { 1, 2, 3, 4, 5, 6 }
@@ -148,13 +148,13 @@ describe('Pointer declarations IR', () => {
           %t{1}: int2B = load y{0}: int*2B
           %t{2}: int2B = %t{0}: int2B plus %t{1}: int2B
           ret %t{2}: int2B
-          end-decl
+          end-def
 
         # --- Block main ---
         def main():
           fun_ptr{0}: float*(int**, const char*)**2B = alloca float*(int**, const char*)*2B
           ret
-          end-decl
+          end-def
       `);
     });
 
@@ -175,7 +175,7 @@ describe('Pointer declarations IR', () => {
           %t{1}: int2B = load y{0}: int*2B
           %t{2}: int2B = %t{0}: int2B plus %t{1}: int2B
           ret %t{2}: int2B
-          end-decl
+          end-def
 
         # --- Block main ---
         def main():
@@ -185,7 +185,7 @@ describe('Pointer declarations IR', () => {
           fun_ptr2{0}: int(int, int)**2B = alloca int(int, int)*2B
           *(fun_ptr2{0}: int(int, int)**2B) = store %t{3}: int sum(int, int)*2B
           ret
-          end-decl
+          end-def
       `);
     });
   });

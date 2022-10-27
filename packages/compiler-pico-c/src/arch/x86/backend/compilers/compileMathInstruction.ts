@@ -30,11 +30,7 @@ export function compileMathInstruction(
   const rightAllocResult = allocator.regs.resolveIRArg(
     {
       iterator,
-      allow: (
-        leftAllocResult.type === IRArgResolverType.MEM
-          ? IRArgResolverType.REG
-          : IRArgResolverType.REG | IRArgResolverType.MEM
-      ),
+      allow: IRArgResolverType.REG | IRArgResolverType.MEM,
       arg: rightVar,
     },
   );

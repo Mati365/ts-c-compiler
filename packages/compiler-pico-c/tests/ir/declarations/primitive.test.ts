@@ -8,7 +8,7 @@ describe('Primitive declarations IR', () => {
         def main():
           a{0}: int*2B = alloca int2B
           ret
-          end-decl
+          end-def
       `);
     });
 
@@ -18,7 +18,7 @@ describe('Primitive declarations IR', () => {
         def main():
           a{0}: char*2B = alloca char1B
           ret
-          end-decl
+          end-def
       `);
     });
 
@@ -28,7 +28,7 @@ describe('Primitive declarations IR', () => {
         def main():
           a{0}: unsigned int*2B = alloca unsigned int2B
           ret
-          end-decl
+          end-def
       `);
     });
   });
@@ -41,7 +41,7 @@ describe('Primitive declarations IR', () => {
           a{0}: int*2B = alloca int2B
           *(a{0}: int*2B) = store %2: int2B
           ret
-          end-decl
+          end-def
       `);
     });
 
@@ -52,7 +52,7 @@ describe('Primitive declarations IR', () => {
           a{0}: char*2B = alloca char1B
           *(a{0}: char*2B) = store %97: char1B
           ret
-          end-decl
+          end-def
       `);
     });
   });

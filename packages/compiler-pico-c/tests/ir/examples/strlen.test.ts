@@ -32,7 +32,7 @@ describe('Example: Strlen', () => {
         *(i{0}: int*2B) = store %t{1}: int2B
         jmp L1:
         ret %-1: int2B
-        end-decl
+        end-def
     `);
   });
 });

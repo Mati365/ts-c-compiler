@@ -1,1 +1,1 @@
-export * from './X86LinearRegAllocator';
+export * from './X86BasicRegAllocator';

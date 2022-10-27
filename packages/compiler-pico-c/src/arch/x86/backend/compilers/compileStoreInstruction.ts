@@ -24,7 +24,7 @@ export function compileStoreInstruction(
   const addr = stackFrame.getLocalVarStackRelAddress(outputVar.name);
   const rightAllocResult = allocator.regs.resolveIRArg(
     {
-      allow: IRArgResolverType.REG,
+      allow: IRArgResolverType.REG | IRArgResolverType.NUMBER,
       arg: value,
       iterator,
     },

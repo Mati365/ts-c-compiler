@@ -15,7 +15,7 @@ describe('Constants IR', () => {
       # --- Block sum ---
       def sum(): [ret: int2B]
         ret %3: int2B
-        end-decl
+        end-def
     `);
   });
 });

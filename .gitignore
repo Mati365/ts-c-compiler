@@ -10,6 +10,7 @@ bochsout.txt
 parport.out
 
 dist/
+docs/
 
 *.swp
 # Logs

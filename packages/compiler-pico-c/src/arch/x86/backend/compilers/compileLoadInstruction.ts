@@ -11,5 +11,5 @@ export function compileLoadInstruction(
     context,
   }: LoadInstructionCompilerAttrs,
 ) {
-  context.allocator.regs.queueIRLoad(instruction);
+  context.allocator.regs.pushIRLoad(instruction);
 }

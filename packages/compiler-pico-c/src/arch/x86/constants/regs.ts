@@ -6,6 +6,7 @@ export type X86IntRegTree = {
   size: X86IntBitsMode,
   name: X86RegName,
   children?: X86IntRegTree[],
+  unavailable?: boolean,
 };
 
 export type RegsMap = {
@@ -19,29 +20,15 @@ export const createGeneralPurposeRegsMap = (): Record<CCompilerArch, RegsMap> =>
   [CCompilerArch.X86_16]: {
     int: [
       {
-        name: 'dx',
+        name: 'ax',
         size: 0x2,
         children: [
           {
-            name: 'dl',
+            name: 'al',
             size: 0x1,
           },
           {
-            name: 'dh',
-            size: 0x1,
-          },
-        ],
-      },
-      {
-        name: 'cx',
-        size: 0x2,
-        children: [
-          {
-            name: 'cl',
-            size: 0x1,
-          },
-          {
-            name: 'ch',
+            name: 'ah',
             size: 0x1,
           },
         ],
@@ -61,15 +48,29 @@ export const createGeneralPurposeRegsMap = (): Record<CCompilerArch, RegsMap> =>
         ],
       },
       {
-        name: 'ax',
+        name: 'cx',
         size: 0x2,
         children: [
           {
-            name: 'al',
+            name: 'cl',
             size: 0x1,
           },
           {
-            name: 'ah',
+            name: 'ch',
+            size: 0x1,
+          },
+        ],
+      },
+      {
+        name: 'dx',
+        size: 0x2,
+        children: [
+          {
+            name: 'dl',
+            size: 0x1,
+          },
+          {
+            name: 'dh',
             size: 0x1,
           },
         ],

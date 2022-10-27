@@ -22,5 +22,5 @@ export function getByteSizeArgPrefixName(byteSize: number): string {
     lastArg = arg[0];
   }
 
-  return lastArg;
+  return lastArg.toLowerCase();
 }

@@ -18,7 +18,7 @@ describe('While stmt', () => {
         jmp L1:
         L2:
         ret
-        end-decl
+        end-def
     `);
   });
 
@@ -37,7 +37,7 @@ describe('While stmt', () => {
         %t{0}: int2B = %2: int2B greater_than %1: int2B
         if: %t{0}: int2B differs %0: int2B then L1
         ret
-        end-decl
+        end-def
     `);
   });
 });

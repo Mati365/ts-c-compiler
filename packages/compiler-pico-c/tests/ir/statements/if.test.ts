@@ -15,7 +15,7 @@ describe('If stmt', () => {
         a{0}: int*2B = alloca int2B
         L1:
         ret
-        end-decl
+        end-def
     `);
   });
 
@@ -51,7 +51,7 @@ describe('If stmt', () => {
         %1_a{0}: int*2B = alloca int2B
         L3:
         ret
-        end-decl
+        end-def
     `);
   });
 
@@ -90,7 +90,7 @@ describe('If stmt', () => {
         c{0}: int*2B = alloca int2B
         L4:
         ret
-        end-decl
+        end-def
     `);
   });
 });

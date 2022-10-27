@@ -3,7 +3,7 @@ import {assertUnreachable} from '@compiler/core/utils';
 import {CCompilerArch, CCompilerConfig} from '@compiler/pico-c/constants';
 import {X86StackFrame} from './X86StackFrame';
 import {X86AbstractRegAllocator} from './X86AbstractRegAllocator';
-import {X86LinearRegAllocator} from './allocators';
+import {X86BasicRegAllocator} from './allocators';
 import {genInstruction, genLabel} from '../asm-utils';
 
 export class X86Allocator {
@@ -24,7 +24,7 @@ export class X86Allocator {
   }
 
   allocRegAllocator() {
-    this._regs = new X86LinearRegAllocator(this);
+    this._regs = new X86BasicRegAllocator(this);
     return this._regs;
   }
 

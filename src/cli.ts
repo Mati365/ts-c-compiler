@@ -4,9 +4,12 @@ import {ccompiler, CCompilerOutput} from '@compiler/pico-c';
 ccompiler(/* cpp */ `
   void sum() {
     int i = 0;
+    i = i + 1 + i + (3 * 4);
 
-    while (i < 10) {
-      ++i;
+    if (i > 5) {
+      int k;
+
+      k = 5 + i;
     }
   }
 `).match(
