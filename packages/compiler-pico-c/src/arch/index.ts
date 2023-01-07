@@ -1,9 +1,12 @@
-import {CCompilerArch} from '../constants';
-import {CArchDescriptor} from './types';
+import { CCompilerArch } from '../constants';
+import { CArchDescriptor } from './types';
 
 import * as X86_16 from './x86/modes/16bit/sizeofPrimitiveType';
 
-const COMPILER_ARCH_DESCRIPTORS: Record<CCompilerArch, Readonly<CArchDescriptor>> = {
+const COMPILER_ARCH_DESCRIPTORS: Record<
+  CCompilerArch,
+  Readonly<CArchDescriptor>
+> = {
   [CCompilerArch.X86_16]: {
     sizeofPrimitiveType: X86_16.sizeofPrimitiveType,
     regs: {

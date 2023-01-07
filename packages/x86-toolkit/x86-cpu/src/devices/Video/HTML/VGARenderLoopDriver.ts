@@ -1,20 +1,16 @@
-import {asap} from '@compiler/core/utils/asap';
-import {uuidX86Device} from '@x86-toolkit/cpu/types';
+import { asap } from '@compiler/core/utils/asap';
+import { uuidX86Device } from '@x86-toolkit/cpu/types';
 
-import {VGAPixBufCanvasRenderer} from '../Renderers';
-import {VGA} from '../VGA';
+import { VGAPixBufCanvasRenderer } from '../Renderers';
+import { VGA } from '../VGA';
 
 type VGARenderLoopDriverInitConfig = {
-  screenElement: HTMLElement,
-  upscaleWidth?: number,
+  screenElement: HTMLElement;
+  upscaleWidth?: number;
 };
 
 /**
  * Driver that inits render loop and renders content to Canvas
- *
- * @export
- * @class VGARenderLoopDriver
- * @extends {uuidX86Device('vgaRenderLoopDriver')}
  */
 export class VGARenderLoopDriver extends uuidX86Device('vgaRenderLoop') {
   private screenElement: HTMLElement = null;
@@ -22,35 +18,31 @@ export class VGARenderLoopDriver extends uuidX86Device('vgaRenderLoop') {
   private frameNumber: number = 0;
 
   get vga(): VGA {
-    const {devices} = this.cpu;
+    const { devices } = this.cpu;
 
-    return <VGA> (devices && devices.vga);
+    return <VGA>(devices && devices.vga);
   }
 
-  init({screenElement, upscaleWidth}: VGARenderLoopDriverInitConfig): void {
+  init({ screenElement, upscaleWidth }: VGARenderLoopDriverInitConfig): void {
     this.screenElement = screenElement;
     this.upscaleWidth = upscaleWidth;
   }
 
   boot(): void {
     /** Monitor render loop */
-    const {screenElement, upscaleWidth, cpu, vga} = this;
+    const { screenElement, upscaleWidth, cpu, vga } = this;
     if (screenElement) {
       /** Render loop */
-      vga.setScreenElement(
-        {
-          upscaleWidth,
-          screenElement,
-        },
-      );
+      vga.setScreenElement({
+        upscaleWidth,
+        screenElement,
+      });
 
       try {
-        asap(
-          () => {
-            cpu.exec(1);
-            return !cpu.isHalted();
-          },
-        );
+        asap(() => {
+          cpu.exec(1);
+          return !cpu.isHalted();
+        });
       } catch (e) {
         cpu.logger.error(e.stack);
       }
@@ -58,8 +50,9 @@ export class VGARenderLoopDriver extends uuidX86Device('vgaRenderLoop') {
       const frame = () => {
         if (cpu.isHalted()) {
           const renderer = vga.getCurrentRenderer();
-          if (renderer instanceof VGAPixBufCanvasRenderer)
+          if (renderer instanceof VGAPixBufCanvasRenderer) {
             renderer.markWholeRegionAsDirty();
+          }
 
           this.redraw();
           return;
@@ -74,13 +67,12 @@ export class VGARenderLoopDriver extends uuidX86Device('vgaRenderLoop') {
   }
 
   redraw(): void {
-    const {vga} = this;
-    if (!vga)
+    const { vga } = this;
+    if (!vga) {
       return;
+    }
 
-    vga
-      .getCurrentRenderer()
-      .redraw(this.frameNumber);
+    vga.getCurrentRenderer().redraw(this.frameNumber);
 
     this.frameNumber = (this.frameNumber + 1) % 0x30;
   }

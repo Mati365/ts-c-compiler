@@ -1,9 +1,9 @@
-import {CountdownTimer} from './CountdownTimer';
+import { CountdownTimer } from './CountdownTimer';
 
 type SpeakerAudioContext = {
-  ctx: AudioContext,
-  oscillator: OscillatorNode,
-  gainNode: GainNode,
+  ctx: AudioContext;
+  oscillator: OscillatorNode;
+  gainNode: GainNode;
 };
 
 /*
@@ -25,10 +25,6 @@ Octave 0    1    2    3    4    5    6    7
 
 /**
  * Beeper
- *
- * @export
- * @class SpeakerTimer
- * @extends {CountdownTimer}
  */
 export class SpeakerTimer extends CountdownTimer {
   private volume: number = 0.1;
@@ -36,8 +32,6 @@ export class SpeakerTimer extends CountdownTimer {
 
   /**
    * Clears audio context and kills audio prop
-   *
-   * @memberof SpeakerTimer
    */
   reset() {
     this.disableAudio();
@@ -45,8 +39,6 @@ export class SpeakerTimer extends CountdownTimer {
 
   /**
    * Creates HTML5 audio instance
-   *
-   * @memberof PIT
    */
   initAudio(): void {
     try {
@@ -61,10 +53,7 @@ export class SpeakerTimer extends CountdownTimer {
 
       // square wave
       oscillator.type = 'square';
-      oscillator.frequency.setValueAtTime(
-        this.getFrequency(),
-        ctx.currentTime,
-      );
+      oscillator.frequency.setValueAtTime(this.getFrequency(), ctx.currentTime);
 
       oscillator.start();
 
@@ -80,14 +69,13 @@ export class SpeakerTimer extends CountdownTimer {
 
   /**
    * Disable audio instance
-   *
-   * @memberof PIT
    */
   disableAudio(): void {
-    if (!this.audio)
+    if (!this.audio) {
       return;
+    }
 
-    const {ctx, oscillator} = this.audio;
+    const { ctx, oscillator } = this.audio;
     this.audio = null;
 
     /* eslint-disable no-unused-expressions */

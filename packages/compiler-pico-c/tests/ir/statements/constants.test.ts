@@ -11,7 +11,7 @@ describe('Constants IR', () => {
       int sum() {
         return ONE + TWO;
       }
-    `).toCompiledIRBeEqual(/* ruby */`
+    `).toCompiledIRBeEqual(/* ruby */ `
       # --- Block sum ---
       def sum(): [ret: int2B]
         ret %3: int2B

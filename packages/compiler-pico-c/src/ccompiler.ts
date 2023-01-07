@@ -1,33 +1,27 @@
-import {ok} from '@compiler/core/monads/Result';
-import {asm} from '@x86-toolkit/assembler/asm';
+import { ok } from '@compiler/core/monads/Result';
+import { asm } from '@x86-toolkit/assembler/asm';
 
+import { dumpAttributesToString, timingsToString } from '@compiler/core/utils';
+
+import { TableBinaryView } from '@x86-toolkit/assembler/parser/compiler/view/TableBinaryView';
+import { TreePrintVisitor } from '@compiler/grammar/tree/TreePrintVisitor';
 import {
-  dumpAttributesToString,
-  timingsToString,
-} from '@compiler/core/utils';
+  CCompilerTimings,
+  createCCompilerTimings,
+} from './frontend/utils/createCCompilerTimings';
+import { CCompilerConfig, CCompilerArch } from './constants/config';
 
-import {TableBinaryView} from '@x86-toolkit/assembler/parser/compiler/view/TableBinaryView';
-import {TreePrintVisitor} from '@compiler/grammar/tree/TreePrintVisitor';
-import {CCompilerTimings, createCCompilerTimings} from './frontend/utils/createCCompilerTimings';
-import {CCompilerConfig, CCompilerArch} from './constants/config';
+import { ASTCCompilerNode } from './frontend/parser/ast';
+import { IRResultView, IRCodeBuilderResult } from './frontend/ir';
 
-import {ASTCCompilerNode} from './frontend/parser/ast';
-import {IRResultView, IRCodeBuilderResult} from './frontend/ir';
+import { isNewScopeASTNode } from './frontend/analyze/interfaces';
+import { CScopeTree, CScopePrintVisitor } from './frontend/analyze';
 
-import {isNewScopeASTNode} from './frontend/analyze/interfaces';
-import {
-  CScopeTree,
-  CScopePrintVisitor,
-} from './frontend/analyze';
-
-import {cIRCompiler} from './frontend';
-import {CBackendCompilerResult, genASMIRCode} from './backend';
+import { cIRCompiler } from './frontend';
+import { CBackendCompilerResult, genASMIRCode } from './backend';
 
 /**
  * Output of compilation
- *
- * @export
- * @class CCompilerResult
  */
 export class CCompilerOutput {
   constructor(
@@ -40,25 +34,17 @@ export class CCompilerOutput {
   ) {}
 
   static serializeTypedTree(ast: ASTCCompilerNode): string {
-    return TreePrintVisitor.serializeToString<ASTCCompilerNode>(
-      ast,
-      {
-        formatterFn: (node) => dumpAttributesToString(
-          node.toString(),
-          {
-            type: node.type?.toString(),
-            scoped: isNewScopeASTNode(node) || null,
-          },
-        ),
-      },
-    );
+    return TreePrintVisitor.serializeToString<ASTCCompilerNode>(ast, {
+      formatterFn: node =>
+        dumpAttributesToString(node.toString(), {
+          type: node.type?.toString(),
+          scoped: isNewScopeASTNode(node) || null,
+        }),
+    });
   }
 
   dump() {
-    const {
-      scope, code, ir,
-      timings, ast, codegen,
-    } = this;
+    const { scope, code, ir, timings, ast, codegen } = this;
 
     console.info(
       [
@@ -79,7 +65,7 @@ export class CCompilerOutput {
         '\nAssembly:',
         '',
         TableBinaryView.serializeToString(
-          asm(codegen.asm, {preprocessor: false}),
+          asm(codegen.asm, { preprocessor: false }),
         ),
         '',
       ].join('\n'),
@@ -93,11 +79,6 @@ export class CCompilerOutput {
  * @see
  *  Flow:
  *  Lexer -> ASTGenerator -> ASTIRCompiler -> X86CodeGen
- *
- * @export
- * @param {string} code
- * @param {CCompilerConfig} ccompilerConfig
- * @returns
  */
 export function ccompiler(
   code: string,
@@ -110,32 +91,22 @@ export function ccompiler(
 ) {
   const timings = createCCompilerTimings();
 
-  return (
-    cIRCompiler(
-      code,
-      {
-        ...ccompilerConfig,
-        timings,
-      },
-    )
-      .andThen(
-        timings.add(
-          'codegen',
-          ({ir, ...result}) => genASMIRCode(ccompilerConfig, ir).andThen((codegen) => ok({
+  return cIRCompiler(code, {
+    ...ccompilerConfig,
+    timings,
+  })
+    .andThen(
+      timings.add('codegen', ({ ir, ...result }) =>
+        genASMIRCode(ccompilerConfig, ir).andThen(codegen =>
+          ok({
             ...result,
             codegen,
             ir,
-          }))),
-      )
-      .andThen(({tree, scope, ir, codegen}) => ok(
-        new CCompilerOutput(
-          code,
-          tree,
-          scope,
-          ir,
-          codegen,
-          timings.unwrap(),
+          }),
         ),
-      ))
-  );
+      ),
+    )
+    .andThen(({ tree, scope, ir, codegen }) =>
+      ok(new CCompilerOutput(code, tree, scope, ir, codegen, timings.unwrap())),
+    );
 }

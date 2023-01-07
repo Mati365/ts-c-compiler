@@ -1,23 +1,16 @@
-import {dumpAttributesToString} from '@compiler/core/utils';
-import {walkOverFields} from '@compiler/grammar/decorators/walkOverFields';
+import { dumpAttributesToString } from '@compiler/core/utils';
+import { walkOverFields } from '@compiler/grammar/decorators/walkOverFields';
 
-import {NodeLocation} from '@compiler/grammar/tree/NodeLocation';
-import {Token} from '@compiler/lexer/tokens';
-import {CTypeSpecifier} from '../../../constants';
-import {ASTCCompilerKind, ASTCCompilerNode} from './ASTCCompilerNode';
-import {ASTCEnumSpecifier} from './ASTCEnumSpecifier';
-import {ASTCStructSpecifier} from './ASTCStructSpecifier';
+import { NodeLocation } from '@compiler/grammar/tree/NodeLocation';
+import { Token } from '@compiler/lexer/tokens';
+import { CTypeSpecifier } from '../../../constants';
+import { ASTCCompilerKind, ASTCCompilerNode } from './ASTCCompilerNode';
+import { ASTCEnumSpecifier } from './ASTCEnumSpecifier';
+import { ASTCStructSpecifier } from './ASTCStructSpecifier';
 
-@walkOverFields(
-  {
-    fields: [
-      'specifier',
-      'typeName',
-      'enumSpecifier',
-      'structOrUnionSpecifier',
-    ],
-  },
-)
+@walkOverFields({
+  fields: ['specifier', 'typeName', 'enumSpecifier', 'structOrUnionSpecifier'],
+})
 export class ASTCTypeSpecifier extends ASTCCompilerNode {
   constructor(
     loc: NodeLocation,
@@ -30,23 +23,16 @@ export class ASTCTypeSpecifier extends ASTCCompilerNode {
   }
 
   get displayName() {
-    const {specifier, typeName} = this;
+    const { specifier, typeName } = this;
 
     return (specifier || typeName?.text)?.trim();
   }
 
-  /**
-   * @returns
-   * @memberof ASTCTypeSpecifier
-   */
   toString() {
-    const {kind, displayName} = this;
+    const { kind, displayName } = this;
 
-    return dumpAttributesToString(
-      kind,
-      {
-        displayName,
-      },
-    );
+    return dumpAttributesToString(kind, {
+      displayName,
+    });
   }
 }

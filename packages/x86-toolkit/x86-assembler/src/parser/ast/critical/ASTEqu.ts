@@ -1,21 +1,20 @@
-import {Token, TokenType} from '@compiler/lexer/tokens';
-import {NodeLocation} from '@compiler/grammar/tree/NodeLocation';
-import {ParserError, ParserErrorCode} from '@x86-toolkit/assembler/shared/ParserError';
+import { Token, TokenType } from '@compiler/lexer/tokens';
+import { NodeLocation } from '@compiler/grammar/tree/NodeLocation';
+import {
+  ParserError,
+  ParserErrorCode,
+} from '@x86-toolkit/assembler/shared/ParserError';
 
-import {ASTAsmParser} from '../ASTAsmParser';
-import {ASTNodeKind} from '../types';
-import {KindASTAsmNode} from '../ASTAsmNode';
+import { ASTAsmParser } from '../ASTAsmParser';
+import { ASTNodeKind } from '../types';
+import { KindASTAsmNode } from '../ASTAsmNode';
 
-import {fetchInstructionTokensArgsList} from '../../utils/fetchInstructionTokensArgsList';
+import { fetchInstructionTokensArgsList } from '../../utils/fetchInstructionTokensArgsList';
 
 export const EQU_TOKEN_NAME = 'equ';
 
 /**
  * Similar to %define but define label with value
- *
- * @export
- * @class ASTEqu
- * @extends {KindASTAsmNode(ASTNodeKind.EQU)}
  */
 export class ASTEqu extends KindASTAsmNode(ASTNodeKind.EQU) {
   constructor(
@@ -27,13 +26,14 @@ export class ASTEqu extends KindASTAsmNode(ASTNodeKind.EQU) {
   }
 
   toString(): string {
-    const {name, expression} = this;
+    const { name, expression } = this;
     return `${name} equ ${expression}`;
   }
 
   static parse(token: Token, parser: ASTAsmParser): ASTEqu {
-    if (token.type !== TokenType.KEYWORD)
+    if (token.type !== TokenType.KEYWORD) {
       return null;
+    }
 
     let nextToken = parser.fetchRelativeToken(1, false);
     let eatCount = 1;
@@ -42,12 +42,13 @@ export class ASTEqu extends KindASTAsmNode(ASTNodeKind.EQU) {
       eatCount = 2;
     }
 
-    if (nextToken.lowerText !== EQU_TOKEN_NAME)
+    if (nextToken.lowerText !== EQU_TOKEN_NAME) {
       return null;
+    }
 
     parser.consume(eatCount);
-    const args = fetchInstructionTokensArgsList(parser, false);
 
+    const args = fetchInstructionTokensArgsList(parser, false);
     if (args.length !== 1) {
       throw new ParserError(
         ParserErrorCode.INCORRECT_EQU_ARGS_COUNT,

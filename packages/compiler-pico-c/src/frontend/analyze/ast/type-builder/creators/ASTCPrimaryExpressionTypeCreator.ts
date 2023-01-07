@@ -1,8 +1,14 @@
-import {TokenType} from '@compiler/lexer/shared';
-import {ASTCCompilerKind, ASTCPrimaryExpression} from '@compiler/pico-c/frontend/parser/ast';
-import {CTypeCheckError, CTypeCheckErrorCode} from '../../../errors/CTypeCheckError';
-import {CType, CPrimitiveType, CPointerType} from '../../../types';
-import {ASTCTypeCreator} from './ASTCTypeCreator';
+import { TokenType } from '@compiler/lexer/shared';
+import {
+  ASTCCompilerKind,
+  ASTCPrimaryExpression,
+} from '@compiler/pico-c/frontend/parser/ast';
+import {
+  CTypeCheckError,
+  CTypeCheckErrorCode,
+} from '../../../errors/CTypeCheckError';
+import { CType, CPrimitiveType, CPointerType } from '../../../types';
+import { ASTCTypeCreator } from './ASTCTypeCreator';
 
 /**
  * Assigns type to ASTCPrimaryExpression
@@ -11,11 +17,11 @@ export class ASTCPrimaryExpressionTypeCreator extends ASTCTypeCreator<ASTCPrimar
   kind = ASTCCompilerKind.PrimaryExpression;
 
   override enter(node: ASTCPrimaryExpression): void {
-    const {arch, scope} = this;
+    const { arch, scope } = this;
     let type: CType = null;
 
     if (node.isConstant()) {
-      const {constant} = node;
+      const { constant } = node;
 
       switch (constant.type) {
         case TokenType.FLOAT_NUMBER:
@@ -36,13 +42,12 @@ export class ASTCPrimaryExpressionTypeCreator extends ASTCTypeCreator<ASTCPrimar
           );
       }
     } else if (node.isIdentifier()) {
-      const {text: name} = node.identifier;
+      const { text: name } = node.identifier;
 
-      type = (
-        scope.findVariableType(name)
-          || scope.findFunction(name)
-          || scope.findCompileTimeConstantType(name)
-      );
+      type =
+        scope.findVariableType(name) ||
+        scope.findFunction(name) ||
+        scope.findCompileTimeConstantType(name);
 
       if (!type) {
         throw new CTypeCheckError(
@@ -53,19 +58,22 @@ export class ASTCPrimaryExpressionTypeCreator extends ASTCTypeCreator<ASTCPrimar
           },
         );
       }
-    } else if (node.isStringLiteral())
+    } else if (node.isStringLiteral()) {
       type = CPointerType.ofStringLiteral(arch);
-    else if (node.isCharLiteral())
+    } else if (node.isCharLiteral()) {
       type = CPrimitiveType.char(arch);
+    }
 
     node.type = type;
   }
 
   override leave(node: ASTCPrimaryExpression): void {
-    if (node.type)
+    if (node.type) {
       return;
+    }
 
-    if (node.isExpression())
+    if (node.isExpression()) {
       node.type = node.expression.type;
+    }
   }
 }

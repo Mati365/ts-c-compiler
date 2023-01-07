@@ -8,7 +8,7 @@ describe('While stmt', () => {
           int a;
         }
       }
-    `).toCompiledIRBeEqual(/* ruby */`
+    `).toCompiledIRBeEqual(/* ruby */ `
       # --- Block main ---
       def main():
         L1:
@@ -29,7 +29,7 @@ describe('While stmt', () => {
           int a;
         } while (2 > 1);
       }
-    `).toCompiledIRBeEqual(/* ruby */`
+    `).toCompiledIRBeEqual(/* ruby */ `
       # --- Block main ---
       def main():
         L1:

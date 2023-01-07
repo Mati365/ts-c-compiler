@@ -1,5 +1,8 @@
-import {ASTCCompilerKind, ASTCInitializer} from '@compiler/pico-c/frontend/parser/ast';
-import {ASTCTypeCreator} from './ASTCTypeCreator';
+import {
+  ASTCCompilerKind,
+  ASTCInitializer,
+} from '@compiler/pico-c/frontend/parser/ast';
+import { ASTCTypeCreator } from './ASTCTypeCreator';
 
 export class ASTCInitializerTypeCreator extends ASTCTypeCreator<ASTCInitializer> {
   kind = ASTCCompilerKind.Initializer;

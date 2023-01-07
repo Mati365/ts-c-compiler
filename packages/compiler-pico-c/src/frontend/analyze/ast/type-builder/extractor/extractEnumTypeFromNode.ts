@@ -1,28 +1,26 @@
-import {ASTCEnumSpecifier} from '@compiler/pico-c/frontend/parser';
-import {CEnumType, CPrimitiveType} from '../../../types';
-import {CTypeCheckError, CTypeCheckErrorCode} from '../../../errors/CTypeCheckError';
-import {TypeExtractorAttrs} from '../constants/types';
+import { ASTCEnumSpecifier } from '@compiler/pico-c/frontend/parser';
+import { CEnumType, CPrimitiveType } from '../../../types';
+import {
+  CTypeCheckError,
+  CTypeCheckErrorCode,
+} from '../../../errors/CTypeCheckError';
+import { TypeExtractorAttrs } from '../constants/types';
 
-import {evalConstantExpression} from '../../expression-eval';
-import {checkLeftTypeOverlapping} from '../../../checker';
+import { evalConstantExpression } from '../../expression-eval';
+import { checkLeftTypeOverlapping } from '../../../checker';
 
 type EnumTypeExtractorAttrs = TypeExtractorAttrs & {
-  enumSpecifier: ASTCEnumSpecifier,
+  enumSpecifier: ASTCEnumSpecifier;
 };
 
 /**
  * Walks over enum tree node and constructs enum type
- *
- * @export
- * @param {EnumTypeExtractorAttrs} attrs
- * @return {CEnumType}
  */
-export function extractEnumTypeFromNode(
-  {
-    enumSpecifier,
-    context,
-  }: EnumTypeExtractorAttrs): CEnumType {
-  const {arch} = context.config;
+export function extractEnumTypeFromNode({
+  enumSpecifier,
+  context,
+}: EnumTypeExtractorAttrs): CEnumType {
+  const { arch } = context.config;
 
   const blankEnum = CEnumType.ofBlank(arch, enumSpecifier.name?.text);
   const expectedResultType = blankEnum.getEntryValueType();
@@ -33,12 +31,10 @@ export function extractEnumTypeFromNode(
     prevEnumEntryValue = prevEnumEntryValue ?? 0;
 
     if (enumeration.expression) {
-      const exprResult = +evalConstantExpression(
-        {
-          expression: enumeration.expression,
-          context,
-        },
-      ).unwrapOrThrow();
+      const exprResult = +evalConstantExpression({
+        expression: enumeration.expression,
+        context,
+      }).unwrapOrThrow();
 
       const resultType = CPrimitiveType.typeofValue(arch, exprResult);
 
@@ -56,10 +52,8 @@ export function extractEnumTypeFromNode(
       prevEnumEntryValue = exprResult;
     }
 
-    return (
-      acc
-        .ofAppendedField(enumeration.name.text, prevEnumEntryValue++)
-        .unwrapOrThrow()
-    );
+    return acc
+      .ofAppendedField(enumeration.name.text, prevEnumEntryValue++)
+      .unwrapOrThrow();
   }, blankEnum);
 }

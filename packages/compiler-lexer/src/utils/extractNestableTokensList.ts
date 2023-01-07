@@ -1,4 +1,4 @@
-import {Token} from '../tokens';
+import { Token } from '../tokens';
 
 /**
  * Fetches tokens list that might contain
@@ -6,44 +6,42 @@ import {Token} from '../tokens';
  *
  * e.g.:
  * [[abc], [abc2]] should match [[abc], [abc2]] not [[abc]
- *
- *
- * @export
- * @param {Object} fetchUntil
- * @param {Token[]} tokens
- * @param {number} offset
- * @returns {[Token[], number]}
  */
 export function extractNestableTokensList(
   fetchUntil: {
-    up(token: Token): boolean,
-    down(token: Token): boolean,
+    up(token: Token): boolean;
+    down(token: Token): boolean;
   },
   tokens: Token[],
   offset: number,
 ): [Token[], number] {
-  const {length} = tokens;
-  const {up, down} = fetchUntil;
+  const { length } = tokens;
+  const { up, down } = fetchUntil;
 
   const tokenBuffer: Token[] = [];
   let nesting = 0;
 
-  for (;; ++offset) {
-    if (offset >= length)
+  for (; ; ++offset) {
+    if (offset >= length) {
       break;
+    }
 
     const token = tokens[offset];
-    if (up(token))
+    if (up(token)) {
       nesting++;
+    }
 
-    if (nesting > 0)
+    if (nesting > 0) {
       tokenBuffer.push(token);
+    }
 
-    if (down(token))
+    if (down(token)) {
       nesting--;
+    }
 
-    if (nesting < 0)
+    if (nesting < 0) {
       break;
+    }
   }
 
   return [tokenBuffer, offset + 1];

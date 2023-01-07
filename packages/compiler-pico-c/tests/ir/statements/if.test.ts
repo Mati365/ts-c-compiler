@@ -8,7 +8,7 @@ describe('If stmt', () => {
           int a;
         }
       }
-    `).toCompiledIRBeEqual(/* ruby */`
+    `).toCompiledIRBeEqual(/* ruby */ `
       # --- Block main ---
       def main():
         if: %2: int2B equal %0: int2B then L1
@@ -28,7 +28,7 @@ describe('If stmt', () => {
           int a;
         }
       }
-    `).toCompiledIRBeEqual(/* ruby */`
+    `).toCompiledIRBeEqual(/* ruby */ `
       # --- Block main ---
       def main():
         a{0}: int*2B = alloca int2B
@@ -68,7 +68,7 @@ describe('If stmt', () => {
           int c;
         }
       }
-    `).toCompiledIRBeEqual(/* ruby */`
+    `).toCompiledIRBeEqual(/* ruby */ `
       # --- Block main ---
       def main():
         a{0}: int*2B = alloca int2B

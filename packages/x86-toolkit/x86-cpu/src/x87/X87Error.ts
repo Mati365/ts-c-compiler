@@ -1,4 +1,4 @@
-import {CodeTranslatedError} from '@compiler/core/shared/CodeTranslatedError';
+import { CodeTranslatedError } from '@compiler/core/shared/CodeTranslatedError';
 
 export enum X87ErrorCode {
   STACK_OVERFLOW_OR_UNDERFLOW,
@@ -18,10 +18,6 @@ export const X87_ERROR_TRANSLATIONS: Record<X87ErrorCode, string> = {
 
 /**
  * Error thrown during fpu operation
- *
- * @export
- * @class X87Error
- * @extends {CodeTranslatedError<X87ErrorCode>}
  */
 export class X87Error extends CodeTranslatedError<X87ErrorCode> {
   constructor(code: X87ErrorCode, meta?: object) {

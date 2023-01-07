@@ -1,23 +1,13 @@
-import {walkOverFields} from '@compiler/grammar/decorators/walkOverFields';
+import { walkOverFields } from '@compiler/grammar/decorators/walkOverFields';
 
-import {NodeLocation} from '@compiler/grammar/tree/NodeLocation';
-import {ASTCCompilerKind, ASTCCompilerNode} from './ASTCCompilerNode';
-import {ASTCDirectDeclarator} from './ASTCDirectDeclarator';
-import {ASTCPointer} from './ASTCPointer';
+import { NodeLocation } from '@compiler/grammar/tree/NodeLocation';
+import { ASTCCompilerKind, ASTCCompilerNode } from './ASTCCompilerNode';
+import { ASTCDirectDeclarator } from './ASTCDirectDeclarator';
+import { ASTCPointer } from './ASTCPointer';
 
-/**
- * @export
- * @class ASTCDeclarator
- * @extends {ASTCCompilerNode}
- */
-@walkOverFields(
-  {
-    fields: [
-      'pointer',
-      'directDeclarator',
-    ],
-  },
-)
+@walkOverFields({
+  fields: ['pointer', 'directDeclarator'],
+})
 export class ASTCDeclarator extends ASTCCompilerNode {
   constructor(
     loc: NodeLocation,
@@ -27,5 +17,7 @@ export class ASTCDeclarator extends ASTCCompilerNode {
     super(ASTCCompilerKind.Declarator, loc);
   }
 
-  isPointer() { return !!this.pointer; }
+  isPointer() {
+    return !!this.pointer;
+  }
 }

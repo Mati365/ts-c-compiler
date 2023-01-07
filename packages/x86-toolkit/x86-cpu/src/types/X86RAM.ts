@@ -1,17 +1,12 @@
-import {VirtualMemBlockDriver} from '../memory/VirtualMemBlockDriver';
-import {VGA} from '../devices/Video/VGA';
-import {X86AbstractCPU} from './X86AbstractCPU';
+import { VirtualMemBlockDriver } from '../memory/VirtualMemBlockDriver';
+import { VGA } from '../devices/Video/VGA';
+import { X86AbstractCPU } from './X86AbstractCPU';
 
 /**
  * Simple RAM manager
  *
  * @todo
  * Add VGA mem maps
- *
- * @export
- * @class X86RAM
- * @extends {VirtualMemBlockDriver}
- * @template T
  */
 export class X86RAM<T extends X86AbstractCPU> extends VirtualMemBlockDriver {
   protected cpu: T;
@@ -21,39 +16,31 @@ export class X86RAM<T extends X86AbstractCPU> extends VirtualMemBlockDriver {
     super(device);
 
     this.cpu = cpu;
-    this.vga = <VGA> cpu.devices.vga;
+    this.vga = <VGA>cpu.devices.vga;
   }
 
   /**
    * Writes single byte to mapped memory
-   *
-   * @param {number} address
-   * @param {X86BitsMode} [bits=0x1]
-   * @returns {number}
-   * @memberof VirtualMemBlockDriver
    */
   writeByte(address: number, value: number): number {
-    const {vga} = this;
+    const { vga } = this;
     const result: number = vga.writeByte(address, value);
-    if (result !== null)
+    if (result !== null) {
       return result;
+    }
 
     return super.writeByte(address, value);
   }
 
   /**
    * Reads single byte from mapped memory
-   *
-   * @param {number} address
-   * @param {X86BitsMode} [bits=0x1]
-   * @returns {number}
-   * @memberof VirtualMemBlockDriver
    */
   readByte(address: number): number {
-    const {vga} = this;
+    const { vga } = this;
     const result: number = vga.readByte(address);
-    if (result !== null)
+    if (result !== null) {
       return result;
+    }
 
     return super.readByte(address);
   }

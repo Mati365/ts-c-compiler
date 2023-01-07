@@ -6,7 +6,7 @@ import {
   ExtendedX86RegName,
 } from '@x86-toolkit/cpu/types';
 
-import {InstructionPrefix, RegisterSchema} from './constants';
+import { InstructionPrefix, RegisterSchema } from './constants';
 
 export {
   X86IntBitsMode,
@@ -20,9 +20,6 @@ export type X86PrefixName = keyof typeof InstructionPrefix;
 
 /**
  * Newer CPU = higher value
- *
- * @export
- * @enum {number}
  */
 export enum X86TargetCPU {
   I_8086 = 0,
@@ -47,7 +44,7 @@ export enum InstructionArgSize {
   WORD = 0x2,
   DWORD = 0x4,
   QWORD = 0x8,
-  TWORD = 0xA,
+  TWORD = 0xa,
 }
 
 export type InstructionArgSizeName = keyof typeof InstructionArgSize;
@@ -70,17 +67,18 @@ export const BRANCH_ADDRESSING_SIZE_MAPPING = {
 export type MemSIBScale = 1 | 2 | 4 | 8;
 
 export type MemAddressDescription = {
-  sreg?: RegisterSchema,
-  reg?: RegisterSchema,
-  reg2?: RegisterSchema,
+  sreg?: RegisterSchema;
+  reg?: RegisterSchema;
+  reg2?: RegisterSchema;
   scale?: {
-    reg: RegisterSchema,
-    value: MemSIBScale,
-  },
+    reg: RegisterSchema;
+    value: MemSIBScale;
+  };
 
-  disp?: number,
-  dispByteSize?: number,
-  signedByteSize?: number,
+  disp?: number;
+  dispByteSize?: number;
+  signedByteSize?: number;
 };
 
-export const isValidScale = (num: number): boolean => num === 1 || num === 2 || num === 4 || num === 8;
+export const isValidScale = (num: number): boolean =>
+  num === 1 || num === 2 || num === 4 || num === 8;

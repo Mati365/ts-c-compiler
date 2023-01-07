@@ -1,4 +1,4 @@
-import {CTypeCheckErrorCode} from './utils/analyzeMatcher';
+import { CTypeCheckErrorCode } from './utils/analyzeMatcher';
 
 describe('Variables scope', () => {
   test('redefine of scope variable trigger error', () => {
@@ -20,7 +20,6 @@ describe('Variables scope', () => {
         }
       `).toHaveCompilerError(CTypeCheckErrorCode.UNKNOWN_IDENTIFIER);
     });
-
 
     test('accessing index variable defined in "for" works fine', () => {
       expect(/* cpp */ `

@@ -1,5 +1,3 @@
 export class X86StackOffset {
-  constructor(
-    readonly offset: number,
-  ) {}
+  constructor(readonly offset: number) {}
 }

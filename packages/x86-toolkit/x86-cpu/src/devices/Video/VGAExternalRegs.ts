@@ -1,13 +1,9 @@
-import {UnionStruct, bits} from '@compiler/core/shared/UnionStruct';
+import { UnionStruct, bits } from '@compiler/core/shared/UnionStruct';
 
 /**
  * Misc Output Register (Read at 3CCh, Write at 3C2h)
  *
  * @see {@link http://www.osdever.net/FreeVGA/vga/extreg.htm#3CCR3C2W}
- * *
- * @export
- * @class MiscReg
- * @extends {UnionStruct}
  */
 export class MiscReg extends UnionStruct {
   @bits(0) inOutAddressSelect: number;
@@ -20,10 +16,6 @@ export class MiscReg extends UnionStruct {
 
 /**
  * Feature Control Register (Read at 3CAh, Write at 3BAh (mono) or 3DAh (color))
- *
- * @export
- * @class FeatureControlReg
- * @extends {UnionStruct}
  */
 export class FeatureControlReg extends UnionStruct {
   @bits(0) fc0: number;
@@ -32,10 +24,6 @@ export class FeatureControlReg extends UnionStruct {
 
 /**
  * Input Status #0 Register (Read-only at 3C2h)
- *
- * @export
- * @class InputStatus0
- * @extends {UnionStruct}
  */
 export class InputStatus0 extends UnionStruct {
   @bits(4) ss: number;
@@ -43,10 +31,6 @@ export class InputStatus0 extends UnionStruct {
 
 /**
  * Input Status #1 Register (Read at 3BAh (mono) or 3DAh (color))
- *
- * @export
- * @class InputStatus1
- * @extends {UnionStruct}
  */
 export class InputStatus1 extends UnionStruct {
   @bits(0) dd: number;
@@ -55,13 +39,10 @@ export class InputStatus1 extends UnionStruct {
 
 /**
  * Group of VGA External Registers (sometimes called the General Registers)
- *
- * @export
- * @class VGAExternalRegs
  */
 export class VGAExternalRegs {
-  miscReg = new MiscReg;
-  featureControlReg = new FeatureControlReg;
-  inputStatus0 = new InputStatus0;
-  inputStatus1 = new InputStatus1;
+  miscReg = new MiscReg();
+  featureControlReg = new FeatureControlReg();
+  inputStatus0 = new InputStatus0();
+  inputStatus1 = new InputStatus1();
 }

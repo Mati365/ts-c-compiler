@@ -1,6 +1,6 @@
-import {UnionStruct, bits} from '@compiler/core/shared/UnionStruct';
-import {X86AbstractCPU} from '@x86-toolkit/cpu/types/X86AbstractCPU';
-import {PIT} from './PIT';
+import { UnionStruct, bits } from '@compiler/core/shared/UnionStruct';
+import { X86AbstractCPU } from '@x86-toolkit/cpu/types/X86AbstractCPU';
+import { PIT } from './PIT';
 
 /**
  * Intel 8253
@@ -13,8 +13,6 @@ import {PIT} from './PIT';
  *  Timer 0 should generate 8h interrupt!
  *  Timer 1 refreshes RAM
  *  Timer 2 sound timer
- *
- * @class Timer
  */
 export enum TimerDecrementMode {
   BINARY = 0x0,
@@ -49,9 +47,6 @@ export class TimerControlByte extends UnionStruct {
 
 /**
  * Timer that countdown
- *
- * @export
- * @class CountdownTimer
  */
 export class CountdownTimer {
   static SYSTEM_OSCILLATOR = 1193.1816666; // 1.193182 MHz
@@ -64,8 +59,8 @@ export class CountdownTimer {
 
   constructor(
     public controlByte: TimerControlByte = new TimerControlByte(0x0),
-    public countdown: number = 0xFFFF,
-    public startValue: number = 0xFFFF,
+    public countdown: number = 0xffff,
+    public startValue: number = 0xffff,
   ) {
     this.reset();
   }
@@ -77,12 +72,15 @@ export class CountdownTimer {
   }
 
   check(pit: PIT) {
-    const {controlByte, rolledOver} = this;
+    const { controlByte, rolledOver } = this;
 
     this.getValue();
-    if (rolledOver
-        && controlByte.channel === 0x0
-        && controlByte.operatingMode === TimerOperatingMode.INTERRUPT_ON_TERMINAL_COUNT) {
+    if (
+      rolledOver &&
+      controlByte.channel === 0x0 &&
+      controlByte.operatingMode ===
+        TimerOperatingMode.INTERRUPT_ON_TERMINAL_COUNT
+    ) {
       pit.raiseIRQ();
       this.rolledOver = false;
     }
@@ -91,12 +89,9 @@ export class CountdownTimer {
   /**
    * @todo
    *  Check if it is correct?
-   *
-   * @returns
-   * @memberof CountdownTimer
    */
   getFrequency() {
-    return (this.countdown / 0xFFFF) * CountdownTimer.SYSTEM_OSCILLATOR;
+    return (this.countdown / 0xffff) * CountdownTimer.SYSTEM_OSCILLATOR;
   }
 
   /**
@@ -104,12 +99,9 @@ export class CountdownTimer {
    *
    * @fixme
    *  Propably incorrect result
-   *
-   * @returns
-   * @memberof CountdownTimer
    */
   getValue() {
-    const {startValue, countdown} = this;
+    const { startValue, countdown } = this;
     const now = X86AbstractCPU.microtick();
 
     const diff = now - this.resetTimerTime;

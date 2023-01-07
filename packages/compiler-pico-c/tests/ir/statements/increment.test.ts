@@ -3,7 +3,8 @@ import '../utils/irMatcher';
 describe('Increment stmt IR', () => {
   describe('post increment', () => {
     test('should genenerate i++ IR', () => {
-      expect(/* cpp */ `void main() { int a; a++; }`).toCompiledIRBeEqual(/* ruby */`
+      expect(/* cpp */ `void main() { int a; a++; }`)
+        .toCompiledIRBeEqual(/* ruby */ `
         # --- Block main ---
         def main():
           a{0}: int*2B = alloca int2B
@@ -16,7 +17,8 @@ describe('Increment stmt IR', () => {
     });
 
     test('should genenerate *ptr++ IR', () => {
-      expect(/* cpp */ `void main() { int* a; *a++; }`).toCompiledIRBeEqual(/* ruby */`
+      expect(/* cpp */ `void main() { int* a; *a++; }`)
+        .toCompiledIRBeEqual(/* ruby */ `
         # --- Block main ---
         def main():
           a{0}: int**2B = alloca int*2B
@@ -30,7 +32,8 @@ describe('Increment stmt IR', () => {
     });
 
     test('should genenerate *(ptr++) IR', () => {
-      expect(/* cpp */ `void main() { int* a; *(a++); }`).toCompiledIRBeEqual(/* ruby */`
+      expect(/* cpp */ `void main() { int* a; *(a++); }`)
+        .toCompiledIRBeEqual(/* ruby */ `
         # --- Block main ---
         def main():
           a{0}: int**2B = alloca int*2B
@@ -44,7 +47,8 @@ describe('Increment stmt IR', () => {
     });
 
     test('should genenerate (*ptr)++ IR', () => {
-      expect(/* cpp */ `void main() { int* a; (*a)++; }`).toCompiledIRBeEqual(/* ruby */`
+      expect(/* cpp */ `void main() { int* a; (*a)++; }`)
+        .toCompiledIRBeEqual(/* ruby */ `
         # --- Block main ---
         def main():
           a{0}: int**2B = alloca int*2B
@@ -60,7 +64,8 @@ describe('Increment stmt IR', () => {
 
   describe('pre increment', () => {
     test('should genenerate ++i IR', () => {
-      expect(/* cpp */ `void main() { int a; ++a; }`).toCompiledIRBeEqual(/* ruby */`
+      expect(/* cpp */ `void main() { int a; ++a; }`)
+        .toCompiledIRBeEqual(/* ruby */ `
         # --- Block main ---
         def main():
           a{0}: int*2B = alloca int2B
@@ -73,7 +78,8 @@ describe('Increment stmt IR', () => {
     });
 
     test('should genenerate ++(*ptr) IR', () => {
-      expect(/* cpp */ `void main() { int* ptr; ++(*ptr); }`).toCompiledIRBeEqual(/* ruby */`
+      expect(/* cpp */ `void main() { int* ptr; ++(*ptr); }`)
+        .toCompiledIRBeEqual(/* ruby */ `
         # --- Block main ---
         def main():
           ptr{0}: int**2B = alloca int*2B
@@ -87,7 +93,8 @@ describe('Increment stmt IR', () => {
     });
 
     test('should genenerate *(++ptr) IR', () => {
-      expect(/* cpp */ `void main() { int* ptr; *(++ptr); }`).toCompiledIRBeEqual(/* ruby */`
+      expect(/* cpp */ `void main() { int* ptr; *(++ptr); }`)
+        .toCompiledIRBeEqual(/* ruby */ `
         # --- Block main ---
         def main():
           ptr{0}: int**2B = alloca int*2B
@@ -103,7 +110,7 @@ describe('Increment stmt IR', () => {
 
   describe('advanced types increment', () => {
     test('increment struct field', () => {
-      expect(/* cpp */`
+      expect(/* cpp */ `
         struct Point {
           int x, y;
           int dupa[10];
@@ -113,7 +120,7 @@ describe('Increment stmt IR', () => {
           struct Point point[] = { { .y = 6 }, { .x = 2 } };
           point[1].dupa[2]++;
         }
-      `).toCompiledIRBeEqual(/* ruby */`
+      `).toCompiledIRBeEqual(/* ruby */ `
         # --- Block main ---
         def main():
           point{0}: struct Point[2]*2B = alloca struct Point[2]48B

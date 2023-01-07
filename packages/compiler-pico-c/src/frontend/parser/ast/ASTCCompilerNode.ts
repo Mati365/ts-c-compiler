@@ -1,8 +1,8 @@
-import {Grammar} from '@compiler/grammar/Grammar';
-import {TreeNode} from '@compiler/grammar/tree/TreeNode';
-import {CCompilerIdentifier} from '@compiler/pico-c/constants';
+import { Grammar } from '@compiler/grammar/Grammar';
+import { TreeNode } from '@compiler/grammar/tree/TreeNode';
+import { CCompilerIdentifier } from '@compiler/pico-c/constants';
 
-import type {CType} from '../../analyze/types/CType';
+import type { CType } from '../../analyze/types/CType';
 
 export enum ASTCCompilerKind {
   TranslationUnit = 'TranslationUnit',
@@ -100,9 +100,14 @@ export enum ASTCCompilerKind {
 
 export type ASTCTreeNode = TreeNode<ASTCCompilerKind>;
 
-export class CCompilerGrammar extends Grammar<CCompilerIdentifier, ASTCCompilerKind> {}
+export class CCompilerGrammar extends Grammar<
+  CCompilerIdentifier,
+  ASTCCompilerKind
+> {}
 
-export class ASTCCompilerNode<C extends TreeNode<ASTCCompilerKind> = any> extends TreeNode<ASTCCompilerKind, C> {
+export class ASTCCompilerNode<
+  C extends TreeNode<ASTCCompilerKind> = any,
+> extends TreeNode<ASTCCompilerKind, C> {
   type?: CType;
 }
 

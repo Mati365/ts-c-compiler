@@ -9,10 +9,10 @@ import {
 
 export function isIRBranchInstruction(instruction: IRInstruction): boolean {
   return (
-    isIRCallInstruction(instruction)
-      || isIRJmpInstruction(instruction)
-      || isIRRetInstruction(instruction)
-      || isIRBrInstruction(instruction)
-      || isIRLabelInstruction(instruction)
+    isIRCallInstruction(instruction) ||
+    isIRJmpInstruction(instruction) ||
+    isIRRetInstruction(instruction) ||
+    isIRBrInstruction(instruction) ||
+    isIRLabelInstruction(instruction)
   );
 }

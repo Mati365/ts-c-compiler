@@ -1,9 +1,6 @@
-import {BinaryOpNode} from '@compiler/grammar/tree/TreeNode';
-import {TokenType} from '@compiler/lexer/tokens';
-import {
-  ASTPreprocessorNode,
-  ASTPreprocessorKind,
-} from '../constants';
+import { BinaryOpNode } from '@compiler/grammar/tree/TreeNode';
+import { TokenType } from '@compiler/lexer/tokens';
+import { ASTPreprocessorNode, ASTPreprocessorKind } from '../constants';
 
 import {
   PreprocessorInterpretable,
@@ -11,20 +8,16 @@ import {
   InterpreterResult,
 } from '../interpreter/PreprocessorInterpreter';
 
-export {createBinOpIfBothSidesPresent} from '@compiler/grammar/utils';
+export { createBinOpIfBothSidesPresent } from '@compiler/grammar/utils';
 
 /**
  * Transforms tree into for that second argument contains operator,
  * it is due to left recursion issue
- *
- * @export
- * @class ASTPreprocessorBinaryOpNode
- * @extends {BinaryNode<ASTPreprocessorKind>}
- * @implements {PreprocessorInterpretable}
  */
 export class ASTPreprocessorBinaryOpNode
   extends BinaryOpNode<ASTPreprocessorKind, ASTPreprocessorNode>
-  implements PreprocessorInterpretable {
+  implements PreprocessorInterpretable
+{
   constructor(
     op: TokenType,
     left: ASTPreprocessorNode,
@@ -35,7 +28,7 @@ export class ASTPreprocessorBinaryOpNode
   }
 
   clone(): ASTPreprocessorBinaryOpNode {
-    const {op, left, right, kind} = this;
+    const { op, left, right, kind } = this;
 
     return new ASTPreprocessorBinaryOpNode(op, left, right, kind);
   }

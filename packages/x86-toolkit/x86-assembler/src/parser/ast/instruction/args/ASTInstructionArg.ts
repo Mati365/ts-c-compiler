@@ -1,15 +1,10 @@
-import {InstructionArgType} from '../../../../types';
+import { InstructionArgType } from '../../../../types';
 
-import {ASTInstructionMatcherSchema} from './ASTInstructionArgMatchers';
-import {ASTResolvableArg} from '../ASTResolvableArg';
+import { ASTInstructionMatcherSchema } from './ASTInstructionArgMatchers';
+import { ASTResolvableArg } from '../ASTResolvableArg';
 
 /**
  * Used for parser to check argument size or type
- *
- * @export
- * @class ASTInstructionArg
- * @extends {ASTResolvableArg<V>}
- * @template V
  */
 export class ASTInstructionArg<V = any> extends ASTResolvableArg<V> {
   // true when user do mov word al, [0x1]

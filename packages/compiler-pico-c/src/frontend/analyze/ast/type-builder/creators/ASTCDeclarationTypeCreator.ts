@@ -1,30 +1,35 @@
-import {ASTCDeclaration, ASTCCompilerKind} from '@compiler/pico-c/frontend/parser/ast';
-import {ASTCTypeCreator} from './ASTCTypeCreator';
+import {
+  ASTCDeclaration,
+  ASTCCompilerKind,
+} from '@compiler/pico-c/frontend/parser/ast';
+import { ASTCTypeCreator } from './ASTCTypeCreator';
 import {
   CTypeCheckError,
   CTypeCheckErrorCode,
 } from '../../../errors/CTypeCheckError';
 
-import {isNamedType} from '../../../utils/isNamedType';
-import {extractInitDeclaratorTypeVariables, extractSpecifierType} from '../extractor';
+import { isNamedType } from '../../../utils/isNamedType';
+import {
+  extractInitDeclaratorTypeVariables,
+  extractSpecifierType,
+} from '../extractor';
 
 export class ASTCDeclarationTypeCreator extends ASTCTypeCreator<ASTCDeclaration> {
   kind = ASTCCompilerKind.Declaration;
 
   enter(declaration: ASTCDeclaration): boolean {
-    if (this.context.abstract)
+    if (this.context.abstract) {
       return false;
+    }
 
-    const {context, scope, analyzeVisitor} = this;
-    const {initList} = declaration;
+    const { context, scope, analyzeVisitor } = this;
+    const { initList } = declaration;
 
     // it returns only "int" from "int abc[3]"
-    const baseType = extractSpecifierType(
-      {
-        specifier: declaration.specifier,
-        context,
-      },
-    );
+    const baseType = extractSpecifierType({
+      specifier: declaration.specifier,
+      context,
+    });
 
     if (!baseType) {
       throw new CTypeCheckError(
@@ -34,28 +39,22 @@ export class ASTCDeclarationTypeCreator extends ASTCTypeCreator<ASTCDeclaration>
     }
 
     if (isNamedType(baseType) && !baseType.isRegistered()) {
-      scope
-        .defineType(baseType)
-        .unwrapOrThrow();
+      scope.defineType(baseType).unwrapOrThrow();
     }
 
     if (initList) {
       analyzeVisitor.visit(initList);
 
-      const variables = initList.children.map((initDeclarator) => (
+      const variables = initList.children.map(initDeclarator =>
         // appends to "int" array size of "int abc[3]" stmt if present, so variable.type is "int[3]"
-        extractInitDeclaratorTypeVariables(
-          {
-            type: baseType,
-            context,
-            initDeclarator,
-          },
-        )
-      ));
+        extractInitDeclaratorTypeVariables({
+          type: baseType,
+          context,
+          initDeclarator,
+        }),
+      );
 
-      scope
-        .defineVariables(variables)
-        .unwrapOrThrow();
+      scope.defineVariables(variables).unwrapOrThrow();
     }
 
     return false;

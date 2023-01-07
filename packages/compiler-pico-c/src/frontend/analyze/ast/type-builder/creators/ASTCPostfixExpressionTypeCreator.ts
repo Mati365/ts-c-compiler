@@ -1,38 +1,51 @@
-import {ASTCCompilerKind, ASTCPostfixExpression} from '@compiler/pico-c/frontend/parser/ast';
-import {CFunctionDeclType, isFuncDeclLikeType} from '../../../types/function';
-import {CTypeCheckError, CTypeCheckErrorCode} from '../../../errors/CTypeCheckError';
-import {ASTCTypeCreator} from './ASTCTypeCreator';
+import {
+  ASTCCompilerKind,
+  ASTCPostfixExpression,
+} from '@compiler/pico-c/frontend/parser/ast';
+import { CFunctionDeclType, isFuncDeclLikeType } from '../../../types/function';
+import {
+  CTypeCheckError,
+  CTypeCheckErrorCode,
+} from '../../../errors/CTypeCheckError';
+import { ASTCTypeCreator } from './ASTCTypeCreator';
 
-import {CPointerType, isArrayLikeType, isPointerLikeType, isStructLikeType} from '../../../types';
-import {checkLeftTypeOverlapping} from '../../../checker';
+import {
+  CPointerType,
+  isArrayLikeType,
+  isPointerLikeType,
+  isStructLikeType,
+} from '../../../types';
+import { checkLeftTypeOverlapping } from '../../../checker';
 
 export class ASTCPostfixExpressionTypeCreator extends ASTCTypeCreator<ASTCPostfixExpression> {
   kind = ASTCCompilerKind.PostfixExpression;
 
   override leave(node: ASTCPostfixExpression): void {
-    if (node.type)
+    if (node.type) {
       return;
+    }
 
     // handle structs / unions members
-    if (node.isArrayExpression())
+    if (node.isArrayExpression()) {
       this.assignArrayLikeAccessType(node);
-    else if (node.isDotExpression() || node.isPtrExpression())
+    } else if (node.isDotExpression() || node.isPtrExpression()) {
       this.assignDotPtrLikeAccessType(node);
-    else if (node.isFnExpression())
+    } else if (node.isFnExpression()) {
       this.assignFunctionCallerTypes(node);
-    else if (node.isFnPtrCallExpression())
+    } else if (node.isFnPtrCallExpression()) {
       this.assignFnPtrCallType(node);
-    else if (node.isPrimaryExpression())
+    } else if (node.isPrimaryExpression()) {
       node.type = node.primaryExpression.type;
-    else if (node.hasNestedPostfixExpression())
+    } else if (node.hasNestedPostfixExpression()) {
       node.type = node.postfixExpression.type;
+    }
   }
 
   /**
    * Assign type to calls like item[0].abc
    */
   private assignArrayLikeAccessType(node: ASTCPostfixExpression) {
-    const {type: baseType} = node.postfixExpression;
+    const { type: baseType } = node.postfixExpression;
 
     if (isPointerLikeType(baseType)) {
       node.type = baseType.baseType;
@@ -53,9 +66,9 @@ export class ASTCPostfixExpressionTypeCreator extends ASTCTypeCreator<ASTCPostfi
    * Assign type to expressions such like it: (*ptr)(1, 2, 3)
    */
   private assignFnPtrCallType(node: ASTCPostfixExpression) {
-    const ptr = <CPointerType> node.postfixExpression.type;
+    const ptr = <CPointerType>node.postfixExpression.type;
 
-    node.type = (<CFunctionDeclType> ptr.baseType).returnType;
+    node.type = (<CFunctionDeclType>ptr.baseType).returnType;
   }
 
   /**
@@ -95,7 +108,8 @@ export class ASTCPostfixExpressionTypeCreator extends ASTCTypeCreator<ASTCPostfi
         );
       }
 
-      const {text: fieldName} = (node.dotExpression || node.ptrExpression).name;
+      const { text: fieldName } = (node.dotExpression || node.ptrExpression)
+        .name;
       const field = baseType.getField(fieldName);
 
       if (!field) {
@@ -125,8 +139,8 @@ export class ASTCPostfixExpressionTypeCreator extends ASTCTypeCreator<ASTCPostfi
    * Verify if called function with proper arguments
    */
   private assignFunctionCallerTypes(node: ASTCPostfixExpression) {
-    const {fnExpression} = node;
-    const {assignments} = fnExpression.args;
+    const { fnExpression } = node;
+    const { assignments } = fnExpression.args;
     let fnType = node.postfixExpression.type;
 
     if (!fnType) {
@@ -139,8 +153,9 @@ export class ASTCPostfixExpressionTypeCreator extends ASTCTypeCreator<ASTCPostfi
       );
     }
 
-    if (isPointerLikeType(fnType))
+    if (isPointerLikeType(fnType)) {
       fnType = fnType.baseType;
+    }
 
     if (!isFuncDeclLikeType(fnType)) {
       throw new CTypeCheckError(
@@ -152,7 +167,7 @@ export class ASTCPostfixExpressionTypeCreator extends ASTCTypeCreator<ASTCPostfi
       );
     }
 
-    const {length: totalFnArgs} = fnType.args;
+    const { length: totalFnArgs } = fnType.args;
 
     if (fnType.isVoidArgsList()) {
       if (assignments.length) {
@@ -190,10 +205,7 @@ export class ASTCPostfixExpressionTypeCreator extends ASTCTypeCreator<ASTCPostfi
       }
 
       fnType.args.forEach((arg, index) => {
-        const [leftType, rightType] = [
-          arg.type,
-          assignments[index].type,
-        ];
+        const [leftType, rightType] = [arg.type, assignments[index].type];
 
         if (!checkLeftTypeOverlapping(leftType, rightType)) {
           throw new CTypeCheckError(

@@ -1,29 +1,29 @@
 import * as R from 'ramda';
 
-import {genUUID} from '@compiler/core/utils/genUUID';
-import {appendToMapKeyArray} from '@compiler/core/utils/appendToMapKeyArray';
-import {rpn} from '@compiler/rpn/rpn';
-import {extractNestableTokensList} from '@compiler/lexer/utils/extractNestableTokensList';
-import {joinTokensTexts} from '@compiler/lexer/utils/joinTokensTexts';
+import { genUUID } from '@compiler/core/utils/genUUID';
+import { appendToMapKeyArray } from '@compiler/core/utils/appendToMapKeyArray';
+import { rpn } from '@compiler/rpn/rpn';
+import { extractNestableTokensList } from '@compiler/lexer/utils/extractNestableTokensList';
+import { joinTokensTexts } from '@compiler/lexer/utils/joinTokensTexts';
 
-import {TokensIterator} from '@compiler/grammar/tree/TokensIterator';
+import { TokensIterator } from '@compiler/grammar/tree/TokensIterator';
+import { Token, TokenType, TokenKind } from '@compiler/lexer/tokens';
+
+import { TreeVisitor } from '@compiler/grammar/tree/TreeVisitor';
+import { ASTPreprocessorNode, isStatementPreprocessorNode } from '../constants';
 import {
-  Token,
-  TokenType,
-  TokenKind,
-} from '@compiler/lexer/tokens';
-
-import {TreeVisitor} from '@compiler/grammar/tree/TreeVisitor';
-import {ASTPreprocessorNode, isStatementPreprocessorNode} from '../constants';
-import {ASTPreprocessorCallable, ASTPreprocessorStmt, ASTPreprocessorSyntaxLine} from '../nodes';
-import {ExpressionResultTreeVisitor} from './ExpressionResultTreeVisitor';
-import {PreprocessorGrammarConfig, createPreprocessorGrammar} from '../grammar';
+  ASTPreprocessorCallable,
+  ASTPreprocessorStmt,
+  ASTPreprocessorSyntaxLine,
+} from '../nodes';
+import { ExpressionResultTreeVisitor } from './ExpressionResultTreeVisitor';
 import {
-  PreprocessorError,
-  PreprocessorErrorCode,
-} from '../PreprocessorError';
+  PreprocessorGrammarConfig,
+  createPreprocessorGrammar,
+} from '../grammar';
+import { PreprocessorError, PreprocessorErrorCode } from '../PreprocessorError';
 
-import {fetchRuntimeCallArgsList} from './utils/fetchRuntimeCallArgsList';
+import { fetchRuntimeCallArgsList } from './utils/fetchRuntimeCallArgsList';
 
 export type InterpreterResult = string | number | boolean | void;
 
@@ -41,9 +41,6 @@ export interface PreprocessorInterpretable {
  *  it helps with:
  *  abc2: equ 2
  *  %if abc2 > 0
- *
- * @export
- * @class PreprocessorScope
  */
 export class PreprocessorScope {
   constructor(
@@ -60,28 +57,21 @@ export class PreprocessorScope {
  * Store grammar and whole interpreter config
  */
 export type PreprocessorInterpreterConfig = {
-  grammarConfig: PreprocessorGrammarConfig,
-  preExec?: string,
-  rootScope?: PreprocessorScope,
+  grammarConfig: PreprocessorGrammarConfig;
+  preExec?: string;
+  rootScope?: PreprocessorScope;
 };
 
 /**
  * Main interpreter logic
- *
- * @export
- * @class PreprocessorInterpreter
  */
 export class PreprocessorInterpreter {
   private scopes: PreprocessorScope[];
   private secondPassExec: boolean = false;
   private secondExecPassNodes: ASTPreprocessorNode[] = [];
 
-  constructor(
-    private config: PreprocessorInterpreterConfig,
-  ) {
-    this.scopes = [
-      config.rootScope ?? new PreprocessorScope,
-    ];
+  constructor(private config: PreprocessorInterpreterConfig) {
+    this.scopes = [config.rootScope ?? new PreprocessorScope()];
   }
 
   isSecondPass() {
@@ -98,9 +88,6 @@ export class PreprocessorInterpreter {
 
   /**
    * Pushes node that require precedding nodes
-   *
-   * @param {ASTPreprocessorNode} node
-   * @memberof PreprocessorInterpreter
    */
   appendToSecondPassExec(node: ASTPreprocessorNode): void {
     this.secondExecPassNodes.push(node);
@@ -108,18 +95,12 @@ export class PreprocessorInterpreter {
 
   /**
    * Pushes preprocessor scope on top, exec fn and pops
-   *
-   * @template R
-   * @param {[string, InterpreterResult][]} [variables=[]]
-   * @param {(scope: PreprocessorScope) => R} fn
-   * @returns {R}
-   * @memberof PreprocessorInterpreter
    */
   enterScope<R = void>(
     variables: [string, InterpreterResult][],
     fn: (scope: PreprocessorScope) => R,
   ): R {
-    const {scopes} = this;
+    const { scopes } = this;
     const scope = new PreprocessorScope(
       new Map<string, InterpreterResult>(variables || []),
     );
@@ -133,19 +114,14 @@ export class PreprocessorInterpreter {
 
   /**
    * Removes all macros from code
-   *
-   * @param {string} code
-   * @returns {[string, ASTPreprocessorStmt]}
-   * @memberof PreprocessorInterpreter
    */
   exec(code: string): [string, ASTPreprocessorStmt] {
-    const {config} = this;
-    const stmt: ASTPreprocessorStmt = createPreprocessorGrammar(config.grammarConfig).process(code).children[0];
+    const { config } = this;
+    const stmt: ASTPreprocessorStmt = createPreprocessorGrammar(
+      config.grammarConfig,
+    ).process(code).children[0];
 
-    return [
-      this.execTree(stmt),
-      stmt,
-    ];
+    return [this.execTree(stmt), stmt];
   }
 
   /**
@@ -153,10 +129,6 @@ export class PreprocessorInterpreter {
    *
    * @see
    *  Preserves lines numbers but not columns!
-   *
-   * @param {ASTPreprocessorNode} ast
-   * @returns {string}
-   * @memberof PreprocessorInterpreter
    */
   execTree(ast: ASTPreprocessorNode): string {
     let acc = '';
@@ -169,31 +141,31 @@ export class PreprocessorInterpreter {
     // second phase
     if (this.secondExecPassNodes.length) {
       this.secondPassExec = true;
-      R.forEach(
-        (node) => {
-          node.exec(this);
-        },
-        this.secondExecPassNodes,
-      );
+      R.forEach(node => {
+        node.exec(this);
+      }, this.secondExecPassNodes);
       this.secondExecPassNodes = [];
     }
 
     const interpreter = this;
     const visitor = new (class extends TreeVisitor<ASTPreprocessorNode> {
       enter(node: ASTPreprocessorNode) {
-        if (!isStatementPreprocessorNode(node))
+        if (!isStatementPreprocessorNode(node)) {
           return;
+        }
 
-        if (node instanceof ASTPreprocessorSyntaxLine)
+        if (node instanceof ASTPreprocessorSyntaxLine) {
           node.exec(interpreter);
+        }
 
         if (this.nesting === 2) {
           const str = node.toEmitterLine(interpreter);
-          if (str)
+          if (str) {
             acc += `${str}\n`;
+          }
         }
       }
-    });
+    })();
 
     visitor.visit(ast);
     return acc;
@@ -201,33 +173,28 @@ export class PreprocessorInterpreter {
 
   /**
    * Removes macro
-   *
-   * @param {string} name
-   * @param {boolean} [caseIntensive=true]
-   * @memberof PreprocessorInterpreter
    */
   undefRuntimeCallable(name: string, caseIntensive: boolean = true): void {
-    const {sensitive, nonSensitive} = this.rootScope.callable;
+    const { sensitive, nonSensitive } = this.rootScope.callable;
 
     nonSensitive.delete(name);
-    if (caseIntensive)
+    if (caseIntensive) {
       sensitive.delete(name);
+    }
   }
 
   /**
    * Declares function that can be executed in ASTPreprocessorSyntaxLine
-   *
-   * @param {ASTPreprocessorCallable} callable
-   * @returns {this}
-   * @memberof PreprocessorInterpreter
    */
   defineRuntimeCallable(callable: ASTPreprocessorCallable): this {
-    const {rootScope} = this;
-    const {caseSensitive} = callable;
+    const { rootScope } = this;
+    const { caseSensitive } = callable;
 
     // find duplicates
     const callables = this.getCallables(callable.name, caseSensitive);
-    const duplicatedMacro = callables && callables.some((item) => item.argsCount === callable.argsCount);
+    const duplicatedMacro =
+      callables &&
+      callables.some(item => item.argsCount === callable.argsCount);
 
     // do not redefine inline macro and macro
     if (duplicatedMacro || (callables?.length && !callable.argsCount)) {
@@ -246,10 +213,10 @@ export class PreprocessorInterpreter {
       }
     }
 
-    const {sensitive, nonSensitive} = rootScope.callable;
-    if (caseSensitive)
+    const { sensitive, nonSensitive } = rootScope.callable;
+    if (caseSensitive) {
       appendToMapKeyArray(callable.name, callable, sensitive);
-    else {
+    } else {
       const lowerName = R.toLower(callable.name);
       appendToMapKeyArray(lowerName, callable, nonSensitive);
     }
@@ -259,24 +226,20 @@ export class PreprocessorInterpreter {
 
   /**
    * Checks if symbol is callable
-   *
-   * @param {string} name
-   * @param {boolean} [caseSensitive=true]
-   * @returns {ASTPreprocessorCallable[]}
-   * @memberof PreprocessorInterpreter
    */
-  getCallables(name: string, caseIntensive: boolean = true): ASTPreprocessorCallable[] {
-    const {sensitive, nonSensitive} = this.rootScope.callable;
+  getCallables(
+    name: string,
+    caseIntensive: boolean = true,
+  ): ASTPreprocessorCallable[] {
+    const { sensitive, nonSensitive } = this.rootScope.callable;
     const sensitiveResult = sensitive.get(name);
-    if (caseIntensive && sensitiveResult)
+    if (caseIntensive && sensitiveResult) {
       return sensitiveResult;
+    }
 
     const nonSensitiveResult = nonSensitive.get(R.toLower(name));
     if (sensitiveResult && nonSensitiveResult) {
-      return [
-        ...sensitiveResult,
-        ...sensitive.get(name),
-      ];
+      return [...sensitiveResult, ...sensitive.get(name)];
     }
 
     return sensitiveResult ?? nonSensitiveResult;
@@ -284,23 +247,23 @@ export class PreprocessorInterpreter {
 
   /**
    * Iterates from current scope to rootScope, if not found returns null
-   *
-   * @param {string} name
-   * @param {boolean} [currentScopeOnly=false]
-   * @returns {InterpreterResult}
-   * @memberof PreprocessorInterpreter
    */
-  getVariable(name: string, currentScopeOnly: boolean = false): InterpreterResult {
-    const {scopes} = this;
+  getVariable(
+    name: string,
+    currentScopeOnly: boolean = false,
+  ): InterpreterResult {
+    const { scopes } = this;
 
     for (let i = scopes.length - 1; i >= 0; --i) {
-      const {variables} = scopes[i];
+      const { variables } = scopes[i];
 
-      if (variables.has(name))
+      if (variables.has(name)) {
         return variables.get(name);
+      }
 
-      if (currentScopeOnly)
+      if (currentScopeOnly) {
         return null;
+      }
     }
 
     return null;
@@ -308,14 +271,13 @@ export class PreprocessorInterpreter {
 
   /**
    * Sets variable with provided name and value in current scope
-   *
-   * @param {string} name
-   * @param {InterpreterResult} value
-   * @param {boolean} allowRedefine
-   * @memberof PreprocessorInterpreter
    */
-  setVariable(name: string, value: InterpreterResult, allowRedefine: boolean = false): void {
-    const {currentScope} = this;
+  setVariable(
+    name: string,
+    value: InterpreterResult,
+    allowRedefine: boolean = false,
+  ): void {
+    const { currentScope } = this;
 
     if (!allowRedefine && currentScope.variables.has(name)) {
       throw new PreprocessorError(
@@ -332,27 +294,24 @@ export class PreprocessorInterpreter {
 
   /**
    * Removes all macro calls from list of tokens
-   *
-   * @param {Token[]} tokens
-   * @returns {[boolean, Token[]]}
-   * @memberof PreprocessorInterpreter
    */
   removeMacrosFromTokens(tokens: Token[]): [boolean, Token[]] {
-    const {grammarConfig: {prefixChar}} = this.config;
+    const {
+      grammarConfig: { prefixChar },
+    } = this.config;
     let newTokens: Token[] = tokens;
     let inInlineMacroExp = false;
 
     for (let i = 0; i < newTokens.length; ++i) {
       const [token, nextToken] = [newTokens[i], newTokens[i + 1]];
-      const {loc, text, type, kind} = token;
+      const { loc, text, type, kind } = token;
 
       // handle DUPA%[asdasd]
       // just explode token here and reset offset
-      const inlineMacroExpression = (
-        text.length > 1
-          && R.endsWith(prefixChar, text)
-          && nextToken?.text === '['
-      );
+      const inlineMacroExpression =
+        text.length > 1 &&
+        R.endsWith(prefixChar, text) &&
+        nextToken?.text === '[';
       if (inlineMacroExpression) {
         newTokens[i] = new Token(TokenType.KEYWORD, null, R.init(text), loc);
         newTokens = R.insert(
@@ -366,20 +325,19 @@ export class PreprocessorInterpreter {
       }
 
       // ignore keywords
-      if (type !== TokenType.KEYWORD || (kind !== TokenKind.BRACKET_PREFIX && kind !== null))
+      if (
+        type !== TokenType.KEYWORD ||
+        (kind !== TokenKind.BRACKET_PREFIX && kind !== null)
+      ) {
         continue;
+      }
 
       // variables, %0
       const variable = this.getVariable(text);
       if (variable !== null) {
         newTokens = R.update(
           i,
-          new Token(
-            TokenType.KEYWORD,
-            null,
-            (<any> variable).toString(),
-            loc,
-          ),
+          new Token(TokenType.KEYWORD, null, (<any>variable).toString(), loc),
           newTokens,
         );
 
@@ -393,15 +351,18 @@ export class PreprocessorInterpreter {
           newTokens[i] = new Token(
             TokenType.KEYWORD,
             null,
-            text.replace(`${prefixChar}${prefixChar}`, `${this.currentScope.id}_`),
+            text.replace(
+              `${prefixChar}${prefixChar}`,
+              `${this.currentScope.id}_`,
+            ),
             loc,
           );
         } else if (nextToken?.text[0] === '[') {
           // expressions %[]
           const [content, newOffset] = extractNestableTokensList(
             {
-              up: (t) => t.text === '[',
-              down: (t) => t.text === ']',
+              up: t => t.text === '[',
+              down: t => t.text === ']',
             },
             tokens,
             i,
@@ -417,7 +378,9 @@ export class PreprocessorInterpreter {
               new Token(
                 TokenType.KEYWORD,
                 null,
-                `${tokens[i - 1]}${this.evalTokensExpression(content).toString()}`,
+                `${tokens[i - 1]}${this.evalTokensExpression(
+                  content,
+                ).toString()}`,
                 loc,
               ),
               ...newTokens.slice(newOffset),
@@ -451,63 +414,48 @@ export class PreprocessorInterpreter {
         // or have no args, example:
         // %define dupa mov
         // dupa ax, bx
-        const inline = i > 0 || !callables.some(({argsCount}) => argsCount > 0);
+        const inline =
+          i > 0 || !callables.some(({ argsCount }) => argsCount > 0);
         const bracketCall = newTokens[i + 1]?.text === '('; // handle; abc(2, 3)
-        const args = (
+        const args =
           !inline || bracketCall
             ? fetchRuntimeCallArgsList(it, bracketCall ? 1 : 0).map(
-              (argTokens) => this.removeMacrosFromTokens(argTokens)[1],
-            )
-            : []
-        );
+                argTokens => this.removeMacrosFromTokens(argTokens)[1],
+              )
+            : [];
 
-        const callable = callables.find(
-          (item) => item.argsCount === args.length,
-        );
+        const callable = callables.find(item => item.argsCount === args.length);
         if (callable) {
           const callResult = callable.runtimeCall(
             this,
-            R.map(
-              (argTokens) => joinTokensTexts('', argTokens),
-              args,
-            ),
+            R.map(argTokens => joinTokensTexts('', argTokens), args),
           );
 
           newTokens = [
             ...newTokens.slice(0, i),
-            new Token(
-              TokenType.KEYWORD,
-              null,
-              callResult,
-              loc,
+            new Token(TokenType.KEYWORD, null, callResult, loc),
+            ...newTokens.slice(
+              it.getTokenIndex() + Math.max(0, +args.length - 1),
             ),
-            ...newTokens.slice(it.getTokenIndex() + Math.max(0, +args.length - 1)),
           ];
         }
       }
     }
 
-    return [
-      newTokens !== tokens,
-      newTokens,
-    ];
+    return [newTokens !== tokens, newTokens];
   }
 
   /**
    * Evaluates inline
-   *
-   * @param {Token[]} tokens
-   * @returns {number}
-   * @memberof PreprocessorInterpreter
    */
   evalTokensExpression(tokens: Token[]): number {
-    const expression = joinTokensTexts('', this.removeMacrosFromTokens(tokens)[1]);
-    const value = rpn(
-      expression,
-      {
-        keywordResolver: (name) => +this.getVariable(name),
-      },
+    const expression = joinTokensTexts(
+      '',
+      this.removeMacrosFromTokens(tokens)[1],
     );
+    const value = rpn(expression, {
+      keywordResolver: name => +this.getVariable(name),
+    });
 
     if (Number.isNaN(value)) {
       throw new PreprocessorError(
@@ -524,10 +472,6 @@ export class PreprocessorInterpreter {
 
   /**
    * Evaluates expression used in ifs, loops etc
-   *
-   * @param {ASTPreprocessorNode} expression
-   * @returns {InterpreterResult}
-   * @memberof PreprocessorInterpreter
    */
   evalExpression(expression: ASTPreprocessorNode): InterpreterResult {
     const visitor = new ExpressionResultTreeVisitor(this);
@@ -537,12 +481,8 @@ export class PreprocessorInterpreter {
 
   /**
    * Resets interpereter state
-   *
-   * @memberof PreprocessorInterpreter
    */
   clear() {
-    this.scopes = [
-      new PreprocessorScope,
-    ];
+    this.scopes = [new PreprocessorScope()];
   }
 }

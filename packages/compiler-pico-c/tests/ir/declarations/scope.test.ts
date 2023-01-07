@@ -11,7 +11,7 @@ describe('Declaration scope', () => {
           int d = *x + 5;
         }
       }
-    `).toCompiledIRBeEqual(/* ruby */`
+    `).toCompiledIRBeEqual(/* ruby */ `
       # --- Block main ---
       def main():
         x{0}: int*2B = alloca int2B

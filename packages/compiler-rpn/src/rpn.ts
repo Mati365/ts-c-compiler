@@ -1,4 +1,4 @@
-import {MathExpression} from './utils';
+import { MathExpression } from './utils';
 
 /**
  * Calculates numeric value of phrase

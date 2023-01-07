@@ -12,7 +12,7 @@ describe('Example: Strlen', () => {
 
         return -1;
       }
-    `).toCompiledIRBeEqual(/* ruby */`
+    `).toCompiledIRBeEqual(/* ruby */ `
       # --- Block strlen ---
       def strlen(str{0}: const char**2B): [ret: int2B]
         i{0}: int*2B = alloca int2B

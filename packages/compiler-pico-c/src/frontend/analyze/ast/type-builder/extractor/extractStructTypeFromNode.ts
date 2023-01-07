@@ -1,61 +1,58 @@
-import {ASTCStructSpecifier} from '@compiler/pico-c/frontend/parser';
-import {CTypeCheckError, CTypeCheckErrorCode} from '../../../errors/CTypeCheckError';
-import {CStructType} from '../../../types';
-import {TypeExtractorAttrs} from '../constants/types';
+import { ASTCStructSpecifier } from '@compiler/pico-c/frontend/parser';
+import {
+  CTypeCheckError,
+  CTypeCheckErrorCode,
+} from '../../../errors/CTypeCheckError';
+import { CStructType } from '../../../types';
+import { TypeExtractorAttrs } from '../constants/types';
 
-import {evalConstantExpression} from '../../expression-eval';
+import { evalConstantExpression } from '../../expression-eval';
 
 type StructTypeExtractorAttrs = TypeExtractorAttrs & {
-  structSpecifier: ASTCStructSpecifier,
+  structSpecifier: ASTCStructSpecifier;
 };
 
 /**
  * Walks over struct specifier tree and creates struct type
  */
-export function extractStructTypeFromNode(
-  {
-    context,
-    structSpecifier,
-    extractSpecifierType,
-    extractNamedEntryFromDeclarator,
-  }: StructTypeExtractorAttrs,
-): CStructType {
-  let structType = CStructType.ofBlank(context.config.arch, structSpecifier.name?.text);
+export function extractStructTypeFromNode({
+  context,
+  structSpecifier,
+  extractSpecifierType,
+  extractNamedEntryFromDeclarator,
+}: StructTypeExtractorAttrs): CStructType {
+  let structType = CStructType.ofBlank(
+    context.config.arch,
+    structSpecifier.name?.text,
+  );
 
   // handle const int x, y;
-  structSpecifier.list?.children.forEach((declaration) => {
-    const type = extractSpecifierType(
-      {
-        specifier: declaration.specifierList,
-        context,
-      },
-    );
+  structSpecifier.list?.children.forEach(declaration => {
+    const type = extractSpecifierType({
+      specifier: declaration.specifierList,
+      context,
+    });
 
-    if (!type)
-      throw new CTypeCheckError(CTypeCheckErrorCode.UNABLE_TO_EXTRACT_STRUCT_TYPE);
+    if (!type) {
+      throw new CTypeCheckError(
+        CTypeCheckErrorCode.UNABLE_TO_EXTRACT_STRUCT_TYPE,
+      );
+    }
 
     // define x, y as separate fields and calculate offsets
-    declaration.declaratorList.children.forEach((structDeclarator) => {
-      const entry = extractNamedEntryFromDeclarator(
-        {
-          declarator: structDeclarator.declarator,
-          context,
-          type,
-        },
-      );
+    declaration.declaratorList.children.forEach(structDeclarator => {
+      const entry = extractNamedEntryFromDeclarator({
+        declarator: structDeclarator.declarator,
+        context,
+        type,
+      });
 
-      const bitset = +evalConstantExpression(
-        {
-          expression: structDeclarator.expression,
-          context,
-        },
-      ).unwrapOrThrow();
+      const bitset = +evalConstantExpression({
+        expression: structDeclarator.expression,
+        context,
+      }).unwrapOrThrow();
 
-      structType = (
-        structType
-          .ofAppendedField(entry, bitset)
-          .unwrapOrThrow()
-      );
+      structType = structType.ofAppendedField(entry, bitset).unwrapOrThrow();
     });
   });
 

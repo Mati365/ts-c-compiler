@@ -1,7 +1,7 @@
 import * as R from 'ramda';
 
-import {X86TargetCPU} from '@x86-toolkit/assembler/types';
-import type {ASTInstructionMatcherSchema} from './args';
+import { X86TargetCPU } from '@x86-toolkit/assembler/types';
+import type { ASTInstructionMatcherSchema } from './args';
 
 export class ASTInstructionSchema {
   readonly minArgsCount: number;
@@ -18,5 +18,7 @@ export class ASTInstructionSchema {
     ).length;
   }
 
-  get byteSize() { return this.binarySchema.length; }
+  get byteSize() {
+    return this.binarySchema.length;
+  }
 }

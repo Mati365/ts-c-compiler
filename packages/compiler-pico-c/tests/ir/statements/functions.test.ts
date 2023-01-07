@@ -5,7 +5,7 @@ describe('Functions IR', () => {
     expect(/* cpp */ `
       int sum(int x, int y) { return x + y; }
       void main() { sum(1, 2); }
-    `).toCompiledIRBeEqual(/* ruby */`
+    `).toCompiledIRBeEqual(/* ruby */ `
       # --- Block sum ---
       def sum(x{0}: int*2B, y{0}: int*2B): [ret: int2B]
         %t{0}: int2B = load x{0}: int*2B
@@ -30,7 +30,7 @@ describe('Functions IR', () => {
         return d;
       }
       void main() { sum(1, 2); }
-    `).toCompiledIRBeEqual(/* ruby */`
+    `).toCompiledIRBeEqual(/* ruby */ `
       # --- Block sum ---
       def sum(x{0}: int*2B, y{0}: int*2B): [ret: int2B]
         d{0}: int*2B = alloca int2B
@@ -59,7 +59,7 @@ describe('Functions IR', () => {
         return out;
       }
       void main() { sum(); }
-    `).toCompiledIRBeEqual(/* ruby */`
+    `).toCompiledIRBeEqual(/* ruby */ `
       # --- Block sum ---
       def sum(): [ret: struct Vec22B]
         out{0}: struct Vec2*2B = alloca struct Vec22B
@@ -87,7 +87,7 @@ describe('Functions IR', () => {
       void main() {
         sum();
       }
-    `).toCompiledIRBeEqual(/* ruby */`
+    `).toCompiledIRBeEqual(/* ruby */ `
       # --- Block sum ---
       def sum(%out{0}: struct Vec2**2B):
         out{0}: struct Vec2*2B = load %out{0}: struct Vec2**2B
@@ -111,7 +111,7 @@ describe('Functions IR', () => {
       void main() {
         int out = sum(1, 2) + 3;
       }
-    `).toCompiledIRBeEqual(/* ruby */`
+    `).toCompiledIRBeEqual(/* ruby */ `
       # --- Block sum ---
       def sum(x{0}: int*2B, y{0}: int*2B): [ret: int2B]
         %t{0}: int2B = load x{0}: int*2B
@@ -141,7 +141,7 @@ describe('Functions IR', () => {
         ptr(1, 2);
         (*ptr)(4, 5);
       }
-    `).toCompiledIRBeEqual(/* ruby */`
+    `).toCompiledIRBeEqual(/* ruby */ `
       # --- Block sum ---
       def sum(x{0}: int*2B, y{0}: int*2B): [ret: int2B]
         %t{0}: int2B = load x{0}: int*2B
@@ -182,7 +182,7 @@ describe('Functions IR', () => {
         struct Vec2 (*ptr)(int, int) = of_vec;
         struct Vec2 vec = (*ptr + 1)(1, 2);
       }
-    `).toCompiledIRBeEqual(/* ruby */`
+    `).toCompiledIRBeEqual(/* ruby */ `
       # --- Block of_vec ---
       def of_vec(x{0}: int*2B, y{0}: int*2B, %out{0}: struct Vec2**2B):
         v{0}: struct Vec2*2B = load %out{0}: struct Vec2**2B
@@ -214,7 +214,7 @@ describe('Functions IR', () => {
       void main() {
         print("hello world!");
       }
-    `).toCompiledIRBeEqual(/* ruby */`
+    `).toCompiledIRBeEqual(/* ruby */ `
       # --- Block print ---
       def print(str{0}: const char**2B):
         ret
@@ -238,7 +238,7 @@ describe('Functions IR', () => {
       void main() {
         return 2 + 3;
       }
-    `).toCompiledIRBeEqual(/* ruby */`
+    `).toCompiledIRBeEqual(/* ruby */ `
       # --- Block main ---
       def main():
         ret

@@ -1,9 +1,14 @@
-import {CBackendError, CBackendErrorCode} from '@compiler/pico-c/backend/errors/CBackendError';
-import {RegsMap, createGeneralPurposeRegsMap} from '../../constants/regs';
-import {RegsMapQuery, queryFromRegsMap} from '../utils/queryFromRegsMap';
 import {
-  IRArgAllocatorArgs, IRArgAllocatorResult,
-  IRRegReqResult, X86AbstractRegAllocator,
+  CBackendError,
+  CBackendErrorCode,
+} from '@compiler/pico-c/backend/errors/CBackendError';
+import { RegsMap, createGeneralPurposeRegsMap } from '../../constants/regs';
+import { RegsMapQuery, queryFromRegsMap } from '../utils/queryFromRegsMap';
+import {
+  IRArgAllocatorArgs,
+  IRArgAllocatorResult,
+  IRRegReqResult,
+  X86AbstractRegAllocator,
 } from '../X86AbstractRegAllocator';
 
 export class X86BasicRegAllocator extends X86AbstractRegAllocator {
@@ -19,22 +24,20 @@ export class X86BasicRegAllocator extends X86AbstractRegAllocator {
   }
 
   requestReg(query: RegsMapQuery): IRRegReqResult {
-    return queryFromRegsMap(query, this.availableRegs).match<IRRegReqResult>(
-      {
-        some: ({availableRegs, reg}) => {
-          this.availableRegs = availableRegs;
-          return {
-            value: <any> reg,
-            asm: [],
-          };
-        },
-        none: () => {
-          return {
-            value: 'ax',
-            asm: [],
-          };
-        },
+    return queryFromRegsMap(query, this.availableRegs).match<IRRegReqResult>({
+      some: ({ availableRegs, reg }) => {
+        this.availableRegs = availableRegs;
+        return {
+          value: <any>reg,
+          asm: [],
+        };
       },
-    );
+      none: () => {
+        return {
+          value: 'ax',
+          asm: [],
+        };
+      },
+    });
   }
 }

@@ -4,19 +4,13 @@ type ResultMatch<T, E, O> = {
 };
 
 export abstract class Result<T, E, ValType = T | E> {
-  constructor(
-    protected readonly _value: ValType,
-  ) {}
+  constructor(protected readonly _value: ValType) {}
 
   abstract isErr(): boolean;
   abstract isOk(): boolean;
 
   /**
    * Returns value from Result
-   *
-   * @abstract
-   * @returns {ValType}
-   * @memberof Result
    */
   abstract unwrap(): T | never;
   abstract unwrapErr(): E | never;
@@ -26,50 +20,26 @@ export abstract class Result<T, E, ValType = T | E> {
 
   /**
    * Executes function provided via arg with monad value and returns its value
-   *
-   * @abstract
-   * @template O
-   * @param {(val: T) => Result<O, E>} fn
-   * @returns {Result<O, E>}
-   * @memberof Result
    */
   abstract andThen<O>(fn: (val: T) => Result<O, E>): Result<O, E>;
 
   /**
    * Rust match alternative, executes ok/err callback based on type
-   *
-   * @abstract
-   * @template O
-   * @param {ResultMatch<T, E, O>} match
-   * @returns {O}
-   * @memberof Result
    */
   abstract match<O>(match: ResultMatch<T, E, O>): O;
 
   /**
    * Modifies internal monad value and returns new value
-   *
-   * @abstract
-   * @template O
-   * @param {(fn: T) => O} fn
-   * @returns {Result<O, E>}
-   * @memberof Result
    */
   abstract map<O>(fn: (fn: T) => O): Result<O, E>;
 }
 
 /**
  * Success value
- *
- * @export
- * @class Ok
- * @extends {Result<T, E>}
- * @template T
- * @template E
  */
 export class Ok<T, E = never> extends Result<T, E> {
   unwrap(): T {
-    return <T> this._value;
+    return this._value as T;
   }
 
   unwrapErr(): never {
@@ -77,7 +47,7 @@ export class Ok<T, E = never> extends Result<T, E> {
   }
 
   unwrapOr(): T {
-    return <T> this._value;
+    return this._value as T;
   }
 
   unwrapOrThrow(): T {
@@ -85,34 +55,32 @@ export class Ok<T, E = never> extends Result<T, E> {
   }
 
   unwrapBoth(): [E, T] {
-    return [null, <T> this._value];
+    return [null, this._value as T];
   }
 
-  isOk() { return true; }
+  isOk() {
+    return true;
+  }
 
-  isErr() { return false; }
+  isErr() {
+    return false;
+  }
 
   match<O>(match: ResultMatch<T, E, O>): O {
-    return match.ok(<T> this._value);
+    return match.ok(this._value as T);
   }
 
   map<O>(fn: (fn: T) => O): Ok<O, E> {
-    return new Ok<O, E>(fn(<T> this._value));
+    return new Ok<O, E>(fn(this._value as T));
   }
 
   andThen<O>(fn: (val: T) => Result<O, E>): Result<O, E> {
-    return fn(<T> this._value);
+    return fn(this._value as T);
   }
 }
 
 /**
  * Error value
- *
- * @export
- * @class Err
- * @extends {Result<T, E>}
- * @template T
- * @template E
  */
 export class Err<T, E> extends Result<T, E> {
   unwrap(): T | never {
@@ -120,7 +88,7 @@ export class Err<T, E> extends Result<T, E> {
   }
 
   unwrapErr(): E {
-    return <E> this._value;
+    return this._value as E;
   }
 
   unwrapOr<A = T>(a: A): A {
@@ -128,27 +96,31 @@ export class Err<T, E> extends Result<T, E> {
   }
 
   unwrapOrThrow(): T {
-    throw <any> this._value;
+    throw this._value as any;
   }
 
   unwrapBoth(): [E, T] {
-    return [<E> this._value, null];
+    return [this._value as E, null];
   }
 
-  isOk() { return false; }
+  isOk() {
+    return false;
+  }
 
-  isErr() { return true; }
+  isErr() {
+    return true;
+  }
 
   match<O>(match: ResultMatch<T, E, O>): O {
-    return match.err(<E> this._value);
+    return match.err(this._value as E);
   }
 
   map<O>(): Err<O, E> {
-    return new Err<O, E>(<E> this._value);
+    return new Err<O, E>(this._value as E);
   }
 
   andThen<O>(): Result<O, E> {
-    return new Err<O, E>(<E> this._value);
+    return new Err<O, E>(this._value as E);
   }
 }
 

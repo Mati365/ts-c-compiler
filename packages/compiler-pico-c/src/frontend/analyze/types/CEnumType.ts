@@ -1,17 +1,20 @@
 import * as R from 'ramda';
 
-import {dumpCompilerAttrs} from '@compiler/core/utils';
+import { dumpCompilerAttrs } from '@compiler/core/utils';
 
-import {Result, err, ok} from '@compiler/core/monads';
-import {CCompilerArch} from '@compiler/pico-c/constants';
-import {CTypeCheckError, CTypeCheckErrorCode} from '../errors/CTypeCheckError';
-import {CType, CTypeDescriptor} from './CType';
-import {CPrimitiveType} from './CPrimitiveType';
+import { Result, err, ok } from '@compiler/core/monads';
+import { CCompilerArch } from '@compiler/pico-c/constants';
+import {
+  CTypeCheckError,
+  CTypeCheckErrorCode,
+} from '../errors/CTypeCheckError';
+import { CType, CTypeDescriptor } from './CType';
+import { CPrimitiveType } from './CPrimitiveType';
 
 export type CEnumFieldsMap = Map<string, number>;
 export type CEnumDescriptor = CTypeDescriptor & {
-  name?: string,
-  fields: CEnumFieldsMap,
+  name?: string;
+  fields: CEnumFieldsMap;
 };
 
 export function isEnumLikeType(type: CType): type is CEnumType {
@@ -20,37 +23,35 @@ export function isEnumLikeType(type: CType): type is CEnumType {
 
 /**
  * Defines C-like enum with ints
- *
- * @export
- * @class CEnumType
- * @extends {CType<CStructTypeDescriptor>}
  */
 export class CEnumType extends CType<CEnumDescriptor> {
   static ofBlank(arch: CCompilerArch, name?: string) {
-    return new CEnumType(
-      {
-        arch,
-        name,
-        fields: new Map,
-      },
-    );
+    return new CEnumType({
+      arch,
+      name,
+      fields: new Map(),
+    });
   }
 
-  override isEnum() { return true; }
+  override isEnum() {
+    return true;
+  }
 
-  get name() { return this.value.name; }
-  get fields() { return this.value.fields; }
+  get name() {
+    return this.value.name;
+  }
+  get fields() {
+    return this.value.fields;
+  }
 
   /**
    * Appends new enumeration type
-   *
-   * @param {string} name
-   * @param {number} value
-   * @return {Result<CEnumType, CTypeCheckError>}
-   * @memberof CEnumType
    */
-  ofAppendedField(name: string, value: number): Result<CEnumType, CTypeCheckError> {
-    return this.bind((state) => {
+  ofAppendedField(
+    name: string,
+    value: number,
+  ): Result<CEnumType, CTypeCheckError> {
+    return this.bind(state => {
       if (this.hasField(name)) {
         return err(
           new CTypeCheckError(
@@ -63,38 +64,29 @@ export class CEnumType extends CType<CEnumDescriptor> {
         );
       }
 
-      return ok(new CEnumType(
-        {
+      return ok(
+        new CEnumType({
           ...state,
-          fields: new Map(
-            [
-              ...this.getFieldsList(),
-              [name, value],
-            ],
-          ),
-        },
-      ));
+          fields: new Map([...this.getFieldsList(), [name, value]]),
+        }),
+      );
     });
   }
 
   override getDisplayName() {
-    const {name, arch} = this;
-    let fields = (
-      this
-        .getFieldsList()
-        .map(([fieldName, value]) => `  ${fieldName} = ${value},`)
-        .join('\n')
-    );
+    const { name, arch } = this;
+    let fields = this.getFieldsList()
+      .map(([fieldName, value]) => `  ${fieldName} = ${value},`)
+      .join('\n');
 
-    if (!R.isEmpty(fields))
+    if (!R.isEmpty(fields)) {
       fields = `\n${fields}\n`;
+    }
 
-    const enumAttrs = dumpCompilerAttrs(
-      {
-        arch,
-        sizeof: this.getByteSize(),
-      },
-    );
+    const enumAttrs = dumpCompilerAttrs({
+      arch,
+      sizeof: this.getByteSize(),
+    });
 
     return `${enumAttrs} enum ${name || '<anonymous>'} {${fields}}`;
   }

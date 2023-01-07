@@ -1,23 +1,25 @@
-import {assertUnreachable} from '@compiler/core/utils';
+import { assertUnreachable } from '@compiler/core/utils';
 
-import {CCompilerArch, CCompilerConfig} from '@compiler/pico-c/constants';
-import {X86StackFrame} from './X86StackFrame';
-import {X86AbstractRegAllocator} from './X86AbstractRegAllocator';
-import {X86BasicRegAllocator} from './allocators';
-import {genInstruction, genLabel} from '../asm-utils';
+import { CCompilerArch, CCompilerConfig } from '@compiler/pico-c/constants';
+import { X86StackFrame } from './X86StackFrame';
+import { X86AbstractRegAllocator } from './X86AbstractRegAllocator';
+import { X86BasicRegAllocator } from './allocators';
+import { genInstruction, genLabel } from '../asm-utils';
 
 export class X86Allocator {
-  private readonly labels: {[id: string]: string} = {};
+  private readonly labels: { [id: string]: string } = {};
 
   private _stackFrame: X86StackFrame;
   private _regs: X86AbstractRegAllocator;
 
-  constructor(
-    readonly config: CCompilerConfig,
-  ) {}
+  constructor(readonly config: CCompilerConfig) {}
 
-  get stackFrame() { return this._stackFrame; }
-  get regs()       { return this._regs; }
+  get stackFrame() {
+    return this._stackFrame;
+  }
+  get regs() {
+    return this._regs;
+  }
 
   getLabel(id: string) {
     return this.labels[id];
@@ -30,11 +32,6 @@ export class X86Allocator {
 
   /**
    * Allocates plain jmp label
-   *
-   * @param {'fn'} type
-   * @param {string} id
-   * @return {string}
-   * @memberof X86Allocator
    */
   allocLabelInstruction(type: 'fn', id: string): string {
     const label = genLabel(`${type}_${id}`);
@@ -44,15 +41,11 @@ export class X86Allocator {
   }
 
   /**
-   * Alloates whole function declaration IR code and injects code into it
-   *
-   * @param {() => string[]} content
-   * @return {string[]}
-   * @memberof X86Allocator
+   * Allocates whole function declaration IR code and injects code into it
    */
   allocStackFrameInstructions(content: () => string[]): string[] {
-    const {config} = this;
-    const {arch} = config;
+    const { config } = this;
+    const { arch } = config;
 
     this._stackFrame = new X86StackFrame(config);
 

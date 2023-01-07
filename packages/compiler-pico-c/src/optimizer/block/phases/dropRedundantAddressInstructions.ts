@@ -1,24 +1,30 @@
-import {isIROutputInstruction} from '@compiler/pico-c/frontend/ir/guards';
+import { isIROutputInstruction } from '@compiler/pico-c/frontend/ir/guards';
 
-import {IRInstruction, isIRLabelOffsetInstruction, isIRLeaInstruction} from '../../../frontend/ir/instructions';
-import {IRVariable} from '../../../frontend/ir/variables';
-import {dropConstantInstructionArgs} from '../utils/dropConstantInstructionArgs';
+import {
+  IRInstruction,
+  isIRLabelOffsetInstruction,
+  isIRLeaInstruction,
+} from '../../../frontend/ir/instructions';
+import { IRVariable } from '../../../frontend/ir/variables';
+import { dropConstantInstructionArgs } from '../utils/dropConstantInstructionArgs';
 
-export function dropRedundantAddressInstructions(instructions: IRInstruction[]) {
+export function dropRedundantAddressInstructions(
+  instructions: IRInstruction[],
+) {
   let hasCache = false;
 
-  const cachedInputs: {[inputVar: string]: IRVariable} = {};
-  const replacedOutputs: {[outputVar: string]: IRVariable} = {};
+  const cachedInputs: { [inputVar: string]: IRVariable } = {};
+  const replacedOutputs: { [outputVar: string]: IRVariable } = {};
   const newInstructions = [...instructions];
 
-  for (let i = 0; i < newInstructions.length;) {
+  for (let i = 0; i < newInstructions.length; ) {
     const instruction = newInstructions[i];
 
     if (isIROutputInstruction(instruction)) {
       let cacheKey: string = null;
 
       if (isIRLeaInstruction(instruction)) {
-        ({name: cacheKey} = instruction.inputVar);
+        ({ name: cacheKey } = instruction.inputVar);
       } else if (isIRLabelOffsetInstruction(instruction)) {
         cacheKey = instruction.labelInstruction.name;
       }
@@ -41,9 +47,13 @@ export function dropRedundantAddressInstructions(instructions: IRInstruction[]) 
     }
 
     if (hasCache) {
-      const optimizedInstruction = dropConstantInstructionArgs(replacedOutputs, instruction);
-      if (optimizedInstruction)
+      const optimizedInstruction = dropConstantInstructionArgs(
+        replacedOutputs,
+        instruction,
+      );
+      if (optimizedInstruction) {
         newInstructions[i] = optimizedInstruction;
+      }
     }
 
     ++i;

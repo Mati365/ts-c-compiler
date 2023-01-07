@@ -1,26 +1,15 @@
-import {dumpAttributesToString} from '@compiler/core/utils';
-import {walkOverFields} from '@compiler/grammar/decorators/walkOverFields';
+import { dumpAttributesToString } from '@compiler/core/utils';
+import { walkOverFields } from '@compiler/grammar/decorators/walkOverFields';
 
-import {NodeLocation} from '@compiler/grammar/tree/NodeLocation';
-import {ASTCCompilerKind, ASTCCompilerNode} from './ASTCCompilerNode';
-import {ASTCDeclarationSpecifier} from './ASTCDeclarationSpecifier';
-import {ASTCDeclarator} from './ASTCDeclarator';
-import {ASTCAbstractDeclarator} from './ASTCAbstractDeclarator';
+import { NodeLocation } from '@compiler/grammar/tree/NodeLocation';
+import { ASTCCompilerKind, ASTCCompilerNode } from './ASTCCompilerNode';
+import { ASTCDeclarationSpecifier } from './ASTCDeclarationSpecifier';
+import { ASTCDeclarator } from './ASTCDeclarator';
+import { ASTCAbstractDeclarator } from './ASTCAbstractDeclarator';
 
-/**
- * @export
- * @class ASTCParameterDeclaration
- * @extends {ASTCCompilerNode}
- */
-@walkOverFields(
-  {
-    fields: [
-      'specifier',
-      'declarator',
-      'abstractDeclarator',
-    ],
-  },
-)
+@walkOverFields({
+  fields: ['specifier', 'declarator', 'abstractDeclarator'],
+})
 export class ASTCParameterDeclaration extends ASTCCompilerNode {
   constructor(
     loc: NodeLocation,
@@ -33,13 +22,10 @@ export class ASTCParameterDeclaration extends ASTCCompilerNode {
   }
 
   toString() {
-    const {kind, vaList} = this;
+    const { kind, vaList } = this;
 
-    return dumpAttributesToString(
-      kind,
-      {
-        vaList,
-      },
-    );
+    return dumpAttributesToString(kind, {
+      vaList,
+    });
   }
 }

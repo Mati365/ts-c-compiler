@@ -1,6 +1,6 @@
-import {UnionStruct, bits} from '@compiler/core/shared/UnionStruct';
-import {MemoryRegionRange} from '@x86-toolkit/cpu/memory/MemoryRegion';
-import {CHARSET_MEMORY_MAPS, VGAIndexedReg} from './VGAConstants';
+import { UnionStruct, bits } from '@compiler/core/shared/UnionStruct';
+import { MemoryRegionRange } from '@x86-toolkit/cpu/memory/MemoryRegion';
+import { CHARSET_MEMORY_MAPS, VGAIndexedReg } from './VGAConstants';
 
 /**
  * @see {@link http://www.osdever.net/FreeVGA/vga/seqreg.htm}
@@ -14,10 +14,6 @@ import {CHARSET_MEMORY_MAPS, VGAIndexedReg} from './VGAConstants';
 
 /**
  * Reset Register (Index 00h)
- *
- * @export
- * @class ResetReg
- * @extends {UnionStruct}
  */
 export class ResetReg extends UnionStruct {
   @bits(0) ar: number;
@@ -26,10 +22,6 @@ export class ResetReg extends UnionStruct {
 
 /**
  * Clocking Mode Register (Index 01h)
- *
- * @export
- * @class ClockingModeReg
- * @extends {UnionStruct}
  */
 export class ClockingModeReg extends UnionStruct {
   @bits(0) dotMode8or9: number;
@@ -41,10 +33,6 @@ export class ClockingModeReg extends UnionStruct {
 
 /**
  * Map Mask Register (Index 02h)
- *
- * @export
- * @class MapMaskReg
- * @extends {UnionStruct}
  */
 export class MapMaskReg extends UnionStruct {
   @bits(0, 3) memPlaneWriteEnable: number;
@@ -52,10 +40,6 @@ export class MapMaskReg extends UnionStruct {
 
 /**
  * Character Map Select Register (Index 03h)
- *
- * @export
- * @class CharMapSelectReg
- * @extends {UnionStruct}
  */
 export class CharMapSelectReg extends UnionStruct {
   @bits(0, 1) charSetBSelect: number;
@@ -66,10 +50,6 @@ export class CharMapSelectReg extends UnionStruct {
 
 /**
  * Sequencer Memory Mode Register (Index 04h)
- *
- * @export
- * @class SequencerMemModeReg
- * @extends {UnionStruct}
  */
 export class SequencerMemModeReg extends UnionStruct {
   @bits(1) extendedMemory: number;
@@ -79,29 +59,20 @@ export class SequencerMemModeReg extends UnionStruct {
 
 /**
  * Group of sequencer regs
- *
- * @export
- * @class VGASequencerRegs
- * @extends {VGAIndexedReg}
  */
 export class VGASequencerRegs extends VGAIndexedReg {
-  resetReg = new ResetReg;
-  clockingModeReg = new ClockingModeReg;
-  mapMaskReg = new MapMaskReg;
-  charMapSelectReg = new CharMapSelectReg;
-  memModeReg = new SequencerMemModeReg;
+  resetReg = new ResetReg();
+  clockingModeReg = new ClockingModeReg();
+  mapMaskReg = new MapMaskReg();
+  charMapSelectReg = new CharMapSelectReg();
+  memModeReg = new SequencerMemModeReg();
 
   /**
    * Returns two fonts charsets
-   *
-   * @returns {[MemoryRegionRange, MemoryRegionRange]}
-   * @memberof VGASequencerRegs
    */
   getCharsetMemRegions(): [MemoryRegionRange, MemoryRegionRange] {
-    const {
-      charSetBSelect, csbs2,
-      charSetASelect, csas2,
-    } = this.charMapSelectReg;
+    const { charSetBSelect, csbs2, charSetASelect, csas2 } =
+      this.charMapSelectReg;
 
     return [
       CHARSET_MEMORY_MAPS[(csas2 << 2) | charSetASelect],
@@ -111,11 +82,16 @@ export class VGASequencerRegs extends VGAIndexedReg {
 
   getRegByIndex(index: number = this.indexReg): number {
     switch (index) {
-      case 0x0: return this.resetReg.number;
-      case 0x1: return this.clockingModeReg.number;
-      case 0x2: return this.mapMaskReg.number;
-      case 0x3: return this.charMapSelectReg.number;
-      case 0x4: return this.memModeReg.number;
+      case 0x0:
+        return this.resetReg.number;
+      case 0x1:
+        return this.clockingModeReg.number;
+      case 0x2:
+        return this.mapMaskReg.number;
+      case 0x3:
+        return this.charMapSelectReg.number;
+      case 0x4:
+        return this.memModeReg.number;
 
       default:
         return null;
@@ -124,11 +100,21 @@ export class VGASequencerRegs extends VGAIndexedReg {
 
   setRegByIndex(value: number, index: number = this.indexReg): void {
     switch (index) {
-      case 0x0: this.resetReg.number = value; break;
-      case 0x1: this.clockingModeReg.number = value; break;
-      case 0x2: this.mapMaskReg.number = value; break;
-      case 0x3: this.charMapSelectReg.number = value; break;
-      case 0x4: this.memModeReg.number = value; break;
+      case 0x0:
+        this.resetReg.number = value;
+        break;
+      case 0x1:
+        this.clockingModeReg.number = value;
+        break;
+      case 0x2:
+        this.mapMaskReg.number = value;
+        break;
+      case 0x3:
+        this.charMapSelectReg.number = value;
+        break;
+      case 0x4:
+        this.memModeReg.number = value;
+        break;
 
       default:
     }

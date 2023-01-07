@@ -1,16 +1,27 @@
 import * as R from 'ramda';
 
-import {RegisterSchema} from '../../../../constants/x86';
-import {X86TargetCPU} from '../../../../types';
-import {ASTInstruction} from '../ASTInstruction';
-import {ASTInstructionArg} from './ASTInstructionArg';
-import {ASTInstructionSchema} from '../ASTInstructionSchema';
+import { RegisterSchema } from '../../../../constants/x86';
+import { X86TargetCPU } from '../../../../types';
+import { ASTInstruction } from '../ASTInstruction';
+import { ASTInstructionArg } from './ASTInstructionArg';
+import { ASTInstructionSchema } from '../ASTInstructionSchema';
 
 import {
-  mem, moffs, reg, sreg, imm, relLabel, x87sti, x87st,
-  nearPointer, farSegPointer, indirectFarSegPointer,
+  mem,
+  moffs,
+  reg,
+  sreg,
+  imm,
+  relLabel,
+  x87sti,
+  x87st,
+  nearPointer,
+  farSegPointer,
+  indirectFarSegPointer,
   immCanBeImplicitSignExtendedToByte,
-} from './utils/matchers';
+} from './matchers';
+
+type ASTCMatchersMap = Record<string, ASTInstructionArgMatcherFactory>;
 
 /**
  * Mnemonic notation:
@@ -46,18 +57,21 @@ export type ASTInstructionArgMatcher = (
   schema?: ASTInstructionSchema,
 ) => boolean;
 
-export type ASTInstructionArgMatcherFactory<T = any> = (config?: T) => ASTInstructionArgMatcher;
+export type ASTInstructionArgMatcherFactory<T = any> = (
+  config?: T,
+) => ASTInstructionArgMatcher;
 
 export type ASTOpcodeMatchers = {
-  [key: string]: ASTInstructionSchema[],
+  [key: string]: ASTInstructionSchema[];
 };
 
-export const ASTInstructionArgMatchers: Record<string, ASTInstructionArgMatcherFactory> = {
+export const ASTInstructionArgMatchers: ASTCMatchersMap = {
   eq: (str: string) => (arg: ASTInstructionArg<any>) => {
-    const {val} = arg;
+    const { val } = arg;
 
-    if (val instanceof RegisterSchema)
+    if (val instanceof RegisterSchema) {
       return val.mnemonic === str;
+    }
 
     return str === val?.toString();
   },
@@ -66,17 +80,26 @@ export const ASTInstructionArgMatchers: Record<string, ASTInstructionArgMatcherF
   moffs: () => (arg: ASTInstructionArg) => moffs(arg, 2),
 
   /** MEM */
-  m: () => (arg: ASTInstructionArg, instruction: ASTInstruction) => mem(arg, instruction, null),
-  mb: () => (arg: ASTInstructionArg, instruction: ASTInstruction) => mem(arg, instruction, 1),
-  mw: () => (arg: ASTInstructionArg, instruction: ASTInstruction) => mem(arg, instruction, 2),
-  md: () => (arg: ASTInstructionArg, instruction: ASTInstruction) => mem(arg, instruction, 4),
-  mq: () => (arg: ASTInstructionArg, instruction: ASTInstruction) => mem(arg, instruction, 8),
+  m: () => (arg: ASTInstructionArg, instruction: ASTInstruction) =>
+    mem(arg, instruction, null),
+  mb: () => (arg: ASTInstructionArg, instruction: ASTInstruction) =>
+    mem(arg, instruction, 1),
+  mw: () => (arg: ASTInstructionArg, instruction: ASTInstruction) =>
+    mem(arg, instruction, 2),
+  md: () => (arg: ASTInstructionArg, instruction: ASTInstruction) =>
+    mem(arg, instruction, 4),
+  mq: () => (arg: ASTInstructionArg, instruction: ASTInstruction) =>
+    mem(arg, instruction, 8),
 
   /** REAL MEM */
-  mwr: () => (arg: ASTInstructionArg, instruction: ASTInstruction) => mem(arg, instruction, 2),
-  mdr: () => (arg: ASTInstructionArg, instruction: ASTInstruction) => mem(arg, instruction, 4),
-  mqr: () => (arg: ASTInstructionArg, instruction: ASTInstruction) => mem(arg, instruction, 8),
-  mtr: () => (arg: ASTInstructionArg, instruction: ASTInstruction) => mem(arg, instruction, 10),
+  mwr: () => (arg: ASTInstructionArg, instruction: ASTInstruction) =>
+    mem(arg, instruction, 2),
+  mdr: () => (arg: ASTInstructionArg, instruction: ASTInstruction) =>
+    mem(arg, instruction, 4),
+  mqr: () => (arg: ASTInstructionArg, instruction: ASTInstruction) =>
+    mem(arg, instruction, 8),
+  mtr: () => (arg: ASTInstructionArg, instruction: ASTInstruction) =>
+    mem(arg, instruction, 10),
 
   /** SREG */
   sr: () => (arg: ASTInstructionArg) => sreg(arg, 2),
@@ -87,30 +110,34 @@ export const ASTInstructionArgMatchers: Record<string, ASTInstructionArgMatcherF
   rq: () => (arg: ASTInstructionArg) => reg(arg, 4),
 
   /** REG/MEM */
-  rmb: () => (arg: ASTInstructionArg, instruction: ASTInstruction) => reg(arg, 1) || mem(arg, instruction, 1),
-  rmw: () => (arg: ASTInstructionArg, instruction: ASTInstruction) => reg(arg, 2) || mem(arg, instruction, 2),
-  rmq: () => (arg: ASTInstructionArg, instruction: ASTInstruction) => reg(arg, 4) || mem(arg, instruction, 4),
+  rmb: () => (arg: ASTInstructionArg, instruction: ASTInstruction) =>
+    reg(arg, 1) || mem(arg, instruction, 1),
+  rmw: () => (arg: ASTInstructionArg, instruction: ASTInstruction) =>
+    reg(arg, 2) || mem(arg, instruction, 2),
+  rmq: () => (arg: ASTInstructionArg, instruction: ASTInstruction) =>
+    reg(arg, 4) || mem(arg, instruction, 4),
 
   /** IMM */
   ib: () => (arg: ASTInstructionArg) => imm(arg, 1),
   iw: () => (arg: ASTInstructionArg) => imm(arg, 2),
 
   /** Trick for 0x83 instructions, detect if number is sign extended and save bytes */
-  sign_extended_ib_to_iw: () => (arg: ASTInstructionArg) => immCanBeImplicitSignExtendedToByte(arg, 1, 2),
+  sign_extended_ib_to_iw: () => (arg: ASTInstructionArg) =>
+    immCanBeImplicitSignExtendedToByte(arg, 1, 2),
 
   /** LABEL - size of label will be matched in second phrase */
-  sl: () => (arg: ASTInstructionArg, instruction: ASTInstruction, addr: number) => (
-    relLabel(instruction, arg, 1, addr)
-  ),
+  sl:
+    () => (arg: ASTInstructionArg, instruction: ASTInstruction, addr: number) =>
+      relLabel(instruction, arg, 1, addr),
 
-  ll: () => (arg: ASTInstructionArg, instruction: ASTInstruction, addr: number) => (
-    relLabel(instruction, arg, 2, addr)
-  ),
+  ll:
+    () => (arg: ASTInstructionArg, instruction: ASTInstruction, addr: number) =>
+      relLabel(instruction, arg, 2, addr),
 
   /** NEAR POINTER */
-  np: () => (arg: ASTInstructionArg, instruction: ASTInstruction, addr: number) => (
-    nearPointer(instruction, arg, 4, addr)
-  ),
+  np:
+    () => (arg: ASTInstructionArg, instruction: ASTInstruction, addr: number) =>
+      nearPointer(instruction, arg, 4, addr),
 
   /** ABSOLUTE FAR POINTERS */
   fptr: () => (arg: ASTInstructionArg) => farSegPointer(arg, 4),
@@ -125,17 +152,24 @@ export const ASTInstructionArgMatchers: Record<string, ASTInstructionArgMatcherF
 
 export const isOptionalArg = (arg: string): boolean => arg === 'st';
 
-export const isRMSchemaArg = R.contains(
-  R.__,
-  [
-    'm', 'mw', 'mb', 'md', 'mq',
-    'rmb', 'rmw', 'rmq',
-    'ifptr', 'moffs',
-    'mwr', 'mdr', 'mqr', 'mtr',
-  ],
-);
+export const isRMSchemaArg = R.includes(R.__, [
+  'm',
+  'mw',
+  'mb',
+  'md',
+  'mq',
+  'rmb',
+  'rmw',
+  'rmq',
+  'ifptr',
+  'moffs',
+  'mwr',
+  'mdr',
+  'mqr',
+  'mtr',
+]);
 
-export const isMoffsSchemaArg = R.contains(R.__, ['moffs']);
+export const isMoffsSchemaArg = R.includes(R.__, ['moffs']);
 
 export class ASTInstructionMatcherSchema {
   readonly rm: boolean;
@@ -162,31 +196,20 @@ export const argMatchersFromStr = R.ifElse(
   R.either(R.isEmpty, R.isNil),
   R.always([]),
   R.compose(
-    R.map(
-      (str) => {
-        const matcher = ASTInstructionArgMatchers[str];
+    R.map(str => {
+      const matcher = ASTInstructionArgMatchers[str];
 
-        return new ASTInstructionMatcherSchema(
-          str,
-          matcher
-            ? matcher()
-            : ASTInstructionArgMatchers.eq(str),
-        );
-      },
-    ),
+      return new ASTInstructionMatcherSchema(
+        str,
+        matcher ? matcher() : ASTInstructionArgMatchers.eq(str),
+      );
+    }),
     R.split(' '),
   ),
 );
 
 /**
  * Looksup in opcodes table nad matches arguments to schemas
- *
- * @export
- * @param {ASTOpcodeMatchers} matchersSet
- * @param {X86TargetCPU} targetCPU
- * @param {ASTInstruction} instruction
- * @param {number} offset
- * @returns {ASTInstructionSchema[]}
  */
 export function findMatchingInstructionSchemas(
   matchersSet: ASTOpcodeMatchers,
@@ -194,38 +217,37 @@ export function findMatchingInstructionSchemas(
   instruction: ASTInstruction,
   offset: number,
 ): ASTInstructionSchema[] {
-  const {opcode, args} = instruction;
+  const { opcode, args } = instruction;
   const opcodeSchemas = matchersSet[opcode];
 
-  if (!opcodeSchemas)
+  if (!opcodeSchemas) {
     return [];
+  }
 
   const targetCheck = R.isNil(targetCPU);
-  const schemas = R.filter(
-    (schema) => {
-      const {
-        argsSchema: matchers,
-        minArgsCount,
-      } = schema;
+  const schemas = R.filter(schema => {
+    const { argsSchema: matchers, minArgsCount } = schema;
 
-      if (minArgsCount > args.length)
+    if (minArgsCount > args.length) {
+      return false;
+    }
+
+    if (targetCheck && !R.isNil(targetCPU) && schema.targetCPU > targetCPU) {
+      return false;
+    }
+
+    for (let i = args.length - 1; i >= 0; --i) {
+      if (
+        R.isNil(args[i]) ||
+        !matchers[i] ||
+        !matchers[i].matcher(args[i], instruction, offset, schema)
+      ) {
         return false;
-
-      if (targetCheck && !R.isNil(targetCPU) && schema.targetCPU > targetCPU)
-        return false;
-
-      for (let i = args.length - 1; i >= 0; --i) {
-        if (R.isNil(args[i]) || !matchers[i] || !matchers[i].matcher(args[i], instruction, offset, schema))
-          return false;
       }
+    }
 
-      return true;
-    },
-    opcodeSchemas,
-  );
+    return true;
+  }, opcodeSchemas);
 
-  return R.sort(
-    (a, b) => a.byteSize - b.byteSize,
-    schemas,
-  );
+  return R.sort((a, b) => a.byteSize - b.byteSize, schemas);
 }

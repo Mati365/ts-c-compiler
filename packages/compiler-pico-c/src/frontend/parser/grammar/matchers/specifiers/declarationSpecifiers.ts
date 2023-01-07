@@ -1,5 +1,5 @@
-import {SyntaxError} from '@compiler/grammar/Grammar';
-import {NodeLocation} from '@compiler/grammar/tree/NodeLocation';
+import { SyntaxError } from '@compiler/grammar/Grammar';
+import { NodeLocation } from '@compiler/grammar/tree/NodeLocation';
 import {
   ASTCAlignmentSpecifiersList,
   ASTCCompilerNode,
@@ -10,13 +10,13 @@ import {
   ASTCTypeSpecifiersList,
 } from '@compiler/pico-c/frontend/parser/ast';
 
-import {CGrammar} from '../shared';
+import { CGrammar } from '../shared';
 
-import {matchStorageClassSpecifier} from './storageClassSpecifier';
-import {matchTypeQualifier} from './typeQualifier';
-import {matchFunctionSpecifier} from './functionSpecifier';
-import {typeSpecifier} from './typeSpecifier';
-import {alignmentSpecifier} from './alignmentSpecifier';
+import { matchStorageClassSpecifier } from './storageClassSpecifier';
+import { matchTypeQualifier } from './typeQualifier';
+import { matchFunctionSpecifier } from './functionSpecifier';
+import { typeSpecifier } from './typeSpecifier';
+import { alignmentSpecifier } from './alignmentSpecifier';
 
 /**
  * declaration_specifiers
@@ -30,13 +30,11 @@ import {alignmentSpecifier} from './alignmentSpecifier';
  *  | function_specifier
  *  | alignment_specifier declaration_specifiers
  *  | alignment_specifier
- *
- * @export
- * @param {CGrammar} grammar
- * @return {ASTCAssignmentExpression}
  */
-export function declarationSpecifiers(grammar: CGrammar): ASTCDeclarationSpecifier {
-  const {g} = grammar;
+export function declarationSpecifiers(
+  grammar: CGrammar,
+): ASTCDeclarationSpecifier {
+  const { g } = grammar;
 
   let loc: NodeLocation = null;
   const storageClassSpecifiers = new ASTCStorageClassSpecifiersList(null, []);
@@ -46,43 +44,44 @@ export function declarationSpecifiers(grammar: CGrammar): ASTCDeclarationSpecifi
   const alignmentSpecifiers = new ASTCAlignmentSpecifiersList(null, []);
 
   do {
-    const item = <ASTCCompilerNode> g.or(
-      {
-        storage() {
-          const node = matchStorageClassSpecifier(grammar);
-          return (storageClassSpecifiers.items.push(node), node);
-        },
-        specifier() {
-          const node = typeSpecifier(grammar);
-          return (typeSpecifiers.items.push(node), node);
-        },
-        qualifier() {
-          const node = matchTypeQualifier(grammar);
-          return (typeQualifiers.items.push(node), node);
-        },
-        functionSpecifier() {
-          const node = matchFunctionSpecifier(grammar);
-          return (functionSpecifiers.items.push(node), node);
-        },
-        alignmentSpecifier() {
-          const node = alignmentSpecifier(grammar);
-          return (alignmentSpecifiers.items.push(node), node);
-        },
-        empty() {
-          return null;
-        },
+    const item = <ASTCCompilerNode>g.or({
+      storage() {
+        const node = matchStorageClassSpecifier(grammar);
+        return storageClassSpecifiers.items.push(node), node;
       },
-    );
+      specifier() {
+        const node = typeSpecifier(grammar);
+        return typeSpecifiers.items.push(node), node;
+      },
+      qualifier() {
+        const node = matchTypeQualifier(grammar);
+        return typeQualifiers.items.push(node), node;
+      },
+      functionSpecifier() {
+        const node = matchFunctionSpecifier(grammar);
+        return functionSpecifiers.items.push(node), node;
+      },
+      alignmentSpecifier() {
+        const node = alignmentSpecifier(grammar);
+        return alignmentSpecifiers.items.push(node), node;
+      },
+      empty() {
+        return null;
+      },
+    });
 
-    if (!item)
+    if (!item) {
       break;
+    }
 
-    if (!loc)
+    if (!loc) {
       loc = item.loc;
+    }
   } while (true);
 
-  if (!loc)
-    throw new SyntaxError;
+  if (!loc) {
+    throw new SyntaxError();
+  }
 
   return new ASTCDeclarationSpecifier(
     loc,

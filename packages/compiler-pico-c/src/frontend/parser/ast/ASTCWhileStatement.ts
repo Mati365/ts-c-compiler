@@ -1,23 +1,14 @@
-import {walkOverFields} from '@compiler/grammar/decorators/walkOverFields';
+import { walkOverFields } from '@compiler/grammar/decorators/walkOverFields';
 
-import {NodeLocation} from '@compiler/grammar/tree/NodeLocation';
-import {ASTCCompilerKind, ASTCCompilerNode} from './ASTCCompilerNode';
+import { NodeLocation } from '@compiler/grammar/tree/NodeLocation';
+import { ASTCCompilerKind, ASTCCompilerNode } from './ASTCCompilerNode';
 
 /**
  * while (true) {}
- *
- * @export
- * @class ASTCWhileStatement
- * @extends {ASTCCompilerNode}
  */
-@walkOverFields(
-  {
-    fields: [
-      'expression',
-      'statement',
-    ],
-  },
-)
+@walkOverFields({
+  fields: ['expression', 'statement'],
+})
 export class ASTCWhileStatement extends ASTCCompilerNode {
   constructor(
     loc: NodeLocation,
@@ -31,10 +22,6 @@ export class ASTCWhileStatement extends ASTCCompilerNode {
 
 /**
  * do { } while(true);
- *
- * @export
- * @class ASTCDoWhileStatement
- * @extends {ASTCWhileStatement}
  */
 export class ASTCDoWhileStatement extends ASTCWhileStatement {
   constructor(

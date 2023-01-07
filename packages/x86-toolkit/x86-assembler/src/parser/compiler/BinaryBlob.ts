@@ -1,22 +1,16 @@
 import * as R from 'ramda';
 
-import {arrayToHex} from '@compiler/core/utils/arrayToHexString';
-import {X86Compiler} from './X86Compiler';
+import { arrayToHex } from '@compiler/core/utils/arrayToHexString';
+import { X86Compiler } from './X86Compiler';
 
 export const toMultilineBinaryBlockString = R.compose(
-  R.map(
-    R.join(' '),
-  ),
+  R.map(R.join(' ')),
   R.splitEvery(8),
   arrayToHex,
 );
 
 /**
  * Binary portion of data
- *
- * @export
- * @class BinaryBlob
- * @template T ast type
  */
 export class BinaryBlob<T = any> {
   constructor(
@@ -33,32 +27,29 @@ export class BinaryBlob<T = any> {
     return this.binary;
   }
 
-  get byteSize() { return this.binary.length; }
+  get byteSize() {
+    return this.binary.length;
+  }
 
   /**
    * Print blob like objdump
-   *
-   * @param {boolean} [withAST=true]
-   * @returns {string[]}
-   * @memberof BinaryBlob
    */
   toString(withAST: boolean = true): string[] {
-    const {binary, ast} = this;
+    const { binary, ast } = this;
     const binLines = toMultilineBinaryBlockString(binary);
 
-    if (!binLines.length || !withAST || !ast)
+    if (!binLines.length || !withAST || !ast) {
       return binLines;
+    }
 
-    return [
-      `${binLines[0].padEnd(30)}${ast.toString()}`,
-      ...R.tail(binLines),
-    ];
+    return [`${binLines[0].padEnd(30)}${ast.toString()}`, ...R.tail(binLines)];
   }
 
   /* eslint-disable @typescript-eslint/no-unused-vars */
   compile(compiler?: X86Compiler, offset?: number): BinaryBlob<T> {
-    if (!this.binary)
+    if (!this.binary) {
       this.binary = [];
+    }
 
     return this;
   }

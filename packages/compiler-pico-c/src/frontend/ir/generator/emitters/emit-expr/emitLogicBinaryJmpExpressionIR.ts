@@ -1,5 +1,5 @@
-import {TokenType} from '@compiler/lexer/shared';
-import {ASTCBinaryOpNode} from '@compiler/pico-c/frontend/parser';
+import { TokenType } from '@compiler/lexer/shared';
+import { ASTCBinaryOpNode } from '@compiler/pico-c/frontend/parser';
 
 import {
   IRBrInstruction,
@@ -29,19 +29,17 @@ type LogicBinaryExpressionIREmitAttrs = IREmitterContextAttrs & {
   labels?: LogicBinaryExpressionLabels;
 };
 
-export function emitLogicBinaryJmpExpressionIR(
-  {
-    scope,
-    context,
-    node,
-  }: LogicBinaryExpressionIREmitAttrs,
-) {
-  const {op} = node;
-  const {emit, factory, conditionStmt} = context;
-  const  {labels} = conditionStmt;
+export function emitLogicBinaryJmpExpressionIR({
+  scope,
+  context,
+  node,
+}: LogicBinaryExpressionIREmitAttrs) {
+  const { op } = node;
+  const { emit, factory, conditionStmt } = context;
+  const { labels } = conditionStmt;
 
   const result = createBlankExprResult();
-  const {instructions} = result;
+  const { instructions } = result;
 
   const localLabels = {
     rightArgLabel: factory.genTmpLabelInstruction(),
@@ -49,47 +47,45 @@ export function emitLogicBinaryJmpExpressionIR(
 
   // if false in OR expr - just jump to next operand (arg1 || arg2 -> jmp from arg1 to arg2)
   // if true in AND expr - just jump to next operand (arg1 && arg2) -> jmp from arg1 to arg2)
-  const leftArgLabels = (
+  const leftArgLabels =
     op === TokenType.OR
       ? {
-        ifFalseLabel: localLabels.rightArgLabel,
-      }
+          ifFalseLabel: localLabels.rightArgLabel,
+        }
       : {
-        ifTrueLabel: localLabels.rightArgLabel,
-      }
-  );
+          ifTrueLabel: localLabels.rightArgLabel,
+        };
 
   const results = {
-    left: emit.expression(
-      {
-        node: node.left,
-        context: {
-          ...context,
-          conditionStmt: {
-            ...conditionStmt,
-            labels: {
-              ...labels,
-              ...leftArgLabels,
-            },
+    left: emit.expression({
+      node: node.left,
+      context: {
+        ...context,
+        conditionStmt: {
+          ...conditionStmt,
+          labels: {
+            ...labels,
+            ...leftArgLabels,
           },
         },
-        scope,
       },
-    ),
+      scope,
+    }),
 
-    right: emit.expression(
-      {
-        node: node.right,
-        context,
-        scope,
-      },
-    ),
+    right: emit.expression({
+      node: node.right,
+      context,
+      scope,
+    }),
   };
 
   if (op === TokenType.OR) {
     appendStmtResults(results.left, result);
-    if (results.left.output)
-      instructions.push(new IRBrInstruction(results.left.output, labels.ifTrueLabel));
+    if (results.left.output) {
+      instructions.push(
+        new IRBrInstruction(results.left.output, labels.ifTrueLabel),
+      );
+    }
 
     instructions.push(localLabels.rightArgLabel);
     appendStmtResults(results.right, result);
@@ -103,8 +99,11 @@ export function emitLogicBinaryJmpExpressionIR(
     instructions.push(new IRJmpInstruction(labels.ifFalseLabel));
   } else {
     appendStmtResults(results.left, result);
-    if (results.left.output)
-      instructions.push(new IRBrInstruction(results.left.output, null, labels.ifFalseLabel));
+    if (results.left.output) {
+      instructions.push(
+        new IRBrInstruction(results.left.output, null, labels.ifFalseLabel),
+      );
+    }
 
     instructions.push(localLabels.rightArgLabel);
     appendStmtResults(results.right, result);

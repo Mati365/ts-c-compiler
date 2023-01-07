@@ -1,24 +1,22 @@
-import {walkOverFields} from '@compiler/grammar/decorators/walkOverFields';
+import { walkOverFields } from '@compiler/grammar/decorators/walkOverFields';
 
-import {NodeLocation} from '@compiler/grammar/tree/NodeLocation';
-import {ASTCFunctionSpecifiersList} from './ASTCFunctionSpecifiersList';
-import {ASTCCompilerKind, ASTCCompilerNode} from './ASTCCompilerNode';
-import {ASTCStorageClassSpecifiersList} from './ASTCStorageClassSpecifiersList';
-import {ASTCTypeQualifiersList} from './ASTCTypeQualifiersList';
-import {ASTCTypeSpecifiersList} from './ASTCTypeSpecifiersList';
-import {ASTCAlignmentSpecifiersList} from './ASTCAlignmentSpecifiersList';
+import { NodeLocation } from '@compiler/grammar/tree/NodeLocation';
+import { ASTCFunctionSpecifiersList } from './ASTCFunctionSpecifiersList';
+import { ASTCCompilerKind, ASTCCompilerNode } from './ASTCCompilerNode';
+import { ASTCStorageClassSpecifiersList } from './ASTCStorageClassSpecifiersList';
+import { ASTCTypeQualifiersList } from './ASTCTypeQualifiersList';
+import { ASTCTypeSpecifiersList } from './ASTCTypeSpecifiersList';
+import { ASTCAlignmentSpecifiersList } from './ASTCAlignmentSpecifiersList';
 
-@walkOverFields(
-  {
-    fields: [
-      'storageClassSpecifiers',
-      'typeSpecifiers',
-      'typeQualifiers',
-      'functionSpecifiers',
-      'alignmentSpecifiers',
-    ],
-  },
-)
+@walkOverFields({
+  fields: [
+    'storageClassSpecifiers',
+    'typeSpecifiers',
+    'typeQualifiers',
+    'functionSpecifiers',
+    'alignmentSpecifiers',
+  ],
+})
 export class ASTCDeclarationSpecifier extends ASTCCompilerNode {
   constructor(
     loc: NodeLocation,
@@ -34,8 +32,10 @@ export class ASTCDeclarationSpecifier extends ASTCCompilerNode {
   dropEmpty(): ASTCDeclarationSpecifier {
     const {
       loc,
-      functionSpecifiers, storageClassSpecifiers,
-      typeSpecifiers, typeQualifiers,
+      functionSpecifiers,
+      storageClassSpecifiers,
+      typeSpecifiers,
+      typeQualifiers,
       alignmentSpecifiers,
     } = this;
 

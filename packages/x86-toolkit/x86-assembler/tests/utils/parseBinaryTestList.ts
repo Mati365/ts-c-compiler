@@ -1,23 +1,16 @@
 import * as R from 'ramda';
 
 export type BinaryTest = {
-  bin: string,
-  test: string,
-  code: string,
+  bin: string;
+  test: string;
+  code: string;
 };
 
 /**
  * Creates list of binary asm codes to be tested
- *
- * @export
- * @param {string} str
- * @returns {BinaryTest[]}
  */
 export function parseBinaryTestList(str: string): BinaryTest[] {
-  const truncated = R.compose(
-    R.reject(R.isEmpty),
-    R.split('\n'),
-  )(str);
+  const truncated = R.compose(R.reject(R.isEmpty), R.split('\n'))(str);
 
   return R.reduce(
     (tests, line) => {
@@ -30,18 +23,18 @@ export function parseBinaryTestList(str: string): BinaryTest[] {
         ];
 
         if (!prevTest || prevTest.code) {
-          tests.push(
-            <BinaryTest> {
-              bin: '',
-              test: '',
-              code: '',
-              [name]: value,
-            },
-          );
-        } else
+          tests.push(<BinaryTest>{
+            bin: '',
+            test: '',
+            code: '',
+            [name]: value,
+          });
+        } else {
           prevTest[name] = value;
-      } else if (prevTest)
+        }
+      } else if (prevTest) {
         prevTest.code += `${line}\n`;
+      }
 
       return tests;
     },

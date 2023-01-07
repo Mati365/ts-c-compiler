@@ -1,10 +1,10 @@
 import * as R from 'ramda';
 
-import {SyntaxError} from '@compiler/grammar/Grammar';
-import {ASTCStructDeclaration, ASTCStructDeclarationList} from '../../../ast';
-import {CGrammar} from '../shared';
+import { SyntaxError } from '@compiler/grammar/Grammar';
+import { ASTCStructDeclaration, ASTCStructDeclarationList } from '../../../ast';
+import { CGrammar } from '../shared';
 
-import {structDeclaration} from './structDeclaration';
+import { structDeclaration } from './structDeclaration';
 
 /**
  * struct_declaration_list
@@ -14,29 +14,29 @@ import {structDeclaration} from './structDeclaration';
  *
  * @see
  *  Empty structures are not part of standard!
- *
- * @export
- * @param {CGrammar} grammar
- * @param {Boolean} allowEmpty
- * @returns {ASTCStructDeclarationList}
  */
-export function structDeclarationList(grammar: CGrammar, allowEmpty: boolean = true): ASTCStructDeclarationList {
+export function structDeclarationList(
+  grammar: CGrammar,
+  allowEmpty: boolean = true,
+): ASTCStructDeclarationList {
   const declarations: ASTCStructDeclaration[] = [];
-  const {g} = grammar;
+  const { g } = grammar;
 
   do {
     const declarationNode = g.try(() => structDeclaration(grammar));
-    if (!declarationNode)
+    if (!declarationNode) {
       break;
+    }
 
     declarations.push(declarationNode);
   } while (true);
 
   if (R.isEmpty(declarations)) {
-    if (allowEmpty)
+    if (allowEmpty) {
       return null;
+    }
 
-    throw new SyntaxError;
+    throw new SyntaxError();
   }
 
   return new ASTCStructDeclarationList(declarations[0].loc, declarations);

@@ -1,45 +1,38 @@
 import chalk from 'chalk';
 
-import {getIRTypeDisplayName} from '../dump/getIRTypeDisplayName';
-import {IsOutputInstruction} from '../interfaces';
+import { getIRTypeDisplayName } from '../dump/getIRTypeDisplayName';
+import { IsOutputInstruction } from '../interfaces';
 
-import {IROpcode} from '../constants';
-import {IRInstruction, IRInstructionArgs} from './IRInstruction';
-import {IRVariable} from '../variables/IRVariable';
-import {CPointerType, CType} from '../../analyze';
+import { IROpcode } from '../constants';
+import { IRInstruction, IRInstructionArgs } from './IRInstruction';
+import { IRVariable } from '../variables/IRVariable';
+import { CPointerType, CType } from '../../analyze';
 
-export function isIRAllocInstruction(instruction: IRInstruction): instruction is IRAllocInstruction {
+export function isIRAllocInstruction(
+  instruction: IRInstruction,
+): instruction is IRAllocInstruction {
   return instruction?.opcode === IROpcode.ALLOC;
 }
 
 /**
- * Allocs nth bytes for variable
- *
- * @export
- * @class IRAllocInstruction
- * @extends {IRInstruction}
- * @implements {IsOutputInstruction}
+ * Allocates nth bytes for variable
  */
-export class IRAllocInstruction extends IRInstruction implements IsOutputInstruction {
+export class IRAllocInstruction
+  extends IRInstruction
+  implements IsOutputInstruction
+{
   static ofDestPtrVariable(variable: IRVariable) {
     return new IRAllocInstruction(
-      (<CPointerType> variable.type).baseType,
+      (<CPointerType>variable.type).baseType,
       variable,
     );
   }
 
-  constructor(
-    readonly type: CType,
-    readonly outputVar: IRVariable,
-  ) {
+  constructor(readonly type: CType, readonly outputVar: IRVariable) {
     super(IROpcode.ALLOC);
   }
 
-  override ofArgs(
-    {
-      output = this.outputVar,
-    }: IRInstructionArgs,
-  ) {
+  override ofArgs({ output = this.outputVar }: IRInstructionArgs) {
     return new IRAllocInstruction(this.type, output);
   }
 
@@ -51,10 +44,10 @@ export class IRAllocInstruction extends IRInstruction implements IsOutputInstruc
   }
 
   override getDisplayName(): string {
-    const {type, outputVar} = this;
+    const { type, outputVar } = this;
 
-    return (
-      `${outputVar.getDisplayName()} = ${chalk.magentaBright('alloca')} ${getIRTypeDisplayName(type, false)}`
-    );
+    return `${outputVar.getDisplayName()} = ${chalk.magentaBright(
+      'alloca',
+    )} ${getIRTypeDisplayName(type, false)}`;
   }
 }

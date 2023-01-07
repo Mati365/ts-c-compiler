@@ -1,20 +1,18 @@
-import {CRelOperator} from '@compiler/pico-c/constants';
+import { CRelOperator } from '@compiler/pico-c/constants';
 
-import {IROpcode} from '../constants';
-import {IROpInstruction} from './IROpInstruction';
-import {IRInstruction} from './IRInstruction';
-import {IRInstructionVarArg, IRVariable} from '../variables';
+import { IROpcode } from '../constants';
+import { IROpInstruction } from './IROpInstruction';
+import { IRInstruction } from './IRInstruction';
+import { IRInstructionVarArg, IRVariable } from '../variables';
 
-export function isIRICmpInstruction(instruction: IRInstruction): instruction is IRICmpInstruction {
+export function isIRICmpInstruction(
+  instruction: IRInstruction,
+): instruction is IRICmpInstruction {
   return instruction.opcode === IROpcode.ICMP;
 }
 
 /**
  * Relationship instruction
- *
- * @export
- * @class IRICmpInstruction
- * @extends {IROpInstruction<CRelOperator>}
  */
 export class IRICmpInstruction extends IROpInstruction<CRelOperator> {
   constructor(
@@ -23,10 +21,6 @@ export class IRICmpInstruction extends IROpInstruction<CRelOperator> {
     rightVar: IRInstructionVarArg,
     outputVar?: IRVariable,
   ) {
-    super(
-      IROpcode.ICMP,
-      operator, leftVar, rightVar, outputVar,
-      'icmp',
-    );
+    super(IROpcode.ICMP, operator, leftVar, rightVar, outputVar, 'icmp');
   }
 }

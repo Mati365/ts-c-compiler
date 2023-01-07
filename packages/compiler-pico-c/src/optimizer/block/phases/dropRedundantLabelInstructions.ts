@@ -1,4 +1,4 @@
-import {isWithLabeledBranches} from '@compiler/pico-c/frontend/ir/interfaces';
+import { isWithLabeledBranches } from '@compiler/pico-c/frontend/ir/interfaces';
 import {
   IRInstruction,
   IRLabelInstruction,
@@ -12,26 +12,28 @@ export function dropRedundantLabelInstructions(instructions: IRInstruction[]) {
 
   // first pass - collect all redundant label
   // instructions and remove them from list
-  for (let i = 0; i < newInstructions.length;) {
+  for (let i = 0; i < newInstructions.length; ) {
     const instruction = newInstructions[i];
 
     if (isIRLabelInstruction(instruction)) {
-      for (++i; i < newInstructions.length;) {
+      for (++i; i < newInstructions.length; ) {
         const nextInstruction = newInstructions[i];
-        if (!isIRLabelInstruction(nextInstruction))
+        if (!isIRLabelInstruction(nextInstruction)) {
           break;
+        }
 
         cachedLabels[nextInstruction.name] = instruction;
         newInstructions.splice(i, 1);
       }
-    } else
+    } else {
       ++i;
+    }
   }
 
   // second pass
   // - replace jmp / branches label names with cached ones
   // - if there is jmp instruction that immiddiately jmps to next label - remove it
-  for (let i = 0; i < newInstructions.length;) {
+  for (let i = 0; i < newInstructions.length; ) {
     let instruction = newInstructions[i];
     const nextInstruction = newInstructions[i + 1];
 
@@ -41,8 +43,9 @@ export function dropRedundantLabelInstructions(instructions: IRInstruction[]) {
 
       for (let j = 0; j < newLabels.length; ++j) {
         const label = newLabels[j];
-        if (!label)
+        if (!label) {
           continue;
+        }
 
         const cachedLabel = label && cachedLabels[label.name];
         if (cachedLabel && cachedLabel !== label) {
@@ -60,12 +63,15 @@ export function dropRedundantLabelInstructions(instructions: IRInstruction[]) {
     // detect and remove:
     // jmp L1
     // L1:
-    if (isIRJmpInstruction(instruction)
-        && isIRLabelInstruction(nextInstruction)
-        && instruction.label.name === nextInstruction.name)
+    if (
+      isIRJmpInstruction(instruction) &&
+      isIRLabelInstruction(nextInstruction) &&
+      instruction.label.name === nextInstruction.name
+    ) {
       newInstructions.splice(i, 1);
-    else
+    } else {
       ++i;
+    }
   }
 
   return newInstructions;

@@ -1,25 +1,17 @@
-import {walkOverFields} from '@compiler/grammar/decorators/walkOverFields';
-import {dumpAttributesToString} from '@compiler/core/utils';
+import { walkOverFields } from '@compiler/grammar/decorators/walkOverFields';
+import { dumpAttributesToString } from '@compiler/core/utils';
 
-import {NodeLocation} from '@compiler/grammar/tree/NodeLocation';
-import {Token} from '@compiler/lexer/tokens';
-import {ASTCCompilerKind, ASTCCompilerNode} from './ASTCCompilerNode';
-import {ASTCConstantExpression} from './ASTCConstantExpression';
+import { NodeLocation } from '@compiler/grammar/tree/NodeLocation';
+import { Token } from '@compiler/lexer/tokens';
+import { ASTCCompilerKind, ASTCCompilerNode } from './ASTCCompilerNode';
+import { ASTCConstantExpression } from './ASTCConstantExpression';
 
 /**
  * Node that holds single enum item such as RED = 'blue'
- *
- * @export
- * @class ASTCEnumEnumeration
- * @extends {ASTCCompilerNode}
  */
-@walkOverFields(
-  {
-    fields: [
-      'expression',
-    ],
-  },
-)
+@walkOverFields({
+  fields: ['expression'],
+})
 export class ASTCEnumEnumeration extends ASTCCompilerNode {
   constructor(
     loc: NodeLocation,
@@ -29,18 +21,11 @@ export class ASTCEnumEnumeration extends ASTCCompilerNode {
     super(ASTCCompilerKind.EnumItem, loc);
   }
 
-  /**
-   * @returns
-   * @memberof ASTCEnumEnumeration
-   */
   toString() {
-    const {kind, name} = this;
+    const { kind, name } = this;
 
-    return dumpAttributesToString(
-      kind,
-      {
-        name,
-      },
-    );
+    return dumpAttributesToString(kind, {
+      name,
+    });
   }
 }

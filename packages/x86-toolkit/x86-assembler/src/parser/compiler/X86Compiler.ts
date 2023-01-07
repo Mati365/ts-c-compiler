@@ -1,41 +1,44 @@
 import * as R from 'ramda';
 
-import {Result, err, ok} from '@compiler/core/monads/Result';
-import {CompilerError} from '@compiler/core/shared/CompilerError';
-import {NumberToken, Token} from '@compiler/lexer/tokens';
+import { Result, err, ok } from '@compiler/core/monads/Result';
+import { CompilerError } from '@compiler/core/shared/CompilerError';
+import { NumberToken, Token } from '@compiler/lexer/tokens';
 
 import {
   MIN_COMPILER_REG_LENGTH,
   MAX_COMPILER_REG_LENGTH,
 } from '../../constants';
 
-import {isReservedKeyword} from '../utils/isReservedKeyword';
-import {rpnTokens} from './utils/rpnTokens';
+import { isReservedKeyword } from '../utils/isReservedKeyword';
+import { rpnTokens } from './utils/rpnTokens';
 
-import {ParserError, ParserErrorCode} from '../../shared/ParserError';
-import {InstructionArgSize, X86TargetCPU} from '../../types';
+import { ParserError, ParserErrorCode } from '../../shared/ParserError';
+import { InstructionArgSize, X86TargetCPU } from '../../types';
 
-import {ASTAsmNode} from '../ast/ASTAsmNode';
-import {ASTCompilerOption, CompilerOptions} from '../ast/def/ASTCompilerOption';
-import {ASTLabelAddrResolver} from '../ast/instruction/ASTResolvableArg';
-import {ASTAsmTree} from '../ast/ASTAsmParser';
-import {ASTNodeKind} from '../ast/types';
-import {ASTInstruction} from '../ast/instruction/ASTInstruction';
-import {ASTDef} from '../ast/def/ASTDef';
-import {ASTEqu} from '../ast/critical/ASTEqu';
+import { ASTAsmNode } from '../ast/ASTAsmNode';
+import {
+  ASTCompilerOption,
+  CompilerOptions,
+} from '../ast/def/ASTCompilerOption';
+import { ASTLabelAddrResolver } from '../ast/instruction/ASTResolvableArg';
+import { ASTAsmTree } from '../ast/ASTAsmParser';
+import { ASTNodeKind } from '../ast/types';
+import { ASTInstruction } from '../ast/instruction/ASTInstruction';
+import { ASTDef } from '../ast/def/ASTDef';
+import { ASTEqu } from '../ast/critical/ASTEqu';
 
-import {ASTTimes} from '../ast/critical/ASTTimes';
+import { ASTTimes } from '../ast/critical/ASTTimes';
 import {
   ASTLabel,
   isLocalLabel,
   resolveLocalTokenAbsName,
 } from '../ast/critical/ASTLabel';
 
-import {BinaryInstruction} from './types/BinaryInstruction';
-import {BinaryDefinition} from './types/BinaryDefinition';
-import {BinaryRepeatedNode} from './types/BinaryRepeatedNode';
-import {BinaryEqu} from './types/BinaryEqu';
-import {BinaryBlob} from './BinaryBlob';
+import { BinaryInstruction } from './types/BinaryInstruction';
+import { BinaryDefinition } from './types/BinaryDefinition';
+import { BinaryRepeatedNode } from './types/BinaryRepeatedNode';
+import { BinaryEqu } from './types/BinaryEqu';
+import { BinaryBlob } from './BinaryBlob';
 
 import {
   FirstPassResult,
@@ -54,30 +57,27 @@ export const MAGIC_LABELS = {
  * @see
  *  Output may contain unresolved ASTInstruction (like jmps) for second pass!
  *  They should be erased after second pass
- *
- * @export
- * @class X86Compiler
  */
 export class X86Compiler {
   private _mode: InstructionArgSize = InstructionArgSize.WORD;
   private _origin: number = 0x0;
   private _target: X86TargetCPU = X86TargetCPU.I_486;
 
-  constructor(
-    readonly tree: ASTAsmTree,
-    readonly maxPasses: number = 7,
-  ) {}
+  constructor(readonly tree: ASTAsmTree, readonly maxPasses: number = 7) {}
 
-  get origin() { return this._origin; }
-  get mode() { return this._mode; }
-  get target() { return this._target; }
+  get origin() {
+    return this._origin;
+  }
+  get mode() {
+    return this._mode;
+  }
+  get target() {
+    return this._target;
+  }
 
   /**
    * Set origin which is absolute address
    * used to generated absolute offsets
-   *
-   * @param {number} origin
-   * @memberof X86Compiler
    */
   setOrigin(origin: number): void {
     this._origin = origin;
@@ -85,38 +85,28 @@ export class X86Compiler {
 
   /**
    * Change bits mode
-   *
-   * @param {number} mode
-   * @memberof X86Compiler
    */
   setMode(mode: number): void {
-    if (mode < MIN_COMPILER_REG_LENGTH || mode > MAX_COMPILER_REG_LENGTH)
+    if (mode < MIN_COMPILER_REG_LENGTH || mode > MAX_COMPILER_REG_LENGTH) {
       throw new ParserError(ParserErrorCode.UNSUPPORTED_COMPILER_MODE);
+    }
 
     this._mode = mode;
   }
 
   /**
    * Set cpu target
-   *
-   * @param {X86TargetCPU} target
-   * @memberof X86Compiler
    */
   setTarget(target: X86TargetCPU): void {
-    if (R.isNil(target))
+    if (R.isNil(target)) {
       throw new ParserError(ParserErrorCode.UNSUPPORTED_COMPILER_TARGET);
+    }
 
     this._target = target;
   }
 
   /**
    * First pass compiler, omit labels and split into multiple chunks
-   *
-   * @param {ASTAsmTree} [tree=this.tree]
-   * @param {boolean} [noAbstractInstructions=false]
-   * @param {number} [initialOffset=0]
-   * @returns {FirstPassResult}
-   * @memberof X86Compiler
    */
   firstPass(
     tree: ASTAsmTree = this.tree,
@@ -125,9 +115,9 @@ export class X86Compiler {
   ): FirstPassResult {
     const result = new FirstPassResult(tree);
 
-    const {target} = this;
-    const {astNodes} = tree;
-    const {labels, equ, nodesOffsets} = result;
+    const { target } = this;
+    const { astNodes } = tree;
+    const { labels, equ, nodesOffsets } = result;
 
     let offset = initialOffset;
     let originDefined = false;
@@ -135,41 +125,29 @@ export class X86Compiler {
     /**
      * Simplified version of keywordResolver but returns only
      * first phase labels values or
-     *
-     * @param {string} name
-     * @returns {number}
      */
     function criticalKeywordResolver(name: string): number {
-      if (equ.has(name))
+      if (equ.has(name)) {
         return equ.get(name).getValue() ?? 0;
+      }
 
       return undefined;
     }
 
     /**
      * Resolves token value
-     *
-     * @param {Token[]} tokens
-     * @returns {number}
      */
     function criticalMathTokensEvaluate(tokens: Token[]): number {
-      return rpnTokens(
-        tokens,
-        {
-          keywordResolver: criticalKeywordResolver,
-        },
-      );
+      return rpnTokens(tokens, {
+        keywordResolver: criticalKeywordResolver,
+      });
     }
 
-    const isRedefinedKeyword = (keyword: string): boolean => (
-      equ.has(keyword) || labels.has(keyword)
-    );
+    const isRedefinedKeyword = (keyword: string): boolean =>
+      equ.has(keyword) || labels.has(keyword);
 
     /**
      * Emits binary set of data for instruction
-     *
-     * @param {BinaryBlob} blob
-     * @param {number} size
      */
     const emitBlob = (blob: BinaryBlob, size?: number): void => {
       const addr = this._origin + offset;
@@ -206,13 +184,15 @@ export class X86Compiler {
      * Emits bytes for node from ASTnode,
      * performs initial compilation of instruction
      * with known size schemas
-     *
-     * @param {ASTAsmNode} node
      */
     const processNode = (node: ASTAsmNode): void => {
       const absoluteAddress = this._origin + offset;
 
-      if (noAbstractInstructions && node.kind !== ASTNodeKind.INSTRUCTION && node.kind !== ASTNodeKind.DEFINE) {
+      if (
+        noAbstractInstructions &&
+        node.kind !== ASTNodeKind.INSTRUCTION &&
+        node.kind !== ASTNodeKind.DEFINE
+      ) {
         throw new ParserError(
           ParserErrorCode.UNPERMITTED_NODE_IN_POSTPROCESS_MODE,
           node.loc.start,
@@ -224,127 +204,135 @@ export class X86Compiler {
 
       switch (node.kind) {
         /** [org 0x1] */
-        case ASTNodeKind.COMPILER_OPTION: {
-          const compilerOption = <ASTCompilerOption> node;
+        case ASTNodeKind.COMPILER_OPTION:
+          {
+            const compilerOption = <ASTCompilerOption>node;
 
-          // origin set
-          if (compilerOption.option === CompilerOptions.ORG) {
-            if (originDefined)
-              throw new ParserError(ParserErrorCode.ORIGIN_REDEFINED, node.loc.start);
+            // origin set
+            if (compilerOption.option === CompilerOptions.ORG) {
+              if (originDefined) {
+                throw new ParserError(
+                  ParserErrorCode.ORIGIN_REDEFINED,
+                  node.loc.start,
+                );
+              }
 
-            this.setOrigin(
-              criticalMathTokensEvaluate(compilerOption.args),
-            );
+              this.setOrigin(criticalMathTokensEvaluate(compilerOption.args));
 
-            offset = 0;
-            originDefined = true;
+              offset = 0;
+              originDefined = true;
 
-          // mode set
-          } else if (compilerOption.option === CompilerOptions.BITS) {
-            this.setMode(
-              criticalMathTokensEvaluate(compilerOption.args) / 8,
-            );
+              // mode set
+            } else if (compilerOption.option === CompilerOptions.BITS) {
+              this.setMode(criticalMathTokensEvaluate(compilerOption.args) / 8);
 
-          // target set
-          } else if (compilerOption.option === CompilerOptions.TARGET) {
-            const arg = <NumberToken> compilerOption.args[0];
+              // target set
+            } else if (compilerOption.option === CompilerOptions.TARGET) {
+              const arg = <NumberToken>compilerOption.args[0];
 
-            this.setTarget(
-              X86TargetCPU[`I_${arg.upperText}`],
-            );
+              this.setTarget(X86TargetCPU[`I_${arg.upperText}`]);
+            }
           }
-        } break;
+          break;
 
         /** times 10 db nop */
         case ASTNodeKind.TIMES:
-          emitBlob(
-            new BinaryRepeatedNode(<ASTTimes> node),
-            1,
-          );
+          emitBlob(new BinaryRepeatedNode(<ASTTimes>node), 1);
           break;
 
         /** xor ax, ax */
-        case ASTNodeKind.INSTRUCTION: {
-          const astInstruction = <ASTInstruction> node;
-          const resolved = astInstruction.tryResolveSchema(null, null, target);
+        case ASTNodeKind.INSTRUCTION:
+          {
+            const astInstruction = <ASTInstruction>node;
+            const resolved = astInstruction.tryResolveSchema(
+              null,
+              null,
+              target,
+            );
 
-          if (!resolved) {
-            throw new ParserError(
-              ParserErrorCode.UNKNOWN_COMPILER_INSTRUCTION,
-              node.loc.start,
-              {
-                instruction: astInstruction.toString(),
-              },
+            if (!resolved) {
+              throw new ParserError(
+                ParserErrorCode.UNKNOWN_COMPILER_INSTRUCTION,
+                node.loc.start,
+                {
+                  instruction: astInstruction.toString(),
+                },
+              );
+            }
+
+            emitBlob(
+              new BinaryInstruction(astInstruction).compile(
+                this,
+                absoluteAddress,
+              ),
             );
           }
-
-          emitBlob(
-            new BinaryInstruction(astInstruction).compile(this, absoluteAddress),
-          );
-        } break;
+          break;
 
         /** db 0x0 */
         case ASTNodeKind.DEFINE:
-          emitBlob(
-            new BinaryDefinition(<ASTDef> node).compile(),
-          );
+          emitBlob(new BinaryDefinition(<ASTDef>node).compile());
           break;
 
         /** test equ 0x0 */
-        case ASTNodeKind.EQU: {
-          const equNode = (<ASTEqu> node);
-          const blob = new BinaryEqu(equNode);
+        case ASTNodeKind.EQU:
+          {
+            const equNode = <ASTEqu>node;
+            const blob = new BinaryEqu(equNode);
 
-          if (isReservedKeyword(equNode.name)) {
-            throw new ParserError(
-              ParserErrorCode.USED_RESERVED_NAME,
-              node.loc.start,
-              {
-                name: equNode.name,
-              },
-            );
+            if (isReservedKeyword(equNode.name)) {
+              throw new ParserError(
+                ParserErrorCode.USED_RESERVED_NAME,
+                node.loc.start,
+                {
+                  name: equNode.name,
+                },
+              );
+            }
+
+            if (isRedefinedKeyword(equNode.name)) {
+              throw new ParserError(
+                ParserErrorCode.EQU_ALREADY_DEFINED,
+                node.loc.start,
+                {
+                  name: equNode.name,
+                },
+              );
+            }
+
+            equ.set(equNode.name, blob);
+            emitBlob(blob, 0);
           }
-
-          if (isRedefinedKeyword(equNode.name)) {
-            throw new ParserError(
-              ParserErrorCode.EQU_ALREADY_DEFINED,
-              node.loc.start,
-              {
-                name: equNode.name,
-              },
-            );
-          }
-
-          equ.set(equNode.name, blob);
-          emitBlob(blob, 0);
-        } break;
+          break;
 
         /** test: */
-        case ASTNodeKind.LABEL: {
-          const labelName = (<ASTLabel> node).name;
+        case ASTNodeKind.LABEL:
+          {
+            const labelName = (<ASTLabel>node).name;
 
-          if (isReservedKeyword(labelName)) {
-            throw new ParserError(
-              ParserErrorCode.USED_RESERVED_NAME,
-              node.loc.start,
-              {
-                name: labelName,
-              },
-            );
+            if (isReservedKeyword(labelName)) {
+              throw new ParserError(
+                ParserErrorCode.USED_RESERVED_NAME,
+                node.loc.start,
+                {
+                  name: labelName,
+                },
+              );
+            }
+
+            if (isRedefinedKeyword(labelName)) {
+              throw new ParserError(
+                ParserErrorCode.LABEL_ALREADY_DEFINED,
+                node.loc.start,
+                {
+                  label: labelName,
+                },
+              );
+            }
+
+            labels.set(labelName, absoluteAddress);
           }
-
-          if (isRedefinedKeyword(labelName)) {
-            throw new ParserError(
-              ParserErrorCode.LABEL_ALREADY_DEFINED,
-              node.loc.start,
-              {
-                label: labelName,
-              },
-            );
-          }
-
-          labels.set(labelName, absoluteAddress);
-        } break;
+          break;
 
         default:
           throw new ParserError(
@@ -357,33 +345,25 @@ export class X86Compiler {
       }
     };
 
-    R.forEach(
-      (node: ASTAsmNode) => {
-        try {
-          processNode(node);
-        } catch (e) {
-          e.loc = e.loc ?? node.loc.start;
+    R.forEach((node: ASTAsmNode) => {
+      try {
+        processNode(node);
+      } catch (e) {
+        e.loc = e.loc ?? node.loc.start;
 
-          throw e;
-        }
-      },
-      astNodes,
-    );
+        throw e;
+      }
+    }, astNodes);
     return result;
   }
 
   /**
    * Find unresolved instructions, try resolve them and emit binaries
-   *
-   * @private
-   * @param {FirstPassResult} firstPassResult
-   * @returns {SecondPassResult}
-   * @memberof X86Compiler
    */
   private secondPass(firstPassResult: FirstPassResult): SecondPassResult {
-    const {target} = this;
-    const {tree} = firstPassResult;
-    const {labels, nodesOffsets, equ} = firstPassResult;
+    const { target } = this;
+    const { tree } = firstPassResult;
+    const { labels, nodesOffsets, equ } = firstPassResult;
 
     const result = new SecondPassResult(0x0, labels);
     let success = false;
@@ -395,25 +375,31 @@ export class X86Compiler {
      *
      * @see
      *  instructionIndex must be equal count of instructions in first phase!
-     *
-     * @param {ASTAsmNode} astNode
-     * @param {number} instructionOffset
-     * @returns {ASTLabelAddrResolver}
      */
-    function labelResolver(astNode: ASTAsmNode, instructionOffset: number): ASTLabelAddrResolver {
+    function labelResolver(
+      astNode: ASTAsmNode,
+      instructionOffset: number,
+    ): ASTLabelAddrResolver {
       return (name: string): number => {
         // handle case mov ax, [b] where [b] is unknown during compile time
-        if (astNode instanceof ASTInstruction)
+        if (astNode instanceof ASTInstruction) {
           astNode.labeledInstruction = true;
+        }
 
-        if (sectionStartOffset !== null && name === MAGIC_LABELS.SECTION_START)
+        if (
+          sectionStartOffset !== null &&
+          name === MAGIC_LABELS.SECTION_START
+        ) {
           return sectionStartOffset;
+        }
 
-        if (name === MAGIC_LABELS.CURRENT_LINE)
+        if (name === MAGIC_LABELS.CURRENT_LINE) {
           return instructionOffset;
+        }
 
-        if (equ.has(name))
+        if (equ.has(name)) {
           return equ.get(name).getValue() ?? 0;
+        }
 
         if (isLocalLabel(name)) {
           name = resolveLocalTokenAbsName(
@@ -429,59 +415,52 @@ export class X86Compiler {
 
     /**
      * Resizes all block after offset which is enlarged
-     *
-     * @param {number} offset
-     * @param {number} enlarge
      */
     function resizeBlockAtOffset(offset: number, enlarge: number): void {
       // if so decrement precceding instruction offsets and label offsets
       for (const [label, labelOffset] of labels) {
-        if (labelOffset > offset)
+        if (labelOffset > offset) {
           labels.set(label, labelOffset + enlarge);
+        }
       }
 
       // if so decrement precceding instruction offsets and label offsets
       const offsetsArray = Array.from(nodesOffsets);
       for (const [instructionOffset] of offsetsArray) {
-        if (instructionOffset > offset)
+        if (instructionOffset > offset) {
           nodesOffsets.delete(instructionOffset);
+        }
       }
 
       for (const [instructionOffset, nextInstruction] of offsetsArray) {
-        if (instructionOffset > offset)
+        if (instructionOffset > offset) {
           nodesOffsets.set(instructionOffset + enlarge, nextInstruction);
+        }
       }
     }
 
     /**
      * Appends blobs map at current offset to nodesOffsets
-     *
-     * @param {number} offset
-     * @param {BinaryBlobsMap} blobs
      */
     function appendBlobsAtOffset(offset: number, blobs: BinaryBlobsMap): void {
       needSort = true;
-      for (const [blobOffset, blob] of blobs)
+      for (const [blobOffset, blob] of blobs) {
         nodesOffsets.set(offset + blobOffset, blob);
+      }
     }
 
     /**
      * Process EQU, returns true if value changed
-     *
-     * @param {number} offset
-     * @param {BinaryEqu} blob
-     * @returns {boolean}
      */
     function passEqu(offset: number, blob: BinaryEqu): boolean {
       const prevValue = blob.getValue();
 
       // ignore, it is propably already resolved
-      if (!blob.isLabeled())
+      if (!blob.isLabeled()) {
         return false;
+      }
 
-      blob.pass(
-        labelResolver(blob.getAST(), offset),
-      );
+      blob.pass(labelResolver(blob.getAST(), offset));
 
       return prevValue !== blob.getValue() || R.isNil(prevValue);
     }
@@ -490,14 +469,11 @@ export class X86Compiler {
      * Definition might contain something like it:
      * db 0xFF, (label+2), 0xFE
      * its tries to resolve second arg
-     *
-     * @param {number} offset
-     * @param {BinaryDefinition} blob
-     * @returns {boolean} True if need to repeat pass
      */
     function passDefinition(offset: number, blob: BinaryDefinition): boolean {
-      return blob.hasUnresolvedDefinitions() && !blob.tryResolveOffsets(
-        labelResolver(blob.getAST(), offset),
+      return (
+        blob.hasUnresolvedDefinitions() &&
+        !blob.tryResolveOffsets(labelResolver(blob.getAST(), offset))
       );
     }
 
@@ -510,14 +486,15 @@ export class X86Compiler {
         try {
           // check for slave blobs (0 bytes instructions, EQU)
           if (blob.slaveBlobs) {
-            const {slaveBlobs: slaves} = blob;
+            const { slaveBlobs: slaves } = blob;
 
             for (let slaveIndex = 0; slaveIndex < slaves.length; ++slaveIndex) {
               const slave = slaves[slaveIndex];
 
               if (slave instanceof BinaryEqu) {
-                if (passEqu(offset, slave))
+                if (passEqu(offset, slave)) {
                   needPass = true;
+                }
               } else {
                 throw new ParserError(
                   ParserErrorCode.INCORRECT_SLAVE_BLOBS,
@@ -528,16 +505,18 @@ export class X86Compiler {
           }
 
           if (blob instanceof BinaryDefinition) {
-            if (passDefinition(offset, blob))
+            if (passDefinition(offset, blob)) {
               needPass = true;
-            else
+            } else {
               continue;
+            }
           } else if (blob instanceof BinaryEqu) {
             // ignore, it is propably already resolved
-            if (passEqu(offset, blob))
+            if (passEqu(offset, blob)) {
               needPass = true;
-            else
+            } else {
               continue;
+            }
           } else if (blob instanceof BinaryRepeatedNode) {
             // repeats instruction nth times
             const blobResult = blob.pass(
@@ -563,20 +542,17 @@ export class X86Compiler {
 
             // generally check for JMP/CALL etc instructions
             // and all args have defined values
-            if (ast.isConstantSize())
+            if (ast.isConstantSize()) {
               continue;
+            }
 
             // matcher must choose which instruction to match
             // based on origin it must choose between short relative
             // jump and long
-            ast.tryResolveSchema(
-              labelResolver(ast, offset),
-              offset,
-              target,
-            );
+            ast.tryResolveSchema(labelResolver(ast, offset), offset, target);
 
             // single instruction might contain multiple schemas but never 0
-            const {schemas} = ast;
+            const { schemas } = ast;
             if (!schemas.length) {
               throw new ParserError(
                 ParserErrorCode.UNKNOWN_COMPILER_INSTRUCTION,
@@ -600,9 +576,7 @@ export class X86Compiler {
             }
 
             // select first schema, it will be discarded if next instruction have label
-            ast.schemas = [
-              ast.schemas[0],
-            ];
+            ast.schemas = [ast.schemas[0]];
           }
         } catch (e) {
           e.loc = e.loc ?? blob.getAST()?.loc?.start;
@@ -614,33 +588,33 @@ export class X86Compiler {
       if (!needPass) {
         success = true;
         break;
-      } else
+      } else {
         result.totalPasses = pass + 1;
+      }
     }
 
     // exhaust tries count
-    if (!success)
+    if (!success) {
       throw new ParserError(ParserErrorCode.UNABLE_TO_COMPILE_FILE);
+    }
 
     // produce binaries
-    const orderedOffsets = (
-      needSort
-        ? (
-          Array
-            .from(nodesOffsets)
-            .sort((a, b) => a[0] - b[0])
-        )
-        : nodesOffsets
-    );
+    const orderedOffsets = needSort
+      ? Array.from(nodesOffsets).sort((a, b) => a[0] - b[0])
+      : nodesOffsets;
 
     for (const [offset, blob] of orderedOffsets) {
       let compiled = blob;
 
-      if (blob instanceof BinaryInstruction)
+      if (blob instanceof BinaryInstruction) {
         compiled = blob.compile(this, offset);
+      }
 
       if (blob.getBinary()) {
-        result.byteSize = Math.max(result.byteSize, offset + blob.byteSize - this._origin);
+        result.byteSize = Math.max(
+          result.byteSize,
+          offset + blob.byteSize - this._origin,
+        );
         result.blobs.set(offset, compiled);
       }
     }
@@ -650,26 +624,16 @@ export class X86Compiler {
 
   /**
    * Transform provided AST nodes array into binary blobs
-   *
-   * @returns {Result<SecondPassResult, CompilerError[]>}
-   * @memberof X86Compiler
    */
   compile(): Result<SecondPassResult, CompilerError[]> {
-    if (!this.tree)
+    if (!this.tree) {
       return null;
+    }
 
     try {
-      return ok(
-        this.secondPass(
-          this.firstPass(),
-        ),
-      );
+      return ok(this.secondPass(this.firstPass()));
     } catch (e) {
-      return err(
-        [
-          e,
-        ],
-      );
+      return err([e]);
     }
   }
 }

@@ -1,4 +1,4 @@
-import {format} from '../utils/format';
+import { format } from '../utils/format';
 
 export class CodeTranslatedError<C = any> extends Error {
   constructor(
@@ -7,9 +7,6 @@ export class CodeTranslatedError<C = any> extends Error {
     readonly meta?: object,
   ) {
     super();
-    this.message = format(
-      this.translations[<any> code],
-      meta || {},
-    );
+    this.message = format(this.translations[<any>code], meta || {});
   }
 }

@@ -7,11 +7,15 @@ import {
   isIRStoreInstruction,
 } from '../../../frontend/ir/instructions';
 
-import {IRConstant, isIRConstant, isIRVariable} from '../../../frontend/ir/variables';
+import {
+  IRConstant,
+  isIRConstant,
+  isIRVariable,
+} from '../../../frontend/ir/variables';
 
-import {dropConstantInstructionArgs} from '../utils/dropConstantInstructionArgs';
-import {tryConcatMathInstructions} from '../utils/tryConcatMathInstructions';
-import {tryEvalConstArgsBinaryInstruction} from '../utils/tryEvalConstArgsBinaryInstruction';
+import { dropConstantInstructionArgs } from '../utils/dropConstantInstructionArgs';
+import { tryConcatMathInstructions } from '../utils/tryConcatMathInstructions';
+import { tryEvalConstArgsBinaryInstruction } from '../utils/tryEvalConstArgsBinaryInstruction';
 
 /**
  * Optimizes instructions list by eliminate const expr.
@@ -19,16 +23,21 @@ import {tryEvalConstArgsBinaryInstruction} from '../utils/tryEvalConstArgsBinary
  * @see
  *  Input and output on first and last instructions must be preserved!
  */
-export function dropOrConcatConstantInstructions(instructions: IRInstruction[]) {
+export function dropOrConcatConstantInstructions(
+  instructions: IRInstruction[],
+) {
   const newInstructions = [...instructions];
   const constantArgs: Record<string, IRConstant> = {};
   let totalConstants = 0;
 
-  for (let i = 0; i < newInstructions.length;) {
+  for (let i = 0; i < newInstructions.length; ) {
     const instruction = newInstructions[i];
 
     if (totalConstants) {
-      const optimizedInstruction = dropConstantInstructionArgs(constantArgs, instruction);
+      const optimizedInstruction = dropConstantInstructionArgs(
+        constantArgs,
+        instruction,
+      );
 
       if (optimizedInstruction) {
         newInstructions[i] = optimizedInstruction;
@@ -37,7 +46,10 @@ export function dropOrConcatConstantInstructions(instructions: IRInstruction[]) 
     }
 
     // remove constant assigns from code
-    if (isIRAssignInstruction(instruction) && isIRConstant(instruction.inputVar)) {
+    if (
+      isIRAssignInstruction(instruction) &&
+      isIRConstant(instruction.inputVar)
+    ) {
       constantArgs[instruction.outputVar.name] = instruction.inputVar;
       newInstructions.splice(i, 1);
       ++totalConstants;
@@ -46,17 +58,17 @@ export function dropOrConcatConstantInstructions(instructions: IRInstruction[]) 
     }
 
     // replace constants in store instruction
-    if (isIRStoreInstruction(instruction)
-        && isIRVariable(instruction.value)
-        && instruction.value.name in constantArgs) {
-      newInstructions[i] = (
-        new IRStoreInstruction(
-          IRConstant.ofConstant(
-            instruction.value.type,
-            constantArgs[instruction.value.name].constant,
-          ),
-          instruction.outputVar,
-        )
+    if (
+      isIRStoreInstruction(instruction) &&
+      isIRVariable(instruction.value) &&
+      instruction.value.name in constantArgs
+    ) {
+      newInstructions[i] = new IRStoreInstruction(
+        IRConstant.ofConstant(
+          instruction.value.type,
+          constantArgs[instruction.value.name].constant,
+        ),
+        instruction.outputVar,
       );
       continue;
     }
@@ -67,10 +79,7 @@ export function dropOrConcatConstantInstructions(instructions: IRInstruction[]) 
 
       if (evalResult.isSome()) {
         newInstructions[i] = new IRAssignInstruction(
-          IRConstant.ofConstant(
-            instruction.leftVar.type,
-            evalResult.unwrap(),
-          ),
+          IRConstant.ofConstant(instruction.leftVar.type, evalResult.unwrap()),
           instruction.outputVar,
         );
 
@@ -78,19 +87,18 @@ export function dropOrConcatConstantInstructions(instructions: IRInstruction[]) 
       }
     }
 
-    const concatedInstruction = tryConcatMathInstructions(
-      {
-        a: newInstructions[i - 1],
-        b: instruction,
-      },
-    );
+    const concatedInstruction = tryConcatMathInstructions({
+      a: newInstructions[i - 1],
+      b: instruction,
+    });
 
     if (concatedInstruction.isSome()) {
       newInstructions[i - 1] = concatedInstruction.unwrap();
       newInstructions.splice(i, 1);
       --i;
-    } else
+    } else {
       ++i;
+    }
   }
 
   return newInstructions;

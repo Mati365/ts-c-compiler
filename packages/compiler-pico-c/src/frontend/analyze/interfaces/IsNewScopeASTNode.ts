@@ -1,4 +1,4 @@
-import type {CScopeTree} from '../scope/CScopeTree';
+import type { CScopeTree } from '../scope/CScopeTree';
 
 export interface IsNewScopeASTNode {
   scope?: CScopeTree;

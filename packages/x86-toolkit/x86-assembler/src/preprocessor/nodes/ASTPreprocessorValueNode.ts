@@ -1,46 +1,38 @@
-import {rpn} from '@compiler/rpn/rpn';
-import {joinTokensTexts} from '@compiler/lexer/utils/joinTokensTexts';
+import { rpn } from '@compiler/rpn/rpn';
+import { joinTokensTexts } from '@compiler/lexer/utils/joinTokensTexts';
 
-import {Token, NumberToken} from '@compiler/lexer/tokens';
-import {ValueNode} from '@compiler/grammar/tree/TreeNode';
+import { Token, NumberToken } from '@compiler/lexer/tokens';
+import { ValueNode } from '@compiler/grammar/tree/TreeNode';
 import {
   InterpreterResult,
   PreprocessorInterpreter,
   PreprocessorInterpretable,
 } from '../interpreter/PreprocessorInterpreter';
 
-import {ASTPreprocessorKind} from '../constants';
-import {
-  PreprocessorError,
-  PreprocessorErrorCode,
-} from '../PreprocessorError';
+import { ASTPreprocessorKind } from '../constants';
+import { PreprocessorError, PreprocessorErrorCode } from '../PreprocessorError';
 
 /**
  * Numbers and simple macros expressions
- *
- * @export
- * @class ASTPreprocessorValueNode
- * @extends {ValueNode<T, ASTPreprocessorKind>}
- * @implements {PreprocessorInterpretable}
- * @template T
  */
 export class ASTPreprocessorValueNode<T extends Token[] = any>
   extends ValueNode<T, ASTPreprocessorKind>
-  implements PreprocessorInterpretable {
+  implements PreprocessorInterpretable
+{
   toEmitterLine(): string {
     return '';
   }
 
   toString(): string {
-    const {value, kind} = this;
+    const { value, kind } = this;
 
     return `${kind} value=${joinTokensTexts('', value)}`;
   }
 
   exec(interpreter: PreprocessorInterpreter): InterpreterResult {
-    const {value} = this;
+    const { value } = this;
     const [, resultTokens] = interpreter.removeMacrosFromTokens(value);
-    const {loc} = resultTokens[0];
+    const { loc } = resultTokens[0];
 
     if (resultTokens.length !== 1) {
       throw new PreprocessorError(
@@ -50,8 +42,9 @@ export class ASTPreprocessorValueNode<T extends Token[] = any>
     }
 
     const [token] = resultTokens;
-    if (token instanceof NumberToken)
+    if (token instanceof NumberToken) {
       return token.value.number;
+    }
 
     // handle string, keyword tokens usually emited from macros
     const parsed = rpn(token.text);

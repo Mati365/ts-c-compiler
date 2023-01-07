@@ -1,15 +1,11 @@
 import * as R from 'ramda';
 
-import {rpn} from '@compiler/rpn/rpn';
-import {MathErrorCode} from '@compiler/rpn/utils';
+import { rpn } from '@compiler/rpn/rpn';
+import { MathErrorCode } from '@compiler/rpn/utils';
 
-import {Result} from '@compiler/core/monads/Result';
-import {MathParserConfig} from '@compiler/rpn/utils/MathExpression';
-import {
-  Token,
-  TokenType,
-  NumberToken,
-} from '@compiler/lexer/tokens';
+import { Result } from '@compiler/core/monads/Result';
+import { MathParserConfig } from '@compiler/rpn/utils/MathExpression';
+import { Token, TokenType, NumberToken } from '@compiler/lexer/tokens';
 
 import {
   ok,
@@ -19,33 +15,35 @@ import {
 
 /**
  * Concat all tokens text into one string
- *
- * @export
- * @param {Token[]} tokens
- * @param {string} [joinStr='']
- * @returns {string}
  */
-export function mergeTokensTexts(tokens: Token[], joinStr: string = ''): string {
+export function mergeTokensTexts(
+  tokens: Token[],
+  joinStr: string = '',
+): string {
   let acc = '';
 
   for (let i = 0; i < tokens.length; ++i) {
     const token = tokens[i];
 
     // prevent something like it: 2--2
-    if (token.type === TokenType.NUMBER
-        && token instanceof NumberToken
-        && token.value.number < 0
-        && !Number.isInteger(+acc[i - 1]))
+    if (
+      token.type === TokenType.NUMBER &&
+      token instanceof NumberToken &&
+      token.value.number < 0 &&
+      !Number.isInteger(+acc[i - 1])
+    ) {
       acc += `(0${token.value.number})`;
-    else if (token.type === TokenType.QUOTE)
+    } else if (token.type === TokenType.QUOTE) {
       acc += `'${token.text}'`;
-    else if (token.type === TokenType.BRACKET)
+    } else if (token.type === TokenType.BRACKET) {
       acc += `(${token.text})`;
-    else
+    } else {
       acc += token.text;
+    }
 
-    if (joinStr)
+    if (joinStr) {
       acc += joinStr;
+    }
   }
 
   return acc;
@@ -53,24 +51,18 @@ export function mergeTokensTexts(tokens: Token[], joinStr: string = ''): string 
 
 /**
  * Calculate expression using reverse polish notation from several tokens
- *
- * @export
- * @param {Token[]} tokens
- * @param {MathParserConfig} [parserConfig]
- * @returns
  */
 export function rpnTokens(tokens: Token[], parserConfig?: MathParserConfig) {
-  if (tokens.length === 1 && tokens[0].type === TokenType.NUMBER)
-    return (<NumberToken> tokens[0]).value.number;
+  if (tokens.length === 1 && tokens[0].type === TokenType.NUMBER) {
+    return (<NumberToken>tokens[0]).value.number;
+  }
 
   try {
-    return rpn(
-      mergeTokensTexts(tokens),
-      parserConfig,
-    );
+    return rpn(mergeTokensTexts(tokens), parserConfig);
   } catch (e) {
-    if (tokens[0] instanceof Token)
+    if (tokens[0] instanceof Token) {
       e.loc = tokens[0].loc;
+    }
 
     throw e;
   }
@@ -79,10 +71,6 @@ export function rpnTokens(tokens: Token[], parserConfig?: MathParserConfig) {
 /**
  * RPN parser that throws error only if occurs unresolved keyword
  * it is very helpful in labels and equ
- *
- * @param {MathParserConfig} config
- * @param {Token[]|string} tokens
- * @returns {Result<number, ASTExpressionParserError>}
  */
 export function safeKeywordResultRPN(
   config: MathParserConfig,
@@ -90,20 +78,21 @@ export function safeKeywordResultRPN(
 ): Result<number, ASTExpressionParserError> {
   try {
     if (R.is(String, tokens)) {
-      return ok(
-        rpn(<string> tokens, config),
-      );
+      return ok(rpn(<string>tokens, config));
     }
 
-    return ok(
-      rpnTokens(<Token[]> tokens, config),
-    );
+    return ok(rpnTokens(<Token[]>tokens, config));
   } catch (e) {
-    if (tokens[0] instanceof Token)
+    if (tokens[0] instanceof Token) {
       e.loc = tokens[0].loc;
+    }
 
-    if (config?.keywordResolver || ('code' in e && e.code !== MathErrorCode.UNKNOWN_KEYWORD))
+    if (
+      config?.keywordResolver ||
+      ('code' in e && e.code !== MathErrorCode.UNKNOWN_KEYWORD)
+    ) {
       throw e;
+    }
 
     return err(ASTExpressionParserError.UNRESOLVED_LABEL);
   }

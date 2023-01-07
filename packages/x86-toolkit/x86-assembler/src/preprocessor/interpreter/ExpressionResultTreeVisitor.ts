@@ -1,20 +1,23 @@
 import * as R from 'ramda';
 
-import {isMathOpToken, evalMathOp} from '@compiler/lexer/utils/isMathOpToken';
-import {isRelationOpToken, evalRelationOp} from '@compiler/lexer/utils/isRelationOpToken';
-import {isLogicOpToken, evalLogicOp} from '@compiler/lexer/utils/isLogicOpToken';
-
-import {NumberToken} from '@compiler/lexer/tokens';
-import {TreeVisitor} from '@compiler/grammar/tree/TreeVisitor';
-
+import { isMathOpToken, evalMathOp } from '@compiler/lexer/utils/isMathOpToken';
 import {
-  PreprocessorError,
-  PreprocessorErrorCode,
-} from '../PreprocessorError';
+  isRelationOpToken,
+  evalRelationOp,
+} from '@compiler/lexer/utils/isRelationOpToken';
+import {
+  isLogicOpToken,
+  evalLogicOp,
+} from '@compiler/lexer/utils/isLogicOpToken';
 
-import {ASTPreprocessorNode, ASTPreprocessorKind} from '../constants';
-import {ASTPreprocessorValueNode} from '../nodes/ASTPreprocessorValueNode';
-import {ASTPreprocessorBinaryOpNode} from '../nodes/ASTPreprocessorBinaryOpNode';
+import { NumberToken } from '@compiler/lexer/tokens';
+import { TreeVisitor } from '@compiler/grammar/tree/TreeVisitor';
+
+import { PreprocessorError, PreprocessorErrorCode } from '../PreprocessorError';
+
+import { ASTPreprocessorNode, ASTPreprocessorKind } from '../constants';
+import { ASTPreprocessorValueNode } from '../nodes/ASTPreprocessorValueNode';
+import { ASTPreprocessorBinaryOpNode } from '../nodes/ASTPreprocessorBinaryOpNode';
 import {
   PreprocessorInterpreter,
   InterpreterResult,
@@ -22,71 +25,71 @@ import {
 
 /**
  * Iterates over tree and calcs expression
- *
- * @export
- * @class ExpressionResultTreeVisitor
- * @extends {TreeVisitor<ASTPreprocessorNode>}
  */
 export class ExpressionResultTreeVisitor extends TreeVisitor<ASTPreprocessorNode> {
   private expressionArgs: InterpreterResult[] = [];
 
-  constructor(
-    private readonly interpreter: PreprocessorInterpreter,
-  ) {
+  constructor(private readonly interpreter: PreprocessorInterpreter) {
     super();
   }
 
-  get value() { return R.last(this.expressionArgs); }
+  get value() {
+    return R.last(this.expressionArgs);
+  }
 
   leave(node: ASTPreprocessorNode) {
-    const {expressionArgs, interpreter} = this;
+    const { expressionArgs, interpreter } = this;
 
     switch (node.kind) {
-      case ASTPreprocessorKind.BinaryOperator: {
-        const {op} = <ASTPreprocessorBinaryOpNode> node;
-        if (R.isNil(op))
-          return;
+      case ASTPreprocessorKind.BinaryOperator:
+        {
+          const { op } = <ASTPreprocessorBinaryOpNode>node;
+          if (R.isNil(op)) {
+            return;
+          }
 
-        const [left, right] = [expressionArgs.pop(), expressionArgs.pop()];
+          const [left, right] = [expressionArgs.pop(), expressionArgs.pop()];
 
-        if (R.isNil(right)) {
-          expressionArgs.push(left);
-          return;
+          if (R.isNil(right)) {
+            expressionArgs.push(left);
+            return;
+          }
+
+          if (typeof left !== typeof right) {
+            throw new PreprocessorError(
+              PreprocessorErrorCode.EXPRESSION_MISMATCH_ARGS_TYPES,
+              node.loc.start,
+            );
+          }
+
+          const reversedArgs = [right, left];
+          let result: InterpreterResult = null;
+          if (isMathOpToken(op)) {
+            result = evalMathOp(op, <number[]>reversedArgs);
+          } else if (isRelationOpToken(op)) {
+            result = evalRelationOp(op, <number[]>reversedArgs);
+          } else if (isLogicOpToken(op)) {
+            result = evalLogicOp(op, <boolean[]>reversedArgs);
+          }
+
+          if (result !== null) {
+            expressionArgs.push(result);
+          } else {
+            throw new PreprocessorError(
+              PreprocessorErrorCode.INCORRECT_EXPRESSION,
+              node.loc.start,
+            );
+          }
         }
+        break;
 
-        if (typeof left !== typeof right) {
-          throw new PreprocessorError(
-            PreprocessorErrorCode.EXPRESSION_MISMATCH_ARGS_TYPES,
-            node.loc.start,
-          );
+      case ASTPreprocessorKind.Value:
+        {
+          const valNode = <ASTPreprocessorValueNode<NumberToken[]>>node;
+
+          expressionArgs.push(valNode.exec(interpreter));
         }
-
-        const reversedArgs = [right, left];
-        let result: InterpreterResult = null;
-        if (isMathOpToken(op))
-          result = evalMathOp(op, <number[]> reversedArgs);
-        else if (isRelationOpToken(op))
-          result = evalRelationOp(op, <number[]> reversedArgs);
-        else if (isLogicOpToken(op))
-          result = evalLogicOp(op, <boolean[]> reversedArgs);
-
-        if (result !== null)
-          expressionArgs.push(result);
-        else {
-          throw new PreprocessorError(
-            PreprocessorErrorCode.INCORRECT_EXPRESSION,
-            node.loc.start,
-          );
-        }
-      } break;
-
-      case ASTPreprocessorKind.Value: {
-        const valNode = <ASTPreprocessorValueNode<NumberToken[]>> node;
-
-        expressionArgs.push(
-          valNode.exec(interpreter),
-        );
-      } break;
+        break;
 
       default:
     }

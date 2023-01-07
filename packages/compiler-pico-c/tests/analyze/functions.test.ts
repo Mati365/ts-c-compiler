@@ -1,5 +1,5 @@
-import {GrammarErrorCode} from '@compiler/grammar/GrammarError';
-import {CTypeCheckErrorCode} from './utils/analyzeMatcher';
+import { GrammarErrorCode } from '@compiler/grammar/GrammarError';
+import { CTypeCheckErrorCode } from './utils/analyzeMatcher';
 
 describe('Function typecheck', () => {
   test('semicolon at end of function is optional', () => {
@@ -47,14 +47,18 @@ describe('Function typecheck', () => {
   });
 
   test('redefinition variable error if arg name has already name of local fn variable', () => {
-    expect(/* cpp */ `void sum(int a) { int a; }`).toHaveCompilerError(CTypeCheckErrorCode.REDEFINITION_OF_VARIABLE);
+    expect(/* cpp */ `void sum(int a) { int a; }`).toHaveCompilerError(
+      CTypeCheckErrorCode.REDEFINITION_OF_VARIABLE,
+    );
   });
 
   test('calling function without args raises error', () => {
     expect(/* cpp */ `
       void sum(int x, int y) {}
       void main() { sum(); }
-    `).toHaveCompilerError(CTypeCheckErrorCode.WRONG_ARGS_COUNT_PASSED_TO_FUNCTION);
+    `).toHaveCompilerError(
+      CTypeCheckErrorCode.WRONG_ARGS_COUNT_PASSED_TO_FUNCTION,
+    );
   });
 
   test('calling function with too many args raises error', () => {
@@ -63,7 +67,9 @@ describe('Function typecheck', () => {
       void main() {
         sum(2, 3, 4);
       }
-    `).toHaveCompilerError(CTypeCheckErrorCode.TOO_MANY_ARGS_PASSED_TO_FUNCTION);
+    `).toHaveCompilerError(
+      CTypeCheckErrorCode.TOO_MANY_ARGS_PASSED_TO_FUNCTION,
+    );
   });
 
   test('calling function with corrects args count does not raise error', () => {
@@ -76,11 +82,15 @@ describe('Function typecheck', () => {
   });
 
   test('returning constant expression in function does not raise error', () => {
-    expect(/* cpp */ `int main() { return 2 + 3 + 4 / (4 * 4); }`).not.toHaveCompilerError();
+    expect(
+      /* cpp */ `int main() { return 2 + 3 + 4 / (4 * 4); }`,
+    ).not.toHaveCompilerError();
   });
 
   test('returning pointer expression in function does not raise error', () => {
-    expect(/* cpp */ `int* ptr() { int a = 2; return &a; }`).not.toHaveCompilerError();
+    expect(
+      /* cpp */ `int* ptr() { int a = 2; return &a; }`,
+    ).not.toHaveCompilerError();
   });
 
   test('returning struct type', () => {
@@ -97,7 +107,9 @@ describe('Function typecheck', () => {
   });
 
   test('double const specifier raises error', () => {
-    expect(/* cpp */ `const const int sum() { return 2; }`).toHaveCompilerError();
+    expect(
+      /* cpp */ `const const int sum() { return 2; }`,
+    ).toHaveCompilerError();
   });
 
   test('const specifier does not raise error', () => {
@@ -124,7 +136,9 @@ describe('Function typecheck', () => {
     expect(/* cpp */ `
       int sum(void) {};
       int main() { sum(1, 2, 3); }
-    `).toHaveCompilerError(CTypeCheckErrorCode.TOO_MANY_ARGS_PASSED_TO_FUNCTION);
+    `).toHaveCompilerError(
+      CTypeCheckErrorCode.TOO_MANY_ARGS_PASSED_TO_FUNCTION,
+    );
   });
 
   test('assign function return to variable does not throw error', () => {

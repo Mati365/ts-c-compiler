@@ -1,70 +1,83 @@
 import * as R from 'ramda';
 
-import {AbstractTreeVisitor, IsWalkableNode} from '@compiler/grammar/tree/AbstractTreeVisitor';
+import {
+  AbstractTreeVisitor,
+  IsWalkableNode,
+} from '@compiler/grammar/tree/AbstractTreeVisitor';
 
-import {isArrayLikeType, isStructLikeType} from '../../types';
-import {ASTCCompilerNode} from '../../../parser/ast/ASTCCompilerNode';
-import {CType} from '../../types/CType';
+import { isArrayLikeType, isStructLikeType } from '../../types';
+import { ASTCCompilerNode } from '../../../parser/ast/ASTCCompilerNode';
+import { CType } from '../../types/CType';
 
-export type CVariableInitializeValue = string | number | CVariableInitializerTree | ASTCCompilerNode;
+export type CVariableInitializeValue =
+  | string
+  | number
+  | CVariableInitializerTree
+  | ASTCCompilerNode;
 export type CVariableInitializerFields = CVariableInitializeValue[];
 
 export function isConstantVariableInitializer(value: CVariableInitializeValue) {
-  if (!value)
+  if (!value) {
     return true;
+  }
 
   const type = typeof value;
   return type === 'string' || type === 'number';
 }
 
-export function isInitializerTreeValue(value: CVariableInitializeValue): value is CVariableInitializerTree {
+export function isInitializerTreeValue(
+  value: CVariableInitializeValue,
+): value is CVariableInitializerTree {
   return R.is(Object, value) && R.has('_baseType', value);
 }
 
 type CVariableStringInitializerAttrs<C> = {
-  baseType: CType,
-  parentAST: C,
-  text: string,
+  baseType: CType;
+  parentAST: C;
+  text: string;
 };
 
 /**
  * Recursive map structure of type initializer
- *
- * @export
- * @class CVariableInitializerTree
- * @implements {IsWalkableNode}
- * @template C
  */
-export class CVariableInitializerTree<C extends ASTCCompilerNode = ASTCCompilerNode> implements IsWalkableNode {
+export class CVariableInitializerTree<
+  C extends ASTCCompilerNode = ASTCCompilerNode,
+> implements IsWalkableNode
+{
   constructor(
     protected readonly _baseType: CType,
     protected readonly _parentAST: C,
     protected _fields: CVariableInitializerFields = null,
   ) {
-    if (!_fields)
+    if (!_fields) {
       this.fill(null);
+    }
   }
 
-  get parentAST() { return this._parentAST; }
-  get baseType() { return this._baseType; }
-  get fields() { return this._fields; }
+  get parentAST() {
+    return this._parentAST;
+  }
 
-  static ofStringLiteral<C extends ASTCCompilerNode>(
-    {
-      baseType,
-      parentAST,
-      text,
-    }: CVariableStringInitializerAttrs<C>,
-  ) {
+  get baseType() {
+    return this._baseType;
+  }
+
+  get fields() {
+    return this._fields;
+  }
+
+  static ofStringLiteral<C extends ASTCCompilerNode>({
+    baseType,
+    parentAST,
+    text,
+  }: CVariableStringInitializerAttrs<C>) {
     const fields: CVariableInitializerFields = [];
-    for (let i = 0; i < text.length; ++i)
-      fields[i] = text.charCodeAt(i);
 
-    return new CVariableInitializerTree(
-      baseType,
-      parentAST,
-      fields,
-    );
+    for (let i = 0; i < text.length; ++i) {
+      fields[i] = text.charCodeAt(i);
+    }
+
+    return new CVariableInitializerTree(baseType, parentAST, fields);
   }
 
   fill(value: CVariableInitializeValue) {
@@ -81,17 +94,15 @@ export class CVariableInitializerTree<C extends ASTCCompilerNode = ASTCCompilerN
 
   /**
    * Returns total count of non null (initialized) fields
-   *
-   * @return {number}
-   * @memberof CVariableInitializerTree
    */
   getInitializedFieldsCount(): number {
-    const {fields} = this;
+    const { fields } = this;
     let i = 0;
 
     for (; i < fields.length; ++i) {
-      if (fields[i] === null)
+      if (fields[i] === null) {
         break;
+      }
     }
 
     return i;
@@ -99,12 +110,9 @@ export class CVariableInitializerTree<C extends ASTCCompilerNode = ASTCCompilerN
 
   /**
    * Expands fields array to given size
-   *
-   * @param {number} size
-   * @memberof CVariableInitializerTree
    */
   ensureSize(size: number) {
-    const {fields} = this;
+    const { fields } = this;
     const delta = size - fields.length;
 
     for (let i = 0; i < delta; ++i) {
@@ -114,13 +122,9 @@ export class CVariableInitializerTree<C extends ASTCCompilerNode = ASTCCompilerN
 
   /**
    * Sets values on given offset and if offset is bigger than array fills with null
-   *
-   * @param {number} offset
-   * @param {CVariableInitializeValue} value
-   * @memberof CVariableInitializerTree
    */
   setAndExpand(offset: number, value: CVariableInitializeValue) {
-    const {fields} = this;
+    const { fields } = this;
 
     this.ensureSize(offset);
     fields[offset] = value;
@@ -128,9 +132,6 @@ export class CVariableInitializerTree<C extends ASTCCompilerNode = ASTCCompilerN
 
   /**
    * Used to return value for non-array type initializers
-   *
-   * @return {CVariableInitializeValue}
-   * @memberof CVariableInitializerTree
    */
   getFirstValue(): CVariableInitializeValue {
     return this._fields[0];
@@ -142,12 +143,9 @@ export class CVariableInitializerTree<C extends ASTCCompilerNode = ASTCCompilerN
    * @example
    *  int a[] = { 1, 2, 3 }
    *  => int[3]
-   *
-   * @return {CType}
-   * @memberof CVariableInitializerTree
    */
   getFixedSizeBaseType(): CType {
-    const {baseType, fields} = this;
+    const { baseType, fields } = this;
 
     if (isArrayLikeType(baseType) && baseType.isUnknownSize()) {
       return baseType.ofSize(
@@ -160,13 +158,9 @@ export class CVariableInitializerTree<C extends ASTCCompilerNode = ASTCCompilerN
 
   /**
    * Returns type at specified offset
-   *
-   * @param {number} offset
-   * @return {CType}
-   * @memberof CVariableInitializerTree
    */
   getIndexExpectedType(offset: number): CType {
-    const {baseType} = this;
+    const { baseType } = this;
 
     if (isStructLikeType(baseType)) {
       return baseType.getFieldTypeByIndex(
@@ -196,19 +190,11 @@ export class CVariableInitializerTree<C extends ASTCCompilerNode = ASTCCompilerN
    *  int a[2][] = { { 1 } }
    *                   ^
    *              Array<int, 2>
-   *
-   * @private
-   * @return {CType}
-   * @memberof CVariableInitializerTree
    */
   getNestedInitializerGroupType(): CType {
-    const {baseType} = this;
+    const { baseType } = this;
 
-    return (
-      isArrayLikeType(baseType)
-        ? baseType.ofTailDimensions()
-        : baseType
-    );
+    return isArrayLikeType(baseType) ? baseType.ofTailDimensions() : baseType;
   }
 
   /**
@@ -219,9 +205,6 @@ export class CVariableInitializerTree<C extends ASTCCompilerNode = ASTCCompilerN
    *
    * @example
    *  int abc[3][4] => 12
-   *
-   * @return {number}
-   * @memberof CVariableInitializerTree
    */
   get scalarValuesCount(): number {
     return this.baseType.scalarValuesCount;

@@ -1,5 +1,5 @@
-import {SyntaxError} from '@compiler/grammar/Grammar';
-import {NodeLocation} from '@compiler/grammar/tree/NodeLocation';
+import { SyntaxError } from '@compiler/grammar/Grammar';
+import { NodeLocation } from '@compiler/grammar/tree/NodeLocation';
 import {
   ASTCCompilerNode,
   ASTCSpecifiersQualifiersList,
@@ -7,10 +7,10 @@ import {
   ASTCTypeSpecifiersList,
 } from '@compiler/pico-c/frontend/parser/ast';
 
-import {CGrammar} from '../shared';
+import { CGrammar } from '../shared';
 
-import {matchTypeQualifier} from './typeQualifier';
-import {typeSpecifier} from './typeSpecifier';
+import { matchTypeQualifier } from './typeQualifier';
+import { typeSpecifier } from './typeSpecifier';
 
 /**
  * specifier_qualifier_list
@@ -19,44 +19,43 @@ import {typeSpecifier} from './typeSpecifier';
  *  | type_qualifier specifier_qualifier_list
  *  | type_qualifier
  *  ;
- *
- * @export
- * @param {CGrammar} grammar
- * @return {ASTCSpecifiersQualifiersList}
  */
-export function qualifiersSpecifiers(grammar: CGrammar): ASTCSpecifiersQualifiersList {
-  const {g} = grammar;
+export function qualifiersSpecifiers(
+  grammar: CGrammar,
+): ASTCSpecifiersQualifiersList {
+  const { g } = grammar;
 
   let loc: NodeLocation = null;
   const typeSpecifiers = new ASTCTypeSpecifiersList(null, []);
   const typeQualifiers = new ASTCTypeQualifiersList(null, []);
 
   do {
-    const item = <ASTCCompilerNode> g.or(
-      {
-        specifier() {
-          const node = typeSpecifier(grammar);
-          return (typeSpecifiers.items.push(node), node);
-        },
-        qualifier() {
-          const node = matchTypeQualifier(grammar);
-          return (typeQualifiers.items.push(node), node);
-        },
-        empty() {
-          return null;
-        },
+    const item = <ASTCCompilerNode>g.or({
+      specifier() {
+        const node = typeSpecifier(grammar);
+        return typeSpecifiers.items.push(node), node;
       },
-    );
+      qualifier() {
+        const node = matchTypeQualifier(grammar);
+        return typeQualifiers.items.push(node), node;
+      },
+      empty() {
+        return null;
+      },
+    });
 
-    if (!item)
+    if (!item) {
       break;
+    }
 
-    if (!loc)
+    if (!loc) {
       loc = item.loc;
+    }
   } while (true);
 
-  if (!loc)
-    throw new SyntaxError;
+  if (!loc) {
+    throw new SyntaxError();
+  }
 
   return new ASTCSpecifiersQualifiersList(
     loc,

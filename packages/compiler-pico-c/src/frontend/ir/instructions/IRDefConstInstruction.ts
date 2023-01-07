@@ -1,25 +1,26 @@
-import {CVariableInitializerTree} from '../../analyze';
-import {CVariableInitializerPrintVisitor} from '../../analyze/ast/initializer-builder';
+import { CVariableInitializerTree } from '../../analyze';
+import { CVariableInitializerPrintVisitor } from '../../analyze/ast/initializer-builder';
 
-import {IROpcode} from '../constants';
-import {IRInstruction, IRInstructionArgs} from './IRInstruction';
-import {IRVariable} from '../variables';
-import {IsOutputInstruction} from '../interfaces';
+import { IROpcode } from '../constants';
+import { IRInstruction, IRInstructionArgs } from './IRInstruction';
+import { IRVariable } from '../variables';
+import { IsOutputInstruction } from '../interfaces';
 
 export type IRConstDefData = number[];
 
-export function isIRDefConstInstruction(instruction: IRInstruction): instruction is IRDefConstInstruction {
+export function isIRDefConstInstruction(
+  instruction: IRInstruction,
+): instruction is IRDefConstInstruction {
   return instruction.opcode === IROpcode.DEF_CONST;
 }
 
 /**
  * Label instruction
- *
- * @export
- * @class IRLabelInstruction
- * @extends {IRInstruction}
  */
-export class IRDefConstInstruction extends IRInstruction implements IsOutputInstruction {
+export class IRDefConstInstruction
+  extends IRInstruction
+  implements IsOutputInstruction
+{
   constructor(
     readonly initializer: CVariableInitializerTree,
     readonly outputVar: IRVariable,
@@ -27,11 +28,7 @@ export class IRDefConstInstruction extends IRInstruction implements IsOutputInst
     super(IROpcode.DEF_CONST);
   }
 
-  override ofArgs(
-    {
-      output = this.outputVar,
-    }: IRInstructionArgs,
-  ) {
+  override ofArgs({ output = this.outputVar }: IRInstructionArgs) {
     return new IRDefConstInstruction(this.initializer, output);
   }
 
@@ -43,10 +40,10 @@ export class IRDefConstInstruction extends IRInstruction implements IsOutputInst
   }
 
   override getDisplayName(): string {
-    const {outputVar, initializer} = this;
+    const { outputVar, initializer } = this;
 
-    return (
-      `${outputVar.getDisplayName()} = const ${CVariableInitializerPrintVisitor.serializeToString(initializer)}`
-    );
+    return `${outputVar.getDisplayName()} = const ${CVariableInitializerPrintVisitor.serializeToString(
+      initializer,
+    )}`;
   }
 }

@@ -3,7 +3,8 @@ import '../utils/irMatcher';
 describe('Assignment IR', () => {
   describe('Primitives', () => {
     test('Assign pre increment: int a = ++i', () => {
-      expect(/* cpp */ `void main() { int a, i = 0; a = ++i; }`).toCompiledIRBeEqual(/* ruby */`
+      expect(/* cpp */ `void main() { int a, i = 0; a = ++i; }`)
+        .toCompiledIRBeEqual(/* ruby */ `
         # --- Block main ---
         def main():
           a{0}: int*2B = alloca int2B
@@ -19,7 +20,8 @@ describe('Assignment IR', () => {
     });
 
     test('Assign post increment: int a = i++', () => {
-      expect(/* cpp */ `void main() { int a, i = 0; a = i++; }`).toCompiledIRBeEqual(/* ruby */`
+      expect(/* cpp */ `void main() { int a, i = 0; a = i++; }`)
+        .toCompiledIRBeEqual(/* ruby */ `
         # --- Block main ---
         def main():
           a{0}: int*2B = alloca int2B
@@ -35,7 +37,8 @@ describe('Assignment IR', () => {
     });
 
     test('Assign post increment and pre increment: int a = i++ + ++i', () => {
-      expect(/* cpp */ `void main() { int a, i = 0; a = i++ + ++i; }`).toCompiledIRBeEqual(/* ruby */`
+      expect(/* cpp */ `void main() { int a, i = 0; a = i++ + ++i; }`)
+        .toCompiledIRBeEqual(/* ruby */ `
         # --- Block main ---
         def main():
           a{0}: int*2B = alloca int2B
@@ -60,7 +63,7 @@ describe('Assignment IR', () => {
           int a = 10;
           a = a * (a - 1) + a;
         }
-      `).toCompiledIRBeEqual(/* ruby */`
+      `).toCompiledIRBeEqual(/* ruby */ `
         # --- Block sum ---
         def sum(): [ret: int2B]
           a{0}: int*2B = alloca int2B
@@ -85,7 +88,7 @@ describe('Assignment IR', () => {
             int arr[] = { 1, 2, 3 };
             int* ptr = arr;
           }
-      `).toCompiledIRBeEqual(/* ruby */`
+      `).toCompiledIRBeEqual(/* ruby */ `
         # --- Block main ---
         def main():
           arr{0}: int[3]*2B = alloca int[3]6B
@@ -106,7 +109,7 @@ describe('Assignment IR', () => {
             int arr[] = { 1, 2, 3, 4, 5, 6 };
             int* ptr = arr;
           }
-      `).toCompiledIRBeEqual(/* ruby */`
+      `).toCompiledIRBeEqual(/* ruby */ `
         # --- Block main ---
         def main():
           arr{0}: int**2B = alloca int*2B
@@ -129,7 +132,7 @@ describe('Assignment IR', () => {
           int array[] = { 1, 2 };
           int sum = array[1] + 3 * 4;
         }
-      `).toCompiledIRBeEqual(/* ruby */`
+      `).toCompiledIRBeEqual(/* ruby */ `
         # --- Block main ---
         def main():
           array{0}: int[2]*2B = alloca int[2]4B
@@ -152,7 +155,7 @@ describe('Assignment IR', () => {
           int array[] = { 1, 2, 3, 4, 5 };
           int sum = array[1] - 3 * 4;
         }
-      `).toCompiledIRBeEqual(/* ruby */`
+      `).toCompiledIRBeEqual(/* ruby */ `
         # --- Block main ---
         def main():
           array{0}: int**2B = alloca int*2B
@@ -178,7 +181,7 @@ describe('Assignment IR', () => {
           int array[4][3] = { 1, 2, 3, 4, 5 };
           int sum = array[1] + 3 * 4;
         }
-      `).toCompiledIRBeEqual(/* ruby */`
+      `).toCompiledIRBeEqual(/* ruby */ `
         # --- Block main ---
         def main():
           array{0}: int**2B = alloca int*2B
@@ -204,7 +207,7 @@ describe('Assignment IR', () => {
           int array[4][3] = { 1, 2, 3, 4, 5 };
           int sum = array[1][0] + 3 * 4;
         }
-      `).toCompiledIRBeEqual(/* ruby */`
+      `).toCompiledIRBeEqual(/* ruby */ `
         # --- Block main ---
         def main():
           array{0}: int**2B = alloca int*2B
@@ -230,7 +233,7 @@ describe('Assignment IR', () => {
           struct Vec2 { int x, y; } vec[] = { { .y = 4 }, { .x =  5 }};
           int sum = vec[1].x + vec[0].y;
         }
-      `).toCompiledIRBeEqual(/* ruby */`
+      `).toCompiledIRBeEqual(/* ruby */ `
         # --- Block main ---
         def main():
           vec{0}: struct Vec2[2]*2B = alloca struct Vec2[2]8B
@@ -255,7 +258,7 @@ describe('Assignment IR', () => {
           int testArray[] = { 1, 2, 3, 4, 5 };
           *(1 + testArray + (2 * 3)) = 4;
         }
-      `).toCompiledIRBeEqual(/* ruby */`
+      `).toCompiledIRBeEqual(/* ruby */ `
         # --- Block main ---
         def main():
           testArray{0}: int**2B = alloca int*2B
@@ -278,7 +281,7 @@ describe('Assignment IR', () => {
           int testArray[] = { 1, 2, 3 };
           *(1 + testArray + (2 * 3)) = 4;
         }
-      `).toCompiledIRBeEqual(/* ruby */`
+      `).toCompiledIRBeEqual(/* ruby */ `
         # --- Block main ---
         def main():
           testArray{0}: int[3]*2B = alloca int[3]6B
@@ -302,7 +305,7 @@ describe('Assignment IR', () => {
           int* a;
           a = &b;
         }
-      `).toCompiledIRBeEqual(/* ruby */`
+      `).toCompiledIRBeEqual(/* ruby */ `
         # --- Block main ---
         def main():
           b{0}: int*2B = alloca int2B
@@ -322,7 +325,7 @@ describe('Assignment IR', () => {
           int* a = &b;
           (*a) = 5;
         }
-      `).toCompiledIRBeEqual(/* ruby */`
+      `).toCompiledIRBeEqual(/* ruby */ `
         # --- Block main ---
         def main():
           b{0}: int*2B = alloca int2B
@@ -344,7 +347,7 @@ describe('Assignment IR', () => {
           int* a = &b;
           int c = a + 5;
         }
-      `).toCompiledIRBeEqual(/* ruby */`
+      `).toCompiledIRBeEqual(/* ruby */ `
         # --- Block main ---
         def main():
           b{0}: int*2B = alloca int2B
@@ -368,7 +371,7 @@ describe('Assignment IR', () => {
           int* a = &b;
           int c = *a + 5;
         }
-      `).toCompiledIRBeEqual(/* ruby */`
+      `).toCompiledIRBeEqual(/* ruby */ `
         # --- Block main ---
         def main():
           b{0}: int*2B = alloca int2B
@@ -393,7 +396,7 @@ describe('Assignment IR', () => {
           int* ptr = arr;
           ptr[2] = 2 *4;
         }
-      `).toCompiledIRBeEqual(/* ruby */`
+      `).toCompiledIRBeEqual(/* ruby */ `
         # --- Block main ---
         def main():
           arr{0}: int**2B = alloca int*2B
@@ -421,7 +424,7 @@ describe('Assignment IR', () => {
           struct Vec2 { int x, y; } vec = { .y = 5 };
           vec.y = 7;
         }
-      `).toCompiledIRBeEqual(/* ruby */`
+      `).toCompiledIRBeEqual(/* ruby */ `
         # --- Block main ---
         def main():
           vec{0}: struct Vec2*2B = alloca struct Vec24B
@@ -435,13 +438,13 @@ describe('Assignment IR', () => {
     });
 
     test('assign nested values', () => {
-      expect(/* cpp */`
+      expect(/* cpp */ `
         void main() {
           struct Vec2 { int x, y; struct Rect { int s, w; } k; } vec = { .y = 5 };
           vec.y = 7;
           vec.k.w = 2;
         }
-      `).toCompiledIRBeEqual(/* ruby */`
+      `).toCompiledIRBeEqual(/* ruby */ `
         # --- Block main ---
         def main():
           vec{0}: struct Vec2*2B = alloca struct Vec28B
@@ -457,7 +460,7 @@ describe('Assignment IR', () => {
     });
 
     test('pointer assign field access', () => {
-      expect(/* cpp */`
+      expect(/* cpp */ `
         struct Vec2 { int x, y; };
 
         void main() {
@@ -465,7 +468,7 @@ describe('Assignment IR', () => {
           struct Vec2* ptr = &vec;
           ptr->y = 5;
         }
-      `).toCompiledIRBeEqual(/* ruby */`
+      `).toCompiledIRBeEqual(/* ruby */ `
         # --- Block main ---
         def main():
           vec{0}: struct Vec2*2B = alloca struct Vec24B
@@ -482,7 +485,7 @@ describe('Assignment IR', () => {
     });
 
     test('loads pointer field data', () => {
-      expect(/* cpp */`
+      expect(/* cpp */ `
         struct Vec2 { int x, y; };
 
         void main() {
@@ -492,7 +495,7 @@ describe('Assignment IR', () => {
 
           int d = ptr->y;
         }
-      `).toCompiledIRBeEqual(/* ruby */`
+      `).toCompiledIRBeEqual(/* ruby */ `
         # --- Block main ---
         def main():
           vec{0}: struct Vec2*2B = alloca struct Vec24B
@@ -514,7 +517,7 @@ describe('Assignment IR', () => {
     });
 
     test('loads pointer to array of structs', () => {
-      expect(/* cpp */`
+      expect(/* cpp */ `
         struct Vec2 {
           int x, y;
           struct Rect { int s, w; } k;
@@ -524,7 +527,7 @@ describe('Assignment IR', () => {
           struct Vec2 vec[] = { { .y = 5 }, { .x = 2 } };
           struct Vec2 (*ptr)[] = &vec;
         }
-      `).toCompiledIRBeEqual(/* ruby */`
+      `).toCompiledIRBeEqual(/* ruby */ `
         # --- Block main ---
         def main():
           vec{0}: struct Vec2[2]*2B = alloca struct Vec2[2]16B

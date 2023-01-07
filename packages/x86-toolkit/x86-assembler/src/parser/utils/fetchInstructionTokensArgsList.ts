@@ -1,27 +1,26 @@
-import {isLineTerminatorToken} from '@compiler/lexer/utils';
+import { isLineTerminatorToken } from '@compiler/lexer/utils';
 
-import {TokenKind, TokenType, Token} from '@compiler/lexer/tokens';
-import {TokensIterator} from '@compiler/grammar/tree/TokensIterator';
+import { TokenKind, TokenType, Token } from '@compiler/lexer/tokens';
+import { TokensIterator } from '@compiler/grammar/tree/TokensIterator';
 
-import {mergeTokensTexts} from '../compiler/utils';
+import { mergeTokensTexts } from '../compiler/utils';
 
 /**
  * Fetches array of args such as:
  * ax, 0x55, byte ax
- *
- * @export
- * @param {ASTAsmParser} parser
- * @param {boolean} [allowSizeOverride=true]
- * @returns {Token[]}
  */
-export function fetchInstructionTokensArgsList(parser: TokensIterator, allowSizeOverride: boolean = true): Token[] {
+export function fetchInstructionTokensArgsList(
+  parser: TokensIterator,
+  allowSizeOverride: boolean = true,
+): Token[] {
   // parse arguments
   const argsTokens: Token[] = [];
   let argTokenBuffer: Token[] = [];
 
   function flushTokenBuffer() {
-    if (!argTokenBuffer.length)
+    if (!argTokenBuffer.length) {
       return;
+    }
 
     if (argTokenBuffer.length === 1) {
       argsTokens.push(argTokenBuffer[0]);
@@ -43,17 +42,19 @@ export function fetchInstructionTokensArgsList(parser: TokensIterator, allowSize
   do {
     // value or size operand
     let token = parser.fetchRelativeToken();
-    if (!token || isLineTerminatorToken(token))
+    if (!token || isLineTerminatorToken(token)) {
       break;
+    }
 
     // single spearator characters
     if (token.type === TokenType.COLON) {
       flushTokenBuffer();
       argsTokens.push(token);
-    } else if (token.type === TokenType.COMMA)
+    } else if (token.type === TokenType.COMMA) {
       flushTokenBuffer();
-    else
+    } else {
       argTokenBuffer.push(token);
+    }
 
     // far / near jmp instruction args prefix
     if (token.kind === TokenKind.BRANCH_ADDRESSING_TYPE) {
@@ -61,12 +62,13 @@ export function fetchInstructionTokensArgsList(parser: TokensIterator, allowSize
       token = parser.fetchRelativeToken();
       argsTokens.push(token);
 
-    // if it was size operand - fetch next token which is prefixed
-    } else if (allowSizeOverride && token.kind === TokenKind.BYTE_SIZE_OVERRIDE) {
+      // if it was size operand - fetch next token which is prefixed
+    } else if (
+      allowSizeOverride &&
+      token.kind === TokenKind.BYTE_SIZE_OVERRIDE
+    ) {
       flushTokenBuffer();
-      argsTokens.push(
-        parser.fetchRelativeToken(),
-      );
+      argsTokens.push(parser.fetchRelativeToken());
     }
   } while (true);
 

@@ -1,11 +1,11 @@
-import {CGrammar} from '../shared';
-import {ASTCCompilerNode} from '../../../ast';
-import {labeledStatement} from './labeledStatement';
-import {compoundStatement} from './compoundStatement';
-import {expressionStatement} from './expressionStatement';
-import {selectionStatement} from './selectionStatement';
-import {iterationStatement} from './iterationStatement';
-import {jumpStatement} from './jumpStatement';
+import { CGrammar } from '../shared';
+import { ASTCCompilerNode } from '../../../ast';
+import { labeledStatement } from './labeledStatement';
+import { compoundStatement } from './compoundStatement';
+import { expressionStatement } from './expressionStatement';
+import { selectionStatement } from './selectionStatement';
+import { iterationStatement } from './iterationStatement';
+import { jumpStatement } from './jumpStatement';
 
 /**
  * statement
@@ -16,22 +16,16 @@ import {jumpStatement} from './jumpStatement';
  *  | iteration_statement
  *  | jump_statement
  *  ;
- *
- * @export
- * @param {CGrammar} grammar
- * @return {ASTCCompilerNode}
  */
 export function statement(grammar: CGrammar): ASTCCompilerNode {
-  const {g} = grammar;
+  const { g } = grammar;
 
-  return <ASTCCompilerNode> g.or(
-    {
-      labeled: () => labeledStatement(grammar),
-      compound: () => compoundStatement(grammar),
-      iteration: () => iterationStatement(grammar),
-      expression: () => expressionStatement(grammar),
-      selection: () => selectionStatement(grammar),
-      jump: () => jumpStatement(grammar),
-    },
-  );
+  return <ASTCCompilerNode>g.or({
+    labeled: () => labeledStatement(grammar),
+    compound: () => compoundStatement(grammar),
+    iteration: () => iterationStatement(grammar),
+    expression: () => expressionStatement(grammar),
+    selection: () => selectionStatement(grammar),
+    jump: () => jumpStatement(grammar),
+  });
 }

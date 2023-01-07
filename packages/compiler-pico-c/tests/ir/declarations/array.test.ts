@@ -3,7 +3,8 @@ import '../utils/irMatcher';
 describe('Arrays declarations IR', () => {
   describe('Uninitialized', () => {
     test('should generate alloc for single dimension array', () => {
-      expect(/* cpp */ `void main() { int a[5]; }`).toCompiledIRBeEqual(/* ruby */`
+      expect(/* cpp */ `void main() { int a[5]; }`)
+        .toCompiledIRBeEqual(/* ruby */ `
         # --- Block main ---
         def main():
           a{0}: int[5]*2B = alloca int[5]10B
@@ -13,7 +14,8 @@ describe('Arrays declarations IR', () => {
     });
 
     test('should generate alloc for single 2-dimension array', () => {
-      expect(/* cpp */ `void main() { int a[5][2]; }`).toCompiledIRBeEqual(/* ruby */`
+      expect(/* cpp */ `void main() { int a[5][2]; }`)
+        .toCompiledIRBeEqual(/* ruby */ `
         # --- Block main ---
         def main():
           a{0}: int[5][2]*2B = alloca int[5][2]20B
@@ -23,7 +25,8 @@ describe('Arrays declarations IR', () => {
     });
 
     test('should generate alloc for single 3-dimension array', () => {
-      expect(/* cpp */ `void main() { int a[5][4][2]; }`).toCompiledIRBeEqual(/* ruby */`
+      expect(/* cpp */ `void main() { int a[5][4][2]; }`)
+        .toCompiledIRBeEqual(/* ruby */ `
         # --- Block main ---
         def main():
           a{0}: int[5][4][2]*2B = alloca int[5][4][2]80B
@@ -35,7 +38,8 @@ describe('Arrays declarations IR', () => {
 
   describe('Initialized', () => {
     test('should generate alloc for single dimension unknown size array', () => {
-      expect(/* cpp */ `void main() { int a[] = { 1, 2, 3 }; }`).toCompiledIRBeEqual(/* ruby */`
+      expect(/* cpp */ `void main() { int a[] = { 1, 2, 3 }; }`)
+        .toCompiledIRBeEqual(/* ruby */ `
         # --- Block main ---
         def main():
           a{0}: int[3]*2B = alloca int[3]6B
@@ -48,7 +52,8 @@ describe('Arrays declarations IR', () => {
     });
 
     test('should generate alloc for single dimension fixed size array', () => {
-      expect(/* cpp */ `void main() { int a[2] = { 1, 2 }; }`).toCompiledIRBeEqual(/* ruby */`
+      expect(/* cpp */ `void main() { int a[2] = { 1, 2 }; }`)
+        .toCompiledIRBeEqual(/* ruby */ `
         # --- Block main ---
         def main():
           a{0}: int[2]*2B = alloca int[2]4B
@@ -60,7 +65,8 @@ describe('Arrays declarations IR', () => {
     });
 
     test('should generate label pointer to longer arrays with constant expressions', () => {
-      expect(/* cpp */ `void main() { int a[] = { 1, 2, 3, 4, 5 }; }`).toCompiledIRBeEqual(/* ruby */`
+      expect(/* cpp */ `void main() { int a[] = { 1, 2, 3, 4, 5 }; }`)
+        .toCompiledIRBeEqual(/* ruby */ `
         # --- Block main ---
         def main():
           a{0}: int**2B = alloca int*2B
@@ -79,7 +85,7 @@ describe('Arrays declarations IR', () => {
           int d = 4;
           int a[] = { 1, 2, 3, 4, d };
         }
-      `).toCompiledIRBeEqual(/* ruby */`
+      `).toCompiledIRBeEqual(/* ruby */ `
         # --- Block main ---
         def main():
           d{0}: int*2B = alloca int2B
@@ -97,7 +103,8 @@ describe('Arrays declarations IR', () => {
     });
 
     test('should string as pointer to label', () => {
-      expect(/* cpp */ `void main() { const char* str = "Hello world!"; }`).toCompiledIRBeEqual(/* ruby */`
+      expect(/* cpp */ `void main() { const char* str = "Hello world!"; }`)
+        .toCompiledIRBeEqual(/* ruby */ `
         # --- Block main ---
         def main():
           str{0}: const char**2B = alloca const char*2B
@@ -122,7 +129,7 @@ describe('Arrays declarations IR', () => {
         void main() {
           struct Vec2 vec[] = { of_vector(), of_vector() };
         }
-      `).toCompiledIRBeEqual(/* ruby */`
+      `).toCompiledIRBeEqual(/* ruby */ `
         # --- Block of_vector ---
         def of_vector(%out{0}: struct Vec2**2B):
           vec{0}: struct Vec2*2B = load %out{0}: struct Vec2**2B

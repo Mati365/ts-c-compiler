@@ -1,4 +1,4 @@
-import {X86RegName} from '@x86-toolkit/assembler';
+import { X86RegName } from '@x86-toolkit/assembler';
 
 export function genRelAddress(reg: X86RegName, offset: number) {
   let suffix = '';

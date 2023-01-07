@@ -1,5 +1,5 @@
-import {CompilerFinalResult} from '../src/parser/index';
-import {asm} from '../src/asm';
+import { CompilerFinalResult } from '../src/parser/index';
+import { asm } from '../src/asm';
 
 describe('compiler options', () => {
   let compileResult: CompilerFinalResult = null;
@@ -10,12 +10,10 @@ describe('compiler options', () => {
       [org 0x7C00]
     `);
 
-    expect(compileResult.unwrap().compiler).toMatchObject(
-      {
-        mode: 0x2,
-        origin: 0x7C00,
-      },
-    );
+    expect(compileResult.unwrap().compiler).toMatchObject({
+      mode: 0x2,
+      origin: 0x7c00,
+    });
   });
 
   it('no brackets', () => {
@@ -24,11 +22,9 @@ describe('compiler options', () => {
       org 0b01110
     `);
 
-    expect(compileResult.unwrap().compiler).toMatchObject(
-      {
-        mode: 0x2,
-        origin: 0b01110,
-      },
-    );
+    expect(compileResult.unwrap().compiler).toMatchObject({
+      mode: 0x2,
+      origin: 0b01110,
+    });
   });
 });

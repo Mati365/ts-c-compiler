@@ -1,4 +1,4 @@
-import {X86IntRegTree} from '../../constants/regs';
+import { X86IntRegTree } from '../../constants/regs';
 
 export function recursiveSetAvailabilityInRegMap(
   path: X86IntRegTree[],

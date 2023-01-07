@@ -1,20 +1,17 @@
-import {createTiming} from '@compiler/core/utils/createTiming';
+import { createTiming } from '@compiler/core/utils/createTiming';
 
 /**
  * Create pack that measures
- *
- * @export
- * @returns
  */
 export function createAssemblerTimings() {
-  return createTiming(
-    {
-      preprocessor: 0,
-      lexer: 0,
-      ast: 0,
-      compiler: 0,
-    },
-  );
+  return createTiming({
+    preprocessor: 0,
+    lexer: 0,
+    ast: 0,
+    compiler: 0,
+  });
 }
 
-export type AssemblerTimings = ReturnType<ReturnType<typeof createAssemblerTimings>['unwrap']>;
+export type AssemblerTimings = ReturnType<
+  ReturnType<typeof createAssemblerTimings>['unwrap']
+>;

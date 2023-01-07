@@ -1,10 +1,10 @@
-import {Result, ok} from '@compiler/core/monads/Result';
-import {CompilerError} from '@compiler/core/shared/CompilerError';
+import { Result, ok } from '@compiler/core/monads/Result';
+import { CompilerError } from '@compiler/core/shared/CompilerError';
 
-import {formatDate, formatTime} from '@compiler/core/utils/format';
-import {createAssemblerTimings} from './utils/createAssemblerTimings';
-import {safeResultPreprocessor, PreprocessorResult} from './preprocessor';
-import {PreprocessorInterpreterConfig} from './preprocessor/interpreter/PreprocessorInterpreter';
+import { formatDate, formatTime } from '@compiler/core/utils/format';
+import { createAssemblerTimings } from './utils/createAssemblerTimings';
+import { safeResultPreprocessor, PreprocessorResult } from './preprocessor';
+import { PreprocessorInterpreterConfig } from './preprocessor/interpreter/PreprocessorInterpreter';
 import {
   compile,
   ast,
@@ -13,24 +13,18 @@ import {
   CompilerOutput,
 } from './parser';
 
-export {
-  CompilerFinalResult,
-  CompilerOutput,
-};
+export { CompilerFinalResult, CompilerOutput };
 
 export type AssemblerConfig = {
-  preprocessor?: boolean,
+  preprocessor?: boolean;
 };
 
 /**
  * Generates predefined functions thar are appended
  * to all assembler builds (if preprocessor enabled)
- *
- * @export
- * @returns
  */
 export function genPreExecPreprocessorCode() {
-  const today = new Date;
+  const today = new Date();
 
   return `
     %define __DATE__ '${formatDate(today, true)}'
@@ -49,17 +43,10 @@ export function genPreExecPreprocessorCode() {
 
 /**
  * Compile ASM file
- *
- * @export
- * @param {string} code
- * @param {AssemblerConfig} [{preprocessor}={}]
- * @returns {CompilerFinalResult}
  */
 export function asm(
   code: string,
-  {
-    preprocessor = true,
-  }: AssemblerConfig = {},
+  { preprocessor = true }: AssemblerConfig = {},
 ): CompilerFinalResult {
   const timings = createAssemblerTimings();
 
@@ -72,23 +59,24 @@ export function asm(
       },
     };
 
-    preprocessorResult = timings.add('preprocessor', safeResultPreprocessor)(code, preprocessorConfig);
-  } else {
-    preprocessorResult = ok(
-      new PreprocessorResult(null, code),
+    preprocessorResult = timings.add('preprocessor', safeResultPreprocessor)(
+      code,
+      preprocessorConfig,
     );
+  } else {
+    preprocessorResult = ok(new PreprocessorResult(null, code));
   }
 
-  return (
-    preprocessorResult
-      .andThen(timings.add('lexer', ({result}) => safeResultAsmLexer(null, result)))
-      .andThen(timings.add('ast', ast))
-      .andThen(timings.add('compiler', compile))
-      .andThen((result) => {
-        result.timings = timings.unwrap();
-        return ok(result);
-      })
-  );
+  return preprocessorResult
+    .andThen(
+      timings.add('lexer', ({ result }) => safeResultAsmLexer(null, result)),
+    )
+    .andThen(timings.add('ast', ast))
+    .andThen(timings.add('compiler', compile))
+    .andThen(result => {
+      result.timings = timings.unwrap();
+      return ok(result);
+    });
 }
 
 /**
@@ -96,17 +84,10 @@ export function asm(
  * it can crash if provided code is incorrect.
  *
  * Use it only in internal JITs etc.
- *
- * @export
- * @param {string} code
- * @param {AssemblerConfig} [config={}]
- * @returns {number[]}
  */
-export function unsafeASM(code: string, config: AssemblerConfig = {}): number[] {
-  return (
-    asm(code, config)
-      .unwrap()
-      .output
-      .getBinary()
-  );
+export function unsafeASM(
+  code: string,
+  config: AssemblerConfig = {},
+): number[] {
+  return asm(code, config).unwrap().output.getBinary();
 }

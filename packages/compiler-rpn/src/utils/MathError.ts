@@ -1,4 +1,4 @@
-import {CompilerError} from '@compiler/core/shared/CompilerError';
+import { CompilerError } from '@compiler/core/shared/CompilerError';
 
 export enum MathErrorCode {
   MISSING_LEFT_BRACKET,
@@ -16,11 +16,6 @@ export const MATH_ERROR_TRANSLATIONS: Record<MathErrorCode, string> = {
   [MathErrorCode.DIVISION_BY_ZERO]: 'Division by zero!',
 };
 
-/**
- * @export
- * @class MathError
- * @extends {CompilerError<MathErrorCode, number>}
- */
 export class MathError extends CompilerError<MathErrorCode, number> {
   constructor(code: MathErrorCode, meta?: object) {
     super(MATH_ERROR_TRANSLATIONS, code, null, meta);

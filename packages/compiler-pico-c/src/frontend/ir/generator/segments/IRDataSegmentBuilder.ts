@@ -1,5 +1,5 @@
-import {IRInstruction} from '../../instructions';
-import {IRSegmentBuilder} from './IRSegmentBuilder';
+import { IRInstruction } from '../../instructions';
+import { IRSegmentBuilder } from './IRSegmentBuilder';
 
 export type IRDataSegmentBuilderResult = {
   instructions: IRInstruction[];
@@ -7,20 +7,12 @@ export type IRDataSegmentBuilderResult = {
 
 /**
  * Initialized data block builder
- *
- * @export
- * @class IRDataSegmentBuilder
- * @implements {IRSegmentBuilder<IRDataSegmentBuilderResult>}
  */
 export class IRDataSegmentBuilder extends IRSegmentBuilder<IRDataSegmentBuilderResult> {
   private instructions: IRInstruction[] = [];
 
   /**
    * Emit instruction and return this
-   *
-   * @param {IRInstruction} instruction
-   * @return {this}
-   * @memberof IRDataSegmentBuilder
    */
   emit(instruction: IRInstruction): this {
     this.instructions.push(instruction);
@@ -29,9 +21,6 @@ export class IRDataSegmentBuilder extends IRSegmentBuilder<IRDataSegmentBuilderR
 
   /**
    * Returns all instructions
-   *
-   * @return {IRDataSegmentBuilderResult}
-   * @memberof IRDataSegmentBuilder
    */
   flush(): IRDataSegmentBuilderResult {
     return {

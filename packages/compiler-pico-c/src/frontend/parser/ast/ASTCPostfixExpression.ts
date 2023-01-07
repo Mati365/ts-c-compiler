@@ -1,96 +1,72 @@
 import * as R from 'ramda';
 
-import {dumpAttributesToString} from '@compiler/core/utils';
-import {walkOverFields} from '@compiler/grammar/decorators/walkOverFields';
+import { dumpAttributesToString } from '@compiler/core/utils';
+import { walkOverFields } from '@compiler/grammar/decorators/walkOverFields';
 
-import {Token} from '@compiler/lexer/tokens';
-import {NodeLocation} from '@compiler/grammar/tree/NodeLocation';
-import {ASTCCompilerNode, ASTCCompilerKind} from './ASTCCompilerNode';
-import {ASTCPrimaryExpression} from './ASTCPrimaryExpression';
-import {ASTCExpression} from './ASTCExpression';
-import {ASTCArgumentsExpressionList} from './ASTCArgumentsExpressionList';
-import {isFuncPtrDeclLikeType} from '../../analyze/types/function/CFunctionDeclType';
+import { Token } from '@compiler/lexer/tokens';
+import { NodeLocation } from '@compiler/grammar/tree/NodeLocation';
+import { ASTCCompilerNode, ASTCCompilerKind } from './ASTCCompilerNode';
+import { ASTCPrimaryExpression } from './ASTCPrimaryExpression';
+import { ASTCExpression } from './ASTCExpression';
+import { ASTCArgumentsExpressionList } from './ASTCArgumentsExpressionList';
+import { isFuncPtrDeclLikeType } from '../../analyze/types/function/CFunctionDeclType';
 
-@walkOverFields(
-  {
-    fields: ['expression'],
-  },
-)
+@walkOverFields({
+  fields: ['expression'],
+})
 export class ASTCPostfixArrayExpression extends ASTCCompilerNode {
-  constructor(
-    loc: NodeLocation,
-    readonly expression: ASTCExpression,
-  ) {
+  constructor(loc: NodeLocation, readonly expression: ASTCExpression) {
     super(ASTCCompilerKind.PostfixArrayExpression, loc);
   }
 }
 
-@walkOverFields(
-  {
-    fields: ['args'],
-  },
-)
+@walkOverFields({
+  fields: ['args'],
+})
 export class ASTCPostfixFnExpression extends ASTCCompilerNode {
-  constructor(
-    loc: NodeLocation,
-    readonly args: ASTCArgumentsExpressionList,
-  ) {
+  constructor(loc: NodeLocation, readonly args: ASTCArgumentsExpressionList) {
     super(ASTCCompilerKind.PostfixFnExpression, loc);
   }
 }
 
 export class ASTCPostfixDotExpression extends ASTCCompilerNode {
-  constructor(
-    loc: NodeLocation,
-    readonly name: Token<string>,
-  ) {
+  constructor(loc: NodeLocation, readonly name: Token<string>) {
     super(ASTCCompilerKind.PostfixDotExpression, loc);
   }
 
   toString() {
-    const {kind, name} = this;
+    const { kind, name } = this;
 
-    return dumpAttributesToString(
-      kind,
-      {
-        name: name.text,
-      },
-    );
+    return dumpAttributesToString(kind, {
+      name: name.text,
+    });
   }
 }
 
 export class ASTCPostfixPtrExpression extends ASTCCompilerNode {
-  constructor(
-    loc: NodeLocation,
-    readonly name: Token<string>,
-  ) {
+  constructor(loc: NodeLocation, readonly name: Token<string>) {
     super(ASTCCompilerKind.PostfixPtrExpression, loc);
   }
 
   toString() {
-    const {kind, name} = this;
+    const { kind, name } = this;
 
-    return dumpAttributesToString(
-      kind,
-      {
-        name: name.text,
-      },
-    );
+    return dumpAttributesToString(kind, {
+      name: name.text,
+    });
   }
 }
 
-@walkOverFields(
-  {
-    fields: [
-      'postfixExpression',
-      'primaryExpression',
-      'arrayExpression',
-      'fnExpression',
-      'dotExpression',
-      'ptrExpression',
-    ],
-  },
-)
+@walkOverFields({
+  fields: [
+    'postfixExpression',
+    'primaryExpression',
+    'arrayExpression',
+    'fnExpression',
+    'dotExpression',
+    'ptrExpression',
+  ],
+})
 export class ASTCPostfixExpression extends ASTCCompilerNode {
   readonly primaryExpression: ASTCPrimaryExpression;
   readonly arrayExpression: ASTCPostfixArrayExpression;
@@ -107,58 +83,79 @@ export class ASTCPostfixExpression extends ASTCCompilerNode {
   }
 
   toString() {
-    const {kind, incExpression, decExpression} = this;
+    const { kind, incExpression, decExpression } = this;
 
-    return dumpAttributesToString(
-      kind,
-      {
-        incExpression,
-        decExpression,
-      },
+    return dumpAttributesToString(kind, {
+      incExpression,
+      decExpression,
+    });
+  }
+
+  isPrimaryExpression() {
+    return !!this.primaryExpression;
+  }
+  isArrayExpression() {
+    return !!this.arrayExpression;
+  }
+  isFnExpression() {
+    return !!this.fnExpression;
+  }
+  isDotExpression() {
+    return !!this.dotExpression;
+  }
+  isPtrExpression() {
+    return !!this.ptrExpression;
+  }
+  isIncExpression() {
+    return this.incExpression;
+  }
+  isDecExpression() {
+    return this.decExpression;
+  }
+
+  isFnPtrCallExpression() {
+    return (
+      isFuncPtrDeclLikeType(this.postfixExpression?.type) &&
+      this.isPrimaryExpression()
     );
   }
 
-  isPrimaryExpression() { return !!this.primaryExpression; }
-  isArrayExpression() { return !!this.arrayExpression; }
-  isFnExpression() { return !!this.fnExpression; }
-  isDotExpression() { return !!this.dotExpression; }
-  isPtrExpression() { return !!this.ptrExpression; }
-  isIncExpression() { return this.incExpression; }
-  isDecExpression() { return this.decExpression; }
-
-  isFnPtrCallExpression() {
-    return isFuncPtrDeclLikeType(this.postfixExpression?.type) && this.isPrimaryExpression();
+  hasNestedPostfixExpression() {
+    return this.postfixExpression;
   }
-
-  hasNestedPostfixExpression() { return this.postfixExpression; }
 
   getFnName(): string {
     return this.postfixExpression.primaryExpression?.identifier?.text;
   }
 
   getPreIncSign() {
-    const {postfixExpression} = this;
+    const { postfixExpression } = this;
 
-    if (!postfixExpression)
+    if (!postfixExpression) {
       return null;
+    }
 
-    if (postfixExpression.isDecExpression())
+    if (postfixExpression.isDecExpression()) {
       return -1;
+    }
 
-    if (postfixExpression.isIncExpression())
+    if (postfixExpression.isIncExpression()) {
       return 1;
+    }
 
     return null;
   }
 
   getPostIncSign() {
-    const {incExpression, decExpression} = this;
+    const { incExpression, decExpression } = this;
 
-    if (incExpression)
+    if (incExpression) {
       return 1;
+    }
 
-    if (decExpression)
+    if (decExpression) {
       return -1;
+    }
 
     return null;
   }

@@ -1,11 +1,7 @@
-import {TokenType} from '../tokens';
+import { TokenType } from '../tokens';
 
 /**
  * Check for operators >, <, <=, >=, ==
- *
- * @export
- * @param {TokenType} type
- * @returns {boolean}
  */
 export function isRelationOpToken(type: TokenType): boolean {
   switch (type) {
@@ -24,11 +20,6 @@ export function isRelationOpToken(type: TokenType): boolean {
 
 /**
  * Fast execute relation operator
- *
- * @export
- * @param {TokenType} op
- * @param {boolean[]} args
- * @returns {boolean}
  */
 export function evalRelationOp(op: TokenType, args: number[]): boolean {
   switch (op) {

@@ -1,19 +1,16 @@
 import * as R from 'ramda';
 
-import {NodeLocation} from '@compiler/grammar/tree/NodeLocation';
-import {TreeVisitor} from '@compiler/grammar/tree/TreeVisitor';
+import { NodeLocation } from '@compiler/grammar/tree/NodeLocation';
+import { TreeVisitor } from '@compiler/grammar/tree/TreeVisitor';
 
-import {
-  ASTPreprocessorKind,
-  ASTPreprocessorNode,
-} from '../constants';
+import { ASTPreprocessorKind, ASTPreprocessorNode } from '../constants';
 
 import {
   PreprocessorInterpreter,
   InterpreterResult,
 } from '../interpreter/PreprocessorInterpreter';
 
-import {ASTPreprocessorCondition} from './ASTPreprocessorIF';
+import { ASTPreprocessorCondition } from './ASTPreprocessorIF';
 
 /**
  * @example
@@ -22,10 +19,6 @@ import {ASTPreprocessorCondition} from './ASTPreprocessorIF';
  * %elif
  *   xor bx, bx
  * %endif
- *
- * @export
- * @class ASTPreprocessorIFDef
- * @extends {ASTPreprocessorNode}
  */
 export class ASTPreprocessorIFDef extends ASTPreprocessorCondition {
   constructor(
@@ -40,39 +33,38 @@ export class ASTPreprocessorIFDef extends ASTPreprocessorCondition {
 
   /**
    * Exec interpreter on node
-   *
-   * @param {PreprocessorInterpreter} interpreter
-   * @returns {InterpreterResult}
-   * @memberof ASTPreprocessorMacro
    */
   exec(interpreter: PreprocessorInterpreter): InterpreterResult {
-    const {consequent, alternate, itemName, negated} = this;
-    let result = !R.isNil(interpreter.getVariable(itemName)) || interpreter.getCallables(itemName)?.length > 0;
-    if (negated)
+    const { consequent, alternate, itemName, negated } = this;
+    let result =
+      !R.isNil(interpreter.getVariable(itemName)) ||
+      interpreter.getCallables(itemName)?.length > 0;
+    if (negated) {
       result = !result;
+    }
 
     this.result = result;
-    if (result)
+    if (result) {
       return consequent.exec(interpreter);
+    }
 
     return alternate?.exec(interpreter);
   }
 
   /**
    * Iterates throught tree
-   *
-   * @param {TreeVisitor<ASTPreprocessorNode>} visitor
-   * @memberof ASTPreprocessorIFDef
    */
   walk(visitor: TreeVisitor<ASTPreprocessorNode>): void {
-    const {consequent, alternate} = this;
+    const { consequent, alternate } = this;
 
     super.walk(visitor);
 
-    if (consequent)
+    if (consequent) {
       visitor.visit(consequent);
+    }
 
-    if (alternate)
+    if (alternate) {
       visitor.visit(alternate);
+    }
   }
 }

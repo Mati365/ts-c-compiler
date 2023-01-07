@@ -1,7 +1,7 @@
-import {CCompilerArch, CCompilerConfig} from '@compiler/pico-c/constants';
+import { CCompilerArch, CCompilerConfig } from '@compiler/pico-c/constants';
 
-import {assertUnreachable} from '@compiler/core/utils';
-import {genRelAddress} from '../asm-utils';
+import { assertUnreachable } from '@compiler/core/utils';
+import { genRelAddress } from '../asm-utils';
 
 type X86StackVariable = {
   offset: number;
@@ -10,11 +10,9 @@ type X86StackVariable = {
 
 export class X86StackFrame {
   private allocated: number = 0;
-  private stackVars: {[id: string]: X86StackVariable} = {};
+  private stackVars: { [id: string]: X86StackVariable } = {};
 
-  constructor(
-    readonly config: CCompilerConfig,
-  ) {}
+  constructor(readonly config: CCompilerConfig) {}
 
   getStackVar(id: string): X86StackVariable {
     return this.stackVars[id];
@@ -45,7 +43,7 @@ export class X86StackFrame {
   }
 
   getLocalVarStackRelAddress(id: string) {
-    const {arch} = this.config;
+    const { arch } = this.config;
     const offset = this.getStackVarOffset(id);
 
     switch (arch) {

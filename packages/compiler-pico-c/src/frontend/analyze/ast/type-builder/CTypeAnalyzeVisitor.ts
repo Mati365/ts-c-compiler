@@ -1,32 +1,26 @@
 import * as R from 'ramda';
 
-import {TreeVisitorsMap} from '@compiler/grammar/tree/TreeGroupedVisitor';
+import { TreeVisitorsMap } from '@compiler/grammar/tree/TreeGroupedVisitor';
 
-import {ASTC_TYPE_CREATORS} from './creators';
-import {ASTCCompilerNode} from '../../../parser/ast/ASTCCompilerNode';
-import {IsNewScopeASTNode} from '../../interfaces';
+import { ASTC_TYPE_CREATORS } from './creators';
+import { ASTCCompilerNode } from '../../../parser/ast/ASTCCompilerNode';
+import { IsNewScopeASTNode } from '../../interfaces';
 
-import {CTypeCheckConfig} from '../../constants';
-import {CTypeAnalyzeContext} from './CTypeAnalyzeContext';
-import {CScopeTree} from '../../scope/CScopeTree';
-import {CInnerTypeTreeVisitor} from './CInnerTypeTreeVisitor';
+import { CTypeCheckConfig } from '../../constants';
+import { CTypeAnalyzeContext } from './CTypeAnalyzeContext';
+import { CScopeTree } from '../../scope/CScopeTree';
+import { CInnerTypeTreeVisitor } from './CInnerTypeTreeVisitor';
 
 type CTypeAnalyzeVisitorAttrs = CTypeCheckConfig & {
-  scope?: CScopeTree,
-  currentAnalyzed?: CTypeAnalyzeContext['currentAnalyzed'],
+  scope?: CScopeTree;
+  currentAnalyzed?: CTypeAnalyzeContext['currentAnalyzed'];
 };
 
 /**
  * Root typechecker visitor
  */
 export class CTypeAnalyzeVisitor extends CInnerTypeTreeVisitor {
-  constructor(
-    {
-      scope,
-      currentAnalyzed,
-      ...config
-    }: CTypeAnalyzeVisitorAttrs,
-  ) {
+  constructor({ scope, currentAnalyzed, ...config }: CTypeAnalyzeVisitorAttrs) {
     super();
 
     this.setVisitorsMap(
@@ -42,34 +36,36 @@ export class CTypeAnalyzeVisitor extends CInnerTypeTreeVisitor {
       ),
     );
 
-    this.setContext(
-      {
-        config,
-        scope: scope ?? new CScopeTree(config),
-        currentAnalyzed: currentAnalyzed ?? {
-          fnType: null,
-        },
+    this.setContext({
+      config,
+      scope: scope ?? new CScopeTree(config),
+      currentAnalyzed: currentAnalyzed ?? {
+        fnType: null,
       },
-    );
+    });
   }
 
-  get scope() { return this.context.scope; }
-  get arch() { return this.context.config.arch; }
-  get currentAnalyzed() { return this.context.currentAnalyzed; }
+  get scope() {
+    return this.context.scope;
+  }
+  get arch() {
+    return this.context.config.arch;
+  }
+  get currentAnalyzed() {
+    return this.context.currentAnalyzed;
+  }
 
   /**
    * Creates new scope visitor
    */
   ofScopeVisitor(scope: CScopeTree): CTypeAnalyzeVisitor {
-    const {context, currentAnalyzed} = this;
+    const { context, currentAnalyzed } = this;
 
-    return new CTypeAnalyzeVisitor(
-      {
-        ...context.config,
-        currentAnalyzed,
-        scope,
-      },
-    );
+    return new CTypeAnalyzeVisitor({
+      ...context.config,
+      currentAnalyzed,
+      scope,
+    });
   }
 
   /**
@@ -79,14 +75,12 @@ export class CTypeAnalyzeVisitor extends CInnerTypeTreeVisitor {
     node: ASTCCompilerNode,
     fn: (newScope: CTypeAnalyzeVisitor) => void,
   ) {
-    const {scope, context} = this;
+    const { scope, context } = this;
 
     const newScope = new CScopeTree(context.config, node);
-    const visitor = this.ofScopeVisitor(
-      scope.appendScope(newScope),
-    );
+    const visitor = this.ofScopeVisitor(scope.appendScope(newScope));
 
-    (<IsNewScopeASTNode> node).scope = newScope;
+    (<IsNewScopeASTNode>node).scope = newScope;
     fn(visitor);
   }
 
@@ -94,6 +88,6 @@ export class CTypeAnalyzeVisitor extends CInnerTypeTreeVisitor {
    * Creates scope and enters node
    */
   visitBlockScope(node?: ASTCCompilerNode) {
-    this.enterScope(node, (visitor) => visitor.visit(node));
+    this.enterScope(node, visitor => visitor.visit(node));
   }
 }

@@ -1,32 +1,21 @@
-import {uuidX86Device} from '../types/X86AbstractDevice';
-import {X86CPU} from '../X86CPU';
+import { uuidX86Device } from '../types/X86AbstractDevice';
+import { X86CPU } from '../X86CPU';
 
 type ClockTimerConfig = {
-  currentMidnight: number,
-  speed: number,
+  currentMidnight: number;
+  speed: number;
 };
 
 function getTodayMidnight(): Date {
-  const now = new Date;
+  const now = new Date();
 
-  return new Date(
-    now.getFullYear(),
-    now.getMonth(),
-    now.getDate(),
-    0,
-    0,
-    0,
-  );
+  return new Date(now.getFullYear(), now.getMonth(), now.getDate(), 0, 0, 0);
 }
 
 /**
  * CMOS
  *
  * @see {@link http://students.mimuw.edu.pl/SO/Projekt03-04/temat3-g4/cmos.html}
- *
- * @export
- * @class CMOS
- * @extends {uuidX86Device('cmos')}
  */
 export class CMOS extends uuidX86Device<X86CPU>('cmos') {
   private index: number = 0;
@@ -35,15 +24,13 @@ export class CMOS extends uuidX86Device<X86CPU>('cmos') {
 
   /**
    * Inits clock, sets current date
-   *
-   * @memberof RTC
    */
   init() {
-    const date = new Date;
+    const date = new Date();
 
     this.timer = {
       currentMidnight: +getTodayMidnight(),
-      speed: 55, /** 55MS tick */
+      speed: 55 /** 55MS tick */,
     };
 
     this.offsets = {
@@ -59,7 +46,7 @@ export class CMOS extends uuidX86Device<X86CPU>('cmos') {
     /* PORTS */
     this.ports = {
       0x70: {
-        set: (index) => {
+        set: index => {
           this.index = index;
         },
       },
@@ -69,35 +56,29 @@ export class CMOS extends uuidX86Device<X86CPU>('cmos') {
     };
 
     /* INTERRUPTS */
-    this.attachInterrupts(0x1A, 'ah', {
+    this.attachInterrupts(0x1a, 'ah', {
       0x0: () => {
-        const {currentMidnight} = this.timer;
+        const { currentMidnight } = this.timer;
         const now = Date.now();
         const ticksFromMidnight = (now - currentMidnight) / this.timer.speed;
 
-        Object.assign(
-          this.regs,
-          {
-            al: (now - currentMidnight) >= 86400000 ? 0x1 : 0x0,
-            dx: ticksFromMidnight & 0xFFFF,
-            cx: (ticksFromMidnight >>> 0x10) & 0xFFFF,
-          },
-        );
+        Object.assign(this.regs, {
+          al: now - currentMidnight >= 86400000 ? 0x1 : 0x0,
+          dx: ticksFromMidnight & 0xffff,
+          cx: (ticksFromMidnight >>> 0x10) & 0xffff,
+        });
       },
 
       /** Read Time From Real Time Clock */
       0x2: () => {
         const now = new Date();
 
-        Object.assign(
-          this.regs,
-          {
-            ch: CMOS.toBCD(now.getHours()),
-            cl: CMOS.toBCD(now.getMinutes()),
-            dh: CMOS.toBCD(now.getSeconds()),
-            dl: 0x0,
-          },
-        );
+        Object.assign(this.regs, {
+          ch: CMOS.toBCD(now.getHours()),
+          cl: CMOS.toBCD(now.getMinutes()),
+          dh: CMOS.toBCD(now.getSeconds()),
+          dl: 0x0,
+        });
         this.regs.status.cf = 0;
       },
     });
@@ -105,17 +86,14 @@ export class CMOS extends uuidX86Device<X86CPU>('cmos') {
 
   /**
    * Slow method to convert each digit to binary
-   *
-   * @static
-   * @param {Number}  num Number
-   * @returns BCD encoded number
    */
   static toBCD(num: number): number {
     const str = num.toString();
     let out = 0;
 
-    for (let i = 0; i < str.length; ++i)
+    for (let i = 0; i < str.length; ++i) {
       out = (out << 4) | parseInt(str[i], 10);
+    }
 
     return out;
   }

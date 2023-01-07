@@ -1,18 +1,16 @@
-import {dumpAttributesToString} from '@compiler/core/utils';
-import {walkOverFields} from '@compiler/grammar/decorators/walkOverFields';
+import { dumpAttributesToString } from '@compiler/core/utils';
+import { walkOverFields } from '@compiler/grammar/decorators/walkOverFields';
 
-import {NodeLocation} from '@compiler/grammar/tree/NodeLocation';
-import {CUnaryCastOperator} from '@compiler/pico-c/constants';
-import {ASTCCompilerKind, ASTCCompilerNode} from './ASTCCompilerNode';
-import {ASTCTypeName} from './ASTCTypeName';
-import {ASTCCastExpression} from './ASTCCastExpression';
-import {ASTCPostfixExpression} from './ASTCPostfixExpression';
+import { NodeLocation } from '@compiler/grammar/tree/NodeLocation';
+import { CUnaryCastOperator } from '@compiler/pico-c/constants';
+import { ASTCCompilerKind, ASTCCompilerNode } from './ASTCCompilerNode';
+import { ASTCTypeName } from './ASTCTypeName';
+import { ASTCCastExpression } from './ASTCCastExpression';
+import { ASTCPostfixExpression } from './ASTCPostfixExpression';
 
-@walkOverFields(
-  {
-    fields: ['unaryExpression'],
-  },
-)
+@walkOverFields({
+  fields: ['unaryExpression'],
+})
 export class ASTCIncUnaryExpression extends ASTCCompilerNode {
   constructor(
     loc: NodeLocation,
@@ -22,11 +20,9 @@ export class ASTCIncUnaryExpression extends ASTCCompilerNode {
   }
 }
 
-@walkOverFields(
-  {
-    fields: ['unaryExpression'],
-  },
-)
+@walkOverFields({
+  fields: ['unaryExpression'],
+})
 export class ASTCDecUnaryExpression extends ASTCCompilerNode {
   constructor(
     loc: NodeLocation,
@@ -36,14 +32,9 @@ export class ASTCDecUnaryExpression extends ASTCCompilerNode {
   }
 }
 
-@walkOverFields(
-  {
-    fields: [
-      'typeName',
-      'unaryExpression',
-    ],
-  },
-)
+@walkOverFields({
+  fields: ['typeName', 'unaryExpression'],
+})
 export class ASTCSizeofUnaryExpression extends ASTCCompilerNode {
   constructor(
     loc: NodeLocation,
@@ -54,11 +45,9 @@ export class ASTCSizeofUnaryExpression extends ASTCCompilerNode {
   }
 }
 
-@walkOverFields(
-  {
-    fields: ['castExpression'],
-  },
-)
+@walkOverFields({
+  fields: ['castExpression'],
+})
 export class ASTCCastUnaryExpression extends ASTCCompilerNode {
   constructor(
     loc: NodeLocation,
@@ -69,28 +58,23 @@ export class ASTCCastUnaryExpression extends ASTCCompilerNode {
   }
 
   toString() {
-    const {kind, operator} = this;
+    const { kind, operator } = this;
 
-    return dumpAttributesToString(
-      kind,
-      {
-        operator,
-      },
-    );
+    return dumpAttributesToString(kind, {
+      operator,
+    });
   }
 }
 
-@walkOverFields(
-  {
-    fields: [
-      'postfixExpression',
-      'castExpression',
-      'decExpression',
-      'incExpression',
-      'sizeofExpression',
-    ],
-  },
-)
+@walkOverFields({
+  fields: [
+    'postfixExpression',
+    'castExpression',
+    'decExpression',
+    'incExpression',
+    'sizeofExpression',
+  ],
+})
 export class ASTCUnaryExpression extends ASTCCompilerNode {
   constructor(
     loc: NodeLocation,

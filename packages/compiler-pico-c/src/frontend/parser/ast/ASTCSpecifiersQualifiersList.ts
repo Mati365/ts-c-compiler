@@ -1,7 +1,7 @@
-import {NodeLocation} from '@compiler/grammar/tree/NodeLocation';
-import {ASTCDeclarationSpecifier} from './ASTCDeclarationSpecifier';
-import {ASTCTypeQualifiersList} from './ASTCTypeQualifiersList';
-import {ASTCTypeSpecifiersList} from './ASTCTypeSpecifiersList';
+import { NodeLocation } from '@compiler/grammar/tree/NodeLocation';
+import { ASTCDeclarationSpecifier } from './ASTCDeclarationSpecifier';
+import { ASTCTypeQualifiersList } from './ASTCTypeQualifiersList';
+import { ASTCTypeSpecifiersList } from './ASTCTypeSpecifiersList';
 
 export class ASTCSpecifiersQualifiersList extends ASTCDeclarationSpecifier {
   constructor(
@@ -13,7 +13,7 @@ export class ASTCSpecifiersQualifiersList extends ASTCDeclarationSpecifier {
   }
 
   dropEmpty(): ASTCSpecifiersQualifiersList {
-    const {loc, typeSpecifiers, typeQualifiers} = this;
+    const { loc, typeSpecifiers, typeQualifiers } = this;
 
     return new ASTCSpecifiersQualifiersList(
       loc,

@@ -1,36 +1,34 @@
 import * as R from 'ramda';
 
-import {walkOverFields} from '@compiler/grammar/decorators/walkOverFields';
+import { walkOverFields } from '@compiler/grammar/decorators/walkOverFields';
 
-import {IsEmpty} from '@compiler/core/interfaces/IsEmpty';
-import {NodeLocation} from '@compiler/grammar/tree/NodeLocation';
+import { IsEmpty } from '@compiler/core/interfaces/IsEmpty';
+import { NodeLocation } from '@compiler/grammar/tree/NodeLocation';
 
-import {ASTCCompilerKind, ASTCCompilerNode} from './ASTCCompilerNode';
-import {ASTCTypeSpecifier} from './ASTCTypeSpecifier';
+import { ASTCCompilerKind, ASTCCompilerNode } from './ASTCCompilerNode';
+import { ASTCTypeSpecifier } from './ASTCTypeSpecifier';
 
-@walkOverFields(
-  {
-    fields: ['items'],
-  },
-)
-export class ASTCTypeSpecifiersList extends ASTCCompilerNode implements IsEmpty {
-  constructor(
-    loc: NodeLocation,
-    readonly items: ASTCTypeSpecifier[],
-  ) {
+@walkOverFields({
+  fields: ['items'],
+})
+export class ASTCTypeSpecifiersList
+  extends ASTCCompilerNode
+  implements IsEmpty
+{
+  constructor(loc: NodeLocation, readonly items: ASTCTypeSpecifier[]) {
     super(ASTCCompilerKind.TypeSpecifiersList, loc);
   }
 
   findPrimitiveSpecifiers() {
-    return this.items.filter((item) => !!item.specifier);
+    return this.items.filter(item => !!item.specifier);
   }
 
   findStructSpecifiers() {
-    return this.items.filter((item) => !!item.structOrUnionSpecifier);
+    return this.items.filter(item => !!item.structOrUnionSpecifier);
   }
 
   findEnumSpecifiers() {
-    return this.items.filter((item) => !!item.enumSpecifier);
+    return this.items.filter(item => !!item.enumSpecifier);
   }
 
   getGroupedSpecifiers() {

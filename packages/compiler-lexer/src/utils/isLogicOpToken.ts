@@ -1,11 +1,7 @@
-import {TokenType} from '../tokens';
+import { TokenType } from '../tokens';
 
 /**
  * Checks if token can perform logic expression
- *
- * @export
- * @param {TokenType} type
- * @returns {boolean}
  */
 export function isLogicOpToken(type: TokenType): boolean {
   switch (type) {
@@ -21,11 +17,6 @@ export function isLogicOpToken(type: TokenType): boolean {
 
 /**
  * Fast execute logic operator
- *
- * @export
- * @param {TokenType} op
- * @param {boolean[]} args
- * @returns {boolean}
  */
 export function evalLogicOp(op: TokenType, args: boolean[]): boolean {
   switch (op) {

@@ -1,15 +1,9 @@
-import {Token, TokenType} from '@compiler/lexer/tokens';
-import {TokensIterator} from '@compiler/grammar/tree/TokensIterator';
-import {isEOFToken} from '@compiler/lexer/utils';
+import { Token, TokenType } from '@compiler/lexer/tokens';
+import { TokensIterator } from '@compiler/grammar/tree/TokensIterator';
+import { isEOFToken } from '@compiler/lexer/utils';
 
 /**
  * Fetch tokens until breakFn is not true
- *
- * @export
- * @param {(token: Token) => boolean} breakFn
- * @param {TokensIterator} parser
- * @param {boolean} excludeBreakToken
- * @returns {Token[]}
  */
 export function fetchTokensUntil(
   breakFn: (token: Token) => boolean,
@@ -19,17 +13,17 @@ export function fetchTokensUntil(
   const tokens: Token[] = [];
 
   do {
-    const token = (
-      excludeBreakToken
-        ? parser.fetchRelativeToken(0, false)
-        : parser.consume()
-    );
+    const token = excludeBreakToken
+      ? parser.fetchRelativeToken(0, false)
+      : parser.consume();
 
-    if (!token || breakFn(token))
+    if (!token || breakFn(token)) {
       break;
+    }
 
-    if (excludeBreakToken)
+    if (excludeBreakToken) {
       parser.consume();
+    }
 
     tokens.push(token);
   } while (true);
@@ -39,12 +33,6 @@ export function fetchTokensUntil(
 
 /**
  * Eats tokens until token type
- *
- * @export
- * @param {TokenType} type
- * @param {TokensIterator} parser
- * @param {boolean} [excludeBreakToken]
- * @returns
  */
 export function fetchTokensUntilTokenType(
   type: TokenType,
@@ -52,7 +40,7 @@ export function fetchTokensUntilTokenType(
   excludeBreakToken?: boolean,
 ) {
   return fetchTokensUntil(
-    (token) => isEOFToken(token) || token.type === type,
+    token => isEOFToken(token) || token.type === type,
     parser,
     excludeBreakToken,
   );

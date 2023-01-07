@@ -1,26 +1,22 @@
 import * as R from 'ramda';
 
-import {isLineTerminatorToken} from '@compiler/lexer/utils';
+import { isLineTerminatorToken } from '@compiler/lexer/utils';
 
-import {Token} from '@compiler/lexer/tokens';
-import {NodeLocation} from '@compiler/grammar/tree/NodeLocation';
+import { Token } from '@compiler/lexer/tokens';
+import { NodeLocation } from '@compiler/grammar/tree/NodeLocation';
 
-import {ParserError, ParserErrorCode} from '../../../shared/ParserError';
-import {ASTAsmParser, ASTAsmTree} from '../ASTAsmParser';
-import {ASTNodeKind} from '../types';
-import {KindASTAsmNode} from '../ASTAsmNode';
+import { ParserError, ParserErrorCode } from '../../../shared/ParserError';
+import { ASTAsmParser, ASTAsmTree } from '../ASTAsmParser';
+import { ASTNodeKind } from '../types';
+import { KindASTAsmNode } from '../ASTAsmNode';
 
-import {isTokenInstructionBeginning} from '../instruction/utils/isTokenInstructionBeginning';
-import {tokenDefSize} from '../def/ASTDef';
+import { isTokenInstructionBeginning } from '../instruction/utils/isTokenInstructionBeginning';
+import { tokenDefSize } from '../def/ASTDef';
 
 export const TIMES_TOKEN_NAME = 'times';
 
 /**
  * Instruction that repeats instruction
- *
- * @export
- * @class ASTTimes
- * @extends {KindASTAsmNode(ASTNodeKind.TIMES)}
  */
 export class ASTTimes extends KindASTAsmNode(ASTNodeKind.TIMES) {
   constructor(
@@ -37,16 +33,11 @@ export class ASTTimes extends KindASTAsmNode(ASTNodeKind.TIMES) {
 
   /**
    * Parses line - consumes expression unless catch any instruction beginning
-   *
-   * @static
-   * @param {Token} token
-   * @param {ASTAsmParser} parser
-   * @returns {ASTTimes}
-   * @memberof ASTTimes
    */
   static parse(token: Token, parser: ASTAsmParser): ASTTimes {
-    if (token.lowerText !== TIMES_TOKEN_NAME)
+    if (token.lowerText !== TIMES_TOKEN_NAME) {
       return null;
+    }
 
     const timesExpression: Token[] = [];
     let repeatedNodeTokens: Token[] = null;
@@ -54,30 +45,39 @@ export class ASTTimes extends KindASTAsmNode(ASTNodeKind.TIMES) {
     // divide line tokens into times expression and repeated node expression
     do {
       const argToken = parser.fetchRelativeToken();
-      if (!argToken)
+      if (!argToken) {
         break;
+      }
 
-      if (!repeatedNodeTokens && (isTokenInstructionBeginning(argToken) || tokenDefSize(argToken)))
+      if (
+        !repeatedNodeTokens &&
+        (isTokenInstructionBeginning(argToken) || tokenDefSize(argToken))
+      ) {
         repeatedNodeTokens = [argToken];
-      else if (isLineTerminatorToken(argToken))
+      } else if (isLineTerminatorToken(argToken)) {
         break;
-      else
+      } else {
         (repeatedNodeTokens || timesExpression).push(argToken);
+      }
     } while (true);
 
     // handle errors
-    if (!timesExpression.length)
-      throw new ParserError(ParserErrorCode.INCORRECT_TIMES_ARGS_COUNT, token.loc);
+    if (!timesExpression.length) {
+      throw new ParserError(
+        ParserErrorCode.INCORRECT_TIMES_ARGS_COUNT,
+        token.loc,
+      );
+    }
 
-    if (!repeatedNodeTokens?.length)
-      throw new ParserError(ParserErrorCode.MISSING_TIMES_REPEATED_INSTRUCTION, token.loc);
+    if (!repeatedNodeTokens?.length) {
+      throw new ParserError(
+        ParserErrorCode.MISSING_TIMES_REPEATED_INSTRUCTION,
+        token.loc,
+      );
+    }
 
     // try generate AST for repeated instruction
-    const repatedNodesTreeResult = (
-      parser
-        .fork(repeatedNodeTokens)
-        .getTree()
-    );
+    const repatedNodesTreeResult = parser.fork(repeatedNodeTokens).getTree();
 
     if (repatedNodesTreeResult.isOk()) {
       const repatedNodesTree = repatedNodesTreeResult.unwrap();

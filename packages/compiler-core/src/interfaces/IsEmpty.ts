@@ -1,3 +1,3 @@
 export interface IsEmpty {
-  isEmpty(): boolean,
+  isEmpty(): boolean;
 }

@@ -1,22 +1,17 @@
-import {walkOverFields} from '@compiler/grammar/decorators/walkOverFields';
+import { walkOverFields } from '@compiler/grammar/decorators/walkOverFields';
 
-import {NodeLocation} from '@compiler/grammar/tree/NodeLocation';
-import {ASTCCompilerKind, ASTCCompilerNode} from './ASTCCompilerNode';
+import { NodeLocation } from '@compiler/grammar/tree/NodeLocation';
+import { ASTCCompilerKind, ASTCCompilerNode } from './ASTCCompilerNode';
 
-@walkOverFields(
-  {
-    fields: [
-      'expression',
-    ],
-  },
-)
+@walkOverFields({
+  fields: ['expression'],
+})
 export class ASTCReturnStatement extends ASTCCompilerNode {
-  constructor(
-    loc: NodeLocation,
-    readonly expression?: ASTCCompilerNode,
-  ) {
+  constructor(loc: NodeLocation, readonly expression?: ASTCCompilerNode) {
     super(ASTCCompilerKind.ReturnStmt, loc);
   }
 
-  hasExpression() { return !!this.expression; }
+  hasExpression() {
+    return !!this.expression;
+  }
 }

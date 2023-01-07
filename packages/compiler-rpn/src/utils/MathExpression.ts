@@ -1,39 +1,27 @@
 import * as R from 'ramda';
 
-import {parseNumberToken} from '@compiler/lexer/utils/parseNumberToken';
-import {isQuote} from '@compiler/lexer/utils/matchCharacter';
-import {reduceTextToBitset} from '@compiler/core/utils';
+import { parseNumberToken } from '@compiler/lexer/utils/parseNumberToken';
+import { isQuote } from '@compiler/lexer/utils/matchCharacter';
+import { reduceTextToBitset } from '@compiler/core/utils';
 
-import {MathOperator} from './MathOperators';
-import {MathError, MathErrorCode} from './MathError';
+import { MathOperator } from './MathOperators';
+import { MathError, MathErrorCode } from './MathError';
 
 export type MathPostfixTokens = (string | MathOperator)[];
 
 export type MathParserConfig = {
-  keywordResolver?: (name: string) => number,
+  keywordResolver?: (name: string) => number;
 };
 
 /**
  * Converts array of postifx tokens into single string
- *
- * @export
- * @param {MathPostfixTokens[]} tokens
- * @returns {string}
  */
 export function joinPostifxTokens(tokens: MathPostfixTokens): string {
   return R.reduce(
     (acc, token) => {
-      const char = (
-        token instanceof MathOperator
-          ? token.char
-          : token
-      );
+      const char = token instanceof MathOperator ? token.char : token;
 
-      return (
-        acc
-          ? `${acc} ${char}`
-          : char
-      );
+      return acc ? `${acc} ${char}` : char;
     },
     '',
     tokens,
@@ -42,10 +30,6 @@ export function joinPostifxTokens(tokens: MathPostfixTokens): string {
 
 /**
  * Replaces all quotes in string to ascii numbers
- *
- * @export
- * @param {string} expression
- * @returns {string}
  */
 export function replaceQuotesWithNumbers(expression: string): string {
   for (let i = 0; i < expression.length; ++i) {
@@ -54,14 +38,18 @@ export function replaceQuotesWithNumbers(expression: string): string {
     if (isQuote(c)) {
       let quoteBuffer = '';
 
-      for (let j = i + 1; j < expression.length && !isQuote(expression[j]); ++j)
+      for (
+        let j = i + 1;
+        j < expression.length && !isQuote(expression[j]);
+        ++j
+      ) {
         quoteBuffer += expression[j];
+      }
 
-      expression = (
-        expression.slice(0, i)
-          + reduceTextToBitset(quoteBuffer)
-          + expression.slice(i + quoteBuffer.length + 2)
-      );
+      expression =
+        expression.slice(0, i) +
+        reduceTextToBitset(quoteBuffer) +
+        expression.slice(i + quoteBuffer.length + 2);
     }
   }
 
@@ -70,19 +58,10 @@ export function replaceQuotesWithNumbers(expression: string): string {
 
 /**
  * Concerts expression to RPN and calculates it
- *
- * @export
- * @class MathExpression
  */
 export class MathExpression {
   /**
    * Calculates expression
-   *
-   * @static
-   * @param {string} phrase
-   * @param {MathParserConfig} [parserConfig]
-   * @returns {number}
-   * @memberof MathExpression
    */
   static evaluate(phrase: string, parserConfig?: MathParserConfig): number {
     return MathExpression.reducePostfixToNumber(
@@ -93,11 +72,6 @@ export class MathExpression {
 
   /**
    * Transforms expression to postfix
-   *
-   * @static
-   * @param {string} phrase
-   * @returns {MathPostfixTokens}
-   * @memberof MathExpression
    */
   static toRPN(phrase: string): MathPostfixTokens {
     const stack: MathOperator[] = [];
@@ -125,9 +99,15 @@ export class MathExpression {
 
       if (operator) {
         // prefix cases with 0: (-1), +1+2
-        if ((operator === MathOperator.PLUS || operator === MathOperator.MINUS) && (!i || (tokens[i - 1]
-            && MathOperator.findOperatorByCharacter(tokens[i - 1]) === MathOperator.LEFT_BRACKET)))
+        if (
+          (operator === MathOperator.PLUS || operator === MathOperator.MINUS) &&
+          (!i ||
+            (tokens[i - 1] &&
+              MathOperator.findOperatorByCharacter(tokens[i - 1]) ===
+                MathOperator.LEFT_BRACKET))
+        ) {
           buffer.push('0');
+        }
 
         if (operator === MathOperator.RIGHT_BRACKET) {
           let foundLeftBracket = false;
@@ -142,34 +122,44 @@ export class MathExpression {
             buffer.push(stack.pop());
           }
 
-          if (!foundLeftBracket)
+          if (!foundLeftBracket) {
             throw new MathError(MathErrorCode.MISSING_LEFT_BRACKET);
-        } else if (operator === MathOperator.LEFT_BRACKET)
+          }
+        } else if (operator === MathOperator.LEFT_BRACKET) {
           stack.push(operator);
-        else {
+        } else {
           // drop when right hand priority stack operator on stack < operator priority
           // drop when left hand priority stack operator on stack >= operator priority
           while (stack.length) {
             const stackOperator = R.last(stack);
 
             // check priority
-            if ((!operator.rightHand && operator.priority <= stackOperator.priority)
-                || (operator.rightHand && operator.priority < stackOperator.priority))
+            if (
+              (!operator.rightHand &&
+                operator.priority <= stackOperator.priority) ||
+              (operator.rightHand && operator.priority < stackOperator.priority)
+            ) {
               buffer.push(stack.pop());
-            else
+            } else {
               break;
+            }
           }
 
           stack.push(operator);
         }
-      } else
+      } else {
         buffer.push(c);
+      }
     }
 
     while (stack.length) {
       const token = stack.pop();
-      if (token === MathOperator.RIGHT_BRACKET || token === MathOperator.LEFT_BRACKET)
+      if (
+        token === MathOperator.RIGHT_BRACKET ||
+        token === MathOperator.LEFT_BRACKET
+      ) {
         throw new MathError(MathErrorCode.INCORRECT_BRACKETS);
+      }
 
       buffer.push(token);
     }
@@ -179,14 +169,11 @@ export class MathExpression {
 
   /**
    * Calculates value of postfix expression
-   *
-   * @static
-   * @param {MathPostfixTokens} tokens
-   * @param {MathParserConfig} [parserConfig]
-   * @returns {number}
-   * @memberof MathExpression
    */
-  static reducePostfixToNumber(tokens: MathPostfixTokens, parserConfig?: MathParserConfig): number {
+  static reducePostfixToNumber(
+    tokens: MathPostfixTokens,
+    parserConfig?: MathParserConfig,
+  ): number {
     const numberStack: number[] = [];
 
     for (let i = 0; i < tokens.length; ++i) {
@@ -199,14 +186,12 @@ export class MathExpression {
 
         if (missingArgs > 0) {
           if (token === MathOperator.PLUS || token === MathOperator.MINUS) {
-            R.times(
-              () => {
-                numberStack.unshift(0);
-              },
-              missingArgs,
-            );
-          } else
+            R.times(() => {
+              numberStack.unshift(0);
+            }, missingArgs);
+          } else {
             throw new MathError(MathErrorCode.MISSING_OPERANDS);
+          }
         }
 
         const args = numberStack.splice(
@@ -214,28 +199,23 @@ export class MathExpression {
           token.argsCount,
         );
 
-        numberStack.push(
-          token.resolver(args),
-        );
+        numberStack.push(token.resolver(args));
       } else {
         const nestedLabel = token && token[0] === '.';
-        let number = (
-          nestedLabel
-            ? NaN
-            : +token
-        );
+        let number = nestedLabel ? NaN : +token;
 
         if (Number.isNaN(number)) {
           // parsing using custom parser is slower than just `+${digit}`
           // so it is second parse method
           const parsedNumber = !nestedLabel && parseNumberToken(token);
 
-          if (parsedNumber)
+          if (parsedNumber) {
             [, number] = parsedNumber;
-          else {
+          } else {
             number = parserConfig?.keywordResolver?.(token);
-            if (R.isNil(number))
-              throw new MathError(MathErrorCode.UNKNOWN_KEYWORD, {token});
+            if (R.isNil(number)) {
+              throw new MathError(MathErrorCode.UNKNOWN_KEYWORD, { token });
+            }
           }
         }
 

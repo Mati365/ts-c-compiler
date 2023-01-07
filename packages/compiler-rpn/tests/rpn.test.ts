@@ -1,9 +1,9 @@
 import * as R from 'ramda';
 
-import {MathExpression, joinPostifxTokens} from '../src/utils/MathExpression';
-import {MathErrorCode} from '../src/utils';
+import { MathExpression, joinPostifxTokens } from '../src/utils/MathExpression';
+import { MathErrorCode } from '../src/utils';
 
-import {rpn} from '../src/rpn';
+import { rpn } from '../src/rpn';
 
 describe('transform', () => {
   it('transforms expression to postfix form', () => {
@@ -11,17 +11,16 @@ describe('transform', () => {
       ['2+2', '2 2 +'],
       ['2.2+2.3', '2.2 2.3 +'],
       ['2 + 2 / 3', '2 2 3 / +'],
-      ['((15 / (7 - (1 + 1))) * 3) - (2 + (1 + 1))', '15 7 1 1 + - / 3 * 2 1 1 + + -'],
+      [
+        '((15 / (7 - (1 + 1))) * 3) - (2 + (1 + 1))',
+        '15 7 1 1 + - / 3 * 2 1 1 + + -',
+      ],
       ['2 << 3', '2 3 <<'],
     ];
 
-    TEST_EXPRESSIONS.forEach(
-      ([normal, postfix]) => {
-        expect(
-          joinPostifxTokens(MathExpression.toRPN(normal)),
-        ).toBe(postfix);
-      },
-    );
+    TEST_EXPRESSIONS.forEach(([normal, postfix]) => {
+      expect(joinPostifxTokens(MathExpression.toRPN(normal))).toBe(postfix);
+    });
   });
 });
 
@@ -35,11 +34,9 @@ describe('output value', () => {
       ['2 << 3 + 4', 256],
       ['(2 << 3) + 4', 20],
       ['3 & 1 + 2', 3],
-    ].forEach(
-      ([expression, value]) => {
-        expect(rpn(<string> expression)).toBe(value);
-      },
-    );
+    ].forEach(([expression, value]) => {
+      expect(rpn(<string>expression)).toBe(value);
+    });
   });
 
   it('calculates keyword expressions', () => {
@@ -49,20 +46,15 @@ describe('output value', () => {
     };
 
     [
-      ['2+test+(-test*2)+test2', 2 + (-2.2) + (-(-2.2) * 2) - 3],
-      ['2+\'ab c\'', 0x63206263],
-    ].forEach(
-      ([expression, value]) => {
-        expect(
-          rpn(
-            <string> expression,
-            {
-              keywordResolver: R.prop(R.__, KEYWORDS),
-            },
-          ),
-        ).toBe(value);
-      },
-    );
+      ['2+test+(-test*2)+test2', 2 + -2.2 + -(-2.2) * 2 - 3],
+      ["2+'ab c'", 0x63206263],
+    ].forEach(([expression, value]) => {
+      expect(
+        rpn(<string>expression, {
+          keywordResolver: R.prop(R.__, KEYWORDS),
+        }),
+      ).toBe(value);
+    });
   });
 });
 

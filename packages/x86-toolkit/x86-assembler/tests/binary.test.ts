@@ -2,8 +2,8 @@
 
 import * as R from 'ramda';
 
-import {asm} from '../src/asm';
-import {arrayToHexString} from '../../../compiler-core/src/utils/arrayToHexString';
+import { asm } from '../src/asm';
+import { arrayToHexString } from '../../../compiler-core/src/utils/arrayToHexString';
 
 import TIMES_TEST_LIST from './asm/times.asm';
 import TETROS_TEST_LIST from './asm/tetros.asm';
@@ -20,7 +20,7 @@ import BOOTOS_BIN_TEST from './asm/bootos.asm';
 import BOOTSLIDE_BIN_TEST from './asm/bootslide.asm';
 import BOOTMAN_BIN_TEST from './asm/bootman.asm';
 
-import {parseBinaryTestList} from './utils/parseBinaryTestList';
+import { parseBinaryTestList } from './utils/parseBinaryTestList';
 
 import './utils/asmMatcher';
 
@@ -45,13 +45,14 @@ const tests = parseBinaryTestList(
 
 describe('binary output compare', () => {
   R.forEach(
-    ({test, bin, code}) => it(test, () => {
-      const result = asm(code);
+    ({ test, bin, code }) =>
+      it(test, () => {
+        const result = asm(code);
 
-      expect(
-        arrayToHexString(result.unwrap().output.getBinary(), ''),
-      ).toBe(bin);
-    }),
+        expect(arrayToHexString(result.unwrap().output.getBinary(), '')).toBe(
+          bin,
+        );
+      }),
     tests,
   );
 });

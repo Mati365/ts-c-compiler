@@ -1,12 +1,21 @@
-import {CPrimitiveType, isFuncDeclLikeType, isPointerLikeType} from '@compiler/pico-c/frontend/analyze';
-import {ASTCPostfixExpression} from '@compiler/pico-c/frontend/parser';
-import {TokenType} from '@compiler/lexer/shared';
+import {
+  CPrimitiveType,
+  isFuncDeclLikeType,
+  isPointerLikeType,
+} from '@compiler/pico-c/frontend/analyze';
+import { ASTCPostfixExpression } from '@compiler/pico-c/frontend/parser';
+import { TokenType } from '@compiler/lexer/shared';
 
-import {IRError, IRErrorCode} from '../../../errors/IRError';
-import {IRAllocInstruction, IRCallInstruction, IRLeaInstruction, IRMathInstruction} from '../../../instructions';
-import {IRConstant, IRVariable, isIRVariable} from '../../../variables';
+import { IRError, IRErrorCode } from '../../../errors/IRError';
+import {
+  IRAllocInstruction,
+  IRCallInstruction,
+  IRLeaInstruction,
+  IRMathInstruction,
+} from '../../../instructions';
+import { IRConstant, IRVariable, isIRVariable } from '../../../variables';
 
-import {emitFnArgsLoadIR} from './emitFnArgsLoadIR';
+import { emitFnArgsLoadIR } from './emitFnArgsLoadIR';
 import {
   appendStmtResults,
   createBlankExprResult,
@@ -18,45 +27,38 @@ type FnCallExpressionIREmitAttrs = IREmitterContextAttrs & {
   node: ASTCPostfixExpression;
 };
 
-export function emitFnCallExpressionIR(
-  {
-    initializerMeta,
-    context,
-    scope,
-    node,
-  }: FnCallExpressionIREmitAttrs,
-): IREmitterExpressionResult {
-  const {emit, allocator, config} = context;
+export function emitFnCallExpressionIR({
+  initializerMeta,
+  context,
+  scope,
+  node,
+}: FnCallExpressionIREmitAttrs): IREmitterExpressionResult {
+  const { emit, allocator, config } = context;
 
   const result = createBlankExprResult();
-  const {output: fnPtrOutput, ...fnPtrResult} = emit.expression(
-    {
-      node: node.postfixExpression,
-      scope,
-      context,
-    },
-  );
+  const { output: fnPtrOutput, ...fnPtrResult } = emit.expression({
+    node: node.postfixExpression,
+    scope,
+    context,
+  });
 
-  if (!isIRVariable(fnPtrOutput)
-      || !isPointerLikeType(fnPtrOutput.type)
-      || !isFuncDeclLikeType(fnPtrOutput.type.baseType)) {
-    throw new IRError(
-      IRErrorCode.PROVIDED_TYPE_IS_NOT_CALLABLE,
-      {
-        typeName: fnPtrOutput?.type?.getDisplayName() ?? '<unknown>',
-      },
-    );
+  if (
+    !isIRVariable(fnPtrOutput) ||
+    !isPointerLikeType(fnPtrOutput.type) ||
+    !isFuncDeclLikeType(fnPtrOutput.type.baseType)
+  ) {
+    throw new IRError(IRErrorCode.PROVIDED_TYPE_IS_NOT_CALLABLE, {
+      typeName: fnPtrOutput?.type?.getDisplayName() ?? '<unknown>',
+    });
   }
 
-  const {baseType: fnType} = fnPtrOutput.type;
-  const {returnType} = fnType;
-  const fnArgsExprResult = emitFnArgsLoadIR(
-    {
-      node: node.fnExpression || node.primaryExpression,
-      context,
-      scope,
-    },
-  );
+  const { baseType: fnType } = fnPtrOutput.type;
+  const { returnType } = fnType;
+  const fnArgsExprResult = emitFnArgsLoadIR({
+    node: node.fnExpression || node.primaryExpression,
+    context,
+    scope,
+  });
 
   appendStmtResults(fnPtrResult, result);
   appendStmtResults(fnArgsExprResult, result);
@@ -74,12 +76,12 @@ export function emitFnCallExpressionIR(
       new IRCallInstruction(
         fnPtrOutput,
         fnArgsExprResult.args,
-        output = allocator.allocTmpVariable(fnType.returnType),
+        (output = allocator.allocTmpVariable(fnType.returnType)),
       ),
     );
   } else if (initializerMeta) {
     // handle direct assign to initializer
-    const {offset, destVar} = initializerMeta;
+    const { offset, destVar } = initializerMeta;
     output = destVar;
 
     if (offset) {
@@ -92,19 +94,13 @@ export function emitFnCallExpressionIR(
         new IRMathInstruction(
           TokenType.PLUS,
           outputSrcAddrVar,
-          IRConstant.ofConstant(
-            CPrimitiveType.int(config.arch),
-            offset,
-          ),
+          IRConstant.ofConstant(CPrimitiveType.int(config.arch), offset),
           outputOffsetAddrVar,
         ),
-        new IRCallInstruction(
-          fnPtrOutput,
-          [
-            ...fnArgsExprResult.args,
-            outputOffsetAddrVar,
-          ],
-        ),
+        new IRCallInstruction(fnPtrOutput, [
+          ...fnArgsExprResult.args,
+          outputOffsetAddrVar,
+        ]),
       );
     } else {
       const outputPtr = allocator.allocTmpPointer(output.type);
@@ -112,13 +108,10 @@ export function emitFnCallExpressionIR(
       // non array or index = 0 initializer
       result.instructions.push(
         new IRLeaInstruction(output, outputPtr),
-        new IRCallInstruction(
-          fnPtrOutput,
-          [
-            ...fnArgsExprResult.args,
-            outputPtr,
-          ],
-        ),
+        new IRCallInstruction(fnPtrOutput, [
+          ...fnArgsExprResult.args,
+          outputPtr,
+        ]),
       );
     }
   } else {
@@ -128,13 +121,7 @@ export function emitFnCallExpressionIR(
     result.instructions.push(
       new IRAllocInstruction(fnType.returnType, output),
       new IRLeaInstruction(output, outputPtr),
-      new IRCallInstruction(
-        fnPtrOutput,
-        [
-          ...fnArgsExprResult.args,
-          outputPtr,
-        ],
-      ),
+      new IRCallInstruction(fnPtrOutput, [...fnArgsExprResult.args, outputPtr]),
     );
   }
 

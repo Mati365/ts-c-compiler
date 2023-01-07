@@ -1,17 +1,15 @@
-import {propEq, find, findIndex} from 'ramda';
+import { propEq, find, findIndex } from 'ramda';
 
 export function findByProp(keyName: string) {
-  return (value: any) => <T>(list: T[]): T => find(
-    propEq(keyName, value) as any,
-    list,
-  );
+  return (value: any) =>
+    <T>(list: T[]): T =>
+      find(propEq(keyName, value) as any, list);
 }
 
 export function findIndexByProp(keyName: string) {
-  return (value: any) => (list: any[]): number => findIndex(
-    propEq(keyName, value),
-    list,
-  );
+  return (value: any) =>
+    (list: any[]): number =>
+      findIndex(propEq(keyName, value), list);
 }
 
 export const findIndexByName = findIndexByProp('name');

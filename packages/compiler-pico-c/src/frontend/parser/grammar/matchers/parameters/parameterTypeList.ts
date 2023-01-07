@@ -1,37 +1,33 @@
-import {NodeLocation} from '@compiler/grammar/tree/NodeLocation';
-import {TokenType} from '@compiler/lexer/shared';
-import {ASTCParameterDeclaration} from '../../../ast/ASTCParameterDeclaration';
-import {ASTCParametersList} from '../../../ast/ASTCParametersList';
-import {CGrammar} from '../shared';
+import { NodeLocation } from '@compiler/grammar/tree/NodeLocation';
+import { TokenType } from '@compiler/lexer/shared';
+import { ASTCParameterDeclaration } from '../../../ast/ASTCParameterDeclaration';
+import { ASTCParametersList } from '../../../ast/ASTCParametersList';
+import { CGrammar } from '../shared';
 
-import {parameterList} from './parameterList';
+import { parameterList } from './parameterList';
 
 /**
  * parameter_type_list
  *  : parameter_list ',' ELLIPSIS
  *  | parameter_list
  *  ;
- *
- * @export
- * @param {CGrammar} grammar
- * @return {ASTCParametersList}
  */
 export function parameterTypeList(grammar: CGrammar): ASTCParametersList {
-  const {g} = grammar;
+  const { g } = grammar;
   const list = parameterList(grammar);
 
   g.try(() => {
-    const ellipsisNode = g.match(
-      {
-        type: TokenType.KEYWORD,
-        terminal: '...',
-      },
-    );
+    const ellipsisNode = g.match({
+      type: TokenType.KEYWORD,
+      terminal: '...',
+    });
 
     list.children.push(
       new ASTCParameterDeclaration(
         NodeLocation.fromTokenLoc(ellipsisNode.loc),
-        null, null, null,
+        null,
+        null,
+        null,
         true,
       ),
     );

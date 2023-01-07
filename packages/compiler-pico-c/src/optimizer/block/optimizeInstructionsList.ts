@@ -1,4 +1,4 @@
-import {IRInstruction} from '../../frontend/ir/instructions';
+import { IRInstruction } from '../../frontend/ir/instructions';
 import {
   dropDeadStoreInstructions,
   dropOrConcatConstantInstructions,
@@ -20,8 +20,9 @@ export function optimizeInstructionsList(instructions: IRInstruction[]) {
       ),
     );
 
-    if (optimizedInstructions.length >= newInstructions.length)
+    if (optimizedInstructions.length >= newInstructions.length) {
       break;
+    }
 
     newInstructions = optimizedInstructions;
   }

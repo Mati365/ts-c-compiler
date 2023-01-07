@@ -18,12 +18,14 @@ export interface Option<T> {
 }
 
 export class Some<T> implements Option<T> {
-  constructor(
-    private readonly value: T,
-  ) {}
+  constructor(private readonly value: T) {}
 
-  isNone() { return false; }
-  isSome() { return true; }
+  isNone() {
+    return false;
+  }
+  isSome() {
+    return true;
+  }
 
   map<O>(fn: (value: T) => O): Some<O> {
     return new Some(fn(this.value));
@@ -49,15 +51,19 @@ export class Some<T> implements Option<T> {
 }
 
 export class None implements Option<never> {
-  isNone() { return true; }
-  isSome() { return false; }
+  isNone() {
+    return true;
+  }
+  isSome() {
+    return false;
+  }
 
   unwrap(): never {
     throw new Error('Cannot unwrap none!');
   }
 
   map(): None {
-    return new None;
+    return new None();
   }
 
   unwrapOr<D>(defaultValue: D) {
@@ -76,4 +82,4 @@ export class None implements Option<never> {
 }
 
 export const some = <T>(value: T = null): Some<T> => new Some<T>(value);
-export const none = () => new None;
+export const none = () => new None();

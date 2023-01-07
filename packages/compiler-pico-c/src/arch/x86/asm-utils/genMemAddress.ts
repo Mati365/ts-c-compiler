@@ -4,27 +4,27 @@ import {
 } from '@x86-toolkit/assembler';
 
 type GenMemAddressConfig = {
-  size?: InstructionArgSizeName,
-  segment?: X86SegmentRegName,
-  expression: string,
+  size?: InstructionArgSizeName;
+  segment?: X86SegmentRegName;
+  expression: string;
 };
 
-export function genMemAddress(
-  {
-    size,
-    segment,
-    expression,
-  }: GenMemAddressConfig,
-): string {
+export function genMemAddress({
+  size,
+  segment,
+  expression,
+}: GenMemAddressConfig): string {
   let output = expression;
 
-  if (segment)
+  if (segment) {
     output = `${segment}:${expression}`;
+  }
 
   output = `[${output}]`;
 
-  if (size)
+  if (size) {
     output = `${size} ${output}`;
+  }
 
   return output;
 }

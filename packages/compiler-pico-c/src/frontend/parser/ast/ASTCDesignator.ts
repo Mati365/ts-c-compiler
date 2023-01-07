@@ -1,18 +1,14 @@
-import {walkOverFields} from '@compiler/grammar/decorators/walkOverFields';
-import {dumpAttributesToString} from '@compiler/core/utils';
+import { walkOverFields } from '@compiler/grammar/decorators/walkOverFields';
+import { dumpAttributesToString } from '@compiler/core/utils';
 
-import {NodeLocation} from '@compiler/grammar/tree/NodeLocation';
-import {Token} from '@compiler/lexer/tokens';
-import {ASTCConstantExpression} from './ASTCConstantExpression';
-import {ASTCCompilerKind, ASTCCompilerNode} from './ASTCCompilerNode';
+import { NodeLocation } from '@compiler/grammar/tree/NodeLocation';
+import { Token } from '@compiler/lexer/tokens';
+import { ASTCConstantExpression } from './ASTCConstantExpression';
+import { ASTCCompilerKind, ASTCCompilerNode } from './ASTCCompilerNode';
 
-@walkOverFields(
-  {
-    fields: [
-      'constantExpression',
-    ],
-  },
-)
+@walkOverFields({
+  fields: ['constantExpression'],
+})
 export class ASTCDesignator extends ASTCCompilerNode {
   constructor(
     loc: NodeLocation,
@@ -23,13 +19,10 @@ export class ASTCDesignator extends ASTCCompilerNode {
   }
 
   toString() {
-    const {kind, identifier} = this;
+    const { kind, identifier } = this;
 
-    return dumpAttributesToString(
-      kind,
-      {
-        identifier: identifier?.text,
-      },
-    );
+    return dumpAttributesToString(kind, {
+      identifier: identifier?.text,
+    });
   }
 }

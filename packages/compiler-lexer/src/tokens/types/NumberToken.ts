@@ -1,8 +1,11 @@
-import {numberByteSize, roundToPowerOfTwo} from '@compiler/core/utils/numberByteSize';
-import {parseNumberToken} from '@compiler/lexer/utils/parseNumberToken';
+import {
+  numberByteSize,
+  roundToPowerOfTwo,
+} from '@compiler/core/utils/numberByteSize';
+import { parseNumberToken } from '@compiler/lexer/utils/parseNumberToken';
 
-import {TokenType, TokenLocation} from '../../shared';
-import {Token} from '../Token';
+import { TokenType, TokenLocation } from '../../shared';
+import { Token } from '../Token';
 
 export enum NumberFormat {
   HEX,
@@ -11,18 +14,13 @@ export enum NumberFormat {
 }
 
 export type NumberTokenValue = {
-  number: number,
-  byteSize: number,
-  format: NumberFormat,
+  number: number;
+  byteSize: number;
+  format: NumberFormat;
 };
 
 /**
  * Token which contains numeric value
- *
- * @export
- * @class NumberToken
- * @extends {Token<NumberTokenValue, O>}
- * @template O Original token
  */
 export class NumberToken<O = any> extends Token<NumberTokenValue, O> {
   constructor(
@@ -31,25 +29,25 @@ export class NumberToken<O = any> extends Token<NumberTokenValue, O> {
     format: NumberFormat,
     loc: TokenLocation,
   ) {
-    super(
-      TokenType.NUMBER,
-      null,
-      text,
-      loc,
-      {
-        // do not use signedNumberByteSize
-        // do not resize number even if overflows
-        byteSize: roundToPowerOfTwo(numberByteSize(Math.abs(number))),
-        number,
-        format,
-      },
-    );
+    super(TokenType.NUMBER, null, text, loc, {
+      // do not use signedNumberByteSize
+      // do not resize number even if overflows
+      byteSize: roundToPowerOfTwo(numberByteSize(Math.abs(number))),
+      number,
+      format,
+    });
   }
 
   static parse(token: string, loc: TokenLocation) {
     const numberInfo = parseNumberToken(token);
-    if (numberInfo !== null)
-      return new NumberToken(token, numberInfo[1], <any> numberInfo[0], loc.clone());
+    if (numberInfo !== null) {
+      return new NumberToken(
+        token,
+        numberInfo[1],
+        <any>numberInfo[0],
+        loc.clone(),
+      );
+    }
 
     return null;
   }

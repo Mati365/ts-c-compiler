@@ -1,4 +1,4 @@
-import {CTypeCheckErrorCode} from './utils/analyzeMatcher';
+import { CTypeCheckErrorCode } from './utils/analyzeMatcher';
 
 describe('Type casting', () => {
   test('implicit integral type to pointer casts', () => {

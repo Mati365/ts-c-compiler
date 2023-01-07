@@ -1,6 +1,6 @@
-import {IsPrintable} from '@compiler/core/interfaces';
-import {IROpcode} from '../constants';
-import {IRInstructionVarArg, IRVariable} from '../variables';
+import { IsPrintable } from '@compiler/core/interfaces';
+import { IROpcode } from '../constants';
+import { IRInstructionVarArg, IRVariable } from '../variables';
 
 export type IRInstructionArgs = {
   input: IRInstructionVarArg[];
@@ -9,16 +9,9 @@ export type IRInstructionArgs = {
 
 /**
  * Basic IR block, contains mini operations similar to assembly
- *
- * @export
- * @abstract
- * @class IRInstruction
- * @implements {IsPrintable}
  */
 export abstract class IRInstruction implements IsPrintable {
-  constructor(
-    readonly opcode: IROpcode,
-  ) {}
+  constructor(readonly opcode: IROpcode) {}
 
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   ofArgs(args: IRInstructionArgs): IRInstruction {

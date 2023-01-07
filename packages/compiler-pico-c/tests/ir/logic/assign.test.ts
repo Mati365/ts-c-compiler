@@ -7,7 +7,7 @@ describe('Logic assign', () => {
         int a = 2;
         int b = a > 0 || a*2 > 0;
       }
-    `).toCompiledIRBeEqual(/* ruby */`
+    `).toCompiledIRBeEqual(/* ruby */ `
       # --- Block main ---
       def main():
         a{0}: int*2B = alloca int2B
@@ -33,7 +33,7 @@ describe('Logic assign', () => {
         int a = 2;
         int b = a > 0 && a*2 > 0;
       }
-    `).toCompiledIRBeEqual(/* ruby */`
+    `).toCompiledIRBeEqual(/* ruby */ `
       # --- Block main ---
       def main():
         a{0}: int*2B = alloca int2B
@@ -58,7 +58,7 @@ describe('Logic assign', () => {
         int a = 2;
         int b = a > 0 && (a > 3 || a > 4);
       }
-    `).toCompiledIRBeEqual(/* ruby */`
+    `).toCompiledIRBeEqual(/* ruby */ `
       # --- Block main ---
       def main():
         a{0}: int*2B = alloca int2B

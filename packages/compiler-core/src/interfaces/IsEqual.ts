@@ -1,3 +1,3 @@
 export interface IsEqual<T> {
-  isEqual(value: T): boolean,
+  isEqual(value: T): boolean;
 }

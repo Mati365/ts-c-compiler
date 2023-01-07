@@ -1,22 +1,26 @@
-import {ASTCCompilerKind, ASTCCastExpression} from '@compiler/pico-c/frontend/parser/ast';
-import {ASTCTypeCreator} from './ASTCTypeCreator';
-import {CTypeCheckError, CTypeCheckErrorCode} from '../../../errors/CTypeCheckError';
+import {
+  ASTCCompilerKind,
+  ASTCCastExpression,
+} from '@compiler/pico-c/frontend/parser/ast';
+import { ASTCTypeCreator } from './ASTCTypeCreator';
+import {
+  CTypeCheckError,
+  CTypeCheckErrorCode,
+} from '../../../errors/CTypeCheckError';
 
-import {extractSpecifierType} from '../extractor';
+import { extractSpecifierType } from '../extractor';
 
 export class ASTCCastExpressionTypeCreator extends ASTCTypeCreator<ASTCCastExpression> {
   kind = ASTCCompilerKind.CastExpression;
 
   override leave(node: ASTCCastExpression): void {
-    const {context} = this;
-    const {typeName, expression} = node;
+    const { context } = this;
+    const { typeName, expression } = node;
 
-    const castedType = extractSpecifierType(
-      {
-        context,
-        specifier: typeName.specifierList,
-      },
-    );
+    const castedType = extractSpecifierType({
+      context,
+      specifier: typeName.specifierList,
+    });
 
     if (!castedType?.isScalar()) {
       throw new CTypeCheckError(
@@ -33,8 +37,10 @@ export class ASTCCastExpressionTypeCreator extends ASTCTypeCreator<ASTCCastExpre
         CTypeCheckErrorCode.UNABLE_CAST_TO_SCALAR_TYPE,
         typeName.loc.start,
         {
-          sourceType: expression.type?.getShortestDisplayName() ?? '<unknown-src-type>',
-          destinationType: castedType?.getShortestDisplayName() ?? '<unknown-dest-type>',
+          sourceType:
+            expression.type?.getShortestDisplayName() ?? '<unknown-src-type>',
+          destinationType:
+            castedType?.getShortestDisplayName() ?? '<unknown-dest-type>',
         },
       );
     }

@@ -1,23 +1,23 @@
 import chalk from 'chalk';
 
-import {IsOutputInstruction} from '../interfaces';
-import {IROpcode} from '../constants';
-import {IRInstruction, IRInstructionArgs} from './IRInstruction';
-import {IRInstructionVarArg, IRVariable} from '../variables';
+import { IsOutputInstruction } from '../interfaces';
+import { IROpcode } from '../constants';
+import { IRInstruction, IRInstructionArgs } from './IRInstruction';
+import { IRInstructionVarArg, IRVariable } from '../variables';
 
-export function isIRAssignInstruction(instruction: IRInstruction): instruction is IRAssignInstruction {
+export function isIRAssignInstruction(
+  instruction: IRInstruction,
+): instruction is IRAssignInstruction {
   return instruction.opcode === IROpcode.ASSIGN;
 }
 
 /**
  * Instruction that assigns variable to tmp ir var
- *
- * @export
- * @class IRAssignInstruction
- * @extends {IRInstruction}
- * @implements {IsOutputInstruction}
  */
-export class IRAssignInstruction extends IRInstruction implements IsOutputInstruction {
+export class IRAssignInstruction
+  extends IRInstruction
+  implements IsOutputInstruction
+{
   constructor(
     readonly inputVar: IRInstructionVarArg,
     readonly outputVar: IRVariable,
@@ -25,17 +25,15 @@ export class IRAssignInstruction extends IRInstruction implements IsOutputInstru
     super(IROpcode.ASSIGN);
   }
 
-  override ofArgs(
-    {
-      input = [this.inputVar],
-      output = this.outputVar,
-    }: IRInstructionArgs,
-  ) {
+  override ofArgs({
+    input = [this.inputVar],
+    output = this.outputVar,
+  }: IRInstructionArgs) {
     return new IRAssignInstruction(input[0], output);
   }
 
   override getArgs(): IRInstructionArgs {
-    const {inputVar, outputVar} = this;
+    const { inputVar, outputVar } = this;
 
     return {
       input: [inputVar],
@@ -44,8 +42,10 @@ export class IRAssignInstruction extends IRInstruction implements IsOutputInstru
   }
 
   override getDisplayName(): string {
-    const {outputVar, inputVar} = this;
+    const { outputVar, inputVar } = this;
 
-    return `${outputVar.getDisplayName()} = ${chalk.yellowBright('assign')} ${inputVar.getDisplayName()}`;
+    return `${outputVar.getDisplayName()} = ${chalk.yellowBright(
+      'assign',
+    )} ${inputVar.getDisplayName()}`;
   }
 }

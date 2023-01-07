@@ -1,5 +1,5 @@
-import {CompilerError} from '@compiler/core/shared/CompilerError';
-import {TokenLocation} from './TokenLocation';
+import { CompilerError } from '@compiler/core/shared/CompilerError';
+import { TokenLocation } from './TokenLocation';
 
 export enum LexerErrorCode {
   UNKNOWN_TOKEN,
@@ -12,11 +12,7 @@ export const LEXER_ERROR_TRANSLATIONS: Record<LexerErrorCode, string> = {
 };
 
 /**
- * Error thrown durin lexer phase!
- *
- * @export
- * @class LexerError
- * @extends {CompilerError<LexerErrorCode, TokenLocation>}
+ * Error thrown during lexer phase!
  */
 export class LexerError extends CompilerError<LexerErrorCode, TokenLocation> {
   constructor(code: LexerErrorCode, loc?: TokenLocation, meta?: object) {

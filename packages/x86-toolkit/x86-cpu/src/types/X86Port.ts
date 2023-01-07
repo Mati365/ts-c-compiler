@@ -1,4 +1,4 @@
-import {X86BitsMode} from './X86Regs';
+import { X86BitsMode } from './X86Regs';
 
 export interface X86Port {
   set?(bits?: number, mode?: X86BitsMode): void;
@@ -6,5 +6,5 @@ export interface X86Port {
 }
 
 export type X86PortsSet = {
-  [key: number]: X86Port,
+  [key: number]: X86Port;
 };

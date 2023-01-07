@@ -1,12 +1,12 @@
-import {FloatNumberToken, Token, TokenType} from '@compiler/lexer/tokens';
+import { FloatNumberToken, Token, TokenType } from '@compiler/lexer/tokens';
 
 function isFloatingPointPartToken(token: Token) {
-  if (!token)
+  if (!token) {
     return false;
+  }
 
   return (
-    token.type === TokenType.NUMBER
-      || token.type === TokenType.FLOAT_NUMBER
+    token.type === TokenType.NUMBER || token.type === TokenType.FLOAT_NUMBER
   );
 }
 
@@ -18,13 +18,10 @@ function isFloatingPointPartToken(token: Token) {
  *
  * @see
  *  Maybe it should be moved directly to lexer?
- *
- * @param {Token} tokens
- * @returns {Token[]}
  */
 export function cMergeNumbersTokens(tokens: Token[]): Token[] {
   const mapped: Token[] = [];
-  const {length: total} = tokens;
+  const { length: total } = tokens;
 
   for (let i = 0; i < total; ++i) {
     const token = tokens[i];
@@ -32,18 +29,19 @@ export function cMergeNumbersTokens(tokens: Token[]): Token[] {
     // detect floating point tokens and concat them
     // fix case when dot can be interpreted both as digit
     // or struct member
-    if (isFloatingPointPartToken(token)
-        && tokens[i + 1]?.type === TokenType.DOT
-        && isFloatingPointPartToken(tokens[i + 2])) {
+    if (
+      isFloatingPointPartToken(token) &&
+      tokens[i + 1]?.type === TokenType.DOT &&
+      isFloatingPointPartToken(tokens[i + 2])
+    ) {
       const text = `${token.text}.${tokens[i + 2].text}`;
 
-      mapped.push(
-        FloatNumberToken.parse(text, token.loc),
-      );
+      mapped.push(FloatNumberToken.parse(text, token.loc));
 
       i += 2;
-    } else
+    } else {
       mapped.push(token);
+    }
   }
 
   return mapped;

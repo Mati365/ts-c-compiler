@@ -1,31 +1,22 @@
-import {walkOverFields} from '@compiler/grammar/decorators/walkOverFields';
-import {dumpAttributesToString} from '@compiler/core/utils';
+import { walkOverFields } from '@compiler/grammar/decorators/walkOverFields';
+import { dumpAttributesToString } from '@compiler/core/utils';
 
-import {IsEmpty} from '@compiler/core/interfaces/IsEmpty';
-import {Token} from '@compiler/lexer/tokens';
-import {NodeLocation} from '@compiler/grammar/tree/NodeLocation';
+import { IsEmpty } from '@compiler/core/interfaces/IsEmpty';
+import { Token } from '@compiler/lexer/tokens';
+import { NodeLocation } from '@compiler/grammar/tree/NodeLocation';
 
-import {ASTCCompilerKind, ASTCCompilerNode} from './ASTCCompilerNode';
-import {ASTCIdentifiersList} from './ASTCIdentifiersList';
-import {ASTCParametersList} from './ASTCParametersList';
-import {ASTCAssignmentExpression} from './ASTCAssignmentExpression';
-import {ASTCTypeQualifiersList} from './ASTCTypeQualifiersList';
+import { ASTCCompilerKind, ASTCCompilerNode } from './ASTCCompilerNode';
+import { ASTCIdentifiersList } from './ASTCIdentifiersList';
+import { ASTCParametersList } from './ASTCParametersList';
+import { ASTCAssignmentExpression } from './ASTCAssignmentExpression';
+import { ASTCTypeQualifiersList } from './ASTCTypeQualifiersList';
 
 /**
  * Handlers []
- *
- * @export
- * @class ASTCDirectDeclaratorArrayExpression
- * @extends {ASTCCompilerNode}
  */
-@walkOverFields(
-  {
-    fields: [
-      'assignmentExpression',
-      'typeQualifiersList',
-    ],
-  },
-)
+@walkOverFields({
+  fields: ['assignmentExpression', 'typeQualifiersList'],
+})
 export class ASTCDirectDeclaratorArrayExpression extends ASTCCompilerNode {
   constructor(
     loc: NodeLocation,
@@ -38,33 +29,24 @@ export class ASTCDirectDeclaratorArrayExpression extends ASTCCompilerNode {
   }
 
   toString() {
-    const {kind, star} = this;
+    const { kind, star } = this;
 
-    return dumpAttributesToString(
-      kind,
-      {
-        star,
-      },
-    );
+    return dumpAttributesToString(kind, {
+      star,
+    });
   }
 }
 
 /**
  * Handlers ()
- *
- * @export
- * @class ASTCDirectDeclaratorArrayExpression
- * @extends {ASTCCompilerNode}
  */
-@walkOverFields(
-  {
-    fields: [
-      'parameterTypeList',
-      'identifiersList',
-    ],
-  },
-)
-export class ASTCDirectDeclaratorFnExpression extends ASTCCompilerNode implements IsEmpty {
+@walkOverFields({
+  fields: ['parameterTypeList', 'identifiersList'],
+})
+export class ASTCDirectDeclaratorFnExpression
+  extends ASTCCompilerNode
+  implements IsEmpty
+{
   constructor(
     loc: NodeLocation,
     readonly parameterTypeList?: ASTCParametersList,
@@ -73,42 +55,32 @@ export class ASTCDirectDeclaratorFnExpression extends ASTCCompilerNode implement
     super(ASTCCompilerKind.DirectDeclaratorFnExpression, loc);
   }
 
-  get argsNodes() { return this.parameterTypeList?.children || []; }
-  get identifiersNodes() { return this.identifiersList?.children || []; }
+  get argsNodes() {
+    return this.parameterTypeList?.children || [];
+  }
+
+  get identifiersNodes() {
+    return this.identifiersList?.children || [];
+  }
 
   isEmpty() {
-    const {parameterTypeList, identifiersList} = this;
+    const { parameterTypeList, identifiersList } = this;
 
     return !parameterTypeList && !identifiersList;
   }
 
   toString() {
-    const {kind} = this;
+    const { kind } = this;
 
-    return dumpAttributesToString(
-      kind,
-      {
-        empty: this.isEmpty(),
-      },
-    );
+    return dumpAttributesToString(kind, {
+      empty: this.isEmpty(),
+    });
   }
 }
 
-/**
- * @export
- * @class ASTCDeclarator
- * @extends {ASTCCompilerNode}
- */
-@walkOverFields(
-  {
-    fields: [
-      'directDeclarator',
-      'declarator',
-      'arrayExpression',
-      'fnExpression',
-    ],
-  },
-)
+@walkOverFields({
+  fields: ['directDeclarator', 'declarator', 'arrayExpression', 'fnExpression'],
+})
 export class ASTCDirectDeclarator extends ASTCCompilerNode {
   constructor(
     loc: NodeLocation,
@@ -121,18 +93,23 @@ export class ASTCDirectDeclarator extends ASTCCompilerNode {
     super(ASTCCompilerKind.DirectDeclarator, loc);
   }
 
-  isArrayExpression() { return !!this.arrayExpression; }
-  isFnExpression() { return !!this.fnExpression; }
-  isIdentifier() { return !!this.identifier; }
+  isArrayExpression() {
+    return !!this.arrayExpression;
+  }
+
+  isFnExpression() {
+    return !!this.fnExpression;
+  }
+
+  isIdentifier() {
+    return !!this.identifier;
+  }
 
   toString() {
-    const {kind, identifier} = this;
+    const { kind, identifier } = this;
 
-    return dumpAttributesToString(
-      kind,
-      {
-        identifier: identifier?.text,
-      },
-    );
+    return dumpAttributesToString(kind, {
+      identifier: identifier?.text,
+    });
   }
 }

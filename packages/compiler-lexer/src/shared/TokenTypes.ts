@@ -1,8 +1,5 @@
 /**
- * It can be shared with preprocessor pseudolanguage
- *
- * @export
- * @enum {number}
+ * It can be shared with preprocessor pseudo-language
  */
 export enum TokenType {
   // Text
@@ -66,9 +63,6 @@ export enum TokenType {
  *
  * @todo
  *  Remove compiler related types, for now it should be still OK
- *
- * @export
- * @enum {number}
  */
 export enum TokenKind {
   // TEST(...)

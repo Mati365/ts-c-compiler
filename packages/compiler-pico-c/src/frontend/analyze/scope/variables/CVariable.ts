@@ -1,83 +1,76 @@
-import {CVariableInitializerTree} from './CVariableInitializerTree';
-import {CNamedTypedEntry, CNamedTypedEntryDescriptor} from './CNamedTypedEntry';
-import {CVariableInitializerPrintVisitor} from '../../ast/initializer-builder/CVariableInitializerPrintVisitor';
-import {CType} from '../../types';
+import { CVariableInitializerTree } from './CVariableInitializerTree';
+import {
+  CNamedTypedEntry,
+  CNamedTypedEntryDescriptor,
+} from './CNamedTypedEntry';
+import { CVariableInitializerPrintVisitor } from '../../ast/initializer-builder/CVariableInitializerPrintVisitor';
+import { CType } from '../../types';
 
 export type CVariableDescriptor = CNamedTypedEntryDescriptor & {
-  global?: boolean,
-  fnArg?: boolean,
-  initializer?: CVariableInitializerTree,
+  global?: boolean;
+  fnArg?: boolean;
+  initializer?: CVariableInitializerTree;
 };
 
 /**
  * Pair name and type with additional global flag
- *
- * @export
- * @class CVariable
- * @extends {CNamedTypedEntry<CVariableDescriptor>}
  */
 export class CVariable extends CNamedTypedEntry<CVariableDescriptor> {
   static ofFunctionArg(entry: CNamedTypedEntry) {
-    return new CVariable(
-      {
-        ...entry.unwrap(),
-        fnArg: true,
-      },
-    );
+    return new CVariable({
+      ...entry.unwrap(),
+      fnArg: true,
+    });
   }
 
-  static ofInitializedEntry(entry: CNamedTypedEntry, initializer?: CVariableInitializerTree) {
-    const {name, type} = entry;
+  static ofInitializedEntry(
+    entry: CNamedTypedEntry,
+    initializer?: CVariableInitializerTree,
+  ) {
+    const { name, type } = entry;
 
-    return new CVariable(
-      {
-        type: initializer?.getFixedSizeBaseType() ?? type,
-        name,
-        initializer,
-      },
-    );
+    return new CVariable({
+      type: initializer?.getFixedSizeBaseType() ?? type,
+      name,
+      initializer,
+    });
   }
 
   static ofAnonymousInitializer(initializer: CVariableInitializerTree) {
-    return new CVariable(
-      {
-        type: initializer.getFixedSizeBaseType(),
-        name: null,
-        initializer,
-      },
-    );
+    return new CVariable({
+      type: initializer.getFixedSizeBaseType(),
+      name: null,
+      initializer,
+    });
   }
 
-  get initializer() { return this.value.initializer; }
+  get initializer() {
+    return this.value.initializer;
+  }
 
-  isGlobal() { return this.value.global; }
-  isInitialized() { return !!this.initializer; }
+  isGlobal() {
+    return this.value.global;
+  }
+
+  isInitialized() {
+    return !!this.initializer;
+  }
 
   /**
    * Maps provided type
-   *
-   * @param {(type: CType) => CType} fn
-   * @return {CVariable}
-   * @memberof CVariable
    */
   ofMappedType(fn: (type: CType) => CType): CVariable {
-    return this.map(
-      ({type, ...attrs}) => ({
-        ...attrs,
-        type: fn(type),
-      }),
-    );
+    return this.map(({ type, ...attrs }) => ({
+      ...attrs,
+      type: fn(type),
+    }));
   }
 
   /**
    * Sets global flag and return new instance
-   *
-   * @param {boolean} [global=true]
-   * @return {CVariable}
-   * @memberof CVariable
    */
   ofGlobalScope(global: boolean = true): CVariable {
-    return this.map((value) => ({
+    return this.map(value => ({
       ...value,
       global,
     }));
@@ -85,13 +78,9 @@ export class CVariable extends CNamedTypedEntry<CVariableDescriptor> {
 
   /**
    * Sets initializer and returns new instance
-   *
-   * @param {CVariableInitializerTree} initializer
-   * @return {CVariable}
-   * @memberof CVariable
    */
   ofInitializer(initializer: CVariableInitializerTree): CVariable {
-    return this.map((value) => ({
+    return this.map(value => ({
       ...value,
       initializer,
     }));
@@ -100,8 +89,11 @@ export class CVariable extends CNamedTypedEntry<CVariableDescriptor> {
   override getDisplayName() {
     let str = super.getDisplayName();
 
-    if (this.isInitialized())
-      str += ` = ${CVariableInitializerPrintVisitor.serializeToString(this.initializer)}`;
+    if (this.isInitialized()) {
+      str += ` = ${CVariableInitializerPrintVisitor.serializeToString(
+        this.initializer,
+      )}`;
+    }
 
     return str;
   }

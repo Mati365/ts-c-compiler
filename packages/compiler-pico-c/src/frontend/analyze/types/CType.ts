@@ -1,43 +1,43 @@
-import {hasFlag} from '@compiler/core/utils';
-import {getCompilerArchDescriptor} from '@compiler/pico-c/arch';
+import { hasFlag } from '@compiler/core/utils';
+import { getCompilerArchDescriptor } from '@compiler/pico-c/arch';
 
-import {IsPrintable} from '@compiler/core/interfaces';
-import {Identity, Result, ok} from '@compiler/core/monads';
-import {CCompilerArch, CTypeQualifier} from '@compiler/pico-c/constants';
-import {CTypeCheckError, CTypeCheckErrorCode} from '../errors/CTypeCheckError';
-import {CQualBitmap} from '../constants';
-
+import { IsPrintable } from '@compiler/core/interfaces';
+import { Identity, Result, ok } from '@compiler/core/monads';
+import { CCompilerArch, CTypeQualifier } from '@compiler/pico-c/constants';
 import {
-  bitsetToKeywords,
-  parseKeywordsToBitset,
-  isNamedType,
-} from '../utils';
+  CTypeCheckError,
+  CTypeCheckErrorCode,
+} from '../errors/CTypeCheckError';
+import { CQualBitmap } from '../constants';
+
+import { bitsetToKeywords, parseKeywordsToBitset, isNamedType } from '../utils';
 
 export type CTypeDescriptor = {
-  arch: CCompilerArch,
-  qualifiers?: number,
-  registered?: boolean, // checks if type is newly created or not
+  arch: CCompilerArch;
+  qualifiers?: number;
+  registered?: boolean; // checks if type is newly created or not
 };
 
 /**
  * Abstract C type
- *
- * @export
- * @abstract
- * @class CType
- * @extends {Identity<T>}
- * @implements {IsPrintable}
- * @template T
  */
 export abstract class CType<T extends CTypeDescriptor = CTypeDescriptor>
   extends Identity<T>
-  implements IsPrintable {
+  implements IsPrintable
+{
+  get arch() {
+    return this.value.arch;
+  }
+  get archDescriptor() {
+    return getCompilerArchDescriptor(this.arch);
+  }
 
-  get arch() { return this.value.arch; }
-  get archDescriptor() { return getCompilerArchDescriptor(this.arch); }
-
-  get qualifiers() { return this.value.qualifiers; }
-  get scalarValuesCount() { return 1; }
+  get qualifiers() {
+    return this.value.qualifiers;
+  }
+  get scalarValuesCount() {
+    return 1;
+  }
 
   getSourceType(): CType {
     return this;
@@ -46,13 +46,9 @@ export abstract class CType<T extends CTypeDescriptor = CTypeDescriptor>
   /**
    * Creates instance that has registered=true flag.
    * Registered flag indicates that type is present in registry
-   *
-   * @param {boolean} [registered=true]
-   * @return {this}
-   * @memberof CType
    */
   ofRegistered(registered: boolean = true): this {
-    return this.map((value) => ({
+    return this.map(value => ({
       ...value,
       registered,
     }));
@@ -60,13 +56,9 @@ export abstract class CType<T extends CTypeDescriptor = CTypeDescriptor>
 
   /**
    * Appends qualifiers to type
-   *
-   * @param {number} qualifiers
-   * @return {this}
-   * @memberof CType
    */
   ofQualifiers(qualifiers: number): this {
-    return this.map((value) => ({
+    return this.map(value => ({
       ...value,
       qualifiers,
     }));
@@ -74,9 +66,6 @@ export abstract class CType<T extends CTypeDescriptor = CTypeDescriptor>
 
   /**
    * Creates const version of type
-   *
-   * @return {this}
-   * @memberof CType
    */
   ofConst(): this {
     return this.ofQualifiers(CQualBitmap.const);
@@ -84,39 +73,64 @@ export abstract class CType<T extends CTypeDescriptor = CTypeDescriptor>
 
   /**
    * Drops specified qualifiers from type and returns new
-   *
-   * @param {number} qualifiers
-   * @return {this}
-   * @memberof CType
    */
   ofDropQualifiers(qualifiers: number): this {
-    return this.map((value) => ({
+    return this.map(value => ({
       ...value,
-      qualifiers: value.qualifiers & (~qualifiers),
+      qualifiers: value.qualifiers & ~qualifiers,
     }));
   }
 
   /**
    * Drops constant qualifiers and returns new types
-   *
-   * @return {this}
-   * @memberof CType
    */
   ofNonConstQualifiers(): this {
     return this.ofDropQualifiers(CQualBitmap.const);
   }
 
-  isRegistered() { return this.value.registered; }
-  isArray() { return false; }
-  isEnum() { return false; }
-  isPrimitive() { return false; }
-  isStruct() { return false; }
-  isUnion() { return false; }
-  isFunction() { return false; }
-  isScalar() { return false; }
-  isPointer() { return false; }
-  isVoid() { return false; }
-  isFlag() { return false; }
+  isRegistered() {
+    return this.value.registered;
+  }
+
+  isArray() {
+    return false;
+  }
+
+  isEnum() {
+    return false;
+  }
+
+  isPrimitive() {
+    return false;
+  }
+
+  isStruct() {
+    return false;
+  }
+
+  isUnion() {
+    return false;
+  }
+
+  isFunction() {
+    return false;
+  }
+
+  isScalar() {
+    return false;
+  }
+
+  isPointer() {
+    return false;
+  }
+
+  isVoid() {
+    return false;
+  }
+
+  isFlag() {
+    return false;
+  }
 
   hasInnerTypeAttributes() {
     return this.isEnum() || this.isStruct();
@@ -144,27 +158,21 @@ export abstract class CType<T extends CTypeDescriptor = CTypeDescriptor>
 
   /**
    * Converts whole type to string
-   *
-   * @abstract
-   * @return {string}
-   * @memberof CType
    */
   abstract getDisplayName(): string;
 
   /**
    * Checks if type has name and display it if so
-   *
-   * @return {string}
-   * @memberof CType
    */
   getShortestDisplayName(): string {
     if (isNamedType(this)) {
       let name = this.name ?? '<anonymous>';
 
-      if (this.isStruct())
+      if (this.isStruct()) {
         name = `struct ${name}`;
-      else if (this.isUnion())
+      } else if (this.isUnion()) {
         name = `union ${name}`;
+      }
 
       return name;
     }
@@ -174,9 +182,6 @@ export abstract class CType<T extends CTypeDescriptor = CTypeDescriptor>
 
   /**
    * Gets size of type in bytes
-   *
-   * @return {number}
-   * @memberof CType
    */
   getByteSize(): number {
     return null;
@@ -184,15 +189,13 @@ export abstract class CType<T extends CTypeDescriptor = CTypeDescriptor>
 
   /**
    * Checks if size matches regs like ax / bx / etc
-   *
-   * @return {boolean}
-   * @memberof CType
    */
   canBeStoredInIntegralReg(): boolean {
-    if (this.isFunction() || this.isVoid())
+    if (this.isFunction() || this.isVoid()) {
       return false;
+    }
 
-    const {archDescriptor} = this;
+    const { archDescriptor } = this;
     const returnByteSize = this.getByteSize();
 
     return returnByteSize <= archDescriptor.regs.integral.maxRegSize;
@@ -200,9 +203,6 @@ export abstract class CType<T extends CTypeDescriptor = CTypeDescriptor>
 
   /**
    * Checks if size matches regs like xmm0, xmm1
-   *
-   * @return {boolean}
-   * @memberof CType
    */
   canBeStoredInFloatReg(): boolean {
     return false;
@@ -210,9 +210,6 @@ export abstract class CType<T extends CTypeDescriptor = CTypeDescriptor>
 
   /**
    * Returns true if can be stored in any kind of reg
-   *
-   * @return {boolean}
-   * @memberof CType
    */
   canBeStoredInReg(): boolean {
     return this.canBeStoredInFloatReg() || this.canBeStoredInIntegralReg();
@@ -220,22 +217,18 @@ export abstract class CType<T extends CTypeDescriptor = CTypeDescriptor>
 
   /**
    * Converts array of string type qualifiers into internal bitset format
-   *
-   * @static
-   * @param {CTypeQualifier[]} qualifiers
-   * @return {Result<number, CTypeCheckError>}
-   * @memberof CType
    */
-  static qualifiersToBitset(qualifiers: CTypeQualifier[]): Result<number, CTypeCheckError> {
-    if (!qualifiers)
+  static qualifiersToBitset(
+    qualifiers: CTypeQualifier[],
+  ): Result<number, CTypeCheckError> {
+    if (!qualifiers) {
       return ok(0);
+    }
 
-    return parseKeywordsToBitset(
-      {
-        errorCode: CTypeCheckErrorCode.UNKNOWN_QUALIFIERS_KEYWORD,
-        bitmap: CQualBitmap,
-        keywords: qualifiers,
-      },
-    );
+    return parseKeywordsToBitset({
+      errorCode: CTypeCheckErrorCode.UNKNOWN_QUALIFIERS_KEYWORD,
+      bitmap: CQualBitmap,
+      keywords: qualifiers,
+    });
   }
 }

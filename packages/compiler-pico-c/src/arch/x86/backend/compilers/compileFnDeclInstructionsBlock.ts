@@ -1,37 +1,38 @@
-import {IROpcode} from '@compiler/pico-c/frontend/ir/constants';
+import { IROpcode } from '@compiler/pico-c/frontend/ir/constants';
 import {
   IRCommentInstruction,
   IRFnDeclInstruction,
 } from '@compiler/pico-c/frontend/ir/instructions';
 
-import {CompiledBlockOutput, CompilerBlockFnAttrs} from '../../constants/types';
-import {IRBlockIterator} from '../iterators/IRBlockIterator';
+import {
+  CompiledBlockOutput,
+  CompilerBlockFnAttrs,
+} from '../../constants/types';
+import { IRBlockIterator } from '../iterators/IRBlockIterator';
 
-import {genComment} from '../../asm-utils';
-import {compileAllocInstruction} from './compileAllocInstruction';
-import {compileStoreInstruction} from './compileStoreInstruction';
-import {compileLoadInstruction} from './compileLoadInstruction';
-import {compileMathInstruction} from './compileMathInstruction';
+import { genComment } from '../../asm-utils';
+import { compileAllocInstruction } from './compileAllocInstruction';
+import { compileStoreInstruction } from './compileStoreInstruction';
+import { compileLoadInstruction } from './compileLoadInstruction';
+import { compileMathInstruction } from './compileMathInstruction';
 
 type FnDeclCompilerBlockFnAttrs = CompilerBlockFnAttrs & {
   instruction: IRFnDeclInstruction;
 };
 
-export function compileFnDeclInstructionsBlock(
-  {
-    instruction: fnInstruction,
-    instructions,
-    context,
-  }: FnDeclCompilerBlockFnAttrs,
-): CompiledBlockOutput {
-  const {allocator} = context;
+export function compileFnDeclInstructionsBlock({
+  instruction: fnInstruction,
+  instructions,
+  context,
+}: FnDeclCompilerBlockFnAttrs): CompiledBlockOutput {
+  const { allocator } = context;
 
   const compileFnContent = (): string[] => {
     const asm: string[] = [];
 
     IRBlockIterator.of(instructions).walk((instruction, iterator) => {
       const arg = {
-        instruction: <any> instruction,
+        instruction: <any>instruction,
         context,
         iterator,
       };
@@ -54,9 +55,7 @@ export function compileFnDeclInstructionsBlock(
           break;
 
         case IROpcode.COMMENT:
-          asm.push(
-            genComment((<IRCommentInstruction> instruction).comment),
-          );
+          asm.push(genComment((<IRCommentInstruction>instruction).comment));
           break;
       }
     });
@@ -64,9 +63,7 @@ export function compileFnDeclInstructionsBlock(
     return asm;
   };
 
-  allocator
-    .allocRegAllocator()
-    .analyzeInstructionsBlock(instructions);
+  allocator.allocRegAllocator().analyzeInstructionsBlock(instructions);
 
   const asm = [
     genComment(fnInstruction.getDisplayName()),

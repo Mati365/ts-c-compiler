@@ -1,8 +1,8 @@
-import {getBit} from '@compiler/core/utils/bits';
-import {Vec2D} from '@compiler/core/types';
-import {UnionStruct, bits} from '@compiler/core/shared/UnionStruct';
+import { getBit } from '@compiler/core/utils/bits';
+import { Vec2D } from '@compiler/core/types';
+import { UnionStruct, bits } from '@compiler/core/shared/UnionStruct';
 
-import {VGA_CURSOR_SHAPES} from '../Video/VGAConstants';
+import { VGA_CURSOR_SHAPES } from '../Video/VGAConstants';
 import {
   BIOS_COLOR_TABLE,
   CP437_UNICODE_FONT_MAPPING,
@@ -12,11 +12,11 @@ import {
   X86_REALMODE_MAPPED_ADDRESSES,
 } from '../../constants/x86';
 
-import {uuidX86Device} from '../../types/X86AbstractDevice';
-import {X86CPU} from '../../X86CPU';
+import { uuidX86Device } from '../../types/X86AbstractDevice';
+import { X86CPU } from '../../X86CPU';
 
-import {VideoMode} from './VideoMode';
-import {VGA} from '../Video/VGA';
+import { VideoMode } from './VideoMode';
+import { VGA } from '../Video/VGA';
 import {
   VGA_TEXT_MODES_PRESET,
   VGA_GRAPHICS_MODES_PRESET,
@@ -24,28 +24,28 @@ import {
 } from '../Video/VGAModesPresets';
 
 type KeymapTable = {
-  [keycode: number]: number[],
+  [keycode: number]: number[];
 };
 
 type CursorBlinkState = {
-  last: number,
-  visible?: boolean,
-  enabled?: boolean,
+  last: number;
+  visible?: boolean;
+  enabled?: boolean;
 };
 
 type ScreenState = {
-  page: number,
-  mode: VideoMode,
+  page: number;
+  mode: VideoMode;
 };
 
 type BIOSFloppyDrive = {
-  buffer: Buffer,
-  track: number,
+  buffer: Buffer;
+  track: number;
   info: {
-    sector: number,
-    sectors: number,
-    heads: number,
-  },
+    sector: number;
+    sectors: number;
+    heads: number;
+  };
 };
 
 class BIOSKeyboardFlags extends UnionStruct {
@@ -80,10 +80,34 @@ export class BIOS extends uuidX86Device<X86CPU>('bios') {
     0x1: new VideoMode(0x1, 40, 25, VGA_TEXT_MODES_PRESET['40x25'], 0x8),
     0x2: new VideoMode(0x2, 80, 25, VGA_TEXT_MODES_PRESET['80x25'], 0x8),
     0x3: new VideoMode(0x3, 80, 25, VGA_TEXT_MODES_PRESET['80x25'], 0x8),
-    0x4: new VideoMode(0x4, 320, 200, VGA_GRAPHICS_MODES_PRESET['320x200x4'], 0x1),
-    0x11: new VideoMode(0x11, 640, 480, VGA_GRAPHICS_MODES_PRESET['640x480x2'], 0x1),
-    0x12: new VideoMode(0x12, 640, 480, VGA_GRAPHICS_MODES_PRESET['640x480x16'], 0x1),
-    0x13: new VideoMode(0x13, 320, 200, VGA_GRAPHICS_MODES_PRESET['320x200x256'], 0x1),
+    0x4: new VideoMode(
+      0x4,
+      320,
+      200,
+      VGA_GRAPHICS_MODES_PRESET['320x200x4'],
+      0x1,
+    ),
+    0x11: new VideoMode(
+      0x11,
+      640,
+      480,
+      VGA_GRAPHICS_MODES_PRESET['640x480x2'],
+      0x1,
+    ),
+    0x12: new VideoMode(
+      0x12,
+      640,
+      480,
+      VGA_GRAPHICS_MODES_PRESET['640x480x16'],
+      0x1,
+    ),
+    0x13: new VideoMode(
+      0x13,
+      320,
+      200,
+      VGA_GRAPHICS_MODES_PRESET['320x200x256'],
+      0x1,
+    ),
   };
 
   private blink: CursorBlinkState = {
@@ -97,19 +121,17 @@ export class BIOS extends uuidX86Device<X86CPU>('bios') {
     mode: null,
   };
 
-  private drives: {[drive: number]: BIOSFloppyDrive} = null;
+  private drives: { [drive: number]: BIOSFloppyDrive } = null;
 
   /**
    * Creates an instance of BIOS.
-   *
-   * @memberof BIOS
    */
   constructor() {
     super(X86_MAPPED_VM_MEM);
   }
 
   get vga(): VGA {
-    return <VGA> this.cpu.devices.vga;
+    return this.cpu.devices.vga as VGA;
   }
 
   /**
@@ -126,7 +148,7 @@ export class BIOS extends uuidX86Device<X86CPU>('bios') {
        * 0x81h  - HDD 1
        */
       [this.regs.dl]: {
-        buffer: null, /** it will be assigned when null to boot medium */
+        buffer: null /** it will be assigned when null to boot medium */,
         track: 0,
         info: {
           /** see: https://pl.wikipedia.org/wiki/CHS */
@@ -148,8 +170,6 @@ export class BIOS extends uuidX86Device<X86CPU>('bios') {
    * Init bios services
    *
    * @see {@link http://stanislavs.org/helppc/int_15.html}
-   *
-   * @memberof BIOS
    */
   initServices() {
     this.attachInterrupts(0x15, 'ah', {
@@ -158,23 +178,21 @@ export class BIOS extends uuidX86Device<X86CPU>('bios') {
        * @see {@link http://stanislavs.org/helppc/int_15-86.html}
        */
       0x86: () => {
-        const {cpu} = this;
-        const {cx, dx, status} = this.regs;
+        const { cpu } = this;
+        const { cx, dx, status } = this.regs;
 
-        const miliseconds = (((cx << 0xF) | dx) / 1000) * 2;
-        if (miliseconds < 2)
+        const miliseconds = (((cx << 0xf) | dx) / 1000) * 2;
+        if (miliseconds < 2) {
           return;
+        }
 
         status.cf = 1;
         cpu.pause = true;
 
-        setTimeout(
-          () => {
-            status.cf = 0;
-            cpu.pause = false;
-          },
-          miliseconds,
-        );
+        setTimeout(() => {
+          status.cf = 0;
+          cpu.pause = false;
+        }, miliseconds);
       },
     });
   }
@@ -195,30 +213,24 @@ export class BIOS extends uuidX86Device<X86CPU>('bios') {
     };
 
     const clearKeyBuffer = (clearCallback = true) => {
-      Object.assign(
-        keymap,
-        {
-          caps: false,
-          alt: false,
-          ctrl: false,
-          shift: false,
-          key: null,
-          callback: clearCallback ? null : keymap.callback,
-        },
-      );
+      Object.assign(keymap, {
+        caps: false,
+        alt: false,
+        ctrl: false,
+        shift: false,
+        key: null,
+        callback: clearCallback ? null : keymap.callback,
+      });
     };
 
-    document.addEventListener('keydown', (e) => {
-      Object.assign(
-        keymap,
-        {
-          caps: e.getModifierState('CapsLock'),
-          alt: e.altKey,
-          ctrl: e.ctrlKey,
-          shift: e.shiftKey,
-          key: e.keyCode,
-        },
-      );
+    document.addEventListener('keydown', e => {
+      Object.assign(keymap, {
+        caps: e.getModifierState('CapsLock'),
+        alt: e.altKey,
+        ctrl: e.ctrlKey,
+        shift: e.shiftKey,
+        key: e.keyCode,
+      });
 
       // eslint-disable-next-line no-unused-expressions
       keymap.callback?.(e);
@@ -229,20 +241,22 @@ export class BIOS extends uuidX86Device<X86CPU>('bios') {
     /**
      * Returns false if user pressed shift
      */
-    const isCaseModifyKeycode = (code: number): boolean => code > 18 || code < 16;
+    const isCaseModifyKeycode = (code: number): boolean =>
+      code > 18 || code < 16;
 
     /**
      * Pause execution until press a button
      * but if user already is pressing button - do not pause
      */
     const keyListener = (callback: (key: any) => void) => {
-      const {cpu} = this;
+      const { cpu } = this;
 
       if (keymap.key === null) {
         cpu.pause = true;
         keymap.callback = (e: KeyboardEvent): void => {
-          if (document.activeElement !== document.body)
+          if (document.activeElement !== document.body) {
             return;
+          }
 
           e.preventDefault();
 
@@ -264,17 +278,22 @@ export class BIOS extends uuidX86Device<X86CPU>('bios') {
      * @todo
      *  Add better support for extened keyboards (see broken arrows)
      */
-    const readKeyState = (keymapTable?: KeymapTable, code: number = keymap.key) => {
-      const {regs} = this;
+    const readKeyState = (
+      keymapTable?: KeymapTable,
+      code: number = keymap.key,
+    ) => {
+      const { regs } = this;
 
       regs.ax = 0x0;
 
-      if (!code)
+      if (!code) {
         return false;
+      }
 
       const mapping = (keymapTable || SCAN_CODES_TABLE)[code];
-      if (!mapping)
+      if (!mapping) {
         return false;
+      }
 
       regs.ax = mapping[Math.min(mapping.length - 1, keymap.shift ? 1 : 0)];
       return true;
@@ -284,15 +303,13 @@ export class BIOS extends uuidX86Device<X86CPU>('bios') {
       /* Wait for keystroke and read */
       0x0: () => {
         // it was used from 0x10, is it ok? maybe use separate array for extended keys?
-        keyListener(
-          (code: number) => readKeyState(null, code),
-        );
+        keyListener((code: number) => readKeyState(null, code));
       },
 
       /* Get keyboard flags */
       0x2: () => {
-        const {regs} = this;
-        const flags = new BIOSKeyboardFlags;
+        const { regs } = this;
+        const flags = new BIOSKeyboardFlags();
 
         flags.capsLockActive = +keymap.caps;
         flags.ctrlDepressed = +keymap.ctrl;
@@ -305,10 +322,10 @@ export class BIOS extends uuidX86Device<X86CPU>('bios') {
 
       /* Get Keyboard Status */
       0x1: () => {
-        const {regs} = this;
+        const { regs } = this;
         const status = readKeyState();
 
-        regs.status.zf = (+status) ^ 1; // 0 if character is available
+        regs.status.zf = +status ^ 1; // 0 if character is available
       },
 
       /* Wait for keystroke and read, AT, PS/2 */
@@ -323,14 +340,12 @@ export class BIOS extends uuidX86Device<X86CPU>('bios') {
 
   /**
    * Init hard drive interrupts, buffers
-   *
-   * @memberof BIOS
    */
   initDrive() {
     this.attachInterrupts(0x13, 'ah', {
       /** Reset floppy drive */
       0x0: () => {
-        const {drives, regs} = this;
+        const { drives, regs } = this;
 
         if (drives[regs.dl]) {
           // this.drives[this.regs.dl] = 0x0;
@@ -344,7 +359,7 @@ export class BIOS extends uuidX86Device<X86CPU>('bios') {
 
       /** Read from floppy drive */
       0x2: () => {
-        const {drives, regs, cpu} = this;
+        const { drives, regs, cpu } = this;
 
         /**
          * see: https://en.wikipedia.org/wiki/INT_13H#INT_13h_AH.3D02h:_Read_Sectors_From_Drive
@@ -354,17 +369,22 @@ export class BIOS extends uuidX86Device<X86CPU>('bios') {
          * cylinder : 76543210 98
          * sector   :            543210
          */
-        const cylinder = ((regs.cx & 0xFF00) >> 8) | (((regs.cx & 0xC0) << 2)),
-          sector = regs.cl & 0x3F,
+        const cylinder = ((regs.cx & 0xff00) >> 8) | ((regs.cx & 0xc0) << 2),
+          sector = regs.cl & 0x3f,
           drive = drives[regs.dl],
           /** Mem adresses */
-          src = ((cylinder * drive.info.heads + regs.dh) * drive.info.sectors + sector - 0x1) * drive.info.sector,
+          src =
+            ((cylinder * drive.info.heads + regs.dh) * drive.info.sectors +
+              sector -
+              0x1) *
+            drive.info.sector,
           dest = cpu.getMemAddress('es', 'bx'),
           sectorSize = drive.info.sector;
 
         /** Device is init before boot, if device is null, assign boot medium */
-        if (!drive.buffer)
+        if (!drive.buffer) {
           drive.buffer = cpu.device;
+        }
 
         let error = false;
         if (drive.buffer) {
@@ -372,30 +392,33 @@ export class BIOS extends uuidX86Device<X86CPU>('bios') {
           for (let i = 0; i < regs.al; ++i) {
             const offset = i * sectorSize;
 
-            if (src + offset + sectorSize > drive.buffer.byteLength
-                || dest + offset + sectorSize > cpu.mem.byteLength) {
+            if (
+              src + offset + sectorSize > drive.buffer.byteLength ||
+              dest + offset + sectorSize > cpu.mem.byteLength
+            ) {
               error = true;
               break;
             }
 
             drive.buffer.copy(
               cpu.mem,
-              dest + offset, /** Dest address */
-              src + offset, /** Source address start */
-              src + offset + sectorSize, /** Source address end */
+              dest + offset /** Dest address */,
+              src + offset /** Source address start */,
+              src + offset + sectorSize /** Source address end */,
             );
           }
 
           /** Always success, buffer is provided */
           regs.status.cf = 0x0;
           regs.ah = 0x0;
-        } else
+        } else {
           error = true;
+        }
 
         /** Error */
         if (error) {
           regs.status.cf = 0x1;
-          regs.ah = 0xBB;
+          regs.ah = 0xbb;
         }
       },
     });
@@ -406,8 +429,6 @@ export class BIOS extends uuidX86Device<X86CPU>('bios') {
    *
    * @todo
    *  Check if 8x8 font is always loaded in graphics mode. Where is font located?
-   *
-   * @memberof BIOS
    */
   initScreen() {
     const graphicsModeCharSize = {
@@ -421,25 +442,24 @@ export class BIOS extends uuidX86Device<X86CPU>('bios') {
       attr: number,
       fgColor: number,
     ) => {
-      const {cpu, vga} = this;
+      const { cpu, vga } = this;
       const screenSize = vga.getPixelScreenSize();
       const writer = cpu.memIO.write[0x1];
       const background = (attr & 0x70) >> 4;
 
       for (let row = 0; row < graphicsModeCharSize.h; ++row) {
-        const charBitsetRow = VGA_8X8_FONT.data[graphicsModeCharSize.w * char + row];
+        const charBitsetRow =
+          VGA_8X8_FONT.data[graphicsModeCharSize.w * char + row];
 
         for (let col = 0; col < graphicsModeCharSize.w; ++col) {
           const bit = (charBitsetRow >> col) & 0x1;
 
           writer(
-            bit
-              ? fgColor
-              : background,
-            0xA0000
-              + (pos.y * graphicsModeCharSize.h + row) * screenSize.w
-              + pos.x * graphicsModeCharSize.w
-              + (graphicsModeCharSize.w - 1 - col),
+            bit ? fgColor : background,
+            0xa0000 +
+              (pos.y * graphicsModeCharSize.h + row) * screenSize.w +
+              pos.x * graphicsModeCharSize.w +
+              (graphicsModeCharSize.w - 1 - col),
           );
         }
       }
@@ -452,9 +472,9 @@ export class BIOS extends uuidX86Device<X86CPU>('bios') {
       moveCursor?: boolean,
       cursor: Vec2D = this.vga.getTextCursorLocation(),
     ): void => {
-      const {cpu, regs, vga} = this;
-      const {page, mode} = this.screen;
-      const {textMode} = vga;
+      const { cpu, regs, vga } = this;
+      const { page, mode } = this.screen;
+      const { textMode } = vga;
 
       switch (character) {
         /** Backspace */
@@ -463,12 +483,13 @@ export class BIOS extends uuidX86Device<X86CPU>('bios') {
           break;
 
         /** New line */
-        case 0xA:
-        case 0xD:
-          if (character === 0xA)
+        case 0xa:
+        case 0xd:
+          if (character === 0xa) {
             cursor.y++;
-          else
+          } else {
             cursor.x = 0;
+          }
 
           /** Scroll up page, simply copy memory */
           if (cursor.y >= mode.h) {
@@ -479,20 +500,17 @@ export class BIOS extends uuidX86Device<X86CPU>('bios') {
 
         /** Normal characters */
         default:
-          color = (color && (typeof attribute === 'undefined' ? regs.bl : attribute)) || 0b111;
+          color =
+            (color &&
+              (typeof attribute === 'undefined' ? regs.bl : attribute)) ||
+            0b111;
 
           /** Direct write to memory */
           if (textMode) {
-            mode.write(
-              cpu.memIO,
-              character,
-              color,
-              cursor.x,
-              cursor.y,
-              page,
-            );
-          } else
+            mode.write(cpu.memIO, character, color, cursor.x, cursor.y, page);
+          } else {
             writeGraphicsCharacter(cursor, character, attribute, color);
+          }
 
           /** Render cursor */
           cursor.x++;
@@ -500,13 +518,15 @@ export class BIOS extends uuidX86Device<X86CPU>('bios') {
             if (textMode) {
               cursor.x = 0;
               cursor.y++;
-            } else
+            } else {
               cursor.x--;
+            }
           }
       }
 
-      if (moveCursor)
+      if (moveCursor) {
         vga.setCursorLocation(cursor);
+      }
     };
 
     const writeCharacters = (
@@ -514,12 +534,13 @@ export class BIOS extends uuidX86Device<X86CPU>('bios') {
       color: number | boolean = true,
       moveCursor: boolean = false,
     ): void => {
-      const {regs, vga} = this;
-      const {al, cx} = regs;
+      const { regs, vga } = this;
+      const { al, cx } = regs;
 
       const cachedCursor = vga.getTextCursorLocation();
-      for (let i = 0; i < cx; ++i)
+      for (let i = 0; i < cx; ++i) {
         writeCharacter(al, attribute, color, moveCursor, cachedCursor);
+      }
     };
 
     /** Graphics interrupts */
@@ -539,8 +560,8 @@ export class BIOS extends uuidX86Device<X86CPU>('bios') {
          * CX=2607h is an invisible cursor
          * If bit 5 of CH is set, that often means "Hide cursor"
          */
-        const {vga} = this;
-        const {ch, cx} = this.regs;
+        const { vga } = this;
+        const { ch, cx } = this.regs;
 
         vga.crtcRegs.setTextCursorDisabled(getBit(5, ch));
         vga.crtcRegs.setTextCursorShape(
@@ -553,25 +574,20 @@ export class BIOS extends uuidX86Device<X86CPU>('bios') {
       /** Cursor pos */
       0x2: () => {
         // todo: add ONLY active page
-        const {dl, dh} = this.regs;
+        const { dl, dh } = this.regs;
 
-        this.vga.setCursorLocation(
-          new Vec2D(dl, dh),
-        );
+        this.vga.setCursorLocation(new Vec2D(dl, dh));
       },
 
       /** Get cursor position and shape */
       0x3: () => {
         const cursor = this.vga.getTextCursorLocation();
 
-        Object.assign(
-          this.regs,
-          {
-            dl: cursor.x,
-            dh: cursor.y,
-            ax: 0,
-          },
-        );
+        Object.assign(this.regs, {
+          dl: cursor.x,
+          dh: cursor.y,
+          ax: 0,
+        });
       },
 
       /** Change active screen */
@@ -584,12 +600,12 @@ export class BIOS extends uuidX86Device<X86CPU>('bios') {
        * todo: Handle cx, dx registers params
        */
       0x6: () => {
-        const {cpu, regs, vga} = this;
-        const {page, mode} = this.screen;
+        const { cpu, regs, vga } = this;
+        const { page, mode } = this.screen;
 
         if (!regs.al) {
           /** Clear screen */
-          mode.iterate(false, cpu, page, (offset) => {
+          mode.iterate(false, cpu, page, offset => {
             cpu.memIO.write[0x2](regs.bh << 0x8, offset);
           });
         } else {
@@ -600,7 +616,12 @@ export class BIOS extends uuidX86Device<X86CPU>('bios') {
 
       /** Read character at cursor */
       0x8: () => {
-        const {cpu, regs, vga, screen: {mode}} = this;
+        const {
+          cpu,
+          regs,
+          vga,
+          screen: { mode },
+        } = this;
         const cursor = vga.getTextCursorLocation();
 
         regs.ax = mode.read(cpu.memIO, cursor.x, cursor.y, regs.bh);
@@ -611,38 +632,47 @@ export class BIOS extends uuidX86Device<X86CPU>('bios') {
         writeCharacters();
       },
 
-      0xA: () => {
+      0xa: () => {
         writeCharacters(null, false);
       },
 
-      0xE: () => {
-        const {regs, vga: {textMode}} = this;
+      0xe: () => {
+        const {
+          regs,
+          vga: { textMode },
+        } = this;
 
-        if (textMode)
+        if (textMode) {
           writeCharacter(regs.al, null, false, true);
-        else
+        } else {
           writeCharacter(regs.al, regs.bl, true, true);
+        }
       },
 
       /** Blinking */
       0x10: () => {
-        if (this.regs.al !== 0x03)
+        if (this.regs.al !== 0x03) {
           throw new Error('Unsupported 10h function!');
+        }
 
-        if (!this.regs.bx)
+        if (!this.regs.bx) {
           this.blink.enabled = false;
+        }
       },
 
       /** Extensions... */
       0x11: () => {
         /** Extend to 80x50 */
-        if (this.regs.al === 0x12)
-          this.setVideoMode(new VideoMode(0x12, 80, 50, VGA_TEXT_MODES_PRESET['80x50'], 0x1));
+        if (this.regs.al === 0x12) {
+          this.setVideoMode(
+            new VideoMode(0x12, 80, 50, VGA_TEXT_MODES_PRESET['80x50'], 0x1),
+          );
+        }
       },
 
       /** Write string */
       0x13: () => {
-        const {cpu, regs} = this;
+        const { cpu, regs } = this;
 
         for (let i = 0; i < regs.cx; ++i) {
           writeCharacter(
@@ -659,8 +689,8 @@ export class BIOS extends uuidX86Device<X86CPU>('bios') {
        * @see
        * http://stanislavs.org/helppc/int_10-f.html
        */
-      0xF: () => {
-        const {mode} = this.screen;
+      0xf: () => {
+        const { mode } = this.screen;
 
         this.regs.al = mode.code;
         this.regs.ah = mode.w;
@@ -670,17 +700,18 @@ export class BIOS extends uuidX86Device<X86CPU>('bios') {
 
   /**
    * Set video mode
-   *
-   * @param {Number|Object} code  Mode
    */
   setVideoMode(code: number | VideoMode): void {
-    const {screen, vga, cpu} = this;
-    const newMode = Number.isNaN(<number> code) ? code : BIOS.VideoMode[<number> code];
+    const { screen, vga, cpu } = this;
+    const newMode = Number.isNaN(<number>code)
+      ? code
+      : BIOS.VideoMode[<number>code];
 
     if (newMode) {
       screen.mode = newMode;
       vga.loadModePreset(screen.mode.vgaPreset);
-    } else
+    } else {
       cpu.logger.warn(`Attempt to load unknown screen code ${code}!`);
+    }
   }
 }

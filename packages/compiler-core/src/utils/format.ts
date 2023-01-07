@@ -7,69 +7,53 @@ export const INNER_ITEM_MATCH_REGEX: RegExp = /%{([?.\w]*)}/g; // match = 1
  *
  * @example
  * "test ${}" => "test variableValue"
- *
- * @export
- * @param {string} str
- * @param {(object|Array<any>)} params
- * @returns {string}
  */
 export function format(str: string, params: object | Array<any>): string {
   let counter = 0;
 
-  return str.replace(
-    INNER_ITEM_MATCH_REGEX,
-    (_, match) => {
-      if (R.is(String, match) && match.length)
-        return params[match];
+  return str.replace(INNER_ITEM_MATCH_REGEX, (_, match) => {
+    if (R.is(String, match) && match.length) {
+      return params[match];
+    }
 
-      return params[counter++];
-    },
-  );
+    return params[counter++];
+  });
 }
 
 /**
  * Formats date to string YYYY-MM-DD
- *
- * @export
- * @param {Date} date
- * @param {boolean} [withDay=true]
- * @param {string} [separator='-']
- * @returns {string}
  */
 export function formatDate(
   date: Date,
   withDay: boolean = true,
   separator: string = '-',
 ): string {
-  if (!date)
+  if (!date) {
     return null;
+  }
 
   const month = (date.getMonth() + 1).toString().padStart(2, '0');
   const day = (date.getDate() + 1).toString().padStart(2, '0');
 
   let formatted = `${date.getFullYear()}${separator}${month}`;
-  if (withDay)
+  if (withDay) {
     formatted = `${formatted}${separator}${day}`;
+  }
 
   return formatted;
 }
 
 /**
  * Formats date to time string HH:MM:SS
- *
- * @export
- * @param {Date} date
- * @param {boolean} [withSeconds=true]
- * @param {string} [separator=':']
- * @returns {string}
  */
 export function formatTime(
   date: Date,
   withSeconds: boolean = true,
   separator: string = ':',
 ): string {
-  if (!date)
+  if (!date) {
     return null;
+  }
 
   const hours = date.getHours().toString().padStart(2, '0');
   const minutes = date.getMinutes().toString().padStart(2, '0');

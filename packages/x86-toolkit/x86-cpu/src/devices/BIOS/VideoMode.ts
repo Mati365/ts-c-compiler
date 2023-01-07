@@ -1,15 +1,8 @@
-import {X86_REALMODE_MAPPED_ADDRESSES} from '../../constants/x86';
-
-import {
-  X86AbstractCPU,
-  X86RAM,
-} from '../../types';
+import { X86_REALMODE_MAPPED_ADDRESSES } from '../../constants/x86';
+import { X86AbstractCPU, X86RAM } from '../../types';
 
 /**
  * Creates video buffer description
- *
- * @export
- * @class VideoMode
  */
 export class VideoMode {
   constructor(
@@ -27,10 +20,6 @@ export class VideoMode {
 
   /**
    * Memory can contain multiple pages
-   *
-   * @param {number} [page=0x0]
-   * @returns {number}
-   * @memberof VideoMode
    */
   getPageOffset(page: number = 0x0): number {
     return this.offset + page * this.pageSize;
@@ -38,14 +27,6 @@ export class VideoMode {
 
   /**
    * Write to VRAM
-   *
-   * @param {X86RAM<X86CPU>} mem
-   * @param {number} char
-   * @param {(number|boolean)} color
-   * @param {number} x
-   * @param {number} y
-   * @param {number} [page=0x0]
-   * @memberof VideoMode
    */
   write(
     mem: X86RAM<X86AbstractCPU>,
@@ -57,23 +38,22 @@ export class VideoMode {
   ): void {
     /** Write direct to memory */
     const address = this.offset + this.pageSize * page + (y * this.w + x) * 0x2;
-    if (color === false)
-      mem.write[0x1](char & 0xFF, address);
-    else
-      mem.write[0x2]((char & 0xFF) | ((<number> color & 0xFF) << 8), address);
+    if (color === false) {
+      mem.write[0x1](char & 0xff, address);
+    } else {
+      mem.write[0x2]((char & 0xff) | (((<number>color) & 0xff) << 8), address);
+    }
   }
 
   /**
    * Read VRAM ad x, y
-   *
-   * @param {X86RAM<X86CPU>} mem
-   * @param {number} x
-   * @param {number} y
-   * @param {number} [page=0x0]
-   * @returns {number}
-   * @memberof VideoMode
    */
-  read(mem: X86RAM<X86AbstractCPU>, x: number, y: number, page: number = 0x0): number {
+  read(
+    mem: X86RAM<X86AbstractCPU>,
+    x: number,
+    y: number,
+    page: number = 0x0,
+  ): number {
     const address = this.offset + this.pageSize * page + (y * this.w + x) * 0x2;
 
     return mem.read[0x2](address);
@@ -81,12 +61,6 @@ export class VideoMode {
 
   /**
    * Iterate every pixel
-   *
-   * @param {boolean} read
-   * @param {X86AbstractCPU} cpu
-   * @param {number} page
-   * @param {(offset: number, x: number, y: number, num: number) => void} fn
-   * @memberof VideoMode
    */
   iterate(
     read: boolean,
@@ -94,7 +68,7 @@ export class VideoMode {
     page: number,
     fn: (offset: number, x: number, y: number, num: number) => void,
   ) {
-    const {w, h} = this;
+    const { w, h } = this;
     let offset = this.getPageOffset(page);
 
     for (let y = 0; y < h; ++y) {
@@ -110,9 +84,6 @@ export class VideoMode {
 
   /**
    * Clear VRAM
-   *
-   * @param {X86RAM<X86AbstractCPU>} mem
-   * @memberof VideoMode
    */
   clear(mem: X86RAM<X86AbstractCPU>) {
     mem.device.fill(

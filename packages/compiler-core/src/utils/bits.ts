@@ -1,27 +1,16 @@
 /**
  * Sets nth bit in value to num(0, 1)
- *
- * @export
- * @param {number} nth
- * @param {number} value
- * @param {number} num
- * @returns {number}
  */
-export function setBit(nth: number, value: number | boolean, num: number): number {
-  return (
-    value
-      ? (num | (1 << nth))
-      : (num & ~(1 << nth))
-  );
+export function setBit(
+  nth: number,
+  value: number | boolean,
+  num: number,
+): number {
+  return value ? num | (1 << nth) : num & ~(1 << nth);
 }
 
 /**
  * Flips nth bit in value, 0 -> 1, 1 -> 0
- *
- * @export
- * @param {number} nth
- * @param {number} num
- * @returns {number}
  */
 export function toggleBit(nth: number, value: number): number {
   return value ^ (1 << nth);
@@ -29,11 +18,6 @@ export function toggleBit(nth: number, value: number): number {
 
 /**
  * Returns nth bit from value, 0 or 1
- *
- * @export
- * @param {number} nth
- * @param {number} value
- * @returns {number}
  */
 export function getBit(nth: number, value: number): number {
   return (value >> nth) & 0x1;
@@ -41,23 +25,13 @@ export function getBit(nth: number, value: number): number {
 
 /**
  * Remove whole flag from value, sets 0
- *
- * @export
- * @param {number} flag
- * @param {number} value
- * @returns {number}
  */
 export function removeFlag(flag: number, value: number): number {
-  return value & (~flag);
+  return value & ~flag;
 }
 
 /**
  * Checks if nth bit is set in value
- *
- * @export
- * @param {number} nth
- * @param {number} value
- * @returns {boolean}
  */
 export function isSetBit(nth: number, value: number): boolean {
   return getBit(nth, value) === 1;
@@ -65,11 +39,6 @@ export function isSetBit(nth: number, value: number): boolean {
 
 /**
  * Checks if bitmask flag is in value
- *
- * @export
- * @param {number} flag
- * @param {number} value
- * @returns {boolean}
  */
 export function hasFlag(flag: number, value: number): boolean {
   return (value & flag) === flag;
@@ -77,11 +46,6 @@ export function hasFlag(flag: number, value: number): boolean {
 
 /**
  * Get most significant bit
- *
- * @export
- * @param {number} num
- * @param {number} [byte=0x1]
- * @returns {number}
  */
 export function getMSbit(num: number, byte: number = 0x1): number {
   return (num >> (byte * 0x8 - 0x1)) & 0x1;
@@ -89,34 +53,48 @@ export function getMSbit(num: number, byte: number = 0x1): number {
 
 /**
  * Get bit next to most significant bit
- *
- * @export
- * @param {number} num
- * @param {number} [byte=0x1]
- * @returns {number}
  */
 export function getSMSbit(num: number, byte: number = 0x1): number {
-  return (num >> ((byte * 0x8 - 0x1) - 1)) & 0x1;
+  return (num >> (byte * 0x8 - 0x1 - 1)) & 0x1;
 }
 
 /**
  * Flips bytes horizontally in byte, much faster than reverseBits
- *
- * @export
- * @param {number} byte
- * @returns {number}
  */
 export function reverseByte(byte: number): number {
   let retVal: number = 0x0;
 
-  if (byte & 0x01) retVal |= 0x80;
-  if (byte & 0x02) retVal |= 0x40;
-  if (byte & 0x04) retVal |= 0x20;
-  if (byte & 0x08) retVal |= 0x10;
-  if (byte & 0x10) retVal |= 0x08;
-  if (byte & 0x20) retVal |= 0x04;
-  if (byte & 0x40) retVal |= 0x02;
-  if (byte & 0x80) retVal |= 0x01;
+  if (byte & 0x01) {
+    retVal |= 0x80;
+  }
+
+  if (byte & 0x02) {
+    retVal |= 0x40;
+  }
+
+  if (byte & 0x04) {
+    retVal |= 0x20;
+  }
+
+  if (byte & 0x08) {
+    retVal |= 0x10;
+  }
+
+  if (byte & 0x10) {
+    retVal |= 0x08;
+  }
+
+  if (byte & 0x20) {
+    retVal |= 0x04;
+  }
+
+  if (byte & 0x40) {
+    retVal |= 0x02;
+  }
+
+  if (byte & 0x80) {
+    retVal |= 0x01;
+  }
 
   return retVal;
 }
@@ -125,13 +103,9 @@ export function reverseByte(byte: number): number {
  * Count bits in 32 int
  *
  * @see {@url https://stackoverflow.com/a/43122214}
- *
- * @export
- * @param {number} n
- * @return {number}
  */
 export function countBits(n: number): number {
-  n -= ((n >> 1) & 0x55555555);
+  n -= (n >> 1) & 0x55555555;
   n = (n & 0x33333333) + ((n >> 2) & 0x33333333);
-  return ((n + (n >> 4) & 0xF0F0F0F) * 0x1010101) >> 24;
+  return (((n + (n >> 4)) & 0xf0f0f0f) * 0x1010101) >> 24;
 }

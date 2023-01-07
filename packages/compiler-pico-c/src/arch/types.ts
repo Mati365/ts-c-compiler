@@ -2,7 +2,7 @@ export type SizeofPrimitiveTypeFn = (specifiers: number) => number;
 
 export type CArchRegsInfo = {
   integral: {
-    maxRegSize: number,
+    maxRegSize: number;
   };
 };
 

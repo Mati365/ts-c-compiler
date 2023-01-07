@@ -1,10 +1,10 @@
-import {Result, err, ok} from '@compiler/core/monads';
+import { Result, err, ok } from '@compiler/core/monads';
 
-import {CScopeTree} from '../analyze';
-import {IRGeneratorConfig} from './constants';
-import {IRError, IRErrorCode} from './errors/IRError';
-import {IRScopeGeneratorResult} from './generator/emitters';
-import {IRGeneratorGlobalVisitor} from './generator';
+import { CScopeTree } from '../analyze';
+import { IRGeneratorConfig } from './constants';
+import { IRError, IRErrorCode } from './errors/IRError';
+import { IRScopeGeneratorResult } from './generator/emitters';
+import { IRGeneratorGlobalVisitor } from './generator';
 
 export type IRCodeBuilderResult = IRScopeGeneratorResult;
 
@@ -19,10 +19,6 @@ export function safeBuildIRCode(
   } catch (e) {
     e.code = e.code ?? IRErrorCode.GENERATOR_ERROR;
 
-    return err(
-      [
-        e,
-      ],
-    );
+    return err([e]);
   }
 }

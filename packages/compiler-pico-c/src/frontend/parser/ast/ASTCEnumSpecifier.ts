@@ -1,27 +1,19 @@
 import * as R from 'ramda';
 
-import {walkOverFields} from '@compiler/grammar/decorators/walkOverFields';
-import {dumpAttributesToString} from '@compiler/core/utils';
+import { walkOverFields } from '@compiler/grammar/decorators/walkOverFields';
+import { dumpAttributesToString } from '@compiler/core/utils';
 
-import {NodeLocation} from '@compiler/grammar/tree/NodeLocation';
-import {Token} from '@compiler/lexer/tokens';
-import {ASTCCompilerKind, ASTCCompilerNode} from './ASTCCompilerNode';
-import {ASTCEnumEnumeration} from './ASTCEnumEnumerator';
+import { NodeLocation } from '@compiler/grammar/tree/NodeLocation';
+import { Token } from '@compiler/lexer/tokens';
+import { ASTCCompilerKind, ASTCCompilerNode } from './ASTCCompilerNode';
+import { ASTCEnumEnumeration } from './ASTCEnumEnumerator';
 
 /**
  * Node that holds C enums
- *
- * @export
- * @class ASTCEnumSpecifier
- * @extends {ASTCCompilerNode}
  */
-@walkOverFields(
-  {
-    fields: [
-      'enumerations',
-    ],
-  },
-)
+@walkOverFields({
+  fields: ['enumerations'],
+})
 export class ASTCEnumSpecifier extends ASTCCompilerNode {
   constructor(
     loc: NodeLocation,
@@ -36,13 +28,10 @@ export class ASTCEnumSpecifier extends ASTCCompilerNode {
   }
 
   toString() {
-    const {kind, name} = this;
+    const { kind, name } = this;
 
-    return dumpAttributesToString(
-      kind,
-      {
-        name,
-      },
-    );
+    return dumpAttributesToString(kind, {
+      name,
+    });
   }
 }

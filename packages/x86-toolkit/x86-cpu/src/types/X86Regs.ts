@@ -1,56 +1,54 @@
 import * as R from 'ramda';
 
-import {
-  X86_REGISTER_NAMES,
-  X86_FLAGS_OFFSETS,
-} from '../constants/x86';
+import { X86_REGISTER_NAMES, X86_FLAGS_OFFSETS } from '../constants/x86';
 
-import {X87StackRegName} from '../x87/X87Regs';
+import { X87StackRegName } from '../x87/X87Regs';
 
 export type X86IntBitsMode = 0x1 | 0x2 | 0x4 | 0x8;
 
-export type X86BitsMode = X86IntBitsMode | 0xA;
+export type X86BitsMode = X86IntBitsMode | 0xa;
 
-export type X86RegsSet = {[index: number]: X86RegName};
+export type X86RegsSet = { [index: number]: X86RegName };
 
-export type X86SegmentPrefix = {_sr: X86RegName};
+export type X86SegmentPrefix = { _sr: X86RegName };
 
 export type X86Prefix = number | X86SegmentPrefix;
 
 export type X86Flags = {
-  cf?: number,
-  pf?: number,
-  af?: number,
-  zf?: number,
-  sf?: number,
-  tf?: number,
-  if?: number,
-  df?: number,
-  of?: number,
+  cf?: number;
+  pf?: number;
+  af?: number;
+  zf?: number;
+  sf?: number;
+  tf?: number;
+  if?: number;
+  df?: number;
+  of?: number;
 };
 
 export type NumericRegisterDumpRow = {
-  register: string,
-  value: string,
+  register: string;
+  value: string;
 };
 
 export type RegistersDebugDump = {
-  flags?: string,
-  regs: NumericRegisterDumpRow[],
+  flags?: string;
+  regs: NumericRegisterDumpRow[];
 };
 
 class X86ByteRegsStore {
-  al?: number; ah?: number;
-  bl?: number; bh?: number;
-  cl?: number; ch?: number;
-  dl?: number; dh?: number;
+  al?: number;
+  ah?: number;
+  bl?: number;
+  bh?: number;
+  cl?: number;
+  ch?: number;
+  dl?: number;
+  dh?: number;
 }
 
 /**
  * Set of flags that modifies flags variable in X86RegsStore
- *
- * @export
- * @class X86StatusRegs
  */
 export class X86RegsStore extends X86ByteRegsStore {
   /* Main registers */
@@ -85,21 +83,14 @@ export class X86RegsStore extends X86ByteRegsStore {
     super();
 
     /** Define flags register helpers */
-    R.forEachObjIndexed(
-      (offset, flag) => {
-        Object.defineProperty(
-          this.status,
-          flag,
-          {
-            get: () => (this.flags >> offset) & 0x1,
-            set: (val) => {
-              this.flags ^= (-(val ? 1 : 0) ^ this.flags) & (1 << offset);
-            },
-          },
-        );
-      },
-      X86_FLAGS_OFFSETS,
-    );
+    R.forEachObjIndexed((offset, flag) => {
+      Object.defineProperty(this.status, flag, {
+        get: () => (this.flags >> offset) & 0x1,
+        set: val => {
+          this.flags ^= (-(val ? 1 : 0) ^ this.flags) & (1 << offset);
+        },
+      });
+    }, X86_FLAGS_OFFSETS);
 
     /**
      * Separate registers, emulate C++ unions
@@ -115,70 +106,66 @@ export class X86RegsStore extends X86ByteRegsStore {
       low: X86RegName,
     ) => {
       Object.defineProperty(this, low, {
-        get: () => this[<string> reg] & 0xFF,
-        set: (val) => {
-          this[<string> reg] = (this[<string> reg] & 0xFF00) | (val & 0xFF);
+        get: () => this[<string>reg] & 0xff,
+        set: val => {
+          this[<string>reg] = (this[<string>reg] & 0xff00) | (val & 0xff);
         },
       });
 
       Object.defineProperty(this, high, {
-        get: () => (this[<string>reg] >> 0x8) & 0xFF,
-        set: (val) => {
-          this[<string> reg] = (this[<string> reg] & 0xFF) | ((val & 0xFF) << 8);
+        get: () => (this[<string>reg] >> 0x8) & 0xff,
+        set: val => {
+          this[<string>reg] = (this[<string>reg] & 0xff) | ((val & 0xff) << 8);
         },
       });
     };
 
-    R.forEach(
-      R.apply(defineRegisterAccessors),
-      [
-        ['ax', 'ah', 'al'],
-        ['bx', 'bh', 'bl'],
-        ['cx', 'ch', 'cl'],
-        ['dx', 'dh', 'dl'],
-      ],
-    );
+    R.forEach(R.apply(defineRegisterAccessors), [
+      ['ax', 'ah', 'al'],
+      ['bx', 'bh', 'bl'],
+      ['cx', 'ch', 'cl'],
+      ['dx', 'dh', 'dl'],
+    ]);
   }
 
   /**
    * Transforms object of regs with number values to number table
-   *
-   * @static
-   * @param {Record<string, string|number>} regs
-   * @returns {NumericRegisterDumpRow[]}
-   * @memberof X86RegsStore
    */
-  static toRegistersTable(regs: Record<string, string | number>): NumericRegisterDumpRow[] {
-    const insertDot = (str: string, pos: number) => `${str.slice(0, pos)}.${str.slice(pos)}`;
+  static toRegistersTable(
+    regs: Record<string, string | number>,
+  ): NumericRegisterDumpRow[] {
+    const insertDot = (str: string, pos: number) =>
+      `${str.slice(0, pos)}.${str.slice(pos)}`;
 
     /** Registers */
     const table: NumericRegisterDumpRow[] = [];
     for (const key in regs) {
       const reg = regs[key];
 
-      if (R.isNil(reg))
+      if (R.isNil(reg)) {
         continue;
+      }
 
-      let value: string = <string> reg;
+      let value: string = <string>reg;
       if (R.is(Number, value)) {
         value = reg.toString(16).toUpperCase();
-        if (value.length < 8)
+        if (value.length < 8) {
           value = new Array(8 - value.length + 1).join('0') + value;
+        }
 
         // add dots to easier reading value
         value = insertDot(value, 4);
       }
 
       // add char character
-      if (Number.isInteger(<number> reg))
-        value += ` (${reg} ${String.fromCharCode(<number> reg & 0xFF)})`;
+      if (Number.isInteger(<number>reg)) {
+        value += ` (${reg} ${String.fromCharCode((<number>reg) & 0xff)})`;
+      }
 
-      table.push(
-        {
-          register: key,
-          value,
-        },
-      );
+      table.push({
+        register: key,
+        value,
+      });
     }
 
     return table;
@@ -186,15 +173,13 @@ export class X86RegsStore extends X86ByteRegsStore {
 
   /**
    * Returns human formatted dump of all registers
-   *
-   * @returns {RegistersDebugDump}
-   * @memberof X86RegsStore
    */
   debugDump(): RegistersDebugDump {
     /** Flags */
     let flags = '';
-    for (const flag in X86_FLAGS_OFFSETS)
+    for (const flag in X86_FLAGS_OFFSETS) {
       flags += `${flag}: ${this.status[flag]} `;
+    }
 
     return {
       regs: X86RegsStore.toRegistersTable(
@@ -215,9 +200,16 @@ export type X86SegmentRegName = 'ds' | 'fs' | 'es' | 'cs' | 'ss' | 'gs';
 /**
  * 32bit regs
  */
-export type ExtendedX86RegName = (
-  X86RegName
+export type ExtendedX86RegName =
+  | X86RegName
   | X87StackRegName
-  | 'eax' | 'ebx' | 'ecx' | 'edx' | 'esi'
-  | 'edi' | 'eip' | 'esp' | 'ebp' | 'eflags'
-);
+  | 'eax'
+  | 'ebx'
+  | 'ecx'
+  | 'edx'
+  | 'esi'
+  | 'edi'
+  | 'eip'
+  | 'esp'
+  | 'ebp'
+  | 'eflags';

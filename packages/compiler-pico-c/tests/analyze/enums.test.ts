@@ -2,8 +2,7 @@ import './utils/analyzeMatcher';
 
 describe('Enum typecheck', () => {
   test('anonymous enums have resolveable entries in current scope', () => {
-    expect(
-      /* cpp */ `
+    expect(/* cpp */ `
         enum {
           ONE = 1,
           TWO = 2,
@@ -12,7 +11,6 @@ describe('Enum typecheck', () => {
         int sum() {
           return ONE + TWO;
         }
-      `,
-    ).not.toHaveCompilerError();
+      `).not.toHaveCompilerError();
   });
 });

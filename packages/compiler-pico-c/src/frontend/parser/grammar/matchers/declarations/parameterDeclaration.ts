@@ -1,7 +1,7 @@
-import {CGrammar} from '../shared';
-import {ASTCParameterDeclaration} from '../../../ast';
+import { CGrammar } from '../shared';
+import { ASTCParameterDeclaration } from '../../../ast';
 
-import {declarationSpecifiers} from '../specifiers/declarationSpecifiers';
+import { declarationSpecifiers } from '../specifiers/declarationSpecifiers';
 
 /**
  * parameter_declaration
@@ -9,34 +9,30 @@ import {declarationSpecifiers} from '../specifiers/declarationSpecifiers';
  *  | declaration_specifiers abstract_declarator
  *  | declaration_specifiers
  *  ;
- *
- * @export
- * @param {CGrammar} grammar
- * @return {ASTCParametersList}
  */
-export function parameterDeclaration(grammar: CGrammar): ASTCParameterDeclaration {
-  const {g, declarator, abstractDeclarator} = grammar;
+export function parameterDeclaration(
+  grammar: CGrammar,
+): ASTCParameterDeclaration {
+  const { g, declarator, abstractDeclarator } = grammar;
   const specifiers = declarationSpecifiers(grammar);
 
-  return <ASTCParameterDeclaration> g.or(
-    {
-      declarator() {
-        return new ASTCParameterDeclaration(
-          specifiers.loc,
-          specifiers,
-          declarator(),
-        );
-      },
-      abstractDeclarator() {
-        return new ASTCParameterDeclaration(
-          specifiers.loc,
-          specifiers,
-          abstractDeclarator(),
-        );
-      },
-      empty() {
-        return new ASTCParameterDeclaration(specifiers.loc, specifiers);
-      },
+  return <ASTCParameterDeclaration>g.or({
+    declarator() {
+      return new ASTCParameterDeclaration(
+        specifiers.loc,
+        specifiers,
+        declarator(),
+      );
     },
-  );
+    abstractDeclarator() {
+      return new ASTCParameterDeclaration(
+        specifiers.loc,
+        specifiers,
+        abstractDeclarator(),
+      );
+    },
+    empty() {
+      return new ASTCParameterDeclaration(specifiers.loc, specifiers);
+    },
+  });
 }

@@ -1,8 +1,8 @@
-import {lexer, LexerConfig, TokenParsersMap} from '@compiler/lexer/lexer';
-import {safeResultLexer} from '@compiler/lexer/safeResultLexer';
+import { lexer, LexerConfig, TokenParsersMap } from '@compiler/lexer/lexer';
+import { safeResultLexer } from '@compiler/lexer/safeResultLexer';
 
-import {Result} from '@compiler/core/monads/Result';
-import {LexerError} from '@compiler/lexer/shared/LexerError';
+import { Result } from '@compiler/core/monads/Result';
+import { LexerError } from '@compiler/lexer/shared/LexerError';
 import {
   Token,
   TokenType,
@@ -20,33 +20,28 @@ import {
 /**
  * Set of all ASM related parsers
  */
-export const TOKEN_PARSERS: TokenParsersMap = Object.freeze(
-  {
-    /** NUMBER */
-    [TokenType.NUMBER]: NumberToken.parse,
+export const TOKEN_PARSERS: TokenParsersMap = Object.freeze({
+  /** NUMBER */
+  [TokenType.NUMBER]: NumberToken.parse,
 
-    /** FLOAT NUMBER */
-    [TokenType.FLOAT_NUMBER]: FloatNumberToken.parse,
+  /** FLOAT NUMBER */
+  [TokenType.FLOAT_NUMBER]: FloatNumberToken.parse,
 
-    /** KEYWORD */
-    [TokenType.KEYWORD]: (token: string, loc?: TokenLocation): boolean | Token => (
-      RegisterToken.parse(token, loc)
-        ?? BranchAddressingTypeToken.parse(token, loc)
-        ?? SizeOverrideToken.parse(token, loc)
-        ?? true
-    ),
-  },
-);
+  /** KEYWORD */
+  [TokenType.KEYWORD]: (token: string, loc?: TokenLocation): boolean | Token =>
+    RegisterToken.parse(token, loc) ??
+    BranchAddressingTypeToken.parse(token, loc) ??
+    SizeOverrideToken.parse(token, loc) ??
+    true,
+});
 
 /**
  * Lexer for assembler lang
- *
- * @export
- * @param {LexerConfig} lexerConfig
- * @param {string} code
- * @returns {IterableIterator<Token>}
  */
-export function asmLexer(lexerConfig: LexerConfig, code: string): IterableIterator<Token> {
+export function asmLexer(
+  lexerConfig: LexerConfig,
+  code: string,
+): IterableIterator<Token> {
   return lexer(
     {
       tokensParsers: TOKEN_PARSERS,
@@ -58,13 +53,11 @@ export function asmLexer(lexerConfig: LexerConfig, code: string): IterableIterat
 
 /**
  * ASM lexer that does not throw errors
- *
- * @export
- * @param {LexerConfig} lexerConfig
- * @param {string} code
- * @returns {Result<Token[], LexerError[]>}
  */
-export function safeResultAsmLexer(lexerConfig: LexerConfig, code: string): Result<Token[], LexerError[]> {
+export function safeResultAsmLexer(
+  lexerConfig: LexerConfig,
+  code: string,
+): Result<Token[], LexerError[]> {
   return safeResultLexer(
     {
       tokensParsers: TOKEN_PARSERS,

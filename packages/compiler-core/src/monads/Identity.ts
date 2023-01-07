@@ -1,12 +1,8 @@
 import * as R from 'ramda';
-import {IsEqual} from '../interfaces';
+import { IsEqual } from '../interfaces';
 
 /**
  * Monad that holds only one value
- *
- * @export
- * @class Identity
- * @template T
  */
 export class Identity<T> implements IsEqual<Identity<T>> {
   protected readonly value: Readonly<T>;
@@ -32,8 +28,6 @@ export class Identity<T> implements IsEqual<Identity<T>> {
   }
 
   map(fn: (value: T) => T): this {
-    return new (this.constructor as any)(
-      this.bind(fn),
-    );
+    return new (this.constructor as any)(this.bind(fn));
   }
 }

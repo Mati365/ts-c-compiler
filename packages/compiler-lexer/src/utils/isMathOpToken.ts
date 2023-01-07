@@ -1,11 +1,7 @@
-import {TokenType} from '../tokens';
+import { TokenType } from '../tokens';
 
 /**
  * Checks if token can perform numeric expression
- *
- * @export
- * @param {TokenType} type
- * @returns {boolean}
  */
 export function isMathOpToken(type: TokenType): boolean {
   switch (type) {
@@ -27,11 +23,6 @@ export function isMathOpToken(type: TokenType): boolean {
 
 /**
  * Fast execute math operator
- *
- * @export
- * @param {TokenType} op
- * @param {number[]} args
- * @returns {number}
  */
 export function evalMathOp(op: TokenType, args: number[]): number {
   switch (op) {

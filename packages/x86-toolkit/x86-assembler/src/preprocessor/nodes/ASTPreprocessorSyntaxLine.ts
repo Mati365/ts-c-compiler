@@ -1,32 +1,22 @@
-import {joinTokensWithSpaces} from '@compiler/lexer/utils/joinTokensTexts';
+import { joinTokensWithSpaces } from '@compiler/lexer/utils/joinTokensTexts';
 
-import {Token} from '@compiler/lexer/tokens';
-import {NodeLocation} from '@compiler/grammar/tree/NodeLocation';
+import { Token } from '@compiler/lexer/tokens';
+import { NodeLocation } from '@compiler/grammar/tree/NodeLocation';
 
 import {
   PreprocessorInterpreter,
   InterpreterResult,
 } from '../interpreter/PreprocessorInterpreter';
 
-import {
-  ASTPreprocessorKind,
-  ASTPreprocessorNode,
-} from '../constants';
+import { ASTPreprocessorKind, ASTPreprocessorNode } from '../constants';
 
 /**
  * Other lines
- *
- * @export
- * @class ASTPreprocessorSyntaxLine
- * @extends {ASTPreprocessorNode}
  */
 export class ASTPreprocessorSyntaxLine extends ASTPreprocessorNode {
   private outputTokens: Token[];
 
-  constructor(
-    loc: NodeLocation,
-    readonly tokens: Token[],
-  ) {
+  constructor(loc: NodeLocation, readonly tokens: Token[]) {
     super(ASTPreprocessorKind.SyntaxStmt, loc);
   }
 
@@ -39,19 +29,17 @@ export class ASTPreprocessorSyntaxLine extends ASTPreprocessorNode {
   }
 
   toString(): string {
-    const {kind, tokens} = this;
+    const { kind, tokens } = this;
 
     return `${kind} stmt="${joinTokensWithSpaces(tokens)}"`;
   }
 
   /**
    * Exec interpreter on node
-   *
-   * @param {PreprocessorInterpreter} interpreter
-   * @returns {InterpreterResult}
-   * @memberof ASTPreprocessorMacro
    */
   exec(interpreter: PreprocessorInterpreter): InterpreterResult {
-    [, this.outputTokens] = interpreter.removeMacrosFromTokens(this.outputTokens ?? this.tokens);
+    [, this.outputTokens] = interpreter.removeMacrosFromTokens(
+      this.outputTokens ?? this.tokens,
+    );
   }
 }

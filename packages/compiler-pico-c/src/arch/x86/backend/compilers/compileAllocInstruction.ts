@@ -1,20 +1,19 @@
-import {IRAllocInstruction} from '@compiler/pico-c/frontend/ir/instructions';
-import {CompilerFnAttrs} from '../../constants/types';
+import { IRAllocInstruction } from '@compiler/pico-c/frontend/ir/instructions';
+import { CompilerFnAttrs } from '../../constants/types';
 
 type AllocInstructionCompilerAttrs = CompilerFnAttrs & {
   instruction: IRAllocInstruction;
 };
 
-export function compileAllocInstruction(
-  {
-    instruction,
-    context,
-  }: AllocInstructionCompilerAttrs,
-) {
-  const {allocator} = context;
-  const {outputVar} = instruction;
+export function compileAllocInstruction({
+  instruction,
+  context,
+}: AllocInstructionCompilerAttrs) {
+  const { allocator } = context;
+  const { outputVar } = instruction;
 
-  allocator
-    .stackFrame
-    .allocLocalVariable(outputVar.name, outputVar.type.getByteSize());
+  allocator.stackFrame.allocLocalVariable(
+    outputVar.name,
+    outputVar.type.getByteSize(),
+  );
 }

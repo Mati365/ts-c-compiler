@@ -1,10 +1,10 @@
 /* eslint-disable no-use-before-define, @typescript-eslint/no-use-before-define */
-import {TokenType, NumberToken, Token} from '@compiler/lexer/tokens';
-import {NodeLocation} from '@compiler/grammar/tree/NodeLocation';
-import {SyntaxError} from '@compiler/grammar/Grammar';
+import { TokenType, NumberToken, Token } from '@compiler/lexer/tokens';
+import { NodeLocation } from '@compiler/grammar/tree/NodeLocation';
+import { SyntaxError } from '@compiler/grammar/Grammar';
 
-import {ASTPreprocessorBinaryOpNode} from '../nodes/ASTPreprocessorBinaryOpNode';
-import {ASTPreprocessorValueNode} from '../nodes/ASTPreprocessorValueNode';
+import { ASTPreprocessorBinaryOpNode } from '../nodes/ASTPreprocessorBinaryOpNode';
+import { ASTPreprocessorValueNode } from '../nodes/ASTPreprocessorValueNode';
 import {
   PreprocessorGrammar,
   ASTPreprocessorNode,
@@ -21,10 +21,11 @@ import {
  * num -> keyword | number | ( expr )
  */
 function num(g: PreprocessorGrammar): ASTPreprocessorNode {
-  const {currentToken: token} = g;
+  const { currentToken: token } = g;
 
-  if (token.type === TokenType.KEYWORD)
+  if (token.type === TokenType.KEYWORD) {
     return keywordTerm(g);
+  }
 
   if (token.type === TokenType.NUMBER) {
     g.consume();
@@ -38,17 +39,15 @@ function num(g: PreprocessorGrammar): ASTPreprocessorNode {
   if (token.type === TokenType.BRACKET && token.text === '(') {
     g.consume();
     const expr = orBitwiseOp(g);
-    g.match(
-      {
-        type: TokenType.BRACKET,
-        terminal: ')',
-      },
-    );
+    g.match({
+      type: TokenType.BRACKET,
+      terminal: ')',
+    });
 
     return expr;
   }
 
-  throw new SyntaxError;
+  throw new SyntaxError();
 }
 
 /**
@@ -56,12 +55,9 @@ function num(g: PreprocessorGrammar): ASTPreprocessorNode {
  *
  * @see
  *  term -> num | +num | -num
- *
- * @param {PreprocessorGrammar} g
- * @returns {ASTPreprocessorNode}
  */
 function term(g: PreprocessorGrammar): ASTPreprocessorNode {
-  const {currentToken: token} = g;
+  const { currentToken: token } = g;
 
   switch (token.type) {
     case TokenType.PLUS:
@@ -73,9 +69,7 @@ function term(g: PreprocessorGrammar): ASTPreprocessorNode {
         new ASTPreprocessorValueNode<NumberToken[]>(
           ASTPreprocessorKind.Value,
           NodeLocation.fromTokenLoc(token.loc),
-          [
-            new NumberToken('0', 0, null, token.loc),
-          ],
+          [new NumberToken('0', 0, null, token.loc)],
         ),
         term(g),
       );
@@ -88,9 +82,6 @@ function term(g: PreprocessorGrammar): ASTPreprocessorNode {
 
 /**
  * Macro calls etc
- *
- * @param {PreprocessorGrammar} g
- * @returns {ASTPreprocessorNode}
  */
 function keywordTerm(g: PreprocessorGrammar): ASTPreprocessorNode {
   const result: Token[] = [g.currentToken];
@@ -100,13 +91,14 @@ function keywordTerm(g: PreprocessorGrammar): ASTPreprocessorNode {
   if (g.currentToken.text === '(') {
     let nesting = 0;
 
-    g.iterate((token) => {
+    g.iterate(token => {
       result.push(token);
 
-      if (token.text === '(')
+      if (token.text === '(') {
         nesting++;
-      else if (token.text === ')')
+      } else if (token.text === ')') {
         nesting--;
+      }
 
       return nesting > 0;
     });
@@ -120,47 +112,30 @@ function keywordTerm(g: PreprocessorGrammar): ASTPreprocessorNode {
   );
 }
 
-const mul = createLeftRecursiveOperatorMatcher(
-  {
-    parentExpression: term,
-    operator: [
-      TokenType.MUL,
-      TokenType.DIV,
-      TokenType.MOD,
-    ],
-  },
-).op;
+const mul = createLeftRecursiveOperatorMatcher({
+  parentExpression: term,
+  operator: [TokenType.MUL, TokenType.DIV, TokenType.MOD],
+}).op;
 
-const add = createLeftRecursiveOperatorMatcher(
-  {
-    parentExpression: mul,
-    operator: [
-      TokenType.PLUS,
-      TokenType.MINUS,
-    ],
-  },
-).op;
+const add = createLeftRecursiveOperatorMatcher({
+  parentExpression: mul,
+  operator: [TokenType.PLUS, TokenType.MINUS],
+}).op;
 
-const andBitwiseOp = createLeftRecursiveOperatorMatcher(
-  {
-    operator: TokenType.BIT_AND,
-    parentExpression: add,
-  },
-).op;
+const andBitwiseOp = createLeftRecursiveOperatorMatcher({
+  operator: TokenType.BIT_AND,
+  parentExpression: add,
+}).op;
 
-const xorBitwiseOp = createLeftRecursiveOperatorMatcher(
-  {
-    operator: TokenType.POW,
-    parentExpression: andBitwiseOp,
-  },
-).op;
+const xorBitwiseOp = createLeftRecursiveOperatorMatcher({
+  operator: TokenType.POW,
+  parentExpression: andBitwiseOp,
+}).op;
 
-const orBitwiseOp = createLeftRecursiveOperatorMatcher(
-  {
-    operator: TokenType.BIT_OR,
-    parentExpression: xorBitwiseOp,
-  },
-).op;
+const orBitwiseOp = createLeftRecursiveOperatorMatcher({
+  operator: TokenType.BIT_OR,
+  parentExpression: xorBitwiseOp,
+}).op;
 
 /**
  * Matches math expression into tree
@@ -184,17 +159,16 @@ const orBitwiseOp = createLeftRecursiveOperatorMatcher(
  *
  * term = <num>
  * term = "(" add ")"
- *
- * @export
- * @param {PreprocessorGrammar} g
- * @param {boolean} [reducePostFixOps=true]
- * @returns {ASTPreprocessorNode}
  */
-export function mathExpression(g: PreprocessorGrammar, reducePostFixOps: boolean = true): ASTPreprocessorNode {
+export function mathExpression(
+  g: PreprocessorGrammar,
+  reducePostFixOps: boolean = true,
+): ASTPreprocessorNode {
   const node = orBitwiseOp(g);
 
-  if (reducePostFixOps)
-    (new PreprocessorReducePostfixOperatorsVisitor).visit(node);
+  if (reducePostFixOps) {
+    new PreprocessorReducePostfixOperatorsVisitor().visit(node);
+  }
 
   return node;
 }

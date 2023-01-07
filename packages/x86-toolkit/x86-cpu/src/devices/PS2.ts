@@ -1,7 +1,7 @@
-import {UnionStruct, bits} from '@compiler/core/shared/UnionStruct';
+import { UnionStruct, bits } from '@compiler/core/shared/UnionStruct';
 
-import {X86CPU} from '../X86CPU';
-import {uuidX86Device} from '../types/X86AbstractDevice';
+import { X86CPU } from '../X86CPU';
+import { uuidX86Device } from '../types/X86AbstractDevice';
 
 export class PS2Status extends UnionStruct {
   @bits(0) outputBufferStatus: number;
@@ -25,10 +25,6 @@ export class PS2Configuration extends UnionStruct {
 /**
  * @todo
  *  Add PS2 support!
- *
- * @export
- * @class PS2
- * @extends {uuidX86Device<X86CPU>('ps2')}
  */
 export class PS2 extends uuidX86Device<X86CPU>('ps2') {
   init() {}

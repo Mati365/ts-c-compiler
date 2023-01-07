@@ -1,5 +1,5 @@
-import {CCompilerArch} from '@compiler/pico-c/constants';
+import { CCompilerArch } from '@compiler/pico-c/constants';
 
 export type CTypeCheckConfig = {
-  arch: CCompilerArch,
+  arch: CCompilerArch;
 };

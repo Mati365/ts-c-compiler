@@ -8,7 +8,7 @@ describe('For stmt', () => {
           int a = 3;
         }
       }
-    `).toCompiledIRBeEqual(/* ruby */`
+    `).toCompiledIRBeEqual(/* ruby */ `
       # --- Block main ---
       def main():
         i{0}: int*2B = alloca int2B

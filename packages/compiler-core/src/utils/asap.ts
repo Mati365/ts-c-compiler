@@ -1,11 +1,7 @@
-import {genUUID} from './genUUID';
+import { genUUID } from './genUUID';
 
 /**
  * Tiny polyfill for setImmediate
- *
- * @export
- * @param {(() => void|boolean)} fn
- * @returns {VoidFunction}
  */
 export function asap(fn: () => void | boolean): VoidFunction {
   const eventUUID = genUUID('asap-handler');
@@ -13,8 +9,9 @@ export function asap(fn: () => void | boolean): VoidFunction {
 
   const post = () => window.postMessage(eventUUID, '*');
   const tick = (e: MessageEvent) => {
-    if (destroyed)
+    if (destroyed) {
       return;
+    }
 
     if (e.source === window && e.data === eventUUID) {
       if (fn() === false) {
@@ -30,8 +27,9 @@ export function asap(fn: () => void | boolean): VoidFunction {
   post();
 
   const unmount = () => {
-    if (destroyed)
+    if (destroyed) {
       return;
+    }
 
     window.removeEventListener('message', tick);
     destroyed = true;

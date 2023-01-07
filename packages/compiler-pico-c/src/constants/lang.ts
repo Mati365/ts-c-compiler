@@ -1,8 +1,8 @@
 import * as R from 'ramda';
-import {$enum} from 'ts-enum-util';
+import { $enum } from 'ts-enum-util';
 
-import {IdentifiersMap} from '@compiler/lexer/lexer';
-import {TokenType} from '@compiler/lexer/shared';
+import { IdentifiersMap } from '@compiler/lexer/lexer';
+import { TokenType } from '@compiler/lexer/shared';
 
 export enum CStructAlign {
   PACKED = 'packed',
@@ -101,9 +101,7 @@ export type CMathOperator =
   | TokenType.BIT_SHIFT_LEFT
   | TokenType.BIT_NOT;
 
-export type CLogicOperator =
-  | TokenType.AND
-  | TokenType.OR;
+export type CLogicOperator = TokenType.AND | TokenType.OR;
 
 export type CRelOperator =
   | TokenType.GREATER_THAN
@@ -122,20 +120,19 @@ export enum CUnaryCastOperator {
   LOGICAL_NOT = '!',
 }
 
-export type CCompilerTypeIdentifier = (
-  CTypeQualifier
+export type CCompilerTypeIdentifier =
+  | CTypeQualifier
   | CStorageClassSpecifier
   | CTypeSpecifier
   | CFunctionSpecifier
-  | CStructLikeSpecifiers
-);
+  | CStructLikeSpecifiers;
 
-export type CCompilerIdentifier = (
-  CCompilerKeyword
-  | CCompilerTypeIdentifier
-);
+export type CCompilerIdentifier = CCompilerKeyword | CCompilerTypeIdentifier;
 
-export const CCOMPILER_ASSIGN_MATH_OPERATORS: Record<CAssignOperator, CMathOperator> = {
+export const CCOMPILER_ASSIGN_MATH_OPERATORS: Record<
+  CAssignOperator,
+  CMathOperator
+> = {
   [CAssignOperator.ASSIGN]: null,
   [CAssignOperator.MUL_ASSIGN]: TokenType.MUL,
   [CAssignOperator.DIV_ASSIGN]: TokenType.DIV,
@@ -164,11 +161,16 @@ export const CCOMPILER_FLOATING_SPECIFIERS: CTypeSpecifier[] = [
   CTypeSpecifier.DOUBLE,
 ];
 
-export const CCOMPILER_STRUCT_LIKE_SPECIFIERS = $enum(CStructLikeSpecifiers).getValues();
-export const CCOMPILER_FUNCTION_SPECIFIERS = $enum(CFunctionSpecifier).getValues();
+export const CCOMPILER_STRUCT_LIKE_SPECIFIERS = $enum(
+  CStructLikeSpecifiers,
+).getValues();
+export const CCOMPILER_FUNCTION_SPECIFIERS =
+  $enum(CFunctionSpecifier).getValues();
 export const CCOMPILER_TYPE_SPECIFIERS = $enum(CTypeSpecifier).getValues();
 export const CCOMPILER_TYPE_QUALIFIERS = $enum(CTypeQualifier).getValues();
-export const CCOMPILER_STORAGE_CLASS_SPECIFIERS = $enum(CStorageClassSpecifier).getValues();
+export const CCOMPILER_STORAGE_CLASS_SPECIFIERS = $enum(
+  CStorageClassSpecifier,
+).getValues();
 export const CCOMPILER_UNARY_OPERATORS = $enum(CUnaryCastOperator).getValues();
 export const CCOMPILER_ASSIGN_OPERATORS = $enum(CAssignOperator).getValues();
 
@@ -179,18 +181,15 @@ export const CCOMPILER_IDENTIFIERS_MAP: IdentifiersMap = [
   CStorageClassSpecifier,
   CFunctionSpecifier,
   CCompilerKeyword,
-].reduce(
-  (acc, enumerator) => {
-    Object.assign(
-      acc,
-      R.fromPairs(
-        $enum(enumerator)
-          .getValues()
-          .map((value) => [value, value]),
-      ),
-    );
+].reduce((acc, enumerator) => {
+  Object.assign(
+    acc,
+    R.fromPairs(
+      $enum(enumerator)
+        .getValues()
+        .map(value => [value, value]),
+    ),
+  );
 
-    return acc;
-  },
-  {},
-);
+  return acc;
+}, {});

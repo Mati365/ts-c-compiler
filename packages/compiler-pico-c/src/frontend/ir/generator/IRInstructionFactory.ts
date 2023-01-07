@@ -1,4 +1,4 @@
-import {IRLabelInstruction} from '../instructions';
+import { IRLabelInstruction } from '../instructions';
 
 export class IRInstructionFactory {
   readonly counters = {
@@ -10,8 +10,6 @@ export class IRInstructionFactory {
   }
 
   genTmpLabelInstruction() {
-    return new IRLabelInstruction(
-      this.genTmpLabelName(),
-    );
+    return new IRLabelInstruction(this.genTmpLabelName());
   }
 }

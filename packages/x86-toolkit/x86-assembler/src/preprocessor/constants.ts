@@ -1,5 +1,5 @@
-import {TreeNode} from '@compiler/grammar/tree/TreeNode';
-import {Grammar} from '@compiler/grammar/Grammar';
+import { TreeNode } from '@compiler/grammar/tree/TreeNode';
+import { Grammar } from '@compiler/grammar/Grammar';
 import {
   PreprocessorInterpretable,
   InterpreterResult,
@@ -7,8 +7,10 @@ import {
 } from './interpreter/PreprocessorInterpreter';
 
 export enum PreprocessorIdentifier {
-  DEFINE, IDEFINE,
-  MACRO, IMACRO,
+  DEFINE,
+  IDEFINE,
+  MACRO,
+  IMACRO,
   ENDMACRO,
   IF,
   IFN,
@@ -43,12 +45,10 @@ export enum ASTPreprocessorKind {
 
 /**
  * Checks if node kind is statement
- *
- * @export
- * @param {ASTPreprocessorNode} node
- * @returns {boolean}
  */
-export function isStatementPreprocessorNode(node: ASTPreprocessorNode): boolean {
+export function isStatementPreprocessorNode(
+  node: ASTPreprocessorNode,
+): boolean {
   switch (node.kind) {
     case ASTPreprocessorKind.Stmt:
     case ASTPreprocessorKind.DefineStmt:
@@ -65,9 +65,15 @@ export function isStatementPreprocessorNode(node: ASTPreprocessorNode): boolean 
   }
 }
 
-export class PreprocessorGrammar extends Grammar<PreprocessorIdentifier, ASTPreprocessorKind> {}
+export class PreprocessorGrammar extends Grammar<
+  PreprocessorIdentifier,
+  ASTPreprocessorKind
+> {}
 
-export class ASTPreprocessorNode extends TreeNode<ASTPreprocessorKind> implements PreprocessorInterpretable {
+export class ASTPreprocessorNode
+  extends TreeNode<ASTPreprocessorKind>
+  implements PreprocessorInterpretable
+{
   /* eslint-disable @typescript-eslint/no-unused-vars */
   toEmitterLine(interpreter?: PreprocessorInterpreter): string {
     return '';

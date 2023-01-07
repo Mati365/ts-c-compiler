@@ -1,16 +1,16 @@
 import * as R from 'ramda';
 
-import {Token, TokenType, NumberToken} from '@compiler/lexer/tokens';
-import {NodeLocation} from '@compiler/grammar/tree/NodeLocation';
+import { Token, TokenType, NumberToken } from '@compiler/lexer/tokens';
+import { NodeLocation } from '@compiler/grammar/tree/NodeLocation';
 
-import {ParserError, ParserErrorCode} from '../../../shared/ParserError';
-import {ASTAsmParser} from '../ASTAsmParser';
-import {ASTNodeKind} from '../types';
-import {InstructionArgSize} from '../../../types';
-import {KindASTAsmNode} from '../ASTAsmNode';
+import { ParserError, ParserErrorCode } from '../../../shared/ParserError';
+import { ASTAsmParser } from '../ASTAsmParser';
+import { ASTNodeKind } from '../types';
+import { InstructionArgSize } from '../../../types';
+import { KindASTAsmNode } from '../ASTAsmNode';
 
-import {toStringArgsList} from '../../utils/toStringArgsList';
-import {fetchInstructionTokensArgsList} from '../../utils/fetchInstructionTokensArgsList';
+import { toStringArgsList } from '../../utils/toStringArgsList';
+import { fetchInstructionTokensArgsList } from '../../utils/fetchInstructionTokensArgsList';
 
 export enum DefTokenNames {
   DB = InstructionArgSize.BYTE,
@@ -22,15 +22,12 @@ export enum DefTokenNames {
 
 /**
  * Checks if token is size def, if so - return size
- *
- * @export
- * @param {string|Token} token
- * @returns {number}
  */
 export function tokenDefSize(token: string | Token): number {
   if (token instanceof Token) {
-    if (token.type !== TokenType.KEYWORD)
+    if (token.type !== TokenType.KEYWORD) {
       return null;
+    }
 
     return DefTokenNames[token.upperText];
   }
@@ -40,10 +37,6 @@ export function tokenDefSize(token: string | Token): number {
 
 /**
  * Used to define binary data variables
- *
- * @export
- * @class ASTDef
- * @extends {KindASTAsmNode(ASTNodeKind.DEFINE)}
  */
 export class ASTDef extends KindASTAsmNode(ASTNodeKind.DEFINE) {
   constructor(
@@ -55,41 +48,30 @@ export class ASTDef extends KindASTAsmNode(ASTNodeKind.DEFINE) {
   }
 
   clone(): ASTDef {
-    const {byteSize, args, loc} = this;
+    const { byteSize, args, loc } = this;
 
     return new ASTDef(byteSize, args, loc);
   }
 
-  /**
-   * @returns {string}
-   * @memberof ASTInstruction
-   */
   toString(): string {
-    const {byteSize, args} = this;
+    const { byteSize, args } = this;
 
-    return toStringArgsList(
-      DefTokenNames[byteSize],
-      args,
-    );
+    return toStringArgsList(DefTokenNames[byteSize], args);
   }
 
   /**
    * Defines binary data
-   *
-   * @static
-   * @param {Token} token
-   * @param {ASTAsmParser} parser
-   * @returns {ASTLabel}
-   * @memberof ASTLabel
    */
   static parse(token: Token, parser: ASTAsmParser): ASTDef {
-    if (token.type !== TokenType.KEYWORD)
+    if (token.type !== TokenType.KEYWORD) {
       return null;
+    }
 
     // check definition size
     const tokenSize: number = tokenDefSize(token);
-    if (!tokenSize)
+    if (!tokenSize) {
       return null;
+    }
 
     // pick all args
     const argsTokens = fetchInstructionTokensArgsList(parser, false);
@@ -103,25 +85,23 @@ export class ASTDef extends KindASTAsmNode(ASTNodeKind.DEFINE) {
 
     // throw error if any number exceddes token def size
     // todo: check strings?
-    R.forEach(
-      (arg) => {
-        if (arg.type !== TokenType.NUMBER)
-          return;
+    R.forEach(arg => {
+      if (arg.type !== TokenType.NUMBER) {
+        return;
+      }
 
-        const numberToken = <NumberToken> arg;
-        if (numberToken.value.byteSize > tokenSize) {
-          throw new ParserError(
-            ParserErrorCode.DEFINED_DATA_EXCEEDES_BOUNDS,
-            token.loc,
-            {
-              data: numberToken.text,
-              maxSize: tokenSize,
-            },
-          );
-        }
-      },
-      argsTokens,
-    );
+      const numberToken = <NumberToken>arg;
+      if (numberToken.value.byteSize > tokenSize) {
+        throw new ParserError(
+          ParserErrorCode.DEFINED_DATA_EXCEEDES_BOUNDS,
+          token.loc,
+          {
+            data: numberToken.text,
+            maxSize: tokenSize,
+          },
+        );
+      }
+    }, argsTokens);
 
     return new ASTDef(
       tokenSize,

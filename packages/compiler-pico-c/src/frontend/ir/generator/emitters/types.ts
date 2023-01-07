@@ -1,22 +1,31 @@
-import {CScopeTree} from '@compiler/pico-c/frontend/analyze';
+import { CScopeTree } from '@compiler/pico-c/frontend/analyze';
 
-import {IRGeneratorConfig} from '../../constants';
-import {IRFnDeclInstruction, IRInstruction} from '../../instructions';
-import {IRConstant, IRVariable} from '../../variables';
-import {IRVariableAllocator} from '../IRVariableAllocator';
+import { IRGeneratorConfig } from '../../constants';
+import { IRFnDeclInstruction, IRInstruction } from '../../instructions';
+import { IRConstant, IRVariable } from '../../variables';
+import { IRVariableAllocator } from '../IRVariableAllocator';
 
-import type {IRCodeSegmentBuilder, IRCodeSegmentBuilderResult} from '../segments/IRCodeSegmentBuilder';
-import type {IRDataSegmentBuilder, IRDataSegmentBuilderResult} from '../segments';
+import type {
+  IRCodeSegmentBuilder,
+  IRCodeSegmentBuilderResult,
+} from '../segments/IRCodeSegmentBuilder';
+import type {
+  IRDataSegmentBuilder,
+  IRDataSegmentBuilderResult,
+} from '../segments';
 
-import type {emitAssignmentIR} from './emitAssignmentIR';
-import type {emitExpressionIR, LogicBinaryExpressionLabels} from './emit-expr';
-import type {emitIdentifierGetterIR} from './emitIdentifierGetterIR';
-import type {emitPointerAddressExpression} from './emitPointerAddressExpression';
-import type {emitUnaryLoadPtrValueIR} from './emitUnaryLoadPointerValueIR';
-import type {IRInstructionFactory} from '../IRInstructionFactory';
-import type {emitLogicExpressionIR} from './emit-expr/emitLogicExpressionIR';
-import type {emitBlockItemIR} from './emit-fn-decl';
-import type {emitVariableInitializerIR} from './emit-initializer';
+import type { emitAssignmentIR } from './emitAssignmentIR';
+import type {
+  emitExpressionIR,
+  LogicBinaryExpressionLabels,
+} from './emit-expr';
+import type { emitIdentifierGetterIR } from './emitIdentifierGetterIR';
+import type { emitPointerAddressExpression } from './emitPointerAddressExpression';
+import type { emitUnaryLoadPtrValueIR } from './emitUnaryLoadPointerValueIR';
+import type { IRInstructionFactory } from '../IRInstructionFactory';
+import type { emitLogicExpressionIR } from './emit-expr/emitLogicExpressionIR';
+import type { emitBlockItemIR } from './emit-fn-decl';
+import type { emitVariableInitializerIR } from './emit-initializer';
 
 export type IRGeneratorSegments = {
   code: IRCodeSegmentBuilder;
@@ -29,7 +38,7 @@ export type IREmitterContext = {
   allocator: IRVariableAllocator;
   factory: IRInstructionFactory;
   emit: {
-    assignment: typeof emitAssignmentIR,
+    assignment: typeof emitAssignmentIR;
     expression: typeof emitExpressionIR;
     logicExpression: typeof emitLogicExpressionIR;
     pointerAddressExpression: typeof emitPointerAddressExpression;
@@ -76,10 +85,12 @@ export type IRScopeGeneratorResult = {
   segments: {
     code: IRCodeSegmentBuilderResult;
     data: IRDataSegmentBuilderResult;
-  },
+  };
 };
 
-export function createBlankStmtResult(instructions?: IRInstruction[]): IREmitterStmtResult {
+export function createBlankStmtResult(
+  instructions?: IRInstruction[],
+): IREmitterStmtResult {
   return {
     instructions: instructions || [],
     data: [],
@@ -99,7 +110,10 @@ export function createBlankExprResult(
 /**
  * Do not change instructions reference!
  */
-export function appendStmtResults(src: IREmitterStmtResult, target: IREmitterStmtResult) {
+export function appendStmtResults(
+  src: IREmitterStmtResult,
+  target: IREmitterStmtResult,
+) {
   if (!src) {
     return target;
   }

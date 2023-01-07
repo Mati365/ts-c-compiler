@@ -1,9 +1,17 @@
-import {replaceNthByte, extractNthByte} from '@compiler/core/utils/extractNthByte';
-import {uuidX86Device} from '../../types/X86AbstractDevice';
+import {
+  replaceNthByte,
+  extractNthByte,
+} from '@compiler/core/utils/extractNthByte';
+import { uuidX86Device } from '../../types/X86AbstractDevice';
 
-import {X86CPU} from '../../X86CPU';
-import {CountdownTimer, TimerControlByte, TimerAccessMode} from './CountdownTimer';
-import {SpeakerTimer} from './SpeakerTimer';
+import { X86CPU } from '../../X86CPU';
+import {
+  CountdownTimer,
+  TimerControlByte,
+  TimerAccessMode,
+} from './CountdownTimer';
+
+import { SpeakerTimer } from './SpeakerTimer';
 
 /**
  * Real-Time Clock
@@ -11,23 +19,20 @@ import {SpeakerTimer} from './SpeakerTimer';
  * @see {@link http://www.ic.unicamp.br/~celio/mc404s102/pcspeaker/InternalSpeaker.htm}
  * @see {@link https://web.archive.org/web/20140307023908/http://fly.srk.fer.hr/GDM/articles/sndmus/speaker1.html}
  * @see {@link https://wiki.osdev.org/Programmable_Interval_Timer}
- *
- * @class PIT
- * @extends {Device}
  */
 export class PIT extends uuidX86Device<X86CPU>('pit') {
-  private timers: {[offset: number]: CountdownTimer} = {
-    0x0: new CountdownTimer,
-    0x1: new CountdownTimer,
-    0x2: new SpeakerTimer,
+  private timers: { [offset: number]: CountdownTimer } = {
+    0x0: new CountdownTimer(),
+    0x1: new CountdownTimer(),
+    0x2: new SpeakerTimer(),
   };
 
   get speakerTimer(): SpeakerTimer {
-    return <SpeakerTimer> this.timers[0x2];
+    return this.timers[0x2] as SpeakerTimer;
   }
 
   tick() {
-    const {timers} = this;
+    const { timers } = this;
 
     timers[0x0].check(this);
     timers[0x1].check(this);
@@ -36,19 +41,11 @@ export class PIT extends uuidX86Device<X86CPU>('pit') {
 
   /**
    * Reads current value from nth counter
-   *
-   * @param {number} index
-   * @returns {number}
-   * @memberof PIT
    */
   readChannelCounterByte(index: number): number {
     const timer = this.timers[index];
-    const {accessMode} = timer.controlByte;
-    const value = (
-      timer.latched
-        ? timer.latchValue
-        : timer.getValue()
-    );
+    const { accessMode } = timer.controlByte;
+    const value = timer.latched ? timer.latchValue : timer.getValue();
 
     let byte = 0;
     switch (accessMode) {
@@ -82,14 +79,10 @@ export class PIT extends uuidX86Device<X86CPU>('pit') {
 
   /**
    * Writes counter value byte into timer
-   *
-   * @param {number} index
-   * @param {number} byte
-   * @memberof PIT
    */
   writeChannelCounterByte(index: number, byte: number) {
     const timer = this.timers[index];
-    const {accessMode} = timer.controlByte;
+    const { accessMode } = timer.controlByte;
     let byteOffset = 0x0;
 
     switch (accessMode) {
@@ -110,35 +103,34 @@ export class PIT extends uuidX86Device<X86CPU>('pit') {
         console.warn('PIT: unknown timer accessMode!');
     }
 
-    if (accessMode !== TimerAccessMode.LATCH_COUNT_VALUE)
+    if (accessMode !== TimerAccessMode.LATCH_COUNT_VALUE) {
       timer.countdown = replaceNthByte(byteOffset, timer.countdown, byte);
+    }
   }
 
   /**
    * Boot device
-   *
-   * @memberof PIT
    */
   init() {
     this.irq = 0x0;
     this.ports = {
       /* recat/write timer countdown value */
       0x40: {
-        set: (byte) => this.writeChannelCounterByte(0x0, byte),
+        set: byte => this.writeChannelCounterByte(0x0, byte),
         get: () => this.readChannelCounterByte(0x0),
       },
       0x41: {
-        set: (byte) => this.writeChannelCounterByte(0x1, byte),
+        set: byte => this.writeChannelCounterByte(0x1, byte),
         get: () => this.readChannelCounterByte(0x1),
       },
       0x42: {
-        set: (byte) => this.writeChannelCounterByte(0x2, byte),
+        set: byte => this.writeChannelCounterByte(0x2, byte),
         get: () => this.readChannelCounterByte(0x2),
       },
 
       /* tell timer that should it will receive data */
       0x43: {
-        set: (data) => {
+        set: data => {
           const controlByte = new TimerControlByte(data);
 
           // find matching timer

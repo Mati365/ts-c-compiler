@@ -1,18 +1,13 @@
-import {walkOverFields} from '@compiler/grammar/decorators/walkOverFields';
+import { walkOverFields } from '@compiler/grammar/decorators/walkOverFields';
 
-import {NodeLocation} from '@compiler/grammar/tree/NodeLocation';
-import {ASTCCompilerKind, ASTCCompilerNode} from './ASTCCompilerNode';
-import {ASTCAbstractDeclarator} from './ASTCAbstractDeclarator';
-import {ASTCSpecifiersQualifiersList} from './ASTCSpecifiersQualifiersList';
+import { NodeLocation } from '@compiler/grammar/tree/NodeLocation';
+import { ASTCCompilerKind, ASTCCompilerNode } from './ASTCCompilerNode';
+import { ASTCAbstractDeclarator } from './ASTCAbstractDeclarator';
+import { ASTCSpecifiersQualifiersList } from './ASTCSpecifiersQualifiersList';
 
-@walkOverFields(
-  {
-    fields: [
-      'specifierList',
-      'abstractDeclarator',
-    ],
-  },
-)
+@walkOverFields({
+  fields: ['specifierList', 'abstractDeclarator'],
+})
 export class ASTCTypeName extends ASTCCompilerNode {
   constructor(
     loc: NodeLocation,

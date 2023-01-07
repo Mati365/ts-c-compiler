@@ -1,7 +1,7 @@
 import * as R from 'ramda';
 
-import {TokenType, TokenKind} from '../shared';
-import {TokenLocation} from '../shared/TokenLocation';
+import { TokenType, TokenKind } from '../shared';
+import { TokenLocation } from '../shared/TokenLocation';
 import {
   toStringQuoteToken,
   toStringBracketToken,
@@ -9,17 +9,10 @@ import {
   matchBracket,
 } from '../utils/matchCharacter';
 
-export {
-  TokenType,
-  TokenKind,
-};
+export { TokenType, TokenKind };
 
 /**
  * Result of tokenizing phrase
- *
- * @export
- * @class Token
- * @template V value
  */
 export class Token<V = any, O = any> {
   readonly upperText: string;
@@ -35,12 +28,6 @@ export class Token<V = any, O = any> {
 
   /**
    * Creates an instance of Token.
-   *
-   * @param {TokenType} type
-   * @param {string} text
-   * @param {TokenLocation} loc
-   * @param {ValueType} [value=null]
-   * @memberof Token
    */
   constructor(
     readonly type: TokenType,
@@ -58,19 +45,13 @@ export class Token<V = any, O = any> {
   }
 
   fork(newText: string = this.text, loc: TokenLocation = this.loc): Token<V> {
-    const {type, kind, value} = this;
+    const { type, kind, value } = this;
 
-    return new Token(
-      type,
-      kind,
-      newText,
-      loc,
-      value,
-    );
+    return new Token(type, kind, newText, loc, value);
   }
 
   toString() {
-    const {text, type, kind} = this;
+    const { text, type, kind } = this;
 
     switch (type) {
       case TokenType.QUOTE: {
@@ -81,8 +62,9 @@ export class Token<V = any, O = any> {
 
       case TokenType.BRACKET: {
         // lexer consumeBracketContent in lexer config
-        if (text.length === 1 && matchBracket(text) !== null)
+        if (text.length === 1 && matchBracket(text) !== null) {
           return text;
+        }
 
         const bracket = toStringBracketToken(kind);
         return `${bracket}${text}${flipBracket(bracket)}`;

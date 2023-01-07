@@ -1,7 +1,7 @@
-import {CSpecBitmap} from '@compiler/pico-c/frontend/analyze/constants/bitmaps';
-import {SizeofPrimitiveTypeFn} from '../../../types';
+import { CSpecBitmap } from '@compiler/pico-c/frontend/analyze/constants/bitmaps';
+import { SizeofPrimitiveTypeFn } from '../../../types';
 
-export const sizeofPrimitiveType: SizeofPrimitiveTypeFn = (specifiers) => {
+export const sizeofPrimitiveType: SizeofPrimitiveTypeFn = specifiers => {
   switch (specifiers) {
     case CSpecBitmap.char:
     case CSpecBitmap.signed | CSpecBitmap.char:

@@ -2,16 +2,19 @@ import * as R from 'ramda';
 
 export type Observable<T> = {
   notify(val: T): void;
-  subscribe(fn: (val: T, unmounter?: VoidFunction) => void, oneTime?: boolean): () => void;
+  subscribe(
+    fn: (val: T, unmounter?: VoidFunction) => void,
+    oneTime?: boolean,
+  ): () => void;
   clear(): void;
 };
 
 type EmitterFn<T> = (obserable: Observable<T>) => () => any;
 
 type BehaviorSubjectObservableArgs<T> = {
-  emitterFn?: EmitterFn<T>,
-  initialValue?: T,
-  comparatorFn?: (a: T, b: T) => boolean,
+  emitterFn?: EmitterFn<T>;
+  initialValue?: T;
+  comparatorFn?: (a: T, b: T) => boolean;
 };
 
 export class BehaviorSubjectObservable<T> implements Observable<T> {
@@ -25,7 +28,7 @@ export class BehaviorSubjectObservable<T> implements Observable<T> {
       initialValue,
       comparatorFn = R.equals,
       emitterFn,
-    } : BehaviorSubjectObservableArgs<T> = {
+    }: BehaviorSubjectObservableArgs<T> = {
       initialValue: null,
     },
   ) {
@@ -44,26 +47,32 @@ export class BehaviorSubjectObservable<T> implements Observable<T> {
   }
 
   destroyEmitter() {
-    const {emitterUnmountFn} = this;
+    const { emitterUnmountFn } = this;
 
-    if (emitterUnmountFn)
+    if (emitterUnmountFn) {
       emitterUnmountFn();
+    }
   }
 
   notify(val: T): BehaviorSubjectObservable<T> {
-    const {observers, comparatorFn} = this;
+    const { observers, comparatorFn } = this;
 
-    if (comparatorFn(this.lastValue, val))
+    if (comparatorFn(this.lastValue, val)) {
       return this;
+    }
 
     this.lastValue = val;
-    for (let i = 0; i < observers.length; ++i)
+    for (let i = 0; i < observers.length; ++i) {
       observers[i](val);
+    }
 
     return this;
   }
 
-  subscribe(fn: (val: T, unmounter?: VoidFunction) => void, oneTime?: boolean): () => void {
+  subscribe(
+    fn: (val: T, unmounter?: VoidFunction) => void,
+    oneTime?: boolean,
+  ): () => void {
     const cachedFn = fn;
     const unmounterRef = {
       current: null,
@@ -74,8 +83,9 @@ export class BehaviorSubjectObservable<T> implements Observable<T> {
         unmounterRef.current();
         cachedFn(val, unmounterRef.current);
       };
-    } else
+    } else {
       fn = (val: T): void => cachedFn(val, unmounterRef.current);
+    }
 
     this.observers.push(fn);
     unmounterRef.current = () => {
@@ -91,7 +101,10 @@ export class BehaviorSubjectObservable<T> implements Observable<T> {
   }
 }
 
-export const createObservablesUnmounter = (...unmounters: VoidFunction[]) => () => {
-  for (let i = 0; i < unmounters.length; ++i)
-    unmounters[i]();
-};
+export const createObservablesUnmounter =
+  (...unmounters: VoidFunction[]) =>
+  () => {
+    for (let i = 0; i < unmounters.length; ++i) {
+      unmounters[i]();
+    }
+  };

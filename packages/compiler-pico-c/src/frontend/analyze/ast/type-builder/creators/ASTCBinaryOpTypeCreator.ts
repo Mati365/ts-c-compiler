@@ -1,21 +1,31 @@
-import {ASTCCompilerKind, ASTCBinaryOpNode} from '@compiler/pico-c/frontend/parser/ast';
-import {TokenType} from '@compiler/lexer/shared';
+import {
+  ASTCCompilerKind,
+  ASTCBinaryOpNode,
+} from '@compiler/pico-c/frontend/parser/ast';
+import { TokenType } from '@compiler/lexer/shared';
 
-import {ASTCTypeCreator} from './ASTCTypeCreator';
-import {CTypeCheckError, CTypeCheckErrorCode} from '../../../errors/CTypeCheckError';
+import { ASTCTypeCreator } from './ASTCTypeCreator';
+import {
+  CTypeCheckError,
+  CTypeCheckErrorCode,
+} from '../../../errors/CTypeCheckError';
 
-import {checkLeftTypeOverlapping, isPointerArithmeticOperator} from '../../../checker';
-import {tryCastToPointer} from '../../../casts';
-import {isPointerLikeType} from '../../../types';
+import {
+  checkLeftTypeOverlapping,
+  isPointerArithmeticOperator,
+} from '../../../checker';
+import { tryCastToPointer } from '../../../casts';
+import { isPointerLikeType } from '../../../types';
 
 export class ASTCBinaryOpTypeCreator extends ASTCTypeCreator<ASTCBinaryOpNode> {
   kind = ASTCCompilerKind.BinaryOperator;
 
   override leave(node: ASTCBinaryOpNode): void {
-    if (node.hasSingleSide())
+    if (node.hasSingleSide()) {
       return;
+    }
 
-    const {left, right, op} = node;
+    const { left, right, op } = node;
     const leftType = tryCastToPointer(left.type);
     const rightType = tryCastToPointer(right.type);
 
@@ -24,8 +34,11 @@ export class ASTCBinaryOpTypeCreator extends ASTCTypeCreator<ASTCBinaryOpNode> {
         CTypeCheckErrorCode.OPERATOR_SIDES_TYPES_MISMATCH,
         node.loc.start,
         {
-          left: left?.type?.getShortestDisplayName() ?? '<unknown-left-expr-type>',
-          right: right?.type?.getShortestDisplayName() ?? '<unknown-right-expr-type>',
+          left:
+            left?.type?.getShortestDisplayName() ?? '<unknown-left-expr-type>',
+          right:
+            right?.type?.getShortestDisplayName() ??
+            '<unknown-right-expr-type>',
         },
       );
     }
@@ -34,7 +47,10 @@ export class ASTCBinaryOpTypeCreator extends ASTCTypeCreator<ASTCBinaryOpNode> {
     const rightPtr = isPointerLikeType(rightType);
 
     if (leftPtr || rightPtr) {
-      if ((leftPtr && rightPtr) || (rightPtr && !leftPtr && op !== TokenType.PLUS)) {
+      if (
+        (leftPtr && rightPtr) ||
+        (rightPtr && !leftPtr && op !== TokenType.PLUS)
+      ) {
         throw new CTypeCheckError(
           CTypeCheckErrorCode.INCORRECT_POINTER_SIDES_TYPES,
           node.loc.start,

@@ -1,5 +1,5 @@
-import {Grammar} from '@compiler/grammar/Grammar';
-import {CCompilerIdentifier} from '@compiler/pico-c/constants';
+import { Grammar } from '@compiler/grammar/Grammar';
+import { CCompilerIdentifier } from '@compiler/pico-c/constants';
 import {
   ASTCStmt,
   ASTCUnaryExpression,
@@ -14,12 +14,12 @@ import {
 export type CGrammarDef = Grammar<CCompilerIdentifier, ASTCCompilerKind>;
 
 export type CGrammar = {
-  g: CGrammarDef,
-  declarator(): ASTCDeclarator,
-  abstractDeclarator(): ASTCAbstractDeclarator,
-  statement(): ASTCStmt,
-  unaryExpression(): ASTCUnaryExpression,
-  assignmentExpression(): ASTCCompilerNode,
-  qualifiersSpecifiers(): ASTCSpecifiersQualifiersList,
-  initializer(): ASTCInitializer,
+  g: CGrammarDef;
+  declarator(): ASTCDeclarator;
+  abstractDeclarator(): ASTCAbstractDeclarator;
+  statement(): ASTCStmt;
+  unaryExpression(): ASTCUnaryExpression;
+  assignmentExpression(): ASTCCompilerNode;
+  qualifiersSpecifiers(): ASTCSpecifiersQualifiersList;
+  initializer(): ASTCInitializer;
 };

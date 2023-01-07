@@ -1,11 +1,14 @@
-import {IRInstruction} from '../../../frontend/ir/instructions';
-import {IRInstructionVarArg, isIRVariable} from '../../../frontend/ir/variables';
+import { IRInstruction } from '../../../frontend/ir/instructions';
+import {
+  IRInstructionVarArg,
+  isIRVariable,
+} from '../../../frontend/ir/variables';
 
 export function dropConstantInstructionArgs(
   constantArgs: Record<string, IRInstructionVarArg>,
   instruction: IRInstruction,
 ) {
-  const {input, output} = instruction.getArgs();
+  const { input, output } = instruction.getArgs();
   let modifiedArgs = false;
 
   for (let j = 0; j < input.length; ++j) {
@@ -22,12 +25,10 @@ export function dropConstantInstructionArgs(
   }
 
   if (modifiedArgs) {
-    return instruction.ofArgs(
-      {
-        input,
-        output,
-      },
-    );
+    return instruction.ofArgs({
+      input,
+      output,
+    });
   }
 
   return null;

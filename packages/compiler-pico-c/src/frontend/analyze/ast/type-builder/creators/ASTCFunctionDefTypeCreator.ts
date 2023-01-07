@@ -1,10 +1,13 @@
-import {ASTCFunctionDefinition, ASTCCompilerKind} from '@compiler/pico-c/frontend/parser/ast';
-import {CFunctionCallConvention} from '@compiler/pico-c/constants';
-import {ASTCTypeCreator} from './ASTCTypeCreator';
+import {
+  ASTCFunctionDefinition,
+  ASTCCompilerKind,
+} from '@compiler/pico-c/frontend/parser/ast';
+import { CFunctionCallConvention } from '@compiler/pico-c/constants';
+import { ASTCTypeCreator } from './ASTCTypeCreator';
 
-import {extractNamedEntryFromDeclaration} from '../../type-builder';
-import {CVariable} from '../../../scope/variables/CVariable';
-import {CFunctionScope} from '../../../scope/CFunctionScope';
+import { extractNamedEntryFromDeclaration } from '../../type-builder';
+import { CVariable } from '../../../scope/variables/CVariable';
+import { CFunctionScope } from '../../../scope/CFunctionScope';
 import {
   CFunctionDeclType,
   CFunctionSpecifierMonad,
@@ -18,25 +21,18 @@ export class ASTCFunctionDefTypeCreator extends ASTCTypeCreator<ASTCFunctionDefi
     const {
       scope,
       analyzeVisitor,
-      context: {
-        currentAnalyzed,
-        config,
-      },
+      context: { currentAnalyzed, config },
     } = this;
 
     const fnType = this.extractFuncTypeFromNode(node);
     if (fnType) {
       const newScope = new CFunctionScope(fnType, config, node);
 
-      scope
-        .defineType(fnType)
-        .unwrapOrThrow();
+      scope.defineType(fnType).unwrapOrThrow();
 
       currentAnalyzed.fnType = fnType;
       analyzeVisitor
-        .ofScopeVisitor(
-          scope.appendScope(newScope),
-        )
+        .ofScopeVisitor(scope.appendScope(newScope))
         .visit(fnType.definition);
 
       currentAnalyzed.fnType = null;
@@ -48,50 +44,44 @@ export class ASTCFunctionDefTypeCreator extends ASTCTypeCreator<ASTCFunctionDefi
     return false;
   }
 
-  extractFuncTypeFromNode(fnDefinition: ASTCFunctionDefinition): CFunctionDeclType {
-    const {context, arch} = this;
-    const {fnExpression} = fnDefinition.declarator.directDeclarator;
+  extractFuncTypeFromNode(
+    fnDefinition: ASTCFunctionDefinition,
+  ): CFunctionDeclType {
+    const { context, arch } = this;
+    const { fnExpression } = fnDefinition.declarator.directDeclarator;
 
-    const returnTypeEntry = extractNamedEntryFromDeclaration(
-      {
-        skipFnExpressions: true,
-        declaration: fnDefinition,
-        context,
-      },
-    );
+    const returnTypeEntry = extractNamedEntryFromDeclaration({
+      skipFnExpressions: true,
+      declaration: fnDefinition,
+      context,
+    });
 
-    const args = fnExpression.argsNodes.map((argNode) => CVariable.ofFunctionArg(
-      extractNamedEntryFromDeclaration(
-        {
+    const args = fnExpression.argsNodes.map(argNode =>
+      CVariable.ofFunctionArg(
+        extractNamedEntryFromDeclaration({
           declaration: argNode,
           context,
-        },
+        }),
       ),
-    ));
-
-    const specifier = (
-      CFunctionSpecifierMonad
-        .ofParserSource(fnDefinition.specifier.functionSpecifiers?.items || [])
-        .unwrapOrThrow()
     );
 
-    const storage = (
-      CStorageClassMonad
-        .ofParserSource(fnDefinition.specifier.storageClassSpecifiers?.items || [])
-        .unwrapOrThrow()
-    );
+    const specifier = CFunctionSpecifierMonad.ofParserSource(
+      fnDefinition.specifier.functionSpecifiers?.items || [],
+    ).unwrapOrThrow();
 
-    return new CFunctionDeclType(
-      {
-        definition: fnDefinition.content,
-        callConvention: CFunctionCallConvention.CDECL,
-        name: returnTypeEntry.name,
-        returnType: returnTypeEntry.type,
-        arch,
-        args,
-        storage,
-        specifier,
-      },
-    );
+    const storage = CStorageClassMonad.ofParserSource(
+      fnDefinition.specifier.storageClassSpecifiers?.items || [],
+    ).unwrapOrThrow();
+
+    return new CFunctionDeclType({
+      definition: fnDefinition.content,
+      callConvention: CFunctionCallConvention.CDECL,
+      name: returnTypeEntry.name,
+      returnType: returnTypeEntry.type,
+      arch,
+      args,
+      storage,
+      specifier,
+    });
   }
 }

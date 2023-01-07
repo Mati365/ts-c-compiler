@@ -1,33 +1,29 @@
 import chalk from 'chalk';
 
-import {IROpcode} from '../constants';
-import {HasLabeledBranches} from '../interfaces';
-import {IRInstructionVarArg} from '../variables';
-import {IRInstruction} from './IRInstruction';
-import {IRLabelInstruction} from './IRLabelInstruction';
+import { IROpcode } from '../constants';
+import { HasLabeledBranches } from '../interfaces';
+import { IRInstructionVarArg } from '../variables';
+import { IRInstruction } from './IRInstruction';
+import { IRLabelInstruction } from './IRLabelInstruction';
 
 export interface IRBranchRelations<R> {
-  ifTrue: R,
-  ifFalse?: R,
+  ifTrue: R;
+  ifFalse?: R;
 }
 
-export function isIRBrInstruction(instruction: IRInstruction): instruction is IRBrInstruction {
+export function isIRBrInstruction(
+  instruction: IRInstruction,
+): instruction is IRBrInstruction {
   return instruction.opcode === IROpcode.BR;
 }
 
 /**
  * If else branch instruction, "else" is optional
- *
- * @export
- * @class IRBrInstruction
- * @extends {IRInstruction}
- * @implements {IRBranchRelations<IRLabelInstruction>}
- * @implements {HasLabeledBranches}
  */
 export class IRBrInstruction
   extends IRInstruction
-  implements IRBranchRelations<IRLabelInstruction>, HasLabeledBranches {
-
+  implements IRBranchRelations<IRLabelInstruction>, HasLabeledBranches
+{
   constructor(
     readonly variable: IRInstructionVarArg,
     readonly ifTrue: IRLabelInstruction,
@@ -36,33 +32,20 @@ export class IRBrInstruction
     super(IROpcode.BR);
   }
 
-  ofLabels(
-    [
-      ifTrue,
-      ifFalse,
-    ]: IRLabelInstruction[],
-  ) {
-    const {variable} = this;
+  ofLabels([ifTrue, ifFalse]: IRLabelInstruction[]) {
+    const { variable } = this;
 
-    return <this> new IRBrInstruction(
-      variable,
-      ifTrue,
-      ifFalse,
-    );
+    return new IRBrInstruction(variable, ifTrue, ifFalse) as this;
   }
 
   getLabels(): IRLabelInstruction[] {
-    const {ifTrue, ifFalse} = this;
+    const { ifTrue, ifFalse } = this;
 
     return [ifTrue, ifFalse];
   }
 
   getDisplayName(): string {
-    const {
-      variable,
-      ifTrue,
-      ifFalse,
-    } = this;
+    const { variable, ifTrue, ifFalse } = this;
 
     const argsStr = [
       variable.getDisplayName(),

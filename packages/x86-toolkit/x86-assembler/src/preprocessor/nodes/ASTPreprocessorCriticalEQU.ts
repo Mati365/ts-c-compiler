@@ -1,15 +1,12 @@
 import * as R from 'ramda';
 
-import {joinTokensWithSpaces} from '@compiler/lexer/utils/joinTokensTexts';
+import { joinTokensWithSpaces } from '@compiler/lexer/utils/joinTokensTexts';
 
-import {Token} from '@compiler/lexer/tokens';
-import {NodeLocation} from '@compiler/grammar/tree/NodeLocation';
-import {TreeVisitor} from '@compiler/grammar/tree/TreeVisitor';
+import { Token } from '@compiler/lexer/tokens';
+import { NodeLocation } from '@compiler/grammar/tree/NodeLocation';
+import { TreeVisitor } from '@compiler/grammar/tree/TreeVisitor';
 
-import {
-  ASTPreprocessorKind,
-  ASTPreprocessorNode,
-} from '../constants';
+import { ASTPreprocessorKind, ASTPreprocessorNode } from '../constants';
 
 import {
   PreprocessorInterpreter,
@@ -18,10 +15,6 @@ import {
 
 /**
  * EQU values that are resolved before compilation
- *
- * @export
- * @class ASTPreprocessorCriticalEQU
- * @extends {ASTPreprocessorNode}
  */
 export class ASTPreprocessorCriticalEQU extends ASTPreprocessorNode {
   private constant: boolean = null;
@@ -37,15 +30,13 @@ export class ASTPreprocessorCriticalEQU extends ASTPreprocessorNode {
 
   /**
    * If expressions is not constant - return original line
-   *
-   * @returns {string}
-   * @memberof ASTPreprocessorCriticalEQU
    */
   toEmitterLine(): string {
-    const {constant, originalTokens} = this;
+    const { constant, originalTokens } = this;
 
-    if (constant)
+    if (constant) {
       return '';
+    }
 
     return joinTokensWithSpaces(
       R.init(originalTokens), // exclude last EOL
@@ -54,30 +45,26 @@ export class ASTPreprocessorCriticalEQU extends ASTPreprocessorNode {
 
   /**
    * Iterates throught tree
-   *
-   * @param {TreeVisitor<ASTPreprocessorNode>} visitor
-   * @memberof TreeNode
    */
   walk(visitor: TreeVisitor<ASTPreprocessorNode>): void {
-    const {expression} = this;
+    const { expression } = this;
 
-    if (expression)
+    if (expression) {
       visitor.visit(expression);
+    }
   }
 
   /**
    * Exec interpreter on node
-   *
-   * @param {PreprocessorInterpreter} interpreter
-   * @returns {InterpreterResult}
-   * @memberof ASTPreprocessorMacro
    */
   exec(interpreter: PreprocessorInterpreter): InterpreterResult {
-    const {name, expression} = this;
+    const { name, expression } = this;
 
     try {
       if (interpreter.getCallables(name)?.length) {
-        [, this.originalTokens] = interpreter.removeMacrosFromTokens(this.originalTokens);
+        [, this.originalTokens] = interpreter.removeMacrosFromTokens(
+          this.originalTokens,
+        );
         return;
       }
 
@@ -92,8 +79,9 @@ export class ASTPreprocessorCriticalEQU extends ASTPreprocessorNode {
       if (!interpreter.isSecondPass()) {
         interpreter.setVariable(name, null);
         interpreter.appendToSecondPassExec(this);
-      } else
+      } else {
         this.constant = false;
+      }
     }
   }
 }

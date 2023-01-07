@@ -1,32 +1,29 @@
-import {Result, err, ok} from '@compiler/core/monads';
-import {ASTCCompilerNode} from '../../../parser/ast';
-import {CTypeCheckError} from '../../errors/CTypeCheckError';
-import {CTypeAnalyzeContext} from '../type-builder/CTypeAnalyzeContext';
+import { Result, err, ok } from '@compiler/core/monads';
+import { ASTCCompilerNode } from '../../../parser/ast';
+import { CTypeCheckError } from '../../errors/CTypeCheckError';
+import { CTypeAnalyzeContext } from '../type-builder/CTypeAnalyzeContext';
 import {
   ConstantExpressionEvalVisitor,
   ConstantOperationResult,
 } from './visitors/ConstantExpressionEvalVisitor';
 
 type EvalExpressionAttrs = {
-  context: CTypeAnalyzeContext,
-  expression: ASTCCompilerNode,
+  context: CTypeAnalyzeContext;
+  expression: ASTCCompilerNode;
 };
 
-export function evalConstantExpression(
-  {
-    context,
-    expression,
-  }: EvalExpressionAttrs,
-): Result<ConstantOperationResult, CTypeCheckError> {
-  if (!expression)
+export function evalConstantExpression({
+  context,
+  expression,
+}: EvalExpressionAttrs): Result<ConstantOperationResult, CTypeCheckError> {
+  if (!expression) {
     return ok(null);
+  }
 
   try {
-    const visitor = (
-      new ConstantExpressionEvalVisitor()
-        .setContext(context)
-        .visit(expression)
-    );
+    const visitor = new ConstantExpressionEvalVisitor()
+      .setContext(context)
+      .visit(expression);
 
     return ok(visitor.value);
   } catch (e) {
