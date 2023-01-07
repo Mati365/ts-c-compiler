@@ -3,7 +3,7 @@ import {CTypeCheckError, CTypeCheckErrorCode} from '../../../errors/CTypeCheckEr
 import {CStructType} from '../../../types';
 import {TypeExtractorAttrs} from '../constants/types';
 
-import {evalConstantExpression} from '../../expression-analyze';
+import {evalConstantExpression} from '../../expression-eval';
 
 type StructTypeExtractorAttrs = TypeExtractorAttrs & {
   structSpecifier: ASTCStructSpecifier,
@@ -11,10 +11,6 @@ type StructTypeExtractorAttrs = TypeExtractorAttrs & {
 
 /**
  * Walks over struct specifier tree and creates struct type
- *
- * @export
- * @param {StructTypeExtractorAttrs} attrs
- * @return {CStructType}
  */
 export function extractStructTypeFromNode(
   {

@@ -1,13 +1,6 @@
 import {ASTCCompilerKind, ASTCWhileStatement} from '@compiler/pico-c/frontend/parser/ast';
 import {ASTCTypeCreator} from './ASTCTypeCreator';
 
-/**
- * Assigns type to ASTCWhileStatement
- *
- * @export
- * @class ASTCWhileStmtTypeCreator
- * @extends {ASTCTypeCreator<ASTCWhileStatement>}
- */
 export class ASTCWhileStmtTypeCreator extends ASTCTypeCreator<ASTCWhileStatement> {
   kind = ASTCCompilerKind.WhileStmt;
 

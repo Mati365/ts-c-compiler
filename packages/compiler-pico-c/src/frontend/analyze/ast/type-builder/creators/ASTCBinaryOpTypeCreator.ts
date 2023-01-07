@@ -2,19 +2,12 @@ import {ASTCCompilerKind, ASTCBinaryOpNode} from '@compiler/pico-c/frontend/pars
 import {TokenType} from '@compiler/lexer/shared';
 
 import {ASTCTypeCreator} from './ASTCTypeCreator';
-import {CTypeCheckError, CTypeCheckErrorCode} from '../../errors/CTypeCheckError';
+import {CTypeCheckError, CTypeCheckErrorCode} from '../../../errors/CTypeCheckError';
 
-import {checkLeftTypeOverlapping, isPointerArithmeticOperator} from '../../checker';
-import {tryCastToPointer} from '../../casts';
-import {isPointerLikeType} from '../../types';
+import {checkLeftTypeOverlapping, isPointerArithmeticOperator} from '../../../checker';
+import {tryCastToPointer} from '../../../casts';
+import {isPointerLikeType} from '../../../types';
 
-/**
- * Assigns type to ASTCBinaryOpTypeCreator
- *
- * @export
- * @class ASTCBinaryOpTypeCreator
- * @extends {ASTCTypeCreator<ASTCBinaryOpNode>}
- */
 export class ASTCBinaryOpTypeCreator extends ASTCTypeCreator<ASTCBinaryOpNode> {
   kind = ASTCCompilerKind.BinaryOperator;
 

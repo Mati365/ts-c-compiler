@@ -2,23 +2,15 @@ import {ASTCFunctionDefinition, ASTCCompilerKind} from '@compiler/pico-c/fronten
 import {CFunctionCallConvention} from '@compiler/pico-c/constants';
 import {ASTCTypeCreator} from './ASTCTypeCreator';
 
-import {extractNamedEntryFromDeclaration} from '../type-builder';
-import {CVariable} from '../../scope/variables/CVariable';
-import {CFunctionScope} from '../../scope/CFunctionScope';
+import {extractNamedEntryFromDeclaration} from '../../type-builder';
+import {CVariable} from '../../../scope/variables/CVariable';
+import {CFunctionScope} from '../../../scope/CFunctionScope';
 import {
   CFunctionDeclType,
   CFunctionSpecifierMonad,
   CStorageClassMonad,
-} from '../../types/function';
+} from '../../../types/function';
 
-/**
- * Enters function definition, analyzes its definition
- * and assigns meta type information to scope
- *
- * @export
- * @class ASTCFunctionDefTypeCreator
- * @extends {ASTCTypeCreator<ASTCFunctionDefinition>}
- */
 export class ASTCFunctionDefTypeCreator extends ASTCTypeCreator<ASTCFunctionDefinition> {
   kind = ASTCCompilerKind.FunctionDefinition;
 
@@ -56,13 +48,6 @@ export class ASTCFunctionDefTypeCreator extends ASTCTypeCreator<ASTCFunctionDefi
     return false;
   }
 
-  /**
-   * Walks over function declaration type from node
-   *
-   * @param {ASTCStructSpecifier} structSpecifier
-   * @return {CFunctionDeclType}
-   * @memberof ASTCFunctionDefTypeCreator
-   */
   extractFuncTypeFromNode(fnDefinition: ASTCFunctionDefinition): CFunctionDeclType {
     const {context, arch} = this;
     const {fnExpression} = fnDefinition.declarator.directDeclarator;

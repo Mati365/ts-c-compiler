@@ -1,7 +1,7 @@
 import {ASTCInitDeclarator} from '@compiler/pico-c/frontend/parser/ast';
 import {CType} from '../../../types/CType';
 import {CVariable} from '../../../scope/variables/CVariable';
-import {CTypeAnalyzeContext} from '../../CTypeAnalyzeContext';
+import {CTypeAnalyzeContext} from '../CTypeAnalyzeContext';
 
 import {extractNamedEntryFromDeclarator} from './extractSpecifierType';
 import {extractInitializerTreeForType} from '../../initializer-builder';

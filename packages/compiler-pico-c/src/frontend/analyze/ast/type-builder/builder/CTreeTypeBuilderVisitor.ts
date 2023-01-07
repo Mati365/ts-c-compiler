@@ -10,13 +10,13 @@ import {
 } from '@compiler/pico-c/frontend/parser/ast';
 
 import type {TypeExtractorFns} from '../constants/types';
-import {evalConstantExpression} from '../../expression-analyze';
+import {evalConstantExpression} from '../../expression-eval';
 
 import {CTypeCheckError, CTypeCheckErrorCode} from '../../../errors/CTypeCheckError';
-import {CInnerTypeTreeVisitor} from '../../CInnerTypeTreeVisitor';
+import {CInnerTypeTreeVisitor} from '../CInnerTypeTreeVisitor';
 import {CNamedTypedEntry} from '../../../scope/variables/CNamedTypedEntry';
 import {CVariable} from '../../../scope';
-import {CTypeAnalyzeContext} from '../../CTypeAnalyzeContext';
+import {CTypeAnalyzeContext} from '../CTypeAnalyzeContext';
 import {
   isArrayLikeType,
   CType,
@@ -32,11 +32,7 @@ export type CTypeBuilderAttrs = TypeExtractorFns & {
 };
 
 /**
- * Walks over declarator related types and treis to construct type
- *
- * @export
- * @class CTreeTypeBuilderVisitor
- * @extends {CInnerTypeTreeVisitor}
+ * Walks over declarator related types and tries to construct type
  */
 export class CTreeTypeBuilderVisitor extends CInnerTypeTreeVisitor {
   private name: string = null;

@@ -1,13 +1,6 @@
 import {ASTCCompilerKind, ASTCIfStatement} from '@compiler/pico-c/frontend/parser/ast';
 import {ASTCTypeCreator} from './ASTCTypeCreator';
 
-/**
- * Assigns type to ASTCIfStmtTypeCreator
- *
- * @export
- * @class ASTCIfStmtTypeCreator
- * @extends {ASTCTypeCreator<ASTCIfStatement>}
- */
 export class ASTCIfStmtTypeCreator extends ASTCTypeCreator<ASTCIfStatement> {
   kind = ASTCCompilerKind.IfStmt;
 

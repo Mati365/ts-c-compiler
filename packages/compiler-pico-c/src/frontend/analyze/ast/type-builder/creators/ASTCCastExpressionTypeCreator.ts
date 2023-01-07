@@ -1,16 +1,9 @@
 import {ASTCCompilerKind, ASTCCastExpression} from '@compiler/pico-c/frontend/parser/ast';
 import {ASTCTypeCreator} from './ASTCTypeCreator';
-import {CTypeCheckError, CTypeCheckErrorCode} from '../../errors/CTypeCheckError';
+import {CTypeCheckError, CTypeCheckErrorCode} from '../../../errors/CTypeCheckError';
 
-import {extractSpecifierType} from '../type-builder';
+import {extractSpecifierType} from '../extractor';
 
-/**
- * Assigns type to ASTCCastExpression
- *
- * @export
- * @class ASTCCastExpressionTypeCreator
- * @extends {ASTCTypeCreator<ASTCCastExpression>}
- */
 export class ASTCCastExpressionTypeCreator extends ASTCTypeCreator<ASTCCastExpression> {
   kind = ASTCCompilerKind.CastExpression;
 

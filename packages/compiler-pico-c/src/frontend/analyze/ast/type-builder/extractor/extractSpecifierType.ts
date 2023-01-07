@@ -20,10 +20,6 @@ import {extractStructTypeFromNode} from './extractStructTypeFromNode';
  *
  * @see
  *  It can both resolve by name or create new type!
- *
- * @export
- * @param {SpecifierResolverAttrs} attrs
- * @return {CType}
  */
 export function extractSpecifierType(
   {

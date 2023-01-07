@@ -1,5 +1,5 @@
 import {GroupTreeVisitor} from '@compiler/grammar/tree/TreeGroupedVisitor';
-import {ASTCCompilerNode} from '../../parser/ast/ASTCCompilerNode';
+import {ASTCCompilerNode} from '../../../parser/ast/ASTCCompilerNode';
 import {CTypeAnalyzeContext} from './CTypeAnalyzeContext';
 import type {CTypeAnalyzeVisitor} from './CTypeAnalyzeVisitor';
 

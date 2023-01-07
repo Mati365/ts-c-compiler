@@ -1,13 +1,6 @@
 import {ASTCCompilerKind, ASTCDoWhileStatement} from '@compiler/pico-c/frontend/parser/ast';
 import {ASTCTypeCreator} from './ASTCTypeCreator';
 
-/**
- * Assigns type to ASTCDoWhileStatement
- *
- * @export
- * @class ASTCDoWhileStmtTypeCreator
- * @extends {ASTCTypeCreator<ASTCDoWhileStatement>}
- */
 export class ASTCDoWhileStmtTypeCreator extends ASTCTypeCreator<ASTCDoWhileStatement> {
   kind = ASTCCompilerKind.DoWhileStmt;
 

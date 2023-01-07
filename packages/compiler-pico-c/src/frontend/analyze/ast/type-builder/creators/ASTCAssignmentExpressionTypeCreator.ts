@@ -1,16 +1,9 @@
 import {ASTCCompilerKind, ASTCAssignmentExpression} from '@compiler/pico-c/frontend/parser/ast';
-import {CTypeCheckError, CTypeCheckErrorCode} from '../../errors/CTypeCheckError';
+import {CTypeCheckError, CTypeCheckErrorCode} from '../../../errors/CTypeCheckError';
 import {ASTCTypeCreator} from './ASTCTypeCreator';
 
-import {checkLeftTypeOverlapping} from '../../checker';
+import {checkLeftTypeOverlapping} from '../../../checker';
 
-/**
- * Assigns type to ASTCAssignmentExpression
- *
- * @export
- * @class ASTCAssignmentExpressionTypeCreator
- * @extends {ASTCTypeCreator<ASTCAssignmentExpression>}
- */
 export class ASTCAssignmentExpressionTypeCreator extends ASTCTypeCreator<ASTCAssignmentExpression> {
   kind = ASTCCompilerKind.AssignmentExpression;
 

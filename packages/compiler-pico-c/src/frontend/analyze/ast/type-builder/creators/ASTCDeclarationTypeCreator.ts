@@ -3,22 +3,11 @@ import {ASTCTypeCreator} from './ASTCTypeCreator';
 import {
   CTypeCheckError,
   CTypeCheckErrorCode,
-} from '../../errors/CTypeCheckError';
+} from '../../../errors/CTypeCheckError';
 
-import {isNamedType} from '../../utils/isNamedType';
-import {
-  extractInitDeclaratorTypeVariables,
-  extractSpecifierType,
-} from '../type-builder';
+import {isNamedType} from '../../../utils/isNamedType';
+import {extractInitDeclaratorTypeVariables, extractSpecifierType} from '../extractor';
 
-/**
- * Enters variable declaration and saves meta info about
- * type to scope context
- *
- * @export
- * @class ASTCDeclarationTypeCreator
- * @extends {ASTCTypeCreator<ASTCDeclaration>}
- */
 export class ASTCDeclarationTypeCreator extends ASTCTypeCreator<ASTCDeclaration> {
   kind = ASTCCompilerKind.Declaration;
 

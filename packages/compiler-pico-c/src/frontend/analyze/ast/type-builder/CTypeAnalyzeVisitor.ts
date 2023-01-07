@@ -1,13 +1,15 @@
 import * as R from 'ramda';
 
-import {GroupTreeVisitor} from '@compiler/grammar/tree/TreeGroupedVisitor';
 import {TreeVisitorsMap} from '@compiler/grammar/tree/TreeGroupedVisitor';
-import {CTypeCheckConfig} from '../constants';
-import {ASTCCompilerNode} from '../../parser/ast/ASTCCompilerNode';
+
+import {ASTC_TYPE_CREATORS} from './creators';
+import {ASTCCompilerNode} from '../../../parser/ast/ASTCCompilerNode';
+import {IsNewScopeASTNode} from '../../interfaces';
+
+import {CTypeCheckConfig} from '../../constants';
 import {CTypeAnalyzeContext} from './CTypeAnalyzeContext';
-import {CScopeTree} from '../scope/CScopeTree';
-import {IsNewScopeASTNode} from '../interfaces';
-import {ASTC_TYPE_CREATORS} from './ast-kinds-visitors';
+import {CScopeTree} from '../../scope/CScopeTree';
+import {CInnerTypeTreeVisitor} from './CInnerTypeTreeVisitor';
 
 type CTypeAnalyzeVisitorAttrs = CTypeCheckConfig & {
   scope?: CScopeTree,
@@ -16,12 +18,8 @@ type CTypeAnalyzeVisitorAttrs = CTypeCheckConfig & {
 
 /**
  * Root typechecker visitor
- *
- * @export
- * @class CTypeAnalyzeVisitor
- * @extends {GroupTreeVisitor<ASTCCompilerNode, any, CTypeAnalyzeContext>}
  */
-export class CTypeAnalyzeVisitor extends GroupTreeVisitor<ASTCCompilerNode, any, CTypeAnalyzeContext> {
+export class CTypeAnalyzeVisitor extends CInnerTypeTreeVisitor {
   constructor(
     {
       scope,
@@ -60,11 +58,7 @@ export class CTypeAnalyzeVisitor extends GroupTreeVisitor<ASTCCompilerNode, any,
   get currentAnalyzed() { return this.context.currentAnalyzed; }
 
   /**
-   * Cres new scope visitor
-   *
-   * @param {CScopeTree} scope
-   * @return {CTypeAnalyzeVisitor}
-   * @memberof CTypeAnalyzeVisitor
+   * Creates new scope visitor
    */
   ofScopeVisitor(scope: CScopeTree): CTypeAnalyzeVisitor {
     const {context, currentAnalyzed} = this;
@@ -80,10 +74,6 @@ export class CTypeAnalyzeVisitor extends GroupTreeVisitor<ASTCCompilerNode, any,
 
   /**
    * Creates new scope and executes fn
-   *
-   * @param {ASTCCompilerNode} node
-   * @param {(newScope: CTypeAnalyzeVisitor) => void} fn
-   * @memberof CTypeAnalyzeVisitor
    */
   enterScope(
     node: ASTCCompilerNode,
@@ -102,9 +92,6 @@ export class CTypeAnalyzeVisitor extends GroupTreeVisitor<ASTCCompilerNode, any,
 
   /**
    * Creates scope and enters node
-   *
-   * @param {ASTCCompilerNode} [node]
-   * @memberof CTypeAnalyzeVisitor
    */
   visitBlockScope(node?: ASTCCompilerNode) {
     this.enterScope(node, (visitor) => visitor.visit(node));

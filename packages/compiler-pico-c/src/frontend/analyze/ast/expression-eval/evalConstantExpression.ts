@@ -1,7 +1,7 @@
 import {Result, err, ok} from '@compiler/core/monads';
 import {ASTCCompilerNode} from '../../../parser/ast';
 import {CTypeCheckError} from '../../errors/CTypeCheckError';
-import {CTypeAnalyzeContext} from '../CTypeAnalyzeContext';
+import {CTypeAnalyzeContext} from '../type-builder/CTypeAnalyzeContext';
 import {
   ConstantExpressionEvalVisitor,
   ConstantOperationResult,

@@ -1,18 +1,11 @@
 import {ASTCCompilerKind, ASTCPostfixExpression} from '@compiler/pico-c/frontend/parser/ast';
-import {CFunctionDeclType, isFuncDeclLikeType} from '../../types/function';
-import {CTypeCheckError, CTypeCheckErrorCode} from '../../errors/CTypeCheckError';
+import {CFunctionDeclType, isFuncDeclLikeType} from '../../../types/function';
+import {CTypeCheckError, CTypeCheckErrorCode} from '../../../errors/CTypeCheckError';
 import {ASTCTypeCreator} from './ASTCTypeCreator';
 
-import {CPointerType, isArrayLikeType, isPointerLikeType, isStructLikeType} from '../../types';
-import {checkLeftTypeOverlapping} from '../../checker';
+import {CPointerType, isArrayLikeType, isPointerLikeType, isStructLikeType} from '../../../types';
+import {checkLeftTypeOverlapping} from '../../../checker';
 
-/**
- * Assigns type to ASTCPostfixExpression
- *
- * @export
- * @class ASTCPostfixExpressionTypeCreator
- * @extends {ASTCTypeCreator<ASTCPostfixExpression>}
- */
 export class ASTCPostfixExpressionTypeCreator extends ASTCTypeCreator<ASTCPostfixExpression> {
   kind = ASTCCompilerKind.PostfixExpression;
 
@@ -37,10 +30,6 @@ export class ASTCPostfixExpressionTypeCreator extends ASTCTypeCreator<ASTCPostfi
 
   /**
    * Assign type to calls like item[0].abc
-   *
-   * @private
-   * @param {ASTCPostfixExpression} node
-   * @memberof ASTCPostfixExpressionTypeCreator
    */
   private assignArrayLikeAccessType(node: ASTCPostfixExpression) {
     const {type: baseType} = node.postfixExpression;
@@ -62,10 +51,6 @@ export class ASTCPostfixExpressionTypeCreator extends ASTCTypeCreator<ASTCPostfi
 
   /**
    * Assign type to expressions such like it: (*ptr)(1, 2, 3)
-   *
-   * @private
-   * @param {ASTCPostfixExpression} node
-   * @memberof ASTCPostfixExpressionTypeCreator
    */
   private assignFnPtrCallType(node: ASTCPostfixExpression) {
     const ptr = <CPointerType> node.postfixExpression.type;
@@ -75,10 +60,6 @@ export class ASTCPostfixExpressionTypeCreator extends ASTCTypeCreator<ASTCPostfi
 
   /**
    * Assign type to calls like item.abc or item->abc
-   *
-   * @private
-   * @param {ASTCPostfixExpression} node
-   * @memberof ASTCPostfixExpressionTypeCreator
    */
   private assignDotPtrLikeAccessType(node: ASTCPostfixExpression) {
     let baseType = (node.primaryExpression || node.postfixExpression).type;
@@ -142,10 +123,6 @@ export class ASTCPostfixExpressionTypeCreator extends ASTCTypeCreator<ASTCPostfi
 
   /**
    * Verify if called function with proper arguments
-   *
-   * @private
-   * @param {ASTCPostfixExpression} node
-   * @memberof ASTCPostfixExpressionTypeCreator
    */
   private assignFunctionCallerTypes(node: ASTCPostfixExpression) {
     const {fnExpression} = node;

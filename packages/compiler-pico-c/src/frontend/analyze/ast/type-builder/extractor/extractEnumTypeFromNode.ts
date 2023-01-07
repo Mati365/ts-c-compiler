@@ -3,7 +3,7 @@ import {CEnumType, CPrimitiveType} from '../../../types';
 import {CTypeCheckError, CTypeCheckErrorCode} from '../../../errors/CTypeCheckError';
 import {TypeExtractorAttrs} from '../constants/types';
 
-import {evalConstantExpression} from '../../expression-analyze';
+import {evalConstantExpression} from '../../expression-eval';
 import {checkLeftTypeOverlapping} from '../../../checker';
 
 type EnumTypeExtractorAttrs = TypeExtractorAttrs & {

@@ -3,14 +3,6 @@ import {InlineTreeVisitor} from '@compiler/grammar/tree/TreeGroupedVisitor';
 
 import type {CTypeAnalyzeVisitor} from '../CTypeAnalyzeVisitor';
 
-/**
- * Creator that appends type to ASTCNode
- *
- * @export
- * @abstract
- * @class ASTCTypeCreator
- * @template T
- */
 export abstract class ASTCTypeCreator<T extends ASTCCompilerNode = ASTCCompilerNode> implements InlineTreeVisitor<T> {
   constructor(
     protected analyzeVisitor: CTypeAnalyzeVisitor,

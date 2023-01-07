@@ -1,13 +1,6 @@
 import {ASTCCompilerKind, ASTCUnaryExpression} from '@compiler/pico-c/frontend/parser/ast';
 import {ASTCTypeCreator} from './ASTCTypeCreator';
 
-/**
- * Assigns type to ASTCUnaryExpressionTypeCreator
- *
- * @export
- * @class ASTCUnaryExpressionTypeCreator
- * @extends {ASTCTypeCreator<ASTCUnaryExpression>}
- */
 export class ASTCUnaryExpressionTypeCreator extends ASTCTypeCreator<ASTCUnaryExpression> {
   kind = ASTCCompilerKind.UnaryExpression;
 

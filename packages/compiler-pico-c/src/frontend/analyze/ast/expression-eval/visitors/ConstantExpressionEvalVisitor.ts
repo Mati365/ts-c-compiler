@@ -15,7 +15,7 @@ import {
   ASTCCastUnaryExpression,
 } from '@compiler/pico-c/frontend/parser/ast';
 
-import {CInnerTypeTreeVisitor} from '../../CInnerTypeTreeVisitor';
+import {CInnerTypeTreeVisitor} from '../../type-builder/CInnerTypeTreeVisitor';
 import {CTypeCheckError, CTypeCheckErrorCode} from '../../../errors/CTypeCheckError';
 
 import {charToInt} from '../../../casts';

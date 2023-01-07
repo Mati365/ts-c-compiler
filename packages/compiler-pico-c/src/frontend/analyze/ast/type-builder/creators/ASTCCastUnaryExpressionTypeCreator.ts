@@ -1,18 +1,11 @@
 import {CUnaryCastOperator} from '@compiler/pico-c/constants';
 import {ASTCCompilerKind, ASTCCastUnaryExpression} from '@compiler/pico-c/frontend/parser/ast';
 
-import {isImplicitPtrType} from '../../types/utils';
+import {isImplicitPtrType} from '../../../types/utils';
 
-import {CPointerType, isArrayLikeType, isFuncDeclLikeType, isPointerLikeType} from '../../types';
+import {CPointerType, isArrayLikeType, isFuncDeclLikeType, isPointerLikeType} from '../../../types';
 import {ASTCTypeCreator} from './ASTCTypeCreator';
 
-/**
- * Assigns type to ASTCCastUnaryExpression
- *
- * @export
- * @class ASTCCastUnaryExpressionTypeCreator
- * @extends {ASTCTypeCreator<ASTCCastUnaryExpression>}
- */
 export class ASTCCastUnaryExpressionTypeCreator extends ASTCTypeCreator<ASTCCastUnaryExpression> {
   kind = ASTCCompilerKind.CastUnaryExpression;
 

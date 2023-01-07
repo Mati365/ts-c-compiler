@@ -1,4 +1,4 @@
-import {CTypeAnalyzeContext} from '../../CTypeAnalyzeContext';
+import {CTypeAnalyzeContext} from '../../type-builder/CTypeAnalyzeContext';
 import {CType} from '../../../types/CType';
 import {ASTCInitializer} from '../../../../parser/ast/ASTCInitializer';
 import {CVariableInitializerTree} from '../../../scope/variables';

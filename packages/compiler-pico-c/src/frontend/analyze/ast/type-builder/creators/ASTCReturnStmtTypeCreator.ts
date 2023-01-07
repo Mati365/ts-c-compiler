@@ -1,9 +1,9 @@
 import {ASTCCompilerKind, ASTCReturnStatement} from '@compiler/pico-c/frontend/parser/ast';
-import {CType, CPrimitiveType} from '../../types';
-import {CTypeCheckError, CTypeCheckErrorCode} from '../../errors/CTypeCheckError';
+import {CType, CPrimitiveType} from '../../../types';
+import {CTypeCheckError, CTypeCheckErrorCode} from '../../../errors/CTypeCheckError';
 import {ASTCTypeCreator} from './ASTCTypeCreator';
 
-import {checkLeftTypeOverlapping} from '../../checker';
+import {checkLeftTypeOverlapping} from '../../../checker';
 
 /**
  * Assigns type to ASTCReturnStatement

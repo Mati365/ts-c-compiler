@@ -5,7 +5,7 @@ import {
 
 import {CType} from '../../../types/CType';
 import {CNamedTypedEntry} from '../../../scope/variables/CNamedTypedEntry';
-import {CTypeAnalyzeContext} from '../../CTypeAnalyzeContext';
+import {CTypeAnalyzeContext} from '../CTypeAnalyzeContext';
 
 type ASTCDeclarationLike = {
   specifier: ASTCDeclarationSpecifier,

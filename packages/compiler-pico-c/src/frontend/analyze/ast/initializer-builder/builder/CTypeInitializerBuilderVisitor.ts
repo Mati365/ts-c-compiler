@@ -8,7 +8,7 @@ import {
   isCompilerTreeNode,
 } from '../../../../parser/ast';
 
-import {CInnerTypeTreeVisitor} from '../../CInnerTypeTreeVisitor';
+import {CInnerTypeTreeVisitor} from '../../type-builder/CInnerTypeTreeVisitor';
 import {CTypeCheckError, CTypeCheckErrorCode} from '../../../errors/CTypeCheckError';
 
 import {
@@ -27,7 +27,7 @@ import {
   CVariableInitializeValue,
 } from '../../../scope/variables';
 
-import {ConstantOperationResult, evalConstantExpression} from '../../expression-analyze';
+import {ConstantOperationResult, evalConstantExpression} from '../../expression-eval';
 import {checkLeftTypeOverlapping} from '../../../checker';
 
 /**

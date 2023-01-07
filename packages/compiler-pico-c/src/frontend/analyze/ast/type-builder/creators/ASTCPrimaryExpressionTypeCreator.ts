@@ -1,15 +1,11 @@
 import {TokenType} from '@compiler/lexer/shared';
 import {ASTCCompilerKind, ASTCPrimaryExpression} from '@compiler/pico-c/frontend/parser/ast';
-import {CTypeCheckError, CTypeCheckErrorCode} from '../../errors/CTypeCheckError';
-import {CType, CPrimitiveType, CPointerType} from '../../types';
+import {CTypeCheckError, CTypeCheckErrorCode} from '../../../errors/CTypeCheckError';
+import {CType, CPrimitiveType, CPointerType} from '../../../types';
 import {ASTCTypeCreator} from './ASTCTypeCreator';
 
 /**
  * Assigns type to ASTCPrimaryExpression
- *
- * @export
- * @class ASTCPrimaryExpressionTypeCreator
- * @extends {ASTCTypeCreator<ASTCPrimaryExpression>}
  */
 export class ASTCPrimaryExpressionTypeCreator extends ASTCTypeCreator<ASTCPrimaryExpression> {
   kind = ASTCCompilerKind.PrimaryExpression;

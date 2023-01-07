@@ -12,10 +12,6 @@ export const C_BACKEND_ERROR_TRANSLATIONS: Record<CBackendErrorCode, string> = {
 
 /**
  * Error thrown during backend code generation phase
- *
- * @export
- * @class CBackendError
- * @extends {CompilerError<CBackendErrorCode, null>}
  */
 export class CBackendError extends CompilerError<CBackendErrorCode, null> {
   constructor(code: CBackendErrorCode, meta?: object) {
