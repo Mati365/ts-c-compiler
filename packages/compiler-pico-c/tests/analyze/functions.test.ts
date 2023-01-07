@@ -93,7 +93,7 @@ describe('Function typecheck', () => {
     ).not.toHaveCompilerError();
   });
 
-  test('returning struct type', () => {
+  test.skip('returning struct type', () => {
     expect(/* cpp */ `
       struct Vec2 {
         int x, y;

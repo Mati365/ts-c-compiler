@@ -335,14 +335,16 @@ export function emitExpressionIR({
           return;
         }
 
-        const exprResult = emitLogicBinaryJmpExpressionIR({
-          node: binary,
-          context,
-          scope,
-        });
+        if (context.conditionStmt) {
+          const exprResult = emitLogicBinaryJmpExpressionIR({
+            node: binary,
+            context,
+            scope,
+          });
 
-        emitExprResultToStack(exprResult);
-        return false;
+          emitExprResultToStack(exprResult);
+          return false;
+        }
       },
 
       leave: (binary: ASTCBinaryOpNode) => {

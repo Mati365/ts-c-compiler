@@ -16,7 +16,7 @@ export type IRVariableDescriptor = {
   prefix: string;
   suffix: number;
   type: CType;
-  volatile?: boolean;
+  temp?: boolean;
   constInitialized?: boolean;
   virtualArrayPtr?: boolean;
 };
@@ -63,14 +63,14 @@ export class IRVariable
     return this.value.virtualArrayPtr;
   }
 
-  get volatile() {
-    return !!this.value.volatile;
-  }
-
   get name() {
     const { prefix, suffix } = this.value;
 
     return `${prefix}{${suffix}}`;
+  }
+
+  isTemporary() {
+    return this.value.temp;
   }
 
   isAnonymous() {
@@ -135,8 +135,8 @@ export class IRVariable
     return this.map(R.assoc('type', type));
   }
 
-  ofVolatile() {
-    return this.map(R.assoc('volatile', true));
+  ofTemp() {
+    return this.map(R.assoc('temp', true));
   }
 
   getDisplayName(withType: boolean = true): string {

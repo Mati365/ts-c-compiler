@@ -1,3 +1,4 @@
 export * from './IRConstant';
-export * from './IRVariable';
 export * from './IRInstructionVarArg';
+export * from './IRVariable';
+export * from './constants';

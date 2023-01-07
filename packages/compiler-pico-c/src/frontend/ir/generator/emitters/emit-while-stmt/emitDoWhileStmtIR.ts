@@ -1,8 +1,4 @@
-import { TokenType } from '@compiler/lexer/shared';
-import { CPrimitiveType } from '@compiler/pico-c/frontend/analyze';
-
-import { IRBrInstruction, IRICmpInstruction } from '../../../instructions';
-import { IRConstant } from '../../../variables';
+import { IRBrInstruction } from '../../../instructions';
 import { WhileStmtIRAttrs } from './emitWhileStmtIR';
 import { createBlankStmtResult, IREmitterStmtResult } from '../types';
 
@@ -11,8 +7,7 @@ export function emitDoWhileStmtIR({
   context,
   node,
 }: WhileStmtIRAttrs): IREmitterStmtResult {
-  const { emit, config, factory } = context;
-  const { arch } = config;
+  const { emit, factory } = context;
 
   const result = createBlankStmtResult();
   const logicResult = emit.logicExpression({
@@ -33,11 +28,6 @@ export function emitDoWhileStmtIR({
     ...result.instructions,
     ...contentResult.instructions,
     ...logicResult.instructions,
-    new IRICmpInstruction(
-      TokenType.DIFFERS,
-      logicResult.output,
-      IRConstant.ofConstant(CPrimitiveType.int(arch), 0),
-    ),
     new IRBrInstruction(logicResult.output, startLabel),
   );
 

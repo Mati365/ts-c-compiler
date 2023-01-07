@@ -38,7 +38,7 @@ const SHARED_CONFIG = {
         },
       },
     ],
-    '\\.asm$': 'jest-raw-loader',
+    '\\.asm$': resolve(__dirname, 'jest-extensions/file-transformer.js'),
   },
 };
 

@@ -247,7 +247,7 @@ export function emitIdentifierGetterIR({
         const parentType = getParentType();
         let entryByteSize: number = null;
 
-        if (!lastIRVar.volatile) {
+        if (!lastIRVar.isTemporary()) {
           instructions.push(
             new IRLoadInstruction(
               lastIRVar,

@@ -1,12 +1,14 @@
-import {
-  CBackendError,
-  CBackendErrorCode,
-} from '@compiler/pico-c/backend/errors/CBackendError';
+// import {
+//   CBackendError,
+//   CBackendErrorCode,
+// } from '@compiler/pico-c/backend/errors/CBackendError';
+
 import { RegsMap, createGeneralPurposeRegsMap } from '../../constants/regs';
 import { RegsMapQuery, queryFromRegsMap } from '../utils/queryFromRegsMap';
 import {
   IRArgAllocatorArgs,
   IRArgAllocatorResult,
+  IRArgResolverType,
   IRRegReqResult,
   X86AbstractRegAllocator,
 } from '../X86AbstractRegAllocator';
@@ -20,7 +22,11 @@ export class X86BasicRegAllocator extends X86AbstractRegAllocator {
 
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   resolveIRArg(attrs: IRArgAllocatorArgs): IRArgAllocatorResult {
-    throw new CBackendError(CBackendErrorCode.REG_ALLOCATOR_ERROR);
+    return {
+      asm: [],
+      type: IRArgResolverType.REG,
+      value: 'ax',
+    };
   }
 
   requestReg(query: RegsMapQuery): IRRegReqResult {

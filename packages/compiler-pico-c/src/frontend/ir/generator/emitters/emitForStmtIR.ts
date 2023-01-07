@@ -1,14 +1,6 @@
-import { TokenType } from '@compiler/lexer/shared';
-import { CPrimitiveType } from '@compiler/pico-c/frontend/analyze';
 import { ASTCForStatement } from '@compiler/pico-c/frontend/parser';
+import { IRBrInstruction, IRJmpInstruction } from '../../instructions';
 
-import {
-  IRBrInstruction,
-  IRJmpInstruction,
-  IRICmpInstruction,
-} from '../../instructions';
-
-import { IRConstant } from '../../variables';
 import {
   createBlankStmtResult,
   IREmitterContextAttrs,
@@ -26,8 +18,7 @@ export function emitForStmtIR({
   context,
   node,
 }: ForStmtIRAttrs): IREmitterStmtResult {
-  const { emit, config, factory } = context;
-  const { arch } = config;
+  const { emit, factory } = context;
 
   const result = createBlankStmtResult();
   const declResult = emitDeclarationIR({
@@ -65,14 +56,7 @@ export function emitForStmtIR({
     ...result.instructions,
     ...logicResult.instructions,
     ...(logicResult.output
-      ? [
-          new IRICmpInstruction(
-            TokenType.EQUAL,
-            logicResult.output,
-            IRConstant.ofConstant(CPrimitiveType.int(arch), 0),
-          ),
-          new IRBrInstruction(logicResult.output, labels.end),
-        ]
+      ? [new IRBrInstruction(logicResult.output, null, labels.end)]
       : []),
     ...contentResult.instructions,
     ...exprResult.instructions,

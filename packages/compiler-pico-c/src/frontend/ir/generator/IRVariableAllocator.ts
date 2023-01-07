@@ -8,14 +8,16 @@ import {
   CVariable,
 } from '../../analyze';
 
+import {
+  IRVariable,
+  COMPILER_GEN_PREFIX,
+  CONST_VAR_PREFIX,
+  TMP_FN_RETURN_VAR_PREFIX,
+  TMP_VAR_PREFIX,
+} from '../variables';
+
 import { IRGeneratorConfig } from '../constants';
 import { IRFnDeclInstruction } from '../instructions';
-import { IRVariable } from '../variables';
-
-const COMPILER_GEN_PREFIX = '%';
-const TMP_VAR_PREFIX = `${COMPILER_GEN_PREFIX}t`;
-const TMP_FN_RETURN_VAR_PREFIX = `${COMPILER_GEN_PREFIX}out`;
-const CONST_VAR_PREFIX = 'c';
 
 type IRAllocatorConfig = IRGeneratorConfig & {
   parent?: IRVariableAllocator;
@@ -88,7 +90,10 @@ export class IRVariableAllocator {
 
     // it happens if we merge together two scopes
     // with the same variable name
-    if (this.isAllocated(mappedVariable.prefix)) {
+    if (
+      this.isAllocated(mappedVariable.prefix) &&
+      !mappedVariable.isTemporary()
+    ) {
       mappedVariable = mappedVariable.ofIncrementedSuffix();
     }
 
@@ -153,7 +158,7 @@ export class IRVariableAllocator {
     const tmpVar =
       this.getVariable(prefix) ??
       new IRVariable({
-        volatile: true,
+        temp: true,
         suffix: -1,
         prefix,
         type,

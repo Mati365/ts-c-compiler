@@ -12,10 +12,10 @@ describe('While stmt', () => {
       # --- Block main ---
       def main():
         L1:
-        %t{0}: int2B = %2: int2B greater_than %1: int2B
-        if: %t{0}: int2B equal %0: int2B then L2
+        %t{0}: i1:zf = icmp %2: int2B greater_than %1: int2B
+        br %t{0}: i1:zf, false: L2
         a{0}: int*2B = alloca int2B
-        jmp L1:
+        jmp L1
         L2:
         ret
         end-def
@@ -34,8 +34,8 @@ describe('While stmt', () => {
       def main():
         L1:
         a{0}: int*2B = alloca int2B
-        %t{0}: int2B = %2: int2B greater_than %1: int2B
-        if: %t{0}: int2B differs %0: int2B then L1
+        %t{0}: i1:zf = icmp %2: int2B greater_than %1: int2B
+        br %t{0}: i1:zf, true: L1
         ret
         end-def
     `);

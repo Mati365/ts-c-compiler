@@ -25,8 +25,8 @@ function toHaveCompilerError(
   code?: number,
 ): MatcherResult {
   const parseResult = R.is(Array, received)
-    ? ccompiler(received[0], <CCompilerConfig>received[1])
-    : ccompiler(<string>received);
+    ? ccompiler(received[0], received[1] as CCompilerConfig)
+    : ccompiler(received as string);
 
   if (parseResult.isOk()) {
     return {
