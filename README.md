@@ -6,8 +6,6 @@
 [![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg?style=flat-square)](http://makeapullrequest.com)
 [![Known Vulnerabilities](https://snyk.io/test/github/Mati365/i8086.js/badge.svg?targetFile=package.json&style=flat-square)](https://snyk.io/test/github/Mati365/i8086.js?targetFile=package.json)
 
-**Heroku APP:** https://i8086.herokuapp.com/
-
 16 bit ANSI C99 x86 compiler, assembler and virtual machine written entirely in TypeScript. It is designed to help with prototyping small bootsector (or bigger) real mode games 🎮 and apps 💻.
 
 JavaScript 16bit x86 assembler bundled in emulator is designed to be fully binarny compatible with 16bit NASM compiler.
