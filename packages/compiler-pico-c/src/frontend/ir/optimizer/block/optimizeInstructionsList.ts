@@ -1,4 +1,4 @@
-import { IRInstruction } from '../../frontend/ir/instructions';
+import { IRInstruction } from '../../instructions';
 import {
   dropDeadStoreInstructions,
   dropOrConcatConstantInstructions,

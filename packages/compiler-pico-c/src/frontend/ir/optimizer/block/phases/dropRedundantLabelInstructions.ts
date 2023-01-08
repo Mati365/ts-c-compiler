@@ -1,10 +1,10 @@
-import { isWithLabeledBranches } from '@compiler/pico-c/frontend/ir/interfaces';
+import { isWithLabeledBranches } from '../../../interfaces';
 import {
   IRInstruction,
   IRLabelInstruction,
   isIRJmpInstruction,
   isIRLabelInstruction,
-} from '../../../frontend/ir/instructions';
+} from '../../../instructions';
 
 export function dropRedundantLabelInstructions(instructions: IRInstruction[]) {
   const newInstructions = [...instructions];

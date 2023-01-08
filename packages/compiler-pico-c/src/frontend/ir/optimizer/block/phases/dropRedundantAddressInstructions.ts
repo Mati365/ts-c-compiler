@@ -1,12 +1,12 @@
-import { isIROutputInstruction } from '@compiler/pico-c/frontend/ir/guards';
+import { isIROutputInstruction } from '../../../guards';
+import { dropConstantInstructionArgs } from '../utils/dropConstantInstructionArgs';
 
+import { IRVariable } from '../../../variables';
 import {
   IRInstruction,
   isIRLabelOffsetInstruction,
   isIRLeaInstruction,
-} from '../../../frontend/ir/instructions';
-import { IRVariable } from '../../../frontend/ir/variables';
-import { dropConstantInstructionArgs } from '../utils/dropConstantInstructionArgs';
+} from '../../../instructions';
 
 export function dropRedundantAddressInstructions(
   instructions: IRInstruction[],

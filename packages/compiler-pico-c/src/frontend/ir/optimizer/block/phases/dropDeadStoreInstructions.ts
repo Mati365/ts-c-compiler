@@ -1,11 +1,11 @@
-import { isIRVariable } from '@compiler/pico-c/frontend/ir/variables';
-import { isIRBranchInstruction } from '@compiler/pico-c/frontend/ir/guards';
+import { isIRVariable } from '../../../variables';
+import { isIRBranchInstruction } from '../../../guards';
 import {
   IRInstruction,
   IRStoreInstruction,
   isIRLoadInstruction,
   isIRStoreInstruction,
-} from '../../../frontend/ir/instructions';
+} from '../../../instructions';
 
 export function dropDeadStoreInstructions(instructions: IRInstruction[]) {
   let cachedStore: Record<string, IRStoreInstruction[]> = {};

@@ -9,7 +9,6 @@ import { CCompilerConfig, CCompilerArch } from '../constants/config';
 import { safeGenerateTree, clexer } from './parser';
 import { safeBuildIRCode } from './ir';
 import { safeBuildTypedTree } from './analyze';
-import { optimizeIRGenResult } from '../optimizer';
 
 type IRCompilerConfig = CCompilerConfig & {
   timings?: CCompilerTimer;
@@ -41,15 +40,6 @@ export function cIRCompiler(
             ...result,
           }),
         ),
-      ),
-    )
-    .andThen(
-      timings.add('optimizer', ({ ir, ...result }) =>
-        ok({
-          ...result,
-          timings,
-          ir: optimizeIRGenResult(ccompilerConfig.optimization, ir),
-        }),
       ),
     );
 }

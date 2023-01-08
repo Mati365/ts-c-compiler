@@ -1,8 +1,8 @@
 import { Option, none, some } from '@compiler/core/monads';
 import { evalMathOp, isMathOpToken } from '@compiler/lexer/utils';
 
-import { IRMathInstruction } from '../../../frontend/ir/instructions';
-import { isIRConstant } from '../../../frontend/ir/variables';
+import { IRMathInstruction } from '../../../instructions';
+import { isIRConstant } from '../../../variables';
 
 export function tryEvalConstArgsBinaryInstruction({
   operator,

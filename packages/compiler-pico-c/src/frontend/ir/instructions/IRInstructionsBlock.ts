@@ -11,7 +11,7 @@ export type IRBlockJmps = Partial<IRBranchRelations<IRInstructionsBlock>> & {
 type IRInstructionsBlockDescriptor = {
   name?: string;
   instructions: IRInstruction[];
-  jmps?: IRBlockJmps;
+  jmps: IRBlockJmps;
 };
 
 /**
@@ -25,6 +25,7 @@ export class IRInstructionsBlock extends Identity<IRInstructionsBlockDescriptor>
   static ofInstructions(instructions: IRInstruction[]): IRInstructionsBlock {
     return new IRInstructionsBlock({
       instructions,
+      jmps: {},
     });
   }
 
@@ -64,6 +65,11 @@ export class IRInstructionsBlock extends Identity<IRInstructionsBlockDescriptor>
       ...value,
       instructions: mapperFn(value.instructions),
     }));
+  }
+
+  setJmps(jmps: IRBlockJmps): this {
+    Object.assign(this.value.jmps, jmps);
+    return this;
   }
 
   /**

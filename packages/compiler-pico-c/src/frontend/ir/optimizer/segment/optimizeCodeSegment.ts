@@ -1,6 +1,6 @@
 import * as R from 'ramda';
 
-import { IRCodeSegmentBuilderResult } from '@compiler/pico-c/frontend/ir/generator';
+import { IRCodeSegmentBuilderResult } from '../../generator';
 import { optimizeInstructionsBlock } from '../block';
 
 export function optimizeCodeSegment(

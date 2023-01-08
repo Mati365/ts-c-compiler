@@ -31,6 +31,7 @@ export class IRResultView {
       new IRInstructionsBlock({
         name: 'Data',
         instructions: data.instructions,
+        jmps: {},
       }),
     );
 
@@ -61,7 +62,7 @@ export class IRResultView {
    * Serialize code block to multiline string
    */
   static serializeCodeBlock(block: IRInstructionsBlock): string {
-    const { name, instructions } = block;
+    const { name, instructions, jmps } = block;
     if (R.isEmpty(instructions)) {
       return null;
     }
@@ -79,6 +80,11 @@ export class IRResultView {
       lines.push(str);
     });
 
-    return lines.join('\n');
+    let result = lines.join('\n');
+    if (jmps.always) {
+      result = [result, this.serializeCodeBlock(jmps.always)].join('\n');
+    }
+
+    return result;
   }
 }

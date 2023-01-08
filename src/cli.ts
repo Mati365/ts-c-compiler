@@ -4,7 +4,10 @@ import { ccompiler, CCompilerOutput } from '@compiler/pico-c';
 ccompiler(/* cpp */ `
   void main() {
     int a = 2;
-    int b = a * 4;
+
+    if (a > 4) {
+      int b = a * 4;
+    }
   }
 `).match({
   ok: result => {

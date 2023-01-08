@@ -1,4 +1,4 @@
-import { IRInstructionsBlock } from '@compiler/pico-c/frontend/ir/instructions';
+import { IRInstructionsBlock } from '../../instructions';
 import { optimizeInstructionsList } from './optimizeInstructionsList';
 
 export function optimizeInstructionsBlock(

@@ -3,17 +3,13 @@ import { fixme } from '@compiler/core/shared';
 import { Option, none, some } from '@compiler/core/monads';
 import { TokenType } from '@compiler/lexer/shared';
 
-import { IRError, IRErrorCode } from '../../../frontend/ir/errors/IRError';
-import {
-  IRConstant,
-  isIRConstant,
-  isIRVariable,
-} from '../../../frontend/ir/variables';
+import { IRError, IRErrorCode } from '../../../errors/IRError';
+import { IRConstant, isIRConstant, isIRVariable } from '../../../variables';
 import {
   IRInstruction,
   IRMathInstruction,
   isIRMathInstruction,
-} from '../../../frontend/ir/instructions';
+} from '../../../instructions';
 
 const canConcatOperators = (a: TokenType, b: TokenType) => {
   if ([a, b].every(arg => arg === TokenType.PLUS || arg === TokenType.MINUS)) {

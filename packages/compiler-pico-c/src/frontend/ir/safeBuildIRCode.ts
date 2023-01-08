@@ -5,6 +5,7 @@ import { IRGeneratorConfig } from './constants';
 import { IRError, IRErrorCode } from './errors/IRError';
 import { IRScopeGeneratorResult } from './generator/emitters';
 import { IRGeneratorGlobalVisitor } from './generator';
+import { optimizeIRGenResult } from './optimizer';
 
 export type IRCodeBuilderResult = IRScopeGeneratorResult;
 
@@ -13,9 +14,9 @@ export function safeBuildIRCode(
   tree: CScopeTree,
 ): Result<IRCodeBuilderResult, IRError[]> {
   try {
-    const result = new IRGeneratorGlobalVisitor(config).visit(tree).flush();
+    const ir = new IRGeneratorGlobalVisitor(config).visit(tree).flush();
 
-    return ok(result);
+    return ok(optimizeIRGenResult(config.optimization, ir));
   } catch (e) {
     e.code = e.code ?? IRErrorCode.GENERATOR_ERROR;
 

@@ -1,4 +1,4 @@
-import { IRScopeGeneratorResult } from '../frontend/ir/generator/emitters';
+import { IRScopeGeneratorResult } from '../generator/emitters';
 import { IROptimizerConfig } from './constants/types';
 import { optimizeCodeSegment } from './segment/optimizeCodeSegment';
 

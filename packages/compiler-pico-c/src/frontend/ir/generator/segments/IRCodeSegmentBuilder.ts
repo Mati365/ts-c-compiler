@@ -21,7 +21,7 @@ export type IRCodeSegmentBuilderResult = {
 };
 
 /**
- * Constructs graph of connected by jumps code blocks
+ * Constructs map of functions that will be later passed to optimizer
  */
 export class IRCodeSegmentBuilder extends IRSegmentBuilder<IRCodeSegmentBuilderResult> {
   private functions: IRFunctionsMap = {};
@@ -42,6 +42,7 @@ export class IRCodeSegmentBuilder extends IRSegmentBuilder<IRCodeSegmentBuilderR
    * If instruction is function - add new block
    */
   emit(instruction: IRInstruction): this {
+    // create new block, `def` has been spotted
     if (isIRFnDeclInstruction(instruction)) {
       if (this.tmpFunction) {
         throw new IRError(IRErrorCode.MISSING_END_FUNCTION_DECLARATION);
@@ -52,15 +53,19 @@ export class IRCodeSegmentBuilder extends IRSegmentBuilder<IRCodeSegmentBuilderR
         block: new IRInstructionsBlock({
           name: instruction.name,
           instructions: [instruction],
+          jmps: {},
         }),
       };
-    } else {
-      this.instructions.push(instruction);
 
-      if (isIRFnEndDeclInstruction(instruction)) {
-        this.functions[this.tmpFunction.block.name] = this.tmpFunction;
-        this.tmpFunction = null;
-      }
+      return this;
+    }
+
+    this.instructions.push(instruction);
+
+    // flush current block, `end-def` has been spotted
+    if (isIRFnEndDeclInstruction(instruction)) {
+      this.functions[this.tmpFunction.block.name] = this.tmpFunction;
+      this.tmpFunction = null;
     }
 
     return this;

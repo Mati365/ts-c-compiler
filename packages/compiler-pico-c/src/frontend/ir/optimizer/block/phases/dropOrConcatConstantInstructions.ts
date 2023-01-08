@@ -5,13 +5,9 @@ import {
   isIRAssignInstruction,
   isIRMathInstruction,
   isIRStoreInstruction,
-} from '../../../frontend/ir/instructions';
+} from '../../../instructions';
 
-import {
-  IRConstant,
-  isIRConstant,
-  isIRVariable,
-} from '../../../frontend/ir/variables';
+import { IRConstant, isIRConstant, isIRVariable } from '../../../variables';
 
 import { dropConstantInstructionArgs } from '../utils/dropConstantInstructionArgs';
 import { tryConcatMathInstructions } from '../utils/tryConcatMathInstructions';
