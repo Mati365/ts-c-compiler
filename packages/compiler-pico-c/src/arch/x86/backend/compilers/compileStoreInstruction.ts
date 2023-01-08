@@ -18,7 +18,6 @@ export function compileStoreInstruction({
   const { outputVar, value } = instruction;
   const { stackFrame } = allocator;
 
-  const prefix = getByteSizeArgPrefixName(value.type.getByteSize());
   const addr = stackFrame.getLocalVarStackRelAddress(outputVar.name);
   const rightAllocResult = allocator.regs.resolveIRArg({
     allow: IRArgResolverType.REG | IRArgResolverType.NUMBER,
@@ -26,6 +25,7 @@ export function compileStoreInstruction({
     iterator,
   });
 
+  const prefix = getByteSizeArgPrefixName(value.type.getByteSize());
   return [
     ...rightAllocResult.asm,
     withInlineComment(

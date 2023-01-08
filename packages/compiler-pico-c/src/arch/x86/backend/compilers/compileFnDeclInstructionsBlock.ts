@@ -8,6 +8,7 @@ import {
   CompiledBlockOutput,
   CompilerBlockFnAttrs,
 } from '../../constants/types';
+
 import { IRBlockIterator } from '../iterators/IRBlockIterator';
 
 import { genComment } from '../../asm-utils';

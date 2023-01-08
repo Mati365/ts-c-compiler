@@ -43,10 +43,12 @@ import {
 
 import {
   IRICmpInstruction,
+  IRJmpInstruction,
   IRLabelOffsetInstruction,
   IRLeaInstruction,
   IRLoadInstruction,
   IRMathInstruction,
+  IRStoreInstruction,
 } from '../../../instructions';
 
 import { IRError, IRErrorCode } from '../../../errors/IRError';
@@ -343,6 +345,43 @@ export function emitExpressionIR({
           });
 
           emitExprResultToStack(exprResult);
+          return false;
+        } else {
+          const labels = {
+            ifTrueLabel: context.factory.genTmpLabelInstruction(),
+            ifFalseLabel: context.factory.genTmpLabelInstruction(),
+            finallyLabel: context.factory.genTmpLabelInstruction(),
+          };
+
+          const exprResult = emitLogicBinaryJmpExpressionIR({
+            node: binary,
+            context: {
+              ...context,
+              conditionStmt: {
+                labels,
+              },
+            },
+            scope,
+          });
+
+          const output = allocNextVariable(binary.left.type);
+          emitExprResultToStack(exprResult);
+
+          instructions.push(
+            labels.ifTrueLabel,
+            new IRStoreInstruction(
+              IRConstant.ofConstant(binary.left.type, 1),
+              output,
+            ),
+            new IRJmpInstruction(labels.finallyLabel),
+            labels.ifFalseLabel,
+            new IRStoreInstruction(
+              IRConstant.ofConstant(binary.left.type, 0),
+              output,
+            ),
+            labels.finallyLabel,
+          );
+
           return false;
         }
       },
