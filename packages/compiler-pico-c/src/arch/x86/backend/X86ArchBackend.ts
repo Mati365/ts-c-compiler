@@ -23,11 +23,11 @@ export class X86ArchBackend extends CAbstractArchBackend {
 
     this.allocator = new X86Allocator(this.config);
 
-    for (const [, block] of Object.entries(segments.code.blocks)) {
+    for (const [, fn] of Object.entries(segments.code.functions)) {
       asm.push(
         ...compileInstructionsBlock({
           context: this.context,
-          block,
+          block: fn.block,
         }),
       );
     }

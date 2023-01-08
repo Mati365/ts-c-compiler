@@ -46,8 +46,8 @@ export class IRResultView {
    * Serializes code segment with branches
    */
   static serializeCodeSegment(code: IRCodeSegmentBuilderResult): string[] {
-    return R.values(code.blocks).reduce((acc, block, index, array) => {
-      acc.push(IRResultView.serializeCodeBlock(block));
+    return R.values(code.functions).reduce((acc, fn, index, array) => {
+      acc.push(IRResultView.serializeCodeBlock(fn.block));
 
       if (index + 1 < array.length) {
         acc.push('\n');

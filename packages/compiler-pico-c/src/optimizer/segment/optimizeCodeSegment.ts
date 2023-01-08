@@ -8,6 +8,12 @@ export function optimizeCodeSegment(
 ): IRCodeSegmentBuilderResult {
   return {
     ...segment,
-    blocks: R.mapObjIndexed(optimizeInstructionsBlock, segment.blocks),
+    functions: R.mapObjIndexed(
+      fn => ({
+        ...fn,
+        block: optimizeInstructionsBlock(fn.block),
+      }),
+      segment.functions,
+    ),
   };
 }

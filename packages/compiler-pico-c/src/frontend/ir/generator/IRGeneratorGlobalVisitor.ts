@@ -89,6 +89,7 @@ export class IRGeneratorGlobalVisitor extends CScopeVisitor {
       });
 
       segments.code.emitBulk(instructions);
+
       if (data) {
         segments.data.emitBulk(data);
       }

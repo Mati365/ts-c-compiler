@@ -43,6 +43,7 @@ export abstract class X86AbstractRegAllocator {
   get config() {
     return this.allocator.config;
   }
+
   get stackFrame() {
     return this.allocator.stackFrame;
   }

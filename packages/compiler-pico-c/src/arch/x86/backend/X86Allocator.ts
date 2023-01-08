@@ -12,7 +12,9 @@ export class X86Allocator {
   private _stackFrame: X86StackFrame;
   private _regs: X86AbstractRegAllocator;
 
-  constructor(readonly config: CCompilerConfig) {}
+  constructor(readonly config: CCompilerConfig) {
+    this._regs = new X86BasicRegAllocator(this);
+  }
 
   get stackFrame() {
     return this._stackFrame;
@@ -23,11 +25,6 @@ export class X86Allocator {
 
   getLabel(id: string) {
     return this.labels[id];
-  }
-
-  allocRegAllocator() {
-    this._regs = new X86BasicRegAllocator(this);
-    return this._regs;
   }
 
   /**

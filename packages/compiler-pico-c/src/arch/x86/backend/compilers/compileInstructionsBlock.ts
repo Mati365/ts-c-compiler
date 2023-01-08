@@ -24,12 +24,12 @@ export function compileInstructionsBlock({
   IRBlockIterator.of(instructions).walk((instruction, iterator) => {
     switch (instruction.opcode) {
       case IROpcode.COMMENT:
-        asm.push(genComment((<IRCommentInstruction>instruction).comment));
+        asm.push(genComment((instruction as IRCommentInstruction).comment));
         break;
 
       case IROpcode.FN_DECL: {
         const result = compileFnDeclInstructionsBlock({
-          instruction: <IRFnDeclInstruction>instruction,
+          instruction: instruction as IRFnDeclInstruction,
           iterator,
           instructions,
           context,

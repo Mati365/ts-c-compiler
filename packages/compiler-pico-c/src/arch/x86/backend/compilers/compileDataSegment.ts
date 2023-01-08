@@ -17,12 +17,12 @@ export function compileDataSegment({
     switch (instruction.opcode) {
       case IROpcode.DEF_CONST:
         {
-          const defConst = <IRDefConstInstruction>instruction;
+          const defConst = instruction as IRDefConstInstruction;
 
           asm.push(
             `${genLabel(defConst.outputVar.name)} ${genDefConst(
               'db',
-              <number[]>defConst.initializer.fields,
+              defConst.initializer.fields as number[],
             )}`,
           );
         }

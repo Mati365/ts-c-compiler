@@ -21,6 +21,7 @@ export enum IRErrorCode {
   RVO_RETURN_CONSTANT = 'RVO_RETURNED_CONSTANT',
   RVO_OPTIMIZATION_FAIL = 'RVO_OPTIMIZATION_FAIL',
   EXPECTED_CONDITION_FLAG_RESULT = 'EXPECTED_CONDITION_FLAG_RESULT',
+  MISSING_END_FUNCTION_DECLARATION = 'MISSING_END_FUNCTION_DECLARATION',
 }
 
 export const C_IR_ERROR_TRANSLATIONS: Record<IRErrorCode, string> = {
@@ -68,6 +69,9 @@ export const C_IR_ERROR_TRANSLATIONS: Record<IRErrorCode, string> = {
   [IRErrorCode.RVO_OPTIMIZATION_FAIL]: fixme('RVO optimization failed!'),
   [IRErrorCode.EXPECTED_CONDITION_FLAG_RESULT]: fixme(
     'Logic expression should return flag type!',
+  ),
+  [IRErrorCode.MISSING_END_FUNCTION_DECLARATION]: fixme(
+    'Missing end function declaration!',
   ),
 };
 

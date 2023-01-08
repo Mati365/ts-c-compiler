@@ -1,46 +1,68 @@
 import { IRError, IRErrorCode } from '../../errors/IRError';
-import { IRInstruction, isIRFnDeclInstruction } from '../../instructions';
+import {
+  IRFnDeclInstruction,
+  IRInstruction,
+  isIRFnDeclInstruction,
+  isIRFnEndDeclInstruction,
+} from '../../instructions';
 
 import { IRInstructionsBlock } from '../../instructions/IRInstructionsBlock';
 import { IRSegmentBuilder } from './IRSegmentBuilder';
 
-export type IRBlockLabelsMap = Record<string, IRInstructionsBlock>;
+export type IRCodeFunctionBlock = {
+  declaration: IRFnDeclInstruction;
+  block: IRInstructionsBlock;
+};
+
+export type IRFunctionsMap = Record<string, IRCodeFunctionBlock>;
+
 export type IRCodeSegmentBuilderResult = {
-  blocks: IRBlockLabelsMap;
+  functions: IRFunctionsMap;
 };
 
 /**
  * Constructs graph of connected by jumps code blocks
  */
 export class IRCodeSegmentBuilder extends IRSegmentBuilder<IRCodeSegmentBuilderResult> {
-  private blocks: IRBlockLabelsMap = {};
-  private tmpBlock = IRInstructionsBlock.ofInstructions([]);
+  private functions: IRFunctionsMap = {};
+  private tmpFunction: IRCodeFunctionBlock = null;
 
-  get instructions() {
-    return this.tmpBlock.instructions;
-  }
-
-  get lastInstruction() {
-    return this.tmpBlock.lastInstruction;
+  private get instructions() {
+    return this.tmpFunction.block.instructions;
   }
 
   /**
    * Removes last instruction from stack
    */
   pop(): IRInstruction {
-    return this.tmpBlock.instructions.pop();
+    return this.instructions.pop();
   }
 
   /**
-   * If instruction is branch - flush instruction stack and add new block
+   * If instruction is function - add new block
    */
   emit(instruction: IRInstruction): this {
     if (isIRFnDeclInstruction(instruction)) {
-      this.flush();
-      this.tmpBlock = this.tmpBlock.ofName(instruction.name);
+      if (this.tmpFunction) {
+        throw new IRError(IRErrorCode.MISSING_END_FUNCTION_DECLARATION);
+      }
+
+      this.tmpFunction = {
+        declaration: instruction,
+        block: new IRInstructionsBlock({
+          name: instruction.name,
+          instructions: [instruction],
+        }),
+      };
+    } else {
+      this.instructions.push(instruction);
+
+      if (isIRFnEndDeclInstruction(instruction)) {
+        this.functions[this.tmpFunction.block.name] = this.tmpFunction;
+        this.tmpFunction = null;
+      }
     }
 
-    this.instructions.push(instruction);
     return this;
   }
 
@@ -48,27 +70,8 @@ export class IRCodeSegmentBuilder extends IRSegmentBuilder<IRCodeSegmentBuilderR
    * Cleanups temp instructions stack and returns graph
    */
   flush(): IRCodeSegmentBuilderResult {
-    this.setBlock(this.tmpBlock);
-    this.tmpBlock = IRInstructionsBlock.ofInstructions([]);
-
     return {
-      blocks: this.blocks,
+      functions: this.functions,
     };
-  }
-
-  /**
-   * Appends new block to blocks map, raises errors if fails
-   */
-  private setBlock(block: IRInstructionsBlock): this {
-    if (block.isEmpty()) {
-      return this;
-    }
-
-    if (!block.name) {
-      throw new IRError(IRErrorCode.MISSING_BLOCK_NAME);
-    }
-
-    this.blocks[block.name] = block;
-    return this;
   }
 }
