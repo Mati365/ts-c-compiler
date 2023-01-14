@@ -68,9 +68,11 @@ export class X86Compiler {
   get origin() {
     return this._origin;
   }
+
   get mode() {
     return this._mode;
   }
+
   get target() {
     return this._target;
   }

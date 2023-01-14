@@ -1,6 +1,5 @@
 import * as R from 'ramda';
 
-import { Option, none } from '@compiler/core/monads';
 import { CType, isPrimitiveLikeType } from '@compiler/pico-c/frontend/analyze';
 import { X86RegName } from '@x86-toolkit/assembler';
 import { X87StackRegName } from '@x86-toolkit/cpu/x87/X87Regs';
@@ -11,6 +10,7 @@ import { recursiveSetAvailabilityInRegMap } from './resursiveSetAvailabilityInRe
 
 export type RegsMapQuery = {
   type: CType;
+  reg?: X86RegName;
 };
 
 export type RegsMapQueryResult = {
@@ -21,27 +21,35 @@ export type RegsMapQueryResult = {
 export function queryFromRegsMap(
   { type }: RegsMapQuery,
   availableRegs: RegsMap,
-): Option<RegsMapQueryResult> {
+): RegsMapQueryResult {
   if (!isPrimitiveLikeType(type)) {
-    return none();
+    return null;
   }
 
   if (type.isIntegral()) {
-    return recursiveRegMapLookupBySize(
+    const path = recursiveRegMapLookupBySize(
       type.getByteSize(),
       availableRegs.int,
-    ).map(path => {
-      const intRegs = recursiveSetAvailabilityInRegMap(path, availableRegs.int);
+    );
 
-      return {
-        reg: R.last(path).name,
-        availableRegs: {
-          ...availableRegs,
-          int: intRegs,
-        },
-      };
+    if (!path) {
+      return null;
+    }
+
+    const intRegs = recursiveSetAvailabilityInRegMap({
+      unavailable: true,
+      list: availableRegs.int,
+      path,
     });
+
+    return {
+      reg: R.last(path).name,
+      availableRegs: {
+        ...availableRegs,
+        int: intRegs,
+      },
+    };
   }
 
-  return none();
+  return null;
 }

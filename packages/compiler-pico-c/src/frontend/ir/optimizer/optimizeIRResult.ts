@@ -2,7 +2,7 @@ import { IRScopeGeneratorResult } from '../generator/emitters';
 import { IROptimizerConfig } from './constants/types';
 import { optimizeCodeSegment } from './segment/optimizeCodeSegment';
 
-export function optimizeIRGenResult(
+export function optimizeIRResult(
   { enabled }: IROptimizerConfig,
   ir: IRScopeGeneratorResult,
 ): IRScopeGeneratorResult {

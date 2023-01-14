@@ -32,7 +32,7 @@ export function dropRedundantLabelInstructions(instructions: IRInstruction[]) {
 
   // second pass
   // - replace jmp / branches label names with cached ones
-  // - if there is jmp instruction that immiddiately jmps to next label - remove it
+  // - if there is jmp instruction that immediately jmps to next label - remove it
   for (let i = 0; i < newInstructions.length; ) {
     let instruction = newInstructions[i];
     const nextInstruction = newInstructions[i + 1];

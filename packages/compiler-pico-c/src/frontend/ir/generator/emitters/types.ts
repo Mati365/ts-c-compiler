@@ -6,9 +6,10 @@ import { IRConstant, IRVariable } from '../../variables';
 import { IRVariableAllocator } from '../IRVariableAllocator';
 
 import type {
-  IRCodeSegmentBuilder,
-  IRCodeSegmentBuilderResult,
-} from '../segments/IRCodeSegmentBuilder';
+  IRFlatCodeSegmentBuilder,
+  IRFlatCodeSegmentBuilderResult,
+} from '../segments/IRFlatCodeSegmentBuilder';
+
 import type {
   IRDataSegmentBuilder,
   IRDataSegmentBuilderResult,
@@ -28,7 +29,7 @@ import type { emitBlockItemIR } from './emit-fn-decl';
 import type { emitVariableInitializerIR } from './emit-initializer';
 
 export type IRGeneratorSegments = {
-  code: IRCodeSegmentBuilder;
+  code: IRFlatCodeSegmentBuilder;
   data: IRDataSegmentBuilder;
 };
 
@@ -83,7 +84,7 @@ export type IREmitterExpressionResult = IREmitterStmtResult & {
 export type IRScopeGeneratorResult = {
   allocator: IRVariableAllocator;
   segments: {
-    code: IRCodeSegmentBuilderResult;
+    code: IRFlatCodeSegmentBuilderResult;
     data: IRDataSegmentBuilderResult;
   };
 };

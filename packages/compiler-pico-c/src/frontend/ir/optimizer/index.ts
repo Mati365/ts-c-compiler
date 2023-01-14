@@ -1,1 +1,1 @@
-export * from './optimizeIRGenResult';
+export * from './optimizeIRResult';

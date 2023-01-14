@@ -2,8 +2,8 @@ import * as R from 'ramda';
 import chalk from 'chalk';
 
 import { IRInstructionsBlock, isIRFnDeclInstruction } from '../instructions';
+import { IRFlatCodeSegmentBuilderResult } from '../generator';
 import { IRCodeBuilderResult } from '../safeBuildIRCode';
-import { IRCodeSegmentBuilderResult } from '../generator';
 
 /**
  * Simple IR serializer. Maybe add graph rendering?
@@ -46,7 +46,7 @@ export class IRResultView {
   /**
    * Serializes code segment with branches
    */
-  static serializeCodeSegment(code: IRCodeSegmentBuilderResult): string[] {
+  static serializeCodeSegment(code: IRFlatCodeSegmentBuilderResult): string[] {
     return R.values(code.functions).reduce((acc, fn, index, array) => {
       acc.push(IRResultView.serializeCodeBlock(fn.block));
 

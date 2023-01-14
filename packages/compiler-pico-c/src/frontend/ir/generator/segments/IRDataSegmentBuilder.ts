@@ -11,17 +11,11 @@ export type IRDataSegmentBuilderResult = {
 export class IRDataSegmentBuilder extends IRSegmentBuilder<IRDataSegmentBuilderResult> {
   private instructions: IRInstruction[] = [];
 
-  /**
-   * Emit instruction and return this
-   */
   emit(instruction: IRInstruction): this {
     this.instructions.push(instruction);
     return this;
   }
 
-  /**
-   * Returns all instructions
-   */
   flush(): IRDataSegmentBuilderResult {
     return {
       instructions: this.instructions,

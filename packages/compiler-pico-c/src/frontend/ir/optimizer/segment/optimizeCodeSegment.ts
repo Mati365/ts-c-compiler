@@ -1,11 +1,11 @@
 import * as R from 'ramda';
 
-import { IRCodeSegmentBuilderResult } from '../../generator';
+import { IRFlatCodeSegmentBuilderResult } from '../../generator';
 import { optimizeInstructionsBlock } from '../block';
 
 export function optimizeCodeSegment(
-  segment: IRCodeSegmentBuilderResult,
-): IRCodeSegmentBuilderResult {
+  segment: IRFlatCodeSegmentBuilderResult,
+): IRFlatCodeSegmentBuilderResult {
   return {
     ...segment,
     functions: R.mapObjIndexed(

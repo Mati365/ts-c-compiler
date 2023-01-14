@@ -1,19 +1,27 @@
 import { X86IntRegTree } from '../../constants/regs';
 
-export function recursiveSetAvailabilityInRegMap(
-  path: X86IntRegTree[],
-  list: X86IntRegTree[],
-): X86IntRegTree[] {
-  let reduced: X86IntRegTree[] = list;
+type SetRegAvailabilityAttrs = {
+  path: X86IntRegTree[];
+  unavailable: boolean;
+  list: X86IntRegTree[];
+};
+
+export function recursiveSetAvailabilityInRegMap({
+  path,
+  unavailable,
+  list,
+}: SetRegAvailabilityAttrs): X86IntRegTree[] {
+  const origin: X86IntRegTree[] = [...list];
+  let reduced: X86IntRegTree[] = origin;
 
   for (const currentPath of path) {
-    reduced = [...reduced];
     reduced[reduced.indexOf(currentPath)] = {
       ...currentPath,
-      unavailable: true,
+      unavailable,
     };
+
     reduced = currentPath.children;
   }
 
-  return reduced;
+  return origin;
 }

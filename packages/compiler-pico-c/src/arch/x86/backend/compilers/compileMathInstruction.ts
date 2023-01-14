@@ -1,7 +1,12 @@
 import { TokenType } from '@compiler/lexer/shared';
 import { IRMathInstruction } from '@compiler/pico-c/frontend/ir/instructions';
 
-import { IRArgResolverType } from '../X86AbstractRegAllocator';
+import {
+  CBackendError,
+  CBackendErrorCode,
+} from '@compiler/pico-c/backend/errors/CBackendError';
+
+import { IRArgDynamicResolverType } from '../X86AbstractRegAllocator';
 import { CompilerFnAttrs } from '../../constants/types';
 import { genInstruction, withInlineComment } from '../../asm-utils';
 
@@ -10,47 +15,82 @@ type MathInstructionCompilerAttrs = CompilerFnAttrs & {
 };
 
 export function compileMathInstruction({
-  iterator,
   instruction,
   context,
 }: MathInstructionCompilerAttrs): string[] {
-  const { allocator } = context;
-  const { leftVar, rightVar } = instruction;
+  const { leftVar, rightVar, outputVar, operator } = instruction;
+  const {
+    allocator: { regs },
+  } = context;
 
-  const leftAllocResult = allocator.regs.resolveIRArg({
-    iterator,
-    allow: IRArgResolverType.REG,
-    arg: leftVar,
-  });
-
-  const rightAllocResult = allocator.regs.resolveIRArg({
-    iterator,
-    allow: IRArgResolverType.REG | IRArgResolverType.MEM,
-    arg: rightVar,
-  });
-
-  let asm = '';
-  switch (instruction.operator) {
+  switch (operator) {
+    case TokenType.MUL:
     case TokenType.PLUS:
-      asm = genInstruction(
-        'add',
-        leftAllocResult.value,
-        rightAllocResult.value,
-      );
-      break;
+    case TokenType.MINUS: {
+      const leftAllocResult = regs.tryResolveIRArgAsReg({
+        arg: leftVar,
+      });
 
-    case TokenType.MINUS:
-      asm = genInstruction(
-        'sub',
-        leftAllocResult.value,
-        rightAllocResult.value,
-      );
-      break;
+      const rightAllocResult = regs.tryResolveIrArg({
+        allow: IRArgDynamicResolverType.REG | IRArgDynamicResolverType.MEM,
+        arg: rightVar,
+      });
+
+      let asm = '';
+
+      if (operator === TokenType.PLUS) {
+        asm = genInstruction(
+          'add',
+          leftAllocResult.value,
+          rightAllocResult.value,
+        );
+      }
+      if (operator === TokenType.MUL) {
+        asm = genInstruction(
+          'imul',
+          leftAllocResult.value,
+          rightAllocResult.value,
+        );
+      } else {
+        asm = genInstruction(
+          'sub',
+          leftAllocResult.value,
+          rightAllocResult.value,
+        );
+      }
+
+      regs.transferRegOwnership(outputVar.name, leftAllocResult.value);
+
+      return [
+        ...leftAllocResult.asm,
+        ...rightAllocResult.asm,
+        withInlineComment(asm, instruction.getDisplayName()),
+      ];
+    }
+
+    case TokenType.DIV: {
+      const leftAllocResult = regs.tryResolveIRArgAsReg({
+        arg: leftVar,
+        specificReg: 'ax',
+      });
+
+      const rightAllocResult = regs.tryResolveIrArg({
+        allow: IRArgDynamicResolverType.REG | IRArgDynamicResolverType.MEM,
+        arg: rightVar,
+      });
+
+      regs.transferRegOwnership(outputVar.name, leftAllocResult.value);
+
+      return [
+        ...leftAllocResult.asm,
+        ...rightAllocResult.asm,
+        withInlineComment(
+          genInstruction('idiv', rightAllocResult.value),
+          instruction.getDisplayName(),
+        ),
+      ];
+    }
   }
 
-  return [
-    ...leftAllocResult.asm,
-    ...rightAllocResult.asm,
-    withInlineComment(asm, instruction.getDisplayName()),
-  ];
+  throw new CBackendError(CBackendErrorCode.UNABLE_TO_COMPILE_INSTRUCTION);
 }

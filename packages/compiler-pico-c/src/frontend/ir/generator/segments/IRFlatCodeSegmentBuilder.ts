@@ -16,14 +16,18 @@ export type IRCodeFunctionBlock = {
 
 export type IRFunctionsMap = Record<string, IRCodeFunctionBlock>;
 
-export type IRCodeSegmentBuilderResult = {
+export type IRFlatCodeSegmentBuilderResult = {
   functions: IRFunctionsMap;
 };
 
 /**
- * Constructs map of functions that will be later passed to optimizer
+ * Constructs map of functions that will be later passed to optimizer and then to graph.
+ *
+ * @see
+ *  List of instructions should be flat! It is much easier to optimize. In other scenario
+ *  optimizer should walk through tree (what is not so fast as walking through plain list)
  */
-export class IRCodeSegmentBuilder extends IRSegmentBuilder<IRCodeSegmentBuilderResult> {
+export class IRFlatCodeSegmentBuilder extends IRSegmentBuilder<IRFlatCodeSegmentBuilderResult> {
   private functions: IRFunctionsMap = {};
   private tmpFunction: IRCodeFunctionBlock = null;
 
@@ -31,16 +35,10 @@ export class IRCodeSegmentBuilder extends IRSegmentBuilder<IRCodeSegmentBuilderR
     return this.tmpFunction.block.instructions;
   }
 
-  /**
-   * Removes last instruction from stack
-   */
   pop(): IRInstruction {
     return this.instructions.pop();
   }
 
-  /**
-   * If instruction is function - add new block
-   */
   emit(instruction: IRInstruction): this {
     // create new block, `def` has been spotted
     if (isIRFnDeclInstruction(instruction)) {
@@ -71,10 +69,7 @@ export class IRCodeSegmentBuilder extends IRSegmentBuilder<IRCodeSegmentBuilderR
     return this;
   }
 
-  /**
-   * Cleanups temp instructions stack and returns graph
-   */
-  flush(): IRCodeSegmentBuilderResult {
+  flush(): IRFlatCodeSegmentBuilderResult {
     return {
       functions: this.functions,
     };

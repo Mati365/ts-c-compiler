@@ -20,14 +20,14 @@ import {
 import { IRGeneratorConfig } from '../constants';
 import { IRVariableAllocator } from './IRVariableAllocator';
 import { IRInstructionFactory } from './IRInstructionFactory';
-import { IRCodeSegmentBuilder, IRDataSegmentBuilder } from './segments';
+import { IRFlatCodeSegmentBuilder, IRDataSegmentBuilder } from './segments';
 
 /**
  * Root IR generator visitor
  */
 export class IRGeneratorGlobalVisitor extends CScopeVisitor {
   readonly segments: IRGeneratorSegments = {
-    code: new IRCodeSegmentBuilder(),
+    code: new IRFlatCodeSegmentBuilder(),
     data: new IRDataSegmentBuilder(),
   };
 

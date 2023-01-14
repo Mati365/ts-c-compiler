@@ -1,13 +1,16 @@
+import * as R from 'ramda';
+
 import {
   IRInstruction,
   IRLoadInstruction,
 } from '@compiler/pico-c/frontend/ir/instructions';
 
-import { IRInstructionVarArg } from '@compiler/pico-c/frontend/ir/variables';
-import { X86RegName } from '@x86-toolkit/assembler';
+import {
+  IRInstructionVarArg,
+  IRVariable,
+} from '@compiler/pico-c/frontend/ir/variables';
 
-import { IRBlockIterator } from './iterators/IRBlockIterator';
-import { RegsMapQuery } from './utils';
+import { X86RegName } from '@x86-toolkit/assembler';
 import { X86Allocator } from './X86Allocator';
 
 export type IRRegReqResult = {
@@ -15,28 +18,31 @@ export type IRRegReqResult = {
   value: X86RegName;
 };
 
-export enum IRArgResolverType {
+export type IRArgAllocatorResult<V extends string | number = string | number> =
+  {
+    asm: string[];
+    value: V;
+  };
+
+export enum IRArgDynamicResolverType {
   REG = 1,
   MEM = 2,
   NUMBER = 3,
 }
 
-export type IRArgAllocatorResult = {
-  asm: string[];
-  value: number | string;
-  type: IRArgResolverType;
+export type IRArgDynamicResolverAttrs = {
+  allow: IRArgDynamicResolverType;
+  arg: IRInstructionVarArg;
 };
 
-export type IRArgAllocatorArgs<
-  A extends IRInstructionVarArg = IRInstructionVarArg,
-> = {
-  iterator: IRBlockIterator;
-  allow: IRArgResolverType;
-  arg: A;
+export type IRArgRegResolverAttrs = {
+  specificReg?: X86RegName;
+  arg: IRInstructionVarArg;
 };
 
 export abstract class X86AbstractRegAllocator {
   protected loadInstructions: Record<string, IRLoadInstruction> = {};
+  protected regOwnership: Partial<Record<string, X86RegName>> = {};
 
   constructor(protected allocator: X86Allocator) {}
 
@@ -52,23 +58,55 @@ export abstract class X86AbstractRegAllocator {
    * Some instructions such like add / sub allows to skip enter
    * and load arg directly from memory.
    */
-  pushIRLoad(load: IRLoadInstruction): this {
+  setIRLoad(load: IRLoadInstruction): this {
     this.loadInstructions[load.outputVar.name] = load;
     return this;
   }
 
+  dropOwnershipByReg(reg: X86RegName) {
+    const { regOwnership } = this;
+
+    for (const varName in regOwnership) {
+      if (regOwnership[varName] === reg) {
+        delete regOwnership[varName];
+      }
+    }
+  }
+
   /**
-   * Function executed before attending to compile instructions block
+   * Transfers register ownership between temp variables
    */
+  transferRegOwnership(inputVar: string, reg: X86RegName) {
+    this.dropOwnershipByReg(reg);
+    this.regOwnership[inputVar] = reg;
+  }
+
+  /**
+   * Get used by tmp instruction reg
+   */
+  getVarReg(inputVar: string) {
+    return this.regOwnership[inputVar];
+  }
+
+  spillAllRegs() {
+    R.forEachObjIndexed(reg => {
+      this.spillReg(reg);
+    }, this.regOwnership);
+
+    this.regOwnership = {};
+  }
+
+  abstract spillReg(reg: X86RegName): void;
+
   abstract analyzeInstructionsBlock(instructions: IRInstruction[]): void;
 
-  /**
-   * Fetches provided mem variable or constant to reg
-   */
-  abstract resolveIRArg(arg: IRArgAllocatorArgs): IRArgAllocatorResult;
+  abstract tryResolveIRArgAsReg(
+    attrs: IRArgRegResolverAttrs,
+  ): IRArgAllocatorResult<X86RegName>;
 
-  /**
-   * Allocates plain new reg
-   */
-  abstract requestReg(query: RegsMapQuery): IRRegReqResult;
+  abstract tryResolveIRArgAsAddr(arg: IRVariable): IRArgAllocatorResult<string>;
+
+  abstract tryResolveIrArg(
+    attrs: IRArgDynamicResolverAttrs,
+  ): IRArgAllocatorResult<string | number>;
 }
