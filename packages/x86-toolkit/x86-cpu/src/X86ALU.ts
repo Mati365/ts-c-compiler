@@ -10,7 +10,7 @@ import {
 
 import { X86CPU } from './X86CPU';
 import { X86Unit } from './X86Unit';
-import { X86AbstractCPU, X86BitsMode, RMByte, X86Interrupt } from './types';
+import { X86AbstractCPU, X86BitsMode, RMByte, X86Interrupt } from './parts';
 
 type ALUOperatorSchema = {
   _c: (a: number, b?: number) => number;

@@ -2,7 +2,7 @@ import {
   replaceNthByte,
   extractNthByte,
 } from '@compiler/core/utils/extractNthByte';
-import { uuidX86Device } from '../../types/X86AbstractDevice';
+import { uuidX86Device } from '../../parts/X86AbstractDevice';
 
 import { X86CPU } from '../../X86CPU';
 import {

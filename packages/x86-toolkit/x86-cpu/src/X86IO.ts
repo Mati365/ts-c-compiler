@@ -1,6 +1,6 @@
 import { X86_REGISTERS } from './constants/x86';
 
-import { X86BitsMode } from './types';
+import { X86BitsMode } from './parts';
 import { X86Unit } from './X86Unit';
 import { X86CPU } from './X86CPU';
 

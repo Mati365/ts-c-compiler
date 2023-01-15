@@ -1,4 +1,4 @@
-import { X86BitsMode } from '@x86-toolkit/cpu/types';
+import { X86BitsMode } from '@x86-toolkit/cpu/parts';
 
 import { InstructionArgType } from '../../../../../types';
 import { ASTInstructionArg } from '../ASTInstructionArg';

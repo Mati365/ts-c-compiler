@@ -1,6 +1,6 @@
 import * as R from 'ramda';
 
-import { X86BitsMode, ExtendedX86RegName } from '@x86-toolkit/cpu/types';
+import { X86BitsMode, ExtendedX86RegName } from '@x86-toolkit/cpu/parts';
 
 import { InstructionArgSize } from '../types';
 

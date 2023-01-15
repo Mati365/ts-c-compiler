@@ -7,8 +7,8 @@ import {
   toIEEE754Extended,
 } from '@compiler/core/utils/IEEE754';
 
-import { X86BitsMode } from '../types/X86Regs';
-import { X86AbstractCPU } from '../types/X86AbstractCPU';
+import { X86BitsMode } from '../parts/X86Regs';
+import { X86AbstractCPU } from '../parts/X86AbstractCPU';
 import { ByteMemRegionAccessor } from './MemoryRegion';
 
 type MemReader = (offset: number) => number;

@@ -13,7 +13,7 @@ import {
   X86AbstractCPU,
   X86Interrupt,
   X86InterruptType,
-} from './types';
+} from './parts';
 
 type X86FlagCondition = (flags: X86Flags) => boolean | number;
 

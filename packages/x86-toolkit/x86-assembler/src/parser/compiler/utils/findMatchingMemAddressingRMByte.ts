@@ -1,5 +1,5 @@
 import { RegisterSchema } from '@x86-toolkit/assembler/constants';
-import { RMAddressingMode } from '@x86-toolkit/cpu/types';
+import { RMAddressingMode } from '@x86-toolkit/cpu/parts';
 import { InstructionArgSize, MemAddressDescription } from '../../../types';
 
 /**

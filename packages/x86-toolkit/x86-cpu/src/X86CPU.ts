@@ -21,7 +21,7 @@ import {
   X86Interrupt,
   SegmentedAddress,
   X86InterruptType,
-} from './types';
+} from './parts';
 
 import { X87 } from './x87/X87';
 import { X86Stack } from './X86Stack';

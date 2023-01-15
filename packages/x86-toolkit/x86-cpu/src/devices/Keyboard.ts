@@ -2,7 +2,7 @@ import { UnionStruct, bits } from '@compiler/core/shared/UnionStruct';
 import { X86CPU } from '../X86CPU';
 import { PIT } from './PIT/PIT';
 
-import { uuidX86Device } from '../types/X86AbstractDevice';
+import { uuidX86Device } from '../parts/X86AbstractDevice';
 
 export class KeyboardControlReg extends UnionStruct {
   @bits(0) timer2Gate: number;

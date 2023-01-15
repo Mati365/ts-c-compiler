@@ -6,7 +6,7 @@ type SetRegAvailabilityAttrs = {
   list: X86IntRegTree[];
 };
 
-export function recursiveSetAvailabilityInRegMap({
+export function recursiveSetAvailabilityInX86RegMap({
   path,
   unavailable,
   list,

@@ -14,9 +14,11 @@ import {
 } from '@compiler/pico-c/backend/errors/CBackendError';
 
 import { genInstruction } from '../../asm-utils';
-
 import { RegsMap, createGeneralPurposeRegsMap } from '../../constants/regs';
-import { RegsMapQuery, queryFromRegsMap } from '../utils/queryFromRegsMap';
+
+import { isX86RegLookup, X86RegLookupQuery } from '../utils';
+import { queryFromX86IntRegsMap } from '../utils/queryFromX86IntRegsMap';
+
 import {
   IRArgAllocatorResult,
   IRArgDynamicResolverAttrs,
@@ -43,9 +45,11 @@ export class X86BasicRegAllocator extends X86AbstractRegAllocator {
     }
 
     if (isIRConstant(arg)) {
-      const { asm, value } = this.requestReg({ type: arg.type });
-      const prefix = getByteSizeArgPrefixName(arg.type.getByteSize());
+      const { asm, value } = this.requestReg({
+        size: arg.type.getByteSize(),
+      });
 
+      const prefix = getByteSizeArgPrefixName(arg.type.getByteSize());
       asm.push(genInstruction('mov', value, `${prefix} ${arg.constant}`));
 
       return {
@@ -98,7 +102,7 @@ export class X86BasicRegAllocator extends X86AbstractRegAllocator {
       const stackAddr = stackFrame.getLocalVarStackRelAddress(cachedLoad.name);
       const prefix = getByteSizeArgPrefixName(arg.type.getByteSize());
       const regResult = this.requestReg({
-        type: arg.type,
+        size: arg.type.getByteSize(),
         reg: specificReg,
       });
 
@@ -186,6 +190,13 @@ export class X86BasicRegAllocator extends X86AbstractRegAllocator {
   }
 
   releaseReg(reg: X86RegName): void {
+    const result = queryFromX86IntRegsMap({ reg }, this.availableRegs);
+
+    // reg is already available to pick, skip
+    if (result?.reg) {
+      return;
+    }
+
     throw new Error(`Todo: Trying to spill... ${reg}!`);
   }
 
@@ -201,17 +212,17 @@ export class X86BasicRegAllocator extends X86AbstractRegAllocator {
     return cachedLoad.inputVar;
   }
 
-  private requestReg(query: RegsMapQuery): IRRegReqResult {
-    let result = queryFromRegsMap(query, this.availableRegs);
+  private requestReg(query: X86RegLookupQuery): IRRegReqResult {
+    let result = queryFromX86IntRegsMap(query, this.availableRegs);
 
     if (!result) {
-      if (query.reg) {
+      if (isX86RegLookup(query)) {
         this.releaseReg(query.reg);
       } else {
         this.releaseReg(Object.values(this.regOwnership)[1].reg);
       }
 
-      result = queryFromRegsMap(query, this.availableRegs);
+      result = queryFromX86IntRegsMap(query, this.availableRegs);
     }
 
     this.availableRegs = result.availableRegs;

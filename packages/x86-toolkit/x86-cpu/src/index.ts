@@ -6,3 +6,4 @@ export * from './X86Stack';
 export * from './X86Unit';
 export * from './devices';
 export * from './helpers';
+export * from './guards';

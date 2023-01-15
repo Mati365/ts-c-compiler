@@ -1,3 +1,3 @@
-export * from './queryFromRegsMap';
-export * from './recursiveRegMapLookupBy';
-export * from './resursiveSetAvailabilityInRegMap';
+export * from './queryFromX86IntRegsMap';
+export * from './recursiveX86RegMapLookup';
+export * from './recursiveSetAvailabilityInX86RegMap';

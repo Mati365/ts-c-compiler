@@ -12,7 +12,7 @@ import {
   X86_REALMODE_MAPPED_ADDRESSES,
 } from '../../constants/x86';
 
-import { uuidX86Device } from '../../types/X86AbstractDevice';
+import { uuidX86Device } from '../../parts/X86AbstractDevice';
 import { X86CPU } from '../../X86CPU';
 
 import { VideoMode } from './VideoMode';

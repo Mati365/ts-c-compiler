@@ -1,7 +1,7 @@
 import * as R from 'ramda';
 
 import { roundedSignedNumberByteSize } from '@compiler/core/utils/numberByteSize';
-import { X86BitsMode } from '@x86-toolkit/cpu/types';
+import { X86BitsMode } from '@x86-toolkit/cpu/parts';
 
 import { InstructionArgType, BranchAddressingType } from '../../../../../types';
 import { ASTInstruction } from '../../ASTInstruction';

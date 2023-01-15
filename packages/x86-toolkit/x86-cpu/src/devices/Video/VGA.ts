@@ -3,7 +3,7 @@ import * as R from 'ramda';
 import { Size, RGBColor, Vec2D } from '@compiler/core/types';
 import { reverseByte } from '@compiler/core/utils/bits';
 
-import { uuidX86Device } from '../../types';
+import { uuidX86Device } from '../../parts';
 
 import { VirtualMemBlockDriver } from '../../memory/VirtualMemBlockDriver';
 import { ByteMemRegionAccessor } from '../../memory/MemoryRegion';

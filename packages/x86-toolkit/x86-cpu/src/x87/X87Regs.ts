@@ -2,7 +2,7 @@ import * as R from 'ramda';
 
 import { getBit, setBit } from '@compiler/core/utils/bits';
 
-import { RegistersDebugDump, X86AbstractCPU, X86RegsStore } from '../types';
+import { RegistersDebugDump, X86AbstractCPU, X86RegsStore } from '../parts';
 
 import { X87Error, X87ErrorCode } from './X87Error';
 

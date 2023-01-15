@@ -5,7 +5,7 @@ import { X86Unit } from '../X86Unit';
 import { X87RegsStore, X87Tag } from './X87Regs';
 import { X86InstructionSet } from '../X86InstructionSet';
 import { X86OpcodesList } from '../X86CPU';
-import { X86AbstractCPU } from '../types';
+import { X86AbstractCPU } from '../parts';
 import { X87Error, X87ErrorCode } from './X87Error';
 
 /**

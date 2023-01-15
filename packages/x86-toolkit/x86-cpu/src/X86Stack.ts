@@ -1,6 +1,6 @@
 import * as R from 'ramda';
 
-import { X86AbstractCPU } from './types';
+import { X86AbstractCPU } from './parts';
 import { X86CPU } from './X86CPU';
 import { X86Unit } from './X86Unit';
 

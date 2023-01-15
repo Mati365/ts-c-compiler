@@ -1,7 +1,7 @@
 import { UnionStruct, bits } from '@compiler/core/shared/UnionStruct';
 
 import { X86CPU } from '../X86CPU';
-import { uuidX86Device } from '../types/X86AbstractDevice';
+import { uuidX86Device } from '../parts/X86AbstractDevice';
 
 export class PS2Status extends UnionStruct {
   @bits(0) outputBufferStatus: number;

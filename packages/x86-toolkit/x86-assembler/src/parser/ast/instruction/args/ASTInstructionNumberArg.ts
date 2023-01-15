@@ -4,7 +4,7 @@ import {
   roundedSignedNumberByteSize,
 } from '@compiler/core/utils/numberByteSize';
 
-import { X86AbstractCPU } from '@x86-toolkit/cpu/types';
+import { X86AbstractCPU } from '@x86-toolkit/cpu/parts';
 import { InstructionArgType } from '../../../../types';
 import { ASTInstructionArg } from './ASTInstructionArg';
 

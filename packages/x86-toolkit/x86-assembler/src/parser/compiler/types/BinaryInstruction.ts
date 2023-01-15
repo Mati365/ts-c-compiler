@@ -6,7 +6,7 @@ import {
   RMByte,
   RMAddressingMode,
   X86AbstractCPU,
-} from '@x86-toolkit/cpu/types';
+} from '@x86-toolkit/cpu/parts';
 
 import { ASTInstruction } from '../../ast/instruction/ASTInstruction';
 import {

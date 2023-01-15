@@ -32,7 +32,7 @@ export type IRArgAllocatorResult<V extends string | number = string | number> =
 export enum IRArgDynamicResolverType {
   REG = 1,
   MEM = 2,
-  NUMBER = 3,
+  NUMBER = 4,
 }
 
 export type IRDynamicArgAllocatorResult =

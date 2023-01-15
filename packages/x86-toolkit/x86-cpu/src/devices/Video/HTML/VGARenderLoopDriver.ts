@@ -1,5 +1,5 @@
 import { asap } from '@compiler/core/utils/asap';
-import { uuidX86Device } from '@x86-toolkit/cpu/types';
+import { uuidX86Device } from '@x86-toolkit/cpu/parts';
 
 import { VGAPixBufCanvasRenderer } from '../Renderers';
 import { VGA } from '../VGA';

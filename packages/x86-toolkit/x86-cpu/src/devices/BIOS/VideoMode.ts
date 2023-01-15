@@ -1,5 +1,5 @@
 import { X86_REALMODE_MAPPED_ADDRESSES } from '../../constants/x86';
-import { X86AbstractCPU, X86RAM } from '../../types';
+import { X86AbstractCPU, X86RAM } from '../../parts';
 
 /**
  * Creates video buffer description
