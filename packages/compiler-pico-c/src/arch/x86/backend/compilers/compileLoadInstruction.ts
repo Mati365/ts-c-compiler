@@ -9,5 +9,5 @@ export function compileLoadInstruction({
   instruction,
   context,
 }: LoadInstructionCompilerAttrs) {
-  context.allocator.regs.setIRLoad(instruction);
+  context.allocator.regs.onIRLoad(instruction);
 }

@@ -5,8 +5,6 @@ import {
   IRInstructionsBlock,
 } from '@compiler/pico-c/frontend/ir/instructions';
 
-import { isIRBranchInstruction } from '@compiler/pico-c/frontend/ir/guards';
-
 import { CompilerFnAttrs } from '../../constants/types';
 import { IRBlockIterator } from '../iterators/IRBlockIterator';
 
@@ -25,10 +23,6 @@ export function compileInstructionsBlock({
   const asm: string[] = [];
 
   IRBlockIterator.of(instructions).walk((instruction, iterator) => {
-    if (isIRBranchInstruction(instruction)) {
-      context.allocator.regs.releaseAllRegs();
-    }
-
     switch (instruction.opcode) {
       case IROpcode.COMMENT:
         asm.push(genComment((instruction as IRCommentInstruction).comment));

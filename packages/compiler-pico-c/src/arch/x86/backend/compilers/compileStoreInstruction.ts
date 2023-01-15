@@ -32,18 +32,24 @@ export function compileStoreInstruction({
   ].join(' ');
 
   if (isIRVariable(value)) {
-    let inputReg = regs.getVarReg(value.name);
+    let inputReg = regs.tryResolveIRArgAsReg({
+      arg: value,
+    });
 
     if (inputReg) {
-      regs.transferRegOwnership(outputVar.name, inputReg);
+      regs.transferRegOwnership(outputVar.name, inputReg.value);
     } else {
       console.warn('FIXME: missing implementation of function return!');
-      inputReg = 'ax';
+      inputReg = {
+        value: 'ax',
+        asm: [],
+      };
     }
 
     return [
+      ...inputReg.asm,
       withInlineComment(
-        genInstruction('mov', destAttr, inputReg),
+        genInstruction('mov', destAttr, inputReg.value),
         instruction.getDisplayName(),
       ),
     ];

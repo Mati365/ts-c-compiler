@@ -9,7 +9,9 @@ type X86SpecificRegLookup = {
   reg: X86RegName;
 };
 
-export type X86RegLookupQuery = X86RegBySizeLookup | X86SpecificRegLookup;
+export type X86RegLookupQuery = (X86RegBySizeLookup | X86SpecificRegLookup) & {
+  withUnavailable?: boolean;
+};
 
 export const isX86RegLookup = (
   query: X86RegLookupQuery,
@@ -24,7 +26,7 @@ export function recursiveX86RegMapLookup(
 
   for (const tree of list) {
     if (
-      !tree.unavailable &&
+      (query.withUnavailable || !tree.unavailable) &&
       (!hasSize || tree.size === query.size) &&
       (!hasReg || tree.name === query.reg)
     ) {

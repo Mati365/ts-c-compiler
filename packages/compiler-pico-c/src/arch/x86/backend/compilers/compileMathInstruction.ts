@@ -59,7 +59,7 @@ export function compileMathInstruction({
       }
 
       if (rightAllocResult.type === IRArgDynamicResolverType.REG) {
-        regs.dropOwnershipByReg(rightAllocResult.value);
+        regs.markRegAsUnused(rightAllocResult.value);
       }
 
       regs.transferRegOwnership(outputVar.name, leftAllocResult.value);
@@ -82,7 +82,7 @@ export function compileMathInstruction({
         arg: rightVar,
       });
 
-      regs.releaseReg('dx');
+      regs.markRegAsUnused('dx');
       regs.transferRegOwnership(outputVar.name, leftAllocResult.value);
 
       return [

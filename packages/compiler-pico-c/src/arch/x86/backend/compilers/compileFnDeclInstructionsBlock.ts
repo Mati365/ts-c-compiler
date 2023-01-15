@@ -64,7 +64,7 @@ export function compileFnDeclInstructionsBlock({
     return asm;
   };
 
-  allocator.regs.analyzeInstructionsBlock(instructions);
+  allocator.regs.onAnalyzeInstructionsBlock(instructions);
 
   const asm = [
     genComment(fnInstruction.getDisplayName()),

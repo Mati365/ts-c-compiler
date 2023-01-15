@@ -1,3 +1,4 @@
+import { format } from '../utils';
 import { CodeTranslatedError } from './CodeTranslatedError';
 
 export function fixme(str: string) {
@@ -17,11 +18,13 @@ export class CompilerError<C = any, L = any> extends CodeTranslatedError<C> {
    * Returns log with location if provided
    */
   getCompilerMessage(): string {
-    const { loc, message, name } = this;
+    const { loc, message, name, meta } = this;
+    const formattedMessage = format(message, meta || {});
+
     if (!loc) {
-      return message;
+      return formattedMessage;
     }
 
-    return `(${loc.toString()}): <${name}> ${message}`;
+    return `(${loc.toString()}): <${name}> ${formattedMessage}`;
   }
 }

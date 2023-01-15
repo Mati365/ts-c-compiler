@@ -1,23 +1,23 @@
 import { getByteSizeArgPrefixName } from '@x86-toolkit/assembler/parser/utils';
 import { hasFlag } from '@compiler/core/utils';
 
+import { IRLoadInstruction } from '@compiler/pico-c/frontend/ir/instructions';
 import {
   IRVariable,
   isIRConstant,
   isIRVariable,
 } from '@compiler/pico-c/frontend/ir/variables';
 
-import { X86RegName } from '@x86-toolkit/assembler/index';
+import { X86RegName } from '@x86-toolkit/assembler';
 import {
   CBackendError,
   CBackendErrorCode,
 } from '@compiler/pico-c/backend/errors/CBackendError';
 
-import { genInstruction } from '../../asm-utils';
-import { RegsMap, createGeneralPurposeRegsMap } from '../../constants/regs';
+import { genInstruction } from '../../../asm-utils';
 
-import { isX86RegLookup, X86RegLookupQuery } from '../utils';
-import { queryFromX86IntRegsMap } from '../utils/queryFromX86IntRegsMap';
+import { isX86RegLookup, X86RegLookupQuery } from '../../utils';
+import { queryFromX86IntRegsMap } from '../../utils/queryFromX86IntRegsMap';
 
 import {
   IRArgAllocatorResult,
@@ -27,13 +27,33 @@ import {
   IRDynamicArgAllocatorResult,
   IRRegReqResult,
   X86AbstractRegAllocator,
-} from '../X86AbstractRegAllocator';
+} from '../../X86AbstractRegAllocator';
+
+import { X86Allocator } from '../../X86Allocator';
+import { X86RegOwnershipTracker } from './X86RegOwnershipTracker';
 
 export class X86BasicRegAllocator extends X86AbstractRegAllocator {
-  private availableRegs: RegsMap;
+  protected readonly ownership: X86RegOwnershipTracker;
 
-  analyzeInstructionsBlock() {
-    this.availableRegs = createGeneralPurposeRegsMap()[this.config.arch];
+  constructor(allocator: X86Allocator) {
+    super(allocator);
+    this.ownership = new X86RegOwnershipTracker(allocator);
+  }
+
+  transferRegOwnership(inputVar: string, reg: X86RegName): void {
+    this.ownership.transferRegOwnership(inputVar, reg);
+  }
+
+  markRegAsUnused(reg: X86RegName): void {
+    this.ownership.dropOwnershipByReg(reg);
+  }
+
+  onIRLoad(load: IRLoadInstruction): void {
+    this.ownership.setIRLoad(load);
+  }
+
+  onAnalyzeInstructionsBlock(): void {
+    this.ownership.analyzeInstructionsBlock();
   }
 
   tryResolveIRArgAsReg({
@@ -59,11 +79,12 @@ export class X86BasicRegAllocator extends X86AbstractRegAllocator {
     }
 
     if (isIRVariable(arg)) {
-      const { regOwnership, stackFrame } = this;
+      const { ownership, stackFrame } = this;
+      const reg = ownership.getVarReg(arg.name);
 
-      if (regOwnership[arg.name]) {
+      if (reg) {
         return {
-          value: regOwnership[arg.name].reg,
+          value: reg,
           asm: [],
         };
       }
@@ -92,9 +113,10 @@ export class X86BasicRegAllocator extends X86AbstractRegAllocator {
        * mov ax, [offset var b] ; int b = ...
        * imul ax, 2             ; int c = ...
        */
-      if (regOwnership[cachedLoad.name]) {
+      const cachedReg = ownership.getVarReg(arg.name);
+      if (cachedReg) {
         return {
-          value: regOwnership[cachedLoad.name].reg,
+          value: cachedReg,
           asm: [],
         };
       }
@@ -114,7 +136,7 @@ export class X86BasicRegAllocator extends X86AbstractRegAllocator {
         ],
       };
 
-      regOwnership[arg.name] = { reg: result.value };
+      ownership.setRegOwnership(arg.name, { reg: result.value });
       return result;
     }
 
@@ -150,13 +172,12 @@ export class X86BasicRegAllocator extends X86AbstractRegAllocator {
     }
 
     if (isIRVariable(arg)) {
-      if (
-        hasFlag(IRArgDynamicResolverType.REG, allow) &&
-        this.regOwnership[arg.name]
-      ) {
+      const { ownership } = this;
+
+      if (hasFlag(IRArgDynamicResolverType.REG, allow) && ownership[arg.name]) {
         return {
           type: IRArgDynamicResolverType.REG,
-          value: this.regOwnership[arg.name].reg,
+          value: ownership[arg.name].reg,
           asm: [],
         };
       }
@@ -189,19 +210,8 @@ export class X86BasicRegAllocator extends X86AbstractRegAllocator {
     throw new CBackendError(CBackendErrorCode.REG_ALLOCATOR_ERROR);
   }
 
-  releaseReg(reg: X86RegName): void {
-    const result = queryFromX86IntRegsMap({ reg }, this.availableRegs);
-
-    // reg is already available to pick, skip
-    if (result?.reg) {
-      return;
-    }
-
-    throw new Error(`Todo: Trying to spill... ${reg}!`);
-  }
-
   private tryResolveCachedLoadDest(name: string) {
-    const cachedLoad = this.loadInstructions[name];
+    const cachedLoad = this.ownership.getCachedLoad(name);
     if (
       !isIRVariable(cachedLoad?.inputVar) ||
       !this.stackFrame.isStackVar(cachedLoad.inputVar.name)
@@ -213,19 +223,22 @@ export class X86BasicRegAllocator extends X86AbstractRegAllocator {
   }
 
   private requestReg(query: X86RegLookupQuery): IRRegReqResult {
-    let result = queryFromX86IntRegsMap(query, this.availableRegs);
+    const { ownership } = this;
+    let result = queryFromX86IntRegsMap(query, ownership.getAvailableRegs());
 
     if (!result) {
       if (isX86RegLookup(query)) {
-        this.releaseReg(query.reg);
+        ownership.dropOwnershipByReg(query.reg);
       } else {
-        this.releaseReg(Object.values(this.regOwnership)[1].reg);
+        ownership.dropOwnershipByReg(
+          Object.values(ownership.getAllRegsOwnerships())[0].reg,
+        );
       }
 
-      result = queryFromX86IntRegsMap(query, this.availableRegs);
+      result = queryFromX86IntRegsMap(query, ownership.getAvailableRegs());
     }
 
-    this.availableRegs = result.availableRegs;
+    ownership.setAvailableRegs(result.availableRegs);
 
     return {
       asm: [],

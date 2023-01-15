@@ -6,6 +6,8 @@ ccompiler(/* cpp */ `
     int a = 2;
     int b = a + a;
     int c = b / 4;
+    int d = a * 3;
+    int k = a * 5;
   }
 `).match({
   ok: result => {
