@@ -10,12 +10,15 @@ import {
 } from '../../constants/types';
 
 import { IRBlockIterator } from '../iterators/IRBlockIterator';
-
 import { genComment } from '../../asm-utils';
+
 import { compileAllocInstruction } from './compileAllocInstruction';
 import { compileStoreInstruction } from './compileStoreInstruction';
 import { compileLoadInstruction } from './compileLoadInstruction';
 import { compileMathInstruction } from './compileMathInstruction';
+import { compileICmpInstruction } from './compileICmpInstruction';
+import { compileLabelInstruction } from './compileLabelInstruction';
+import { compileJmpInstruction } from './compileJmpInstruction';
 
 type FnDeclCompilerBlockFnAttrs = CompilerBlockFnAttrs & {
   instruction: IRFnDeclInstruction;
@@ -53,6 +56,18 @@ export function compileFnDeclInstructionsBlock({
 
         case IROpcode.STORE:
           asm.push(...compileStoreInstruction(arg));
+          break;
+
+        case IROpcode.JMP:
+          asm.push(...compileJmpInstruction(arg));
+          break;
+
+        case IROpcode.LABEL:
+          asm.push(...compileLabelInstruction(arg));
+          break;
+
+        case IROpcode.ICMP:
+          asm.push(...compileICmpInstruction(arg));
           break;
 
         case IROpcode.COMMENT:

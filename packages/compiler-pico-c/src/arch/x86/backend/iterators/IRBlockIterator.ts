@@ -21,6 +21,7 @@ export class IRBlockIterator {
 
   next() {
     ++this._offset;
+    return this.instructions[this._offset];
   }
 
   walk(

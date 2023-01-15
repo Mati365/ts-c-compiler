@@ -3,11 +3,14 @@ import { ccompiler, CCompilerOutput } from '@compiler/pico-c';
 
 ccompiler(/* cpp */ `
   void main() {
-    int a = 2;
-    int b = 3;
-    int c = 4;
-    int k = (a + 1) + (b * 3) + c;
-    int abc = k * 3;
+    int a = 6;
+    int k = 6;
+
+    if (a > 5 || a < 2) {
+      int k = 5;
+    } else if (a * k > 5) {
+      int d = 5;
+    }
   }
 `).match({
   ok: result => {

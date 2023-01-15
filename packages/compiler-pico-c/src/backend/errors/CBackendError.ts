@@ -6,6 +6,7 @@ export enum CBackendErrorCode {
   STORE_VAR_ERROR = 'STORE_VAR_ERROR',
   UNABLE_TO_COMPILE_INSTRUCTION = 'UNABLE_TO_COMPILE_INSTRUCTION',
   UNABLE_TO_SPILL_REG = 'UNABLE_TO_SPILL_REG',
+  MISSING_BR_INSTRUCTION = 'MISSING_BR_INSTRUCTION',
 }
 
 export const C_BACKEND_ERROR_TRANSLATIONS: Record<CBackendErrorCode, string> = {
@@ -15,6 +16,7 @@ export const C_BACKEND_ERROR_TRANSLATIONS: Record<CBackendErrorCode, string> = {
   [CBackendErrorCode.STORE_VAR_ERROR]: fixme('Store var error!'),
   [CBackendErrorCode.REG_ALLOCATOR_ERROR]: fixme('Reg allocator error!'),
   [CBackendErrorCode.UNABLE_TO_SPILL_REG]: fixme('Unable to spill %{reg} reg!'),
+  [CBackendErrorCode.MISSING_BR_INSTRUCTION]: fixme('Missing br instruction!'),
   [CBackendErrorCode.UNABLE_TO_COMPILE_INSTRUCTION]: fixme(
     'Unable to compile instruction!',
   ),

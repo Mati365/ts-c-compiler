@@ -122,7 +122,6 @@ export class X86BasicRegAllocator extends X86AbstractRegAllocator {
       }
 
       const stackAddr = stackFrame.getLocalVarStackRelAddress(cachedLoad.name);
-      const prefix = getByteSizeArgPrefixName(arg.type.getByteSize());
       const regResult = this.requestReg({
         size: arg.type.getByteSize(),
         reg: specificReg,
@@ -131,7 +130,7 @@ export class X86BasicRegAllocator extends X86AbstractRegAllocator {
       const result = {
         value: regResult.value,
         asm: [
-          genInstruction('mov', regResult.value, `${prefix} ${stackAddr}`),
+          genInstruction('mov', regResult.value, stackAddr),
           ...regResult.asm,
         ],
       };
@@ -153,9 +152,11 @@ export class X86BasicRegAllocator extends X86AbstractRegAllocator {
       cachedLoad.name,
     );
 
+    const prefix = getByteSizeArgPrefixName(arg.type.getByteSize());
+
     return {
       asm: [],
-      value: stackAddr,
+      value: `${prefix} ${stackAddr}`,
     };
   }
 
@@ -238,6 +239,11 @@ export class X86BasicRegAllocator extends X86AbstractRegAllocator {
       }
 
       result = queryFromX86IntRegsMap(query, ownership.getAvailableRegs());
+
+      if (!result) {
+        // todo: Add spilling register support!
+        throw new CBackendError(CBackendErrorCode.REG_ALLOCATOR_ERROR);
+      }
     }
 
     ownership.setAvailableRegs(result.availableRegs);

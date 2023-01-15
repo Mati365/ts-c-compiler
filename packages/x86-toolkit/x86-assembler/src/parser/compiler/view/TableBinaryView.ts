@@ -81,7 +81,7 @@ export class TableBinaryView extends BinaryView<JMPTableEntry[]> {
     return new TableBinaryView(result)
       .serialize()
       .map(({ jmpGraph, blob, offset }) => {
-        const prefix = `0x${offset.toString(16).padStart(6, '0')}${jmpGraph}  `;
+        const prefix = `0x${offset.toString(16).padStart(6, '0')}  `;
         const binary = blob
           .toString()
           .map((str, index) =>
@@ -89,7 +89,7 @@ export class TableBinaryView extends BinaryView<JMPTableEntry[]> {
           )
           .join('\n');
 
-        return `${prefix}${binary}`;
+        return `${prefix}${jmpGraph.padEnd(10, ' ')}${binary}`;
       })
       .join('\n');
   }
