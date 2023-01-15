@@ -32,13 +32,18 @@ yarn run test
 ## Status
 
 - [ ] C compiler
-  - [ ] Frontend
+  - [x] Frontend
     - [x] Syntax parser
     - [x] Typechecker
     - [x] IR code generator
-  - [ ] Backend
-    - [ ] IR optimizer
+  - [x] Backend
+    - [x] IR optimizer
     - [ ] X86-16 Code generator
+      - [ ] Register allocator
+      - [ ] Compile math integer instruction
+      - [ ] Compile if stmts
+      - [ ] Compile loops
+      - [ ] Compile function calls
 - [x] ASM Compiler
   - [x] NASM syntax instruction compiler matcher with expression eval `mov ax, byte [ds:label+bx+12+(1/3)]`
   - [x] Instruction prefix support `rep movsw`
@@ -82,6 +87,7 @@ yarn run test
 
 ## Screens
 
+![C Compiler IR](/doc/screen-10.png)
 ![C Compiler IR](/doc/screen-9.png)
 ![Pillman](/doc/screen-6.png)
 ![Space invaders](/doc/screen-7.png)

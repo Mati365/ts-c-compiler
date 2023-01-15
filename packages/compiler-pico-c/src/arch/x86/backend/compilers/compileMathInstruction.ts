@@ -32,7 +32,6 @@ export function compileMathInstruction({
       });
 
       const rightAllocResult = regs.tryResolveIrArg({
-        allow: IRArgDynamicResolverType.REG | IRArgDynamicResolverType.MEM,
         arg: rightVar,
       });
 

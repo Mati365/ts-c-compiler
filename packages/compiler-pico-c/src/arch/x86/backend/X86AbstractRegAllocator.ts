@@ -40,7 +40,7 @@ export type IRDynamicArgAllocatorResult =
   | IRArgAllocatorTypedResult<IRArgDynamicResolverType.NUMBER, number>;
 
 export type IRArgDynamicResolverAttrs = {
-  allow: IRArgDynamicResolverType;
+  allow?: IRArgDynamicResolverType;
   arg: IRInstructionVarArg;
 };
 

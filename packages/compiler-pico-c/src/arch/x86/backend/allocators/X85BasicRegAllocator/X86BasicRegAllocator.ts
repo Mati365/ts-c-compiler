@@ -113,7 +113,7 @@ export class X86BasicRegAllocator extends X86AbstractRegAllocator {
        * mov ax, [offset var b] ; int b = ...
        * imul ax, 2             ; int c = ...
        */
-      const cachedReg = ownership.getVarReg(arg.name);
+      const cachedReg = ownership.getVarReg(cachedLoad.name);
       if (cachedReg) {
         return {
           value: cachedReg,
@@ -160,8 +160,10 @@ export class X86BasicRegAllocator extends X86AbstractRegAllocator {
   }
 
   tryResolveIrArg({
-    allow,
     arg,
+    allow = IRArgDynamicResolverType.REG |
+      IRArgDynamicResolverType.MEM |
+      IRArgDynamicResolverType.NUMBER,
   }: IRArgDynamicResolverAttrs): IRDynamicArgAllocatorResult {
     if (hasFlag(IRArgDynamicResolverType.NUMBER, allow) && isIRConstant(arg)) {
       return {

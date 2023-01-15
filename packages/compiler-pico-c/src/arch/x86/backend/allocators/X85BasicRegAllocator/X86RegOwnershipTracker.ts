@@ -73,24 +73,26 @@ export class X86RegOwnershipTracker {
     return varNames;
   }
 
-  dropOwnershipByReg(reg: X86RegName) {
+  dropOwnershipByReg(reg: X86RegName, updateAvailableRegs: boolean = true) {
     this.getOwnershipByReg(reg).forEach(varName => {
       delete this.regOwnership[varName];
     });
 
-    const { availableRegs } = restoreRegInX86IntRegsMap(
-      { reg },
-      this.availableRegs,
-    );
+    if (updateAvailableRegs) {
+      const { availableRegs } = restoreRegInX86IntRegsMap(
+        { reg },
+        this.availableRegs,
+      );
 
-    this.availableRegs = availableRegs;
+      this.availableRegs = availableRegs;
+    }
   }
 
   /**
    * Transfers register ownership between temp variables
    */
   transferRegOwnership(inputVar: string, reg: X86RegName) {
-    this.dropOwnershipByReg(reg);
+    this.dropOwnershipByReg(reg, false);
     this.regOwnership[inputVar] = {
       reg,
     };

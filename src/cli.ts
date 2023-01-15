@@ -4,10 +4,10 @@ import { ccompiler, CCompilerOutput } from '@compiler/pico-c';
 ccompiler(/* cpp */ `
   void main() {
     int a = 2;
-    int b = a + a;
-    int c = b / 4;
-    int d = a * 3;
-    int k = a * 5;
+    int b = 3;
+    int c = 4;
+    int k = (a + 1) + (b * 3) + c;
+    int abc = k * 3;
   }
 `).match({
   ok: result => {
