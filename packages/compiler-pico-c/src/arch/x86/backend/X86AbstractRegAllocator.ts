@@ -104,7 +104,7 @@ export abstract class X86AbstractRegAllocator {
    * Get used by tmp instruction reg
    */
   getVarReg(inputVar: string) {
-    return this.regOwnership[inputVar].reg;
+    return this.regOwnership[inputVar]?.reg;
   }
 
   releaseAllRegs() {

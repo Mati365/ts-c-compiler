@@ -32,9 +32,14 @@ export function compileStoreInstruction({
   ].join(' ');
 
   if (isIRVariable(value)) {
-    const inputReg = regs.getVarReg(value.name);
+    let inputReg = regs.getVarReg(value.name);
 
-    regs.transferRegOwnership(outputVar.name, inputReg);
+    if (inputReg) {
+      regs.transferRegOwnership(outputVar.name, inputReg);
+    } else {
+      console.warn('FIXME: missing implementation of function return!');
+      inputReg = 'ax';
+    }
 
     return [
       withInlineComment(
