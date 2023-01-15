@@ -11,6 +11,10 @@ ccompiler(/* cpp */ `
     } else if (a * k > 5) {
       int d = 5;
     }
+
+    while (a > 5) {
+      int s = a;
+    }
   }
 `).match({
   ok: result => {
