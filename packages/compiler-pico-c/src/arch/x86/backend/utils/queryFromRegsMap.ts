@@ -5,11 +5,11 @@ import { X86RegName } from '@x86-toolkit/assembler';
 import { X87StackRegName } from '@x86-toolkit/cpu/x87/X87Regs';
 import { RegsMap } from '../../constants/regs';
 
-import { recursiveRegMapLookupBySize } from './recursiveRegMapLookupBySize';
+import { recursiveRegMapLookupBy } from './recursiveRegMapLookupBy';
 import { recursiveSetAvailabilityInRegMap } from './resursiveSetAvailabilityInRegMap';
 
 export type RegsMapQuery = {
-  type: CType;
+  type?: CType;
   reg?: X86RegName;
 };
 
@@ -19,7 +19,7 @@ export type RegsMapQueryResult = {
 };
 
 export function queryFromRegsMap(
-  { type }: RegsMapQuery,
+  { type, reg }: RegsMapQuery,
   availableRegs: RegsMap,
 ): RegsMapQueryResult {
   if (!isPrimitiveLikeType(type)) {
@@ -27,8 +27,11 @@ export function queryFromRegsMap(
   }
 
   if (type.isIntegral()) {
-    const path = recursiveRegMapLookupBySize(
-      type.getByteSize(),
+    const path = recursiveRegMapLookupBy(
+      {
+        reg,
+        size: type?.getByteSize(),
+      },
       availableRegs.int,
     );
 

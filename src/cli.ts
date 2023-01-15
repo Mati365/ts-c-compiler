@@ -4,8 +4,9 @@ import { ccompiler, CCompilerOutput } from '@compiler/pico-c';
 ccompiler(/* cpp */ `
   void main() {
     int a = 2;
-    int b = a + 3;
-    int c = a * 4;
+    int b = a + a;
+    int c = b * 2;
+    int d = c + b + a + (1 + 3) / 2;
   }
 `).match({
   ok: result => {

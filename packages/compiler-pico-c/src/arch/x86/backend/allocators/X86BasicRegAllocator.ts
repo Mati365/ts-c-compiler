@@ -22,6 +22,7 @@ import {
   IRArgDynamicResolverAttrs,
   IRArgDynamicResolverType,
   IRArgRegResolverAttrs,
+  IRDynamicArgAllocatorResult,
   IRRegReqResult,
   X86AbstractRegAllocator,
 } from '../X86AbstractRegAllocator';
@@ -54,27 +55,47 @@ export class X86BasicRegAllocator extends X86AbstractRegAllocator {
     }
 
     if (isIRVariable(arg)) {
-      const { stackFrame, regOwnership } = this;
+      const { regOwnership, stackFrame } = this;
 
       if (regOwnership[arg.name]) {
         return {
-          value: regOwnership[arg.name],
+          value: regOwnership[arg.name].reg,
           asm: [],
         };
       }
 
       /**
-       * Lookup for tmp variables that contain value from stack frame.
-       * Example:
-       *  t{1} = load a
+       * Compiler detects temp variable like this:
+       *
+       * %t{0}: int2B = load a{0}: int*2B
+       * %t{1}: int2B = load a{0}: int*2B
+       * %t{2}: int2B = %t{0}: int2B plus %t{1}: int2B
+       *
+       * and knows that %t{2} is loading content from a{0}
        */
       const cachedLoad = this.tryResolveCachedLoadDest(arg.name);
       if (!cachedLoad) {
         return null;
       }
 
-      const stackAddr = stackFrame.getLocalVarStackRelAddress(cachedLoad.name);
+      /**
+       * Handle reusing of regs:
+       *
+       * int a = 2;
+       * int b = a + a;
+       * int c = b * 2;
+       *
+       * mov ax, [offset var b] ; int b = ...
+       * imul ax, 2             ; int c = ...
+       */
+      if (regOwnership[cachedLoad.name]) {
+        return {
+          value: regOwnership[cachedLoad.name].reg,
+          asm: [],
+        };
+      }
 
+      const stackAddr = stackFrame.getLocalVarStackRelAddress(cachedLoad.name);
       const prefix = getByteSizeArgPrefixName(arg.type.getByteSize());
       const regResult = this.requestReg({
         type: arg.type,
@@ -89,7 +110,7 @@ export class X86BasicRegAllocator extends X86AbstractRegAllocator {
         ],
       };
 
-      regOwnership[arg.name] = result.value;
+      regOwnership[arg.name] = { reg: result.value };
       return result;
     }
 
@@ -115,19 +136,36 @@ export class X86BasicRegAllocator extends X86AbstractRegAllocator {
   tryResolveIrArg({
     allow,
     arg,
-  }: IRArgDynamicResolverAttrs): IRArgAllocatorResult<string | number> {
+  }: IRArgDynamicResolverAttrs): IRDynamicArgAllocatorResult {
     if (hasFlag(IRArgDynamicResolverType.NUMBER, allow) && isIRConstant(arg)) {
       return {
+        type: IRArgDynamicResolverType.NUMBER,
         value: arg.constant,
         asm: [],
       };
     }
 
-    if (hasFlag(IRArgDynamicResolverType.MEM, allow) && isIRVariable(arg)) {
-      const result = this.tryResolveIRArgAsAddr(arg);
+    if (isIRVariable(arg)) {
+      if (
+        hasFlag(IRArgDynamicResolverType.REG, allow) &&
+        this.regOwnership[arg.name]
+      ) {
+        return {
+          type: IRArgDynamicResolverType.REG,
+          value: this.regOwnership[arg.name].reg,
+          asm: [],
+        };
+      }
 
-      if (result) {
-        return result;
+      if (hasFlag(IRArgDynamicResolverType.MEM, allow)) {
+        const result = this.tryResolveIRArgAsAddr(arg);
+
+        if (result) {
+          return {
+            type: IRArgDynamicResolverType.MEM,
+            ...result,
+          };
+        }
       }
     }
 
@@ -137,14 +175,17 @@ export class X86BasicRegAllocator extends X86AbstractRegAllocator {
       });
 
       if (result) {
-        return result;
+        return {
+          type: IRArgDynamicResolverType.REG,
+          ...result,
+        };
       }
     }
 
     throw new CBackendError(CBackendErrorCode.REG_ALLOCATOR_ERROR);
   }
 
-  spillReg(reg: X86RegName): void {
+  releaseReg(reg: X86RegName): void {
     throw new Error(`Todo: Trying to spill... ${reg}!`);
   }
 
@@ -165,9 +206,9 @@ export class X86BasicRegAllocator extends X86AbstractRegAllocator {
 
     if (!result) {
       if (query.reg) {
-        this.spillReg(query.reg);
+        this.releaseReg(query.reg);
       } else {
-        this.spillReg(Object.values(this.regOwnership)[1]);
+        this.releaseReg(Object.values(this.regOwnership)[1].reg);
       }
 
       result = queryFromRegsMap(query, this.availableRegs);

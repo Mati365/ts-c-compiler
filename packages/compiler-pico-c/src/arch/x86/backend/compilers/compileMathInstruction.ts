@@ -44,8 +44,7 @@ export function compileMathInstruction({
           leftAllocResult.value,
           rightAllocResult.value,
         );
-      }
-      if (operator === TokenType.MUL) {
+      } else if (operator === TokenType.MUL) {
         asm = genInstruction(
           'imul',
           leftAllocResult.value,
@@ -57,6 +56,10 @@ export function compileMathInstruction({
           leftAllocResult.value,
           rightAllocResult.value,
         );
+      }
+
+      if (rightAllocResult.type === IRArgDynamicResolverType.REG) {
+        regs.dropOwnershipByReg(rightAllocResult.value);
       }
 
       regs.transferRegOwnership(outputVar.name, leftAllocResult.value);
@@ -79,6 +82,7 @@ export function compileMathInstruction({
         arg: rightVar,
       });
 
+      regs.releaseReg('dx');
       regs.transferRegOwnership(outputVar.name, leftAllocResult.value);
 
       return [

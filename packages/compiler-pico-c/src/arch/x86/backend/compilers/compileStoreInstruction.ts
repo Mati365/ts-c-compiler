@@ -34,7 +34,7 @@ export function compileStoreInstruction({
   if (isIRVariable(value)) {
     const inputReg = regs.getVarReg(value.name);
 
-    regs.dropOwnershipByReg(inputReg);
+    regs.transferRegOwnership(outputVar.name, inputReg);
 
     return [
       withInlineComment(

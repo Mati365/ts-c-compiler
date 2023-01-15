@@ -13,6 +13,11 @@ import {
 import { X86RegName } from '@x86-toolkit/assembler';
 import { X86Allocator } from './X86Allocator';
 
+type IRRegOwnershipValue = {
+  reg: X86RegName;
+  dirty?: boolean;
+};
+
 export type IRRegReqResult = {
   asm: string[];
   value: X86RegName;
@@ -30,6 +35,17 @@ export enum IRArgDynamicResolverType {
   NUMBER = 3,
 }
 
+export type IRDynamicArgAllocatorResult =
+  | (IRArgAllocatorResult<X86RegName> & {
+      type: IRArgDynamicResolverType.REG;
+    })
+  | (IRArgAllocatorResult<string> & {
+      type: IRArgDynamicResolverType.MEM;
+    })
+  | (IRArgAllocatorResult<number> & {
+      type: IRArgDynamicResolverType.NUMBER;
+    });
+
 export type IRArgDynamicResolverAttrs = {
   allow: IRArgDynamicResolverType;
   arg: IRInstructionVarArg;
@@ -42,7 +58,7 @@ export type IRArgRegResolverAttrs = {
 
 export abstract class X86AbstractRegAllocator {
   protected loadInstructions: Record<string, IRLoadInstruction> = {};
-  protected regOwnership: Partial<Record<string, X86RegName>> = {};
+  protected regOwnership: Partial<Record<string, IRRegOwnershipValue>> = {};
 
   constructor(protected allocator: X86Allocator) {}
 
@@ -67,7 +83,7 @@ export abstract class X86AbstractRegAllocator {
     const { regOwnership } = this;
 
     for (const varName in regOwnership) {
-      if (regOwnership[varName] === reg) {
+      if (regOwnership[varName].reg === reg) {
         delete regOwnership[varName];
       }
     }
@@ -78,25 +94,30 @@ export abstract class X86AbstractRegAllocator {
    */
   transferRegOwnership(inputVar: string, reg: X86RegName) {
     this.dropOwnershipByReg(reg);
-    this.regOwnership[inputVar] = reg;
+    this.regOwnership[inputVar] = {
+      reg,
+      dirty: false,
+    };
   }
 
   /**
    * Get used by tmp instruction reg
    */
   getVarReg(inputVar: string) {
-    return this.regOwnership[inputVar];
+    return this.regOwnership[inputVar].reg;
   }
 
-  spillAllRegs() {
-    R.forEachObjIndexed(reg => {
-      this.spillReg(reg);
+  releaseAllRegs() {
+    R.forEachObjIndexed(({ dirty, reg }) => {
+      if (dirty) {
+        this.releaseReg(reg);
+      }
     }, this.regOwnership);
 
     this.regOwnership = {};
   }
 
-  abstract spillReg(reg: X86RegName): void;
+  abstract releaseReg(reg: X86RegName): void;
 
   abstract analyzeInstructionsBlock(instructions: IRInstruction[]): void;
 
@@ -108,5 +129,5 @@ export abstract class X86AbstractRegAllocator {
 
   abstract tryResolveIrArg(
     attrs: IRArgDynamicResolverAttrs,
-  ): IRArgAllocatorResult<string | number>;
+  ): IRDynamicArgAllocatorResult;
 }

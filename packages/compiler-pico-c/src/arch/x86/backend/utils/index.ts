@@ -1,3 +1,3 @@
 export * from './queryFromRegsMap';
-export * from './recursiveRegMapLookupBySize';
+export * from './recursiveRegMapLookupBy';
 export * from './resursiveSetAvailabilityInRegMap';

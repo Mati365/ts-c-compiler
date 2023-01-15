@@ -26,7 +26,7 @@ export function compileInstructionsBlock({
 
   IRBlockIterator.of(instructions).walk((instruction, iterator) => {
     if (isIRBranchInstruction(instruction)) {
-      context.allocator.regs.spillAllRegs();
+      context.allocator.regs.releaseAllRegs();
     }
 
     switch (instruction.opcode) {
