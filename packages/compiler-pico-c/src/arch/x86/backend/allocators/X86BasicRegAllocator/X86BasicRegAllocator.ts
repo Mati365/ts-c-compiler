@@ -225,7 +225,7 @@ export class X86BasicRegAllocator extends X86AbstractRegAllocator {
     return cachedLoad.inputVar;
   }
 
-  private requestReg(query: X86RegLookupQuery): IRRegReqResult {
+  requestReg(query: X86RegLookupQuery): IRRegReqResult {
     const { ownership } = this;
     let result = queryFromX86IntRegsMap(query, ownership.getAvailableRegs());
 

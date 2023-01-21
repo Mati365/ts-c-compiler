@@ -39,6 +39,7 @@ export function emitIncExpressionIR({
   const incValue = isPointerLikeType(irSrcVar.type)
     ? irSrcVar.type.getByteSize()
     : 1;
+
   const instructions: IRInstruction[] = [
     new IRLoadInstruction(rootIRVar, irSrcVar),
     new IRMathInstruction(

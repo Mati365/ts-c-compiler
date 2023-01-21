@@ -6,6 +6,9 @@ import {
   CBackendErrorCode,
 } from '@compiler/pico-c/backend/errors/CBackendError';
 
+import { isIRVariable } from '@compiler/pico-c/frontend/ir/variables';
+import { isIRVariableLaterUsed } from '../utils';
+
 import { IRArgDynamicResolverType } from '../X86AbstractRegAllocator';
 import { CompilerFnAttrs } from '../../constants/types';
 import { genInstruction, withInlineComment } from '../../asm-utils';
@@ -16,6 +19,7 @@ type MathInstructionCompilerAttrs = CompilerFnAttrs & {
 
 export function compileMathInstruction({
   instruction,
+  iterator,
   context,
 }: MathInstructionCompilerAttrs): string[] {
   const { leftVar, rightVar, outputVar, operator } = instruction;
@@ -35,22 +39,22 @@ export function compileMathInstruction({
         arg: rightVar,
       });
 
-      let asm = '';
+      let operatorAsm: string = null;
 
       if (operator === TokenType.PLUS) {
-        asm = genInstruction(
+        operatorAsm = genInstruction(
           'add',
           leftAllocResult.value,
           rightAllocResult.value,
         );
       } else if (operator === TokenType.MUL) {
-        asm = genInstruction(
+        operatorAsm = genInstruction(
           'imul',
           leftAllocResult.value,
           rightAllocResult.value,
         );
       } else {
-        asm = genInstruction(
+        operatorAsm = genInstruction(
           'sub',
           leftAllocResult.value,
           rightAllocResult.value,
@@ -61,13 +65,31 @@ export function compileMathInstruction({
         regs.markRegAsUnused(rightAllocResult.value);
       }
 
-      regs.transferRegOwnership(outputVar.name, leftAllocResult.value);
+      const asm: string[] = [...leftAllocResult.asm, ...rightAllocResult.asm];
 
-      return [
-        ...leftAllocResult.asm,
-        ...rightAllocResult.asm,
-        withInlineComment(asm, instruction.getDisplayName()),
-      ];
+      // add ax, 1 moves its output to `ax` as a dest
+      // but IR code looks like this: %t{1}: int2B = %t{0}: int2B plus %1: int2B
+      // it means that if `%t{0}` is being overridden after performing operation
+      // in 90% of cases it will not create any problems but there is `++i` and `i++`
+      // statements. The second one returns `%t{0}` which is being overridden.
+      // so we have to perform lookup ahead if something is using `%t{0}`.
+      // if not - do not add any additional instructions
+      // if so - generate additional mov
+      if (
+        isIRVariable(leftVar) &&
+        isIRVariableLaterUsed(iterator, leftVar.name)
+      ) {
+        const reg = regs.requestReg({
+          size: leftVar.type.getByteSize(),
+        });
+
+        asm.push(genInstruction('mov', reg.value, leftAllocResult.value));
+        regs.transferRegOwnership(leftVar.name, reg.value);
+      }
+
+      regs.transferRegOwnership(outputVar.name, leftAllocResult.value);
+      asm.push(withInlineComment(operatorAsm, instruction.getDisplayName()));
+      return asm;
     }
 
     case TokenType.DIV: {

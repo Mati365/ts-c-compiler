@@ -3,9 +3,10 @@ import { ccompiler, CCompilerOutput } from '@compiler/pico-c';
 
 ccompiler(/* cpp */ `
   void main() {
-    int abc[] = { 1, 2, 3 };
-    int k = 5;
-    char str[] = { 'a', 'b', 'c' };
+    // char str[] = { 'a', 'b', 'c' };
+    // int k = str[0];
+    int a = 0;
+    int c = a++;
   }
 `).match({
   ok: result => {

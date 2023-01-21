@@ -44,11 +44,7 @@ export function compileStoreInstruction({
     if (inputReg) {
       regs.transferRegOwnership(outputVar.name, inputReg.value);
     } else {
-      console.warn('FIXME: missing implementation of function return!');
-      inputReg = {
-        value: 'ax',
-        asm: [],
-      };
+      throw new CBackendError(CBackendErrorCode.STORE_VAR_ERROR);
     }
 
     return [

@@ -8,6 +8,7 @@ import {
 } from '@compiler/pico-c/frontend/ir/variables';
 
 import { X86RegName } from '@x86-toolkit/assembler';
+import { X86RegLookupQuery } from './utils';
 import { X86Allocator } from './X86Allocator';
 
 export type IRRegReqResult = {
@@ -59,6 +60,8 @@ export abstract class X86AbstractRegAllocator {
   get stackFrame() {
     return this.allocator.stackFrame;
   }
+
+  abstract requestReg(query: X86RegLookupQuery): IRRegReqResult;
 
   abstract transferRegOwnership(inputVar: string, reg: X86RegName): void;
 
