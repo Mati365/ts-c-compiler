@@ -1,10 +1,14 @@
 import { X86RegName } from '@x86-toolkit/assembler';
 
-export function genRelAddress(reg: X86RegName, offset: number) {
-  let suffix = '';
+export function genRelAddress(
+  reg: X86RegName,
+  offset: number,
+  suffix?: string,
+) {
+  let offsetSuffix = '';
   if (offset) {
-    suffix = ` ${offset < 0 ? '-' : '+'} ${Math.abs(offset)}`;
+    offsetSuffix = ` ${offset < 0 ? '-' : '+'} ${Math.abs(offset)}`;
   }
 
-  return `[${reg}${suffix}]`;
+  return `[${reg}${offsetSuffix}${suffix || ''}]`;
 }

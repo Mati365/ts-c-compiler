@@ -26,7 +26,7 @@ export class X86StackFrame {
     return this.getStackVar(id).offset;
   }
 
-  allocBytes(bytes: number) {
+  private allocBytes(bytes: number) {
     this.allocated += bytes;
     return -this.allocated;
   }
@@ -42,13 +42,13 @@ export class X86StackFrame {
     return offset;
   }
 
-  getLocalVarStackRelAddress(id: string) {
+  getLocalVarStackRelAddress(id: string, offset: number = 0) {
     const { arch } = this.config;
-    const offset = this.getStackVarOffset(id);
+    const stackOffset = this.getStackVarOffset(id);
 
     switch (arch) {
       case CCompilerArch.X86_16:
-        return genRelAddress('bp', offset);
+        return genRelAddress('bp', stackOffset + offset);
 
       default:
         assertUnreachable(arch);

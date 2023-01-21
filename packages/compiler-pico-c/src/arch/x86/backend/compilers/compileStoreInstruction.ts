@@ -22,13 +22,18 @@ export function compileStoreInstruction({
   context,
 }: StoreInstructionCompilerAttrs): string[] {
   const { allocator } = context;
-  const { outputVar, value } = instruction;
+  const { outputVar, value, offset } = instruction;
   const { stackFrame, regs } = allocator;
 
-  const prefix = getByteSizeArgPrefixName(value.type.getByteSize());
+  const itemByteSize = value.type.getByteSize();
+
+  const prefix = getByteSizeArgPrefixName(itemByteSize);
   const destAttr = [
     prefix.toLocaleLowerCase(),
-    stackFrame.getLocalVarStackRelAddress(outputVar.name),
+    stackFrame.getLocalVarStackRelAddress(
+      outputVar.name,
+      outputVar.getStackAllocByteSize() - itemByteSize - offset,
+    ),
   ].join(' ');
 
   if (isIRVariable(value)) {

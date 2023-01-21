@@ -14,6 +14,6 @@ export function compileAllocInstruction({
 
   allocator.stackFrame.allocLocalVariable(
     outputVar.name,
-    outputVar.type.getByteSize(),
+    outputVar.getStackAllocByteSize(),
   );
 }
