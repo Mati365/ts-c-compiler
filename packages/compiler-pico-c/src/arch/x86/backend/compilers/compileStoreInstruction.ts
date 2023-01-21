@@ -1,3 +1,4 @@
+import { CPrimitiveType } from '@compiler/pico-c/frontend/analyze';
 import {
   CBackendError,
   CBackendErrorCode,
@@ -26,15 +27,36 @@ export function compileStoreInstruction({
   const { stackFrame, regs } = allocator;
 
   const itemByteSize = value.type.getByteSize();
-
   const prefix = getByteSizeArgPrefixName(itemByteSize);
-  const destAttr = [
-    prefix.toLocaleLowerCase(),
-    stackFrame.getLocalVarStackRelAddress(
-      outputVar.name,
-      outputVar.getStackAllocByteSize() - itemByteSize - offset,
-    ),
-  ].join(' ');
+
+  let destAddr: string = null;
+  const asm: string[] = [];
+
+  if (outputVar.isTemporary()) {
+    // handle pointers assign
+    // *(%t{0}) = 4;
+    const ptrByteSize = CPrimitiveType.address(
+      allocator.config.arch,
+    ).getByteSize();
+
+    const ptrVarAddr = regs.tryResolveIRArgAsReg({
+      arg: outputVar,
+      specificReg: 'bx',
+    });
+
+    asm.push(...ptrVarAddr.asm);
+    destAddr = `${getByteSizeArgPrefixName(ptrByteSize)} [${ptrVarAddr.value}]`;
+  } else {
+    // handle normal variable assign
+    // a = 5;
+    destAddr = [
+      prefix.toLocaleLowerCase(),
+      stackFrame.getLocalVarStackRelAddress(
+        outputVar.name,
+        outputVar.getStackAllocByteSize() - itemByteSize - offset,
+      ),
+    ].join(' ');
+  }
 
   if (isIRVariable(value)) {
     let inputReg = regs.tryResolveIRArgAsReg({
@@ -47,23 +69,27 @@ export function compileStoreInstruction({
       throw new CBackendError(CBackendErrorCode.STORE_VAR_ERROR);
     }
 
-    return [
+    asm.push(
       ...inputReg.asm,
       withInlineComment(
-        genInstruction('mov', destAttr, inputReg.value),
+        genInstruction('mov', destAddr, inputReg.value),
         instruction.getDisplayName(),
       ),
-    ];
+    );
   }
 
   if (isIRConstant(value)) {
-    return [
+    asm.push(
       withInlineComment(
-        genInstruction('mov', destAttr, value.constant),
+        genInstruction('mov', destAddr, value.constant),
         instruction.getDisplayName(),
       ),
-    ];
+    );
   }
 
-  throw new CBackendError(CBackendErrorCode.STORE_VAR_ERROR);
+  if (!asm.length) {
+    throw new CBackendError(CBackendErrorCode.STORE_VAR_ERROR);
+  }
+
+  return asm;
 }

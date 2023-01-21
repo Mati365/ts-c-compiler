@@ -28,6 +28,7 @@ export function compileLeaInstruction({
 
   const addressReg = regs.requestReg({
     size: CPrimitiveType.address(config.arch).getByteSize(),
+    reg: 'bx',
   });
 
   regs.transferRegOwnership(outputVar.name, addressReg.value);
@@ -36,6 +37,7 @@ export function compileLeaInstruction({
   // such like: const char* str = "Hello world!";
   if (inputVar.constInitialized) {
     return [
+      ...addressReg.asm,
       withInlineComment(
         genInstruction('mov', addressReg.value, genLabelName(inputVar.name)),
         instruction.getDisplayName(),
@@ -46,6 +48,7 @@ export function compileLeaInstruction({
   // int* a = &k;
   if (!inputVar.isTemporary()) {
     return [
+      ...addressReg.asm,
       withInlineComment(
         genInstruction(
           'lea',

@@ -82,7 +82,7 @@ export class X86BasicRegAllocator extends X86AbstractRegAllocator {
       const { ownership, stackFrame } = this;
       const reg = ownership.getVarReg(arg.name);
 
-      if (reg) {
+      if (reg && (!specificReg || specificReg === reg)) {
         return {
           value: reg,
           asm: [],
@@ -114,7 +114,7 @@ export class X86BasicRegAllocator extends X86AbstractRegAllocator {
        * imul ax, 2             ; int c = ...
        */
       const cachedReg = ownership.getVarReg(cachedLoad.name);
-      if (cachedReg) {
+      if (cachedReg && (!specificReg || specificReg === cachedReg)) {
         return {
           value: cachedReg,
           asm: [],

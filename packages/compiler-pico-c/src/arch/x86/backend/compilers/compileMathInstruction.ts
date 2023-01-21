@@ -83,7 +83,11 @@ export function compileMathInstruction({
           size: leftVar.type.getByteSize(),
         });
 
-        asm.push(genInstruction('mov', reg.value, leftAllocResult.value));
+        asm.push(
+          ...reg.asm,
+          genInstruction('mov', reg.value, leftAllocResult.value),
+        );
+
         regs.transferRegOwnership(leftVar.name, reg.value);
       }
 

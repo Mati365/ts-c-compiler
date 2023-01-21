@@ -5,6 +5,8 @@ ccompiler(/* cpp */ `
   void main() {
     int k = 5;
     int* a = &k;
+
+    *a = 4 + k;
   }
 `).match({
   ok: result => {
