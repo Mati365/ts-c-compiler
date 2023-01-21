@@ -19,6 +19,7 @@ import { compileMathInstruction } from './compileMathInstruction';
 import { compileICmpInstruction } from './compileICmpInstruction';
 import { compileLabelInstruction } from './compileLabelInstruction';
 import { compileJmpInstruction } from './compileJmpInstruction';
+import { compileLeaInstruction } from './compileLeaInstruction';
 
 type FnDeclCompilerBlockFnAttrs = CompilerBlockFnAttrs & {
   instruction: IRFnDeclInstruction;
@@ -48,6 +49,10 @@ export function compileFnDeclInstructionsBlock({
 
         case IROpcode.LOAD:
           compileLoadInstruction(arg);
+          break;
+
+        case IROpcode.LEA:
+          asm.push(...compileLeaInstruction(arg));
           break;
 
         case IROpcode.MATH:

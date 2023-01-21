@@ -3,10 +3,7 @@ import { ccompiler, CCompilerOutput } from '@compiler/pico-c';
 
 ccompiler(/* cpp */ `
   void main() {
-    // char str[] = { 'a', 'b', 'c' };
-    // int k = str[0];
-    int a = 0;
-    int c = a++;
+    const char* str = "Hello world!";
   }
 `).match({
   ok: result => {

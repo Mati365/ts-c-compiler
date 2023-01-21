@@ -19,6 +19,7 @@ export class X86Allocator {
   get stackFrame() {
     return this._stackFrame;
   }
+
   get regs() {
     return this._regs;
   }
