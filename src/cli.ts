@@ -3,10 +3,11 @@ import { ccompiler, CCompilerOutput } from '@compiler/pico-c';
 
 ccompiler(/* cpp */ `
   void main() {
-    int k = 5;
-    int* a = &k;
-
-    *a = 4 + k;
+    int j = 6;
+    int* c = &j;
+    int** ks = &c;
+    **ks = 7;
+    j = **ks + 15;
   }
 `).match({
   ok: result => {

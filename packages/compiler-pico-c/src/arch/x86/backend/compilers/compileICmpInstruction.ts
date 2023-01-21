@@ -1,3 +1,4 @@
+import { CRelOperator } from '@compiler/pico-c/constants';
 import { TokenType } from '@compiler/lexer/shared';
 import {
   CBackendError,
@@ -15,9 +16,8 @@ import {
   withInlineComment,
 } from '../../asm-utils';
 
-import { IRArgDynamicResolverType } from '../X86AbstractRegAllocator';
+import { IRArgDynamicResolverType } from '../reg-allocator';
 import { CompilerFnAttrs } from '../../constants/types';
-import { CRelOperator } from '@compiler/pico-c/constants';
 
 const OPERATOR_JMP_INSTRUCTIONS: Record<CRelOperator, [string, string]> = {
   [TokenType.GREATER_THAN]: ['jg', 'jng'],

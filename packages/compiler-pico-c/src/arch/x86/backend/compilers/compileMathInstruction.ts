@@ -9,7 +9,7 @@ import {
 import { isIRVariable } from '@compiler/pico-c/frontend/ir/variables';
 import { isIRVariableLaterUsed } from '../utils';
 
-import { IRArgDynamicResolverType } from '../X86AbstractRegAllocator';
+import { IRArgDynamicResolverType } from '../reg-allocator';
 import { CompilerFnAttrs } from '../../constants/types';
 import { genInstruction, withInlineComment } from '../../asm-utils';
 
@@ -62,7 +62,7 @@ export function compileMathInstruction({
       }
 
       if (rightAllocResult.type === IRArgDynamicResolverType.REG) {
-        regs.markRegAsUnused(rightAllocResult.value);
+        regs.ownership.dropOwnershipByReg(rightAllocResult.value);
       }
 
       const asm: string[] = [...leftAllocResult.asm, ...rightAllocResult.asm];
@@ -88,10 +88,19 @@ export function compileMathInstruction({
           genInstruction('mov', reg.value, leftAllocResult.value),
         );
 
-        regs.transferRegOwnership(leftVar.name, reg.value);
+        regs.ownership.transferRegOwnership(leftVar.name, reg.value);
       }
 
-      regs.transferRegOwnership(outputVar.name, leftAllocResult.value);
+      if (outputVar.isTemporary()) {
+        console.info(outputVar.name);
+        regs.ownership.transferRegOwnership(
+          outputVar.name,
+          leftAllocResult.value,
+        );
+      }
+
+      console.info(regs.ownership.getAllOwnerships());
+
       asm.push(withInlineComment(operatorAsm, instruction.getDisplayName()));
       return asm;
     }
@@ -107,8 +116,11 @@ export function compileMathInstruction({
         arg: rightVar,
       });
 
-      regs.markRegAsUnused('dx');
-      regs.transferRegOwnership(outputVar.name, leftAllocResult.value);
+      regs.ownership.dropOwnershipByReg('dx');
+      regs.ownership.transferRegOwnership(
+        outputVar.name,
+        leftAllocResult.value,
+      );
 
       return [
         ...leftAllocResult.asm,

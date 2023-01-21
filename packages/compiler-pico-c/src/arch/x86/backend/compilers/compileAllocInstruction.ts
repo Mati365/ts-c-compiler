@@ -9,11 +9,15 @@ export function compileAllocInstruction({
   instruction,
   context,
 }: AllocInstructionCompilerAttrs) {
-  const { allocator } = context;
   const { outputVar } = instruction;
+  const {
+    allocator: { stackFrame, regs },
+  } = context;
 
-  allocator.stackFrame.allocLocalVariable(
+  const stackVar = stackFrame.allocLocalVariable(
     outputVar.name,
     outputVar.getStackAllocByteSize(),
   );
+
+  regs.ownership.setOwnership(outputVar.name, { stackVar });
 }

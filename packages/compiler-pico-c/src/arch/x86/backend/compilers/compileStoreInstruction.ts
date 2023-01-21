@@ -39,13 +39,13 @@ export function compileStoreInstruction({
       allocator.config.arch,
     ).getByteSize();
 
-    const ptrVarAddr = regs.tryResolveIRArgAsReg({
+    const ptrVarReg = regs.tryResolveIRArgAsReg({
       arg: outputVar,
       specificReg: 'bx',
     });
 
-    asm.push(...ptrVarAddr.asm);
-    destAddr = `${getByteSizeArgPrefixName(ptrByteSize)} [${ptrVarAddr.value}]`;
+    asm.push(...ptrVarReg.asm);
+    destAddr = `${getByteSizeArgPrefixName(ptrByteSize)} [${ptrVarReg.value}]`;
   } else {
     // handle normal variable assign
     // a = 5;
@@ -59,15 +59,9 @@ export function compileStoreInstruction({
   }
 
   if (isIRVariable(value)) {
-    let inputReg = regs.tryResolveIRArgAsReg({
+    const inputReg = regs.tryResolveIRArgAsReg({
       arg: value,
     });
-
-    if (inputReg) {
-      regs.transferRegOwnership(outputVar.name, inputReg.value);
-    } else {
-      throw new CBackendError(CBackendErrorCode.STORE_VAR_ERROR);
-    }
 
     asm.push(
       ...inputReg.asm,

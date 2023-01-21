@@ -2,15 +2,14 @@ import { assertUnreachable } from '@compiler/core/utils';
 
 import { CCompilerArch, CCompilerConfig } from '@compiler/pico-c/constants';
 import { X86StackFrame } from './X86StackFrame';
-import { X86AbstractRegAllocator } from './X86AbstractRegAllocator';
-import { X86BasicRegAllocator } from './allocators';
+import { X86BasicRegAllocator } from './reg-allocator';
 import { genInstruction, genLabel } from '../asm-utils';
 
 export class X86Allocator {
   private readonly labels: { [id: string]: string } = {};
 
   private _stackFrame: X86StackFrame;
-  private _regs: X86AbstractRegAllocator;
+  private _regs: X86BasicRegAllocator;
 
   constructor(readonly config: CCompilerConfig) {
     this._regs = new X86BasicRegAllocator(this);

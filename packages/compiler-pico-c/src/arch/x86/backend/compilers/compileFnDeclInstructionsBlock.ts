@@ -48,7 +48,7 @@ export function compileFnDeclInstructionsBlock({
           break;
 
         case IROpcode.LOAD:
-          compileLoadInstruction(arg);
+          asm.push(...compileLoadInstruction(arg));
           break;
 
         case IROpcode.LEA:
@@ -83,8 +83,6 @@ export function compileFnDeclInstructionsBlock({
 
     return asm;
   };
-
-  allocator.regs.onAnalyzeInstructionsBlock(instructions);
 
   const asm = [
     genComment(fnInstruction.getDisplayName()),
