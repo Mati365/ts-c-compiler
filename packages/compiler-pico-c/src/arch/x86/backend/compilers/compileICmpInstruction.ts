@@ -22,8 +22,8 @@ import { CRelOperator } from '@compiler/pico-c/constants';
 const OPERATOR_JMP_INSTRUCTIONS: Record<CRelOperator, [string, string]> = {
   [TokenType.GREATER_THAN]: ['jg', 'jng'],
   [TokenType.GREATER_EQ_THAN]: ['jge', 'jnge'],
-  [TokenType.LESS_THAN]: ['jl', 'jnl'],
-  [TokenType.LESS_EQ_THAN]: ['jle', 'jnle'],
+  [TokenType.LESS_THAN]: ['jl', 'jge'],
+  [TokenType.LESS_EQ_THAN]: ['jle', 'jg'],
   [TokenType.EQUAL]: ['jz', 'jnz'],
   [TokenType.DIFFERS]: ['jnz', 'jz'],
 };
