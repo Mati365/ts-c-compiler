@@ -42,13 +42,13 @@ import {
 } from '../types';
 
 import {
+  IRAssignInstruction,
   IRICmpInstruction,
   IRJmpInstruction,
   IRLabelOffsetInstruction,
   IRLeaInstruction,
   IRLoadInstruction,
   IRMathInstruction,
-  IRStoreInstruction,
 } from '../../../instructions';
 
 import { IRError, IRErrorCode } from '../../../errors/IRError';
@@ -369,13 +369,13 @@ export function emitExpressionIR({
 
           instructions.push(
             labels.ifTrueLabel,
-            new IRStoreInstruction(
+            new IRAssignInstruction(
               IRConstant.ofConstant(binary.left.type, 1),
               output,
             ),
             new IRJmpInstruction(labels.finallyLabel),
             labels.ifFalseLabel,
-            new IRStoreInstruction(
+            new IRAssignInstruction(
               IRConstant.ofConstant(binary.left.type, 0),
               output,
             ),

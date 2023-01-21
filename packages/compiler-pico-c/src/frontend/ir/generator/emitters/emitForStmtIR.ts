@@ -8,6 +8,7 @@ import {
 } from './types';
 
 import { emitDeclarationIR } from './emitDeclarationIR';
+import { LogicBinaryExpressionLabels } from './emit-expr';
 
 export type ForStmtIRAttrs = IREmitterContextAttrs & {
   node: ASTCForStatement;
@@ -27,10 +28,21 @@ export function emitForStmtIR({
     context,
   });
 
+  const startLabel = factory.genTmpLabelInstruction();
+  const labels: LogicBinaryExpressionLabels = {
+    ifTrueLabel: factory.genTmpLabelInstruction(),
+    ifFalseLabel: factory.genTmpLabelInstruction(),
+  };
+
   const logicResult = emit.logicExpression({
     scope,
-    context,
     node: node.condition,
+    context: {
+      ...context,
+      conditionStmt: {
+        labels,
+      },
+    },
   });
 
   const exprResult = emit.expression({
@@ -38,11 +50,6 @@ export function emitForStmtIR({
     context,
     node: node.expression,
   });
-
-  const labels = {
-    start: factory.genTmpLabelInstruction(),
-    end: factory.genTmpLabelInstruction(),
-  };
 
   const contentResult = emit.block({
     node: node.statement,
@@ -52,16 +59,24 @@ export function emitForStmtIR({
 
   result.instructions.push(
     ...declResult.instructions,
-    labels.start,
+    startLabel,
     ...result.instructions,
     ...logicResult.instructions,
     ...(logicResult.output
-      ? [new IRBrInstruction(logicResult.output, null, labels.end)]
+      ? [
+          new IRBrInstruction(
+            logicResult.output,
+            labels.ifTrueLabel,
+            labels.ifFalseLabel,
+          ),
+        ]
       : []),
+    labels.ifTrueLabel,
     ...contentResult.instructions,
     ...exprResult.instructions,
-    new IRJmpInstruction(labels.start),
-    ...(logicResult.output ? [labels.end] : []),
+    new IRJmpInstruction(startLabel),
+    ...(logicResult.output ? [labels.ifFalseLabel] : []),
+    labels.ifFalseLabel,
   );
 
   return result;
