@@ -42,13 +42,14 @@ import {
 } from '../types';
 
 import {
-  IRAssignInstruction,
   IRICmpInstruction,
   IRJmpInstruction,
   IRLabelOffsetInstruction,
   IRLeaInstruction,
   IRLoadInstruction,
   IRMathInstruction,
+  IRPhiInstruction,
+  IRAssignInstruction,
 } from '../../../instructions';
 
 import { IRError, IRErrorCode } from '../../../errors/IRError';
@@ -353,6 +354,12 @@ export function emitExpressionIR({
             finallyLabel: context.factory.genTmpLabelInstruction(),
           };
 
+          const outputs = {
+            left: allocNextVariable(binary.left.type),
+            right: allocNextVariable(binary.right.type),
+            all: allocNextVariable(binary.left.type),
+          };
+
           const exprResult = emitLogicBinaryJmpExpressionIR({
             node: binary,
             context: {
@@ -364,22 +371,33 @@ export function emitExpressionIR({
             scope,
           });
 
-          const output = allocNextVariable(binary.left.type);
+          const phi = new IRPhiInstruction(
+            [outputs.left, outputs.right],
+            outputs.all,
+          );
+
           emitExprResultToStack(exprResult);
 
           instructions.push(
             labels.ifTrueLabel,
             new IRAssignInstruction(
               IRConstant.ofConstant(binary.left.type, 1),
-              output,
+              outputs.left,
+              {
+                phi,
+              },
             ),
             new IRJmpInstruction(labels.finallyLabel),
             labels.ifFalseLabel,
             new IRAssignInstruction(
               IRConstant.ofConstant(binary.left.type, 0),
-              output,
+              outputs.right,
+              {
+                phi,
+              },
             ),
             labels.finallyLabel,
+            phi,
           );
 
           return false;

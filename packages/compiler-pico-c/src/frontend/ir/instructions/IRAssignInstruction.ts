@@ -4,6 +4,12 @@ import { IsOutputInstruction } from '../interfaces';
 import { IROpcode } from '../constants';
 import { IRInstruction, IRInstructionArgs } from './IRInstruction';
 import { IRInstructionVarArg, IRVariable } from '../variables';
+import { IRPhiInstruction } from './IRPhiInstruction';
+
+export type IRAssignMeta = {
+  virtual?: boolean;
+  phi?: IRPhiInstruction;
+};
 
 export function isIRAssignInstruction(
   instruction: IRInstruction,
@@ -12,7 +18,8 @@ export function isIRAssignInstruction(
 }
 
 /**
- * Instruction that assigns variable to tmp ir var
+ * Instruction that assigns variable to tmp ir var.
+ * Assign instruction used to set data to registers
  */
 export class IRAssignInstruction
   extends IRInstruction
@@ -21,6 +28,9 @@ export class IRAssignInstruction
   constructor(
     readonly inputVar: IRInstructionVarArg,
     readonly outputVar: IRVariable,
+    readonly meta: IRAssignMeta = {
+      virtual: false,
+    },
   ) {
     super(IROpcode.ASSIGN);
   }

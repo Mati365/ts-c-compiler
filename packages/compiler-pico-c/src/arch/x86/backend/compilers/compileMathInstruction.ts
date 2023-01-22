@@ -10,12 +10,11 @@ import { isIRVariable } from '@compiler/pico-c/frontend/ir/variables';
 import { isIRVariableLaterUsed } from '../utils';
 
 import { IRArgDynamicResolverType } from '../reg-allocator';
-import { CompilerFnAttrs } from '../../constants/types';
+import { CompilerInstructionFnAttrs } from '../../constants/types';
 import { genInstruction, withInlineComment } from '../../asm-utils';
 
-type MathInstructionCompilerAttrs = CompilerFnAttrs & {
-  instruction: IRMathInstruction;
-};
+type MathInstructionCompilerAttrs =
+  CompilerInstructionFnAttrs<IRMathInstruction>;
 
 export function compileMathInstruction({
   instruction,
@@ -33,7 +32,10 @@ export function compileMathInstruction({
     case TokenType.MINUS: {
       const leftAllocResult = regs.tryResolveIRArgAsReg({
         arg: leftVar,
-      });
+      }) || {
+        asm: [],
+        value: 'dx',
+      };
 
       const rightAllocResult = regs.tryResolveIrArg({
         arg: rightVar,
@@ -92,14 +94,11 @@ export function compileMathInstruction({
       }
 
       if (outputVar.isTemporary()) {
-        console.info(outputVar.name);
         regs.ownership.transferRegOwnership(
           outputVar.name,
           leftAllocResult.value,
         );
       }
-
-      console.info(regs.ownership.getAllOwnerships());
 
       asm.push(withInlineComment(operatorAsm, instruction.getDisplayName()));
       return asm;
@@ -108,7 +107,7 @@ export function compileMathInstruction({
     case TokenType.DIV: {
       const leftAllocResult = regs.tryResolveIRArgAsReg({
         arg: leftVar,
-        specificReg: 'ax',
+        allowedRegs: ['ax'],
       });
 
       const rightAllocResult = regs.tryResolveIrArg({

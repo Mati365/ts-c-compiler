@@ -17,7 +17,7 @@ import {
 } from '../../asm-utils';
 
 import { IRArgDynamicResolverType } from '../reg-allocator';
-import { CompilerFnAttrs } from '../../constants/types';
+import { CompilerInstructionFnAttrs } from '../../constants/types';
 
 const OPERATOR_JMP_INSTRUCTIONS: Record<CRelOperator, [string, string]> = {
   [TokenType.GREATER_THAN]: ['jg', 'jng'],
@@ -28,9 +28,8 @@ const OPERATOR_JMP_INSTRUCTIONS: Record<CRelOperator, [string, string]> = {
   [TokenType.DIFFERS]: ['jnz', 'jz'],
 };
 
-type ICmpInstructionCompilerAttrs = CompilerFnAttrs & {
-  instruction: IRICmpInstruction;
-};
+type ICmpInstructionCompilerAttrs =
+  CompilerInstructionFnAttrs<IRICmpInstruction>;
 
 export function compileICmpInstruction({
   instruction,

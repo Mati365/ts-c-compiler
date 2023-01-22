@@ -5,7 +5,7 @@ import { X86RegName } from '@x86-toolkit/assembler';
 import { X86Allocator } from '../X86Allocator';
 import { IROwnershipMap, IROwnershipValue, isRegOwnership } from './utils';
 
-import { createGeneralPurposeRegsMap, RegsMap } from '../../constants/regs';
+import { createX86RegsMap, RegsMap } from '../../constants/regs';
 import { restoreRegInX86IntRegsMap } from '../utils';
 
 export class X86RegOwnershipTracker {
@@ -13,7 +13,7 @@ export class X86RegOwnershipTracker {
   protected availableRegs: RegsMap;
 
   constructor(protected allocator: X86Allocator) {
-    this.availableRegs = createGeneralPurposeRegsMap()[this.config.arch];
+    this.availableRegs = createX86RegsMap()[this.config.arch];
   }
 
   get config() {
@@ -88,12 +88,11 @@ export class X86RegOwnershipTracker {
   }
 
   releaseAllRegs() {
-    R.forEachObjIndexed(item => {
-      if (isRegOwnership(item)) {
+    R.forEachObjIndexed((item, key) => {
+      if (isRegOwnership(item) && !item.noPrune) {
         this.dropOwnershipByReg(item.reg);
+        delete this.ownership[key];
       }
     }, this.ownership);
-
-    this.ownership = {};
   }
 }

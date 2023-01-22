@@ -6,7 +6,7 @@ type X86RegBySizeLookup = {
 };
 
 type X86SpecificRegLookup = {
-  reg: X86RegName;
+  allowedRegs: X86RegName[];
 };
 
 export type X86RegLookupQuery = (X86RegBySizeLookup | X86SpecificRegLookup) & {
@@ -15,7 +15,8 @@ export type X86RegLookupQuery = (X86RegBySizeLookup | X86SpecificRegLookup) & {
 
 export const isX86RegLookup = (
   query: X86RegLookupQuery,
-): query is X86SpecificRegLookup => 'reg' in query && !!query.reg;
+): query is X86SpecificRegLookup =>
+  'allowedRegs' in query && !!query.allowedRegs;
 
 export function recursiveX86RegMapLookup(
   query: X86RegLookupQuery,
@@ -28,7 +29,7 @@ export function recursiveX86RegMapLookup(
     if (
       (query.withUnavailable || !tree.unavailable) &&
       (!hasSize || tree.size === query.size) &&
-      (!hasReg || tree.name === query.reg)
+      (!hasReg || query.allowedRegs.includes(tree.name))
     ) {
       return [tree];
     }

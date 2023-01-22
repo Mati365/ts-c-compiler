@@ -3,11 +3,12 @@ import { ccompiler, CCompilerOutput } from '@compiler/pico-c';
 
 ccompiler(/* cpp */ `
   void main() {
-    int j = 6;
-    int* c = &j;
+    // int abc[] = { 1, 2 };
+    // abc[2] += abc[2] + 3;
+    int a = 2;
+    int* c = &a;
     int** ks = &c;
-    **ks = 7;
-    j = **ks + 15;
+    **ks = 4;
   }
 `).match({
   ok: result => {

@@ -535,12 +535,15 @@ export class X86CPU extends X86AbstractCPU {
           case 0x4:
             address = registers.si + displacement;
             break;
+
           case 0x5:
             address = registers.di + displacement;
             break;
+
           case 0x6:
             address = registers.bp + displacement;
             break;
+
           case 0x7:
             address = registers.bx + displacement;
             break;

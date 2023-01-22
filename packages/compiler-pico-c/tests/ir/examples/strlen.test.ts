@@ -23,15 +23,16 @@ describe('Example: Strlen', () => {
         %t{4}: const char*2B = %t{2}: const char*2B plus %t{3}: int2B
         %t{5}: const char1B = load %t{4}: const char*2B
         %t{6}: i1:zf = icmp %t{5}: const char1B equal %48: char1B
-        br %t{6}: i1:zf, false: L3
-        L4:
+        br %t{6}: i1:zf, false: L4
+        L5:
         %t{7}: int2B = load i{0}: int*2B
         ret %t{7}: int2B
-        L3:
+        L4:
         %t{0}: int2B = load i{0}: int*2B
         %t{1}: int2B = %t{0}: int2B plus %1: int2B
         *(i{0}: int*2B) = store %t{1}: int2B
         jmp L1
+        L3:
         ret %-1: int2B
         end-def
     `);

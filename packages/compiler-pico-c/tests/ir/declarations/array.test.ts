@@ -64,18 +64,35 @@ describe('Arrays declarations IR', () => {
       `);
     });
 
-    test('should generate label pointer to longer arrays with constant expressions', () => {
-      expect(/* cpp */ `void main() { int a[] = { 1, 2, 3, 4, 5 }; }`)
+    test('should generate movs for non constant type', () => {
+      expect(/* cpp */ `void main() { int abc[] = { 1, 2, 3, 4, 5, 6 }; }`)
         .toCompiledIRBeEqual(/* ruby */ `
         # --- Block main ---
         def main():
-          a{0}: int**2B = alloca int*2B
-          %t{0}: int*2B = lea c{0}: int[5]10B
-          *(a{0}: int**2B) = store %t{0}: int*2B
+          abc{0}: int[6]*2B = alloca int[6]12B
+          *(abc{0}: int[6]*2B) = store %1: int2B
+          *(abc{0}: int[6]*2B + %2) = store %2: int2B
+          *(abc{0}: int[6]*2B + %4) = store %3: int2B
+          *(abc{0}: int[6]*2B + %6) = store %4: int2B
+          *(abc{0}: int[6]*2B + %8) = store %5: int2B
+          *(abc{0}: int[6]*2B + %10) = store %6: int2B
           ret
           end-def
-        # --- Block Data ---
-          c{0}: int[5]10B = const { 1, 2, 3, 4, 5 }
+      `);
+    });
+
+    test('should generate label pointer to longer arrays with constant expressions and const type', () => {
+      expect(/* cpp */ `void main() { const int a[] = { 1, 2, 3, 4, 5 }; }`)
+        .toCompiledIRBeEqual(/* ruby */ `
+        # --- Block main ---
+        def main():
+          a{0}: const int**2B = alloca const int*2B
+          %t{0}: const int*2B = lea c{0}: const int[5]10B
+          *(a{0}: const int**2B) = store %t{0}: const int*2B
+          ret
+          end-def
+          # --- Block Data ---
+          c{0}: const int[5]10B = const { 1, 2, 3, 4, 5 }
       `);
     });
 

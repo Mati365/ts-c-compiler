@@ -3,7 +3,7 @@ import { X86StackVariable } from '../../X86StackFrame';
 
 export type IRRegOwnership = {
   reg: X86RegName;
-  prunable?: boolean;
+  noPrune?: boolean;
 };
 
 export type IRStackVarOwnership = {

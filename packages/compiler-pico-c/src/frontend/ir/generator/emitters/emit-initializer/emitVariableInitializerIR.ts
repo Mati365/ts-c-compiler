@@ -64,6 +64,7 @@ export function emitVariableInitializerIR({
     if (
       (isStringType || isArrayType) &&
       initializer.hasOnlyConstantExpressions() &&
+      (!isArrayType || type.getSourceType().isConst()) &&
       initializer.getInitializedFieldsCount() >
         MIN_PTR_ARRAY_INITIALIZED_FIELDS_COUNT
     ) {

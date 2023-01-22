@@ -19,10 +19,7 @@ export type RegsMap = {
   };
 };
 
-export const createGeneralPurposeRegsMap = (): Record<
-  CCompilerArch,
-  RegsMap
-> => ({
+export const createX86RegsMap = (): Record<CCompilerArch, RegsMap> => ({
   [CCompilerArch.X86_16]: {
     int: [
       {
@@ -81,6 +78,14 @@ export const createGeneralPurposeRegsMap = (): Record<
           },
         ],
       },
+      {
+        name: 'di',
+        size: 0x2,
+      },
+      {
+        name: 'si',
+        size: 0x2,
+      },
     ],
     float: {
       x87: X87_STACK_REGISTERS,
@@ -88,4 +93,5 @@ export const createGeneralPurposeRegsMap = (): Record<
   },
 });
 
-export const X86_GENERAL_PURPOSE_REGS = createGeneralPurposeRegsMap();
+export const X86_ADDRESSING_REGS: X86RegName[] = ['bx', 'si', 'di'];
+export const X86_GENERAL_REGS: X86RegName[] = ['ax', 'cx', 'dx', 'bx'];

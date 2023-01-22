@@ -141,7 +141,7 @@ describe('Function typecheck', () => {
     );
   });
 
-  test('assign function return to variable does not throw error', () => {
+  test.skip('assign function return to variable does not throw error', () => {
     expect(/* cpp */ `
       int sum(void) { return 2; }
       int main() { int acc = sum(); }

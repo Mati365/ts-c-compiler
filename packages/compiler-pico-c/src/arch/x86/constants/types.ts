@@ -15,6 +15,11 @@ export type CompilerBlockFnAttrs = CompilerFnAttrs & {
   instructions: IRInstruction[];
 };
 
+export type CompilerInstructionFnAttrs<I extends IRInstruction> =
+  CompilerFnAttrs & {
+    instruction: I;
+  };
+
 export type CompiledBlockOutput = {
   asm: string[];
 };

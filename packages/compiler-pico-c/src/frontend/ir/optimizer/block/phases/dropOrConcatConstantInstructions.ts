@@ -44,6 +44,7 @@ export function dropOrConcatConstantInstructions(
     // remove constant assigns from code
     if (
       isIRAssignInstruction(instruction) &&
+      instruction.meta.virtual &&
       isIRConstant(instruction.inputVar)
     ) {
       constantArgs[instruction.outputVar.name] = instruction.inputVar;
@@ -77,6 +78,9 @@ export function dropOrConcatConstantInstructions(
         newInstructions[i] = new IRAssignInstruction(
           IRConstant.ofConstant(instruction.leftVar.type, evalResult.unwrap()),
           instruction.outputVar,
+          {
+            virtual: true,
+          },
         );
 
         continue;

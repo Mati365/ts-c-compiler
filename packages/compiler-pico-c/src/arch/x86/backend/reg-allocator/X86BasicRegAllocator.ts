@@ -13,16 +13,14 @@ import {
 
 import { getByteSizeArgPrefixName } from '@x86-toolkit/assembler/parser/utils';
 import { genInstruction } from '../../asm-utils';
-import {
-  isX86RegLookup,
-  queryFromX86IntRegsMap,
-  X86RegLookupQuery,
-} from '../utils';
+import { queryFromX86IntRegsMap, X86RegLookupQuery } from '../utils';
 
 import { X86RegName } from '@x86-toolkit/assembler';
 import { X86Allocator } from '../X86Allocator';
 import { X86RegOwnershipTracker } from './X86RegOwnershipTracker';
 import { isRegOwnership, isStackVarOwnership } from './utils';
+
+import { X86_GENERAL_REGS } from '../../constants/regs';
 
 export type IRRegReqResult = {
   asm: string[];
@@ -59,8 +57,9 @@ export type IRArgDynamicResolverAttrs = {
 };
 
 export type IRArgRegResolverAttrs = {
-  specificReg?: X86RegName;
+  allowedRegs?: X86RegName[];
   arg: IRInstructionVarArg;
+  allocIfNotFound?: boolean;
 };
 
 export class X86BasicRegAllocator {
@@ -80,8 +79,11 @@ export class X86BasicRegAllocator {
 
   tryResolveIRArgAsReg({
     arg,
-    specificReg,
+    allowedRegs,
+    allocIfNotFound,
   }: IRArgRegResolverAttrs): IRArgAllocatorResult<X86RegName> {
+    const { stackFrame, ownership } = this;
+
     if (!arg.type.isScalar()) {
       throw new CBackendError(CBackendErrorCode.REG_ALLOCATOR_ERROR);
     }
@@ -101,19 +103,31 @@ export class X86BasicRegAllocator {
     }
 
     if (isIRVariable(arg)) {
-      const { stackFrame, ownership } = this;
       const varOwnership = ownership.getVarOwnership(arg.name);
 
       if (isRegOwnership(varOwnership)) {
-        // often called when we request `bx` register for specific variable that we have in cache
+        // often called when we request `bx` register for specific variable that we have previously loaded
         // example: int* c = &j; int** ks = &c; **ks = 7;
-        if (specificReg && varOwnership.reg !== specificReg) {
-          ownership.swapRegOwnership(specificReg, varOwnership.reg);
+        // other example: abc[2]++;
+        if (allowedRegs && !allowedRegs.includes(varOwnership.reg)) {
+          const regResult = this.requestReg({
+            size: arg.type.getByteSize(),
+            allowedRegs,
+          });
 
-          return {
-            value: specificReg,
-            asm: [genInstruction('xchg', specificReg, varOwnership.reg)],
+          const result = {
+            value: regResult.value,
+            asm: [
+              genInstruction('mov', regResult.value, varOwnership.reg),
+              ...regResult.asm,
+            ],
           };
+
+          ownership.setOwnership(arg.name, {
+            reg: regResult.value,
+          });
+
+          return result;
         }
 
         return {
@@ -129,7 +143,7 @@ export class X86BasicRegAllocator {
 
         const regResult = this.requestReg({
           size: arg.type.getByteSize(),
-          reg: specificReg,
+          allowedRegs,
         });
 
         const result = {
@@ -140,9 +154,25 @@ export class X86BasicRegAllocator {
           ],
         };
 
-        ownership.setOwnership(arg.name, { reg: result.value });
+        ownership.setOwnership(arg.name, {
+          reg: result.value,
+        });
+
         return result;
       }
+    }
+
+    if (allocIfNotFound) {
+      const result = this.requestReg({
+        allowedRegs,
+        size: arg.type.getByteSize(),
+      });
+
+      ownership.setOwnership(arg.name, {
+        reg: result.value,
+      });
+
+      return result;
     }
 
     return null;
@@ -221,19 +251,17 @@ export class X86BasicRegAllocator {
 
   requestReg(query: X86RegLookupQuery): IRRegReqResult {
     const { ownership } = this;
-    let result = queryFromX86IntRegsMap(query, ownership.getAvailableRegs());
+    const result = queryFromX86IntRegsMap(
+      { allowedRegs: X86_GENERAL_REGS, ...query },
+      ownership.getAvailableRegs(),
+    );
 
     if (!result) {
-      if (isX86RegLookup(query)) {
-        ownership.dropOwnershipByReg(query.reg);
-      }
-
-      result = queryFromX86IntRegsMap(query, ownership.getAvailableRegs());
-
-      if (!result) {
-        // todo: Add spilling register support!
-        throw new CBackendError(CBackendErrorCode.REG_ALLOCATOR_ERROR);
-      }
+      // todo:
+      // - Add spilling register support!
+      // - Naive idea: perform fast check all of variables that are currently allocated
+      //   and detect which is not needed anymore. Then delete it and release register.
+      throw new CBackendError(CBackendErrorCode.REG_ALLOCATOR_ERROR);
     }
 
     ownership.setAvailableRegs(result.availableRegs);

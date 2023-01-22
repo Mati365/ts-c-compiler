@@ -106,23 +106,22 @@ describe('Assignment IR', () => {
     test('assignment realocated array to pointer', () => {
       expect(/* cpp */ `
           void main() {
-            int arr[] = { 1, 2, 3, 4, 5, 6 };
+            const int arr[] = { 1, 2, 3, 4, 5, 6 };
             int* ptr = arr;
           }
       `).toCompiledIRBeEqual(/* ruby */ `
         # --- Block main ---
         def main():
-          arr{0}: int**2B = alloca int*2B
-          %t{0}: int*2B = lea c{0}: int[6]12B
-          *(arr{0}: int**2B) = store %t{0}: int*2B
+          arr{0}: const int**2B = alloca const int*2B
+          %t{0}: const int*2B = lea c{0}: const int[6]12B
+          *(arr{0}: const int**2B) = store %t{0}: const int*2B
           ptr{0}: int**2B = alloca int*2B
-          %t{1}: int*2B = load arr{0}: int**2B
-          *(ptr{0}: int**2B) = store %t{1}: int*2B
+          %t{1}: const int*2B = load arr{0}: const int**2B
+          *(ptr{0}: int**2B) = store %t{1}: const int*2B
           ret
           end-def
-
-        # --- Block Data ---
-          c{0}: int[6]12B = const { 1, 2, 3, 4, 5, 6 }
+          # --- Block Data ---
+          c{0}: const int[6]12B = const { 1, 2, 3, 4, 5, 6 }
       `);
     });
 
@@ -152,78 +151,75 @@ describe('Assignment IR', () => {
     test('assignment 1-dimension realocated array', () => {
       expect(/* cpp */ `
         void main() {
-          int array[] = { 1, 2, 3, 4, 5 };
+          const int array[] = { 1, 2, 3, 4, 5 };
           int sum = array[1] - 3 * 4;
         }
       `).toCompiledIRBeEqual(/* ruby */ `
         # --- Block main ---
         def main():
-          array{0}: int**2B = alloca int*2B
-          %t{0}: int*2B = lea c{0}: int[5]10B
-          *(array{0}: int**2B) = store %t{0}: int*2B
+          array{0}: const int**2B = alloca const int*2B
+          %t{0}: const int*2B = lea c{0}: const int[5]10B
+          *(array{0}: const int**2B) = store %t{0}: const int*2B
           sum{0}: int*2B = alloca int2B
-          %t{1}: int*2B = load array{0}: int**2B
+          %t{1}: int*2B = load array{0}: const int**2B
           %t{2}: int*2B = %t{1}: int*2B plus %2: int2B
           %t{3}: int2B = load %t{2}: int*2B
           %t{5}: int2B = %t{3}: int2B minus %12: int2B
           *(sum{0}: int*2B) = store %t{5}: int2B
           ret
           end-def
-
-        # --- Block Data ---
-          c{0}: int[5]10B = const { 1, 2, 3, 4, 5 }
+          # --- Block Data ---
+          c{0}: const int[5]10B = const { 1, 2, 3, 4, 5 }
       `);
     });
 
     test('assignment 2-dimension array by single dimension with realocated array', () => {
       expect(/* cpp */ `
         void main() {
-          int array[4][3] = { 1, 2, 3, 4, 5 };
+          const int array[4][3] = { 1, 2, 3, 4, 5 };
           int sum = array[1] + 3 * 4;
         }
       `).toCompiledIRBeEqual(/* ruby */ `
         # --- Block main ---
         def main():
-          array{0}: int**2B = alloca int*2B
-          %t{0}: int*2B = lea c{0}: int[12]24B
-          *(array{0}: int**2B) = store %t{0}: int*2B
+          array{0}: const int**2B = alloca const int*2B
+          %t{0}: const int*2B = lea c{0}: const int[12]24B
+          *(array{0}: const int**2B) = store %t{0}: const int*2B
           sum{0}: int*2B = alloca int2B
-          %t{1}: int*2B = load array{0}: int**2B
+          %t{1}: int*2B = load array{0}: const int**2B
           %t{2}: int*2B = %t{1}: int*2B plus %6: int2B
           %t{3}: int2B = load %t{2}: int*2B
           %t{5}: int2B = %t{3}: int2B plus %12: int2B
           *(sum{0}: int*2B) = store %t{5}: int2B
           ret
           end-def
-
-        # --- Block Data ---
-          c{0}: int[12]24B = const { 1, 2, 3, 4, 5, null, null, null, null, null, null, null }
+          # --- Block Data ---
+          c{0}: const int[12]24B = const { 1, 2, 3, 4, 5, null, null, null, null, null, null, null }
       `);
     });
 
     test('assignment 2-dimension array with realocated array', () => {
       expect(/* cpp */ `
         void main() {
-          int array[4][3] = { 1, 2, 3, 4, 5 };
+          const int array[4][3] = { 1, 2, 3, 4, 5 };
           int sum = array[1][0] + 3 * 4;
         }
       `).toCompiledIRBeEqual(/* ruby */ `
         # --- Block main ---
         def main():
-          array{0}: int**2B = alloca int*2B
-          %t{0}: int*2B = lea c{0}: int[12]24B
-          *(array{0}: int**2B) = store %t{0}: int*2B
+          array{0}: const int**2B = alloca const int*2B
+          %t{0}: const int*2B = lea c{0}: const int[12]24B
+          *(array{0}: const int**2B) = store %t{0}: const int*2B
           sum{0}: int*2B = alloca int2B
-          %t{1}: int*2B = load array{0}: int**2B
+          %t{1}: int*2B = load array{0}: const int**2B
           %t{2}: int*2B = %t{1}: int*2B plus %6: int2B
           %t{3}: int2B = load %t{2}: int*2B
           %t{5}: int2B = %t{3}: int2B plus %12: int2B
           *(sum{0}: int*2B) = store %t{5}: int2B
           ret
           end-def
-
-        # --- Block Data ---
-          c{0}: int[12]24B = const { 1, 2, 3, 4, 5, null, null, null, null, null, null, null }
+          # --- Block Data ---
+          c{0}: const int[12]24B = const { 1, 2, 3, 4, 5, null, null, null, null, null, null, null }
       `);
     });
 
@@ -261,17 +257,17 @@ describe('Assignment IR', () => {
       `).toCompiledIRBeEqual(/* ruby */ `
         # --- Block main ---
         def main():
-          testArray{0}: int**2B = alloca int*2B
-          %t{0}: int*2B = lea c{0}: int[5]10B
-          *(testArray{0}: int**2B) = store %t{0}: int*2B
-          %t{1}: int*2B = load testArray{0}: int**2B
-          %t{6}: int*2B = %t{1}: int*2B plus %14: int2B
-          *(%t{6}: int*2B) = store %4: int2B
+          testArray{0}: int[5]*2B = alloca int[5]10B
+          *(testArray{0}: int[5]*2B) = store %1: int2B
+          *(testArray{0}: int[5]*2B + %2) = store %2: int2B
+          *(testArray{0}: int[5]*2B + %4) = store %3: int2B
+          *(testArray{0}: int[5]*2B + %6) = store %4: int2B
+          *(testArray{0}: int[5]*2B + %8) = store %5: int2B
+          %t{0}: int[5]*2B = lea testArray{0}: int[5]*2B
+          %t{5}: int[5]*2B = %t{0}: int[5]*2B plus %14: int2B
+          *(%t{5}: int[5]*2B) = store %4: int2B
           ret
           end-def
-
-        # --- Block Data ---
-          c{0}: int[5]10B = const { 1, 2, 3, 4, 5 }
       `);
     });
 
@@ -399,20 +395,21 @@ describe('Assignment IR', () => {
       `).toCompiledIRBeEqual(/* ruby */ `
         # --- Block main ---
         def main():
-          arr{0}: int**2B = alloca int*2B
-          %t{0}: int*2B = lea c{0}: int[6]12B
-          *(arr{0}: int**2B) = store %t{0}: int*2B
+          arr{0}: int[6]*2B = alloca int[6]12B
+          *(arr{0}: int[6]*2B) = store %1: int2B
+          *(arr{0}: int[6]*2B + %2) = store %2: int2B
+          *(arr{0}: int[6]*2B + %4) = store %3: int2B
+          *(arr{0}: int[6]*2B + %6) = store %4: int2B
+          *(arr{0}: int[6]*2B + %8) = store %5: int2B
+          *(arr{0}: int[6]*2B + %10) = store %6: int2B
           ptr{0}: int**2B = alloca int*2B
-          %t{1}: int*2B = load arr{0}: int**2B
-          *(ptr{0}: int**2B) = store %t{1}: int*2B
-          %t{2}: int*2B = load ptr{0}: int**2B
-          %t{3}: int*2B = %t{2}: int*2B plus %4: int2B
-          *(%t{3}: int*2B) = store %8: int2B
+          %t{0}: int[6]*2B = lea arr{0}: int[6]*2B
+          *(ptr{0}: int**2B) = store %t{0}: int[6]*2B
+          %t{1}: int*2B = load ptr{0}: int**2B
+          %t{2}: int*2B = %t{1}: int*2B plus %4: int2B
+          *(%t{2}: int*2B) = store %8: int2B
           ret
           end-def
-
-        # --- Block Data ---
-          c{0}: int[6]12B = const { 1, 2, 3, 4, 5, 6 }
       `);
     });
   });

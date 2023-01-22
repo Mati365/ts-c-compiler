@@ -4,19 +4,20 @@ import {
   CBackendErrorCode,
 } from '@compiler/pico-c/backend/errors/CBackendError';
 
+import { X86_ADDRESSING_REGS } from '../../constants/regs';
+
 import { IRStoreInstruction } from '@compiler/pico-c/frontend/ir/instructions';
 import { getByteSizeArgPrefixName } from '@x86-toolkit/assembler/parser/utils';
 
-import { CompilerFnAttrs } from '../../constants/types';
+import { CompilerInstructionFnAttrs } from '../../constants/types';
 import { genInstruction, withInlineComment } from '../../asm-utils';
 import {
   isIRConstant,
   isIRVariable,
 } from '@compiler/pico-c/frontend/ir/variables';
 
-type StoreInstructionCompilerAttrs = CompilerFnAttrs & {
-  instruction: IRStoreInstruction;
-};
+type StoreInstructionCompilerAttrs =
+  CompilerInstructionFnAttrs<IRStoreInstruction>;
 
 export function compileStoreInstruction({
   instruction,
@@ -41,7 +42,7 @@ export function compileStoreInstruction({
 
     const ptrVarReg = regs.tryResolveIRArgAsReg({
       arg: outputVar,
-      specificReg: 'bx',
+      allowedRegs: X86_ADDRESSING_REGS,
     });
 
     asm.push(...ptrVarReg.asm);
@@ -70,9 +71,7 @@ export function compileStoreInstruction({
         instruction.getDisplayName(),
       ),
     );
-  }
-
-  if (isIRConstant(value)) {
+  } else if (isIRConstant(value)) {
     asm.push(
       withInlineComment(
         genInstruction('mov', destAddr, value.constant),

@@ -2,13 +2,14 @@ import {
   ASTCCompilerKind,
   ASTCAssignmentExpression,
 } from '@compiler/pico-c/frontend/parser/ast';
+
+import { checkLeftTypeOverlapping } from '../../../checker';
 import {
   CTypeCheckError,
   CTypeCheckErrorCode,
 } from '../../../errors/CTypeCheckError';
-import { ASTCTypeCreator } from './ASTCTypeCreator';
 
-import { checkLeftTypeOverlapping } from '../../../checker';
+import { ASTCTypeCreator } from './ASTCTypeCreator';
 
 export class ASTCAssignmentExpressionTypeCreator extends ASTCTypeCreator<ASTCAssignmentExpression> {
   kind = ASTCCompilerKind.AssignmentExpression;

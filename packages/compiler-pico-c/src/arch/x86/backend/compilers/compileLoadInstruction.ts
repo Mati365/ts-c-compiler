@@ -4,16 +4,17 @@ import {
   CBackendErrorCode,
 } from '@compiler/pico-c/backend/errors/CBackendError';
 
+import { X86_ADDRESSING_REGS } from '../../constants/regs';
+
 import { isIRVariable } from '@compiler/pico-c/frontend/ir/variables';
 import { isPointerLikeType } from '@compiler/pico-c/frontend/analyze';
-
-import { CompilerFnAttrs } from '../../constants/types';
-import { genInstruction, withInlineComment } from '../../asm-utils';
 import { isStackVarOwnership } from '../reg-allocator/utils';
 
-type LoadInstructionCompilerAttrs = CompilerFnAttrs & {
-  instruction: IRLoadInstruction;
-};
+import { CompilerInstructionFnAttrs } from '../../constants/types';
+import { genInstruction, withInlineComment } from '../../asm-utils';
+
+type LoadInstructionCompilerAttrs =
+  CompilerInstructionFnAttrs<IRLoadInstruction>;
 
 export function compileLoadInstruction({
   instruction,
@@ -34,13 +35,18 @@ export function compileLoadInstruction({
     // handle loading pointer to types, such as %t{0} = load %t{1}: int*
     const input = regs.tryResolveIRArgAsReg({
       arg: inputVar,
-      specificReg: 'bx',
+      allowedRegs: X86_ADDRESSING_REGS,
     });
 
-    regs.ownership.transferRegOwnership(outputVar.name, input.value);
+    const reg = regs.requestReg({
+      size: inputVar.type.getByteSize(),
+    });
+
+    regs.ownership.transferRegOwnership(outputVar.name, reg.value);
     asm.push(
+      ...input.asm,
       withInlineComment(
-        genInstruction('mov', input.value, `[${input.value}]`),
+        genInstruction('mov', reg.value, `[${input.value}]`),
         instruction.getDisplayName(),
       ),
     );
@@ -52,7 +58,7 @@ export function compileLoadInstruction({
       // handle loading pointer to types, such as **k
       const reg = regs.requestReg({
         size: inputVar.type.getByteSize(),
-        reg: 'bx',
+        allowedRegs: X86_ADDRESSING_REGS,
       });
 
       asm.push(

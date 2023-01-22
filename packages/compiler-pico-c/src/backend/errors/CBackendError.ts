@@ -7,6 +7,7 @@ export enum CBackendErrorCode {
   UNABLE_TO_COMPILE_INSTRUCTION = 'UNABLE_TO_COMPILE_INSTRUCTION',
   UNABLE_TO_SPILL_REG = 'UNABLE_TO_SPILL_REG',
   MISSING_BR_INSTRUCTION = 'MISSING_BR_INSTRUCTION',
+  INCORRECT_PHI_NODE = 'INCORRECT_PHI_NODE',
 }
 
 export const C_BACKEND_ERROR_TRANSLATIONS: Record<CBackendErrorCode, string> = {
@@ -20,6 +21,7 @@ export const C_BACKEND_ERROR_TRANSLATIONS: Record<CBackendErrorCode, string> = {
   [CBackendErrorCode.UNABLE_TO_COMPILE_INSTRUCTION]: fixme(
     'Unable to compile instruction!',
   ),
+  [CBackendErrorCode.INCORRECT_PHI_NODE]: fixme('Incorrect phi node!'),
 };
 
 /**

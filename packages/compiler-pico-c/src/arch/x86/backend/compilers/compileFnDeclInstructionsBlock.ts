@@ -2,6 +2,7 @@ import { IROpcode } from '@compiler/pico-c/frontend/ir/constants';
 import {
   IRCommentInstruction,
   IRFnDeclInstruction,
+  isIRLabelInstruction,
 } from '@compiler/pico-c/frontend/ir/instructions';
 
 import {
@@ -20,6 +21,8 @@ import { compileICmpInstruction } from './compileICmpInstruction';
 import { compileLabelInstruction } from './compileLabelInstruction';
 import { compileJmpInstruction } from './compileJmpInstruction';
 import { compileLeaInstruction } from './compileLeaInstruction';
+import { compileAssignInstruction } from './compileAssignInstruction';
+import { compilePhiInstruction } from './compilePhiInstruction';
 
 type FnDeclCompilerBlockFnAttrs = CompilerBlockFnAttrs & {
   instruction: IRFnDeclInstruction;
@@ -42,9 +45,21 @@ export function compileFnDeclInstructionsBlock({
         iterator,
       };
 
+      if (isIRLabelInstruction(instruction)) {
+        allocator.regs.ownership.releaseAllRegs();
+      }
+
       switch (instruction.opcode) {
         case IROpcode.ALLOC:
           compileAllocInstruction(arg);
+          break;
+
+        case IROpcode.ASSIGN:
+          asm.push(...compileAssignInstruction(arg));
+          break;
+
+        case IROpcode.PHI:
+          compilePhiInstruction(arg);
           break;
 
         case IROpcode.LOAD:

@@ -1,15 +1,13 @@
 import { IRJmpInstruction } from '@compiler/pico-c/frontend/ir/instructions';
+
+import { CompilerInstructionFnAttrs } from '../../constants/types';
 import {
   genInstruction,
   genLabelName,
   withInlineComment,
 } from '../../asm-utils';
 
-import { CompilerFnAttrs } from '../../constants/types';
-
-type JmpInstructionCompilerAttrs = CompilerFnAttrs & {
-  instruction: IRJmpInstruction;
-};
+type JmpInstructionCompilerAttrs = CompilerInstructionFnAttrs<IRJmpInstruction>;
 
 export function compileJmpInstruction({
   instruction,
