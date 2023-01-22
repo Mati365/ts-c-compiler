@@ -21,6 +21,18 @@ export class ASTCAssignmentExpressionTypeCreator extends ASTCTypeCreator<ASTCAss
     if (node.isOperatorExpression()) {
       const { unaryExpression: left, expression: right } = node;
 
+      if (left?.type?.isConst()) {
+        throw new CTypeCheckError(
+          CTypeCheckErrorCode.ASSIGNMENT_TO_CONST,
+          node.loc.start,
+          {
+            left:
+              left?.type?.getShortestDisplayName() ??
+              '<unknown-left-expr-type>',
+          },
+        );
+      }
+
       if (!checkLeftTypeOverlapping(left?.type, right?.type)) {
         throw new CTypeCheckError(
           CTypeCheckErrorCode.ASSIGNMENT_EXPRESSION_TYPES_MISMATCH,
