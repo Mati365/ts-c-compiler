@@ -40,6 +40,7 @@ export enum CTypeCheckErrorCode {
   RETURN_EXPRESSION_WRONG_TYPE,
   PROVIDED_TYPE_DOES_NOT_CONTAIN_PROPERTIES,
   ASSIGNMENT_EXPRESSION_TYPES_MISMATCH,
+  ASSIGNMENT_TO_CONST,
   OPERATOR_SIDES_TYPES_MISMATCH,
   REDEFINITION_OF_COMPILE_CONSTANT,
   INVALID_INITIALIZER,
@@ -135,6 +136,8 @@ export const C_TYPE_CHECK_ERROR_TRANSLATIONS: Record<
     'Provided %{typeName} does not contain members!',
   [CTypeCheckErrorCode.ASSIGNMENT_EXPRESSION_TYPES_MISMATCH]:
     'Assignment expression types mismatch! Unable assign "%{right}" to "%{left}"!',
+  [CTypeCheckErrorCode.ASSIGNMENT_TO_CONST]:
+    'Assignment to read-only type "%{left}"!',
   [CTypeCheckErrorCode.OPERATOR_SIDES_TYPES_MISMATCH]:
     'Operator types mismatch! Left side type "%{left}" mismatch with right side "%{right}"!',
   [CTypeCheckErrorCode.REDEFINITION_OF_COMPILE_CONSTANT]:
