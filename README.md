@@ -38,11 +38,18 @@ yarn run test
     - [x] IR code generator
   - [x] Backend
     - [x] IR optimizer
-    - [ ] X86-16 Code generator
+    - [x] X86-16 Code generator
       - [ ] Register allocator
+        - [x] Basic allocation using ownership checking
+        - [ ] Spilling regs and detection lifetime of IR vars
       - [ ] Compile math integer instruction
-      - [ ] Compile if stmts
-      - [ ] Compile loops
+        - [x] Compile `*`, `+`, `-`
+        - [ ] Compile division
+      - [x] Compile if stmts
+      - [x] Compile `while {}`, `do { } while`, `for (...) {}` loops
+      - [ ] Compile pointers
+        - [x] Basic pointer access `*k = 5`
+        - [ ] Array access `k[4]`
       - [ ] Compile function calls
 - [x] ASM Compiler
   - [x] NASM syntax instruction compiler matcher with expression eval `mov ax, byte [ds:label+bx+12+(1/3)]`
