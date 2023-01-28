@@ -7,7 +7,6 @@ import {
 } from '@compiler/pico-c/backend/errors/CBackendError';
 
 import { isIRVariable } from '@compiler/pico-c/frontend/ir/variables';
-import { isIRVariableLaterUsed } from '../utils';
 
 import { IRArgDynamicResolverType } from '../reg-allocator';
 import { CompilerInstructionFnAttrs } from '../../constants/types';
@@ -18,11 +17,11 @@ type MathInstructionCompilerAttrs =
 
 export function compileMathInstruction({
   instruction,
-  iterator,
   context,
 }: MathInstructionCompilerAttrs): string[] {
   const { leftVar, rightVar, outputVar, operator } = instruction;
   const {
+    iterator,
     allocator: { regs },
   } = context;
 
@@ -72,36 +71,30 @@ export function compileMathInstruction({
       // if so - generate additional mov
       if (
         isIRVariable(leftVar) &&
-        isIRVariableLaterUsed(iterator, leftVar.name)
+        regs.ownership.lifetime.isVariableLaterUsed(
+          iterator.offset,
+          leftVar.name,
+        )
       ) {
         const reg = regs.requestReg({
           size: leftVar.type.getByteSize(),
         });
 
-        // prevent mov ax, ax
-        if (reg.value !== leftAllocResult.value) {
-          asm.push(
-            ...reg.asm,
-            genInstruction('mov', reg.value, leftAllocResult.value),
-          );
-        }
+        asm.push(
+          ...reg.asm,
+          genInstruction('mov', reg.value, leftAllocResult.value),
+        );
 
-        regs.ownership.transferRegOwnership(leftVar.name, reg.value);
-      }
-
-      if (
-        rightAllocResult.type === IRArgDynamicResolverType.REG &&
-        (!isIRVariable(rightVar) ||
-          !isIRVariableLaterUsed(iterator, rightVar.name))
-      ) {
-        regs.ownership.dropOwnership(rightAllocResult.value);
+        regs.ownership.setOwnership(leftVar.name, {
+          releasePrevAllocatedReg: false,
+          reg: reg.value,
+        });
       }
 
       if (outputVar.isTemporary()) {
-        regs.ownership.transferRegOwnership(
-          outputVar.name,
-          leftAllocResult.value,
-        );
+        regs.ownership.setOwnership(outputVar.name, {
+          reg: leftAllocResult.value,
+        });
       }
 
       asm.push(withInlineComment(operatorAsm, instruction.getDisplayName()));
@@ -119,11 +112,9 @@ export function compileMathInstruction({
         arg: rightVar,
       });
 
-      regs.ownership.dropOwnership(leftAllocResult.value);
-      regs.ownership.transferRegOwnership(
-        outputVar.name,
-        leftAllocResult.value,
-      );
+      regs.ownership.setOwnership(outputVar.name, {
+        reg: leftAllocResult.value,
+      });
 
       return [
         ...leftAllocResult.asm,

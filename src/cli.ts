@@ -5,7 +5,21 @@ ccompiler(/* cpp */ `
   void main() {
     int c = 3;
     int abc[] = { 1, 2 };
-    abc[c] = abc[2];
+    abc[c] = abc[2] + c;
+
+    c++;
+
+    if (c == 5) {
+      c *= 2;
+      c += 7 + c;
+      int d = c + 4;
+    }
+
+    int k = c + 2;
+
+    for (int i = k; i < 10; ++i) {
+
+    }
   }
 `).match({
   ok: result => {

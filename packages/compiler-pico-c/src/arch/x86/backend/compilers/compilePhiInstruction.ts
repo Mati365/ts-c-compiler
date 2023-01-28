@@ -31,5 +31,5 @@ export function compilePhiInstruction({
     return argOwnership;
   }, null as IRRegOwnership);
 
-  regs.ownership.transferRegOwnership(outputVar.name, inputOwnership.reg);
+  regs.ownership.setOwnership(outputVar.name, { reg: inputOwnership.reg });
 }

@@ -4,15 +4,11 @@ import type { X86Allocator } from '../backend/X86Allocator';
 
 export type BackendCompilerContext = {
   allocator: X86Allocator;
+  iterator: IRBlockIterator;
 };
 
 export type CompilerFnAttrs = {
-  iterator: IRBlockIterator;
   context: BackendCompilerContext;
-};
-
-export type CompilerBlockFnAttrs = CompilerFnAttrs & {
-  instructions: IRInstruction[];
 };
 
 export type CompilerInstructionFnAttrs<I extends IRInstruction> =

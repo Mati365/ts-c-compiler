@@ -28,7 +28,9 @@ export function compileLeaInstruction({
     size: CPrimitiveType.address(config.arch).getByteSize(),
   });
 
-  regs.ownership.transferRegOwnership(outputVar.name, addressReg.value);
+  regs.ownership.setOwnership(outputVar.name, {
+    reg: addressReg.value,
+  });
 
   // variable allocated in data segment
   // such like: const char* str = "Hello world!";

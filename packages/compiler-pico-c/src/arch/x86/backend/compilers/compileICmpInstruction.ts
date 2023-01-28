@@ -33,10 +33,10 @@ type ICmpInstructionCompilerAttrs =
 
 export function compileICmpInstruction({
   instruction,
-  iterator,
   context,
 }: ICmpInstructionCompilerAttrs): string[] {
   const {
+    iterator,
     allocator: { regs },
   } = context;
 

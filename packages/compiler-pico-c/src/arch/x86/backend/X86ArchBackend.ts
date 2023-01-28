@@ -3,31 +3,23 @@ import { CAbstractArchBackend } from '@compiler/pico-c/backend/abstract/CAbstrac
 import { CBackendCompilerResult } from '@compiler/pico-c/backend/constants/types';
 
 import { X86Allocator } from './X86Allocator';
-import { BackendCompilerContext } from '../constants/types';
-
 import { compileDataSegment, compileInstructionsBlock } from './compilers';
+import { IRBlockIterator } from './iterators/IRBlockIterator';
 
 export class X86ArchBackend extends CAbstractArchBackend {
-  private allocator: X86Allocator;
-
-  get context(): BackendCompilerContext {
-    const { allocator } = this;
-
-    return {
-      allocator,
-    };
-  }
-
   compileIR({ segments }: IRScopeGeneratorResult): CBackendCompilerResult {
     const asm: string[] = [];
 
-    this.allocator = new X86Allocator(this.config);
-
     for (const [, fn] of Object.entries(segments.code.functions)) {
+      const iterator = IRBlockIterator.of(fn.block.instructions);
+      const allocator = new X86Allocator(this.config, iterator);
+
       asm.push(
         ...compileInstructionsBlock({
-          context: this.context,
-          block: fn.block,
+          context: {
+            iterator,
+            allocator,
+          },
         }),
       );
     }

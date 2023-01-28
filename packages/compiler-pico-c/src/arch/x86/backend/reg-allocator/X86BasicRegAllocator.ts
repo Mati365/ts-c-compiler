@@ -52,14 +52,14 @@ export type IRDynamicArgAllocatorResult =
   | IRArgAllocatorTypedResult<IRArgDynamicResolverType.NUMBER, number>;
 
 export type IRArgDynamicResolverAttrs = {
-  allow?: IRArgDynamicResolverType;
   arg: IRInstructionVarArg;
+  allow?: IRArgDynamicResolverType;
 };
 
 export type IRArgRegResolverAttrs = {
-  allowedRegs?: X86RegName[];
   arg: IRInstructionVarArg;
   allocIfNotFound?: boolean;
+  allowedRegs?: X86RegName[];
 };
 
 export class X86BasicRegAllocator {
@@ -251,10 +251,18 @@ export class X86BasicRegAllocator {
 
   requestReg(query: X86RegLookupQuery): IRRegReqResult {
     const { ownership } = this;
-    const result = queryFromX86IntRegsMap(
+    let result = queryFromX86IntRegsMap(
       { allowedRegs: X86_GENERAL_REGS, ...query },
       ownership.getAvailableRegs(),
     );
+
+    if (!result) {
+      ownership.releaseNotUsedLaterRegs();
+      result = queryFromX86IntRegsMap(
+        { allowedRegs: X86_GENERAL_REGS, ...query },
+        ownership.getAvailableRegs(),
+      );
+    }
 
     if (!result) {
       // todo:

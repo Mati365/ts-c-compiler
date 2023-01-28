@@ -42,7 +42,7 @@ export function compileLoadInstruction({
       size: inputVar.type.getByteSize(),
     });
 
-    regs.ownership.transferRegOwnership(outputVar.name, reg.value);
+    regs.ownership.setOwnership(outputVar.name, { reg: reg.value });
     asm.push(
       ...input.asm,
       withInlineComment(

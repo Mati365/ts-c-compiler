@@ -5,12 +5,8 @@ import {
   isIRLabelInstruction,
 } from '@compiler/pico-c/frontend/ir/instructions';
 
-import {
-  CompiledBlockOutput,
-  CompilerBlockFnAttrs,
-} from '../../constants/types';
+import { CompiledBlockOutput, CompilerFnAttrs } from '../../constants/types';
 
-import { IRBlockIterator } from '../iterators/IRBlockIterator';
 import { genComment } from '../../asm-utils';
 
 import { compileAllocInstruction } from './compileAllocInstruction';
@@ -24,21 +20,19 @@ import { compileLeaInstruction } from './compileLeaInstruction';
 import { compileAssignInstruction } from './compileAssignInstruction';
 import { compilePhiInstruction } from './compilePhiInstruction';
 
-type FnDeclCompilerBlockFnAttrs = CompilerBlockFnAttrs & {
+type FnDeclCompilerBlockFnAttrs = CompilerFnAttrs & {
   instruction: IRFnDeclInstruction;
 };
 
 export function compileFnDeclInstructionsBlock({
   instruction: fnInstruction,
-  instructions,
   context,
 }: FnDeclCompilerBlockFnAttrs): CompiledBlockOutput {
-  const { allocator } = context;
-
+  const { allocator, iterator } = context;
   const compileFnContent = (): string[] => {
     const asm: string[] = [];
 
-    IRBlockIterator.of(instructions).walk((instruction, iterator) => {
+    iterator.walk(instruction => {
       const arg = {
         instruction: <any>instruction,
         context,

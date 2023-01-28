@@ -1,9 +1,10 @@
 import { assertUnreachable } from '@compiler/core/utils';
-
 import { CCompilerArch, CCompilerConfig } from '@compiler/pico-c/constants';
+
 import { X86StackFrame } from './X86StackFrame';
 import { X86BasicRegAllocator } from './reg-allocator';
 import { genInstruction, genLabel } from '../asm-utils';
+import { IRBlockIterator } from './iterators/IRBlockIterator';
 
 export class X86Allocator {
   private readonly labels: { [id: string]: string } = {};
@@ -11,8 +12,15 @@ export class X86Allocator {
   private _stackFrame: X86StackFrame;
   private _regs: X86BasicRegAllocator;
 
-  constructor(readonly config: CCompilerConfig) {
+  constructor(
+    readonly config: CCompilerConfig,
+    readonly iterator: IRBlockIterator,
+  ) {
     this._regs = new X86BasicRegAllocator(this);
+  }
+
+  get instructions() {
+    return this.iterator.instructions;
   }
 
   get stackFrame() {
