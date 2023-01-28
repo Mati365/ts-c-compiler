@@ -97,20 +97,6 @@ export class X86RegOwnershipTracker {
     this.ownership[inputVar] = value;
   }
 
-  releaseAllRegs() {
-    const { ownership } = this;
-    const unusedRegs: X86RegName[] = [];
-
-    R.forEachObjIndexed((item, key) => {
-      if (isRegOwnership(item) && !item.noPrune) {
-        unusedRegs.push(item.reg);
-        delete ownership[key];
-      }
-    }, ownership);
-
-    this.releaseRegs(unusedRegs);
-  }
-
   releaseNotUsedLaterRegs() {
     const { lifetime, ownership, allocator } = this;
     const { offset } = allocator.iterator;

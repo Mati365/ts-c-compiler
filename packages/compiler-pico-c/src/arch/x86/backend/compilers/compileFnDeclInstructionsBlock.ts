@@ -40,7 +40,7 @@ export function compileFnDeclInstructionsBlock({
       };
 
       if (isIRLabelInstruction(instruction)) {
-        allocator.regs.ownership.releaseAllRegs();
+        allocator.regs.ownership.releaseNotUsedLaterRegs();
       }
 
       switch (instruction.opcode) {
