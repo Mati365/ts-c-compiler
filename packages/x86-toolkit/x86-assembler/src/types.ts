@@ -47,7 +47,9 @@ export enum InstructionArgSize {
   TWORD = 0xa,
 }
 
-export type InstructionArgSizeName = keyof typeof InstructionArgSize;
+export type InstructionArgSizeName =
+  | keyof typeof InstructionArgSize
+  | Lowercase<keyof typeof InstructionArgSize>;
 
 export enum BranchAddressingType {
   NEAR = 'near',

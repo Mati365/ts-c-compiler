@@ -51,6 +51,7 @@ export function dropRedundantAddressInstructions(
         replacedOutputs,
         instruction,
       );
+
       if (optimizedInstruction) {
         newInstructions[i] = optimizedInstruction;
       }

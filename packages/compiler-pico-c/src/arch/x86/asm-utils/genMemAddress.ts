@@ -7,17 +7,23 @@ type GenMemAddressConfig = {
   size?: InstructionArgSizeName;
   segment?: X86SegmentRegName;
   expression: string;
+  offset?: number;
 };
 
 export function genMemAddress({
   size,
   segment,
   expression,
+  offset,
 }: GenMemAddressConfig): string {
   let output = expression;
 
   if (segment) {
     output = `${segment}:${expression}`;
+  }
+
+  if (offset) {
+    output += ` ${offset < 0 ? '-' : '+'} ${Math.abs(offset)}`;
   }
 
   output = `[${output}]`;

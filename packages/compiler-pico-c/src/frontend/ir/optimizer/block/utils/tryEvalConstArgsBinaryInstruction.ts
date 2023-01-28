@@ -4,11 +4,16 @@ import { evalMathOp, isMathOpToken } from '@compiler/lexer/utils';
 import { IRMathInstruction } from '../../../instructions';
 import { isIRConstant } from '../../../variables';
 
+type ConstInstructionEvalAttrs = Pick<
+  IRMathInstruction,
+  'operator' | 'leftVar' | 'rightVar'
+>;
+
 export function tryEvalConstArgsBinaryInstruction({
   operator,
   leftVar,
   rightVar,
-}: IRMathInstruction): Option<number> {
+}: ConstInstructionEvalAttrs): Option<number> {
   if (!isIRConstant(leftVar) || !isIRConstant(rightVar)) {
     return none();
   }

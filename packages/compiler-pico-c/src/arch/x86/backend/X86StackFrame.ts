@@ -1,7 +1,7 @@
 import { CCompilerArch, CCompilerConfig } from '@compiler/pico-c/constants';
 
 import { assertUnreachable } from '@compiler/core/utils';
-import { genRelAddress } from '../asm-utils';
+import { genMemAddress } from '../asm-utils';
 
 export type X86StackVariable = {
   name: string;
@@ -50,7 +50,10 @@ export class X86StackFrame {
 
     switch (arch) {
       case CCompilerArch.X86_16:
-        return genRelAddress('bp', stackOffset + offset);
+        return genMemAddress({
+          expression: 'bp',
+          offset: stackOffset + offset,
+        });
 
       default:
         assertUnreachable(arch);

@@ -13,7 +13,11 @@ import {
 
 import { getByteSizeArgPrefixName } from '@x86-toolkit/assembler/parser/utils';
 import { genInstruction } from '../../asm-utils';
-import { queryFromX86IntRegsMap, X86RegLookupQuery } from '../utils';
+import {
+  queryFromX86IntRegsMap,
+  X86IntRegsMapQueryResult,
+  X86RegLookupQuery,
+} from '../utils';
 
 import { X86RegName } from '@x86-toolkit/assembler';
 import { X86Allocator } from '../X86Allocator';
@@ -249,9 +253,22 @@ export class X86BasicRegAllocator {
     throw new CBackendError(CBackendErrorCode.REG_ALLOCATOR_ERROR);
   }
 
-  requestReg(query: X86RegLookupQuery): IRRegReqResult {
+  requestReg({
+    prefer,
+    ...query
+  }: X86RegLookupQuery & { prefer?: X86RegName[] }): IRRegReqResult {
     const { ownership } = this;
-    let result = queryFromX86IntRegsMap(
+    let result: X86IntRegsMapQueryResult = null;
+
+    if (prefer) {
+      result ||= queryFromX86IntRegsMap(
+        { allowedRegs: prefer, ...query },
+        ownership.getAvailableRegs(),
+      );
+    }
+
+    // if there is no preferred regs just pick any free
+    result ||= queryFromX86IntRegsMap(
       { allowedRegs: X86_GENERAL_REGS, ...query },
       ownership.getAvailableRegs(),
     );
@@ -267,8 +284,6 @@ export class X86BasicRegAllocator {
     if (!result) {
       // todo:
       // - Add spilling register support!
-      // - Naive idea: perform fast check all of variables that are currently allocated
-      //   and detect which is not needed anymore. Then delete it and release register.
       throw new CBackendError(CBackendErrorCode.REG_ALLOCATOR_ERROR);
     }
 

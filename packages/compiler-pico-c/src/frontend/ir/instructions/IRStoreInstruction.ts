@@ -32,6 +32,12 @@ export class IRStoreInstruction
     return R.isNil(this.value);
   }
 
+  ofOffset(newOffset: number = 0) {
+    const { value, outputVar } = this;
+
+    return new IRStoreInstruction(value, outputVar, newOffset);
+  }
+
   override ofArgs({
     input = [this.value],
     output = this.outputVar,

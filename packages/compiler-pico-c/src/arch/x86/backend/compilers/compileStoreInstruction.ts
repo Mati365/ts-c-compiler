@@ -8,13 +8,17 @@ import { X86_ADDRESSING_REGS } from '../../constants/regs';
 
 import { IRStoreInstruction } from '@compiler/pico-c/frontend/ir/instructions';
 import { getByteSizeArgPrefixName } from '@x86-toolkit/assembler/parser/utils';
-
-import { CompilerInstructionFnAttrs } from '../../constants/types';
-import { genInstruction, withInlineComment } from '../../asm-utils';
 import {
   isIRConstant,
   isIRVariable,
 } from '@compiler/pico-c/frontend/ir/variables';
+
+import { CompilerInstructionFnAttrs } from '../../constants/types';
+import {
+  genInstruction,
+  genMemAddress,
+  withInlineComment,
+} from '../../asm-utils';
 
 type StoreInstructionCompilerAttrs =
   CompilerInstructionFnAttrs<IRStoreInstruction>;
@@ -46,7 +50,11 @@ export function compileStoreInstruction({
     });
 
     asm.push(...ptrVarReg.asm);
-    destAddr = `${getByteSizeArgPrefixName(ptrByteSize)} [${ptrVarReg.value}]`;
+    destAddr = genMemAddress({
+      size: getByteSizeArgPrefixName(ptrByteSize),
+      expression: ptrVarReg.value,
+      offset,
+    });
   } else {
     // handle normal variable assign
     // a = 5;

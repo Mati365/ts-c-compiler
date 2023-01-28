@@ -1,12 +1,14 @@
 import { $enum } from 'ts-enum-util';
-import { InstructionArgSize } from '../../types';
+import { InstructionArgSize, InstructionArgSizeName } from '../../types';
 
 const ARG_SIZE_NAMES_ENTRIES = $enum(InstructionArgSize).getEntries();
 
 /**
  * Return type name "WORD" | "BYTE" etc depending on size
  */
-export function getByteSizeArgPrefixName(byteSize: number): string {
+export function getByteSizeArgPrefixName(
+  byteSize: number,
+): InstructionArgSizeName {
   let lastArg: (typeof ARG_SIZE_NAMES_ENTRIES)[0][0];
 
   for (let i = 0; i < ARG_SIZE_NAMES_ENTRIES.length; ++i) {
@@ -18,5 +20,5 @@ export function getByteSizeArgPrefixName(byteSize: number): string {
     lastArg = arg[0];
   }
 
-  return lastArg.toLowerCase();
+  return lastArg.toLowerCase() as InstructionArgSizeName;
 }

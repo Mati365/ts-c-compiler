@@ -5,7 +5,7 @@ export function dropConstantInstructionArgs(
   constantArgs: Record<string, IRInstructionVarArg>,
   instruction: IRInstruction,
 ) {
-  const { input, output } = instruction.getArgs();
+  let { input, output } = instruction.getArgs();
   let modifiedArgs = false;
 
   for (let j = 0; j < input.length; ++j) {
@@ -19,6 +19,13 @@ export function dropConstantInstructionArgs(
         modifiedArgs = true;
       }
     }
+  }
+
+  // handle *(t{0}) = 123
+  const cachedOutput = constantArgs[output?.name];
+  if (isIRVariable(cachedOutput)) {
+    output = cachedOutput;
+    modifiedArgs = true;
   }
 
   if (modifiedArgs) {

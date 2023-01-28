@@ -6,6 +6,8 @@ import {
 import { CPrimitiveType } from '@compiler/pico-c/frontend/analyze';
 import { IRLeaInstruction } from '@compiler/pico-c/frontend/ir/instructions';
 
+import { X86_ADDRESSING_REGS } from '../../constants/regs';
+
 import { CompilerInstructionFnAttrs } from '../../constants/types';
 import {
   genInstruction,
@@ -26,6 +28,7 @@ export function compileLeaInstruction({
 
   const addressReg = regs.requestReg({
     size: CPrimitiveType.address(config.arch).getByteSize(),
+    prefer: X86_ADDRESSING_REGS,
   });
 
   regs.ownership.setOwnership(outputVar.name, {
