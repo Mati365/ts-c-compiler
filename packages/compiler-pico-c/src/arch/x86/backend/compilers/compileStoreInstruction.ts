@@ -52,10 +52,7 @@ export function compileStoreInstruction({
     // a = 5;
     destAddr = [
       prefix.toLocaleLowerCase(),
-      stackFrame.getLocalVarStackRelAddress(
-        outputVar.name,
-        outputVar.getStackAllocByteSize() - itemByteSize - offset,
-      ),
+      stackFrame.getLocalVarStackRelAddress(outputVar.name, offset),
     ].join(' ');
   }
 

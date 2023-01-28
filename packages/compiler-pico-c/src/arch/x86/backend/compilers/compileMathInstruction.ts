@@ -32,10 +32,7 @@ export function compileMathInstruction({
     case TokenType.MINUS: {
       const leftAllocResult = regs.tryResolveIRArgAsReg({
         arg: leftVar,
-      }) || {
-        asm: [],
-        value: 'dx',
-      };
+      });
 
       const rightAllocResult = regs.tryResolveIrArg({
         arg: rightVar,
@@ -63,10 +60,6 @@ export function compileMathInstruction({
         );
       }
 
-      if (rightAllocResult.type === IRArgDynamicResolverType.REG) {
-        regs.ownership.dropOwnershipByReg(rightAllocResult.value);
-      }
-
       const asm: string[] = [...leftAllocResult.asm, ...rightAllocResult.asm];
 
       // add ax, 1 moves its output to `ax` as a dest
@@ -85,12 +78,23 @@ export function compileMathInstruction({
           size: leftVar.type.getByteSize(),
         });
 
-        asm.push(
-          ...reg.asm,
-          genInstruction('mov', reg.value, leftAllocResult.value),
-        );
+        // prevent mov ax, ax
+        if (reg.value !== leftAllocResult.value) {
+          asm.push(
+            ...reg.asm,
+            genInstruction('mov', reg.value, leftAllocResult.value),
+          );
+        }
 
         regs.ownership.transferRegOwnership(leftVar.name, reg.value);
+      }
+
+      if (
+        rightAllocResult.type === IRArgDynamicResolverType.REG &&
+        (!isIRVariable(rightVar) ||
+          !isIRVariableLaterUsed(iterator, rightVar.name))
+      ) {
+        regs.ownership.dropOwnership(rightAllocResult.value);
       }
 
       if (outputVar.isTemporary()) {
@@ -107,7 +111,7 @@ export function compileMathInstruction({
     case TokenType.DIV: {
       const leftAllocResult = regs.tryResolveIRArgAsReg({
         arg: leftVar,
-        allowedRegs: ['ax'],
+        allowedRegs: ['dx'],
       });
 
       const rightAllocResult = regs.tryResolveIrArg({
@@ -115,7 +119,7 @@ export function compileMathInstruction({
         arg: rightVar,
       });
 
-      regs.ownership.dropOwnershipByReg('dx');
+      regs.ownership.dropOwnership(leftAllocResult.value);
       regs.ownership.transferRegOwnership(
         outputVar.name,
         leftAllocResult.value,

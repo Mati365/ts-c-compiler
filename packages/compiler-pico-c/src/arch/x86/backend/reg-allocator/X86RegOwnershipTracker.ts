@@ -44,6 +44,18 @@ export class X86RegOwnershipTracker {
     this.ownership[varName] = value;
   }
 
+  dropOwnership(varName: string) {
+    const item = this.ownership[varName];
+    if (!item || !isRegOwnership(item)) {
+      return;
+    }
+
+    const ownerships = this.getOwnershipByReg(item.reg);
+    if (ownerships.length === 1) {
+      this.releaseReg(item.reg);
+    }
+  }
+
   getOwnershipByReg(reg: X86RegName) {
     const varNames: string[] = [];
 
@@ -62,24 +74,6 @@ export class X86RegOwnershipTracker {
     });
   }
 
-  dropOwnershipByReg(reg: X86RegName, updateAvailableRegs: boolean = true) {
-    this.getOwnershipByReg(reg).forEach(varName => {
-      delete this.ownership[varName];
-    });
-
-    if (updateAvailableRegs) {
-      const { availableRegs } = restoreRegInX86IntRegsMap(
-        { reg },
-        this.availableRegs,
-      );
-
-      this.availableRegs = availableRegs;
-    }
-  }
-
-  /**
-   * Transfers register ownership between temp variables
-   */
   transferRegOwnership(inputVar: string, reg: X86RegName) {
     this.dropOwnershipByReg(reg, false);
     this.ownership[inputVar] = {
@@ -94,5 +88,27 @@ export class X86RegOwnershipTracker {
         delete this.ownership[key];
       }
     }, this.ownership);
+  }
+
+  private dropOwnershipByReg(
+    reg: X86RegName,
+    updateAvailableRegs: boolean = true,
+  ) {
+    this.getOwnershipByReg(reg).forEach(varName => {
+      delete this.ownership[varName];
+    });
+
+    if (updateAvailableRegs) {
+      this.releaseReg(reg);
+    }
+  }
+
+  private releaseReg(reg: X86RegName) {
+    const { availableRegs } = restoreRegInX86IntRegsMap(
+      { reg },
+      this.availableRegs,
+    );
+
+    this.availableRegs = availableRegs;
   }
 }
