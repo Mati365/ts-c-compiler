@@ -1,3 +1,4 @@
+export * from './concatConstantStoreInstructions';
 export * from './dropDeadStoreInstructions';
 export * from './dropInstructionsWithOrphanOutputs';
 export * from './dropOrConcatConstantInstructions';

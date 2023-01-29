@@ -10,4 +10,5 @@ export * from './compileLeaInstruction';
 export * from './compileLoadInstruction';
 export * from './compileMathInstruction';
 export * from './compilePhiInstruction';
+export * from './compileRetInstruction';
 export * from './compileStoreInstruction';

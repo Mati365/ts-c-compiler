@@ -19,6 +19,7 @@ import { compileJmpInstruction } from './compileJmpInstruction';
 import { compileLeaInstruction } from './compileLeaInstruction';
 import { compileAssignInstruction } from './compileAssignInstruction';
 import { compilePhiInstruction } from './compilePhiInstruction';
+import { compileRetInstruction } from './compileRetInstruction';
 
 type FnDeclCompilerBlockFnAttrs = CompilerFnAttrs & {
   instruction: IRFnDeclInstruction;
@@ -97,6 +98,7 @@ export function compileFnDeclInstructionsBlock({
     genComment(fnInstruction.getDisplayName()),
     allocator.allocLabelInstruction('fn', fnInstruction.name),
     ...allocator.allocStackFrameInstructions(compileFnContent),
+    ...compileRetInstruction(),
   ];
 
   return {

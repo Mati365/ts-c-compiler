@@ -1,4 +1,9 @@
-import { IRInstruction, isIRMathInstruction } from '../../../instructions';
+import {
+  IRInstruction,
+  isIRLeaInstruction,
+  isIRMathInstruction,
+} from '../../../instructions';
+
 import { isOutputInstruction } from '../../../interfaces';
 import { isIRVariable } from '../../../variables';
 
@@ -56,7 +61,11 @@ export function dropInstructionsWithOrphanOutputs(
   }
 
   for (const { instruction, times } of Object.values(counters)) {
-    if (times <= 1 && isIRMathInstruction(instruction)) {
+    if (times > 1) {
+      continue;
+    }
+
+    if (isIRMathInstruction(instruction) || isIRLeaInstruction(instruction)) {
       newInstructions.splice(newInstructions.indexOf(instruction), 1);
     }
   }

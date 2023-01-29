@@ -2,8 +2,18 @@ import { CCompilerArch, CCompilerConfig } from '@compiler/pico-c/constants';
 import { isPointerLikeType } from '@compiler/pico-c/frontend/analyze';
 import { assertUnreachable } from '@compiler/core/utils';
 
+import {
+  IRInstructionVarArg,
+  IRVariable,
+  isIRVariable,
+} from '@compiler/pico-c/frontend/ir/variables';
+
+import {
+  CBackendError,
+  CBackendErrorCode,
+} from '@compiler/pico-c/backend/errors/CBackendError';
+
 import { genMemAddress } from '../asm-utils';
-import { IRVariable } from '@compiler/pico-c/frontend/ir/variables';
 
 export type X86StackVariable = {
   name: string;
@@ -51,6 +61,10 @@ export class X86StackFrame {
     const { arch } = this.config;
     const stackOffset = this.getStackVarOffset(name);
 
+    if (stackOffset + offset >= 0) {
+      throw new CBackendError(CBackendErrorCode.OFFSET_OVERFLOW, { name });
+    }
+
     switch (arch) {
       case CCompilerArch.X86_16:
         return genMemAddress({
@@ -63,13 +77,16 @@ export class X86StackFrame {
     }
   }
 
-  static getStackAllocVariableSize(variable: IRVariable) {
-    const { type, virtualArrayPtr } = variable;
+  static getStackAllocVariableSize(variable: IRInstructionVarArg) {
+    const { type } = variable;
 
     // IR variables are always pointers
     // IR variable that points to stack variable is also pointer
     // so alloc stack byte size should be ca
-    if (!virtualArrayPtr && isPointerLikeType(type)) {
+    if (
+      (!isIRVariable(variable) || !variable.virtualArrayPtr) &&
+      isPointerLikeType(type)
+    ) {
       return type.baseType.getByteSize();
     }
 

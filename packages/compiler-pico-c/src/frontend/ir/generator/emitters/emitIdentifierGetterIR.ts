@@ -47,7 +47,7 @@ type LvalueExpressionIREmitAttrs = IREmitterContextAttrs & {
   emitValueAtAddress?: boolean;
 };
 
-type LvalueExpressionIREmitResult = IREmitterExpressionVarResult & {
+export type LvalueExpressionIREmitResult = IREmitterExpressionVarResult & {
   rootIRVar: IRVariable;
 };
 

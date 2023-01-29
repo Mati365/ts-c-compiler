@@ -175,6 +175,14 @@ function parseMemExpression(
     addressDescription.signedByteSize = signedNumberByteSize(
       addressDescription.disp,
     );
+  } else if (
+    !addressDescription.reg2 &&
+    addressDescription.reg?.mnemonic === 'bp'
+  ) {
+    // special case for BP instruction specified in addressing mode table
+    addressDescription.disp = 0;
+    addressDescription.dispByteSize = 1;
+    addressDescription.signedByteSize = 1;
   } else {
     addressDescription.dispByteSize = 0;
     addressDescription.signedByteSize = 0;

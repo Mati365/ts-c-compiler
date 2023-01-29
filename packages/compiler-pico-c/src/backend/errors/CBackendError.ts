@@ -8,6 +8,8 @@ export enum CBackendErrorCode {
   UNABLE_TO_SPILL_REG = 'UNABLE_TO_SPILL_REG',
   MISSING_BR_INSTRUCTION = 'MISSING_BR_INSTRUCTION',
   INCORRECT_PHI_NODE = 'INCORRECT_PHI_NODE',
+  INVALID_STORE_ASSIGNMENT = 'INVALID_STORE_ASSIGNMENT',
+  OFFSET_OVERFLOW = 'ALLOC_OFFSET_OVERFLOW',
 }
 
 export const C_BACKEND_ERROR_TRANSLATIONS: Record<CBackendErrorCode, string> = {
@@ -22,6 +24,11 @@ export const C_BACKEND_ERROR_TRANSLATIONS: Record<CBackendErrorCode, string> = {
     'Unable to compile instruction!',
   ),
   [CBackendErrorCode.INCORRECT_PHI_NODE]: fixme('Incorrect phi node!'),
+  [CBackendErrorCode.OFFSET_OVERFLOW]:
+    'Offset overflows variable "%{name}" size!',
+  [CBackendErrorCode.INVALID_STORE_ASSIGNMENT]: fixme(
+    'Incorrect store assignment!',
+  ),
 };
 
 /**

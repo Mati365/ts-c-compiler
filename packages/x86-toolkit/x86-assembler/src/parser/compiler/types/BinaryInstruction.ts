@@ -51,6 +51,7 @@ export class BinaryInstruction extends BinaryBlob<ASTInstruction> {
       ast.numArgs[0],
       ast.segMemArgs[0],
     ];
+
     const sibByte = ast.getScale();
     let rmByte =
       rmArg &&

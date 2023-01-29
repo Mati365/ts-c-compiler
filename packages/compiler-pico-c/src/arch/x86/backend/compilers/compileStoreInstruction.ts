@@ -31,9 +31,6 @@ export function compileStoreInstruction({
   const { outputVar, value, offset } = instruction;
   const { stackFrame, regs } = allocator;
 
-  const itemByteSize = value.type.getByteSize();
-  const prefix = getByteSizeArgPrefixName(itemByteSize);
-
   let destAddr: string = null;
   const asm: string[] = [];
 
@@ -58,6 +55,8 @@ export function compileStoreInstruction({
   } else {
     // handle normal variable assign
     // a = 5;
+    const prefix = getByteSizeArgPrefixName(value.type.getByteSize());
+
     destAddr = [
       prefix.toLocaleLowerCase(),
       stackFrame.getLocalVarStackRelAddress(outputVar.name, offset),
