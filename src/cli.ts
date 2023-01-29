@@ -11,7 +11,6 @@ ccompiler(/* cpp */ `
   //   int a = letters[0] * 2;
   // }
 
-
   // todo: Optimize
   // add bx, 32                ; %t{3}: int*2B = %t{0}: int*2B plus %32: int2B
   // mov ax, [bx]              ; %t{4}: int2B = load %t{3}: int*2B
@@ -26,12 +25,16 @@ ccompiler(/* cpp */ `
   //   point[1].dupa[2]++;
   // }
 
-  void main() {
-  // struct Vec2 { int x, y; struct Rect { int s, w; } k; } vec = { .y = 5 };
-  //   vec.y = 7;
-  //   vec.k.w++;
-    char arr[] = { 1, 2, 3, 4 };
-    arr[1] = 2;
+  void strlen() {
+    const char* str = "Hello world!";
+
+    for (int i = 0;;++i) {
+      if (*(str + i) == '0') {
+        return i;
+      }
+    }
+
+    return -1;
   }
 `).match({
   ok: result => {
@@ -45,3 +48,10 @@ ccompiler(/* cpp */ `
     console.error(error);
   },
 });
+
+/**
+ * Optimize to AL:
+ *
+ * and ax, 0xff
+ * mov word [bp - 12], ax    ; *(b{0}: char*2B) = store %t{1}: int2B
+ */

@@ -46,11 +46,11 @@ export function compileLoadInstruction({
       });
     }
 
+    const regSize = archDescriptor.regs.integral.maxRegSize;
     const outputRegByteSize = outputVar.type.getByteSize();
-    const inputByteSize = inputVar.type.baseType.getByteSize();
 
     const reg = regs.requestReg({
-      size: archDescriptor.regs.integral.maxRegSize,
+      size: regSize,
     });
 
     regs.ownership.setOwnership(outputVar.name, { reg: reg.value });
@@ -63,7 +63,7 @@ export function compileLoadInstruction({
     );
 
     // truncate variable size, it happens when `int a = b;` where `b` is char
-    if (inputByteSize > outputRegByteSize) {
+    if (regSize > outputRegByteSize) {
       asm.push(
         genInstruction(
           'and',
