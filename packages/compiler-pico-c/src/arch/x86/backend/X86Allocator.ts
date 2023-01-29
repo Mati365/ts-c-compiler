@@ -1,10 +1,10 @@
 import { assertUnreachable } from '@compiler/core/utils';
 import { CCompilerArch, CCompilerConfig } from '@compiler/pico-c/constants';
+import { IRBlockIterator } from '@compiler/pico-c/frontend/ir/iterator/IRBlockIterator';
 
 import { X86StackFrame } from './X86StackFrame';
 import { X86BasicRegAllocator } from './reg-allocator';
 import { genInstruction, genLabel } from '../asm-utils';
-import { IRBlockIterator } from './iterators/IRBlockIterator';
 
 export class X86Allocator {
   private readonly labels: { [id: string]: string } = {};

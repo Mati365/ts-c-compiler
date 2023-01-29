@@ -1,6 +1,6 @@
 import { last } from 'ramda';
 
-// import { isOutputInstruction } from '@compiler/pico-c/frontend/ir/interfaces';
+import { isOutputInstruction } from '@compiler/pico-c/frontend/ir/interfaces';
 import { isIRBranchInstruction } from '@compiler/pico-c/frontend/ir/guards';
 import { isIRVariable } from '@compiler/pico-c/frontend/ir/variables';
 
@@ -45,12 +45,12 @@ export class X86VarLifetimeGraph {
         continue;
       }
 
-      // if (isOutputInstruction(instruction)) {
-      //   const { outputVar } = instruction;
-      //   if (outputVar) {
-      //     trackVariableUsage(offset, outputVar.name);
-      //   }
-      // }
+      if (isOutputInstruction(instruction)) {
+        const { outputVar } = instruction;
+        if (outputVar) {
+          trackVariableUsage(offset, outputVar.name);
+        }
+      }
 
       for (const inputArg of instruction.getArgs().input) {
         if (!isIRVariable(inputArg)) {

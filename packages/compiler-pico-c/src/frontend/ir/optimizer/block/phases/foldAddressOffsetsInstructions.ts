@@ -81,9 +81,6 @@ export function foldAddressOffsetsInstructions(instructions: IRInstruction[]) {
         instruction.offset + evalResult,
       );
 
-      newInstructions.splice(j, 1);
-      --i;
-
       // replace these t{1} vars after optimizing t{0}, t{1} is equal t{0}
       // %t{0}: int*2B = lea abc{0}: int[4]*2B
       // *(%t{0}: int*2B) = store %3: int2B

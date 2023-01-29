@@ -13,10 +13,7 @@ export function compileAllocInstruction({
     allocator: { stackFrame, regs },
   } = context;
 
-  const stackVar = stackFrame.allocLocalVariable(
-    outputVar.name,
-    outputVar.getStackAllocByteSize(),
-  );
-
-  regs.ownership.setOwnership(outputVar.name, { stackVar });
+  regs.ownership.setOwnership(outputVar.name, {
+    stackVar: stackFrame.allocLocalVariable(outputVar),
+  });
 }

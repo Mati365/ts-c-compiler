@@ -6,13 +6,7 @@ import { getIRTypeDisplayName } from '../dump/getIRTypeDisplayName';
 import { IsPrintable } from '@compiler/core/interfaces';
 import { Identity } from '@compiler/core/monads';
 import { PartialBy } from '@compiler/core/types';
-import {
-  CPointerType,
-  CType,
-  CVariable,
-  isArrayLikeType,
-  isPointerLikeType,
-} from '../../analyze';
+import { CPointerType, CType, CVariable } from '../../analyze';
 
 export function isIRVariable(obj: any): obj is IRVariable {
   return R.is(Object, obj) && obj.value && obj.value.prefix;
@@ -156,20 +150,6 @@ export class IRVariable
     return `${chalk.blueBright(name)}${
       withType ? getIRTypeDisplayName(type) : ''
     }`;
-  }
-
-  getStackAllocByteSize() {
-    const { type, virtualArrayPtr } = this;
-
-    if (
-      !virtualArrayPtr &&
-      isPointerLikeType(type) &&
-      isArrayLikeType(type.baseType)
-    ) {
-      return type.baseType.getByteSize();
-    }
-
-    return type.getByteSize();
   }
 
   isShallowEqual(variable: IRVariable) {

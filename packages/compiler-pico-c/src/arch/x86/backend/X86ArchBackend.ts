@@ -1,10 +1,10 @@
 import { IRScopeGeneratorResult } from '@compiler/pico-c/frontend/ir/generator';
 import { CAbstractArchBackend } from '@compiler/pico-c/backend/abstract/CAbstractArchBackend';
 import { CBackendCompilerResult } from '@compiler/pico-c/backend/constants/types';
+import { IRBlockIterator } from '@compiler/pico-c/frontend/ir/iterator/IRBlockIterator';
 
 import { X86Allocator } from './X86Allocator';
 import { compileDataSegment, compileInstructionsBlock } from './compilers';
-import { IRBlockIterator } from './iterators/IRBlockIterator';
 
 export class X86ArchBackend extends CAbstractArchBackend {
   compileIR({ segments }: IRScopeGeneratorResult): CBackendCompilerResult {

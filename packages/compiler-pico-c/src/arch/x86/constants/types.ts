@@ -1,5 +1,5 @@
 import type { IRInstruction } from '@compiler/pico-c/frontend/ir/instructions';
-import type { IRBlockIterator } from '../backend/iterators/IRBlockIterator';
+import type { IRBlockIterator } from '@compiler/pico-c/frontend/ir/iterator/IRBlockIterator';
 import type { X86Allocator } from '../backend/X86Allocator';
 
 export type BackendCompilerContext = {

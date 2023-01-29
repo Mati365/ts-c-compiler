@@ -103,6 +103,30 @@ describe('Assignment IR', () => {
       `);
     });
 
+    test('multiple array assignments have optimized lea instructions count', () => {
+      expect(/* cpp */ `
+        void main() {
+          int array[] = { 1, 2, 3 };
+          array[1] = 3;
+          array[2] = 4;
+          array[3] = 5;
+        }
+      `).toCompiledIRBeEqual(/* ruby */ `
+        # --- Block main ---
+        def main():
+          array{0}: int[3]*2B = alloca int[3]6B
+          *(array{0}: int[3]*2B) = store %1: int2B
+          *(array{0}: int[3]*2B + %2) = store %2: int2B
+          *(array{0}: int[3]*2B + %4) = store %3: int2B
+          %t{0}: int*2B = lea array{0}: int[3]*2B
+          *(%t{0}: int*2B + %2) = store %3: int2B
+          *(%t{0}: int*2B + %4) = store %4: int2B
+          *(%t{0}: int*2B + %6) = store %5: int2B
+          ret
+          end-def
+      `);
+    });
+
     test('assignment realocated array to pointer', () => {
       expect(/* cpp */ `
           void main() {
@@ -264,8 +288,7 @@ describe('Assignment IR', () => {
           *(testArray{0}: int[5]*2B + %6) = store %4: int2B
           *(testArray{0}: int[5]*2B + %8) = store %5: int2B
           %t{0}: int[5]*2B = lea testArray{0}: int[5]*2B
-          %t{5}: int[5]*2B = %t{0}: int[5]*2B plus %14: int2B
-          *(%t{5}: int[5]*2B) = store %4: int2B
+          *(%t{0}: int[5]*2B + %14) = store %4: int2B
           ret
           end-def
       `);
@@ -285,8 +308,7 @@ describe('Assignment IR', () => {
           *(testArray{0}: int[3]*2B + %2) = store %2: int2B
           *(testArray{0}: int[3]*2B + %4) = store %3: int2B
           %t{0}: int[3]*2B = lea testArray{0}: int[3]*2B
-          %t{5}: int[3]*2B = %t{0}: int[3]*2B plus %14: int2B
-          *(%t{5}: int[3]*2B) = store %4: int2B
+          *(%t{0}: int[3]*2B + %14) = store %4: int2B
           ret
           end-def
       `);
@@ -427,8 +449,7 @@ describe('Assignment IR', () => {
           vec{0}: struct Vec2*2B = alloca struct Vec24B
           *(vec{0}: struct Vec2*2B + %2) = store %5: int2B
           %t{0}: int*2B = lea vec{0}: struct Vec2*2B
-          %t{1}: int*2B = %t{0}: int*2B plus %2: int2B
-          *(%t{1}: int*2B) = store %7: int2B
+          *(%t{0}: int*2B + %2) = store %7: int2B
           ret
           end-def
       `);
@@ -443,14 +464,12 @@ describe('Assignment IR', () => {
         }
       `).toCompiledIRBeEqual(/* ruby */ `
         # --- Block main ---
-        def main():
+          def main():
           vec{0}: struct Vec2*2B = alloca struct Vec28B
           *(vec{0}: struct Vec2*2B + %2) = store %5: int2B
           %t{0}: int*2B = lea vec{0}: struct Vec2*2B
-          %t{1}: int*2B = %t{0}: int*2B plus %2: int2B
-          *(%t{1}: int*2B) = store %7: int2B
-          %t{4}: int*2B = %t{0}: int*2B plus %6: int2B
-          *(%t{4}: int*2B) = store %2: int2B
+          *(%t{0}: int*2B + %2) = store %7: int2B
+          *(%t{0}: int*2B + %6) = store %2: int2B
           ret
           end-def
       `);
