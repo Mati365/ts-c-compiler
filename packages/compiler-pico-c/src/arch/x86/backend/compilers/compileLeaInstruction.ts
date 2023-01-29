@@ -62,5 +62,6 @@ export function compileLeaInstruction({
     ];
   }
 
+  return ['; asdsad' + instruction.getDisplayName()];
   throw new CBackendError(CBackendErrorCode.UNABLE_TO_COMPILE_INSTRUCTION);
 }

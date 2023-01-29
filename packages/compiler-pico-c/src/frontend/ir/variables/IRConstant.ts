@@ -47,8 +47,6 @@ export class IRConstant
   getDisplayName(): string {
     const { constant, type } = this.value;
 
-    return `${chalk.greenBright(
-      `0x${constant.toString(16)}`,
-    )}${getIRTypeDisplayName(type)}`;
+    return `%${chalk.greenBright(constant)}${getIRTypeDisplayName(type)}`;
   }
 }

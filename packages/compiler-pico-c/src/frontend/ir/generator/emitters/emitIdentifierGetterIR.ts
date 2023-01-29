@@ -318,7 +318,9 @@ export function emitIdentifierGetterIR({
 
   if (emitValueAtAddress && lastIRVar && isPointerLikeType(lastIRVar.type)) {
     const outputVar = allocator.allocTmpVariable(lastIRVar.type.baseType);
-    instructions.push(new IRLoadInstruction(lastIRVar, outputVar));
+    instructions.push(
+      new IRLoadInstruction(lastIRVar, outputVar.ofType(node.type!)),
+    );
 
     return {
       output: outputVar,

@@ -15,7 +15,7 @@ const CCOMPILER_ARCH_BACKENDS: Record<
   CCompilerArch,
   CAbstractBackendConstructor
 > = {
-  [CCompilerArch.X86_16]: X86ArchBackend,
+  [X86ArchBackend.arch]: X86ArchBackend,
 };
 
 export function genASMIRCode(

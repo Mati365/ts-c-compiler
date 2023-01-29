@@ -1,9 +1,14 @@
-import { CPrimitiveType } from '@compiler/pico-c/frontend/analyze';
+import {
+  CPointerType,
+  CPrimitiveType,
+} from '@compiler/pico-c/frontend/analyze';
+
 import {
   IRInstruction,
   IRStoreInstruction,
   isIRStoreInstruction,
 } from '../../../instructions';
+
 import { IRConstant, isIRConstant } from '../../../variables';
 
 /**
@@ -55,12 +60,16 @@ export function concatConstantStoreInstruction(instructions: IRInstruction[]) {
         (instruction.value.constant & 0xff) |
         ((nextInstruction.value.constant & 0xff) << 0x8);
 
+      const extendedPtrType = CPointerType.ofType(
+        CPrimitiveType.address(instruction.outputVar.type.arch),
+      );
+
       newInstructions[i] = new IRStoreInstruction(
         IRConstant.ofConstant(
           CPrimitiveType.int(instruction.value.type.arch),
           wordValue,
         ),
-        instruction.outputVar,
+        instruction.outputVar.ofType(extendedPtrType),
         instruction.offset,
       );
 

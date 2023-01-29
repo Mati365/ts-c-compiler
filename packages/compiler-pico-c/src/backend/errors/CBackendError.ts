@@ -10,6 +10,7 @@ export enum CBackendErrorCode {
   INCORRECT_PHI_NODE = 'INCORRECT_PHI_NODE',
   INVALID_STORE_ASSIGNMENT = 'INVALID_STORE_ASSIGNMENT',
   OFFSET_OVERFLOW = 'ALLOC_OFFSET_OVERFLOW',
+  EXPECTED_IR_PTR_BUT_RECEIVE = 'EXPECTED_IR_PTR_BUT_RECEIVE',
 }
 
 export const C_BACKEND_ERROR_TRANSLATIONS: Record<CBackendErrorCode, string> = {
@@ -25,9 +26,12 @@ export const C_BACKEND_ERROR_TRANSLATIONS: Record<CBackendErrorCode, string> = {
   ),
   [CBackendErrorCode.INCORRECT_PHI_NODE]: fixme('Incorrect phi node!'),
   [CBackendErrorCode.OFFSET_OVERFLOW]:
-    'Offset overflows variable "%{name}" size!',
+    'Stack offset overflows variable "%{name}" size! Possible stack corruption!',
   [CBackendErrorCode.INVALID_STORE_ASSIGNMENT]: fixme(
     'Incorrect store assignment!',
+  ),
+  [CBackendErrorCode.EXPECTED_IR_PTR_BUT_RECEIVE]: fixme(
+    'Expected IR pointer but received: "%{type}"!',
   ),
 };
 

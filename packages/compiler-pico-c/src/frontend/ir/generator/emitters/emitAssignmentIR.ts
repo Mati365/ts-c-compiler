@@ -1,4 +1,3 @@
-import { isPointerLikeType } from '@compiler/pico-c/frontend/analyze';
 import { ASTCAssignmentExpression } from '@compiler/pico-c/frontend/parser';
 import {
   CAssignOperator,
@@ -19,29 +18,8 @@ import {
   IREmitterExpressionResult,
 } from './types';
 
-import {
-  emitIdentifierGetterIR,
-  LvalueExpressionIREmitResult,
-} from './emitIdentifierGetterIR';
+import { emitIdentifierGetterIR } from './emitIdentifierGetterIR';
 import { emitExpressionIR } from './emit-expr';
-
-const castAssignSides = (
-  lvalue: LvalueExpressionIREmitResult,
-  rvalue: IREmitterExpressionResult,
-) => {
-  const lType = lvalue.output.type;
-  const rType = rvalue.output.type;
-
-  if (!isPointerLikeType(lType)) {
-    return;
-  }
-
-  console.info(lType.getDisplayName(), rType.getDisplayName(), rvalue);
-
-  if (lType.baseType) {
-    console.info(lType.getByteSize(), rvalue);
-  }
-};
 
 export type AssignmentIREmitAttrs = IREmitterContextAttrs & {
   node: ASTCAssignmentExpression;
@@ -75,8 +53,6 @@ export function emitAssignmentIR({
   // char letters[] = "Hello world";
   // letters[0] = 1;
   // in this case there should be auto cast `1` value to char
-  castAssignSides(lvalue, rvalue);
-
   appendStmtResults(lvalue, result);
   appendStmtResults(rvalue, result);
 

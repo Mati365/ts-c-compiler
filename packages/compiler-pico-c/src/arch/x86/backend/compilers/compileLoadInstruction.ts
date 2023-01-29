@@ -4,6 +4,7 @@ import {
   CBackendErrorCode,
 } from '@compiler/pico-c/backend/errors/CBackendError';
 
+import { BINARY_MASKS } from '@compiler/core/constants';
 import { X86_ADDRESSING_REGS } from '../../constants/regs';
 
 import { isIRVariable } from '@compiler/pico-c/frontend/ir/variables';
@@ -22,6 +23,7 @@ export function compileLoadInstruction({
 }: LoadInstructionCompilerAttrs): string[] {
   const { inputVar, outputVar } = instruction;
   const {
+    archDescriptor,
     allocator: { regs, stackFrame },
   } = context;
 
@@ -38,8 +40,17 @@ export function compileLoadInstruction({
       allowedRegs: X86_ADDRESSING_REGS,
     });
 
+    if (!isPointerLikeType(inputVar.type)) {
+      throw new CBackendError(CBackendErrorCode.EXPECTED_IR_PTR_BUT_RECEIVE, {
+        type: inputVar.type.getDisplayName(),
+      });
+    }
+
+    const outputRegByteSize = outputVar.type.getByteSize();
+    const inputByteSize = inputVar.type.baseType.getByteSize();
+
     const reg = regs.requestReg({
-      size: inputVar.type.getByteSize(),
+      size: archDescriptor.regs.integral.maxRegSize,
     });
 
     regs.ownership.setOwnership(outputVar.name, { reg: reg.value });
@@ -50,6 +61,17 @@ export function compileLoadInstruction({
         instruction.getDisplayName(),
       ),
     );
+
+    // truncate variable size, it happens when `int a = b;` where `b` is char
+    if (inputByteSize > outputRegByteSize) {
+      asm.push(
+        genInstruction(
+          'and',
+          reg.value,
+          `0x${BINARY_MASKS[outputRegByteSize].toString(16)}`,
+        ),
+      );
+    }
   } else {
     if (
       isPointerLikeType(inputVar.type) &&
