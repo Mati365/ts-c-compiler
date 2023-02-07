@@ -1,5 +1,6 @@
 import { CCompilerArch } from '@compiler/pico-c/constants';
 import { X86IntBitsMode, X86RegName } from '@x86-toolkit/assembler';
+import { COMPILER_REGISTERS_SET } from '@x86-toolkit/assembler/constants';
 import {
   X87StackRegName,
   X87_STACK_REGISTERS,
@@ -93,5 +94,9 @@ export const createX86RegsMap = (): Record<CCompilerArch, RegsMap> => ({
   },
 });
 
+export const X86_REGISTERS_SET = COMPILER_REGISTERS_SET;
 export const X86_ADDRESSING_REGS: X86RegName[] = ['bx', 'si', 'di'];
 export const X86_GENERAL_REGS: X86RegName[] = ['ax', 'cx', 'dx', 'bx'];
+
+export const getX86RegByteSize = (reg: X86RegName) =>
+  X86_REGISTERS_SET[reg].byteSize;

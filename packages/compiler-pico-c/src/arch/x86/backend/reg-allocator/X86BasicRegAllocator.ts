@@ -24,18 +24,17 @@ import { X86Allocator } from '../X86Allocator';
 import { X86RegOwnershipTracker } from './X86RegOwnershipTracker';
 import { isRegOwnership, isStackVarOwnership } from './utils';
 
-import { X86_GENERAL_REGS } from '../../constants/regs';
-
-export type IRRegReqResult = {
-  asm: string[];
-  value: X86RegName;
-};
+import { X86_GENERAL_REGS, getX86RegByteSize } from '../../constants/regs';
+import { BINARY_MASKS } from '@compiler/core/constants';
 
 export type IRArgAllocatorResult<V extends string | number = string | number> =
   {
     asm: string[];
+    size: number;
     value: V;
   };
+
+export type IRRegReqResult = IRArgAllocatorResult<X86RegName>;
 
 type IRArgAllocatorTypedResult<
   T extends IRArgDynamicResolverType,
@@ -57,14 +56,21 @@ export type IRDynamicArgAllocatorResult =
 
 export type IRArgDynamicResolverAttrs = {
   arg: IRInstructionVarArg;
+  size?: number;
   allow?: IRArgDynamicResolverType;
 };
 
 export type IRArgRegResolverAttrs = {
   arg: IRInstructionVarArg;
+  size?: number;
   allocIfNotFound?: boolean;
   allowedRegs?: X86RegName[];
 };
+
+const ALLOW_ALL_ARG_RESOLVER_METHODS =
+  IRArgDynamicResolverType.REG |
+  IRArgDynamicResolverType.MEM |
+  IRArgDynamicResolverType.NUMBER;
 
 export class X86BasicRegAllocator {
   readonly ownership: X86RegOwnershipTracker;
@@ -83,10 +89,15 @@ export class X86BasicRegAllocator {
 
   tryResolveIRArgAsReg({
     arg,
+    size = arg.type.getByteSize(),
     allowedRegs,
     allocIfNotFound,
   }: IRArgRegResolverAttrs): IRArgAllocatorResult<X86RegName> {
     const { stackFrame, ownership } = this;
+
+    if (size < arg.type.getByteSize()) {
+      throw new CBackendError(CBackendErrorCode.VALUE_IS_BIGGER_THAN_REG);
+    }
 
     if (!arg.type.isScalar()) {
       throw new CBackendError(CBackendErrorCode.REG_ALLOCATOR_ERROR);
@@ -94,15 +105,16 @@ export class X86BasicRegAllocator {
 
     if (isIRConstant(arg)) {
       const { asm, value } = this.requestReg({
-        size: arg.type.getByteSize(),
+        size,
       });
 
-      const prefix = getByteSizeArgPrefixName(arg.type.getByteSize());
+      const prefix = getByteSizeArgPrefixName(size);
       asm.push(genInstruction('mov', value, `${prefix} ${arg.constant}`));
 
       return {
         value,
         asm,
+        size,
       };
     }
 
@@ -115,27 +127,27 @@ export class X86BasicRegAllocator {
         // other example: abc[2]++;
         if (allowedRegs && !allowedRegs.includes(varOwnership.reg)) {
           const regResult = this.requestReg({
-            size: arg.type.getByteSize(),
+            size,
             allowedRegs,
           });
 
-          const result = {
+          ownership.setOwnership(arg.name, {
+            reg: regResult.value,
+          });
+
+          return {
+            size,
             value: regResult.value,
             asm: [
               genInstruction('mov', regResult.value, varOwnership.reg),
               ...regResult.asm,
             ],
           };
-
-          ownership.setOwnership(arg.name, {
-            reg: regResult.value,
-          });
-
-          return result;
         }
 
         return {
           value: varOwnership.reg,
+          size,
           asm: [],
         };
       }
@@ -146,11 +158,12 @@ export class X86BasicRegAllocator {
         );
 
         const regResult = this.requestReg({
-          size: arg.type.getByteSize(),
+          size,
           allowedRegs,
         });
 
         const result = {
+          size,
           value: regResult.value,
           asm: [
             genInstruction('mov', regResult.value, stackAddr),
@@ -169,7 +182,7 @@ export class X86BasicRegAllocator {
     if (allocIfNotFound) {
       const result = this.requestReg({
         allowedRegs,
-        size: arg.type.getByteSize(),
+        size,
       });
 
       ownership.setOwnership(arg.name, {
@@ -182,7 +195,10 @@ export class X86BasicRegAllocator {
     return null;
   }
 
-  tryResolveIRArgAsAddr(arg: IRVariable): IRArgAllocatorResult<string> {
+  tryResolveIRArgAsAddr(
+    arg: IRVariable,
+    prefixSize: number = arg.type.getByteSize(),
+  ): IRArgAllocatorResult<string> {
     const varOwnership = this.ownership.getVarOwnership(arg.name);
     if (!isStackVarOwnership(varOwnership)) {
       return null;
@@ -192,25 +208,28 @@ export class X86BasicRegAllocator {
       varOwnership.stackVar.name,
     );
 
-    const prefix = getByteSizeArgPrefixName(arg.type.getByteSize());
+    const prefix = getByteSizeArgPrefixName(prefixSize);
 
     return {
       asm: [],
+      size: prefixSize,
       value: `${prefix} ${stackAddr}`,
     };
   }
 
   tryResolveIrArg({
     arg,
-    allow = IRArgDynamicResolverType.REG |
-      IRArgDynamicResolverType.MEM |
-      IRArgDynamicResolverType.NUMBER,
+    size = arg.type.getByteSize(),
+    allow = ALLOW_ALL_ARG_RESOLVER_METHODS,
   }: IRArgDynamicResolverAttrs): IRDynamicArgAllocatorResult {
+    const argSize = arg.type.getByteSize();
+
     if (hasFlag(IRArgDynamicResolverType.NUMBER, allow) && isIRConstant(arg)) {
       return {
         type: IRArgDynamicResolverType.NUMBER,
         value: arg.constant,
         asm: [],
+        size,
       };
     }
 
@@ -222,11 +241,37 @@ export class X86BasicRegAllocator {
           type: IRArgDynamicResolverType.REG,
           value: ownership[arg.name].reg,
           asm: [],
+          size,
         };
       }
 
       if (hasFlag(IRArgDynamicResolverType.MEM, allow)) {
         const result = this.tryResolveIRArgAsAddr(arg);
+
+        // handle case when we want to resolve address but receive it as word
+        // example: %t{3}: char1B = %t{1}: int2B plus %t{2}: char1B
+        // %t{2} should return word
+        if (hasFlag(IRArgDynamicResolverType.REG, allow) && size > argSize) {
+          const extendedResult = this.tryResolveIRArgAsAddr(arg, size);
+          const outputReg = this.requestReg({
+            size,
+          });
+
+          return {
+            type: IRArgDynamicResolverType.REG,
+            value: outputReg.value,
+            asm: [
+              ...extendedResult.asm,
+              genInstruction('mov', outputReg.value, extendedResult.value),
+              genInstruction(
+                'and',
+                outputReg.value,
+                `0x${BINARY_MASKS[argSize].toString(16)}`,
+              ),
+            ],
+            size,
+          };
+        }
 
         if (result) {
           return {
@@ -291,7 +336,8 @@ export class X86BasicRegAllocator {
 
     return {
       asm: [],
-      value: result.reg,
-    } as IRRegReqResult;
+      size: getX86RegByteSize(result.reg as X86RegName),
+      value: result.reg as X86RegName,
+    };
   }
 }

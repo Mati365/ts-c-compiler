@@ -68,6 +68,7 @@ export function reduceRegSchemaStore<T>(regs: T[]): { [name: string]: T } {
  * Reduce registers to object with [regName]: Register
  */
 const Reg = RegisterSchema;
+
 export const COMPILER_REGISTERS_SET: RegSchemaStore = reduceRegSchemaStore([
   // X86
   new Reg('al', 0x0, 0x1),

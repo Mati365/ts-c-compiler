@@ -34,6 +34,7 @@ import {
 } from '@compiler/pico-c/frontend/parser';
 
 import { GroupTreeVisitor } from '@compiler/grammar/tree/TreeGroupedVisitor';
+import { getBiggerIRArg } from '../../../utils';
 import {
   appendStmtResults,
   createBlankExprResult,
@@ -408,7 +409,7 @@ export function emitExpressionIR({
         // handle math instruction such like this: 2 * a
         let [a, b] = [argsVarsStack.pop(), argsVarsStack.pop()];
         let output: IRVariable = null;
-        let defaultOutputType = a.type;
+        let defaultOutputType = getBiggerIRArg(a, b).type;
 
         if (
           !isPointerArithmeticType(b.type) &&

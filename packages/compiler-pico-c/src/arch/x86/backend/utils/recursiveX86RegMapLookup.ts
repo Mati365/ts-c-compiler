@@ -1,29 +1,18 @@
 import { X86RegName } from '@x86-toolkit/assembler/index';
 import { X86IntRegTree } from '../../constants/regs';
 
-type X86RegBySizeLookup = {
-  size: number;
-};
-
-type X86SpecificRegLookup = {
-  allowedRegs: X86RegName[];
-};
-
-export type X86RegLookupQuery = (X86RegBySizeLookup | X86SpecificRegLookup) & {
+export type X86RegLookupQuery = {
+  allowedRegs?: X86RegName[];
+  size?: number;
   withUnavailable?: boolean;
 };
-
-export const isX86RegLookup = (
-  query: X86RegLookupQuery,
-): query is X86SpecificRegLookup =>
-  'allowedRegs' in query && !!query.allowedRegs;
 
 export function recursiveX86RegMapLookup(
   query: X86RegLookupQuery,
   list: X86IntRegTree[],
 ): X86IntRegTree[] {
-  const hasSize = 'size' in query;
-  const hasReg = isX86RegLookup(query);
+  const hasSize = 'size' in query && !!query.size;
+  const hasReg = 'allowedRegs' in query && !!query.allowedRegs;
 
   for (const tree of list) {
     if (

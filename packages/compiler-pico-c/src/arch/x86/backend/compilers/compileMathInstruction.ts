@@ -34,6 +34,7 @@ export function compileMathInstruction({
       });
 
       const rightAllocResult = regs.tryResolveIrArg({
+        size: leftVar.type.getByteSize(),
         arg: rightVar,
       });
 

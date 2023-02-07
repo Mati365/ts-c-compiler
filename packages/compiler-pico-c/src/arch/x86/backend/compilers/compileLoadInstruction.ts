@@ -63,6 +63,7 @@ export function compileLoadInstruction({
     );
 
     // truncate variable size, it happens when `int a = b;` where `b` is char
+    // todo: check if is even needed, X86BasicRegAllocator perform reg casts automatically
     if (regSize > outputRegByteSize) {
       asm.push(
         genInstruction(
