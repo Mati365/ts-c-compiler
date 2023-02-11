@@ -209,6 +209,15 @@ export class ASTInstruction extends KindASTAsmNode(ASTNodeKind.INSTRUCTION) {
   }
 
   /**
+   * Check if instruction truncates its value in destination
+   */
+  isMovExtendInstruction() {
+    const { opcode } = this;
+
+    return opcode === 'movsx' || opcode === 'movzx';
+  }
+
+  /**
    * Used for matching instruction in jump labels
    */
   getPredictedBinarySchemaSize(schema: ASTInstructionSchema = this.schemas[0]) {
@@ -321,7 +330,7 @@ export class ASTInstruction extends KindASTAsmNode(ASTNodeKind.INSTRUCTION) {
     // regenerate schema args
     const { branchAddressingType, jumpInstruction, argsTokens } = this;
     const [overridenBranchAddressingType, newArgs] =
-      ASTInstruction.parseInstructionArgsTokens(
+      this.parseInstructionArgsTokens(
         branchAddressingType,
         argsTokens,
         jumpInstruction ? InstructionArgSize.WORD : null,
@@ -357,11 +366,13 @@ export class ASTInstruction extends KindASTAsmNode(ASTNodeKind.INSTRUCTION) {
    * @see
    *  BranchAddressingType might be overriden so return both values!
    */
-  static parseInstructionArgsTokens(
+  parseInstructionArgsTokens(
     branchAddressingType: BranchAddressingType,
     tokens: Token[],
     defaultMemArgByteSize: number = null,
   ): [BranchAddressingType, ASTInstructionArg<any>[]] {
+    const hasSignExtendArg = this.isMovExtendInstruction();
+
     let byteSizeOverride: number = null;
     let maxArgSize: number = null;
     let branchSizeOverride: number = branchAddressingType
@@ -371,11 +382,11 @@ export class ASTInstruction extends KindASTAsmNode(ASTNodeKind.INSTRUCTION) {
     /**
      * Checks size of number, applies override and throw if error
      */
-    function parseNumberArg(
+    const parseNumberArg = (
       token: Token,
       number: number,
       byteSize: number,
-    ): ASTInstructionNumberArg {
+    ): ASTInstructionNumberArg => {
       // if no - number
       if (!R.isNil(byteSizeOverride) && byteSizeOverride < byteSize) {
         throw new ParserError(
@@ -406,16 +417,16 @@ export class ASTInstruction extends KindASTAsmNode(ASTNodeKind.INSTRUCTION) {
         InstructionArgType.NUMBER,
         assignedLabel,
       );
-    }
+    };
 
     /**
      * Consumes token and product instruction arg
      */
-    function parseToken(
+    const parseToken = (
       prevArgs: ASTInstructionArg[],
       token: Token,
       iterator: TokensIterator,
-    ): ASTInstructionArg<any> {
+    ): ASTInstructionArg<any> => {
       const nextToken = iterator.fetchRelativeToken(1, false);
       const destinationArg = !prevArgs.length;
 
@@ -529,6 +540,12 @@ export class ASTInstruction extends KindASTAsmNode(ASTNodeKind.INSTRUCTION) {
 
                 if (prevRegArg?.byteSize) {
                   memSize = prevRegArg.byteSize;
+
+                  // edge case: movsx, movzx truncate byte size so
+                  // mem size should be one byte smaller
+                  if (memSize > 1 && hasSignExtendArg) {
+                    memSize--;
+                  }
                 } else {
                   throw new ParserError(
                     ParserErrorCode.MISSING_MEM_OPERAND_SIZE,
@@ -562,7 +579,7 @@ export class ASTInstruction extends KindASTAsmNode(ASTNodeKind.INSTRUCTION) {
           operand: token.text,
         },
       );
-    }
+    };
 
     // a bit faster than transduce
     const argsTokensIterator = new TokensIterator(tokens);
@@ -632,38 +649,43 @@ export class ASTInstruction extends KindASTAsmNode(ASTNodeKind.INSTRUCTION) {
       );
     }
 
-    // add missing branch sizes for memory args
-    // mov [0x0], word 0x7C
-    // argument [0x0] initially has 1B of target size
-    // but after word override should be 2 byte
-    R.forEach(arg => {
-      if (arg.type !== InstructionArgType.MEMORY) {
-        return;
-      }
+    // extending memory size in movsx, movzx should not be performed
+    // in that instructions args used to be in different size
+    // for example first arg AX and second byte address
+    if (!hasSignExtendArg) {
+      // add missing branch sizes for memory args
+      // mov [0x0], word 0x7C
+      // argument [0x0] initially has 1B of target size
+      // but after word override should be 2 byte
+      for (const arg of acc) {
+        if (arg.type !== InstructionArgType.MEMORY) {
+          return;
+        }
 
-      // handle mov ax, byte [ds:0xe620]
-      // size must be equal for mem param
-      if (maxArgSize && byteSizeOverride && byteSizeOverride !== maxArgSize) {
-        throw new ParserError(
-          ParserErrorCode.OPERAND_SIZES_MISMATCH,
-          tokens[0].loc,
-        );
-      }
+        // handle mov ax, byte [ds:0xe620]
+        // size must be equal for mem param
+        if (maxArgSize && byteSizeOverride && byteSizeOverride !== maxArgSize) {
+          throw new ParserError(
+            ParserErrorCode.OPERAND_SIZES_MISMATCH,
+            tokens[0].loc,
+          );
+        }
 
-      if (byteSizeOverride) {
-        arg.byteSize = byteSizeOverride;
-      } else if (maxArgSize) {
-        arg.byteSize = maxArgSize;
-      } else {
-        throw new ParserError(
-          ParserErrorCode.MEM_OPERAND_SIZE_NOT_SPECIFIED,
-          tokens[0].loc,
-          {
-            operand: arg.toString(),
-          },
-        );
+        if (byteSizeOverride) {
+          arg.byteSize = byteSizeOverride;
+        } else if (maxArgSize) {
+          arg.byteSize = maxArgSize;
+        } else {
+          throw new ParserError(
+            ParserErrorCode.MEM_OPERAND_SIZE_NOT_SPECIFIED,
+            tokens[0].loc,
+            {
+              operand: arg.toString(),
+            },
+          );
+        }
       }
-    }, acc);
+    }
 
     return [branchAddressingType, acc];
   }

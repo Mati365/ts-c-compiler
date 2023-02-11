@@ -225,7 +225,7 @@ export function findMatchingInstructionSchemas(
   }
 
   const targetCheck = R.isNil(targetCPU);
-  const schemas = R.filter(schema => {
+  const schemas = opcodeSchemas.filter(schema => {
     const { argsSchema: matchers, minArgsCount } = schema;
 
     if (minArgsCount > args.length) {
@@ -247,7 +247,7 @@ export function findMatchingInstructionSchemas(
     }
 
     return true;
-  }, opcodeSchemas);
+  });
 
-  return R.sort((a, b) => a.byteSize - b.byteSize, schemas);
+  return schemas.sort((a, b) => a.byteSize - b.byteSize);
 }
