@@ -34,7 +34,7 @@ export class ASTCPrimaryExpressionTypeCreator extends ASTCTypeCreator<ASTCPrimar
           break;
 
         case TokenType.NUMBER:
-          type = typeofValueOrNode(arch, node.constant.text);
+          type = typeofValueOrNode(arch, node.constant.value.number);
           break;
 
         default:

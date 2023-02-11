@@ -137,9 +137,14 @@ export class CPrimitiveType extends CType<CPrimitiveTypeDescriptor> {
 
     // INT / CHAR
     if (Number.isInteger(value)) {
-      const intType = CPrimitiveType.int(arch);
+      const charType = CPrimitiveType.char(arch);
       const byteSize = numberByteSize(value);
 
+      if (charType.getByteSize() === byteSize) {
+        return charType;
+      }
+
+      const intType = CPrimitiveType.int(arch);
       if (intType.getByteSize() < byteSize) {
         return null;
       }
