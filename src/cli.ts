@@ -32,11 +32,21 @@ ccompiler(/* cpp */ `
 
   void strlen() {
     // todo: FIX!
-    // add ax, byte [bp - 5]     ; %t{4}: char1B = %t{2}: int2B plus %t{3}: char1B
-    // mov byte [bp - 7], ax     ; *(c{1}: int*2B) = store %t{4}: char1B
-    char b = 'b';
-    char c = 'c';
-    char d = b + c;
+    char* ptr = 2;
+    *(ptr) = 4;
+
+    // wrong mov istruction
+    int k = 5;
+    *(ptr) = k;
+
+    int addr = 0x8000;
+    *(addr) = 3;
+    *(addr) = 3;
+    *(addr) = 3;
+    *(addr) = 3;
+    *(addr) = 3;
+    *(addr) = 3;
+
     return -1;
   }
 `).match({
