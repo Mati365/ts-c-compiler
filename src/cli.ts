@@ -31,21 +31,12 @@ ccompiler(/* cpp */ `
   // }
 
   void strlen() {
-    // todo: FIX!
-    char* ptr = 2;
-    *(ptr) = 4;
+    char b = 's';
+    int a = (int) b + 3 + (int) b;
 
-    // wrong mov istruction
-    int k = 5;
-    *(ptr) = k;
-
-    int addr = 0x8000;
-    *(addr) = 3;
-    *(addr) = 3;
-    *(addr) = 3;
-    *(addr) = 3;
-    *(addr) = 3;
-    *(addr) = 3;
+    // char b = 'b';
+    // int c = 4;
+    // c = c + 5 + (int) b;
 
     return -1;
   }

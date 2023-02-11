@@ -24,8 +24,8 @@ import { X86Allocator } from '../X86Allocator';
 import { X86RegOwnershipTracker } from './X86RegOwnershipTracker';
 import { isRegOwnership, isStackVarOwnership } from './utils';
 
-import { X86_GENERAL_REGS, getX86RegByteSize } from '../../constants/regs';
 import { BINARY_MASKS } from '@compiler/core/constants';
+import { X86_GENERAL_REGS, getX86RegByteSize } from '../../constants/regs';
 
 export type IRArgAllocatorResult<V extends string | number = string | number> =
   {
@@ -94,6 +94,7 @@ export class X86BasicRegAllocator {
     allocIfNotFound,
   }: IRArgRegResolverAttrs): IRArgAllocatorResult<X86RegName> {
     const { stackFrame, ownership } = this;
+    const argSmallerThanRequestedSize = arg.type.getByteSize() < size;
 
     if (size < arg.type.getByteSize()) {
       throw new CBackendError(CBackendErrorCode.VALUE_IS_BIGGER_THAN_REG);
@@ -122,10 +123,18 @@ export class X86BasicRegAllocator {
       const varOwnership = ownership.getVarOwnership(arg.name);
 
       if (isRegOwnership(varOwnership)) {
-        // often called when we request `bx` register for specific variable that we have previously loaded
-        // example: int* c = &j; int** ks = &c; **ks = 7;
-        // other example: abc[2]++;
-        if (allowedRegs && !allowedRegs.includes(varOwnership.reg)) {
+        // 1. Case:
+        //  handle case: int a = (int) b + 3; where `b: char` is being loaded into bigger reg
+        //
+        // 2. Case:
+        //  often called when we request `bx` register for specific variable that we have previously loaded
+        //  example: int* c = &j; int** ks = &c; **ks = 7;
+        //  other example: abc[2]++;
+
+        if (
+          (allowedRegs && !allowedRegs.includes(varOwnership.reg)) ||
+          argSmallerThanRequestedSize
+        ) {
           const regResult = this.requestReg({
             size,
             allowedRegs,
@@ -135,14 +144,26 @@ export class X86BasicRegAllocator {
             reg: regResult.value,
           });
 
-          return {
+          const result = {
             size,
             value: regResult.value,
             asm: [
-              genInstruction('mov', regResult.value, varOwnership.reg),
               ...regResult.asm,
+              genInstruction('mov', regResult.value, varOwnership.reg),
             ],
           };
+
+          if (argSmallerThanRequestedSize) {
+            result.asm.push(
+              genInstruction(
+                'and',
+                result.value,
+                `0x${BINARY_MASKS[arg.type.getByteSize()].toString(16)}`,
+              ),
+            );
+          }
+
+          return result;
         }
 
         return {
@@ -166,10 +187,21 @@ export class X86BasicRegAllocator {
           size,
           value: regResult.value,
           asm: [
-            genInstruction('mov', regResult.value, stackAddr),
             ...regResult.asm,
+            genInstruction('mov', regResult.value, stackAddr),
           ],
         };
+
+        // handle case: int a = (int) b + 3; where `b: char` is being loaded into bigger reg
+        if (argSmallerThanRequestedSize) {
+          result.asm.push(
+            genInstruction(
+              'and',
+              result.value,
+              `0x${BINARY_MASKS[arg.type.getByteSize()].toString(16)}`,
+            ),
+          );
+        }
 
         ownership.setOwnership(arg.name, {
           reg: result.value,

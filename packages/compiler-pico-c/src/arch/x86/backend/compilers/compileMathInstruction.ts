@@ -7,6 +7,7 @@ import {
 } from '@compiler/pico-c/backend/errors/CBackendError';
 
 import { isIRVariable } from '@compiler/pico-c/frontend/ir/variables';
+import { getBiggerIRArg } from '@compiler/pico-c/frontend/ir/utils';
 
 import { IRArgDynamicResolverType } from '../reg-allocator';
 import { CompilerInstructionFnAttrs } from '../../constants/types';
@@ -29,12 +30,14 @@ export function compileMathInstruction({
     case TokenType.MUL:
     case TokenType.PLUS:
     case TokenType.MINUS: {
+      const biggerArg = getBiggerIRArg(leftVar, rightVar);
       const leftAllocResult = regs.tryResolveIRArgAsReg({
+        size: biggerArg.type.getByteSize(),
         arg: leftVar,
       });
 
       const rightAllocResult = regs.tryResolveIrArg({
-        size: leftVar.type.getByteSize(),
+        size: biggerArg.type.getByteSize(),
         arg: rightVar,
       });
 

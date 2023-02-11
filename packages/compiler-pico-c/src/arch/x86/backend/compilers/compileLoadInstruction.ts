@@ -4,7 +4,6 @@ import {
   CBackendErrorCode,
 } from '@compiler/pico-c/backend/errors/CBackendError';
 
-import { BINARY_MASKS } from '@compiler/core/constants';
 import { X86_ADDRESSING_REGS } from '../../constants/regs';
 
 import { isIRVariable } from '@compiler/pico-c/frontend/ir/variables';
@@ -47,32 +46,19 @@ export function compileLoadInstruction({
     }
 
     const regSize = archDescriptor.regs.integral.maxRegSize;
-    const outputRegByteSize = outputVar.type.getByteSize();
-
     const reg = regs.requestReg({
       size: regSize,
     });
 
     regs.ownership.setOwnership(outputVar.name, { reg: reg.value });
     asm.push(
+      ...reg.asm,
       ...input.asm,
       withInlineComment(
         genInstruction('mov', reg.value, `[${input.value}]`),
         instruction.getDisplayName(),
       ),
     );
-
-    // truncate variable size, it happens when `int a = b;` where `b` is char
-    // todo: check if is even needed, X86BasicRegAllocator perform reg casts automatically
-    if (regSize > outputRegByteSize) {
-      asm.push(
-        genInstruction(
-          'and',
-          reg.value,
-          `0x${BINARY_MASKS[outputRegByteSize].toString(16)}`,
-        ),
-      );
-    }
   } else {
     if (
       isPointerLikeType(inputVar.type) &&
