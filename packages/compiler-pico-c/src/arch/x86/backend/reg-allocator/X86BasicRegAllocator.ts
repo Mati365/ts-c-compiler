@@ -25,7 +25,12 @@ import { X86RegOwnershipTracker } from './X86RegOwnershipTracker';
 import { isRegOwnership, isStackVarOwnership } from './utils';
 
 import { BINARY_MASKS } from '@compiler/core/constants';
-import { X86_GENERAL_REGS, getX86RegByteSize } from '../../constants/regs';
+import {
+  X86_GENERAL_REGS_PARTS,
+  X86_GENERAL_REGS,
+  X86RegsParts,
+  getX86RegByteSize,
+} from '../../constants/regs';
 
 export type IRArgAllocatorResult<V extends string | number = string | number> =
   {
@@ -164,6 +169,29 @@ export class X86BasicRegAllocator {
           }
 
           return result;
+        }
+
+        // handle case when we already loaded variable into reg previously
+        // and we require the same value in smaller reg
+        // example:
+        //  char[] letters = "Hello world";
+        //  char b = letters[0];
+
+        const regSize = getX86RegByteSize(varOwnership.reg);
+        if (regSize !== size) {
+          const regPart = X86_GENERAL_REGS_PARTS[
+            varOwnership.reg
+          ] as X86RegsParts;
+
+          if (regPart && regPart.size === size) {
+            return {
+              value: regPart.low,
+              asm: [],
+              size,
+            };
+          }
+
+          throw new CBackendError(CBackendErrorCode.REG_ALLOCATOR_ERROR);
         }
 
         return {

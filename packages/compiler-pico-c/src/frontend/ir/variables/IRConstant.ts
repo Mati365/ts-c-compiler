@@ -37,6 +37,10 @@ export class IRConstant
     return this.value.constant;
   }
 
+  ofType(type: CType) {
+    return this.map(R.assoc('type', type));
+  }
+
   mapConstant(fn: (constant: number) => number) {
     return new IRConstant({
       type: this.type,

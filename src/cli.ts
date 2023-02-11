@@ -11,11 +11,6 @@ ccompiler(/* cpp */ `
   //   int a = letters[0] * 2;
   // }
 
-  // todo: b should be truncated
-  // char b = 'b';
-  // int c = 4;
-  // c = c + 5 + (int) b;
-
   // todo: Optimize
   // add bx, 32                ; %t{3}: int*2B = %t{0}: int*2B plus %32: int2B
   // mov ax, [bx]              ; %t{4}: int2B = load %t{3}: int*2B
@@ -31,12 +26,8 @@ ccompiler(/* cpp */ `
   // }
 
   void strlen() {
-    char b = 's';
-    int a = (int) b + 3 + (int) b;
-
-    // char b = 'b';
-    // int c = 4;
-    // c = c + 5 + (int) b;
+    char[] letters = "Hello world";
+    char b = letters[0];
 
     return -1;
   }
