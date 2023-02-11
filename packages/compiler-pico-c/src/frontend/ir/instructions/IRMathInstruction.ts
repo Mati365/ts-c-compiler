@@ -41,7 +41,7 @@ export class IRMathInstruction extends IROpInstruction<CMathOperator> {
   }
 
   tryFlipConstantsToRight(): Option<IRMathInstruction> {
-    if (this.hasBothConstantArgs()) {
+    if (!this.hasAnyConstantArg() || this.hasBothConstantArgs()) {
       return none();
     }
 

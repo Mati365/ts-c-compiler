@@ -64,11 +64,7 @@ export function emitVariableLoadInitializerIR({
         !destVar.isShallowEqual(exprResult.output)
       ) {
         result.instructions.push(
-          new IRStoreInstruction(
-            exprResult.output.ofType(initializerType),
-            destVar,
-            offset,
-          ),
+          new IRStoreInstruction(exprResult.output, destVar, offset),
         );
       }
     } else if (R.is(String, initializer)) {

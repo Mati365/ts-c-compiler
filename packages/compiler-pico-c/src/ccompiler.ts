@@ -65,7 +65,7 @@ export class CCompilerOutput {
         '\nAssembly:',
         '',
         TableBinaryView.serializeToString(
-          asm(codegen.asm, { preprocessor: false }),
+          asm(codegen.asm, { preprocessor: true }),
         ),
         '',
       ].join('\n'),

@@ -7,7 +7,12 @@ import {
   CTypeCheckError,
   CTypeCheckErrorCode,
 } from '../../../errors/CTypeCheckError';
-import { CType, CPrimitiveType, CPointerType } from '../../../types';
+import {
+  CType,
+  CPrimitiveType,
+  CPointerType,
+  typeofValueOrNode,
+} from '../../../types';
 import { ASTCTypeCreator } from './ASTCTypeCreator';
 
 /**
@@ -29,7 +34,7 @@ export class ASTCPrimaryExpressionTypeCreator extends ASTCTypeCreator<ASTCPrimar
           break;
 
         case TokenType.NUMBER:
-          type = CPrimitiveType.int(arch);
+          type = typeofValueOrNode(arch, node.constant.text);
           break;
 
         default:

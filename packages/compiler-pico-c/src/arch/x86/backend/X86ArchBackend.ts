@@ -13,7 +13,7 @@ export class X86ArchBackend extends CAbstractArchBackend {
   static readonly arch = CCompilerArch.X86_16;
 
   compileIR({ segments }: IRScopeGeneratorResult): CBackendCompilerResult {
-    const asm: string[] = [];
+    const asm: string[] = ['cpu 386'];
 
     for (const [, fn] of Object.entries(segments.code.functions)) {
       const iterator = IRBlockIterator.of(fn.block.instructions);
@@ -36,8 +36,6 @@ export class X86ArchBackend extends CAbstractArchBackend {
         segment: segments.data,
       }),
     );
-
-    console.info(asm.join('\n'));
 
     return {
       asm: asm.join('\n'),

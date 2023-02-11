@@ -24,13 +24,7 @@ import { X86Allocator } from '../X86Allocator';
 import { X86RegOwnershipTracker } from './X86RegOwnershipTracker';
 import { isRegOwnership, isStackVarOwnership } from './utils';
 
-import { BINARY_MASKS } from '@compiler/core/constants';
-import {
-  X86_GENERAL_REGS_PARTS,
-  X86_GENERAL_REGS,
-  X86RegsParts,
-  getX86RegByteSize,
-} from '../../constants/regs';
+import { getX86RegByteSize } from '../../constants/regs';
 
 export type IRArgAllocatorResult<V extends string | number = string | number> =
   {
@@ -99,7 +93,7 @@ export class X86BasicRegAllocator {
     allocIfNotFound,
   }: IRArgRegResolverAttrs): IRArgAllocatorResult<X86RegName> {
     const { stackFrame, ownership } = this;
-    const argSmallerThanRequestedSize = arg.type.getByteSize() < size;
+    const requestArgSizeDelta = size - arg.type.getByteSize();
 
     if (size < arg.type.getByteSize()) {
       throw new CBackendError(CBackendErrorCode.VALUE_IS_BIGGER_THAN_REG);
@@ -138,7 +132,7 @@ export class X86BasicRegAllocator {
 
         if (
           (allowedRegs && !allowedRegs.includes(varOwnership.reg)) ||
-          argSmallerThanRequestedSize
+          requestArgSizeDelta
         ) {
           const regResult = this.requestReg({
             size,
@@ -149,24 +143,15 @@ export class X86BasicRegAllocator {
             reg: regResult.value,
           });
 
+          const movOpcode = requestArgSizeDelta >= 1 ? 'movzx' : 'mov';
           const result = {
             size,
             value: regResult.value,
             asm: [
               ...regResult.asm,
-              genInstruction('mov', regResult.value, varOwnership.reg),
+              genInstruction(movOpcode, regResult.value, varOwnership.reg),
             ],
           };
-
-          if (argSmallerThanRequestedSize) {
-            result.asm.push(
-              genInstruction(
-                'and',
-                result.value,
-                `0x${BINARY_MASKS[arg.type.getByteSize()].toString(16)}`,
-              ),
-            );
-          }
 
           return result;
         }
@@ -179,9 +164,8 @@ export class X86BasicRegAllocator {
 
         const regSize = getX86RegByteSize(varOwnership.reg);
         if (regSize !== size) {
-          const regPart = X86_GENERAL_REGS_PARTS[
-            varOwnership.reg
-          ] as X86RegsParts;
+          const regPart =
+            ownership.getAvailableRegs().general.parts[varOwnership.reg];
 
           if (regPart && regPart.size === size) {
             return {
@@ -211,25 +195,16 @@ export class X86BasicRegAllocator {
           allowedRegs,
         });
 
+        // handle case: int a = (int) b + 3; where `b: char` is being loaded into bigger reg
+        const movOpcode = requestArgSizeDelta >= 1 ? 'movzx' : 'mov';
         const result = {
           size,
           value: regResult.value,
           asm: [
             ...regResult.asm,
-            genInstruction('mov', regResult.value, stackAddr),
+            genInstruction(movOpcode, regResult.value, stackAddr),
           ],
         };
-
-        // handle case: int a = (int) b + 3; where `b: char` is being loaded into bigger reg
-        if (argSmallerThanRequestedSize) {
-          result.asm.push(
-            genInstruction(
-              'and',
-              result.value,
-              `0x${BINARY_MASKS[arg.type.getByteSize()].toString(16)}`,
-            ),
-          );
-        }
 
         ownership.setOwnership(arg.name, {
           reg: result.value,
@@ -299,9 +274,10 @@ export class X86BasicRegAllocator {
       if (hasFlag(IRArgDynamicResolverType.REG, allow) && ownership[arg.name]) {
         return {
           type: IRArgDynamicResolverType.REG,
-          value: ownership[arg.name].reg,
-          asm: [],
-          size,
+          ...this.tryResolveIRArgAsReg({
+            arg,
+            size,
+          }),
         };
       }
 
@@ -311,7 +287,11 @@ export class X86BasicRegAllocator {
         // handle case when we want to resolve address but receive it as word
         // example: %t{3}: char1B = %t{1}: int2B plus %t{2}: char1B
         // %t{2} should return word
-        if (hasFlag(IRArgDynamicResolverType.REG, allow) && size > argSize) {
+        if (
+          result &&
+          hasFlag(IRArgDynamicResolverType.REG, allow) &&
+          size > argSize
+        ) {
           const extendedResult = this.tryResolveIRArgAsAddr(arg, size);
           const outputReg = this.requestReg({
             size,
@@ -322,12 +302,7 @@ export class X86BasicRegAllocator {
             value: outputReg.value,
             asm: [
               ...extendedResult.asm,
-              genInstruction('mov', outputReg.value, extendedResult.value),
-              genInstruction(
-                'and',
-                outputReg.value,
-                `0x${BINARY_MASKS[argSize].toString(16)}`,
-              ),
+              genInstruction('movzx', outputReg.value, extendedResult.value),
             ],
             size,
           };
@@ -345,6 +320,7 @@ export class X86BasicRegAllocator {
     if (hasFlag(IRArgDynamicResolverType.REG, allow)) {
       const result = this.tryResolveIRArgAsReg({
         arg,
+        size,
       });
 
       if (result) {
@@ -363,6 +339,10 @@ export class X86BasicRegAllocator {
     ...query
   }: X86RegLookupQuery & { prefer?: X86RegName[] }): IRRegReqResult {
     const { ownership } = this;
+    const { general: generalRegs } = ownership.getAvailableRegs();
+    const defaultAllowedRegs =
+      generalRegs.size === query.size ? generalRegs.list : null;
+
     let result: X86IntRegsMapQueryResult = null;
 
     if (prefer) {
@@ -374,14 +354,14 @@ export class X86BasicRegAllocator {
 
     // if there is no preferred regs just pick any free
     result ||= queryFromX86IntRegsMap(
-      { allowedRegs: X86_GENERAL_REGS, ...query },
+      { allowedRegs: defaultAllowedRegs, ...query },
       ownership.getAvailableRegs(),
     );
 
     if (!result) {
       ownership.releaseNotUsedLaterRegs();
       result = queryFromX86IntRegsMap(
-        { allowedRegs: X86_GENERAL_REGS, ...query },
+        { allowedRegs: defaultAllowedRegs, ...query },
         ownership.getAvailableRegs(),
       );
     }

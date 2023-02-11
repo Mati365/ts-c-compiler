@@ -39,7 +39,7 @@ export function emitPointerAddressExpression({
       !isPointerLikeType(lastInstruction.inputVar.type) ||
       !isImplicitPtrType(lastInstruction.inputVar.type.baseType))
   ) {
-    const addrVariable = allocator.allocAddressVariable();
+    const addrVariable = allocator.allocAddressVariable(output.type);
     instructions.push(new IRLeaInstruction(output, addrVariable));
 
     return {

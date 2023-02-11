@@ -26,10 +26,15 @@ ccompiler(/* cpp */ `
   // }
 
   void strlen() {
+    // fix: sucky code
     char[] letters = "Hello world";
-    int b = letters[0] + 2;
-
-    return -1;
+    // check why not working:
+    int d = 5;
+    int s = 5;
+    int k = letters[0] + letters[0] * d + s * 5;
+    int sk = 2;
+    sk *= 4 + d;
+    sk += d;
   }
 `).match({
   ok: result => {

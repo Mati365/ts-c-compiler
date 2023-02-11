@@ -18,6 +18,7 @@ import {
 
 import { IRGeneratorConfig } from '../constants';
 import { IRFnDeclInstruction } from '../instructions';
+import { getSourceNonPtrType } from '../../analyze/types/utils';
 
 type IRAllocatorConfig = IRGeneratorConfig & {
   parent?: IRVariableAllocator;
@@ -173,11 +174,12 @@ export class IRVariableAllocator {
   /**
    * Define variable to LEA output
    */
-  allocAddressVariable(prefix: string = TMP_VAR_PREFIX): IRVariable {
-    const { arch } = this.config;
-
+  allocAddressVariable(
+    baseType: CType = CPrimitiveType.int(this.config.arch),
+    prefix: string = TMP_VAR_PREFIX,
+  ): IRVariable {
     return this.allocTmpVariable(
-      CPointerType.ofType(CPrimitiveType.address(arch)),
+      CPointerType.ofType(getSourceNonPtrType(baseType)),
       prefix,
     );
   }

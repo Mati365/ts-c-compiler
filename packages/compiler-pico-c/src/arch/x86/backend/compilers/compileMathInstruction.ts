@@ -30,14 +30,31 @@ export function compileMathInstruction({
     case TokenType.MUL:
     case TokenType.PLUS:
     case TokenType.MINUS: {
-      const biggerArg = getBiggerIRArg(leftVar, rightVar);
+      // imul instruction likes only 16bit / 32bit args
+      // so force make it at least that big
+      let argSize = getBiggerIRArg(leftVar, rightVar).type.getByteSize();
+
+      if (operator === TokenType.MUL) {
+        argSize = Math.max(
+          argSize,
+          regs.ownership.getAvailableRegs().general.size,
+        );
+      }
+
       const leftAllocResult = regs.tryResolveIRArgAsReg({
-        size: biggerArg.type.getByteSize(),
+        size: argSize,
         arg: leftVar,
       });
 
+      if (outputVar.isTemporary()) {
+        regs.ownership.setOwnership(outputVar.name, {
+          reg: leftAllocResult.value,
+        });
+      }
+
+      // alloc right variable and perform operation
       const rightAllocResult = regs.tryResolveIrArg({
-        size: biggerArg.type.getByteSize(),
+        size: argSize,
         arg: rightVar,
       });
 
@@ -92,12 +109,6 @@ export function compileMathInstruction({
         regs.ownership.setOwnership(leftVar.name, {
           releasePrevAllocatedReg: false,
           reg: reg.value,
-        });
-      }
-
-      if (outputVar.isTemporary()) {
-        regs.ownership.setOwnership(outputVar.name, {
-          reg: leftAllocResult.value,
         });
       }
 

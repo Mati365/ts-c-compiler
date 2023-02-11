@@ -13,18 +13,17 @@ import {
   isIRVariable,
 } from '@compiler/pico-c/frontend/ir/variables';
 
-import {
-  X86RegsParts,
-  X86_ADDRESSING_REGS,
-  X86_GENERAL_REGS_PARTS,
-} from '../../constants/regs';
-
 import { CompilerInstructionFnAttrs } from '../../constants/types';
 import {
   genInstruction,
   genMemAddress,
   withInlineComment,
 } from '../../asm-utils';
+
+import {
+  isArrayLikeType,
+  isPointerLikeType,
+} from '@compiler/pico-c/frontend/analyze';
 
 type StoreInstructionCompilerAttrs =
   CompilerInstructionFnAttrs<IRStoreInstruction>;
@@ -46,7 +45,7 @@ export function compileStoreInstruction({
     const outputByteSize = getSourceNonPtrType(outputVar.type).getByteSize();
     const ptrVarReg = regs.tryResolveIRArgAsReg({
       arg: outputVar,
-      allowedRegs: X86_ADDRESSING_REGS,
+      allowedRegs: regs.ownership.getAvailableRegs().addressing,
     });
 
     asm.push(...ptrVarReg.asm);
@@ -60,12 +59,35 @@ export function compileStoreInstruction({
     };
   } else {
     // handle normal variable assign
-    // a = 5;
-    const size = value.type.getByteSize();
-    const prefix = getByteSizeArgPrefixName(size);
+    // *(a) = 5;
+    // todo: check if this .isStruct() is needed:
+    //  char b = 'b';
+    //  int k = b;
+    //  struct Abc {
+    //    int x, y;
+    //  } vec = { .y = 5 };
+    //
+    const srcType = (() => {
+      if (!isPointerLikeType(outputVar.type)) {
+        throw new CBackendError(CBackendErrorCode.STORE_VAR_SHOULD_BE_PTR);
+      }
+
+      const { baseType } = outputVar.type;
+      if (isArrayLikeType(baseType)) {
+        return getSourceNonPtrType(baseType);
+      }
+
+      return baseType;
+    })();
+
+    const outputByteSize = (
+      srcType.isStruct() ? value.type : srcType
+    ).getByteSize();
+
+    const prefix = getByteSizeArgPrefixName(outputByteSize);
 
     destAddr = {
-      size,
+      size: outputByteSize,
       expr: [
         prefix.toLocaleLowerCase(),
         stackFrame.getLocalVarStackRelAddress(outputVar.name, offset),
@@ -78,15 +100,33 @@ export function compileStoreInstruction({
       arg: value,
     });
 
-    // case: *(%t{1}: char*2B) = store %t{2}: int2B
-    // bigger value is loaded in smaller address
     if (inputReg.size - destAddr.size === 1) {
-      const part = X86_GENERAL_REGS_PARTS[inputReg.value] as X86RegsParts;
+      // case: *(%t{1}: char*2B) = store %t{2}: int2B
+      // bigger value is loaded in smaller address
+      const part =
+        regs.ownership.getAvailableRegs().general.parts[inputReg.value];
 
       inputReg = {
         ...inputReg,
         size: part.size,
         value: part.low,
+      };
+    } else if (inputReg.size - destAddr.size === -1) {
+      // case: *(k{0}: int*2B) = store %t{0}: char1B
+      // smaller value is loaded in bigger address
+      const extendedReg = regs.requestReg({
+        size: destAddr.size,
+      });
+
+      // extend value before move
+      inputReg = {
+        asm: [
+          ...inputReg.asm,
+          ...extendedReg.asm,
+          genInstruction('movzx', extendedReg.value, inputReg.value),
+        ],
+        size: extendedReg.size,
+        value: extendedReg.value,
       };
     }
 

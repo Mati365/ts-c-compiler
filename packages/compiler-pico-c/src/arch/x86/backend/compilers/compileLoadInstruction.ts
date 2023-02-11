@@ -4,9 +4,6 @@ import {
   CBackendErrorCode,
 } from '@compiler/pico-c/backend/errors/CBackendError';
 
-import { BINARY_MASKS } from '@compiler/core/constants';
-import { X86_ADDRESSING_REGS } from '../../constants/regs';
-
 import { isIRVariable } from '@compiler/pico-c/frontend/ir/variables';
 import { isPointerLikeType } from '@compiler/pico-c/frontend/analyze';
 import { isStackVarOwnership } from '../reg-allocator/utils';
@@ -23,7 +20,6 @@ export function compileLoadInstruction({
 }: LoadInstructionCompilerAttrs): string[] {
   const { inputVar, outputVar } = instruction;
   const {
-    archDescriptor,
     allocator: { regs, stackFrame },
   } = context;
 
@@ -37,7 +33,7 @@ export function compileLoadInstruction({
     // handle loading pointer to types, such as %t{0} = load %t{1}: int*
     const input = regs.tryResolveIRArgAsReg({
       arg: inputVar,
-      allowedRegs: X86_ADDRESSING_REGS,
+      allowedRegs: regs.ownership.getAvailableRegs().addressing,
     });
 
     if (!isPointerLikeType(inputVar.type)) {
@@ -46,36 +42,32 @@ export function compileLoadInstruction({
       });
     }
 
-    const regSize = archDescriptor.regs.integral.maxRegSize;
-    const outputRegByteSize = outputVar.type.getByteSize();
+    const regSize = inputVar.type.baseType.getByteSize();
+    const outputRegSize = outputVar.type.getByteSize();
 
     const reg = regs.requestReg({
       size: regSize,
     });
+
+    // truncate variable size, it happens when:
+    //  char[] letters = "Hello world";
+    //  int b = letters[0] + 2;
+    // letter[0] must be truncated to 1 byte (compiler used to emit `mov ax, [bx]` like instruction)
+    const zeroExtend = regSize - outputRegSize === 1;
 
     regs.ownership.setOwnership(outputVar.name, { reg: reg.value });
     asm.push(
       ...reg.asm,
       ...input.asm,
       withInlineComment(
-        genInstruction('mov', reg.value, `[${input.value}]`),
+        genInstruction(
+          zeroExtend ? 'movzx' : 'mov',
+          reg.value,
+          `[${input.value}]`,
+        ),
         instruction.getDisplayName(),
       ),
     );
-
-    // truncate variable size, it happens when:
-    //  char[] letters = "Hello world";
-    //  int b = letters[0] + 2;
-    // letter[0] must be truncated to 1 byte (compiler used to emit `mov ax, [bx]` like instruction)
-    if (regSize > outputRegByteSize) {
-      asm.push(
-        genInstruction(
-          'and',
-          reg.value,
-          `0x${BINARY_MASKS[outputRegByteSize].toString(16)}`,
-        ),
-      );
-    }
   } else {
     if (
       isPointerLikeType(inputVar.type) &&
@@ -84,7 +76,7 @@ export function compileLoadInstruction({
       // handle loading pointer to types, such as **k
       const reg = regs.requestReg({
         size: inputVar.type.getByteSize(),
-        allowedRegs: X86_ADDRESSING_REGS,
+        allowedRegs: regs.ownership.getAvailableRegs().addressing,
       });
 
       asm.push(

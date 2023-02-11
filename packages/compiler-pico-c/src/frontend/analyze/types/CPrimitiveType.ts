@@ -135,10 +135,12 @@ export class CPrimitiveType extends CType<CPrimitiveTypeDescriptor> {
       return null;
     }
 
-    // INT
+    // INT / CHAR
     if (Number.isInteger(value)) {
       const intType = CPrimitiveType.int(arch);
-      if (intType.getByteSize() < numberByteSize(value)) {
+      const byteSize = numberByteSize(value);
+
+      if (intType.getByteSize() < byteSize) {
         return null;
       }
 

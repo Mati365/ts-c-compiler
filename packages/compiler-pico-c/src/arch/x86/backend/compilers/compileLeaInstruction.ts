@@ -6,8 +6,6 @@ import {
 import { CPrimitiveType } from '@compiler/pico-c/frontend/analyze';
 import { IRLeaInstruction } from '@compiler/pico-c/frontend/ir/instructions';
 
-import { X86_ADDRESSING_REGS } from '../../constants/regs';
-
 import { CompilerInstructionFnAttrs } from '../../constants/types';
 import {
   genInstruction,
@@ -28,7 +26,7 @@ export function compileLeaInstruction({
 
   const addressReg = regs.requestReg({
     size: CPrimitiveType.address(config.arch).getByteSize(),
-    prefer: X86_ADDRESSING_REGS,
+    prefer: regs.ownership.getAvailableRegs().addressing,
   });
 
   regs.ownership.setOwnership(outputVar.name, {
@@ -62,6 +60,5 @@ export function compileLeaInstruction({
     ];
   }
 
-  return ['; asdsad' + instruction.getDisplayName()];
   throw new CBackendError(CBackendErrorCode.UNABLE_TO_COMPILE_INSTRUCTION);
 }

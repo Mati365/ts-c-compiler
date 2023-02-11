@@ -138,14 +138,14 @@ export function emitIdentifierGetterIR({
            * not into te stack but somewhere else
            */
           if (irVariable.virtualArrayPtr) {
-            lastIRVar = allocator.allocAddressVariable();
+            lastIRVar = allocator.allocAddressVariable(irVariable.type);
             instructions.push(new IRLoadInstruction(irVariable, lastIRVar));
           } else if (
             isPointerLikeType(irVariable.type) &&
             isArrayLikeType(irVariable.type.baseType)
           ) {
             // emits LEA before array[1][2], struct. like expressions
-            lastIRVar = allocator.allocAddressVariable();
+            lastIRVar = allocator.allocAddressVariable(irVariable.type);
             instructions.push(new IRLeaInstruction(irVariable, lastIRVar));
           } else {
             lastIRVar = irVariable;
@@ -171,7 +171,7 @@ export function emitIdentifierGetterIR({
         instructions.push(
           new IRLoadInstruction(
             lastIRVar,
-            (lastIRVar = allocator.allocAddressVariable()),
+            (lastIRVar = allocator.allocAddressVariable(lastIRVar.type)),
           ),
         );
 
@@ -186,7 +186,7 @@ export function emitIdentifierGetterIR({
               TokenType.PLUS,
               lastIRVar,
               offsetConstant,
-              (lastIRVar = allocator.allocAddressVariable()),
+              (lastIRVar = allocator.allocAddressVariable(lastIRVar.type)),
             ),
           );
         }
@@ -213,7 +213,7 @@ export function emitIdentifierGetterIR({
           instructions.push(
             new IRLeaInstruction(
               lastIRVar,
-              (lastIRVar = allocator.allocAddressVariable()),
+              (lastIRVar = allocator.allocAddressVariable(lastIRVar.type)),
             ),
           );
         }
@@ -229,7 +229,7 @@ export function emitIdentifierGetterIR({
               TokenType.PLUS,
               lastIRVar,
               offsetConstant,
-              (lastIRVar = allocator.allocAddressVariable()),
+              (lastIRVar = allocator.allocAddressVariable(lastIRVar.type)),
             ),
           );
         }
@@ -251,7 +251,7 @@ export function emitIdentifierGetterIR({
           instructions.push(
             new IRLoadInstruction(
               lastIRVar,
-              (lastIRVar = allocator.allocAddressVariable()),
+              (lastIRVar = allocator.allocAddressVariable(lastIRVar.type)),
             ),
           );
         }
@@ -283,7 +283,7 @@ export function emitIdentifierGetterIR({
               entryByteSize,
             );
 
-            offsetAddressVar = allocator.allocAddressVariable();
+            offsetAddressVar = allocator.allocAddressVariable(lastIRVar.type);
             instructions.push(
               new IRMathInstruction(
                 TokenType.MUL,
@@ -306,7 +306,7 @@ export function emitIdentifierGetterIR({
               TokenType.PLUS,
               lastIRVar,
               offsetAddressVar,
-              (lastIRVar = allocator.allocAddressVariable()),
+              (lastIRVar = allocator.allocAddressVariable(lastIRVar.type)),
             ),
           );
         }

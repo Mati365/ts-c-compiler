@@ -4,9 +4,11 @@ import {
   concatConstantStoreInstruction,
   dropDeadStoreInstructions,
   dropInstructionsWithOrphanOutputs,
+  dropNopMathInstructions,
   dropOrConcatConstantInstructions,
   dropRedundantAddressInstructions,
   dropRedundantLabelInstructions,
+  flipMathInstructionsOperands,
   foldAddressOffsetsInstructions,
 } from './phases';
 
@@ -22,6 +24,8 @@ const optimizeFlow = compose(
   dropDeadStoreInstructions,
   dropOrConcatConstantInstructions,
   dropRedundantAddressInstructions,
+  dropNopMathInstructions,
+  flipMathInstructionsOperands,
 );
 
 export function optimizeInstructionsList(
