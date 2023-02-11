@@ -27,7 +27,7 @@ ccompiler(/* cpp */ `
 
   void strlen() {
     char[] letters = "Hello world";
-    char b = letters[0];
+    int b = letters[0] + 2;
 
     return -1;
   }

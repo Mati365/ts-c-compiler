@@ -4,6 +4,7 @@ import {
   CBackendErrorCode,
 } from '@compiler/pico-c/backend/errors/CBackendError';
 
+import { BINARY_MASKS } from '@compiler/core/constants';
 import { X86_ADDRESSING_REGS } from '../../constants/regs';
 
 import { isIRVariable } from '@compiler/pico-c/frontend/ir/variables';
@@ -46,6 +47,8 @@ export function compileLoadInstruction({
     }
 
     const regSize = archDescriptor.regs.integral.maxRegSize;
+    const outputRegByteSize = outputVar.type.getByteSize();
+
     const reg = regs.requestReg({
       size: regSize,
     });
@@ -59,6 +62,20 @@ export function compileLoadInstruction({
         instruction.getDisplayName(),
       ),
     );
+
+    // truncate variable size, it happens when:
+    //  char[] letters = "Hello world";
+    //  int b = letters[0] + 2;
+    // letter[0] must be truncated to 1 byte (compiler used to emit `mov ax, [bx]` like instruction)
+    if (regSize > outputRegByteSize) {
+      asm.push(
+        genInstruction(
+          'and',
+          reg.value,
+          `0x${BINARY_MASKS[outputRegByteSize].toString(16)}`,
+        ),
+      );
+    }
   } else {
     if (
       isPointerLikeType(inputVar.type) &&
