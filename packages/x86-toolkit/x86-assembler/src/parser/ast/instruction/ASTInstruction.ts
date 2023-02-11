@@ -657,7 +657,7 @@ export class ASTInstruction extends KindASTAsmNode(ASTNodeKind.INSTRUCTION) {
       // mov [0x0], word 0x7C
       // argument [0x0] initially has 1B of target size
       // but after word override should be 2 byte
-      for (const arg of acc) {
+      acc.forEach(arg => {
         if (arg.type !== InstructionArgType.MEMORY) {
           return;
         }
@@ -684,7 +684,7 @@ export class ASTInstruction extends KindASTAsmNode(ASTNodeKind.INSTRUCTION) {
             },
           );
         }
-      }
+      });
     }
 
     return [branchAddressingType, acc];

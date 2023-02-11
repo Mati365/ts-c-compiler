@@ -246,7 +246,7 @@ export class ASTInstructionMemPtrArg extends ASTInstructionArg<MemAddressDescrip
       return parsedPhrase;
     }
 
-    return `${sizePrefix} ptr [${parsedPhrase}]`;
+    return `${sizePrefix} [${parsedPhrase}]`;
   }
 
   /**
