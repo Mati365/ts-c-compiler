@@ -18,6 +18,7 @@ import {
 
 import { IRArgDynamicResolverType } from '../reg-allocator';
 import { CompilerInstructionFnAttrs } from '../../constants/types';
+import { getBiggerIRArg } from '@compiler/pico-c/frontend/ir/utils';
 
 const OPERATOR_JMP_INSTRUCTIONS: Record<CRelOperator, [string, string]> = {
   [TokenType.GREATER_THAN]: ['jg', 'jng'],
@@ -47,17 +48,28 @@ export function compileICmpInstruction({
     throw new CBackendError(CBackendErrorCode.MISSING_BR_INSTRUCTION);
   }
 
+  // handle case when we compare int with char like this:
+  // if (a: int > b: char) { ... }
+  const argSize = getBiggerIRArg(
+    instruction.leftVar,
+    instruction.rightVar,
+  ).type.getByteSize();
+
   const leftAllocResult = regs.tryResolveIrArg({
+    size: argSize,
     arg: instruction.leftVar,
     allow: IRArgDynamicResolverType.MEM | IRArgDynamicResolverType.REG,
   });
 
   const rightAllocResult = regs.tryResolveIrArg({
+    size: argSize,
     arg: instruction.rightVar,
     allow: IRArgDynamicResolverType.REG | IRArgDynamicResolverType.NUMBER,
   });
 
   const asm: string[] = [
+    ...leftAllocResult.asm,
+    ...rightAllocResult.asm,
     withInlineComment(
       genInstruction('cmp', leftAllocResult.value, rightAllocResult.value),
       instruction.getDisplayName(),

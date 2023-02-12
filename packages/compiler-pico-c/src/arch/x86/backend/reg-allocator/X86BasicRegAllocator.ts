@@ -1,3 +1,5 @@
+import { BINARY_MASKS } from '@compiler/core/constants';
+
 import { hasFlag } from '@compiler/core/utils';
 import {
   CBackendError,
@@ -96,10 +98,6 @@ export class X86BasicRegAllocator {
 
     const regsParts = ownership.getAvailableRegs().general.parts;
     const requestArgSizeDelta = size - arg.type.getByteSize();
-
-    if (size < arg.type.getByteSize()) {
-      throw new CBackendError(CBackendErrorCode.VALUE_IS_BIGGER_THAN_REG);
-    }
 
     if (!arg.type.isScalar()) {
       throw new CBackendError(CBackendErrorCode.REG_ALLOCATOR_ERROR);
@@ -303,9 +301,14 @@ export class X86BasicRegAllocator {
       if (hasFlag(IRArgDynamicResolverType.MEM, allow)) {
         const result = this.tryResolveIRArgAsAddr(arg);
 
-        // handle case when we want to resolve address but receive it as word
-        // example: %t{3}: char1B = %t{1}: int2B plus %t{2}: char1B
-        // %t{2} should return word
+        // handle case when we want to load word but type at the address is byte
+        // example:
+        //  char a = 'a';
+        //  int b = 4;
+        //  if (a > b && a + 4 > b) {
+        //    int k = 0;
+        //  }
+
         if (
           result &&
           hasFlag(IRArgDynamicResolverType.REG, allow) &&
@@ -321,7 +324,13 @@ export class X86BasicRegAllocator {
             value: outputReg.value,
             asm: [
               ...extendedResult.asm,
-              genInstruction('movzx', outputReg.value, extendedResult.value),
+              ...outputReg.asm,
+              genInstruction('mov', outputReg.value, extendedResult.value),
+              genInstruction(
+                'and',
+                outputReg.value,
+                `0x${BINARY_MASKS[argSize].toString(16)}`,
+              ),
             ],
             size,
           };

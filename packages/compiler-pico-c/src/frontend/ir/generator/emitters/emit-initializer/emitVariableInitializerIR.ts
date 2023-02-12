@@ -5,6 +5,7 @@ import {
   CPointerType,
   CVariable,
   isArrayLikeType,
+  isPointerLikeType,
 } from '@compiler/pico-c/frontend/analyze';
 
 import { IRVariable } from '../../../variables';
@@ -23,8 +24,6 @@ import {
 } from '../types';
 
 import { emitVariableLoadInitializerIR } from './emitVariableLoadInitializerIR';
-
-const MIN_PTR_ARRAY_INITIALIZED_FIELDS_COUNT = 4;
 
 type InitializerIREmitAttrs = IREmitterContextAttrs & {
   variable: CVariable;
@@ -52,21 +51,22 @@ export function emitVariableInitializerIR({
 
   if (variable.isInitialized()) {
     const isArrayType = isArrayLikeType(type);
-    const isStringType = checkLeftTypeOverlapping(
-      type,
-      CArrayType.ofStringLiteral(config.arch),
-      {
+    const isStringPtr =
+      isPointerLikeType(type) &&
+      checkLeftTypeOverlapping(type, CArrayType.ofStringLiteral(config.arch), {
         implicitCast: false,
         ignoreConstChecks: true,
-      },
-    );
+      });
 
+    // string pointer is an special case
+    // in that kind of array we allocate only one item on stack
+    // so any string literal that is longer than one character must be allocated in data segment
+    // it is not possible to alloc any other type in similar way
     if (
-      (isStringType || isArrayType) &&
-      initializer.hasOnlyConstantExpressions() &&
+      (isStringPtr || isArrayType) &&
       (!isArrayType || type.getSourceType().isConst()) &&
-      initializer.getInitializedFieldsCount() >
-        MIN_PTR_ARRAY_INITIALIZED_FIELDS_COUNT
+      initializer.hasOnlyConstantExpressions() &&
+      initializer.getInitializedFieldsCount() > (isStringPtr ? 1 : 3)
     ) {
       // initializer with const expressions
       const arrayPtrType = CPointerType.ofArray(<CArrayType>type);

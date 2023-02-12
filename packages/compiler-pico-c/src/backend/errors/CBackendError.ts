@@ -12,7 +12,6 @@ export enum CBackendErrorCode {
   INVALID_STORE_ASSIGNMENT = 'INVALID_STORE_ASSIGNMENT',
   OFFSET_OVERFLOW = 'ALLOC_OFFSET_OVERFLOW',
   EXPECTED_IR_PTR_BUT_RECEIVE = 'EXPECTED_IR_PTR_BUT_RECEIVE',
-  VALUE_IS_BIGGER_THAN_REG = 'VALUE_IS_BIGGER_THAN_REG',
 }
 
 export const C_BACKEND_ERROR_TRANSLATIONS: Record<CBackendErrorCode, string> = {
@@ -37,9 +36,6 @@ export const C_BACKEND_ERROR_TRANSLATIONS: Record<CBackendErrorCode, string> = {
   ),
   [CBackendErrorCode.EXPECTED_IR_PTR_BUT_RECEIVE]: fixme(
     'Expected IR pointer but received: "%{type}"!',
-  ),
-  [CBackendErrorCode.VALUE_IS_BIGGER_THAN_REG]: fixme(
-    'Value is bigger than requested reg!',
   ),
 };
 

@@ -80,7 +80,7 @@ export class CTypeInitializerBuilderVisitor extends CInnerTypeTreeVisitor {
    *                ^
    */
   private extractInitializer(node: ASTCInitializer) {
-    const { baseType, arch } = this;
+    const { baseType } = this;
 
     if (!this.tree) {
       this.tree = new CVariableInitializerTree(baseType, node);
@@ -92,7 +92,7 @@ export class CTypeInitializerBuilderVisitor extends CInnerTypeTreeVisitor {
     if (
       arrayType &&
       !node.hasInitializerList() &&
-      !checkLeftTypeOverlapping(CArrayType.ofStringLiteral(arch), baseType, {
+      !checkLeftTypeOverlapping(node.type, baseType, {
         implicitCast: false,
       })
     ) {

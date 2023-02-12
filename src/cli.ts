@@ -25,21 +25,16 @@ ccompiler(/* cpp */ `
   //   point[1].dupa[2]++;
   // }
 
-  void strlen() {
-    // fix: sucky code
-    // char[] letters = "Hello world";
-    // // check why not working:
-    // int d = 5;
-    // int s = 5;
-    // int k = letters[0] + letters[0] * d + s * 5;
-    // int sk = 2;
-    // sk *= 4 + d;
-    // sk += d;
+  void main() {
+    char a = 'a';
 
-    int array[] = { 1, 2, 3, 4, 5 };
-    array[1] = 3;
-    array[2] = 4;
-    array[3] = 5;
+    if (a > 4) {
+      int k = 0;
+    } else if (a < 5) {
+      int j = 4;
+    } else {
+      int c = 4;
+    }
   }
 `).match({
   ok: result => {

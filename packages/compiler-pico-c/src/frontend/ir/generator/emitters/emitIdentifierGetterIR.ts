@@ -2,8 +2,10 @@ import * as R from 'ramda';
 
 import { TokenType } from '@compiler/lexer/shared';
 import {
+  CArrayType,
   CPointerType,
   CPrimitiveType,
+  CVariableInitializerTree,
   isArrayLikeType,
   isPointerLikeType,
   isStructLikeType,
@@ -23,11 +25,13 @@ import {
 } from '@compiler/pico-c/frontend/parser';
 
 import {
-  IRInstruction,
+  IRAllocInstruction,
+  IRDefConstInstruction,
   IRLabelOffsetInstruction,
   IRLeaInstruction,
   IRLoadInstruction,
   IRMathInstruction,
+  IRStoreInstruction,
 } from '../../instructions';
 
 import {
@@ -37,9 +41,11 @@ import {
   isIRVariable,
 } from '../../variables';
 
-import { IREmitterContextAttrs, IREmitterExpressionVarResult } from './types';
-
-import { IsOutputInstruction } from '../../interfaces';
+import {
+  createBlankExprResult,
+  IREmitterContextAttrs,
+  IREmitterExpressionVarResult,
+} from './types';
 import { IRError, IRErrorCode } from '../../errors/IRError';
 
 type LvalueExpressionIREmitAttrs = IREmitterContextAttrs & {
@@ -58,7 +64,7 @@ export function emitIdentifierGetterIR({
   node,
 }: LvalueExpressionIREmitAttrs): LvalueExpressionIREmitResult {
   const { allocator, config, emit } = context;
-  let instructions: (IRInstruction & IsOutputInstruction)[] = [];
+  const { instructions, data } = createBlankExprResult();
 
   let rootIRVar: IRVariable;
   let lastIRVar: IRVariable = null;
@@ -106,49 +112,84 @@ export function emitIdentifierGetterIR({
 
     [ASTCCompilerKind.PrimaryExpression]: {
       enter(expr: ASTCPrimaryExpression) {
-        if (!expr.isIdentifier()) {
-          return;
-        }
+        if (expr.isStringLiteral()) {
+          /**
+           * Used in inline string initialization like in:
+           *
+           *  fn("Hello world!");
+           *
+           * todo: Check if it even works!
+           */
+          const arrayPtrType = CPointerType.ofArray(<CArrayType>expr.type);
+          const dataType = CArrayType.ofFlattenDescriptor({
+            type: expr.type,
+            dimensions: [expr.stringLiteral.length],
+          });
 
-        const name = expr.identifier.text;
-        const irFunction = allocator.getFunction(name);
+          lastIRVar = allocator.allocTmpVariable(dataType);
 
-        /**
-         * Detect case:
-         * int* ptr = fn_name;
-         */
-        if (irFunction) {
-          lastIRVar = allocator.allocTmpVariable(
-            CPointerType.ofType(irFunction.type),
+          const constArrayVar = allocator.allocConstDataVariable(dataType);
+          const tmpLeaAddressVar = allocator.allocTmpVariable(arrayPtrType);
+
+          data.push(
+            new IRDefConstInstruction(
+              CVariableInitializerTree.ofStringLiteral({
+                baseType: expr.type,
+                parentAST: expr,
+                text: expr.stringLiteral,
+              }),
+              constArrayVar,
+            ),
           );
 
           instructions.push(
-            new IRLabelOffsetInstruction(irFunction, lastIRVar),
+            IRAllocInstruction.ofDestPtrVariable(lastIRVar),
+            new IRLeaInstruction(constArrayVar, tmpLeaAddressVar),
+            new IRStoreInstruction(tmpLeaAddressVar, lastIRVar),
           );
-        } else {
-          const irVariable = allocator.getVariable(name);
-          rootIRVar ??= irVariable;
+        }
+
+        if (expr.isIdentifier()) {
+          const name = expr.identifier.text;
+          const irFunction = allocator.getFunction(name);
 
           /**
-           * detect this case:
-           *  char array[10] = { 1, 2, 3, 4, 5, 6 };
-           *  array[1] = 2;
-           *
-           * which is transformed into pointer that is pointing
-           * not into te stack but somewhere else
+           * Detect case:
+           * int* ptr = fn_name;
            */
-          if (irVariable.virtualArrayPtr) {
-            lastIRVar = allocator.allocAddressVariable(irVariable.type);
-            instructions.push(new IRLoadInstruction(irVariable, lastIRVar));
-          } else if (
-            isPointerLikeType(irVariable.type) &&
-            isArrayLikeType(irVariable.type.baseType)
-          ) {
-            // emits LEA before array[1][2], struct. like expressions
-            lastIRVar = allocator.allocAddressVariable(irVariable.type);
-            instructions.push(new IRLeaInstruction(irVariable, lastIRVar));
+          if (irFunction) {
+            lastIRVar = allocator.allocTmpVariable(
+              CPointerType.ofType(irFunction.type),
+            );
+
+            instructions.push(
+              new IRLabelOffsetInstruction(irFunction, lastIRVar),
+            );
           } else {
-            lastIRVar = irVariable;
+            const irVariable = allocator.getVariable(name);
+            rootIRVar ??= irVariable;
+
+            /**
+             * detect this case:
+             *  char array[10] = { 1, 2, 3, 4, 5, 6 };
+             *  array[1] = 2;
+             *
+             * which is transformed into pointer that is pointing
+             * not into te stack but somewhere else
+             */
+            if (irVariable.virtualArrayPtr) {
+              lastIRVar = allocator.allocAddressVariable(irVariable.type);
+              instructions.push(new IRLoadInstruction(irVariable, lastIRVar));
+            } else if (
+              isPointerLikeType(irVariable.type) &&
+              isArrayLikeType(irVariable.type.baseType)
+            ) {
+              // emits LEA before array[1][2], struct. like expressions
+              lastIRVar = allocator.allocAddressVariable(irVariable.type);
+              instructions.push(new IRLeaInstruction(irVariable, lastIRVar));
+            } else {
+              lastIRVar = irVariable;
+            }
           }
         }
       },
@@ -331,6 +372,7 @@ export function emitIdentifierGetterIR({
 
   return {
     output: lastIRVar,
+    data,
     rootIRVar,
     instructions,
   };
