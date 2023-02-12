@@ -1,4 +1,4 @@
-import './utils/analyzeMatcher';
+import './utils';
 
 describe('Enum typecheck', () => {
   test('anonymous enums have resolveable entries in current scope', () => {

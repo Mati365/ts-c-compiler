@@ -1,4 +1,4 @@
-import '../utils/irMatcher';
+import '../utils';
 
 describe('Assignment IR', () => {
   describe('Primitives', () => {
@@ -70,7 +70,7 @@ describe('Assignment IR', () => {
           *(a{0}: int*2B) = store %10: int2B
           %t{0}: int2B = load a{0}: int*2B
           %t{1}: int2B = load a{0}: int*2B
-          %t{2}: int2B = %t{1}: int2B minus %1: int2B
+          %t{2}: int2B = %t{1}: int2B minus %1: char1B
           %t{3}: int2B = %t{0}: int2B mul %t{2}: int2B
           %t{4}: int2B = load a{0}: int*2B
           %t{5}: int2B = %t{3}: int2B plus %t{4}: int2B
@@ -116,9 +116,9 @@ describe('Assignment IR', () => {
         def main():
           array{0}: int[3]*2B = alloca int[3]6B
           *(array{0}: int[3]*2B) = store %1: int2B
-          *(array{0}: int[3]*2B + %2) = store %3: int2B
-          *(array{0}: int[3]*2B + %4) = store %4: int2B
-          *(array{0}: int[3]*2B + %6) = store %5: int2B
+          *(array{0}: int[3]*2B + %2) = store %3: char1B
+          *(array{0}: int[3]*2B + %4) = store %4: char1B
+          *(array{0}: int[3]*2B + %6) = store %5: char1B
           ret
           end-def
       `);
@@ -162,7 +162,7 @@ describe('Assignment IR', () => {
           %t{0}: int*2B = lea array{0}: int[2]*2B
           %t{1}: int*2B = %t{0}: int*2B plus %2: int2B
           %t{2}: int2B = load %t{1}: int*2B
-          %t{4}: int2B = %t{2}: int2B plus %12: int2B
+          %t{4}: int2B = %t{2}: int2B plus %12: char1B
           *(sum{0}: int*2B) = store %t{4}: int2B
           ret
           end-def
@@ -182,11 +182,11 @@ describe('Assignment IR', () => {
           %t{0}: const int*2B = lea c{0}: const int[5]10B
           *(array{0}: const int**2B) = store %t{0}: const int*2B
           sum{0}: int*2B = alloca int2B
-          %t{1}: int*2B = load array{0}: const int**2B
-          %t{2}: int*2B = %t{1}: int*2B plus %2: int2B
-          %t{3}: const int2B = load %t{2}: int*2B
-          %t{5}: int2B = %t{3}: int2B minus %12: int2B
-          *(sum{0}: int*2B) = store %t{5}: int2B
+          %t{1}: const int*2B = load array{0}: const int**2B
+          %t{2}: const int*2B = %t{1}: const int*2B plus %2: int2B
+          %t{3}: const int2B = load %t{2}: const int*2B
+          %t{5}: const int2B = %t{3}: const int2B minus %12: char1B
+          *(sum{0}: int*2B) = store %t{5}: const int2B
           ret
           end-def
           # --- Block Data ---
@@ -207,11 +207,11 @@ describe('Assignment IR', () => {
           %t{0}: const int*2B = lea c{0}: const int[12]24B
           *(array{0}: const int**2B) = store %t{0}: const int*2B
           sum{0}: int*2B = alloca int2B
-          %t{1}: int*2B = load array{0}: const int**2B
-          %t{2}: int*2B = %t{1}: int*2B plus %6: int2B
-          %t{3}: const int[4]8B = load %t{2}: int*2B
-          %t{5}: int2B = %t{3}: int2B plus %12: int2B
-          *(sum{0}: int*2B) = store %t{5}: int2B
+          %t{1}: const int*2B = load array{0}: const int**2B
+          %t{2}: const int*2B = %t{1}: const int*2B plus %6: int2B
+          %t{3}: const int[4]8B = load %t{2}: const int*2B
+          %t{5}: const int2B = %t{3}: const int2B plus %12: char1B
+          *(sum{0}: int*2B) = store %t{5}: const int2B
           ret
           end-def
           # --- Block Data ---
@@ -232,11 +232,11 @@ describe('Assignment IR', () => {
           %t{0}: const int*2B = lea c{0}: const int[12]24B
           *(array{0}: const int**2B) = store %t{0}: const int*2B
           sum{0}: int*2B = alloca int2B
-          %t{1}: int*2B = load array{0}: const int**2B
-          %t{2}: int*2B = %t{1}: int*2B plus %6: int2B
-          %t{3}: const int2B = load %t{2}: int*2B
-          %t{5}: int2B = %t{3}: int2B plus %12: int2B
-          *(sum{0}: int*2B) = store %t{5}: int2B
+          %t{1}: const int*2B = load array{0}: const int**2B
+          %t{2}: const int*2B = %t{1}: const int*2B plus %6: int2B
+          %t{3}: const int2B = load %t{2}: const int*2B
+          %t{5}: const int2B = %t{3}: const int2B plus %12: char1B
+          *(sum{0}: int*2B) = store %t{5}: const int2B
           ret
           end-def
           # --- Block Data ---
@@ -257,13 +257,15 @@ describe('Assignment IR', () => {
           *(vec{0}: struct Vec2[2]*2B + %2) = store %4: int2B
           *(vec{0}: struct Vec2[2]*2B + %4) = store %5: int2B
           sum{0}: int*2B = alloca int2B
-          %t{0}: int*2B = lea vec{0}: struct Vec2[2]*2B
-          %t{1}: int*2B = %t{0}: int*2B plus %4: int2B
-          %t{2}: int2B = load %t{1}: int*2B
-          %t{4}: int*2B = %t{0}: int*2B plus %2: int2B
-          %t{5}: int2B = load %t{4}: int*2B
-          %t{6}: int2B = %t{2}: int2B plus %t{5}: int2B
-          *(sum{0}: int*2B) = store %t{6}: int2B
+          %t{0}: struct Vec2*2B = lea vec{0}: struct Vec2[2]*2B
+          %t{1}: struct Vec2*2B = %t{0}: struct Vec2*2B plus %4: int2B
+          %t{2}: struct Vec2*2B = lea %t{1}: struct Vec2*2B
+          %t{3}: int2B = load %t{2}: struct Vec2*2B
+          %t{5}: struct Vec2*2B = lea %t{4}: struct Vec2*2B
+          %t{6}: struct Vec2*2B = %t{5}: struct Vec2*2B plus %2: int2B
+          %t{7}: int2B = load %t{6}: struct Vec2*2B
+          %t{8}: struct Vec24B = %t{3}: struct Vec24B plus %t{7}: struct Vec24B
+          *(sum{0}: int*2B) = store %t{8}: struct Vec24B
           ret
           end-def
       `);
@@ -284,7 +286,7 @@ describe('Assignment IR', () => {
           *(testArray{0}: int[5]*2B + %4) = store %3: int2B
           *(testArray{0}: int[5]*2B + %6) = store %4: int2B
           *(testArray{0}: int[5]*2B + %8) = store %5: int2B
-          *(testArray{0}: int[5]*2B + %14) = store %4: int2B
+          *(testArray{0}: int[5]*2B + %14) = store %4: char1B
           ret
           end-def
       `);
@@ -303,7 +305,7 @@ describe('Assignment IR', () => {
           *(testArray{0}: int[3]*2B) = store %1: int2B
           *(testArray{0}: int[3]*2B + %2) = store %2: int2B
           *(testArray{0}: int[3]*2B + %4) = store %3: int2B
-          *(testArray{0}: int[3]*2B + %14) = store %4: int2B
+          *(testArray{0}: int[3]*2B + %14) = store %4: char1B
           ret
           end-def
       `);
@@ -340,14 +342,14 @@ describe('Assignment IR', () => {
         }
       `).toCompiledIRBeEqual(/* ruby */ `
         # --- Block main ---
-        def main():
+          def main():
           b{0}: int*2B = alloca int2B
           *(b{0}: int*2B) = store %4: int2B
           a{0}: int**2B = alloca int*2B
           %t{0}: int*2B = lea b{0}: int*2B
           *(a{0}: int**2B) = store %t{0}: int*2B
           %t{1}: int*2B = load a{0}: int**2B
-          *(%t{1}: int*2B) = store %5: int2B
+          *(%t{1}: int*2B) = store %5: char1B
           ret
           end-def
       `);
@@ -362,7 +364,7 @@ describe('Assignment IR', () => {
         }
       `).toCompiledIRBeEqual(/* ruby */ `
         # --- Block main ---
-        def main():
+          def main():
           b{0}: int*2B = alloca int2B
           *(b{0}: int*2B) = store %4: int2B
           a{0}: int**2B = alloca int*2B
@@ -370,7 +372,7 @@ describe('Assignment IR', () => {
           *(a{0}: int**2B) = store %t{0}: int*2B
           c{0}: int*2B = alloca int2B
           %t{1}: int*2B = load a{0}: int**2B
-          %t{3}: int*2B = %t{1}: int*2B plus %10: int2B
+          %t{3}: int*2B = %t{1}: int*2B plus %10: char1B
           *(c{0}: int*2B) = store %t{3}: int*2B
           ret
           end-def
@@ -386,7 +388,7 @@ describe('Assignment IR', () => {
         }
       `).toCompiledIRBeEqual(/* ruby */ `
         # --- Block main ---
-        def main():
+          def main():
           b{0}: int*2B = alloca int2B
           *(b{0}: int*2B) = store %4: int2B
           a{0}: int**2B = alloca int*2B
@@ -395,7 +397,7 @@ describe('Assignment IR', () => {
           c{0}: int*2B = alloca int2B
           %t{1}: int*2B = load a{0}: int**2B
           %t{2}: int2B = load %t{1}: int*2B
-          %t{3}: int2B = %t{2}: int2B plus %5: int2B
+          %t{3}: int2B = %t{2}: int2B plus %5: char1B
           *(c{0}: int*2B) = store %t{3}: int2B
           ret
           end-def
@@ -411,7 +413,7 @@ describe('Assignment IR', () => {
         }
       `).toCompiledIRBeEqual(/* ruby */ `
         # --- Block main ---
-        def main():
+          def main():
           arr{0}: int[6]*2B = alloca int[6]12B
           *(arr{0}: int[6]*2B) = store %1: int2B
           *(arr{0}: int[6]*2B + %2) = store %2: int2B
@@ -424,7 +426,7 @@ describe('Assignment IR', () => {
           *(ptr{0}: int**2B) = store %t{0}: int[6]*2B
           %t{1}: int*2B = load ptr{0}: int**2B
           %t{2}: int*2B = %t{1}: int*2B plus %4: int2B
-          *(%t{2}: int*2B) = store %8: int2B
+          *(%t{2}: int*2B) = store %8: char1B
           ret
           end-def
       `);
@@ -442,7 +444,7 @@ describe('Assignment IR', () => {
         # --- Block main ---
         def main():
           vec{0}: struct Vec2*2B = alloca struct Vec24B
-          *(vec{0}: struct Vec2*2B + %2) = store %7: int2B
+          *(vec{0}: struct Vec2*2B + %2) = store %7: char1B
           ret
           end-def
       `);
@@ -459,8 +461,8 @@ describe('Assignment IR', () => {
         # --- Block main ---
         def main():
           vec{0}: struct Vec2*2B = alloca struct Vec28B
-          *(vec{0}: struct Vec2*2B + %2) = store %7: int2B
-          *(vec{0}: struct Vec2*2B + %6) = store %2: int2B
+          *(vec{0}: struct Vec2*2B + %2) = store %7: char1B
+          *(vec{0}: struct Vec2*2B + %6) = store %2: char1B
           ret
           end-def
       `);
@@ -481,11 +483,11 @@ describe('Assignment IR', () => {
           vec{0}: struct Vec2*2B = alloca struct Vec24B
           *(vec{0}: struct Vec2*2B + %2) = store %5: int2B
           ptr{0}: struct Vec2**2B = alloca struct Vec2*2B
-          %t{0}: int*2B = lea vec{0}: struct Vec2*2B
-          *(ptr{0}: struct Vec2**2B) = store %t{0}: int*2B
-          %t{1}: int*2B = load ptr{0}: struct Vec2**2B
-          %t{2}: int*2B = %t{1}: int*2B plus %2: int2B
-          *(%t{2}: int*2B) = store %5: int2B
+          %t{0}: struct Vec2*2B = lea vec{0}: struct Vec2*2B
+          *(ptr{0}: struct Vec2**2B) = store %t{0}: struct Vec2*2B
+          %t{1}: struct Vec2*2B = load ptr{0}: struct Vec2**2B
+          %t{2}: struct Vec2*2B = %t{1}: struct Vec2*2B plus %2: int2B
+          *(%t{2}: struct Vec2*2B) = store %5: char1B
           ret
           end-def
       `);
@@ -508,16 +510,16 @@ describe('Assignment IR', () => {
           vec{0}: struct Vec2*2B = alloca struct Vec24B
           *(vec{0}: struct Vec2*2B + %2) = store %5: int2B
           ptr{0}: struct Vec2**2B = alloca struct Vec2*2B
-          %t{0}: int*2B = lea vec{0}: struct Vec2*2B
-          *(ptr{0}: struct Vec2**2B) = store %t{0}: int*2B
-          %t{1}: int*2B = load ptr{0}: struct Vec2**2B
-          %t{2}: int*2B = %t{1}: int*2B plus %2: int2B
-          *(%t{2}: int*2B) = store %5: int2B
+          %t{0}: struct Vec2*2B = lea vec{0}: struct Vec2*2B
+          *(ptr{0}: struct Vec2**2B) = store %t{0}: struct Vec2*2B
+          %t{1}: struct Vec2*2B = load ptr{0}: struct Vec2**2B
+          %t{2}: struct Vec2*2B = %t{1}: struct Vec2*2B plus %2: int2B
+          *(%t{2}: struct Vec2*2B) = store %5: char1B
           d{0}: int*2B = alloca int2B
-          %t{3}: int*2B = load ptr{0}: struct Vec2**2B
-          %t{4}: int*2B = %t{3}: int*2B plus %2: int2B
-          %t{5}: int2B = load %t{4}: int*2B
-          *(d{0}: int*2B) = store %t{5}: int2B
+          %t{3}: struct Vec2*2B = load ptr{0}: struct Vec2**2B
+          %t{4}: struct Vec2*2B = %t{3}: struct Vec2*2B plus %2: int2B
+          %t{5}: int2B = load %t{4}: struct Vec2*2B
+          *(d{0}: int*2B) = store %t{5}: struct Vec24B
           ret
           end-def
       `);
@@ -541,8 +543,8 @@ describe('Assignment IR', () => {
           *(vec{0}: struct Vec2[2]*2B + %2) = store %5: int2B
           *(vec{0}: struct Vec2[2]*2B + %8) = store %2: int2B
           ptr{0}: struct Vec2[]**2B = alloca struct Vec2[]*2B
-          %t{0}: int*2B = lea vec{0}: struct Vec2[2]*2B
-          *(ptr{0}: struct Vec2[]**2B) = store %t{0}: int*2B
+          %t{0}: struct Vec2*2B = lea vec{0}: struct Vec2[2]*2B
+          *(ptr{0}: struct Vec2[]**2B) = store %t{0}: struct Vec2*2B
           ret
           end-def
       `);

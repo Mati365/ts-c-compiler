@@ -27,14 +27,19 @@ ccompiler(/* cpp */ `
 
   void strlen() {
     // fix: sucky code
-    char[] letters = "Hello world";
-    // check why not working:
-    int d = 5;
-    int s = 5;
-    int k = letters[0] + letters[0] * d + s * 5;
-    int sk = 2;
-    sk *= 4 + d;
-    sk += d;
+    // char[] letters = "Hello world";
+    // // check why not working:
+    // int d = 5;
+    // int s = 5;
+    // int k = letters[0] + letters[0] * d + s * 5;
+    // int sk = 2;
+    // sk *= 4 + d;
+    // sk += d;
+
+    int array[] = { 1, 2, 3, 4, 5 };
+    array[1] = 3;
+    array[2] = 4;
+    array[3] = 5;
   }
 `).match({
   ok: result => {

@@ -1,4 +1,4 @@
-import '../utils/irMatcher';
+import '../utils';
 
 describe('For stmt', () => {
   test('for statement', () => {
@@ -15,7 +15,7 @@ describe('For stmt', () => {
         *(i{0}: int*2B) = store %0: int2B
         L1:
         %t{0}: int2B = load i{0}: int*2B
-        %t{1}: i1:zf = icmp %t{0}: int2B less_than %10: int2B
+        %t{1}: i1:zf = icmp %t{0}: int2B less_than %10: char1B
         br %t{1}: i1:zf, true: L2, false: L3
         L2:
         a{0}: int*2B = alloca int2B

@@ -93,6 +93,8 @@ export class X86BasicRegAllocator {
     allocIfNotFound,
   }: IRArgRegResolverAttrs): IRArgAllocatorResult<X86RegName> {
     const { stackFrame, ownership } = this;
+
+    const regsParts = ownership.getAvailableRegs().general.parts;
     const requestArgSizeDelta = size - arg.type.getByteSize();
 
     if (size < arg.type.getByteSize()) {
@@ -122,6 +124,8 @@ export class X86BasicRegAllocator {
       const varOwnership = ownership.getVarOwnership(arg.name);
 
       if (isRegOwnership(varOwnership)) {
+        const varOwnershipRegSize = getX86RegByteSize(varOwnership.reg);
+
         // 1. Case:
         //  handle case: int a = (int) b + 3; where `b: char` is being loaded into bigger reg
         //
@@ -143,8 +147,9 @@ export class X86BasicRegAllocator {
             reg: regResult.value,
           });
 
-          const movOpcode = requestArgSizeDelta >= 1 ? 'movzx' : 'mov';
-          const result = {
+          const movOpcode = requestArgSizeDelta ? 'movzx' : 'mov';
+
+          return {
             size,
             value: regResult.value,
             asm: [
@@ -152,8 +157,6 @@ export class X86BasicRegAllocator {
               genInstruction(movOpcode, regResult.value, varOwnership.reg),
             ],
           };
-
-          return result;
         }
 
         // handle case when we already loaded variable into reg previously
@@ -162,11 +165,11 @@ export class X86BasicRegAllocator {
         //  char[] letters = "Hello world";
         //  char b = letters[0];
 
-        const regSize = getX86RegByteSize(varOwnership.reg);
-        if (regSize !== size) {
-          const regPart =
-            ownership.getAvailableRegs().general.parts[varOwnership.reg];
+        if (varOwnershipRegSize - size === 1) {
+          const regPart = regsParts[varOwnership.reg];
 
+          // variable is placed in AX / BX / etc. type registers that
+          // have smaller parts like AL / AH / etc.
           if (regPart && regPart.size === size) {
             return {
               value: regPart.low,
@@ -175,6 +178,22 @@ export class X86BasicRegAllocator {
             };
           }
 
+          // but in some cases ownership of reg is already using bigger reg than requested
+          // in that cases just alloc next one
+          const regResult = this.requestReg({
+            size: varOwnershipRegSize,
+            allowedRegs,
+          });
+
+          return {
+            size,
+            value: regsParts[regResult.value].low,
+            asm: [
+              ...regResult.asm,
+              genInstruction('mov', regResult.value, varOwnership.reg),
+            ],
+          };
+        } else if (varOwnershipRegSize - size > 1) {
           throw new CBackendError(CBackendErrorCode.REG_ALLOCATOR_ERROR);
         }
 

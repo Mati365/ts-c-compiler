@@ -6,13 +6,13 @@ import {
 
 import { isImplicitPtrType } from '../../../types/utils';
 
+import { ASTCTypeCreator } from './ASTCTypeCreator';
 import {
   CPointerType,
   isArrayLikeType,
   isFuncDeclLikeType,
   isPointerLikeType,
 } from '../../../types';
-import { ASTCTypeCreator } from './ASTCTypeCreator';
 
 export class ASTCCastUnaryExpressionTypeCreator extends ASTCTypeCreator<ASTCCastUnaryExpression> {
   kind = ASTCCompilerKind.CastUnaryExpression;

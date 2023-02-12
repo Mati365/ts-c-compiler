@@ -1,4 +1,4 @@
-import '../utils/irMatcher';
+import '../utils';
 
 describe('Pointer declarations IR', () => {
   describe('Uninitialized', () => {
@@ -83,7 +83,7 @@ describe('Pointer declarations IR', () => {
           *(a{0}: int*2B) = store %123: int2B
           b{0}: int**2B = alloca int*2B
           %t{0}: int2B = load a{0}: int*2B
-          %t{1}: int2B = %t{0}: int2B plus %2: int2B
+          %t{1}: int2B = %t{0}: int2B plus %2: char1B
           *(b{0}: int**2B) = store %t{1}: int2B
           ret
           end-def
@@ -108,7 +108,7 @@ describe('Pointer declarations IR', () => {
           c{0}: int*2B = alloca int2B
           %t{1}: int*2B = load b{0}: int**2B
           %t{2}: int2B = load %t{1}: int*2B
-          %t{3}: int2B = %t{2}: int2B plus %4: int2B
+          %t{3}: int2B = %t{2}: int2B plus %4: char1B
           *(c{0}: int*2B) = store %t{3}: int2B
           ret
           end-def

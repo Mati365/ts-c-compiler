@@ -1,4 +1,4 @@
-import '../utils/irMatcher';
+import '../utils';
 
 describe('If stmt', () => {
   test('basic if statement', () => {
@@ -11,13 +11,13 @@ describe('If stmt', () => {
     `).toCompiledIRBeEqual(/* ruby */ `
       # --- Block main ---
       def main():
-      %t{0}: i1:zf = icmp %2: int2B differs %0: int2B
-      br %t{0}: i1:zf, false: L1
-      L2:
-      a{0}: int*2B = alloca int2B
-      L1:
-      ret
-      end-def
+        %t{0}: i1:zf = icmp %2: char1B differs %0: int2B
+        br %t{0}: i1:zf, false: L1
+        L2:
+        a{0}: int*2B = alloca int2B
+        L1:
+        ret
+        end-def
     `);
   });
 
@@ -38,7 +38,7 @@ describe('If stmt', () => {
         b{0}: int*2B = alloca int2B
         *(b{0}: int*2B) = store %4: int2B
         %t{0}: int2B = load a{0}: int*2B
-        %t{1}: i1:zf = icmp %t{0}: int2B greater_than %2: int2B
+        %t{1}: i1:zf = icmp %t{0}: int2B greater_than %2: char1B
         br %t{1}: i1:zf, false: L3
         L4:
         %t{2}: int2B = load a{0}: int*2B
@@ -47,7 +47,7 @@ describe('If stmt', () => {
         br %t{4}: i1:zf, true: L2
         L3:
         %t{5}: int2B = load b{0}: int*2B
-        %t{6}: i1:zf = icmp %t{5}: int2B greater_than %1: int2B
+        %t{6}: i1:zf = icmp %t{5}: int2B greater_than %1: char1B
         br %t{6}: i1:zf, true: L2
         jmp L1
         L2:
@@ -79,14 +79,14 @@ describe('If stmt', () => {
         b{0}: int*2B = alloca int2B
         *(b{0}: int*2B) = store %4: int2B
         %t{0}: int2B = load a{0}: int*2B
-        %t{1}: i1:zf = icmp %t{0}: int2B greater_than %2: int2B
+        %t{1}: i1:zf = icmp %t{0}: int2B greater_than %2: char1B
         br %t{1}: i1:zf, false: L3
         L2:
         %1_a{0}: int*2B = alloca int2B
         jmp L4
         L3:
         %t{2}: int2B = load b{0}: int*2B
-        %t{3}: i1:zf = icmp %t{2}: int2B greater_than %2: int2B
+        %t{3}: i1:zf = icmp %t{2}: int2B greater_than %2: char1B
         br %t{3}: i1:zf, false: L6
         L5:
         %1_b{0}: int*2B = alloca int2B

@@ -1,4 +1,4 @@
-import { CTypeCheckErrorCode } from './utils/analyzeMatcher';
+import { CTypeCheckErrorCode } from './utils';
 
 describe('Initializer typecheck', () => {
   test('initializer list to auto flatten array size', () => {

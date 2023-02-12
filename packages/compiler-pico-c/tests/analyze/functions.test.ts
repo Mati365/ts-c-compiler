@@ -1,5 +1,5 @@
 import { GrammarErrorCode } from '@compiler/grammar/GrammarError';
-import { CTypeCheckErrorCode } from './utils/analyzeMatcher';
+import { CTypeCheckErrorCode } from './utils';
 
 describe('Function typecheck', () => {
   test('semicolon at end of function is optional', () => {

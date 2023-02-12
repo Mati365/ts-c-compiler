@@ -1,4 +1,4 @@
-import '../utils/irMatcher';
+import '../utils';
 
 describe('Example: Strlen', () => {
   test('Strlen definition', () => {
@@ -33,7 +33,7 @@ describe('Example: Strlen', () => {
         *(i{0}: int*2B) = store %t{1}: int2B
         jmp L1
         L3:
-        ret %-1: int2B
+        ret %-1: char1B
         end-def
     `);
   });

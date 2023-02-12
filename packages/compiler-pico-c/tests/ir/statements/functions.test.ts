@@ -1,4 +1,4 @@
-import '../utils/irMatcher';
+import '../utils';
 
 describe('Functions IR', () => {
   test('should emit return by register from expression primitive types', () => {
@@ -13,11 +13,10 @@ describe('Functions IR', () => {
         %t{2}: int2B = %t{0}: int2B plus %t{1}: int2B
         ret %t{2}: int2B
         end-def
-
-      # --- Block main ---
-      def main():
+        # --- Block main ---
+        def main():
         %t{3}: int sum(int, int)*2B = label-offset sum
-        %t{4}: int2B = call %t{3}: int sum(int, int)*2B :: (%1: int2B, %2: int2B)
+        %t{4}: int2B = call %t{3}: int sum(int, int)*2B :: (%1: char1B, %2: char1B)
         ret
         end-def
     `);
@@ -41,11 +40,10 @@ describe('Functions IR', () => {
         %t{3}: int2B = load d{0}: int*2B
         ret %t{3}: int2B
         end-def
-
-      # --- Block main ---
-      def main():
+        # --- Block main ---
+        def main():
         %t{4}: int sum(int, int)*2B = label-offset sum
-        %t{5}: int2B = call %t{4}: int sum(int, int)*2B :: (%1: int2B, %2: int2B)
+        %t{5}: int2B = call %t{4}: int sum(int, int)*2B :: (%1: char1B, %2: char1B)
         ret
         end-def
     `);
@@ -67,9 +65,8 @@ describe('Functions IR', () => {
         %t{0}: struct Vec22B = load out{0}: struct Vec2*2B
         ret %t{0}: struct Vec22B
         end-def
-
-      # --- Block main ---
-      def main():
+        # --- Block main ---
+        def main():
         %t{1}: struct Vec2 sum()*2B = label-offset sum
         %t{2}: struct Vec22B = call %t{1}: struct Vec2 sum()*2B :: ()
         ret
@@ -89,13 +86,13 @@ describe('Functions IR', () => {
       }
     `).toCompiledIRBeEqual(/* ruby */ `
       # --- Block sum ---
-      def sum(%out{0}: struct Vec2**2B):
+        def sum(%out{0}: struct Vec2**2B):
         out{0}: struct Vec2*2B = load %out{0}: struct Vec2**2B
         *(out{0}: struct Vec2*2B) = store %6: int2B
         ret
         end-def
-      # --- Block main ---
-      def main():
+        # --- Block main ---
+        def main():
         %t{1}: struct Vec2 sum()*2B = label-offset sum
         %t{2}: struct Vec24B = alloca struct Vec24B
         %t{3}: struct Vec2*2B = lea %t{2}: struct Vec24B
@@ -119,13 +116,12 @@ describe('Functions IR', () => {
         %t{2}: int2B = %t{0}: int2B plus %t{1}: int2B
         ret %t{2}: int2B
         end-def
-
-      # --- Block main ---
-      def main():
+        # --- Block main ---
+        def main():
         out{0}: int*2B = alloca int2B
         %t{3}: int sum(int, int)*2B = label-offset sum
-        %t{4}: int2B = call %t{3}: int sum(int, int)*2B :: (%1: int2B, %2: int2B)
-        %t{5}: int2B = %t{4}: int2B plus %3: int2B
+        %t{4}: int2B = call %t{3}: int sum(int, int)*2B :: (%1: char1B, %2: char1B)
+        %t{5}: int2B = %t{4}: int2B plus %3: char1B
         *(out{0}: int*2B) = store %t{5}: int2B
         ret
         end-def
@@ -149,19 +145,18 @@ describe('Functions IR', () => {
         %t{2}: int2B = %t{0}: int2B plus %t{1}: int2B
         ret %t{2}: int2B
         end-def
-
-      # --- Block main ---
-      def main(): [ret: int2B]
+        # --- Block main ---
+        def main(): [ret: int2B]
         ptr{0}: int(int, int)**2B = alloca int(int, int)*2B
         %t{3}: int sum(int, int)*2B = label-offset sum
         *(ptr{0}: int(int, int)**2B) = store %t{3}: int sum(int, int)*2B
         %t{4}: int(int, int)*2B = load ptr{0}: int(int, int)**2B
-        %t{5}: int(int, int)*2B = %t{4}: int(int, int)*2B plus %1: int2B
-        %t{6}: int2B = call %t{5}: int(int, int)*2B :: (%1: int2B, %2: int2B)
+        %t{5}: int(int, int)*2B = %t{4}: int(int, int)*2B plus %1: char1B
+        %t{6}: int2B = call %t{5}: int(int, int)*2B :: (%1: char1B, %2: char1B)
         %t{7}: int(int, int)*2B = load ptr{0}: int(int, int)**2B
-        %t{8}: int2B = call %t{7}: int(int, int)*2B :: (%1: int2B, %2: int2B)
+        %t{8}: int2B = call %t{7}: int(int, int)*2B :: (%1: char1B, %2: char1B)
         %t{9}: int(int, int)*2B = load ptr{0}: int(int, int)**2B
-        %t{10}: int2B = call %t{9}: int(int, int)*2B :: (%4: int2B, %5: int2B)
+        %t{10}: int2B = call %t{9}: int(int, int)*2B :: (%4: char1B, %5: char1B)
         ret
         end-def
     `);
@@ -192,17 +187,16 @@ describe('Functions IR', () => {
         *(v{0}: struct Vec2*2B + %2) = store %t{1}: int2B
         ret
         end-def
-
-      # --- Block main ---
-      def main(): [ret: int2B]
+        # --- Block main ---
+        def main(): [ret: int2B]
         ptr{0}: struct Vec2(int, int)**2B = alloca struct Vec2(int, int)*2B
         %t{3}: struct Vec2 of_vec(int, int)*2B = label-offset of_vec
         *(ptr{0}: struct Vec2(int, int)**2B) = store %t{3}: struct Vec2 of_vec(int, int)*2B
         vec{0}: struct Vec2*2B = alloca struct Vec24B
         %t{4}: struct Vec2(int, int)*2B = load ptr{0}: struct Vec2(int, int)**2B
-        %t{5}: struct Vec2(int, int)*2B = %t{4}: struct Vec2(int, int)*2B plus %1: int2B
+        %t{5}: struct Vec2(int, int)*2B = %t{4}: struct Vec2(int, int)*2B plus %1: char1B
         %t{6}: struct Vec2**2B = lea vec{0}: struct Vec2*2B
-        call %t{5}: struct Vec2(int, int)*2B :: (%1: int2B, %2: int2B, %t{6}: struct Vec2**2B)
+        call %t{5}: struct Vec2(int, int)*2B :: (%1: char1B, %2: char1B, %t{6}: struct Vec2**2B)
         ret
         end-def
     `);

@@ -1,4 +1,4 @@
-import { CTypeCheckErrorCode } from './utils/analyzeMatcher';
+import { CTypeCheckErrorCode } from './utils';
 
 describe('Variable access', () => {
   test('access first level depth nested structure fails if assign to int', () => {

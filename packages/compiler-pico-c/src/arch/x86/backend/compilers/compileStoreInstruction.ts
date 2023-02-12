@@ -118,6 +118,10 @@ export function compileStoreInstruction({
         size: destAddr.size,
       });
 
+      regs.ownership.setOwnership(value.name, {
+        reg: extendedReg.value,
+      });
+
       // extend value before move
       inputReg = {
         asm: [

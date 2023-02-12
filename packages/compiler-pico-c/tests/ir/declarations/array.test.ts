@@ -1,4 +1,4 @@
-import '../utils/irMatcher';
+import '../utils';
 
 describe('Arrays declarations IR', () => {
   describe('Uninitialized', () => {

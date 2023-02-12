@@ -25,6 +25,7 @@ export function dropNopMathInstructions(instructions: IRInstruction[]) {
     if (
       instruction.operator === TokenType.MUL &&
       instruction.hasAnyConstantArg() &&
+      !instruction.hasBothConstantArgs() &&
       instruction.getFirstConstantArg().constant === 0x1
     ) {
       replaceArgs[instruction.outputVar.name] = instruction.getFirstVarArg();

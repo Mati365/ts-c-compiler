@@ -1,4 +1,4 @@
-import '../utils/irMatcher';
+import '../utils';
 
 describe('While stmt', () => {
   test('basic while statement', () => {
@@ -12,7 +12,7 @@ describe('While stmt', () => {
       # --- Block main ---
       def main():
         L1:
-        %t{0}: i1:zf = icmp %2: int2B greater_than %1: int2B
+        %t{0}: i1:zf = icmp %2: char1B greater_than %1: char1B
         br %t{0}: i1:zf, false: L2
         a{0}: int*2B = alloca int2B
         jmp L1
@@ -34,7 +34,7 @@ describe('While stmt', () => {
       def main():
         L1:
         a{0}: int*2B = alloca int2B
-        %t{0}: i1:zf = icmp %2: int2B greater_than %1: int2B
+        %t{0}: i1:zf = icmp %2: char1B greater_than %1: char1B
         br %t{0}: i1:zf, true: L1
         ret
         end-def

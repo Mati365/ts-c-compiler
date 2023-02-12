@@ -1,4 +1,4 @@
-import { CTypeCheckErrorCode } from './utils/analyzeMatcher';
+import { CTypeCheckErrorCode } from './utils';
 
 describe('Variables scope', () => {
   test('redefine of scope variable trigger error', () => {
