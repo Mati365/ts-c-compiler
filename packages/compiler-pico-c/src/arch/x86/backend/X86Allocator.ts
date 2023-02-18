@@ -6,6 +6,8 @@ import { X86StackFrame } from './X86StackFrame';
 import { X86BasicRegAllocator } from './reg-allocator';
 import { genInstruction, genLabelName } from '../asm-utils';
 
+export type X86StackFrameContentFn = () => { asm: string[]; ret: string[] };
+
 export class X86Allocator {
   private readonly labels: { [id: string]: string } = {};
 
@@ -48,20 +50,24 @@ export class X86Allocator {
   /**
    * Allocates whole function declaration IR code and injects code into it
    */
-  allocStackFrameInstructions(content: () => string[]): string[] {
+  allocStackFrameInstructions(contentFn: X86StackFrameContentFn): string[] {
     const { config } = this;
     const { arch } = config;
 
     this._stackFrame = new X86StackFrame(config);
 
     switch (arch) {
-      case CCompilerArch.X86_16:
+      case CCompilerArch.X86_16: {
+        const content = contentFn();
+
         return [
           genInstruction('push', 'bp'),
           genInstruction('mov', 'bp', 'sp'),
-          ...content(),
+          ...content.asm,
           genInstruction('pop', 'bp'),
+          ...content.ret,
         ];
+      }
 
       default:
         assertUnreachable(arch);

@@ -5,6 +5,7 @@ import {
   isIRLabelInstruction,
 } from '@compiler/pico-c/frontend/ir/instructions';
 
+import { X86StackFrameContentFn } from '../X86Allocator';
 import {
   X86CompiledBlockOutput,
   X86CompilerFnAttrs,
@@ -36,8 +37,10 @@ export function compileFnDeclInstructionsBlock({
   context,
 }: FnDeclCompilerBlockFnAttrs): X86CompiledBlockOutput {
   const { allocator, iterator } = context;
-  const compileFnContent = (): string[] => {
+
+  const compileFnContent: X86StackFrameContentFn = () => {
     const asm: string[] = [];
+    let ret: string[] = [];
 
     getX86FnCaller(fnInstruction.type.callConvention).allocIRFnDefStackArgs({
       declaration: fnInstruction,
@@ -107,17 +110,26 @@ export function compileFnDeclInstructionsBlock({
         case IROpcode.COMMENT:
           asm.push(genComment((<IRCommentInstruction>instruction).comment));
           break;
+
+        case IROpcode.RET:
+          ret = compileRetInstruction({
+            ...arg,
+            fnInstruction,
+          });
+          break;
       }
     });
 
-    return asm;
+    return {
+      ret,
+      asm,
+    };
   };
 
   const asm = [
     genComment(fnInstruction.getDisplayName()),
     genLabel(allocator.allocLabel('fn', fnInstruction.name), false),
     ...allocator.allocStackFrameInstructions(compileFnContent),
-    ...compileRetInstruction(),
   ];
 
   return {

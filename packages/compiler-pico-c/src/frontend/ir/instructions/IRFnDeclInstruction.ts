@@ -32,6 +32,10 @@ export class IRFnDeclInstruction
     super(IROpcode.FN_DECL);
   }
 
+  hasReturnValueInReg() {
+    return !!this.returnRegType;
+  }
+
   isVoid() {
     const { returnRegType, outputVarPtr } = this;
 
