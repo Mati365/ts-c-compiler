@@ -50,6 +50,13 @@ export class X86CdeclFnCaller implements X86ConventionalFnCaller {
       });
     }
 
+    // handle case when we call `sum(void)` with `sum(1, 2, 3)`.
+    // Cleanup `1`, .. args stack because `ret` function does not do that
+    const argsCountDelta = totalArgs - declaration.args.length;
+    if (argsCountDelta) {
+      asm.push(genInstruction('add', stack.reg, argsCountDelta * stack.size));
+    }
+
     return asm;
   }
 

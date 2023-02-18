@@ -150,10 +150,10 @@ describe('Function typecheck', () => {
     `).not.toHaveCompilerError();
   });
 
-  test.skip('assign function return to variable does not throw error', () => {
+  test('assign function return to variable does not throw error', () => {
     expect(/* cpp */ `
       int sum(void) { return 2; }
       int main() { int acc = sum(); }
-    `).toHaveCompilerError();
+    `).not.toHaveCompilerError();
   });
 });
