@@ -44,6 +44,7 @@ export function functionRvoStmtTransformer({
         rvoOutputVar,
         instruction.outputVar,
       );
+
       optimized = true;
       break;
     } else {

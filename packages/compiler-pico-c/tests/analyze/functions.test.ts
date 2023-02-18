@@ -141,10 +141,19 @@ describe('Function typecheck', () => {
     );
   });
 
+  test('can return value from void and does not crash', () => {
+    expect(/* cpp */ `
+      void sum(int a, int b) {
+        int k = a + b;
+        return k;
+      }
+    `).not.toHaveCompilerError();
+  });
+
   test.skip('assign function return to variable does not throw error', () => {
     expect(/* cpp */ `
       int sum(void) { return 2; }
       int main() { int acc = sum(); }
-    `).not.toHaveCompilerError();
+    `).toHaveCompilerError();
   });
 });

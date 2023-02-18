@@ -24,7 +24,7 @@ export function compileLoadInstruction({
   } = context;
 
   if (!isIRVariable(inputVar)) {
-    return;
+    throw new CBackendError(CBackendErrorCode.UNKNOWN_BACKEND_ERROR);
   }
 
   const asm: string[] = [];

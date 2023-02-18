@@ -299,7 +299,6 @@ export function emitExpressionIR({
             } else {
               // handle normal "ptr" variable, loads its pointing value
               const tmpVar = allocNextVariable(srcVar.type.baseType);
-
               instructions.push(new IRLoadInstruction(srcVar, tmpVar));
             }
           } else {

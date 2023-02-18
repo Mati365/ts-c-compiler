@@ -233,4 +233,33 @@ describe('Functions IR', () => {
         end-def
     `);
   });
+
+  test('should not return primitive variable from function with void return type', () => {
+    expect(/* cpp*/ `
+      void sum() {
+        int k = 2;
+        return k;
+      }
+    `).toCompiledIRBeEqual(/* ruby */ `
+      # --- Block sum ---
+      def sum():
+        k{0}: int*2B = alloca int2B
+        *(k{0}: int*2B) = store %2: int2B
+        ret
+        end-def
+    `);
+  });
+
+  test('should not return constants from function with void return type', () => {
+    expect(/* cpp*/ `
+      void sum() {
+        return 2;
+      }
+    `).toCompiledIRBeEqual(/* ruby */ `
+      # --- Block sum ---
+      def sum():
+        ret
+        end-def
+    `);
+  });
 });
