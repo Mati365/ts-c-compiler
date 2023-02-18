@@ -9,7 +9,7 @@ export function genLabelName(name: string): string {
  *  Move it to compiler context! Compiler should generate unique
  *  label prefix per compilation unit!
  */
-export function genLabel(name: string, prefix?: boolean): string {
+export function genLabel(name: string, prefix: boolean = true): string {
   const inner = prefix ? genLabelName(name) : name;
 
   return `${inner}:`;
