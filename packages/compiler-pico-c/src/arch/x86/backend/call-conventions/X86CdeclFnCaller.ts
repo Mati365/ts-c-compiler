@@ -74,7 +74,7 @@ export class X86CdeclFnCaller implements X86ConventionalFnCaller {
       const arg = args[i];
       const stackVar = stackFrame.allocRawStackVariable({
         name: arg.name,
-        offset: (args.length - i) * stack.size,
+        offset: (i + 1) * stack.size,
         size: X86StackFrame.getStackAllocVariableSize(arg),
       });
 

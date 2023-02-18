@@ -53,6 +53,28 @@ describe('Variable assign', () => {
           a = a + 5;
         }
       `).toCompiledAsmBeEqual(`
+        cpu 386
+        ; def sum():
+        @@_fn_sum:
+        push bp
+        mov bp, sp
+        pop bp
+        ret
+
+        ; def main():
+        @@_fn_main:
+        push bp
+        mov bp, sp
+        mov word [bp - 2], 2      ; *(a{0}: int*2B) = store %2: int2B
+        mov ax, [bp - 2]
+        add ax, 6                 ; %t{1}: int2B = %t{0}: int2B plus %6: char1B
+        mov word [bp - 2], ax     ; *(a{0}: int*2B) = store %t{1}: int2B
+        call @@_fn_sum
+        mov bx, [bp - 2]
+        add bx, 5                 ; %t{4}: int2B = %t{3}: int2B plus %5: char1B
+        mov word [bp - 2], bx     ; *(a{0}: int*2B) = store %t{4}: int2B
+        pop bp
+        ret
       `);
     });
   });

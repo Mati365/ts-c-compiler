@@ -107,8 +107,8 @@ describe('Function call', () => {
         @@_fn_sum:
         push bp
         mov bp, sp
-        mov ax, [bp + 4]
-        add ax, word [bp + 2]     ; %t{2}: int2B = %t{0}: int2B plus %t{1}: int2B
+        mov ax, [bp + 2]
+        add ax, word [bp + 4]     ; %t{2}: int2B = %t{0}: int2B plus %t{1}: int2B
         pop bp
         ret 4
 
@@ -123,6 +123,36 @@ describe('Function call', () => {
         mov word [bp - 2], ax     ; *(acc{0}: int*2B) = store %t{5}: int2B
         pop bp
         ; missing return
+        ret
+      `);
+    });
+
+    test('call with mixed args type Int and Char', () => {
+      expect(/* cpp */ `
+        int sum(int a, char b) { return a + b; }
+        void main() { int k = sum(3, 'a'); }
+      `).toCompiledAsmBeEqual(`
+        cpu 386
+        ; def sum(a{0}: int*2B, b{0}: char*2B): [ret: int2B]
+        @@_fn_sum:
+        push bp
+        mov bp, sp
+        mov ax, [bp + 2]
+        mov bx, word [bp + 4]
+        and bx, 0xff
+        add ax, bx                ; %t{2}: int2B = %t{0}: int2B plus %t{1}: char1B
+        pop bp
+        ret 4
+
+        ; def main():
+        @@_fn_main:
+        push bp
+        mov bp, sp
+        push 97
+        push 3
+        call @@_fn_sum
+        mov word [bp - 2], ax     ; *(k{0}: int*2B) = store %t{4}: int2B
+        pop bp
         ret
       `);
     });
@@ -194,6 +224,20 @@ describe('Function call', () => {
 
         @@_c_0_: db 72, 101, 108, 108, 111, 32, 119, 111, 114, 108, 100, 33
         @@_c_1_: db 72, 101, 108, 108, 111
+      `);
+    });
+  });
+
+  describe('Struct types', () => {
+    test('call with struct as argument', () => {
+      expect(/* cpp */ `
+        struct Vec2 { int x, y; };
+        int sum_vec(struct Vec2 vec) { return vec.x + vec.y; }
+        int main() {
+          struct Vec2 vec = { .x = 1, .y = 3 };
+          sum_vec(vec);
+        }
+      `).toCompiledAsmBeEqual(`
       `);
     });
   });

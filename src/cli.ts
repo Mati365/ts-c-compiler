@@ -2,10 +2,17 @@ import 'source-map-support/register';
 import { ccompiler, CCompilerOutput } from '@compiler/pico-c';
 
 ccompiler(/* cpp */ `
-  void printf(const char* str, const char* str2) {}
+  struct Vec2 {
+    int x, y;
+  };
+
+  int sum_vec(struct Vec2 vec, struct Vec2 vec2) {
+    return vec.x + vec.y;
+  }
+
   int main() {
-    const char* str = "Hello world!";
-    printf("Hello", str);
+    struct Vec2 vec = { .x = 1, .y = 3 };
+    sum_vec(vec, vec);
   }
 `).match({
   ok: result => {
