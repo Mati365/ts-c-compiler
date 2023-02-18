@@ -20,6 +20,7 @@ import { compileLeaInstruction } from './compileLeaInstruction';
 import { compileAssignInstruction } from './compileAssignInstruction';
 import { compilePhiInstruction } from './compilePhiInstruction';
 import { compileRetInstruction } from './compileRetInstruction';
+import { compileLabelOffsetInstruction } from './compileLabelOffsetInstruction';
 
 type FnDeclCompilerBlockFnAttrs = CompilerFnAttrs & {
   instruction: IRFnDeclInstruction;
@@ -79,6 +80,10 @@ export function compileFnDeclInstructionsBlock({
 
         case IROpcode.LABEL:
           asm.push(...compileLabelInstruction(arg));
+          break;
+
+        case IROpcode.LABEL_OFFSET:
+          compileLabelOffsetInstruction(arg);
           break;
 
         case IROpcode.ICMP:

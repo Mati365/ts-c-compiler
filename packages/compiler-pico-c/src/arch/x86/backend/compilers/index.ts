@@ -6,6 +6,7 @@ export * from './compileICmpInstruction';
 export * from './compileInstructionsBlock';
 export * from './compileJmpInstruction';
 export * from './compileLabelInstruction';
+export * from './compileLabelOffsetInstruction';
 export * from './compileLeaInstruction';
 export * from './compileLoadInstruction';
 export * from './compileMathInstruction';
