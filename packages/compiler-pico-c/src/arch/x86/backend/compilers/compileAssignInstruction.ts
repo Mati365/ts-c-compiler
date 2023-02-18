@@ -1,10 +1,10 @@
 import { IRAssignInstruction } from '@compiler/pico-c/frontend/ir/instructions';
-import { CompilerInstructionFnAttrs } from '../../constants/types';
+import { X86CompilerInstructionFnAttrs } from '../../constants/types';
 import { genInstruction, withInlineComment } from '../../asm-utils';
 import { isIRConstant } from '@compiler/pico-c/frontend/ir/variables';
 
 type AssignInstructionCompilerAttrs =
-  CompilerInstructionFnAttrs<IRAssignInstruction>;
+  X86CompilerInstructionFnAttrs<IRAssignInstruction>;
 
 export function compileAssignInstruction({
   instruction,

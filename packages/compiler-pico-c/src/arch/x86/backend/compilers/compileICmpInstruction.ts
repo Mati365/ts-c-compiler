@@ -17,7 +17,7 @@ import {
 } from '../../asm-utils';
 
 import { IRArgDynamicResolverType } from '../reg-allocator';
-import { CompilerInstructionFnAttrs } from '../../constants/types';
+import { X86CompilerInstructionFnAttrs } from '../../constants/types';
 import { getBiggerIRArg } from '@compiler/pico-c/frontend/ir/utils';
 
 const OPERATOR_JMP_INSTRUCTIONS: Record<CRelOperator, [string, string]> = {
@@ -30,7 +30,7 @@ const OPERATOR_JMP_INSTRUCTIONS: Record<CRelOperator, [string, string]> = {
 };
 
 type ICmpInstructionCompilerAttrs =
-  CompilerInstructionFnAttrs<IRICmpInstruction>;
+  X86CompilerInstructionFnAttrs<IRICmpInstruction>;
 
 export function compileICmpInstruction({
   instruction,

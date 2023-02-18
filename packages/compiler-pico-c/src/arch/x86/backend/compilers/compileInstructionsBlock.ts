@@ -4,12 +4,12 @@ import {
   IRFnDeclInstruction,
 } from '@compiler/pico-c/frontend/ir/instructions';
 
-import { CompilerFnAttrs } from '../../constants/types';
+import { X86CompilerFnAttrs } from '../../constants/types';
 
 import { genComment } from '../../asm-utils';
 import { compileFnDeclInstructionsBlock } from './compileFnDeclInstructionsBlock';
 
-type InstructionBlockCompilerAttrs = CompilerFnAttrs;
+type InstructionBlockCompilerAttrs = X86CompilerFnAttrs;
 
 export function compileInstructionsBlock({
   context,

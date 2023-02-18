@@ -5,7 +5,10 @@ import {
   isIRLabelInstruction,
 } from '@compiler/pico-c/frontend/ir/instructions';
 
-import { CompiledBlockOutput, CompilerFnAttrs } from '../../constants/types';
+import {
+  X86CompiledBlockOutput,
+  X86CompilerFnAttrs,
+} from '../../constants/types';
 
 import { genComment, genLabel } from '../../asm-utils';
 
@@ -23,14 +26,14 @@ import { compileRetInstruction } from './compileRetInstruction';
 import { compileLabelOffsetInstruction } from './compileLabelOffsetInstruction';
 import { compileCallInstruction } from './compileCallInstruction';
 
-type FnDeclCompilerBlockFnAttrs = CompilerFnAttrs & {
+type FnDeclCompilerBlockFnAttrs = X86CompilerFnAttrs & {
   instruction: IRFnDeclInstruction;
 };
 
 export function compileFnDeclInstructionsBlock({
   instruction: fnInstruction,
   context,
-}: FnDeclCompilerBlockFnAttrs): CompiledBlockOutput {
+}: FnDeclCompilerBlockFnAttrs): X86CompiledBlockOutput {
   const { allocator, iterator } = context;
   const compileFnContent = (): string[] => {
     const asm: string[] = [];

@@ -8,11 +8,11 @@ import { isIRVariable } from '@compiler/pico-c/frontend/ir/variables';
 import { isPointerLikeType } from '@compiler/pico-c/frontend/analyze';
 import { isStackVarOwnership } from '../reg-allocator/utils';
 
-import { CompilerInstructionFnAttrs } from '../../constants/types';
+import { X86CompilerInstructionFnAttrs } from '../../constants/types';
 import { genInstruction, withInlineComment } from '../../asm-utils';
 
 type LoadInstructionCompilerAttrs =
-  CompilerInstructionFnAttrs<IRLoadInstruction>;
+  X86CompilerInstructionFnAttrs<IRLoadInstruction>;
 
 export function compileLoadInstruction({
   instruction,

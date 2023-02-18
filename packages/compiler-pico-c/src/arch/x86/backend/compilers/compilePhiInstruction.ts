@@ -4,10 +4,11 @@ import {
 } from '@compiler/pico-c/backend/errors/CBackendError';
 import { IRPhiInstruction } from '@compiler/pico-c/frontend/ir/instructions';
 
-import { CompilerInstructionFnAttrs } from '../../constants/types';
+import { X86CompilerInstructionFnAttrs } from '../../constants/types';
 import { IRRegOwnership, isRegOwnership } from '../reg-allocator/utils';
 
-type PhiInstructionCompilerAttrs = CompilerInstructionFnAttrs<IRPhiInstruction>;
+type PhiInstructionCompilerAttrs =
+  X86CompilerInstructionFnAttrs<IRPhiInstruction>;
 
 export function compilePhiInstruction({
   instruction,

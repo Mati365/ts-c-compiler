@@ -30,6 +30,31 @@ describe('Variable assign', () => {
         ret
       `);
     });
+
+    test('compiler reuses variable that is already placed in reg', () => {
+      expect(/* cpp */ `
+        void main() {
+          int a = 2;
+          a = a + 6;
+          // sum(4, 4);
+          a = a + 5;
+        }
+      `).toCompiledAsmBeEqual(`
+      `);
+    });
+
+    test('compiler does not reuse variable if branch is between statements', () => {
+      expect(/* cpp */ `
+        void sum() {}
+        void main() {
+          int a = 2;
+          a = a + 6;
+          sum();
+          a = a + 5;
+        }
+      `).toCompiledAsmBeEqual(`
+      `);
+    });
   });
 
   describe('Assign to array item', () => {

@@ -1,8 +1,8 @@
 import { IRAllocInstruction } from '@compiler/pico-c/frontend/ir/instructions';
-import { CompilerInstructionFnAttrs } from '../../constants/types';
+import { X86CompilerInstructionFnAttrs } from '../../constants/types';
 
 type AllocInstructionCompilerAttrs =
-  CompilerInstructionFnAttrs<IRAllocInstruction>;
+  X86CompilerInstructionFnAttrs<IRAllocInstruction>;
 
 export function compileAllocInstruction({
   instruction,

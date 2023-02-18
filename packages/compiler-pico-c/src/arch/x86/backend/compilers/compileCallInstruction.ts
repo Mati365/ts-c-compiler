@@ -1,20 +1,28 @@
 import { IRCallInstruction } from '@compiler/pico-c/frontend/ir/instructions';
-import { CompilerInstructionFnAttrs } from '../../constants/types';
+import { X86CompilerInstructionFnAttrs } from '../../constants/types';
 
 import { isIRLabel } from '@compiler/pico-c/frontend/ir/variables';
-import { genInstruction } from '../../asm-utils';
+import { getX86FnCaller } from '../call-conventions';
 
 type CallInstructionCompilerAttrs =
-  CompilerInstructionFnAttrs<IRCallInstruction>;
+  X86CompilerInstructionFnAttrs<IRCallInstruction>;
 
 export function compileCallInstruction({
   instruction,
   context,
 }: CallInstructionCompilerAttrs) {
   const { fnResolver } = context;
-  const callTarget = isIRLabel(instruction.fnPtr)
-    ? fnResolver.tryResolveFnLabel(instruction.fnPtr.name)
-    : 'todo';
+  const { fnPtr } = instruction;
 
-  return [genInstruction('call', callTarget)];
+  const target = isIRLabel(fnPtr)
+    ? fnResolver.tryResolveFnBlock(fnPtr.name)
+    : null;
+
+  return getX86FnCaller(target.declaration.type.callConvention).compileIRFnCall(
+    {
+      callerInstruction: instruction,
+      context,
+      target,
+    },
+  );
 }

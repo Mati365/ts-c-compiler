@@ -1,8 +1,8 @@
 import { IRLabelOffsetInstruction } from '@compiler/pico-c/frontend/ir/instructions';
-import { CompilerInstructionFnAttrs } from '../../constants/types';
+import { X86CompilerInstructionFnAttrs } from '../../constants/types';
 
 type LabelOffsetInstructionCompilerAttrs =
-  CompilerInstructionFnAttrs<IRLabelOffsetInstruction>;
+  X86CompilerInstructionFnAttrs<IRLabelOffsetInstruction>;
 
 export function compileLabelOffsetInstruction({
   instruction,

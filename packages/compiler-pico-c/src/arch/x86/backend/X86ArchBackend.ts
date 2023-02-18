@@ -9,9 +9,9 @@ import {
 } from '@compiler/pico-c/frontend/ir/generator';
 
 import { X86Allocator } from './X86Allocator';
-import { BackendCompilerContext } from '../constants/types';
+import { X86BackendCompilerContext } from '../constants/types';
 import {
-  BackendCompiledFunctions,
+  X86BackendCompiledFunctions,
   X86FunctionResolver,
 } from './X86FunctionResolver';
 
@@ -40,7 +40,7 @@ export class X86ArchBackend extends CAbstractArchBackend {
   private compileIRFunctions(
     codeSegment: IRFlatCodeSegmentBuilderResult,
   ): string[] {
-    const compiledFunctions: BackendCompiledFunctions = {};
+    const compiledFunctions: X86BackendCompiledFunctions = {};
 
     for (const [, fn] of Object.entries(codeSegment.functions)) {
       const { name } = fn.declaration;
@@ -49,7 +49,7 @@ export class X86ArchBackend extends CAbstractArchBackend {
       const allocator = new X86Allocator(this.config, iterator);
       const fnResolver = new X86FunctionResolver(compiledFunctions);
 
-      const context: BackendCompilerContext = {
+      const context: X86BackendCompilerContext = {
         arch: X86ArchBackend.arch,
         archDescriptor: getCompilerArchDescriptor(X86ArchBackend.arch),
         codeSegment,

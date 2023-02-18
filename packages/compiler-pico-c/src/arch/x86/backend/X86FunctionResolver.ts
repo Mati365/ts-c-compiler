@@ -1,19 +1,25 @@
 import type { IRCodeFunctionBlock } from '@compiler/pico-c/frontend/ir/generator';
 
-export type BackendCompiledFunctions = Record<
+export type X86BackendCompiledFunction = IRCodeFunctionBlock & {
+  asm: {
+    code: string[];
+    label: string;
+  };
+};
+
+export type X86BackendCompiledFunctions = Record<
   string,
-  IRCodeFunctionBlock & {
-    asm: {
-      code: string[];
-      label: string;
-    };
-  }
+  X86BackendCompiledFunction
 >;
 
 export class X86FunctionResolver {
-  constructor(private readonly compiled: BackendCompiledFunctions) {}
+  constructor(private readonly compiled: X86BackendCompiledFunctions) {}
 
-  tryResolveFnLabel(name: string) {
-    return this.compiled[name].asm.label;
+  tryResolveFnBlock(name: string): X86BackendCompiledFunction {
+    return this.compiled[name];
+  }
+
+  tryResolveFnLabel(name: string): string {
+    return this.tryResolveFnBlock(name).asm.label;
   }
 }

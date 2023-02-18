@@ -10,11 +10,11 @@ import { isIRVariable } from '@compiler/pico-c/frontend/ir/variables';
 import { getBiggerIRArg } from '@compiler/pico-c/frontend/ir/utils';
 
 import { IRArgDynamicResolverType } from '../reg-allocator';
-import { CompilerInstructionFnAttrs } from '../../constants/types';
+import { X86CompilerInstructionFnAttrs } from '../../constants/types';
 import { genInstruction, withInlineComment } from '../../asm-utils';
 
 type MathInstructionCompilerAttrs =
-  CompilerInstructionFnAttrs<IRMathInstruction>;
+  X86CompilerInstructionFnAttrs<IRMathInstruction>;
 
 export function compileMathInstruction({
   instruction,

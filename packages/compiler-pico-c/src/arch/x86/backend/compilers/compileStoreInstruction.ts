@@ -13,7 +13,7 @@ import {
   isIRVariable,
 } from '@compiler/pico-c/frontend/ir/variables';
 
-import { CompilerInstructionFnAttrs } from '../../constants/types';
+import { X86CompilerInstructionFnAttrs } from '../../constants/types';
 import {
   genInstruction,
   genMemAddress,
@@ -26,7 +26,7 @@ import {
 } from '@compiler/pico-c/frontend/analyze';
 
 type StoreInstructionCompilerAttrs =
-  CompilerInstructionFnAttrs<IRStoreInstruction>;
+  X86CompilerInstructionFnAttrs<IRStoreInstruction>;
 
 export function compileStoreInstruction({
   instruction,

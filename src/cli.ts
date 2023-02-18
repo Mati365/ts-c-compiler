@@ -4,7 +4,7 @@ import { ccompiler, CCompilerOutput } from '@compiler/pico-c';
 ccompiler(/* cpp */ `
   void sum(int a, int b) {}
   void main() {
-    sum(4, 4);
+    sum(4, 8);
   }
 `).match({
   ok: result => {
