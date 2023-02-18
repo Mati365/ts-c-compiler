@@ -262,4 +262,31 @@ describe('Functions IR', () => {
         end-def
     `);
   });
+
+  test('call with string literal', () => {
+    expect(/* cpp*/ `
+      void printf(const char* str) {}
+      int main() {
+        printf("Hello");
+      }
+    `).toCompiledIRBeEqual(/* ruby */ `
+      # --- Block printf ---
+      def printf(str{0}: const char**2B):
+        ret
+        end-def
+
+
+      # --- Block main ---
+      def main(): [ret: int2B]
+        %t{1}: const char**2B = alloca const char*2B
+        %t{2}: const char*2B = lea c{0}: const char[5]5B
+        *(%t{1}: const char**2B) = store %t{2}: const char*2B
+        call label-offset printf :: (%t{1}: const char**2B)
+        ret
+        end-def
+
+      # --- Block Data ---
+        c{0}: const char[5]5B = const { 72, 101, 108, 108, 111 }
+    `);
+  });
 });

@@ -127,4 +127,74 @@ describe('Function call', () => {
       `);
     });
   });
+
+  describe('Array types', () => {
+    test('call with string literal', () => {
+      expect(/* cpp */ `
+        void printf(const char* str) {}
+        int main() {
+          printf("Hello");
+        }
+      `).toCompiledAsmBeEqual(`
+        cpu 386
+        ; def printf(str{0}: const char**2B):
+        @@_fn_printf:
+        push bp
+        mov bp, sp
+        pop bp
+        ret 2
+
+        ; def main(): [ret: int2B]
+        @@_fn_main:
+        push bp
+        mov bp, sp
+        mov bx, @@_c_0_           ; %t{2}: const char*2B = lea c{0}: const char[5]5B
+        mov word [bp - 2], bx     ; *(%t{1}: const char**2B) = store %t{2}: const char*2B
+        push word [bp - 2]
+        call @@_fn_printf
+        pop bp
+        ; missing return
+        ret
+
+        @@_c_0_: db 72, 101, 108, 108, 111
+      `);
+    });
+
+    test('call with two string literals, one implicit', () => {
+      expect(/* cpp */ `
+        void printf(const char* str, const char* str2) {}
+        int main() {
+          const char* str = "Hello world!";
+          printf("Hello", str);
+        }
+      `).toCompiledAsmBeEqual(`
+        cpu 386
+        ; def printf(str{0}: const char**2B, str2{0}: const char**2B):
+        @@_fn_printf:
+        push bp
+        mov bp, sp
+        pop bp
+        ret 4
+
+        ; def main(): [ret: int2B]
+        @@_fn_main:
+        push bp
+        mov bp, sp
+        mov bx, @@_c_0_           ; %t{0}: const char*2B = lea c{0}: const char[12]12B
+        mov word [bp - 2], bx     ; *(str{1}: const char**2B) = store %t{0}: const char*2B
+        mov di, @@_c_1_           ; %t{3}: const char*2B = lea c{1}: const char[5]5B
+        mov word [bp - 4], di     ; *(%t{2}: const char**2B) = store %t{3}: const char*2B
+        mov si, [bp - 2]          ; %t{4}: const char*2B = load str{1}: const char**2B
+        push si
+        push word [bp - 4]
+        call @@_fn_printf
+        pop bp
+        ; missing return
+        ret
+
+        @@_c_0_: db 72, 101, 108, 108, 111, 32, 119, 111, 114, 108, 100, 33
+        @@_c_1_: db 72, 101, 108, 108, 111
+      `);
+    });
+  });
 });

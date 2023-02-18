@@ -4,7 +4,10 @@ import {
 } from '@compiler/pico-c/backend/errors/CBackendError';
 
 import { getByteSizeArgPrefixName } from '@x86-toolkit/assembler/parser/utils';
-import { getSourceNonPtrType } from '@compiler/pico-c/frontend/analyze/types/utils';
+import {
+  getBaseTypeIfPtr,
+  getSourceNonPtrType,
+} from '@compiler/pico-c/frontend/analyze/types/utils';
 
 import { IRStoreInstruction } from '@compiler/pico-c/frontend/ir/instructions';
 
@@ -36,27 +39,36 @@ export function compileStoreInstruction({
   const { outputVar, value, offset } = instruction;
   const { stackFrame, regs } = allocator;
 
-  let destAddr: { expr: string; size: number } = null;
+  let destAddr: { value: string; size: number } = null;
   const asm: string[] = [];
 
   if (outputVar.isTemporary()) {
     // handle pointers assign
     // *(%t{0}) = 4;
-    const outputByteSize = getSourceNonPtrType(outputVar.type).getByteSize();
-    const ptrVarReg = regs.tryResolveIRArgAsReg({
-      arg: outputVar,
-      allowedRegs: regs.ownership.getAvailableRegs().addressing,
-    });
+    const outputByteSize = getBaseTypeIfPtr(outputVar.type).getByteSize();
+    const memPtrAddr = regs.tryResolveIRArgAsAddr(outputVar);
 
-    asm.push(...ptrVarReg.asm);
-    destAddr = {
-      size: outputByteSize,
-      expr: genMemAddress({
-        size: getByteSizeArgPrefixName(outputByteSize),
-        expression: ptrVarReg.value,
-        offset,
-      }),
-    };
+    if (memPtrAddr) {
+      // handle case: %t{1}: const char**2B = alloca const char*2B
+      // it can be reproduced in `printf("Hello");` call
+      asm.push(...memPtrAddr.asm);
+      destAddr = memPtrAddr;
+    } else {
+      const ptrVarReg = regs.tryResolveIRArgAsReg({
+        arg: outputVar,
+        allowedRegs: regs.ownership.getAvailableRegs().addressing,
+      });
+
+      asm.push(...ptrVarReg.asm);
+      destAddr = {
+        size: outputByteSize,
+        value: genMemAddress({
+          size: getByteSizeArgPrefixName(outputByteSize),
+          expression: ptrVarReg.value,
+          offset,
+        }),
+      };
+    }
   } else {
     // handle normal variable assign
     // *(a) = 5;
@@ -88,7 +100,7 @@ export function compileStoreInstruction({
 
     destAddr = {
       size: outputByteSize,
-      expr: [
+      value: [
         prefix.toLocaleLowerCase(),
         stackFrame.getLocalVarStackRelAddress(outputVar.name, offset),
       ].join(' '),
@@ -137,14 +149,14 @@ export function compileStoreInstruction({
     asm.push(
       ...inputReg.asm,
       withInlineComment(
-        genInstruction('mov', destAddr.expr, inputReg.value),
+        genInstruction('mov', destAddr.value, inputReg.value),
         instruction.getDisplayName(),
       ),
     );
   } else if (isIRConstant(value)) {
     asm.push(
       withInlineComment(
-        genInstruction('mov', destAddr.expr, value.constant),
+        genInstruction('mov', destAddr.value, value.constant),
         instruction.getDisplayName(),
       ),
     );
