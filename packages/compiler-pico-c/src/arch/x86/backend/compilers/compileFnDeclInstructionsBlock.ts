@@ -11,6 +11,7 @@ import {
 } from '../../constants/types';
 
 import { genComment, genLabel } from '../../asm-utils';
+import { getX86FnCaller } from '../call-conventions';
 
 import { compileAllocInstruction } from './compileAllocInstruction';
 import { compileStoreInstruction } from './compileStoreInstruction';
@@ -37,6 +38,11 @@ export function compileFnDeclInstructionsBlock({
   const { allocator, iterator } = context;
   const compileFnContent = (): string[] => {
     const asm: string[] = [];
+
+    getX86FnCaller(fnInstruction.type.callConvention).allocIRFnDefStackArgs({
+      declaration: fnInstruction,
+      context,
+    });
 
     iterator.walk(instruction => {
       const arg = {

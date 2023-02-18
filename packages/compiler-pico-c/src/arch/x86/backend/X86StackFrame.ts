@@ -44,6 +44,11 @@ export class X86StackFrame {
     return -this.allocated;
   }
 
+  allocRawStackVariable(stackVar: X86StackVariable): X86StackVariable {
+    this.stackVars[stackVar.name] = stackVar;
+    return stackVar;
+  }
+
   allocLocalVariable(variable: IRVariable): X86StackVariable {
     const size = X86StackFrame.getStackAllocVariableSize(variable);
     const offset = this.allocBytes(size);
@@ -61,7 +66,7 @@ export class X86StackFrame {
     const { arch } = this.config;
     const stackOffset = this.getStackVarOffset(name);
 
-    if (stackOffset + offset >= 0) {
+    if (offset < 0 && stackOffset + offset >= 0) {
       throw new CBackendError(CBackendErrorCode.OFFSET_OVERFLOW, { name });
     }
 
