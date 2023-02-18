@@ -6,7 +6,7 @@ import {
   ASTCCompilerNode,
 } from '@compiler/pico-c/frontend/parser';
 
-import { IRInstructionVarArg } from '../../../variables';
+import { IRInstructionTypedArg } from '../../../variables';
 import {
   appendStmtResults,
   createBlankStmtResult,
@@ -24,7 +24,7 @@ export function emitFnArgsLoadIR({
 }: FnArgsLoadIREmitAttrs) {
   const { emit } = context;
   const result = createBlankStmtResult();
-  const args: IRInstructionVarArg[] = [];
+  const args: IRInstructionTypedArg[] = [];
 
   GroupTreeVisitor.ofIterator<ASTCCompilerNode>({
     [ASTCCompilerKind.AssignmentExpression]: {

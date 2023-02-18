@@ -5,7 +5,7 @@ import { IsOutputInstruction } from '../interfaces';
 
 import { IROpcode } from '../constants';
 import { IRInstruction, IRInstructionArgs } from './IRInstruction';
-import { IRInstructionVarArg, IRVariable } from '../variables';
+import { IRInstructionTypedArg, IRVariable } from '../variables';
 
 export function isIRStoreInstruction(
   instruction: IRInstruction,
@@ -21,7 +21,7 @@ export class IRStoreInstruction
   implements IsOutputInstruction
 {
   constructor(
-    readonly value: IRInstructionVarArg,
+    readonly value: IRInstructionTypedArg,
     readonly outputVar: IRVariable,
     readonly offset: number = 0,
   ) {

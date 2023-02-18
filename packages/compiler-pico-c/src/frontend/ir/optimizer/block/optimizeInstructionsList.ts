@@ -2,6 +2,7 @@ import { compose } from 'ramda';
 import { IRInstruction } from '../../instructions';
 import {
   concatConstantStoreInstruction,
+  dropConstantLabelOffsetsArgs,
   dropDeadStoreInstructions,
   dropInstructionsWithOrphanOutputs,
   dropNopMathInstructions,
@@ -17,8 +18,8 @@ type OptimizerConfig = {
 };
 
 const optimizeFlow = compose(
-  concatConstantStoreInstruction,
   dropInstructionsWithOrphanOutputs,
+  concatConstantStoreInstruction,
   foldAddressOffsetsInstructions,
   dropRedundantLabelInstructions,
   dropDeadStoreInstructions,
@@ -26,6 +27,7 @@ const optimizeFlow = compose(
   dropRedundantAddressInstructions,
   dropNopMathInstructions,
   flipMathInstructionsOperands,
+  dropConstantLabelOffsetsArgs,
 );
 
 export function optimizeInstructionsList(

@@ -26,7 +26,7 @@ export function dropRedundantAddressInstructions(
       if (isIRLeaInstruction(instruction)) {
         ({ name: cacheKey } = instruction.inputVar);
       } else if (isIRLabelOffsetInstruction(instruction)) {
-        cacheKey = instruction.labelInstruction.name;
+        cacheKey = instruction.label.name;
       }
 
       if (cacheKey) {

@@ -56,7 +56,8 @@ import {
 import { IRError, IRErrorCode } from '../../../errors/IRError';
 import {
   IRConstant,
-  IRInstructionVarArg,
+  IRInstructionTypedArg,
+  IRLabel,
   IRVariable,
 } from '../../../variables';
 
@@ -80,7 +81,7 @@ export function emitExpressionIR({
 
   const result = createBlankExprResult();
   const { instructions } = result;
-  let argsVarsStack: IRInstructionVarArg[] = [];
+  let argsVarsStack: IRInstructionTypedArg[] = [];
 
   const pushNextVariable = (variable: IRVariable) => {
     argsVarsStack.push(variable);
@@ -279,7 +280,9 @@ export function emitExpressionIR({
           if (srcFn) {
             const tmpVar = allocNextVariable(CPointerType.ofType(srcFn.type));
 
-            instructions.push(new IRLabelOffsetInstruction(srcFn, tmpVar));
+            instructions.push(
+              new IRLabelOffsetInstruction(IRLabel.ofName(srcFn.name), tmpVar),
+            );
           } else if (srcVar) {
             // handle a[2] / *a
             if (!isPointerLikeType(srcVar.type)) {

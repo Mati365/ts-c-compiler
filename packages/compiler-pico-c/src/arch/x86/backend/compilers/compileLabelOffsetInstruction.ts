@@ -8,14 +8,10 @@ export function compileLabelOffsetInstruction({
   instruction,
   context,
 }: LabelOffsetInstructionCompilerAttrs) {
-  const { outputVar } = instruction;
-  const { allocator, compiled } = context;
+  const { label } = instruction;
+  const { fnResolver } = context;
 
   setTimeout(() => {
-    console.info({
-      compiled,
-      outputVar,
-      allocator,
-    });
+    console.info('TODO:', fnResolver.tryResolveFnLabel(label.name));
   }, 0);
 }

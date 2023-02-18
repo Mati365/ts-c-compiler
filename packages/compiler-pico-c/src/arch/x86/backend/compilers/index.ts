@@ -1,5 +1,6 @@
 export * from './compileAllocInstruction';
 export * from './compileAssignInstruction';
+export * from './compileCallInstruction';
 export * from './compileDataSegment';
 export * from './compileFnDeclInstructionsBlock';
 export * from './compileICmpInstruction';

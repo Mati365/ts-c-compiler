@@ -3,7 +3,7 @@ import chalk from 'chalk';
 import { IsOutputInstruction } from '../interfaces';
 import { IROpcode } from '../constants';
 import { IRInstruction, IRInstructionArgs } from './IRInstruction';
-import { IRInstructionVarArg, IRVariable } from '../variables';
+import { IRInstructionTypedArg, IRVariable } from '../variables';
 import { IRPhiInstruction } from './IRPhiInstruction';
 
 export type IRAssignMeta = {
@@ -26,7 +26,7 @@ export class IRAssignInstruction
   implements IsOutputInstruction
 {
   constructor(
-    readonly inputVar: IRInstructionVarArg,
+    readonly inputVar: IRInstructionTypedArg,
     readonly outputVar: IRVariable,
     readonly meta: IRAssignMeta = {
       virtual: false,
@@ -39,7 +39,7 @@ export class IRAssignInstruction
     input = [this.inputVar],
     output = this.outputVar,
   }: IRInstructionArgs) {
-    return new IRAssignInstruction(input[0], output);
+    return new IRAssignInstruction(<IRInstructionTypedArg>input[0], output);
   }
 
   override getArgs(): IRInstructionArgs {

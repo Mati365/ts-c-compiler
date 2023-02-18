@@ -1,6 +1,6 @@
 import { TokenType } from '@compiler/lexer/shared';
 import { IRInstruction, isIRMathInstruction } from '../../../instructions';
-import { IRInstructionVarArg } from '../../../variables';
+import { IRInstructionTypedArg } from '../../../variables';
 import { dropConstantInstructionArgs } from '../utils';
 
 /**
@@ -12,7 +12,7 @@ import { dropConstantInstructionArgs } from '../utils';
  */
 export function dropNopMathInstructions(instructions: IRInstruction[]) {
   const newInstructions = [...instructions];
-  const replaceArgs: Record<string, IRInstructionVarArg> = {};
+  const replaceArgs: Record<string, IRInstructionTypedArg> = {};
   let needSecondPass = false;
 
   for (let i = 0; i < newInstructions.length; ++i) {

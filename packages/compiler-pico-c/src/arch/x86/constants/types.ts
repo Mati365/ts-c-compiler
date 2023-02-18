@@ -1,20 +1,11 @@
 import type { CCompilerArch } from '@compiler/pico-c/constants';
-import type {
-  IRCodeFunctionBlock,
-  IRFlatCodeSegmentBuilderResult,
-} from '@compiler/pico-c/frontend/ir/generator';
+import type { IRFlatCodeSegmentBuilderResult } from '@compiler/pico-c/frontend/ir/generator';
 
 import type { IRInstruction } from '@compiler/pico-c/frontend/ir/instructions';
 import type { IRBlockIterator } from '@compiler/pico-c/frontend/ir/iterator/IRBlockIterator';
 import type { CArchDescriptor } from '../../types';
 import type { X86Allocator } from '../backend/X86Allocator';
-
-export type BackendCompiledFunctions = Record<
-  string,
-  IRCodeFunctionBlock & {
-    asm: string[];
-  }
->;
+import type { X86FunctionResolver } from '../backend/X86FunctionResolver';
 
 export type BackendCompilerContext = {
   arch: CCompilerArch;
@@ -22,9 +13,7 @@ export type BackendCompilerContext = {
   allocator: X86Allocator;
   iterator: IRBlockIterator;
   codeSegment: IRFlatCodeSegmentBuilderResult;
-  compiled: {
-    functions: BackendCompiledFunctions;
-  };
+  fnResolver: X86FunctionResolver;
 };
 
 export type CompilerFnAttrs = {

@@ -3,7 +3,7 @@ import { isPointerLikeType } from '@compiler/pico-c/frontend/analyze';
 import { assertUnreachable } from '@compiler/core/utils';
 
 import {
-  IRInstructionVarArg,
+  IRInstructionTypedArg,
   IRVariable,
   isIRVariable,
 } from '@compiler/pico-c/frontend/ir/variables';
@@ -77,7 +77,7 @@ export class X86StackFrame {
     }
   }
 
-  static getStackAllocVariableSize(variable: IRInstructionVarArg) {
+  static getStackAllocVariableSize(variable: IRInstructionTypedArg) {
     const { type } = variable;
 
     // IR variables are always pointers

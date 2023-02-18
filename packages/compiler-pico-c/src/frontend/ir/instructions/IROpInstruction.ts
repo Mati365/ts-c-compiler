@@ -6,7 +6,7 @@ import { IROpcode } from '../constants';
 import { IRInstruction, IRInstructionArgs } from './IRInstruction';
 import {
   IRConstant,
-  IRInstructionVarArg,
+  IRInstructionTypedArg,
   IRVariable,
   isIRConstant,
   isIRVariable,
@@ -22,8 +22,8 @@ export class IROpInstruction<O>
   constructor(
     opcode: IROpcode,
     readonly operator: O,
-    readonly leftVar: IRInstructionVarArg,
-    readonly rightVar: IRInstructionVarArg,
+    readonly leftVar: IRInstructionTypedArg,
+    readonly rightVar: IRInstructionTypedArg,
     readonly outputVar: IRVariable = null,
     readonly serializerPrefix: string = null,
   ) {

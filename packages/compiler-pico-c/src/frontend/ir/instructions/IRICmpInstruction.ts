@@ -3,7 +3,7 @@ import { CRelOperator } from '@compiler/pico-c/constants';
 import { IROpcode } from '../constants';
 import { IROpInstruction } from './IROpInstruction';
 import { IRInstruction } from './IRInstruction';
-import { IRInstructionVarArg, IRVariable } from '../variables';
+import { IRInstructionTypedArg, IRVariable } from '../variables';
 
 export function isIRICmpInstruction(
   instruction: IRInstruction,
@@ -17,8 +17,8 @@ export function isIRICmpInstruction(
 export class IRICmpInstruction extends IROpInstruction<CRelOperator> {
   constructor(
     operator: CRelOperator,
-    leftVar: IRInstructionVarArg,
-    rightVar: IRInstructionVarArg,
+    leftVar: IRInstructionTypedArg,
+    rightVar: IRInstructionTypedArg,
     outputVar?: IRVariable,
   ) {
     super(IROpcode.ICMP, operator, leftVar, rightVar, outputVar, 'icmp');

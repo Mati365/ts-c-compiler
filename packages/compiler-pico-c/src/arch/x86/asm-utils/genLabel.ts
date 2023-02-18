@@ -4,6 +4,13 @@ export function genLabelName(name: string): string {
   return `${DEFAULT_UNIQ_PREFIX}${name.replace(/[{}]/g, '_')}`;
 }
 
-export function genLabel(name: string): string {
-  return `${genLabelName(name)}:`;
+/**
+ * @todo
+ *  Move it to compiler context! Compiler should generate unique
+ *  label prefix per compilation unit!
+ */
+export function genLabel(name: string, prefix?: boolean): string {
+  const inner = prefix ? genLabelName(name) : name;
+
+  return `${inner}:`;
 }

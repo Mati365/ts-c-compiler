@@ -1,4 +1,5 @@
 export * from './concatConstantStoreInstructions';
+export * from './dropConstantLabelOffsetsArgs';
 export * from './dropDeadStoreInstructions';
 export * from './dropInstructionsWithOrphanOutputs';
 export * from './dropNopMathInstructions';

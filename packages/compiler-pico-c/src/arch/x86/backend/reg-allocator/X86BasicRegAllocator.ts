@@ -7,7 +7,7 @@ import {
 } from '@compiler/pico-c/backend/errors/CBackendError';
 
 import {
-  IRInstructionVarArg,
+  IRInstructionTypedArg,
   IRVariable,
   isIRConstant,
   isIRVariable,
@@ -56,13 +56,13 @@ export type IRDynamicArgAllocatorResult =
   | IRArgAllocatorTypedResult<IRArgDynamicResolverType.NUMBER, number>;
 
 export type IRArgDynamicResolverAttrs = {
-  arg: IRInstructionVarArg;
+  arg: IRInstructionTypedArg;
   size?: number;
   allow?: IRArgDynamicResolverType;
 };
 
 export type IRArgRegResolverAttrs = {
-  arg: IRInstructionVarArg;
+  arg: IRInstructionTypedArg;
   size?: number;
   allocIfNotFound?: boolean;
   allowedRegs?: X86RegName[];

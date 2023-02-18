@@ -36,7 +36,8 @@ import {
 
 import {
   IRConstant,
-  IRInstructionVarArg,
+  IRInstructionTypedArg,
+  IRLabel,
   IRVariable,
   isIRVariable,
 } from '../../variables';
@@ -163,7 +164,10 @@ export function emitIdentifierGetterIR({
             );
 
             instructions.push(
-              new IRLabelOffsetInstruction(irFunction, lastIRVar),
+              new IRLabelOffsetInstruction(
+                IRLabel.ofName(irFunction.name),
+                lastIRVar,
+              ),
             );
           } else {
             const irVariable = allocator.getVariable(name);
@@ -313,7 +317,7 @@ export function emitIdentifierGetterIR({
           });
 
         instructions.push(...exprInstructions);
-        let offsetAddressVar: IRInstructionVarArg = null;
+        let offsetAddressVar: IRInstructionTypedArg = null;
 
         if (isIRVariable(exprOutput)) {
           if (isPointerLikeType(exprOutput.type)) {

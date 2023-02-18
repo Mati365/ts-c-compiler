@@ -4,7 +4,7 @@ import { IRBlockIterator } from '@compiler/pico-c/frontend/ir/iterator/IRBlockIt
 
 import { X86StackFrame } from './X86StackFrame';
 import { X86BasicRegAllocator } from './reg-allocator';
-import { genInstruction, genLabel } from '../asm-utils';
+import { genInstruction, genLabelName } from '../asm-utils';
 
 export class X86Allocator {
   private readonly labels: { [id: string]: string } = {};
@@ -38,8 +38,8 @@ export class X86Allocator {
   /**
    * Allocates plain jmp label
    */
-  allocLabelInstruction(type: 'fn', id: string): string {
-    const label = genLabel(`${type}_${id}`);
+  allocLabel(type: 'fn', id: string): string {
+    const label = genLabelName(`${type}_${id}`);
 
     this.labels[id] = label;
     return label;

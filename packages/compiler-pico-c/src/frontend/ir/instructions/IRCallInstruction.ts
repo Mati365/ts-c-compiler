@@ -3,7 +3,7 @@ import chalk from 'chalk';
 import { IsOutputInstruction } from '../interfaces';
 import { IROpcode } from '../constants';
 import { IRInstruction, IRInstructionArgs } from './IRInstruction';
-import { IRVariable, IRInstructionVarArg } from '../variables';
+import { IRVariable, IRInstructionTypedArg, IRLabel } from '../variables';
 
 export function isIRCallInstruction(
   instruction: IRInstruction,
@@ -19,18 +19,26 @@ export class IRCallInstruction
   implements IsOutputInstruction
 {
   constructor(
-    readonly fnPtr: IRVariable,
-    readonly args: IRInstructionVarArg[],
+    readonly fnPtr: IRVariable | IRLabel,
+    readonly args: IRInstructionTypedArg[],
     readonly outputVar?: IRVariable,
   ) {
     super(IROpcode.CALL);
+  }
+
+  ofFnPtr(fnPtr: IRVariable | IRLabel) {
+    return new IRCallInstruction(fnPtr, this.args, this.outputVar);
   }
 
   override ofArgs({
     input: [fnPtr, ...restInput],
     output = this.outputVar,
   }: IRInstructionArgs) {
-    return new IRCallInstruction(<IRVariable>fnPtr, restInput, output);
+    return new IRCallInstruction(
+      <IRVariable>fnPtr,
+      <IRInstructionTypedArg[]>restInput,
+      output,
+    );
   }
 
   override getArgs(): IRInstructionArgs {

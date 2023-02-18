@@ -8,8 +8,13 @@ import {
   IRFlatCodeSegmentBuilderResult,
 } from '@compiler/pico-c/frontend/ir/generator';
 
-import { BackendCompiledFunctions } from '../constants/types';
 import { X86Allocator } from './X86Allocator';
+import { BackendCompilerContext } from '../constants/types';
+import {
+  BackendCompiledFunctions,
+  X86FunctionResolver,
+} from './X86FunctionResolver';
+
 import { compileDataSegment, compileInstructionsBlock } from './compilers';
 import { getCompilerArchDescriptor } from '../../../arch';
 
@@ -38,29 +43,35 @@ export class X86ArchBackend extends CAbstractArchBackend {
     const compiledFunctions: BackendCompiledFunctions = {};
 
     for (const [, fn] of Object.entries(codeSegment.functions)) {
+      const { name } = fn.declaration;
+
       const iterator = IRBlockIterator.of(fn.block.instructions);
       const allocator = new X86Allocator(this.config, iterator);
+      const fnResolver = new X86FunctionResolver(compiledFunctions);
 
-      compiledFunctions[fn.declaration.name] = {
+      const context: BackendCompilerContext = {
+        arch: X86ArchBackend.arch,
+        archDescriptor: getCompilerArchDescriptor(X86ArchBackend.arch),
+        codeSegment,
+        iterator,
+        allocator,
+        fnResolver,
+      };
+
+      compiledFunctions[name] = {
         ...fn,
-        asm: compileInstructionsBlock({
-          context: {
-            arch: X86ArchBackend.arch,
-            archDescriptor: getCompilerArchDescriptor(X86ArchBackend.arch),
-            codeSegment,
-            iterator,
-            allocator,
-            compiled: {
-              functions: compiledFunctions,
-            },
-          },
-        }),
+        asm: {
+          code: compileInstructionsBlock({ context }),
+          label: allocator.getLabel(name),
+        },
       };
     }
 
-    return Object.values(compiledFunctions).reduce((acc, { asm }) => {
-      acc.push(...asm);
+    const asm = Object.values(compiledFunctions).reduce((acc, fn) => {
+      acc.push(...fn.asm.code);
       return acc;
     }, [] as string[]);
+
+    return asm;
   }
 }

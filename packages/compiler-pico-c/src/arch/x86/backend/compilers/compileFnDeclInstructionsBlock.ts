@@ -7,7 +7,7 @@ import {
 
 import { CompiledBlockOutput, CompilerFnAttrs } from '../../constants/types';
 
-import { genComment } from '../../asm-utils';
+import { genComment, genLabel } from '../../asm-utils';
 
 import { compileAllocInstruction } from './compileAllocInstruction';
 import { compileStoreInstruction } from './compileStoreInstruction';
@@ -21,6 +21,7 @@ import { compileAssignInstruction } from './compileAssignInstruction';
 import { compilePhiInstruction } from './compilePhiInstruction';
 import { compileRetInstruction } from './compileRetInstruction';
 import { compileLabelOffsetInstruction } from './compileLabelOffsetInstruction';
+import { compileCallInstruction } from './compileCallInstruction';
 
 type FnDeclCompilerBlockFnAttrs = CompilerFnAttrs & {
   instruction: IRFnDeclInstruction;
@@ -78,6 +79,10 @@ export function compileFnDeclInstructionsBlock({
           asm.push(...compileJmpInstruction(arg));
           break;
 
+        case IROpcode.CALL:
+          asm.push(...compileCallInstruction(arg));
+          break;
+
         case IROpcode.LABEL:
           asm.push(...compileLabelInstruction(arg));
           break;
@@ -101,7 +106,7 @@ export function compileFnDeclInstructionsBlock({
 
   const asm = [
     genComment(fnInstruction.getDisplayName()),
-    allocator.allocLabelInstruction('fn', fnInstruction.name),
+    genLabel(allocator.allocLabel('fn', fnInstruction.name), false),
     ...allocator.allocStackFrameInstructions(compileFnContent),
     ...compileRetInstruction(),
   ];

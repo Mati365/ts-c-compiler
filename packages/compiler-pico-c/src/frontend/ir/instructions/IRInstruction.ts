@@ -1,9 +1,9 @@
 import { IsPrintable } from '@compiler/core/interfaces';
 import { IROpcode } from '../constants';
-import { IRInstructionVarArg, IRVariable } from '../variables';
+import { IRInstructionArg, IRVariable } from '../variables';
 
 export type IRInstructionArgs = {
-  input: IRInstructionVarArg[];
+  input: IRInstructionArg[];
   output?: IRVariable;
 };
 

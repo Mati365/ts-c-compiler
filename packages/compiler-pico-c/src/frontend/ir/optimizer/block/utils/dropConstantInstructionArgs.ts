@@ -1,8 +1,8 @@
 import { IRInstruction } from '../../../instructions';
-import { IRInstructionVarArg, isIRVariable } from '../../../variables';
+import { IRInstructionTypedArg, isIRVariable } from '../../../variables';
 
 export function dropConstantInstructionArgs(
-  constantArgs: Record<string, IRInstructionVarArg>,
+  constantArgs: Record<string, IRInstructionTypedArg>,
   instruction: IRInstruction,
 ) {
   let { input, output } = instruction.getArgs();

@@ -1,4 +1,4 @@
 import { IRConstant } from './IRConstant';
 import { IRVariable } from './IRVariable';
 
-export type IRInstructionVarArg = IRVariable | IRConstant;
+export type IRInstructionTypedArg = IRVariable | IRConstant;
