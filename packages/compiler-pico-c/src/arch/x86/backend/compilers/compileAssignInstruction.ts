@@ -1,10 +1,10 @@
 import { IRAssignInstruction } from '@compiler/pico-c/frontend/ir/instructions';
-import { CompilerInstructionFnAttrs } from '../../constants/types';
+import { X86CompilerInstructionFnAttrs } from '../../constants/types';
 import { genInstruction, withInlineComment } from '../../asm-utils';
 import { isIRConstant } from '@compiler/pico-c/frontend/ir/variables';
 
 type AssignInstructionCompilerAttrs =
-  CompilerInstructionFnAttrs<IRAssignInstruction>;
+  X86CompilerInstructionFnAttrs<IRAssignInstruction>;
 
 export function compileAssignInstruction({
   instruction,
@@ -17,6 +17,9 @@ export function compileAssignInstruction({
   const outputReg = regs.tryResolveIRArgAsReg({
     arg: meta.phi?.vars[0] || outputVar,
     allocIfNotFound: true,
+    ...(meta?.preferAddressRegsOutput && {
+      preferRegs: allocator.regs.ownership.getAvailableRegs().addressing,
+    }),
   });
 
   regs.ownership.setOwnership(outputVar.name, {

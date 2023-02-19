@@ -5,7 +5,7 @@ import { TokenType } from '@compiler/lexer/shared';
 import { IROpcode } from '../constants';
 import { IROpInstruction } from './IROpInstruction';
 import { IRInstruction, IRInstructionArgs } from './IRInstruction';
-import { IRInstructionVarArg, IRVariable } from '../variables';
+import { IRInstructionTypedArg, IRVariable } from '../variables';
 
 export function isIRMathInstruction(
   instruction: IRInstruction,
@@ -19,8 +19,8 @@ export function isIRMathInstruction(
 export class IRMathInstruction extends IROpInstruction<CMathOperator> {
   constructor(
     operator: CMathOperator,
-    leftVar: IRInstructionVarArg,
-    rightVar: IRInstructionVarArg,
+    leftVar: IRInstructionTypedArg,
+    rightVar: IRInstructionTypedArg,
     outputVar?: IRVariable,
   ) {
     super(IROpcode.MATH, operator, leftVar, rightVar, outputVar);

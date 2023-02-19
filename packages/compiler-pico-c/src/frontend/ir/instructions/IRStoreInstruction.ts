@@ -5,7 +5,7 @@ import { IsOutputInstruction } from '../interfaces';
 
 import { IROpcode } from '../constants';
 import { IRInstruction, IRInstructionArgs } from './IRInstruction';
-import { IRInstructionVarArg, IRVariable } from '../variables';
+import { IRInstructionTypedArg, IRVariable } from '../variables';
 
 export function isIRStoreInstruction(
   instruction: IRInstruction,
@@ -14,14 +14,17 @@ export function isIRStoreInstruction(
 }
 
 /**
- * Instruction that saves variable to mem
+ * Instead of `load` it performs only:
+ *  1. Fetch address or reg
+ *
+ * It does not perform loading memory that can be specified by reg.
  */
 export class IRStoreInstruction
   extends IRInstruction
   implements IsOutputInstruction
 {
   constructor(
-    readonly value: IRInstructionVarArg,
+    readonly value: IRInstructionTypedArg,
     readonly outputVar: IRVariable,
     readonly offset: number = 0,
   ) {

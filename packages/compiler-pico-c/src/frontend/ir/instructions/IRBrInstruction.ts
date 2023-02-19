@@ -2,7 +2,7 @@ import chalk from 'chalk';
 
 import { IROpcode } from '../constants';
 import { HasLabeledBranches } from '../interfaces';
-import { IRInstructionVarArg } from '../variables';
+import { IRInstructionTypedArg } from '../variables';
 import { IRInstruction } from './IRInstruction';
 import { IRLabelInstruction } from './IRLabelInstruction';
 
@@ -25,7 +25,7 @@ export class IRBrInstruction
   implements IRBranchRelations<IRLabelInstruction>, HasLabeledBranches
 {
   constructor(
-    readonly variable: IRInstructionVarArg,
+    readonly variable: IRInstructionTypedArg,
     readonly ifTrue: IRLabelInstruction,
     readonly ifFalse?: IRLabelInstruction,
   ) {

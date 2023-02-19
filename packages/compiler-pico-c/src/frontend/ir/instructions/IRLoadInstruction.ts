@@ -3,7 +3,7 @@ import chalk from 'chalk';
 import { IsOutputInstruction } from '../interfaces';
 import { IROpcode } from '../constants';
 import { IRInstruction, IRInstructionArgs } from './IRInstruction';
-import { IRInstructionVarArg, IRVariable } from '../variables';
+import { IRInstructionTypedArg, IRVariable } from '../variables';
 
 export function isIRLoadInstruction(
   instruction: IRInstruction,
@@ -12,14 +12,17 @@ export function isIRLoadInstruction(
 }
 
 /**
- * Instruction that loads variable from mem
+ * Instruction loads memory address pointed by `inputVar`.
+ * Instead of `assign` it performs:
+ *  1. Fetch address (or reuse if exists in any register)
+ *  2. Fetch data at specified address
  */
 export class IRLoadInstruction
   extends IRInstruction
   implements IsOutputInstruction
 {
   constructor(
-    readonly inputVar: IRInstructionVarArg,
+    readonly inputVar: IRInstructionTypedArg,
     readonly outputVar: IRVariable,
     readonly offset: number = 0,
   ) {

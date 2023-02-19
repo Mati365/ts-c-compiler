@@ -1,9 +1,9 @@
 import { IRLabelInstruction } from '@compiler/pico-c/frontend/ir/instructions';
-import { CompilerInstructionFnAttrs } from '../../constants/types';
+import { X86CompilerInstructionFnAttrs } from '../../constants/types';
 import { genLabel } from '../../asm-utils';
 
 type LabelInstructionCompilerAttrs =
-  CompilerInstructionFnAttrs<IRLabelInstruction>;
+  X86CompilerInstructionFnAttrs<IRLabelInstruction>;
 
 export function compileLabelInstruction({
   instruction,

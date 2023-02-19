@@ -94,12 +94,13 @@ describe('Variables initialization', () => {
         @@_fn_main:
         push bp
         mov bp, sp
-        mov word [bp - 2], 25928  ; *(letters{0}: int*2B) = store %25928: int2B
-        lea bx, [bp - 2]          ; %t{0}: char*2B = lea letters{0}: char[2]*2B
+        mov word [bp - 3], 25928  ; *(letters{0}: int*2B) = store %25928: int2B
+        mov byte [bp - 1], 0      ; *(letters{0}: char[3]*2B + %2) = store %0: char1B
+        lea bx, [bp - 3]          ; %t{0}: char*2B = lea letters{0}: char[3]*2B
         mov al, [bx]              ; %t{1}: char1B = load %t{0}: char*2B
         add al, 2                 ; %t{2}: char1B = %t{1}: char1B plus %2: char1B
         movzx cx, al
-        mov word [bp - 4], cx     ; *(a{0}: int*2B) = store %t{2}: char1B
+        mov word [bp - 5], cx     ; *(a{0}: int*2B) = store %t{2}: char1B
         pop bp
         ret
       `);
@@ -205,6 +206,25 @@ describe('Variables initialization', () => {
         @@_c_0_: db 1, 2, 3, 4, 5
       `);
     });
+
+    test('struct array', () => {
+      expect(/* cpp */ `
+        void main() {
+          struct Vec2 { int x, y; char z; } vec[] = { { .y = 4 }, { .x =  5, .z = 7 }};
+        }
+      `).toCompiledAsmBeEqual(`
+        cpu 386
+        ; def main():
+        @@_fn_main:
+        push bp
+        mov bp, sp
+        mov word [bp - 8], 4      ; *(vec{0}: struct Vec2[2]*2B + %2) = store %4: int2B
+        mov word [bp - 5], 5      ; *(vec{0}: struct Vec2[2]*2B + %5) = store %5: int2B
+        mov byte [bp - 1], 7      ; *(vec{0}: struct Vec2[2]*2B + %9) = store %7: char1B
+        pop bp
+        ret
+      `);
+    });
   });
 
   describe('Strings initialization', () => {
@@ -219,9 +239,11 @@ describe('Variables initialization', () => {
         @@_fn_main:
         push bp
         mov bp, sp
-        mov word [bp - 2], 72     ; *(letters1{0}: const char**2B) = store %72: const char*2B
+        mov bx, @@_c_0_           ; %t{0}: const char*2B = lea c{0}: const char[2]2B
+        mov word [bp - 2], bx     ; *(letters1{0}: const char**2B) = store %t{0}: const char*2B
         pop bp
         ret
+        @@_c_0_: db 72, 0
       `);
     });
 
@@ -238,18 +260,17 @@ describe('Variables initialization', () => {
         @@_fn_main:
         push bp
         mov bp, sp
-        mov bx, @@_c_0_           ; %t{0}: const char*2B = lea c{0}: const char[4]4B
+        mov bx, @@_c_0_           ; %t{0}: const char*2B = lea c{0}: const char[5]5B
         mov word [bp - 2], bx     ; *(letters1{0}: const char**2B) = store %t{0}: const char*2B
-        mov di, @@_c_1_           ; %t{1}: char*2B = lea c{1}: char[5]5B
+        mov di, @@_c_1_           ; %t{1}: char*2B = lea c{1}: char[6]6B
         mov word [bp - 4], di     ; *(letters2{0}: char**2B) = store %t{1}: char*2B
-        mov si, @@_c_2_           ; %t{2}: const char*2B = lea c{2}: const char[11]11B
+        mov si, @@_c_2_           ; %t{2}: const char*2B = lea c{2}: const char[12]12B
         mov word [bp - 6], si     ; *(letters3{0}: const char**2B) = store %t{2}: const char*2B
         pop bp
         ret
-
-        @@_c_0_: db 72, 101, 108, 108
-        @@_c_1_: db 72, 101, 108, 108, 111
-        @@_c_2_: db 72, 101, 108, 108, 111, 32, 119, 111, 114, 108, 100
+        @@_c_0_: db 72, 101, 108, 108, 0
+        @@_c_1_: db 72, 101, 108, 108, 111, 0
+        @@_c_2_: db 72, 101, 108, 108, 111, 32, 119, 111, 114, 108, 100, 0
       `);
     });
 
@@ -265,14 +286,14 @@ describe('Variables initialization', () => {
         @@_fn_main:
         push bp
         mov bp, sp
-        mov word [bp - 4], 25928  ; *(letters1{0}: int*2B) = store %25928: int2B
-        mov word [bp - 2], 27756  ; *(letters1{0}: int*2B + %2) = store %27756: int2B
-        mov bx, @@_c_0_           ; %t{0}: const char*2B = lea c{0}: const char[6]6B
-        mov word [bp - 6], bx     ; *(letters2{0}: const char**2B) = store %t{0}: const char*2B
+        mov word [bp - 5], 25928  ; *(letters1{0}: int*2B) = store %25928: int2B
+        mov word [bp - 3], 27756  ; *(letters1{0}: int*2B + %2) = store %27756: int2B
+        mov byte [bp - 1], 0      ; *(letters1{0}: char[5]*2B + %4) = store %0: char1B
+        mov bx, @@_c_0_           ; %t{0}: const char*2B = lea c{0}: const char[7]7B
+        mov word [bp - 7], bx     ; *(letters2{0}: const char**2B) = store %t{0}: const char*2B
         pop bp
         ret
-
-        @@_c_0_: db 72, 101, 108, 108, 111, 33
+        @@_c_0_: db 72, 101, 108, 108, 111, 33, 0
       `);
     });
   });

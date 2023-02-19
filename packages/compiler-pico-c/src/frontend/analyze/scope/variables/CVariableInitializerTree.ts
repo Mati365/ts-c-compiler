@@ -77,6 +77,8 @@ export class CVariableInitializerTree<
       fields[i] = text.charCodeAt(i);
     }
 
+    fields[text.length] = 0x0;
+
     return new CVariableInitializerTree(baseType, parentAST, fields);
   }
 

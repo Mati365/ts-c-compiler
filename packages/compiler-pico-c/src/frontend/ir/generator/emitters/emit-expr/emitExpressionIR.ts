@@ -21,6 +21,7 @@ import {
   CVariableInitializerTree,
   isPointerArithmeticType,
   isPointerLikeType,
+  isStructLikeType,
 } from '@compiler/pico-c/frontend/analyze';
 
 import {
@@ -56,7 +57,8 @@ import {
 import { IRError, IRErrorCode } from '../../../errors/IRError';
 import {
   IRConstant,
-  IRInstructionVarArg,
+  IRInstructionTypedArg,
+  IRLabel,
   IRVariable,
 } from '../../../variables';
 
@@ -64,6 +66,7 @@ import { emitIdentifierGetterIR } from '../emitIdentifierGetterIR';
 import { emitIncExpressionIR } from '../emitIncExpressionIR';
 import { emitFnCallExpressionIR } from '../emit-fn-call-expression';
 import { emitLogicBinaryJmpExpressionIR } from './emitLogicBinaryJmpExpressionIR';
+import { emitStructShallowCopyIR } from './emitStructShallowCopyIR';
 
 export type ExpressionIREmitAttrs = IREmitterContextAttrs & {
   node: ASTCCompilerNode;
@@ -80,7 +83,7 @@ export function emitExpressionIR({
 
   const result = createBlankExprResult();
   const { instructions } = result;
-  let argsVarsStack: IRInstructionVarArg[] = [];
+  let argsVarsStack: IRInstructionTypedArg[] = [];
 
   const pushNextVariable = (variable: IRVariable) => {
     argsVarsStack.push(variable);
@@ -279,7 +282,9 @@ export function emitExpressionIR({
           if (srcFn) {
             const tmpVar = allocNextVariable(CPointerType.ofType(srcFn.type));
 
-            instructions.push(new IRLabelOffsetInstruction(srcFn, tmpVar));
+            instructions.push(
+              new IRLabelOffsetInstruction(IRLabel.ofName(srcFn.name), tmpVar),
+            );
           } else if (srcVar) {
             // handle a[2] / *a
             if (!isPointerLikeType(srcVar.type)) {
@@ -293,10 +298,23 @@ export function emitExpressionIR({
               const tmpVar = allocNextVariable(srcVar.type);
 
               instructions.push(new IRLeaInstruction(srcVar, tmpVar));
+            } else if (
+              isStructLikeType(srcVar.type.baseType) &&
+              !srcVar.type.baseType.canBeStoredInReg() &&
+              1 > 4
+            ) {
+              // handle "struct" array, perform shallow copy by value
+              // of provided type
+              emitExprResultToStack(
+                emitStructShallowCopyIR({
+                  allocator,
+                  type: srcVar.type.baseType,
+                }),
+              );
             } else {
-              // handle normal "ptr" variable, loads its pointing value
+              // handle normal "a" variable, loads its pointing value
+              // basically `a = 2`
               const tmpVar = allocNextVariable(srcVar.type.baseType);
-
               instructions.push(new IRLoadInstruction(srcVar, tmpVar));
             }
           } else {

@@ -15,8 +15,7 @@ describe('Functions IR', () => {
         end-def
         # --- Block main ---
         def main():
-        %t{3}: int sum(int, int)*2B = label-offset sum
-        %t{4}: int2B = call %t{3}: int sum(int, int)*2B :: (%1: char1B, %2: char1B)
+        %t{4}: int2B = call label-offset sum :: (%1: char1B, %2: char1B)
         ret
         end-def
     `);
@@ -42,8 +41,7 @@ describe('Functions IR', () => {
         end-def
         # --- Block main ---
         def main():
-        %t{4}: int sum(int, int)*2B = label-offset sum
-        %t{5}: int2B = call %t{4}: int sum(int, int)*2B :: (%1: char1B, %2: char1B)
+        %t{5}: int2B = call label-offset sum :: (%1: char1B, %2: char1B)
         ret
         end-def
     `);
@@ -67,8 +65,7 @@ describe('Functions IR', () => {
         end-def
         # --- Block main ---
         def main():
-        %t{1}: struct Vec2 sum()*2B = label-offset sum
-        %t{2}: struct Vec22B = call %t{1}: struct Vec2 sum()*2B :: ()
+        %t{2}: struct Vec22B = call label-offset sum :: ()
         ret
         end-def
     `);
@@ -86,17 +83,16 @@ describe('Functions IR', () => {
       }
     `).toCompiledIRBeEqual(/* ruby */ `
       # --- Block sum ---
-        def sum(%out{0}: struct Vec2**2B):
-        out{0}: struct Vec2*2B = load %out{0}: struct Vec2**2B
-        *(out{0}: struct Vec2*2B) = store %6: int2B
+      def sum(%out{0}: struct Vec2*2B):
+        %t{1}: struct Vec2*2B = assign %out{0}: struct Vec2*2B
+        *(%t{1}: struct Vec2*2B) = store %6: int2B
         ret
         end-def
         # --- Block main ---
         def main():
-        %t{1}: struct Vec2 sum()*2B = label-offset sum
-        %t{2}: struct Vec24B = alloca struct Vec24B
-        %t{3}: struct Vec2*2B = lea %t{2}: struct Vec24B
-        call %t{1}: struct Vec2 sum()*2B :: (%t{3}: struct Vec2*2B)
+        %t{3}: struct Vec2*2B = alloca struct Vec24B
+        %t{4}: struct Vec2*2B = lea %t{3}: struct Vec2*2B
+        call label-offset sum :: (%t{4}: struct Vec2*2B)
         ret
         end-def
     `);
@@ -119,8 +115,7 @@ describe('Functions IR', () => {
         # --- Block main ---
         def main():
         out{0}: int*2B = alloca int2B
-        %t{3}: int sum(int, int)*2B = label-offset sum
-        %t{4}: int2B = call %t{3}: int sum(int, int)*2B :: (%1: char1B, %2: char1B)
+        %t{4}: int2B = call label-offset sum :: (%1: char1B, %2: char1B)
         %t{5}: int2B = %t{4}: int2B plus %3: char1B
         *(out{0}: int*2B) = store %t{5}: int2B
         ret
@@ -178,25 +173,25 @@ describe('Functions IR', () => {
         struct Vec2 vec = (*ptr + 1)(1, 2);
       }
     `).toCompiledIRBeEqual(/* ruby */ `
-      # --- Block of_vec ---
-      def of_vec(x{0}: int*2B, y{0}: int*2B, %out{0}: struct Vec2**2B):
-        v{0}: struct Vec2*2B = load %out{0}: struct Vec2**2B
+        # --- Block of_vec ---
+        def of_vec(x{0}: int*2B, y{0}: int*2B, %out{0}: struct Vec2*2B):
+        %t{3}: struct Vec2*2B = assign %out{0}: struct Vec2*2B
         %t{0}: int2B = load x{0}: int*2B
-        *(v{0}: struct Vec2*2B) = store %t{0}: int2B
+        *(%t{3}: struct Vec2*2B) = store %t{0}: int2B
         %t{1}: int2B = load y{0}: int*2B
-        *(v{0}: struct Vec2*2B + %2) = store %t{1}: int2B
+        *(%t{3}: struct Vec2*2B + %2) = store %t{1}: int2B
         ret
         end-def
         # --- Block main ---
         def main(): [ret: int2B]
         ptr{0}: struct Vec2(int, int)**2B = alloca struct Vec2(int, int)*2B
-        %t{3}: struct Vec2 of_vec(int, int)*2B = label-offset of_vec
-        *(ptr{0}: struct Vec2(int, int)**2B) = store %t{3}: struct Vec2 of_vec(int, int)*2B
+        %t{4}: struct Vec2 of_vec(int, int)*2B = label-offset of_vec
+        *(ptr{0}: struct Vec2(int, int)**2B) = store %t{4}: struct Vec2 of_vec(int, int)*2B
         vec{0}: struct Vec2*2B = alloca struct Vec24B
-        %t{4}: struct Vec2(int, int)*2B = load ptr{0}: struct Vec2(int, int)**2B
-        %t{5}: struct Vec2(int, int)*2B = %t{4}: struct Vec2(int, int)*2B plus %1: char1B
-        %t{6}: struct Vec2**2B = lea vec{0}: struct Vec2*2B
-        call %t{5}: struct Vec2(int, int)*2B :: (%1: char1B, %2: char1B, %t{6}: struct Vec2**2B)
+        %t{5}: struct Vec2(int, int)*2B = load ptr{0}: struct Vec2(int, int)**2B
+        %t{6}: struct Vec2(int, int)*2B = %t{5}: struct Vec2(int, int)*2B plus %1: char1B
+        %t{7}: struct Vec2**2B = lea vec{0}: struct Vec2*2B
+        call %t{6}: struct Vec2(int, int)*2B :: (%1: char1B, %2: char1B, %t{7}: struct Vec2**2B)
         ret
         end-def
     `);
@@ -211,19 +206,18 @@ describe('Functions IR', () => {
     `).toCompiledIRBeEqual(/* ruby */ `
       # --- Block print ---
       def print(str{0}: const char**2B):
-        ret
-        end-def
+      ret
+      end-def
       # --- Block main ---
       def main():
-        %t{0}: void print(const char*)*2B = label-offset print
-        %t{1}: const char**2B = alloca const char*2B
-        %t{2}: const char*2B = lea c{0}: const char[12]12B
-        *(%t{1}: const char**2B) = store %t{2}: const char*2B
-        call %t{0}: void print(const char*)*2B :: (%t{1}: const char**2B)
-        ret
-        end-def
+      %t{1}: const char**2B = alloca const char*2B
+      %t{2}: const char*2B = lea c{0}: const char[13]13B
+      *(%t{1}: const char**2B) = store %t{2}: const char*2B
+      call label-offset print :: (%t{1}: const char**2B)
+      ret
+      end-def
       # --- Block Data ---
-        c{0}: const char[12]12B = const { 104, 101, 108, 108, 111, 32, 119, 111, 114, 108, 100, 33 }
+      c{0}: const char[13]13B = const { 104, 101, 108, 108, 111, 32, 119, 111, 114, 108, 100, 33, 0 }
     `);
   });
 
@@ -237,6 +231,59 @@ describe('Functions IR', () => {
       def main():
         ret
         end-def
+    `);
+  });
+
+  test('should not return primitive variable from function with void return type', () => {
+    expect(/* cpp*/ `
+      void sum() {
+        int k = 2;
+        return k;
+      }
+    `).toCompiledIRBeEqual(/* ruby */ `
+      # --- Block sum ---
+      def sum():
+        k{0}: int*2B = alloca int2B
+        *(k{0}: int*2B) = store %2: int2B
+        ret
+        end-def
+    `);
+  });
+
+  test('should not return constants from function with void return type', () => {
+    expect(/* cpp*/ `
+      void sum() {
+        return 2;
+      }
+    `).toCompiledIRBeEqual(/* ruby */ `
+      # --- Block sum ---
+      def sum():
+        ret
+        end-def
+    `);
+  });
+
+  test('call with string literal', () => {
+    expect(/* cpp*/ `
+      void printf(const char* str) {}
+      int main() {
+        printf("Hello");
+      }
+    `).toCompiledIRBeEqual(/* ruby */ `
+        # --- Block printf ---
+        def printf(str{0}: const char**2B):
+        ret
+        end-def
+        # --- Block main ---
+        def main(): [ret: int2B]
+        %t{1}: const char**2B = alloca const char*2B
+        %t{2}: const char*2B = lea c{0}: const char[6]6B
+        *(%t{1}: const char**2B) = store %t{2}: const char*2B
+        call label-offset printf :: (%t{1}: const char**2B)
+        ret
+        end-def
+        # --- Block Data ---
+        c{0}: const char[6]6B = const { 72, 101, 108, 108, 111, 0 }
     `);
   });
 });

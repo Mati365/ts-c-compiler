@@ -1,11 +1,12 @@
 import {
   IRInstruction,
+  isIRLabelOffsetInstruction,
   isIRLeaInstruction,
   isIRMathInstruction,
 } from '../../../instructions';
 
 import { isOutputInstruction } from '../../../interfaces';
-import { isIRVariable } from '../../../variables';
+import { isIRLabel, isIRVariable } from '../../../variables';
 
 type InstructionOutputUsageInfo = {
   instruction: IRInstruction;
@@ -50,7 +51,7 @@ export function dropInstructionsWithOrphanOutputs(
 
     // track usage
     for (const input of instruction.getArgs().input) {
-      if (!isIRVariable(input)) {
+      if (!isIRVariable(input) && !isIRLabel(input)) {
         continue;
       }
 
@@ -65,7 +66,11 @@ export function dropInstructionsWithOrphanOutputs(
       continue;
     }
 
-    if (isIRMathInstruction(instruction) || isIRLeaInstruction(instruction)) {
+    if (
+      isIRMathInstruction(instruction) ||
+      isIRLeaInstruction(instruction) ||
+      isIRLabelOffsetInstruction(instruction)
+    ) {
       newInstructions.splice(newInstructions.indexOf(instruction), 1);
     }
   }

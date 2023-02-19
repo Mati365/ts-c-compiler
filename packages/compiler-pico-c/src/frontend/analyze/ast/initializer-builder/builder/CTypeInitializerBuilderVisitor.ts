@@ -252,7 +252,7 @@ export class CTypeInitializerBuilderVisitor extends CInnerTypeTreeVisitor {
           );
         }
 
-        offset += field.getIndex();
+        offset += field.index;
         baseType = field.type;
       }
 

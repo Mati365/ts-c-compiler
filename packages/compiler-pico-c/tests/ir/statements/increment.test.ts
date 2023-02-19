@@ -127,12 +127,10 @@ describe('Increment stmt IR', () => {
           *(point{0}: struct Point[2]*2B + %2) = store %6: int2B
           *(point{0}: struct Point[2]*2B + %24) = store %2: int2B
           %t{0}: struct Point*2B = lea point{0}: struct Point[2]*2B
-          %t{1}: struct Point*2B = %t{0}: struct Point*2B plus %24: int2B
-          %t{2}: struct Point*2B = lea %t{1}: struct Point*2B
-          %t{4}: struct Point*2B = %t{2}: struct Point*2B plus %8: int2B
-          %t{5}: struct Point24B = load %t{4}: struct Point*2B
-          %t{6}: struct Point24B = %t{5}: struct Point24B plus %1: int2B
-          *(point{0}: struct Point[2]*2B + %32) = store %t{6}: struct Point24B
+          %t{3}: struct Point*2B = %t{0}: struct Point*2B plus %32: int2B
+          %t{4}: struct Point24B = load %t{3}: struct Point*2B
+          %t{5}: struct Point24B = %t{4}: struct Point24B plus %1: int2B
+          *(point{0}: struct Point[2]*2B + %32) = store %t{5}: struct Point24B
           ret
           end-def
       `);

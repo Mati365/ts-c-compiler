@@ -8,11 +8,11 @@ import { isIRVariable } from '@compiler/pico-c/frontend/ir/variables';
 import { isPointerLikeType } from '@compiler/pico-c/frontend/analyze';
 import { isStackVarOwnership } from '../reg-allocator/utils';
 
-import { CompilerInstructionFnAttrs } from '../../constants/types';
+import { X86CompilerInstructionFnAttrs } from '../../constants/types';
 import { genInstruction, withInlineComment } from '../../asm-utils';
 
 type LoadInstructionCompilerAttrs =
-  CompilerInstructionFnAttrs<IRLoadInstruction>;
+  X86CompilerInstructionFnAttrs<IRLoadInstruction>;
 
 export function compileLoadInstruction({
   instruction,
@@ -24,7 +24,7 @@ export function compileLoadInstruction({
   } = context;
 
   if (!isIRVariable(inputVar)) {
-    return;
+    throw new CBackendError(CBackendErrorCode.UNKNOWN_BACKEND_ERROR);
   }
 
   const asm: string[] = [];
@@ -42,8 +42,11 @@ export function compileLoadInstruction({
       });
     }
 
-    const regSize = inputVar.type.baseType.getByteSize();
     const outputRegSize = outputVar.type.getByteSize();
+    const regSize = Math.min(
+      outputRegSize,
+      inputVar.type.baseType.getByteSize(),
+    );
 
     const reg = regs.requestReg({
       size: regSize,

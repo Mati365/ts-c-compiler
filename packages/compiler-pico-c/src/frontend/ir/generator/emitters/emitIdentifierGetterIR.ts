@@ -36,7 +36,8 @@ import {
 
 import {
   IRConstant,
-  IRInstructionVarArg,
+  IRInstructionTypedArg,
+  IRLabel,
   IRVariable,
   isIRVariable,
 } from '../../variables';
@@ -163,7 +164,10 @@ export function emitIdentifierGetterIR({
             );
 
             instructions.push(
-              new IRLabelOffsetInstruction(irFunction, lastIRVar),
+              new IRLabelOffsetInstruction(
+                IRLabel.ofName(irFunction.name),
+                lastIRVar,
+              ),
             );
           } else {
             const irVariable = allocator.getVariable(name);
@@ -218,7 +222,7 @@ export function emitIdentifierGetterIR({
 
         const offsetConstant = IRConstant.ofConstant(
           CPrimitiveType.int(config.arch),
-          parentType.baseType.getField(expr.name.text).getOffset(),
+          parentType.baseType.getField(expr.name.text).offset,
         );
 
         if (offsetConstant.constant) {
@@ -249,7 +253,8 @@ export function emitIdentifierGetterIR({
 
         if (
           isPointerLikeType(lastIRVar.type) &&
-          isStructLikeType(lastIRVar.type.baseType)
+          isStructLikeType(lastIRVar.type.baseType) &&
+          !lastIRVar.isTemporary()
         ) {
           instructions.push(
             new IRLeaInstruction(
@@ -261,7 +266,7 @@ export function emitIdentifierGetterIR({
 
         const offsetConstant = IRConstant.ofConstant(
           CPrimitiveType.int(config.arch),
-          parentType.getField(expr.name.text).getOffset(),
+          parentType.getField(expr.name.text).offset,
         );
 
         if (offsetConstant.constant) {
@@ -313,7 +318,7 @@ export function emitIdentifierGetterIR({
           });
 
         instructions.push(...exprInstructions);
-        let offsetAddressVar: IRInstructionVarArg = null;
+        let offsetAddressVar: IRInstructionTypedArg = null;
 
         if (isIRVariable(exprOutput)) {
           if (isPointerLikeType(exprOutput.type)) {
@@ -358,10 +363,17 @@ export function emitIdentifierGetterIR({
   })(node);
 
   if (emitValueAtAddress && lastIRVar && isPointerLikeType(lastIRVar.type)) {
-    const outputVar = allocator.allocTmpVariable(lastIRVar.type.baseType);
-    instructions.push(
-      new IRLoadInstruction(lastIRVar, outputVar.ofType(node.type!)),
+    // handle loading data into identifier IR
+    // example: int k = vec.x;
+    // last variable is `x` from `vec` but `IR` returned `Vec2*`
+    // it has to be auto-casted to `int`
+    const outputVar = allocator.allocTmpVariable(
+      lastIRVar.type.baseType.isPrimitive()
+        ? lastIRVar.type.baseType
+        : node.type,
     );
+
+    instructions.push(new IRLoadInstruction(lastIRVar, outputVar));
 
     return {
       output: outputVar,

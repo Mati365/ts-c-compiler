@@ -2,7 +2,7 @@ import chalk from 'chalk';
 import * as R from 'ramda';
 
 import { IROpcode } from '../constants';
-import { IRInstructionVarArg } from '../variables';
+import { IRInstructionTypedArg } from '../variables';
 import { IRInstruction, IRInstructionArgs } from './IRInstruction';
 
 export function isIRRetInstruction(
@@ -15,7 +15,7 @@ export function isIRRetInstruction(
  * IR return instruction
  */
 export class IRRetInstruction extends IRInstruction {
-  constructor(readonly value?: IRInstructionVarArg) {
+  constructor(readonly value?: IRInstructionTypedArg) {
     super(IROpcode.RET);
   }
 
@@ -24,7 +24,7 @@ export class IRRetInstruction extends IRInstruction {
   }
 
   override ofArgs({ input = [this.value] }: IRInstructionArgs) {
-    return new IRRetInstruction(input[0]);
+    return new IRRetInstruction(<IRInstructionTypedArg>input[0]);
   }
 
   override getArgs(): IRInstructionArgs {

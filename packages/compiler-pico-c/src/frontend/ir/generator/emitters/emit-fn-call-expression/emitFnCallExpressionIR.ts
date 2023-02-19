@@ -115,8 +115,8 @@ export function emitFnCallExpressionIR({
       );
     }
   } else {
-    output = allocator.allocTmpVariable(fnType.returnType);
-    const outputPtr = allocator.allocTmpPointer(output.type);
+    output = allocator.allocTmpPointer(fnType.returnType);
+    const outputPtr = allocator.allocTmpPointer(fnType.returnType);
 
     result.instructions.push(
       new IRAllocInstruction(fnType.returnType, output),

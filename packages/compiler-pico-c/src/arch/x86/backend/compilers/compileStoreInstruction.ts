@@ -4,8 +4,6 @@ import {
 } from '@compiler/pico-c/backend/errors/CBackendError';
 
 import { getByteSizeArgPrefixName } from '@x86-toolkit/assembler/parser/utils';
-import { getSourceNonPtrType } from '@compiler/pico-c/frontend/analyze/types/utils';
-
 import { IRStoreInstruction } from '@compiler/pico-c/frontend/ir/instructions';
 
 import {
@@ -13,20 +11,17 @@ import {
   isIRVariable,
 } from '@compiler/pico-c/frontend/ir/variables';
 
-import { CompilerInstructionFnAttrs } from '../../constants/types';
+import { getStoreOutputByteSize } from '../utils';
+
+import { X86CompilerInstructionFnAttrs } from '../../constants/types';
 import {
   genInstruction,
   genMemAddress,
   withInlineComment,
 } from '../../asm-utils';
 
-import {
-  isArrayLikeType,
-  isPointerLikeType,
-} from '@compiler/pico-c/frontend/analyze';
-
 type StoreInstructionCompilerAttrs =
-  CompilerInstructionFnAttrs<IRStoreInstruction>;
+  X86CompilerInstructionFnAttrs<IRStoreInstruction>;
 
 export function compileStoreInstruction({
   instruction,
@@ -36,27 +31,40 @@ export function compileStoreInstruction({
   const { outputVar, value, offset } = instruction;
   const { stackFrame, regs } = allocator;
 
-  let destAddr: { expr: string; size: number } = null;
+  let destAddr: { value: string; size: number } = null;
   const asm: string[] = [];
+  const outputByteSize = getStoreOutputByteSize(outputVar.type, offset);
 
   if (outputVar.isTemporary()) {
-    // handle pointers assign
-    // *(%t{0}) = 4;
-    const outputByteSize = getSourceNonPtrType(outputVar.type).getByteSize();
-    const ptrVarReg = regs.tryResolveIRArgAsReg({
-      arg: outputVar,
-      allowedRegs: regs.ownership.getAvailableRegs().addressing,
-    });
+    // 1. handle pointers assign
+    //  *(%t{0}) = 4;
+    // 2. handle case when we have:
+    //  *(%t{4}: struct Vec2*2B) = store %5: char1B
+    //  in this case size should be loaded from left side and it should
+    //  respect offset size of struct entry (for example `x` might have 1B size)
+    const memPtrAddr = regs.tryResolveIRArgAsAddr(outputVar);
 
-    asm.push(...ptrVarReg.asm);
-    destAddr = {
-      size: outputByteSize,
-      expr: genMemAddress({
-        size: getByteSizeArgPrefixName(outputByteSize),
-        expression: ptrVarReg.value,
-        offset,
-      }),
-    };
+    if (memPtrAddr) {
+      // handle case: %t{1}: const char**2B = alloca const char*2B
+      // it can be reproduced in `printf("Hello");` call
+      asm.push(...memPtrAddr.asm);
+      destAddr = memPtrAddr;
+    } else {
+      const ptrVarReg = regs.tryResolveIRArgAsReg({
+        arg: outputVar,
+        allowedRegs: regs.ownership.getAvailableRegs().addressing,
+      });
+
+      asm.push(...ptrVarReg.asm);
+      destAddr = {
+        size: outputByteSize,
+        value: genMemAddress({
+          size: getByteSizeArgPrefixName(outputByteSize),
+          expression: ptrVarReg.value,
+          offset,
+        }),
+      };
+    }
   } else {
     // handle normal variable assign
     // *(a) = 5;
@@ -67,28 +75,11 @@ export function compileStoreInstruction({
     //    int x, y;
     //  } vec = { .y = 5 };
     //
-    const srcType = (() => {
-      if (!isPointerLikeType(outputVar.type)) {
-        throw new CBackendError(CBackendErrorCode.STORE_VAR_SHOULD_BE_PTR);
-      }
-
-      const { baseType } = outputVar.type;
-      if (isArrayLikeType(baseType)) {
-        return getSourceNonPtrType(baseType);
-      }
-
-      return baseType;
-    })();
-
-    const outputByteSize = (
-      srcType.isStruct() ? value.type : srcType
-    ).getByteSize();
-
     const prefix = getByteSizeArgPrefixName(outputByteSize);
 
     destAddr = {
       size: outputByteSize,
-      expr: [
+      value: [
         prefix.toLocaleLowerCase(),
         stackFrame.getLocalVarStackRelAddress(outputVar.name, offset),
       ].join(' '),
@@ -137,14 +128,14 @@ export function compileStoreInstruction({
     asm.push(
       ...inputReg.asm,
       withInlineComment(
-        genInstruction('mov', destAddr.expr, inputReg.value),
+        genInstruction('mov', destAddr.value, inputReg.value),
         instruction.getDisplayName(),
       ),
     );
   } else if (isIRConstant(value)) {
     asm.push(
       withInlineComment(
-        genInstruction('mov', destAddr.expr, value.constant),
+        genInstruction('mov', destAddr.value, value.constant),
         instruction.getDisplayName(),
       ),
     );

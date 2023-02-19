@@ -25,29 +25,39 @@ export class IRFnDeclInstruction
     readonly type: CFunctionDeclType,
     readonly name: string,
     readonly args: IRVariable[],
-    readonly returnRegType?: CType,
-    readonly outputVarPtr: IRVariable = null,
+    readonly returnType?: CType,
+    readonly outputVar: IRVariable = null,
     readonly variadic: boolean = false,
   ) {
     super(IROpcode.FN_DECL);
   }
 
-  isVoid() {
-    const { returnRegType, outputVarPtr } = this;
+  getArgsWithRVO() {
+    const { args, outputVar } = this;
 
-    return !returnRegType && !outputVarPtr;
+    return outputVar ? [...args, outputVar] : args;
+  }
+
+  hasReturnValue() {
+    return !!this.returnType;
+  }
+
+  isVoid() {
+    const { returnType, outputVar } = this;
+
+    return !returnType && !outputVar;
   }
 
   override getDisplayName(): string {
-    const { name, args, returnRegType, outputVarPtr } = this;
+    const { name, args, returnType, outputVar } = this;
 
     const serializedArgs = args.map(arg => arg.getDisplayName());
-    const retStr = returnRegType
-      ? `: [ret${getIRTypeDisplayName(returnRegType)}]`
+    const retStr = returnType
+      ? `: [ret${getIRTypeDisplayName(returnType)}]`
       : ':';
 
-    if (outputVarPtr) {
-      serializedArgs.push(outputVarPtr.getDisplayName());
+    if (outputVar) {
+      serializedArgs.push(outputVar.getDisplayName());
     }
 
     return `${chalk.bold.yellow('def')} ${chalk.bold.white(

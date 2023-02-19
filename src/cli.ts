@@ -2,40 +2,47 @@ import 'source-map-support/register';
 import { ccompiler, CCompilerOutput } from '@compiler/pico-c';
 
 ccompiler(/* cpp */ `
-  // todo: letters[0] should be truncated
-  // huge issue, truncating type in IR!
-  // void main() {
-  //   char letters[] = "Hello world";
+  // todo:
+  // sprawdź co ładuje do: int k =0x6; char i = k;
+  // mamy little endian!
 
-  //   char b = letters[0];
-  //   int a = letters[0] * 2;
-  // }
+  int strlen(const char* str) {
+    for (int i = 0;;++i) {
+      if (*(str + i) == '0') {
+        return i;
+      }
+    }
 
-  // todo: Optimize
-  // add bx, 32                ; %t{3}: int*2B = %t{0}: int*2B plus %32: int2B
-  // mov ax, [bx]              ; %t{4}: int2B = load %t{3}: int*2B
-  // struct Point {
-  //   int x, y;
-  //   int dupa[10];
-  //   char c;
-  // };
-
-  // void main() {
-  //   struct Point point[] = { { .y = 6 }, { .x = 2 } };
-  //   point[1].dupa[2]++;
-  // }
+    return -1;
+  }
 
   void main() {
-    char a = 'a';
-
-    if (a > 4) {
-      int k = 0;
-    } else if (a < 5) {
-      int j = 4;
-    } else {
-      int c = 4;
-    }
+    strlen("Hello world!");
   }
+    // int main() {
+    // struct Vec2 out = of_vec(2, 3);
+    // out.x = 1;
+    // out.y = 7;
+    // }
+
+  // struct Vec2 {
+  //   int x, y;
+  // };
+
+  // int sum_vec(struct Vec2 vec) {
+  //   return  vec.x + vec.y;
+  // }
+
+  // int main() {
+    // struct Vec2 vec = { .x = 1, .y = 3 };
+    // int k = vec.x;
+    // vec.x = 3;
+    // sum_vec(vec);
+  // }
+  // void main() {
+  //   struct Vec2 vec = { .x = 1, .y = 3 };
+  //   int k = vec.x + vec.y;
+  // }
 `).match({
   ok: result => {
     result.dump();
@@ -48,10 +55,3 @@ ccompiler(/* cpp */ `
     console.error(error);
   },
 });
-
-/**
- * Optimize to AL:
- *
- * and ax, 0xff
- * mov word [bp - 12], ax    ; *(b{0}: char*2B) = store %t{1}: int2B
- */

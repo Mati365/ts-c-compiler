@@ -9,7 +9,7 @@ export enum CStructAlign {
 }
 
 export enum CFunctionCallConvention {
-  CDECL = 'CDECL',
+  STDCALL = 'STDCALL',
 }
 
 export enum CStorageClassSpecifier {

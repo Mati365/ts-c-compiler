@@ -215,7 +215,7 @@ export class IRVariableAllocator {
         irDefArgs,
         null,
         this.allocTmpVariable(
-          CPointerType.ofType(CPointerType.ofType(returnType)),
+          CPointerType.ofType(returnType),
           TMP_FN_RETURN_VAR_PREFIX,
         ),
       );

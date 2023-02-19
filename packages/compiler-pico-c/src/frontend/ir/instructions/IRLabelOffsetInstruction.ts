@@ -1,9 +1,7 @@
-import chalk from 'chalk';
-
-import { IsLabeledInstruction, IsOutputInstruction } from '../interfaces';
+import { IsOutputInstruction } from '../interfaces';
 import { IROpcode } from '../constants';
 import { IRInstruction, IRInstructionArgs } from './IRInstruction';
-import { IRVariable } from '../variables';
+import { IRLabel, IRVariable } from '../variables';
 
 export function isIRLabelOffsetInstruction(
   instruction: IRInstruction,
@@ -20,15 +18,12 @@ export class IRLabelOffsetInstruction
   extends IRInstruction
   implements IsOutputInstruction
 {
-  constructor(
-    readonly labelInstruction: IsLabeledInstruction,
-    readonly outputVar: IRVariable,
-  ) {
+  constructor(readonly label: IRLabel, readonly outputVar: IRVariable) {
     super(IROpcode.LABEL_OFFSET);
   }
 
   override ofArgs({ output = this.outputVar }: IRInstructionArgs) {
-    return new IRLabelOffsetInstruction(this.labelInstruction, output);
+    return new IRLabelOffsetInstruction(this.label, output);
   }
 
   override getArgs(): IRInstructionArgs {
@@ -41,10 +36,8 @@ export class IRLabelOffsetInstruction
   }
 
   override getDisplayName(): string {
-    const { labelInstruction, outputVar } = this;
+    const { label, outputVar } = this;
 
-    return `${outputVar.getDisplayName()} = ${chalk.yellowBright(
-      'label-offset',
-    )} ${labelInstruction.name}`;
+    return `${outputVar.getDisplayName()} = ${label.getDisplayName()}`;
   }
 }

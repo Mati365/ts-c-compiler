@@ -75,7 +75,7 @@ export class ASTCFunctionDefTypeCreator extends ASTCTypeCreator<ASTCFunctionDefi
 
     return new CFunctionDeclType({
       definition: fnDefinition.content,
-      callConvention: CFunctionCallConvention.CDECL,
+      callConvention: CFunctionCallConvention.STDCALL,
       name: returnTypeEntry.name,
       returnType: returnTypeEntry.type,
       arch,

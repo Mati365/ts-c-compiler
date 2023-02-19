@@ -139,9 +139,12 @@ export function emitBlockItemIR({
 
     [ASTCCompilerKind.ReturnStmt]: {
       enter(expr: ASTCExpression) {
-        const canBeStoredInReg =
-          context.parent.fnDecl.type.returnType.canBeStoredInIntegralReg();
+        const fnReturnType = context.parent.fnDecl.type.returnType;
+        if (fnReturnType.isVoid()) {
+          return false;
+        }
 
+        const canBeStoredInReg = fnReturnType.canBeStoredInIntegralReg();
         let assignResult = emitExpressionIR({
           node: expr,
           scope,
@@ -160,7 +163,8 @@ export function emitBlockItemIR({
           result = functionRvoStmtTransformer({
             stmtResult: result,
             returnedVar: assignResult.output,
-            rvoOutputVar: context.parent.fnDecl.outputVarPtr,
+            rvoOutputVar: context.parent.fnDecl.outputVar,
+            context: context,
           });
 
           result.instructions.push(new IRRetInstruction());

@@ -6,14 +6,15 @@ import {
 import { CPrimitiveType } from '@compiler/pico-c/frontend/analyze';
 import { IRLeaInstruction } from '@compiler/pico-c/frontend/ir/instructions';
 
-import { CompilerInstructionFnAttrs } from '../../constants/types';
+import { X86CompilerInstructionFnAttrs } from '../../constants/types';
 import {
   genInstruction,
   genLabelName,
   withInlineComment,
 } from '../../asm-utils';
 
-type LeaInstructionCompilerAttrs = CompilerInstructionFnAttrs<IRLeaInstruction>;
+type LeaInstructionCompilerAttrs =
+  X86CompilerInstructionFnAttrs<IRLeaInstruction>;
 
 export function compileLeaInstruction({
   instruction,
@@ -46,15 +47,12 @@ export function compileLeaInstruction({
   }
 
   // int* a = &k;
-  if (!inputVar.isTemporary()) {
+  const stackAddress = stackFrame.getLocalVarStackRelAddress(inputVar.name);
+  if (stackAddress) {
     return [
       ...addressReg.asm,
       withInlineComment(
-        genInstruction(
-          'lea',
-          addressReg.value,
-          stackFrame.getLocalVarStackRelAddress(inputVar.name),
-        ),
+        genInstruction('lea', addressReg.value, stackAddress),
         instruction.getDisplayName(),
       ),
     ];

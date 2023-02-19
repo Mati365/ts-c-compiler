@@ -5,9 +5,14 @@ import {
   isIRLabelInstruction,
 } from '@compiler/pico-c/frontend/ir/instructions';
 
-import { CompiledBlockOutput, CompilerFnAttrs } from '../../constants/types';
+import { X86StackFrameContentFn } from '../X86Allocator';
+import {
+  X86CompiledBlockOutput,
+  X86CompilerFnAttrs,
+} from '../../constants/types';
 
-import { genComment } from '../../asm-utils';
+import { genComment, genLabel } from '../../asm-utils';
+import { getX86FnCaller } from '../call-conventions';
 
 import { compileAllocInstruction } from './compileAllocInstruction';
 import { compileStoreInstruction } from './compileStoreInstruction';
@@ -20,18 +25,27 @@ import { compileLeaInstruction } from './compileLeaInstruction';
 import { compileAssignInstruction } from './compileAssignInstruction';
 import { compilePhiInstruction } from './compilePhiInstruction';
 import { compileRetInstruction } from './compileRetInstruction';
+import { compileLabelOffsetInstruction } from './compileLabelOffsetInstruction';
+import { compileCallInstruction } from './compileCallInstruction';
 
-type FnDeclCompilerBlockFnAttrs = CompilerFnAttrs & {
+type FnDeclCompilerBlockFnAttrs = X86CompilerFnAttrs & {
   instruction: IRFnDeclInstruction;
 };
 
 export function compileFnDeclInstructionsBlock({
   instruction: fnInstruction,
   context,
-}: FnDeclCompilerBlockFnAttrs): CompiledBlockOutput {
+}: FnDeclCompilerBlockFnAttrs): X86CompiledBlockOutput {
   const { allocator, iterator } = context;
-  const compileFnContent = (): string[] => {
+
+  const compileFnContent: X86StackFrameContentFn = () => {
     const asm: string[] = [];
+    let ret: string[] = [];
+
+    getX86FnCaller(fnInstruction.type.callConvention).allocIRFnDefStackArgs({
+      declaration: fnInstruction,
+      context,
+    });
 
     iterator.walk(instruction => {
       const arg = {
@@ -77,8 +91,16 @@ export function compileFnDeclInstructionsBlock({
           asm.push(...compileJmpInstruction(arg));
           break;
 
+        case IROpcode.CALL:
+          asm.push(...compileCallInstruction(arg));
+          break;
+
         case IROpcode.LABEL:
           asm.push(...compileLabelInstruction(arg));
+          break;
+
+        case IROpcode.LABEL_OFFSET:
+          compileLabelOffsetInstruction(arg);
           break;
 
         case IROpcode.ICMP:
@@ -88,17 +110,26 @@ export function compileFnDeclInstructionsBlock({
         case IROpcode.COMMENT:
           asm.push(genComment((<IRCommentInstruction>instruction).comment));
           break;
+
+        case IROpcode.RET:
+          ret = compileRetInstruction({
+            ...arg,
+            fnInstruction,
+          });
+          break;
       }
     });
 
-    return asm;
+    return {
+      ret,
+      asm,
+    };
   };
 
   const asm = [
     genComment(fnInstruction.getDisplayName()),
-    allocator.allocLabelInstruction('fn', fnInstruction.name),
+    genLabel(allocator.allocLabel('fn', fnInstruction.name), false),
     ...allocator.allocStackFrameInstructions(compileFnContent),
-    ...compileRetInstruction(),
   ];
 
   return {

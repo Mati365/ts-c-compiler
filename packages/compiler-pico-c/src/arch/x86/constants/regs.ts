@@ -20,6 +20,7 @@ export type X86IntRegTree = {
 };
 
 export type RegsMap = {
+  stack: X86RegName;
   addressing: Array<X86RegName>;
   general: {
     size: number;
@@ -34,6 +35,7 @@ export type RegsMap = {
 
 export const createX86RegsMap = (): Record<CCompilerArch, RegsMap> => ({
   [CCompilerArch.X86_16]: {
+    stack: 'sp',
     addressing: ['bx', 'si', 'di'],
     general: {
       size: 2,
