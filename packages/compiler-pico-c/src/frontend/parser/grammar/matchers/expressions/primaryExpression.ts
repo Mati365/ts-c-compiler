@@ -65,12 +65,12 @@ export function primaryExpression(grammar: CGrammar): ASTCPrimaryExpression {
         );
       }
 
-      // handle "a"
+      // handle "a" and append \0 NULL byte character at the end
       return new ASTCPrimaryExpression(
         NodeLocation.fromTokenLoc(literal.loc),
         null,
         null,
-        literal.text,
+        `${literal.text}\0`,
       );
     },
 

@@ -6,13 +6,19 @@ ccompiler(/* cpp */ `
   // sprawdź co ładuje do: int k =0x6; char i = k;
   // mamy little endian!
 
-  struct Vec2 {
-    int x, y;
-  };
-    struct Vec2 of_vec(int x, int y) {
-    struct Vec2 v = { .x = x, .y = y };
-    return v;
+  int strlen(const char* str) {
+    for (int i = 0;;++i) {
+      if (*(str + i) == '0') {
+        return i;
+      }
     }
+
+    return -1;
+  }
+
+  void main() {
+    strlen("Hello world!");
+  }
     // int main() {
     // struct Vec2 out = of_vec(2, 3);
     // out.x = 1;
