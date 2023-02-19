@@ -211,13 +211,13 @@ describe('Functions IR', () => {
       # --- Block main ---
       def main():
       %t{1}: const char**2B = alloca const char*2B
-      %t{2}: const char*2B = lea c{0}: const char[12]12B
+      %t{2}: const char*2B = lea c{0}: const char[13]13B
       *(%t{1}: const char**2B) = store %t{2}: const char*2B
       call label-offset print :: (%t{1}: const char**2B)
       ret
       end-def
       # --- Block Data ---
-      c{0}: const char[12]12B = const { 104, 101, 108, 108, 111, 32, 119, 111, 114, 108, 100, 33 }
+      c{0}: const char[13]13B = const { 104, 101, 108, 108, 111, 32, 119, 111, 114, 108, 100, 33, 0 }
     `);
   });
 
@@ -270,23 +270,20 @@ describe('Functions IR', () => {
         printf("Hello");
       }
     `).toCompiledIRBeEqual(/* ruby */ `
-      # --- Block printf ---
-      def printf(str{0}: const char**2B):
+        # --- Block printf ---
+        def printf(str{0}: const char**2B):
         ret
         end-def
-
-
-      # --- Block main ---
-      def main(): [ret: int2B]
+        # --- Block main ---
+        def main(): [ret: int2B]
         %t{1}: const char**2B = alloca const char*2B
-        %t{2}: const char*2B = lea c{0}: const char[5]5B
+        %t{2}: const char*2B = lea c{0}: const char[6]6B
         *(%t{1}: const char**2B) = store %t{2}: const char*2B
         call label-offset printf :: (%t{1}: const char**2B)
         ret
         end-def
-
-      # --- Block Data ---
-        c{0}: const char[5]5B = const { 72, 101, 108, 108, 111 }
+        # --- Block Data ---
+        c{0}: const char[6]6B = const { 72, 101, 108, 108, 111, 0 }
     `);
   });
 });

@@ -70,7 +70,7 @@ export function primaryExpression(grammar: CGrammar): ASTCPrimaryExpression {
         NodeLocation.fromTokenLoc(literal.loc),
         null,
         null,
-        `${literal.text}\0`,
+        literal.text,
       );
     },
 

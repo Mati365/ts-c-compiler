@@ -16,16 +16,17 @@ describe('Variable assign', () => {
         @@_fn_main:
         push bp
         mov bp, sp
-        mov word [bp - 2], 25928  ; *(letters{0}: int*2B) = store %25928: int2B
-        mov word [bp - 4], 0      ; *(a{0}: int*2B) = store %0: int2B
-        lea bx, [bp - 2]          ; %t{0}: char*2B = lea letters{0}: char[2]*2B
+        mov word [bp - 3], 25928  ; *(letters{0}: int*2B) = store %25928: int2B
+        mov byte [bp - 1], 0      ; *(letters{0}: char[3]*2B + %2) = store %0: char1B
+        mov word [bp - 5], 0      ; *(a{0}: int*2B) = store %0: int2B
+        lea bx, [bp - 3]          ; %t{0}: char*2B = lea letters{0}: char[3]*2B
         mov al, [bx]              ; %t{1}: char1B = load %t{0}: char*2B
         movzx cx, al
         imul cx, 2                ; %t{2}: char1B = %t{1}: char1B mul %2: char1B
-        mov al, [bp - 4]
+        mov al, [bp - 5]
         add al, cl                ; %t{4}: char1B = %t{3}: char1B plus %t{2}: char1B
         movzx dx, al
-        mov word [bp - 4], dx     ; *(a{0}: int*2B) = store %t{4}: char1B
+        mov word [bp - 5], dx     ; *(a{0}: int*2B) = store %t{4}: char1B
         pop bp
         ret
       `);
