@@ -10,7 +10,7 @@ import {
   X86FnRetCompilerAttrs,
 } from './X86ConventionalFnCaller';
 
-export class X86CdeclFnCaller implements X86ConventionalFnCaller {
+export class X86StdcallFnCaller implements X86ConventionalFnCaller {
   /**
    * Compiles `call` opcode and pushes args
    */

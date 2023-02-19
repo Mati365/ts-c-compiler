@@ -162,7 +162,7 @@ export class CTreeTypeBuilderVisitor extends CInnerTypeTreeVisitor {
     );
 
     this.type = new CFunctionDeclType({
-      callConvention: CFunctionCallConvention.CDECL,
+      callConvention: CFunctionCallConvention.STDCALL,
       name: null,
       definition: null,
       returnType: this.type,

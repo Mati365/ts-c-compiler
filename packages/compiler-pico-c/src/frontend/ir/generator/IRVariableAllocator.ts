@@ -196,9 +196,16 @@ export class IRVariableAllocator {
    */
   allocFunctionType(fn: CFunctionDeclType): IRFnDeclInstruction {
     const { name, returnType, args } = fn;
-    const irDefArgs = args.map(arg =>
-      this.allocAsPointer(IRVariable.ofScopeVariable(arg)),
-    );
+    const irDefArgs = args.map(arg => {
+      let scopeVar = IRVariable.ofScopeVariable(arg);
+
+      // handle case when we pass struct to function
+      if (!arg.type.canBeStoredInReg()) {
+        scopeVar = scopeVar.ofPointerType();
+      }
+
+      return this.allocAsPointer(scopeVar);
+    });
 
     const irFn = (() => {
       if (returnType.isVoid()) {

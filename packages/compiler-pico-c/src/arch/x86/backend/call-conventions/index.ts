@@ -1,13 +1,13 @@
 import { CFunctionCallConvention } from '@compiler/pico-c/constants';
 
 import type { X86ConventionalFnCaller } from './X86ConventionalFnCaller';
-import { X86CdeclFnCaller } from './X86CdeclFnCaller';
+import { X86StdcallFnCaller } from './X86StdcallFnCaller';
 
 const X86ConventionalFnCallers: Record<
   CFunctionCallConvention,
   X86ConventionalFnCaller
 > = {
-  [CFunctionCallConvention.CDECL]: new X86CdeclFnCaller(),
+  [CFunctionCallConvention.STDCALL]: new X86StdcallFnCaller(),
 };
 
 export const getX86FnCaller = (
