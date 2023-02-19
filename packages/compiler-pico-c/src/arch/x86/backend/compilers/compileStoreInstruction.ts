@@ -4,11 +4,6 @@ import {
 } from '@compiler/pico-c/backend/errors/CBackendError';
 
 import { getByteSizeArgPrefixName } from '@x86-toolkit/assembler/parser/utils';
-import {
-  getBaseTypeIfPtr,
-  getSourceNonPtrType,
-} from '@compiler/pico-c/frontend/analyze/types/utils';
-
 import { IRStoreInstruction } from '@compiler/pico-c/frontend/ir/instructions';
 
 import {
@@ -16,17 +11,14 @@ import {
   isIRVariable,
 } from '@compiler/pico-c/frontend/ir/variables';
 
+import { getStoreOutputByteSize } from '../utils';
+
 import { X86CompilerInstructionFnAttrs } from '../../constants/types';
 import {
   genInstruction,
   genMemAddress,
   withInlineComment,
 } from '../../asm-utils';
-
-import {
-  isArrayLikeType,
-  isPointerLikeType,
-} from '@compiler/pico-c/frontend/analyze';
 
 type StoreInstructionCompilerAttrs =
   X86CompilerInstructionFnAttrs<IRStoreInstruction>;
@@ -41,11 +33,15 @@ export function compileStoreInstruction({
 
   let destAddr: { value: string; size: number } = null;
   const asm: string[] = [];
+  const outputByteSize = getStoreOutputByteSize(outputVar.type, offset);
 
   if (outputVar.isTemporary()) {
-    // handle pointers assign
-    // *(%t{0}) = 4;
-    const outputByteSize = getBaseTypeIfPtr(outputVar.type).getByteSize();
+    // 1. handle pointers assign
+    //  *(%t{0}) = 4;
+    // 2. handle case when we have:
+    //  *(%t{4}: struct Vec2*2B) = store %5: char1B
+    //  in this case size should be loaded from left side and it should
+    //  respect offset size of struct entry (for example `x` might have 1B size)
     const memPtrAddr = regs.tryResolveIRArgAsAddr(outputVar);
 
     if (memPtrAddr) {
@@ -79,23 +75,6 @@ export function compileStoreInstruction({
     //    int x, y;
     //  } vec = { .y = 5 };
     //
-    const srcType = (() => {
-      if (!isPointerLikeType(outputVar.type)) {
-        throw new CBackendError(CBackendErrorCode.STORE_VAR_SHOULD_BE_PTR);
-      }
-
-      const { baseType } = outputVar.type;
-      if (isArrayLikeType(baseType)) {
-        return getSourceNonPtrType(baseType);
-      }
-
-      return baseType;
-    })();
-
-    const outputByteSize = (
-      srcType.isStruct() ? value.type : srcType
-    ).getByteSize();
-
     const prefix = getByteSizeArgPrefixName(outputByteSize);
 
     destAddr = {

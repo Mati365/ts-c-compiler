@@ -14,7 +14,10 @@ export function isIRStoreInstruction(
 }
 
 /**
- * Instruction that saves variable to mem
+ * Instead of `load` it performs only:
+ *  1. Fetch address or reg
+ *
+ * It does not perform loading memory that can be specified by reg.
  */
 export class IRStoreInstruction
   extends IRInstruction

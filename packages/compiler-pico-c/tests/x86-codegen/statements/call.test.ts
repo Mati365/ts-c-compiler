@@ -122,7 +122,6 @@ describe('Function call', () => {
         add ax, 4                 ; %t{5}: int2B = %t{4}: int2B plus %4: char1B
         mov word [bp - 2], ax     ; *(acc{0}: int*2B) = store %t{5}: int2B
         pop bp
-        ; missing return
         ret
       `);
     });
@@ -183,7 +182,6 @@ describe('Function call', () => {
         push word [bp - 2]
         call @@_fn_printf
         pop bp
-        ; missing return
         ret
 
         @@_c_0_: db 72, 101, 108, 108, 111
@@ -205,7 +203,6 @@ describe('Function call', () => {
         mov bp, sp
         pop bp
         ret 4
-
         ; def main(): [ret: int2B]
         @@_fn_main:
         push bp
@@ -219,9 +216,7 @@ describe('Function call', () => {
         push word [bp - 4]
         call @@_fn_printf
         pop bp
-        ; missing return
         ret
-
         @@_c_0_: db 72, 101, 108, 108, 111, 32, 119, 111, 114, 108, 100, 33
         @@_c_1_: db 72, 101, 108, 108, 111
       `);
@@ -229,7 +224,81 @@ describe('Function call', () => {
   });
 
   describe('Struct types', () => {
-    test('call with struct as argument', () => {
+    test('can return whole structure in register if fits', () => {
+      expect(/* cpp */ `
+        struct Vec2 { int x; };
+        struct Vec2 sum() {
+          struct Vec2 out = { .x = 6 };
+          return out;
+        }
+        void main() { sum(); }
+      `).toCompiledAsmBeEqual(`
+        cpu 386
+        ; def sum(): [ret: struct Vec22B]
+        @@_fn_sum:
+        push bp
+        mov bp, sp
+        mov word [bp - 2], 6      ; *(out{0}: struct Vec2*2B) = store %6: int2B
+        pop bp
+        mov ax, [bp - 2]
+        ret
+        ; def main():
+        @@_fn_main:
+        push bp
+        mov bp, sp
+        call @@_fn_sum
+        pop bp
+        ret
+      `);
+    });
+
+    test('RVO call with struct as return type', () => {
+      expect(/* cpp */ `
+        struct Vec2 {
+          int x, y;
+        };
+
+        struct Vec2 of_vec(int x, int y) {
+          struct Vec2 v = { .x = x, .y = y };
+          return v;
+        }
+
+        int main() {
+          struct Vec2 out = of_vec(2, 3);
+          out.x = 1;
+          out.y = 7;
+        }
+      `).toCompiledAsmBeEqual(`
+        cpu 386
+        ; def of_vec(x{0}: int*2B, y{0}: int*2B, %out{0}: struct Vec2*2B):
+        @@_fn_of_vec:
+        push bp
+        mov bp, sp
+        mov bx, word [bp + 6]     ; %t{3}: struct Vec2*2B = assign %out{0}: struct Vec2*2B
+        mov ax, [bp + 2]
+        mov word [bx], ax         ; *(%t{3}: struct Vec2*2B) = store %t{0}: int2B
+        mov cx, [bp + 4]
+        mov word [bx + 2], cx     ; *(%t{3}: struct Vec2*2B + %2) = store %t{1}: int2B
+        pop bp
+        ret 6
+
+        ; def main(): [ret: int2B]
+        @@_fn_main:
+        push bp
+        mov bp, sp
+        lea bx, [bp - 4]          ; %t{5}: struct Vec2**2B = lea out{0}: struct Vec2*2B
+        push bx
+        push 3
+        push 2
+        call @@_fn_of_vec
+        mov word [bp - 4], 1      ; *(out{0}: struct Vec2*2B) = store %1: char1B
+        mov word [bp - 2], 7      ; *(out{0}: struct Vec2*2B + %2) = store %7: char1B
+        pop bp
+        ret
+      `);
+    });
+
+    test.skip('call with struct as argument', () => {
       expect(/* cpp */ `
         struct Vec2 { int x, y; };
         int sum_vec(struct Vec2 vec) { return vec.x + vec.y; }

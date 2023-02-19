@@ -17,6 +17,9 @@ export function compileAssignInstruction({
   const outputReg = regs.tryResolveIRArgAsReg({
     arg: meta.phi?.vars[0] || outputVar,
     allocIfNotFound: true,
+    ...(meta?.preferAddressRegsOutput && {
+      preferRegs: allocator.regs.ownership.getAvailableRegs().addressing,
+    }),
   });
 
   regs.ownership.setOwnership(outputVar.name, {

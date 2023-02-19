@@ -21,6 +21,7 @@ import {
   CVariableInitializerTree,
   isPointerArithmeticType,
   isPointerLikeType,
+  isStructLikeType,
 } from '@compiler/pico-c/frontend/analyze';
 
 import {
@@ -65,6 +66,7 @@ import { emitIdentifierGetterIR } from '../emitIdentifierGetterIR';
 import { emitIncExpressionIR } from '../emitIncExpressionIR';
 import { emitFnCallExpressionIR } from '../emit-fn-call-expression';
 import { emitLogicBinaryJmpExpressionIR } from './emitLogicBinaryJmpExpressionIR';
+import { emitStructShallowCopyIR } from './emitStructShallowCopyIR';
 
 export type ExpressionIREmitAttrs = IREmitterContextAttrs & {
   node: ASTCCompilerNode;
@@ -296,8 +298,22 @@ export function emitExpressionIR({
               const tmpVar = allocNextVariable(srcVar.type);
 
               instructions.push(new IRLeaInstruction(srcVar, tmpVar));
+            } else if (
+              isStructLikeType(srcVar.type.baseType) &&
+              !srcVar.type.baseType.canBeStoredInReg() &&
+              1 > 4
+            ) {
+              // handle "struct" array, perform shallow copy by value
+              // of provided type
+              emitExprResultToStack(
+                emitStructShallowCopyIR({
+                  allocator,
+                  type: srcVar.type.baseType,
+                }),
+              );
             } else {
-              // handle normal "ptr" variable, loads its pointing value
+              // handle normal "a" variable, loads its pointing value
+              // basically `a = 2`
               const tmpVar = allocNextVariable(srcVar.type.baseType);
               instructions.push(new IRLoadInstruction(srcVar, tmpVar));
             }

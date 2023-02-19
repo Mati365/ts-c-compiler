@@ -51,6 +51,7 @@ export class X86RegOwnershipTracker {
 
     if (isRegOwnership(item)) {
       const ownerships = this.getOwnershipByReg(item.reg);
+
       if (ownerships.length === 1) {
         this.releaseRegs([item.reg]);
       }

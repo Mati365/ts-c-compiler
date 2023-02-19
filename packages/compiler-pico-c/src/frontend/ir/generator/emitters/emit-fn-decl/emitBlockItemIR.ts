@@ -163,7 +163,8 @@ export function emitBlockItemIR({
           result = functionRvoStmtTransformer({
             stmtResult: result,
             returnedVar: assignResult.output,
-            rvoOutputVar: context.parent.fnDecl.outputVarPtr,
+            rvoOutputVar: context.parent.fnDecl.outputVar,
+            context: context,
           });
 
           result.instructions.push(new IRRetInstruction());

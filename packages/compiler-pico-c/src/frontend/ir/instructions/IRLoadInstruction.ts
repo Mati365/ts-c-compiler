@@ -12,7 +12,10 @@ export function isIRLoadInstruction(
 }
 
 /**
- * Instruction that loads variable from mem
+ * Instruction loads memory address pointed by `inputVar`.
+ * Instead of `assign` it performs:
+ *  1. Fetch address (or reuse if exists in any register)
+ *  2. Fetch data at specified address
  */
 export class IRLoadInstruction
   extends IRInstruction

@@ -103,7 +103,10 @@ export function compileMathInstruction({
 
         asm.push(
           ...reg.asm,
-          genInstruction('mov', reg.value, leftAllocResult.value),
+          withInlineComment(
+            genInstruction('mov', reg.value, leftAllocResult.value),
+            `swap - ${instruction.getDisplayName()}`,
+          ),
         );
 
         regs.ownership.setOwnership(leftVar.name, {

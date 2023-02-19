@@ -84,7 +84,7 @@ export class CStructType extends CType<CStructTypeDescriptor> {
         new CStructEntry({
           ...entry.unwrap(),
           index: prevEntry
-            ? prevEntry.getIndex() + prevEntry.type.scalarValuesCount
+            ? prevEntry.index + prevEntry.type.scalarValuesCount
             : 0,
           offset: alignerFn(this, entry.type),
           bitset,
@@ -139,7 +139,7 @@ export class CStructType extends CType<CStructTypeDescriptor> {
    */
   override getByteSize(): number {
     return this.getFieldsList().reduce((acc, [, entry]) => {
-      const endOffset = entry.getOffset() + entry.type.getByteSize();
+      const endOffset = entry.offset + entry.type.getByteSize();
 
       return Math.max(acc, endOffset);
     }, 0);
@@ -189,35 +189,60 @@ export class CStructType extends CType<CStructTypeDescriptor> {
   }
 
   @memoizeMethod
-  getFlattenFieldsTypes(): [string, CType][] {
-    const mapStructEntryPair = (pair: [string, CType]) => {
-      const [name, type] = pair;
+  getFlattenFieldsTypes(): [string, CType, number][] {
+    const mapStructEntryPair = (pair: [string, CType, number]) => {
+      const [name, type, offset] = pair;
 
       if (isStructLikeType(type)) {
         return type
           .getFlattenFieldsTypes()
-          .map(([structName, value]) => [`${name}.${structName}`, value]);
+          .map(([structName, value, nestedOffset]) => [
+            `${name}.${structName}`,
+            value,
+            offset + nestedOffset,
+          ]);
       }
 
       if (isArrayLikeType(type)) {
         return R.unnest(
           R.times<[string, CType]>(
-            index => mapStructEntryPair([`${name}.${index}`, type.baseType]),
+            index =>
+              mapStructEntryPair([
+                `${name}.${index}`,
+                type.baseType,
+                offset + index * type.baseType.getByteSize(),
+              ]),
             type.size,
           ),
         );
       }
 
-      return [[name, type]];
+      return [pair];
     };
 
-    return this.getFieldsList().flatMap(([name, { type }]) =>
-      mapStructEntryPair([name, type]),
+    return this.getFieldsList().flatMap(([name, { type, offset }]) =>
+      mapStructEntryPair([name, type, offset]),
     );
   }
 
   getFlattenFieldsCount() {
     return this.getFlattenFieldsTypes().length;
+  }
+
+  @memoizeMethod
+  getFlattenFieldTypeByOffset(offset: number): CType {
+    const fields = this.getFlattenFieldsTypes();
+
+    for (let i = 0; i < fields.length; ++i) {
+      const field = fields[i];
+      const nextNextField = fields[i + 1];
+
+      if (field[2] <= offset && (!nextNextField || nextNextField[2] > offset)) {
+        return field[1];
+      }
+    }
+
+    return null;
   }
 
   getFieldTypeByIndex(index: number): CType {

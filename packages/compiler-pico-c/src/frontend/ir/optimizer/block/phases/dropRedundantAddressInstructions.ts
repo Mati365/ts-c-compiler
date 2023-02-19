@@ -1,4 +1,4 @@
-import { isIROutputInstruction } from '../../../guards';
+import { isIRBranchInstruction, isIROutputInstruction } from '../../../guards';
 import { dropConstantInstructionArgs } from '../utils/dropConstantInstructionArgs';
 
 import { IRVariable } from '../../../variables';
@@ -13,12 +13,20 @@ export function dropRedundantAddressInstructions(
 ) {
   let hasCache = false;
 
-  const cachedInputs: { [inputVar: string]: IRVariable } = {};
-  const replacedOutputs: { [outputVar: string]: IRVariable } = {};
+  let cachedInputs: { [inputVar: string]: IRVariable } = {};
+  let replacedOutputs: { [outputVar: string]: IRVariable } = {};
   const newInstructions = [...instructions];
 
   for (let i = 0; i < newInstructions.length; ) {
     const instruction = newInstructions[i];
+
+    if (isIRBranchInstruction(instruction)) {
+      replacedOutputs = {};
+      cachedInputs = {};
+      hasCache = false;
+      ++i;
+      continue;
+    }
 
     if (isIROutputInstruction(instruction)) {
       let cacheKey: string = null;

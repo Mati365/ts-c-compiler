@@ -209,7 +209,7 @@ describe('Assignment IR', () => {
           sum{0}: int*2B = alloca int2B
           %t{1}: const int*2B = load array{0}: const int**2B
           %t{2}: const int*2B = %t{1}: const int*2B plus %6: int2B
-          %t{3}: const int[4]8B = load %t{2}: const int*2B
+          %t{3}: const int2B = load %t{2}: const int*2B
           %t{5}: const int2B = %t{3}: const int2B plus %12: char1B
           *(sum{0}: int*2B) = store %t{5}: const int2B
           ret
@@ -259,13 +259,11 @@ describe('Assignment IR', () => {
           sum{0}: int*2B = alloca int2B
           %t{0}: struct Vec2*2B = lea vec{0}: struct Vec2[2]*2B
           %t{1}: struct Vec2*2B = %t{0}: struct Vec2*2B plus %4: int2B
-          %t{2}: struct Vec2*2B = lea %t{1}: struct Vec2*2B
-          %t{3}: int2B = load %t{2}: struct Vec2*2B
-          %t{5}: struct Vec2*2B = lea %t{4}: struct Vec2*2B
-          %t{6}: struct Vec2*2B = %t{5}: struct Vec2*2B plus %2: int2B
-          %t{7}: int2B = load %t{6}: struct Vec2*2B
-          %t{8}: struct Vec24B = %t{3}: struct Vec24B plus %t{7}: struct Vec24B
-          *(sum{0}: int*2B) = store %t{8}: struct Vec24B
+          %t{2}: int2B = load %t{1}: struct Vec2*2B
+          %t{4}: struct Vec2*2B = %t{0}: struct Vec2*2B plus %2: int2B
+          %t{5}: int2B = load %t{4}: struct Vec2*2B
+          %t{6}: int2B = %t{2}: int2B plus %t{5}: int2B
+          *(sum{0}: int*2B) = store %t{6}: int2B
           ret
           end-def
       `);
@@ -519,7 +517,7 @@ describe('Assignment IR', () => {
           %t{3}: struct Vec2*2B = load ptr{0}: struct Vec2**2B
           %t{4}: struct Vec2*2B = %t{3}: struct Vec2*2B plus %2: int2B
           %t{5}: int2B = load %t{4}: struct Vec2*2B
-          *(d{0}: int*2B) = store %t{5}: struct Vec24B
+          *(d{0}: int*2B) = store %t{5}: int2B
           ret
           end-def
       `);

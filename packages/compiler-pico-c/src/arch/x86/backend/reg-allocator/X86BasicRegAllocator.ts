@@ -13,6 +13,7 @@ import {
   isIRVariable,
 } from '@compiler/pico-c/frontend/ir/variables';
 
+import { isStructLikeType } from '@compiler/pico-c/frontend/analyze';
 import { getByteSizeArgPrefixName } from '@x86-toolkit/assembler/parser/utils';
 import { genInstruction } from '../../asm-utils';
 import {
@@ -65,6 +66,7 @@ export type IRArgRegResolverAttrs = {
   arg: IRInstructionTypedArg;
   size?: number;
   allocIfNotFound?: boolean;
+  preferRegs?: X86RegName[];
   allowedRegs?: X86RegName[];
 };
 
@@ -91,6 +93,7 @@ export class X86BasicRegAllocator {
   tryResolveIRArgAsReg({
     arg,
     size = arg.type.getByteSize(),
+    preferRegs,
     allowedRegs,
     allocIfNotFound,
   }: IRArgRegResolverAttrs): IRArgAllocatorResult<X86RegName> {
@@ -99,12 +102,16 @@ export class X86BasicRegAllocator {
     const regsParts = ownership.getAvailableRegs().general.parts;
     const requestArgSizeDelta = size - arg.type.getByteSize();
 
-    if (!arg.type.isScalar()) {
+    if (
+      !arg.type.isScalar() &&
+      (!isStructLikeType(arg.type) || !arg.type.canBeStoredInReg())
+    ) {
       throw new CBackendError(CBackendErrorCode.REG_ALLOCATOR_ERROR);
     }
 
     if (isIRConstant(arg)) {
       const { asm, value } = this.requestReg({
+        prefer: preferRegs,
         size,
       });
 
@@ -137,6 +144,7 @@ export class X86BasicRegAllocator {
           requestArgSizeDelta
         ) {
           const regResult = this.requestReg({
+            prefer: preferRegs,
             size,
             allowedRegs,
           });
@@ -179,6 +187,7 @@ export class X86BasicRegAllocator {
           // but in some cases ownership of reg is already using bigger reg than requested
           // in that cases just alloc next one
           const regResult = this.requestReg({
+            prefer: preferRegs,
             size: varOwnershipRegSize,
             allowedRegs,
           });
@@ -208,6 +217,7 @@ export class X86BasicRegAllocator {
         );
 
         const regResult = this.requestReg({
+          prefer: preferRegs,
           size,
           allowedRegs,
         });
@@ -233,6 +243,7 @@ export class X86BasicRegAllocator {
 
     if (allocIfNotFound) {
       const result = this.requestReg({
+        prefer: preferRegs,
         allowedRegs,
         size,
       });
@@ -375,7 +386,7 @@ export class X86BasicRegAllocator {
 
     if (prefer) {
       result ||= queryFromX86IntRegsMap(
-        { allowedRegs: prefer, ...query },
+        { ...query, allowedRegs: prefer },
         ownership.getAvailableRegs(),
       );
     }

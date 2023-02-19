@@ -1,20 +1,24 @@
 import {
-  IRLoadInstruction,
+  IRAssignInstruction,
   isIRAllocInstruction,
   isIRLoadInstruction,
 } from '../../../instructions';
 
+import { dropConstantInstructionArgs } from '../../../optimizer/block/utils/dropConstantInstructionArgs';
+
 import { IRError, IRErrorCode } from '../../../errors/IRError';
 import { IRVariable } from '../../../variables';
-import { IREmitterStmtResult } from '../types';
+import { IREmitterContext, IREmitterStmtResult } from '../types';
 
 type RvoStmtTransformerAttrs = {
+  context: IREmitterContext;
   stmtResult: IREmitterStmtResult;
   returnedVar: IRVariable;
   rvoOutputVar: IRVariable;
 };
 
 export function functionRvoStmtTransformer({
+  context,
   stmtResult,
   returnedVar,
   rvoOutputVar,
@@ -39,11 +43,29 @@ export function functionRvoStmtTransformer({
       isIRAllocInstruction(instruction) &&
       instruction.outputVar.isShallowEqual(rvoOptimizedVar)
     ) {
-      // replace alloc with pointer
-      newInstructions[i] = new IRLoadInstruction(
-        rvoOutputVar,
-        instruction.outputVar,
+      // replace all optimize variable occurs with argument
+      const tmpStructVar = context.allocator.allocTmpVariable(
+        rvoOutputVar.type,
       );
+
+      const replaceMap = {
+        [instruction.outputVar.name]: tmpStructVar,
+      };
+
+      newInstructions[i] = new IRAssignInstruction(rvoOutputVar, tmpStructVar, {
+        preferAddressRegsOutput: true,
+      });
+
+      for (let j = i; j < newInstructions.length; ++j) {
+        const optimizedInstruction = dropConstantInstructionArgs(
+          replaceMap,
+          newInstructions[j],
+        );
+
+        if (optimizedInstruction) {
+          newInstructions[j] = optimizedInstruction;
+        }
+      }
 
       optimized = true;
       break;

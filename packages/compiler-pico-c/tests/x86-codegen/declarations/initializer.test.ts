@@ -205,6 +205,25 @@ describe('Variables initialization', () => {
         @@_c_0_: db 1, 2, 3, 4, 5
       `);
     });
+
+    test('struct array', () => {
+      expect(/* cpp */ `
+        void main() {
+          struct Vec2 { int x, y; char z; } vec[] = { { .y = 4 }, { .x =  5, .z = 7 }};
+        }
+      `).toCompiledAsmBeEqual(`
+        cpu 386
+        ; def main():
+        @@_fn_main:
+        push bp
+        mov bp, sp
+        mov word [bp - 8], 4      ; *(vec{0}: struct Vec2[2]*2B + %2) = store %4: int2B
+        mov word [bp - 5], 5      ; *(vec{0}: struct Vec2[2]*2B + %5) = store %5: int2B
+        mov byte [bp - 1], 7      ; *(vec{0}: struct Vec2[2]*2B + %9) = store %7: char1B
+        pop bp
+        ret
+      `);
+    });
   });
 
   describe('Strings initialization', () => {

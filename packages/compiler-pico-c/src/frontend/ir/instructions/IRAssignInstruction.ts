@@ -8,6 +8,7 @@ import { IRPhiInstruction } from './IRPhiInstruction';
 
 export type IRAssignMeta = {
   virtual?: boolean;
+  preferAddressRegsOutput?: boolean;
   phi?: IRPhiInstruction;
 };
 

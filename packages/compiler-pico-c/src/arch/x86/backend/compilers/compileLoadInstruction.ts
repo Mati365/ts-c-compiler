@@ -42,8 +42,11 @@ export function compileLoadInstruction({
       });
     }
 
-    const regSize = inputVar.type.baseType.getByteSize();
     const outputRegSize = outputVar.type.getByteSize();
+    const regSize = Math.min(
+      outputRegSize,
+      inputVar.type.baseType.getByteSize(),
+    );
 
     const reg = regs.requestReg({
       size: regSize,

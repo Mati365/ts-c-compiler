@@ -47,15 +47,12 @@ export function compileLeaInstruction({
   }
 
   // int* a = &k;
-  if (!inputVar.isTemporary()) {
+  const stackAddress = stackFrame.getLocalVarStackRelAddress(inputVar.name);
+  if (stackAddress) {
     return [
       ...addressReg.asm,
       withInlineComment(
-        genInstruction(
-          'lea',
-          addressReg.value,
-          stackFrame.getLocalVarStackRelAddress(inputVar.name),
-        ),
+        genInstruction('lea', addressReg.value, stackAddress),
         instruction.getDisplayName(),
       ),
     ];

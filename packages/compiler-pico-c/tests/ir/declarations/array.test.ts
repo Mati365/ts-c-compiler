@@ -147,20 +147,21 @@ describe('Arrays declarations IR', () => {
           struct Vec2 vec[] = { of_vector(), of_vector() };
         }
       `).toCompiledIRBeEqual(/* ruby */ `
-        # --- Block of_vector ---
-        def of_vector(%out{0}: struct Vec2**2B):
-          vec{0}: struct Vec2*2B = load %out{0}: struct Vec2**2B
-          *(vec{0}: struct Vec2*2B) = store %0: int2B
-          *(vec{0}: struct Vec2*2B + %6) = store %0: int2B
+          # --- Block of_vector ---
+          def of_vector(%out{0}: struct Vec2*2B):
+          %t{1}: struct Vec2*2B = assign %out{0}: struct Vec2*2B
+          *(%t{1}: struct Vec2*2B) = store %0: int2B
+          *(%t{1}: struct Vec2*2B + %6) = store %0: int2B
           ret
           end-def
           # --- Block main ---
           def main():
           vec{1}: struct Vec2[2]*2B = alloca struct Vec2[2]16B
-          %t{2}: struct Vec2[2]**2B = lea vec{1}: struct Vec2[2]*2B
-          call label-offset of_vector :: (%t{2}: struct Vec2[2]**2B)
-          %t{5}: int*2B = %t{2}: struct Vec2[2]**2B plus %8: int2B
-          call label-offset of_vector :: (%t{5}: int*2B)
+          %t{3}: struct Vec2[2]**2B = lea vec{1}: struct Vec2[2]*2B
+          call label-offset of_vector :: (%t{3}: struct Vec2[2]**2B)
+          %t{5}: int*2B = lea vec{1}: struct Vec2[2]*2B
+          %t{6}: int*2B = %t{5}: int*2B plus %8: int2B
+          call label-offset of_vector :: (%t{6}: int*2B)
           ret
           end-def
       `);
