@@ -139,7 +139,7 @@ export function emitBlockItemIR({
 
     [ASTCCompilerKind.ReturnStmt]: {
       enter(expr: ASTCExpression) {
-        const fnReturnType = context.parent.fnDecl.type.returnType;
+        const fnReturnType = context.fnStmt.declaration.type.returnType;
         if (fnReturnType.isVoid()) {
           return false;
         }
@@ -163,7 +163,7 @@ export function emitBlockItemIR({
           result = functionRvoStmtTransformer({
             stmtResult: result,
             returnedVar: assignResult.output,
-            rvoOutputVar: context.parent.fnDecl.outputVar,
+            rvoOutputVar: context.fnStmt.declaration.outputVar,
             context: context,
           });
 

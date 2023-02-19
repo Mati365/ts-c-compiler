@@ -1,12 +1,6 @@
-import * as R from 'ramda';
-
 import { CFunctionDeclType } from '@compiler/pico-c/frontend/analyze';
 import { ASTCFunctionDefinition } from '@compiler/pico-c/frontend/parser';
-import {
-  IRFnEndDeclInstruction,
-  IRRetInstruction,
-  isIRRetInstruction,
-} from '../../../instructions';
+import { IRFnEndDeclInstruction } from '../../../instructions';
 
 import { emitBlockItemIR } from './emitBlockItemIR';
 import {
@@ -26,8 +20,10 @@ export function emitFunctionIR({
   node,
 }: FunctionIREmitAttrs): IREmitterStmtResult {
   const fnType = <CFunctionDeclType>node.type;
-  const fnDecl = context.allocator.allocFunctionType(fnType);
-  const result = createBlankStmtResult([fnDecl]);
+  const declaration = context.allocator.allocFunctionType(fnType);
+  const result = createBlankStmtResult([declaration]);
+
+  const endDeclarationLabel = context.factory.genTmpLabelInstruction();
 
   appendStmtResults(
     emitBlockItemIR({
@@ -35,18 +31,17 @@ export function emitFunctionIR({
       node: node.content,
       context: {
         ...context,
-        parent: {
-          fnDecl,
+        fnStmt: {
+          declaration,
+          labels: {
+            endFnLabel: endDeclarationLabel,
+          },
         },
       },
     }),
     result,
   );
 
-  if (!isIRRetInstruction(R.last(result.instructions))) {
-    result.instructions.push(new IRRetInstruction());
-  }
-
-  result.instructions.push(new IRFnEndDeclInstruction());
+  result.instructions.push(endDeclarationLabel, new IRFnEndDeclInstruction());
   return result;
 }

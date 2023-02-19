@@ -1,7 +1,12 @@
 import { CScopeTree } from '@compiler/pico-c/frontend/analyze';
 
 import { IRGeneratorConfig } from '../../constants';
-import { IRFnDeclInstruction, IRInstruction } from '../../instructions';
+import {
+  IRFnDeclInstruction,
+  IRInstruction,
+  IRLabelInstruction,
+} from '../../instructions';
+
 import { IRConstant, IRVariable } from '../../variables';
 import { IRVariableAllocator } from '../IRVariableAllocator';
 
@@ -20,6 +25,7 @@ import type {
   emitExpressionIR,
   LogicBinaryExpressionLabels,
 } from './emit-expr';
+
 import type { emitIdentifierGetterIR } from './emitIdentifierGetterIR';
 import type { emitPointerAddressExpression } from './emitPointerAddressExpression';
 import type { emitUnaryLoadPtrValueIR } from './emitUnaryLoadPointerValueIR';
@@ -48,8 +54,11 @@ export type IREmitterContext = {
     block: typeof emitBlockItemIR;
     initializer: typeof emitVariableInitializerIR;
   };
-  parent?: {
-    fnDecl?: IRFnDeclInstruction;
+  fnStmt?: {
+    declaration: IRFnDeclInstruction;
+    labels: {
+      endFnLabel: IRLabelInstruction;
+    };
   };
   conditionStmt?: {
     labels: LogicBinaryExpressionLabels;
