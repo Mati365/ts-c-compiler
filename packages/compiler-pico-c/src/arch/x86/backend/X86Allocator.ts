@@ -60,15 +60,23 @@ export class X86Allocator {
       case CCompilerArch.X86_16: {
         const content = contentFn();
 
-        return [
-          genInstruction('push', 'bp'),
-          genInstruction('mov', 'bp', 'sp'),
-          ...content.asm,
-        ];
+        return [...this.genFnTopStackFrame(), ...content.asm];
       }
 
       default:
         assertUnreachable(arch);
     }
+  }
+
+  genFnTopStackFrame() {
+    return [
+      genInstruction('push', 'bp'),
+      genInstruction('mov', 'bp', 'sp'),
+      genInstruction('sub', 'sp', this._stackFrame.getTotalAllocatedBytes()),
+    ];
+  }
+
+  genFnBottomStackFrame() {
+    return [genInstruction('mov', 'sp', 'bp'), genInstruction('pop', 'bp')];
   }
 }

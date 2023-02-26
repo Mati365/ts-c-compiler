@@ -4,6 +4,8 @@ import {
   CCOMPILER_ASSIGN_MATH_OPERATORS,
 } from '@compiler/pico-c/constants';
 
+import { getBaseTypeIfPtr } from '@compiler/pico-c/frontend/analyze/types/utils';
+
 import {
   IRLoadInstruction,
   IRMathInstruction,
@@ -42,7 +44,6 @@ export function emitAssignmentIR({
     context,
   });
 
-  const rvalueType = node.expression.type;
   const rvalue = emitExpressionIR({
     node: node.expression,
     scope,
@@ -61,8 +62,9 @@ export function emitAssignmentIR({
     result.output = rvalue.output;
   } else {
     // other operators such like: abc *= 2;
-    const irSrcVar = allocator.allocTmpVariable(rvalueType);
-    const tmpResultVar = allocator.allocTmpVariable(rvalueType);
+    const lvalueType = getBaseTypeIfPtr(lvalue.output.type);
+    const irSrcVar = allocator.allocTmpVariable(lvalueType);
+    const tmpResultVar = allocator.allocTmpVariable(lvalueType);
 
     result.instructions.push(
       new IRLoadInstruction(lvalue.output, irSrcVar),

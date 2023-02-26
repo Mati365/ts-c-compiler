@@ -67,11 +67,24 @@ export function compileMathInstruction({
           rightAllocResult.value,
         );
       } else if (operator === TokenType.MUL) {
-        operatorAsm = genInstruction(
-          'imul',
-          leftAllocResult.value,
-          rightAllocResult.value,
-        );
+        if (
+          rightAllocResult.type === IRArgDynamicResolverType.NUMBER &&
+          rightAllocResult.value % 2 === 0
+        ) {
+          // transform `mul` with arg `2`, `4`, itp. into `shl`
+          operatorAsm = genInstruction(
+            'shl',
+            leftAllocResult.value,
+            Math.log2(rightAllocResult.value),
+          );
+        } else {
+          // compile normal `imul`
+          operatorAsm = genInstruction(
+            'imul',
+            leftAllocResult.value,
+            rightAllocResult.value,
+          );
+        }
       } else {
         operatorAsm = genInstruction(
           'sub',

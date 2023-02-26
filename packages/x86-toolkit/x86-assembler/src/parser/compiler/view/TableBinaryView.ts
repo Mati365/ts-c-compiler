@@ -89,7 +89,7 @@ export class TableBinaryView extends BinaryView<JMPTableEntry[]> {
           )
           .join('\n');
 
-        return `${prefix}${jmpGraph.padEnd(10, ' ')}${binary}`;
+        return `${prefix}${jmpGraph.padEnd(20, ' ')}${binary}`;
       })
       .join('\n');
   }

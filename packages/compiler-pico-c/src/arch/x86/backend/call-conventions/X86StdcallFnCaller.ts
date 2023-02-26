@@ -1,10 +1,13 @@
-import { IRVariable } from '@compiler/pico-c/frontend/ir/variables';
-import { X86RegName } from '@x86-toolkit/assembler/index';
+import chalk from 'chalk';
 
-import { genInstruction } from '../../asm-utils';
+import { CFunctionCallConvention } from '@compiler/pico-c/constants';
+import { IRVariable } from '@compiler/pico-c/frontend/ir/variables';
+
+import { genInstruction, withInlineComment } from '../../asm-utils';
 import { getX86RegByteSize } from '../../constants/regs';
 
 import { compileMemcpy } from '../compilers/shared';
+import { isRegOwnership } from '../reg-allocator/utils';
 import { getStoreOutputByteSize } from '../utils';
 
 import { X86Allocator } from '../X86Allocator';
@@ -17,8 +20,13 @@ import {
 } from './X86ConventionalFnCaller';
 
 export class X86StdcallFnCaller implements X86ConventionalFnCaller {
+  protected readonly convention = CFunctionCallConvention.STDCALL;
+
   /**
    * Compiles `call` opcode and pushes args
+   *
+   * @todo
+   *  Add preserving registers algorithm!
    */
   compileIRFnCall({
     context,
@@ -45,6 +53,12 @@ export class X86StdcallFnCaller implements X86ConventionalFnCaller {
 
     asm.push(genInstruction('call', target.asm.label));
 
+    // do not reorder! it must be called before `getReturnReg` setOwnership!
+    const preservedRegs = this.preserveConventionRegsAsm({
+      context,
+      declaration,
+    });
+
     // restore result from register (AX is already loaded in `compileIRFnRet`)
     if (
       callerInstruction.outputVar &&
@@ -52,7 +66,10 @@ export class X86StdcallFnCaller implements X86ConventionalFnCaller {
       declaration.hasReturnValue()
     ) {
       regs.ownership.setOwnership(callerInstruction.outputVar.name, {
-        reg: this.getReturnReg(allocator),
+        reg: this.getReturnReg({
+          context,
+          declaration,
+        }),
       });
     }
 
@@ -65,7 +82,7 @@ export class X86StdcallFnCaller implements X86ConventionalFnCaller {
       asm.push(genInstruction('add', stack.reg, argsCountDelta * stack.size));
     }
 
-    return asm;
+    return [...preservedRegs.preserve, ...asm, ...preservedRegs.restore];
   }
 
   /**
@@ -121,14 +138,19 @@ export class X86StdcallFnCaller implements X86ConventionalFnCaller {
         const retResolvedArg = allocator.regs.tryResolveIRArgAsReg({
           size: getStoreOutputByteSize(declaration.returnType, 0),
           arg: retInstruction.value,
-          allowedRegs: [this.getReturnReg(allocator)],
+          allowedRegs: [
+            this.getReturnReg({
+              context,
+              declaration,
+            }),
+          ],
         });
 
         asm.push(...retResolvedArg.asm);
       }
     }
 
-    asm.push(genInstruction('pop', 'bp'));
+    asm.push(...allocator.genFnBottomStackFrame());
 
     if (totalArgs) {
       asm.push(genInstruction('ret', totalArgs * stack.size));
@@ -139,10 +161,6 @@ export class X86StdcallFnCaller implements X86ConventionalFnCaller {
     return asm;
   }
 
-  private getReturnReg(allocator: X86Allocator): X86RegName {
-    return allocator.regs.ownership.getAvailableRegs().general.list[0];
-  }
-
   private getContextStackInfo(allocator: X86Allocator) {
     const reg = allocator.regs.ownership.getAvailableRegs().stack;
     const size = getX86RegByteSize(reg);
@@ -151,5 +169,86 @@ export class X86StdcallFnCaller implements X86ConventionalFnCaller {
       reg,
       size,
     };
+  }
+
+  private getReturnReg({ context, declaration }: X86FnBasicCompilerAttrs) {
+    const regs = context.allocator.regs.ownership.getAvailableRegs();
+    const { returnType } = declaration;
+
+    if (!returnType || returnType.isVoid()) {
+      return null;
+    }
+
+    return regs.general.list[0];
+  }
+
+  private preserveConventionRegsAsm({
+    context,
+    declaration,
+  }: X86FnBasicCompilerAttrs) {
+    const {
+      allocator: { regs },
+    } = context;
+
+    const { ownership } = regs;
+
+    const asm: Record<'preserve' | 'restore', string[]> = {
+      preserve: [],
+      restore: [],
+    };
+
+    // preserve already allocated regs on stack
+    ownership.releaseNotUsedLaterRegs();
+
+    const returnReg = this.getReturnReg({
+      context,
+      declaration,
+    });
+
+    if (returnReg) {
+      // check if somebody booked `AX` register and swap it if unavailable
+      const cachedOwnership = ownership.getOwnershipByReg(returnReg);
+      if (cachedOwnership?.length) {
+        const newReg = regs.requestReg({
+          size: getX86RegByteSize(returnReg),
+        });
+
+        asm.preserve.push(
+          ...newReg.asm,
+          genInstruction('xchg', returnReg, newReg.value),
+        );
+
+        cachedOwnership.forEach(varName => {
+          ownership.setOwnership(varName, {
+            reg: newReg.value,
+          });
+        });
+      }
+    }
+
+    Object.entries(ownership.getAllOwnerships()).forEach(
+      ([varName, varOwnership]) => {
+        if (!isRegOwnership(varOwnership)) {
+          return;
+        }
+
+        asm.preserve.push(
+          withInlineComment(
+            genInstruction('push', varOwnership.reg),
+            `${chalk.greenBright('preserve:')} ${chalk.blueBright(varName)}`,
+          ),
+        );
+
+        asm.restore.push(
+          withInlineComment(
+            genInstruction('pop', varOwnership.reg),
+            `${chalk.greenBright('restore:')} ${chalk.blueBright(varName)}`,
+          ),
+        );
+      },
+    );
+
+    // push all regs
+    return asm;
   }
 }

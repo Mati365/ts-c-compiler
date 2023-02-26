@@ -39,6 +39,10 @@ export class X86StackFrame {
     return this.getStackVar(id).offset;
   }
 
+  getTotalAllocatedBytes(): number {
+    return this.allocated;
+  }
+
   private allocBytes(bytes: number) {
     this.allocated += bytes;
     return -this.allocated;

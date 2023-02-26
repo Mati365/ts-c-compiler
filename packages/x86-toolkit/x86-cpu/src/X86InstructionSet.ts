@@ -39,6 +39,7 @@ export class X86InstructionSet extends X86Unit {
   protected init(cpu: X86CPU): void {
     X86InstructionSet.initBaseOpcodes(cpu);
     X86InstructionSet.initBranchOpcodes(cpu);
+    X86InstructionSet.initExtendedMovOpcodes(cpu);
   }
   /* eslint-enable class-methods-use-this */
 
@@ -755,5 +756,47 @@ export class X86InstructionSet extends X86Unit {
       opcodes[opcode] = () => jumpIf(jmpFn);
       opcodes[(0x0f << 0x8) | (+opcode + 0x10)] = () => jumpIf(jmpFn, 0x2);
     }, jmpOpcodes);
+  }
+
+  /**
+   * Init movzx / movsx instructions
+   */
+  static initExtendedMovOpcodes(cpu: X86CPU): void {
+    const { opcodes, memIO, registers } = cpu;
+
+    Object.assign(opcodes, {
+      /** MOVZX r16,r/m8 */ [0x0fb6]: (bits: X86BitsMode = 0x2) => {
+        cpu.parseRmByte(
+          (reg, modeReg) => {
+            registers[<string>X86_REGISTERS[bits][modeReg]] = registers[reg];
+          },
+          (address, reg: string) => {
+            registers[reg] = memIO.read[bits - 0x1](address);
+          },
+          (bits - 1) as X86BitsMode,
+        );
+      },
+
+      /** MOVSX r16,r/m8 */ [0x0fbe]: (bits: X86BitsMode = 0x2) => {
+        cpu.parseRmByte(
+          (reg, modeReg) => {
+            registers[<string>X86_REGISTERS[bits][modeReg]] =
+              X86AbstractCPU.signExtend(
+                registers[reg] as number,
+                (bits - 1) as X86BitsMode,
+                bits,
+              );
+          },
+          (address, reg: string) => {
+            registers[reg] = X86AbstractCPU.signExtend(
+              memIO.read[bits - 0x1](address),
+              (bits - 1) as X86BitsMode,
+              bits,
+            );
+          },
+          (bits - 1) as X86BitsMode,
+        );
+      },
+    });
   }
 }

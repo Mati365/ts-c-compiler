@@ -18,11 +18,11 @@ export function compileCallInstruction({
     ? fnResolver.tryResolveFnBlock(fnPtr.name)
     : null;
 
-  return getX86FnCaller(target.declaration.type.callConvention).compileIRFnCall(
-    {
-      callerInstruction: instruction,
-      context,
-      target,
-    },
-  );
+  const caller = getX86FnCaller(target.declaration.type.callConvention);
+
+  return caller.compileIRFnCall({
+    callerInstruction: instruction,
+    context,
+    target,
+  });
 }

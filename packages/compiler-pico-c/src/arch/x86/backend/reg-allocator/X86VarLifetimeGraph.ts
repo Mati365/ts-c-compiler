@@ -32,6 +32,8 @@ export class X86VarLifetimeGraph {
           from: offset,
           to: offset,
         });
+
+        branchOccurred = false;
       } else {
         lastVarGraph.to = offset;
       }

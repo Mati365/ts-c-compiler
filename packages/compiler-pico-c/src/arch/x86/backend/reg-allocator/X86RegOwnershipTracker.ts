@@ -112,6 +112,16 @@ export class X86RegOwnershipTracker {
     }, ownership);
   }
 
+  releaseAllRegs() {
+    const { ownership } = this;
+
+    R.forEachObjIndexed((_, varName) => {
+      if (isRegOwnership(ownership[varName])) {
+        this.dropOwnership(varName);
+      }
+    }, ownership);
+  }
+
   releaseRegs(regs: X86RegName[]) {
     this.availableRegs = regs.reduce(
       (acc, reg) => restoreInX86IntRegsMap({ allowedRegs: [reg] }, acc),
@@ -119,7 +129,7 @@ export class X86RegOwnershipTracker {
     );
   }
 
-  private getOwnershipByReg(reg: X86RegName) {
+  getOwnershipByReg(reg: X86RegName) {
     const varNames: string[] = [];
 
     R.forEachObjIndexed((item, varName) => {

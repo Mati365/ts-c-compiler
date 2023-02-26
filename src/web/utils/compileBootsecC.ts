@@ -5,7 +5,16 @@ import { trimLines } from '@compiler/core/utils';
 
 const attachBootSignatureASM = (asmCode: string): string =>
   trimLines(/* s */ `
+  [org 0x7c00]
+  jmp 0x0000:initialize_mbr
+
+  initialize_mbr:
+  xor ax, ax
+  mov ds, ax
+  mov es, ax
+  mov fs, ax
   call @@_fn_main
+  xchg dx, dx
   hlt
 
   ${asmCode}
