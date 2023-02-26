@@ -1,3 +1,5 @@
+import { Buffer } from 'buffer';
+
 const FLOPPY35_BYTE_SIZE = 1474560;
 
 /**

@@ -66,7 +66,6 @@ import { emitIdentifierGetterIR } from '../emitIdentifierGetterIR';
 import { emitIncExpressionIR } from '../emitIncExpressionIR';
 import { emitFnCallExpressionIR } from '../emit-fn-call-expression';
 import { emitLogicBinaryJmpExpressionIR } from './emitLogicBinaryJmpExpressionIR';
-import { emitStructShallowCopyIR } from './emitStructShallowCopyIR';
 
 export type ExpressionIREmitAttrs = IREmitterContextAttrs & {
   node: ASTCCompilerNode;
@@ -300,17 +299,11 @@ export function emitExpressionIR({
               instructions.push(new IRLeaInstruction(srcVar, tmpVar));
             } else if (
               isStructLikeType(srcVar.type.baseType) &&
-              !srcVar.type.baseType.canBeStoredInReg() &&
-              1 > 4
+              !srcVar.type.baseType.canBeStoredInReg()
             ) {
-              // handle "struct" array, perform shallow copy by value
-              // of provided type
-              emitExprResultToStack(
-                emitStructShallowCopyIR({
-                  allocator,
-                  type: srcVar.type.baseType,
-                }),
-              );
+              // handle `a = vec` assign where `vec` is structure that
+              // does not fits into single reg
+              pushNextVariable(srcVar);
             } else {
               // handle normal "a" variable, loads its pointing value
               // basically `a = 2`

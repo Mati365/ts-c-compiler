@@ -40,9 +40,8 @@ export function compileFnDeclInstructionsBlock({
 
   const compileFnContent: X86StackFrameContentFn = () => {
     const asm: string[] = [];
-    let ret: string[] = [];
 
-    getX86FnCaller(fnInstruction.type.callConvention).allocIRFnDefStackArgs({
+    getX86FnCaller(fnInstruction.type.callConvention).allocIRFnDefArgs({
       declaration: fnInstruction,
       context,
     });
@@ -112,16 +111,17 @@ export function compileFnDeclInstructionsBlock({
           break;
 
         case IROpcode.RET:
-          ret = compileRetInstruction({
-            ...arg,
-            fnInstruction,
-          });
+          asm.push(
+            ...compileRetInstruction({
+              ...arg,
+              fnInstruction,
+            }),
+          );
           break;
       }
     });
 
     return {
-      ret,
       asm,
     };
   };

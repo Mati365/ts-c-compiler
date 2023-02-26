@@ -26,38 +26,50 @@ export class IRFnDeclInstruction
     readonly name: string,
     readonly args: IRVariable[],
     readonly returnType?: CType,
-    readonly outputVar: IRVariable = null,
+    private rvoOutputVar: IRVariable = null,
     readonly variadic: boolean = false,
   ) {
     super(IROpcode.FN_DECL);
-  }
-
-  getArgsWithRVO() {
-    const { args, outputVar } = this;
-
-    return outputVar ? [...args, outputVar] : args;
   }
 
   hasReturnValue() {
     return !!this.returnType;
   }
 
-  isVoid() {
-    const { returnType, outputVar } = this;
+  hasRVO() {
+    return !!this.rvoOutputVar;
+  }
 
-    return !returnType && !outputVar;
+  getRVOOutputVar() {
+    return this.rvoOutputVar;
+  }
+
+  setRVOOutputVar(rvoVar: IRVariable) {
+    this.rvoOutputVar = rvoVar;
+  }
+
+  getArgsWithRVO() {
+    const { args, rvoOutputVar } = this;
+
+    return rvoOutputVar ? [...args, rvoOutputVar] : args;
+  }
+
+  isVoid() {
+    const { returnType, rvoOutputVar } = this;
+
+    return !returnType && !rvoOutputVar;
   }
 
   override getDisplayName(): string {
-    const { name, args, returnType, outputVar } = this;
+    const { name, args, returnType, rvoOutputVar } = this;
 
     const serializedArgs = args.map(arg => arg.getDisplayName());
     const retStr = returnType
       ? `: [ret${getIRTypeDisplayName(returnType)}]`
       : ':';
 
-    if (outputVar) {
-      serializedArgs.push(outputVar.getDisplayName());
+    if (rvoOutputVar) {
+      serializedArgs.push(`rvo: ${rvoOutputVar.getDisplayName()}`);
     }
 
     return `${chalk.bold.yellow('def')} ${chalk.bold.white(

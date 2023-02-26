@@ -1,3 +1,5 @@
+import { Buffer } from 'buffer';
+
 import { getBit } from '@compiler/core/utils/bits';
 import { Vec2D } from '@compiler/core/types';
 import { UnionStruct, bits } from '@compiler/core/shared/UnionStruct';
@@ -401,7 +403,7 @@ export class BIOS extends uuidX86Device<X86CPU>('bios') {
             }
 
             drive.buffer.copy(
-              cpu.mem,
+              Buffer.from(cpu.mem.buffer),
               dest + offset /** Dest address */,
               src + offset /** Source address start */,
               src + offset + sectorSize /** Source address end */,

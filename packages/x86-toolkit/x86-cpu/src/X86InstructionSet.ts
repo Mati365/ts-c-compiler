@@ -282,7 +282,7 @@ export class X86InstructionSet extends X86Unit {
                 break;
 
               default:
-                throw new Error('Unimplemented 0xFF reg rm instruction!');
+                throw new Error(`Unimplemented ${modeReg} reg rm instruction!`);
             }
           },
           (address, reg, byte) => {

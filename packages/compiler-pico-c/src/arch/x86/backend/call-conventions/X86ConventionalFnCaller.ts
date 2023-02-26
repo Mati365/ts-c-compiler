@@ -25,5 +25,5 @@ export type X86FnRetCompilerAttrs = X86FnBasicCompilerAttrs & {
 export interface X86ConventionalFnCaller {
   compileIRFnCall(attrs: X86FnCallerCompilerAttrs): string[];
   compileIRFnRet(attrs: X86FnRetCompilerAttrs): string[];
-  allocIRFnDefStackArgs(attrs: X86FnBasicCompilerAttrs): void;
+  allocIRFnDefArgs(attrs: X86FnBasicCompilerAttrs): void;
 }

@@ -25,23 +25,24 @@ export function emitFunctionIR({
   scope,
   node,
 }: FunctionIREmitAttrs): IREmitterStmtResult {
-  const fnType = <CFunctionDeclType>node.type;
-  const fnDecl = context.allocator.allocFunctionType(fnType);
-  const result = createBlankStmtResult([fnDecl]);
+  const { allocator } = context;
 
-  appendStmtResults(
-    emitBlockItemIR({
-      scope,
-      node: node.content,
-      context: {
-        ...context,
-        parent: {
-          fnDecl,
-        },
+  const fnType = <CFunctionDeclType>node.type;
+  const declaration = allocator.allocFunctionType(fnType);
+  const result = createBlankStmtResult([declaration]);
+
+  const blockStmt = emitBlockItemIR({
+    scope,
+    node: node.content,
+    context: {
+      ...context,
+      fnStmt: {
+        declaration,
       },
-    }),
-    result,
-  );
+    },
+  });
+
+  appendStmtResults(blockStmt, result);
 
   if (!isIRRetInstruction(R.last(result.instructions))) {
     result.instructions.push(new IRRetInstruction());

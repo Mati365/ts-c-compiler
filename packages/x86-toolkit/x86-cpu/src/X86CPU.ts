@@ -1,4 +1,5 @@
 import * as R from 'ramda';
+import { Buffer } from 'buffer';
 
 import { getMSbit } from '@compiler/core/utils/bits';
 import { unsafeASM } from '@x86-toolkit/assembler';
@@ -167,7 +168,7 @@ export class X86CPU extends X86AbstractCPU {
     address: number,
     size: number = buffer.length,
   ): Uint8Array {
-    buffer.copy(this.mem, address, 0, size);
+    buffer.copy(Buffer.from(this.mem.buffer), address, 0, size);
     return this.mem;
   }
 

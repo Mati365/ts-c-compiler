@@ -112,6 +112,13 @@ export class X86RegOwnershipTracker {
     }, ownership);
   }
 
+  releaseRegs(regs: X86RegName[]) {
+    this.availableRegs = regs.reduce(
+      (acc, reg) => restoreInX86IntRegsMap({ allowedRegs: [reg] }, acc),
+      this.availableRegs,
+    );
+  }
+
   private getOwnershipByReg(reg: X86RegName) {
     const varNames: string[] = [];
 
@@ -122,12 +129,5 @@ export class X86RegOwnershipTracker {
     }, this.ownership);
 
     return varNames;
-  }
-
-  private releaseRegs(regs: X86RegName[]) {
-    this.availableRegs = regs.reduce(
-      (acc, reg) => restoreInX86IntRegsMap({ allowedRegs: [reg] }, acc),
-      this.availableRegs,
-    );
   }
 }
