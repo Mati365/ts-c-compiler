@@ -68,6 +68,7 @@ export type IRArgRegResolverAttrs = {
   allocIfNotFound?: boolean;
   preferRegs?: X86RegName[];
   allowedRegs?: X86RegName[];
+  noOwnership?: boolean;
 };
 
 const ALLOW_ALL_ARG_RESOLVER_METHODS =
@@ -96,6 +97,7 @@ export class X86BasicRegAllocator {
     preferRegs,
     allowedRegs,
     allocIfNotFound,
+    noOwnership,
   }: IRArgRegResolverAttrs): IRArgAllocatorResult<X86RegName> {
     const { stackFrame, ownership } = this;
 
@@ -125,6 +127,34 @@ export class X86BasicRegAllocator {
       };
     }
 
+    // handles case when we perform resolve arg on plain `a` variable
+    // it is forbidden because stack var ownership for this kind of variables
+    // should not be ever overridden! Use additional IRLoadInstruction on this variable
+    // if you want to resolve it otherwise you will receive only stack address.
+    // see: REMEMBER TO CLEANUP REG!
+    if (!arg.isTemporary()) {
+      if (!noOwnership) {
+        throw new CBackendError(CBackendErrorCode.REG_ALLOCATOR_ERROR);
+      }
+
+      const { asm, value } = this.requestReg({
+        prefer: preferRegs,
+        size,
+      });
+
+      const stackAddr = stackFrame.getLocalVarStackRelAddress(arg.name);
+
+      if (!stackAddr) {
+        throw new CBackendError(CBackendErrorCode.REG_ALLOCATOR_ERROR);
+      }
+
+      return {
+        asm: [...asm, genInstruction('lea', value, stackAddr)],
+        value,
+        size,
+      };
+    }
+
     if (isIRVariable(arg)) {
       const varOwnership = ownership.getVarOwnership(arg.name);
 
@@ -149,9 +179,11 @@ export class X86BasicRegAllocator {
             allowedRegs,
           });
 
-          ownership.setOwnership(arg.name, {
-            reg: regResult.value,
-          });
+          if (!noOwnership) {
+            ownership.setOwnership(arg.name, {
+              reg: regResult.value,
+            });
+          }
 
           const movOpcode = requestArgSizeDelta ? 'movzx' : 'mov';
 
@@ -233,9 +265,13 @@ export class X86BasicRegAllocator {
           ],
         };
 
-        ownership.setOwnership(arg.name, {
-          reg: result.value,
-        });
+        // it will not cause an issue due to IR specification
+        // we do not ever resolve directly stack args!
+        if (!noOwnership) {
+          ownership.setOwnership(arg.name, {
+            reg: result.value,
+          });
+        }
 
         return result;
       }
@@ -248,9 +284,11 @@ export class X86BasicRegAllocator {
         size,
       });
 
-      ownership.setOwnership(arg.name, {
-        reg: result.value,
-      });
+      if (!noOwnership) {
+        ownership.setOwnership(arg.name, {
+          reg: result.value,
+        });
+      }
 
       return result;
     }
@@ -371,6 +409,10 @@ export class X86BasicRegAllocator {
     }
 
     throw new CBackendError(CBackendErrorCode.REG_ALLOCATOR_ERROR);
+  }
+
+  releaseRegs(regs: X86RegName[]) {
+    return this.ownership.releaseRegs(regs);
   }
 
   requestReg({

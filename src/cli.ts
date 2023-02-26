@@ -3,46 +3,30 @@ import { ccompiler, CCompilerOutput } from '@compiler/pico-c';
 
 ccompiler(/* cpp */ `
   // todo:
-  // sprawdź co ładuje do: int k =0x6; char i = k;
-  // mamy little endian!
+  // 1. branching RVO
+  // 2. sprawdź co ładuje do: int k =0x6; char i = k;
+  //    mamy little endian!
+  struct Vec2 {
+    int x, y;
+    char c;
+  };
 
-  int strlen(const char* str) {
-    for (int i = 0;;++i) {
-      if (*(str + i) == '0') {
-        return i;
-      }
+  // todo: not work
+  struct Vec2 of(int x, int y) {
+    if (x > y) {
+      struct Vec2 a = { .x = 1, .y = 2 };
+      return a;
     }
 
-    return -1;
+    struct Vec2 b = { .x = 3, .y = 4 };
+    return b;
   }
 
-  void main() {
-    strlen("Hello world!");
+  int main() {
+    struct Vec2 out = of(2, 3);
+    out.x = 1;
+    out.y = 7;
   }
-    // int main() {
-    // struct Vec2 out = of_vec(2, 3);
-    // out.x = 1;
-    // out.y = 7;
-    // }
-
-  // struct Vec2 {
-  //   int x, y;
-  // };
-
-  // int sum_vec(struct Vec2 vec) {
-  //   return  vec.x + vec.y;
-  // }
-
-  // int main() {
-    // struct Vec2 vec = { .x = 1, .y = 3 };
-    // int k = vec.x;
-    // vec.x = 3;
-    // sum_vec(vec);
-  // }
-  // void main() {
-  //   struct Vec2 vec = { .x = 1, .y = 3 };
-  //   int k = vec.x + vec.y;
-  // }
 `).match({
   ok: result => {
     result.dump();

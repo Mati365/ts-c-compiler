@@ -1,7 +1,12 @@
+import { IRVariable } from '@compiler/pico-c/frontend/ir/variables';
 import { X86RegName } from '@x86-toolkit/assembler/index';
+
 import { genInstruction } from '../../asm-utils';
 import { getX86RegByteSize } from '../../constants/regs';
+
+import { compileMemcpy } from '../compilers/shared';
 import { getStoreOutputByteSize } from '../utils';
+
 import { X86Allocator } from '../X86Allocator';
 import { X86StackFrame } from '../X86StackFrame';
 import {
@@ -66,7 +71,7 @@ export class X86StdcallFnCaller implements X86ConventionalFnCaller {
   /**
    * Reads all args in `def` instruction
    */
-  allocIRFnDefStackArgs({ context, declaration }: X86FnBasicCompilerAttrs) {
+  allocIRFnDefArgs({ context, declaration }: X86FnBasicCompilerAttrs) {
     const { allocator } = context;
     const { stackFrame, regs } = allocator;
 
@@ -77,7 +82,7 @@ export class X86StdcallFnCaller implements X86ConventionalFnCaller {
       const arg = args[i];
       const stackVar = stackFrame.allocRawStackVariable({
         name: arg.name,
-        offset: (i + 1) * stack.size,
+        offset: (i + 2) * stack.size,
         size: X86StackFrame.getStackAllocVariableSize(arg),
       });
 
@@ -101,8 +106,17 @@ export class X86StdcallFnCaller implements X86ConventionalFnCaller {
     const totalArgs = declaration.getArgsWithRVO().length;
     const asm: string[] = [];
 
-    if (!declaration.isVoid() && declaration.hasReturnValue()) {
-      if (retInstruction.value) {
+    if (!declaration.isVoid() && retInstruction.value) {
+      if (declaration.hasRVO()) {
+        // copy structure A to B
+        asm.push(
+          ...compileMemcpy({
+            context,
+            outputVar: declaration.getRVOOutputVar(),
+            inputVar: retInstruction.value as IRVariable,
+          }),
+        );
+      } else if (declaration.hasReturnValue()) {
         // handle case when we call `return 2`
         const retResolvedArg = allocator.regs.tryResolveIRArgAsReg({
           size: getStoreOutputByteSize(declaration.returnType, 0),
@@ -113,6 +127,8 @@ export class X86StdcallFnCaller implements X86ConventionalFnCaller {
         asm.push(...retResolvedArg.asm);
       }
     }
+
+    asm.push(genInstruction('pop', 'bp'));
 
     if (totalArgs) {
       asm.push(genInstruction('ret', totalArgs * stack.size));

@@ -1,3 +1,5 @@
+import { Buffer } from 'buffer';
+
 import {
   fromIEEE754Double,
   fromIEEE754Single,

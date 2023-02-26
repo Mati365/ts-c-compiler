@@ -13,7 +13,6 @@ import {
 } from '@compiler/pico-c/frontend/parser';
 
 import { IRRetInstruction } from '../../../instructions';
-import { IRError, IRErrorCode } from '../../../errors/IRError';
 
 import {
   appendStmtResults,
@@ -21,9 +20,6 @@ import {
   IREmitterContextAttrs,
   IREmitterStmtResult,
 } from '../types';
-
-import { functionRvoStmtTransformer } from './functionRvoStmtTransformer';
-import { isIRVariable } from '../../../variables';
 
 import { emitAssignmentIR } from '../emitAssignmentIR';
 import { emitDeclarationIR } from '../emitDeclarationIR';
@@ -139,36 +135,21 @@ export function emitBlockItemIR({
 
     [ASTCCompilerKind.ReturnStmt]: {
       enter(expr: ASTCExpression) {
-        const fnReturnType = context.parent.fnDecl.type.returnType;
+        const { fnStmt } = context;
+        const fnReturnType = fnStmt.declaration.type.returnType;
+
         if (fnReturnType.isVoid()) {
           return false;
         }
 
-        const canBeStoredInReg = fnReturnType.canBeStoredInIntegralReg();
-        let assignResult = emitExpressionIR({
+        const assignResult = emitExpressionIR({
           node: expr,
           scope,
           context,
         });
 
         appendStmtResults(assignResult, result);
-
-        if (canBeStoredInReg) {
-          result.instructions.push(new IRRetInstruction(assignResult.output));
-        } else {
-          if (!isIRVariable(assignResult.output)) {
-            throw new IRError(IRErrorCode.RVO_RETURN_CONSTANT);
-          }
-
-          result = functionRvoStmtTransformer({
-            stmtResult: result,
-            returnedVar: assignResult.output,
-            rvoOutputVar: context.parent.fnDecl.outputVar,
-            context: context,
-          });
-
-          result.instructions.push(new IRRetInstruction());
-        }
+        result.instructions.push(new IRRetInstruction(assignResult.output));
 
         return false;
       },

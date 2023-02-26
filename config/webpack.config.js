@@ -3,23 +3,24 @@ const nodeExternals = require('webpack-node-externals');
 const NodemonPlugin = require('nodemon-webpack-plugin');
 const CircularDependencyPlugin = require('circular-dependency-plugin');
 const ESLintPlugin = require('eslint-webpack-plugin');
+const HtmlWebpackPlugin = require('html-webpack-plugin');
 
 const PRODUCTION_MODE = process.env.NODE_ENV === 'production';
 
-const pkgResolve = (pkgPath) => path.resolve(__dirname, path.join('../packages/', pkgPath));
-const srcResolve = (pkgPath) => path.resolve(__dirname, path.join('../src/', pkgPath));
+const pkgResolve = pkgPath =>
+  path.resolve(__dirname, path.join('../packages/', pkgPath));
+const srcResolve = pkgPath =>
+  path.resolve(__dirname, path.join('../src/', pkgPath));
 
-const createConfig = (
-  {
-    nodemon,
-    target,
-    entryName,
-    mainFile,
-    outputFile,
-    outputPath = '',
-    plugins = [],
-  },
-) => ({
+const createConfig = ({
+  nodemon,
+  target,
+  entryName,
+  mainFile,
+  outputFile,
+  outputPath = '',
+  plugins = [],
+}) => ({
   target,
   mode: PRODUCTION_MODE ? 'production' : 'development',
   watch: !PRODUCTION_MODE,
@@ -29,7 +30,7 @@ const createConfig = (
   },
   output: {
     filename: outputFile,
-    publicPath: 'public/',
+    publicPath: '',
     path: path.resolve(__dirname, '../dist', outputPath || ''),
   },
   module: {
@@ -48,7 +49,7 @@ const createConfig = (
           {
             loader: 'file-loader',
             options: {
-              publicPath: 'public',
+              publicPath: '/',
               emitFile: true,
             },
           },
@@ -65,36 +66,31 @@ const createConfig = (
       },
     ],
   },
-  externals: (
-    target === 'node'
-      ? [
-        nodeExternals(),
-      ]
-      : []
-  ),
+  externals: target === 'node' ? [nodeExternals()] : [],
   node: {
     __dirname: false,
   },
   plugins: [
-    new ESLintPlugin(
-      {
-        extensions: ['js', 'jsx', 'ts', 'tsx'],
-        exclude: ['node_modules'],
-      },
-    ),
-    new CircularDependencyPlugin,
+    ...(target === 'node'
+      ? []
+      : [
+          new HtmlWebpackPlugin({
+            title: 'Emulator',
+          }),
+        ]),
+    new ESLintPlugin({
+      extensions: ['js', 'jsx', 'ts', 'tsx'],
+      exclude: ['node_modules'],
+    }),
+    new CircularDependencyPlugin(),
     ...plugins,
-    ...(
-      nodemon
-        ? [
-          new NodemonPlugin(
-            {
-              watch: 'dist',
-            },
-          ),
+    ...(nodemon
+      ? [
+          new NodemonPlugin({
+            watch: 'dist',
+          }),
         ]
-        : []
-    ),
+      : []),
   ],
   resolve: {
     extensions: ['.tsx', '.ts', '.js', '.jsx'],
@@ -111,15 +107,27 @@ const createConfig = (
       '@client': srcResolve('client'),
       '@server': srcResolve('server'),
     },
+    ...(target !== 'node' && {
+      fallback: {
+        path: false,
+        fs: false,
+      },
+    }),
   },
 });
 
-module.exports = createConfig(
-  {
+module.exports = [
+  createConfig({
     target: 'node',
-    entryName: 'server',
+    entryName: 'cli',
     mainFile: 'cli.ts',
     outputFile: 'cli.js',
     nodemon: true,
-  },
-);
+  }),
+  createConfig({
+    entryName: 'web',
+    mainFile: 'web/index.tsx',
+    outputFile: 'web.js',
+    nodemon: false,
+  }),
+];

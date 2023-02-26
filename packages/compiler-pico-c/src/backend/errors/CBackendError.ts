@@ -12,6 +12,7 @@ export enum CBackendErrorCode {
   INVALID_STORE_ASSIGNMENT = 'INVALID_STORE_ASSIGNMENT',
   OFFSET_OVERFLOW = 'ALLOC_OFFSET_OVERFLOW',
   EXPECTED_IR_PTR_BUT_RECEIVE = 'EXPECTED_IR_PTR_BUT_RECEIVE',
+  INCORRECT_MEMCPY_ARGS = 'INCORRECT_MEMCPY_ARGS',
 }
 
 export const C_BACKEND_ERROR_TRANSLATIONS: Record<CBackendErrorCode, string> = {
@@ -37,6 +38,7 @@ export const C_BACKEND_ERROR_TRANSLATIONS: Record<CBackendErrorCode, string> = {
   [CBackendErrorCode.EXPECTED_IR_PTR_BUT_RECEIVE]: fixme(
     'Expected IR pointer but received: "%{type}"!',
   ),
+  [CBackendErrorCode.INCORRECT_MEMCPY_ARGS]: fixme('Incorrect memcpy args!'),
 };
 
 /**

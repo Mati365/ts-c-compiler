@@ -6,7 +6,7 @@ import { X86StackFrame } from './X86StackFrame';
 import { X86BasicRegAllocator } from './reg-allocator';
 import { genInstruction, genLabelName } from '../asm-utils';
 
-export type X86StackFrameContentFn = () => { asm: string[]; ret: string[] };
+export type X86StackFrameContentFn = () => { asm: string[] };
 
 export class X86Allocator {
   private readonly labels: { [id: string]: string } = {};
@@ -64,8 +64,6 @@ export class X86Allocator {
           genInstruction('push', 'bp'),
           genInstruction('mov', 'bp', 'sp'),
           ...content.asm,
-          genInstruction('pop', 'bp'),
-          ...content.ret,
         ];
       }
 
