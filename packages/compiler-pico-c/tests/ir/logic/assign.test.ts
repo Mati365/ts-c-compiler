@@ -191,6 +191,37 @@ describe('Logic assign', () => {
     `);
   });
 
+  test('assign 0 && a > 2', () => {
+    expect(/* cpp */ `
+      void main() {
+        int a = 14;
+        int b = 0 && a > 2;
+      }
+    `).toCompiledIRBeEqual(/* ruby */ `
+      # --- Block main ---
+      def main():
+        a{0}: int*2B = alloca int2B
+        *(a{0}: int*2B) = store %14: int2B
+        b{0}: int*2B = alloca int2B
+        jmp L2
+        L4:
+        %t{3}: int2B = load a{0}: int*2B
+        %t{4}: i1:zf = icmp %t{3}: int2B greater_than %2: char1B
+        br %t{4}: i1:zf, true: L1
+        jmp L2
+        L1:
+        %t{0}: char1B = assign:φ %1: char1B
+        jmp L3
+        L2:
+        %t{1}: int2B = assign:φ %0: char1B
+        L3:
+        %t{2}: char1B = φ(%t{0}: char1B, %t{1}: int2B)
+        *(b{0}: int*2B) = store %t{2}: char1B
+        ret
+        end-def
+    `);
+  });
+
   test('assign with mixed logic expression', () => {
     expect(/* cpp */ `
       void main() {
