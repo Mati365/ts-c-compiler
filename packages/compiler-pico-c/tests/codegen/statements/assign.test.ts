@@ -104,8 +104,8 @@ describe('Variable assign', () => {
         mov word [bp - 2], 3      ; *(vec{0}: struct Vec2*2B + %2) = store %3: int2B
         lea bx, [bp - 4]          ; %t{0}: struct Vec2*2B = lea vec{0}: struct Vec2*2B
         mov ax, [bx]              ; %t{1}: int2B = load %t{0}: struct Vec2*2B
-        add bx, 2                 ; %t{3}: struct Vec2*2B = %t{0}: struct Vec2*2B plus %2: int2B
-        mov cx, [bx]              ; %t{4}: int2B = load %t{3}: struct Vec2*2B
+        add bx, 2                 ; %t{3}: int*2B = %t{0}: struct Vec2*2B plus %2: int2B
+        mov cx, [bx]              ; %t{4}: int2B = load %t{3}: int*2B
         add ax, cx                ; %t{5}: int2B = %t{1}: int2B plus %t{4}: int2B
         mov word [bp - 6], ax     ; *(k{0}: int*2B) = store %t{5}: int2B
         mov sp, bp
@@ -131,9 +131,9 @@ describe('Variable assign', () => {
         mov word [bp - 5], 5      ; *(vec{0}: struct Vec2[2]*2B + %5) = store %5: int2B
         mov byte [bp - 1], 7      ; *(vec{0}: struct Vec2[2]*2B + %9) = store %7: char1B
         lea bx, [bp - 10]         ; %t{0}: struct Vec2*2B = lea vec{0}: struct Vec2[2]*2B
-        mov ax, bx                ; swap - %t{1}: struct Vec2*2B = %t{0}: struct Vec2*2B plus %4: int2B
-        add bx, 4                 ; %t{1}: struct Vec2*2B = %t{0}: struct Vec2*2B plus %4: int2B
-        mov al, [bx]              ; %t{2}: char1B = load %t{1}: struct Vec2*2B
+        mov ax, bx                ; swap - %t{1}: char*2B = %t{0}: struct Vec2*2B plus %4: int2B
+        add bx, 4                 ; %t{1}: char*2B = %t{0}: struct Vec2*2B plus %4: int2B
+        mov al, [bx]              ; %t{2}: char1B = load %t{1}: char*2B
         add ax, 5                 ; %t{4}: struct Vec2*2B = %t{0}: struct Vec2*2B plus %5: int2B
         mov di, ax
         mov ax, [di]              ; %t{5}: int2B = load %t{4}: struct Vec2*2B
@@ -269,11 +269,11 @@ describe('Variable assign', () => {
         mov word [bp - 6], bx     ; *(ptr{0}: struct Vec2**2B) = store %t{0}: struct Vec2*2B
         mov word [bp - 2], 6      ; *(vec{0}: struct Vec2*2B + %2) = store %6: char1B
         mov di, [bp - 6]          ; %t{3}: struct Vec2*2B = load ptr{0}: struct Vec2**2B
-        add di, 2                 ; %t{4}: struct Vec2*2B = %t{3}: struct Vec2*2B plus %2: int2B
-        mov word [di], 5          ; *(%t{4}: struct Vec2*2B) = store %5: char1B
+        add di, 2                 ; %t{4}: int*2B = %t{3}: struct Vec2*2B plus %2: int2B
+        mov word [di], 5          ; *(%t{4}: int*2B) = store %5: char1B
         mov si, [bp - 6]          ; %t{5}: struct Vec2*2B = load ptr{0}: struct Vec2**2B
-        add si, 2                 ; %t{6}: struct Vec2*2B = %t{5}: struct Vec2*2B plus %2: int2B
-        mov ax, [si]              ; %t{7}: int2B = load %t{6}: struct Vec2*2B
+        add si, 2                 ; %t{6}: int*2B = %t{5}: struct Vec2*2B plus %2: int2B
+        mov ax, [si]              ; %t{7}: int2B = load %t{6}: int*2B
         mov word [bp - 8], ax     ; *(d{0}: int*2B) = store %t{7}: int2B
         mov sp, bp
         pop bp

@@ -11,7 +11,7 @@ import {
   isIRVariable,
 } from '@compiler/pico-c/frontend/ir/variables';
 
-import { getStoreOutputByteSize } from '../utils';
+import { getTypeOffsetByteSize } from '@compiler/pico-c/frontend/ir/utils';
 
 import { X86CompilerInstructionFnAttrs } from '../../constants/types';
 import {
@@ -33,7 +33,7 @@ export function compileStoreInstruction({
 
   let destAddr: { value: string; size: number } = null;
   const asm: string[] = [];
-  const outputByteSize = getStoreOutputByteSize(outputVar.type, offset);
+  const outputByteSize = getTypeOffsetByteSize(outputVar.type, offset);
 
   if (outputVar.isTemporary()) {
     // 1. handle pointers assign

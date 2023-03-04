@@ -9,18 +9,18 @@ import {
   isStructLikeType,
 } from '@compiler/pico-c/frontend/analyze';
 
-export const getStoreOutputByteSize = (type: CType, offset: number) => {
+export const getTypeAtOffset = (type: CType, offset: number): CType => {
   const baseOutputType = getBaseTypeIfPtr(type);
 
   if (isStructLikeType(baseOutputType)) {
-    return baseOutputType.getFlattenFieldTypeByOffset(offset).getByteSize();
+    return baseOutputType.getFlattenFieldTypeByOffset(offset);
   }
 
   if (isArrayLikeType(baseOutputType)) {
     const arrayItem = getSourceNonPtrType(baseOutputType);
 
-    return getStoreOutputByteSize(arrayItem, offset % arrayItem.getByteSize());
+    return getTypeAtOffset(arrayItem, offset % arrayItem.getByteSize());
   }
 
-  return baseOutputType.getByteSize();
+  return baseOutputType;
 };

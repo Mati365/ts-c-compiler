@@ -286,4 +286,61 @@ describe('Functions IR', () => {
         c{0}: const char[6]6B = const { 72, 101, 108, 108, 111, 0 }
     `);
   });
+
+  test('call function with pointer to struct and increment', () => {
+    expect(/* cpp*/ `
+      struct Vec2 {
+        int x, y;
+      };
+
+      void inc(struct Vec2* vec, int k) {
+        vec->y += 3 + k;
+        vec->y--;
+      }
+
+      int main() {
+        int a = 1;
+        struct Vec2 vec = { .x = 5, .y = 11 };
+        inc(&vec, 10);
+
+        a = vec.y;
+        asm('xchg dx, dx');
+        return a;
+      }
+    `).toCompiledIRBeEqual(/* ruby */ `
+        # --- Block inc ---
+        def inc(vec{0}: struct Vec2**2B, k{0}: int*2B):
+        %t{0}: struct Vec2*2B = load vec{0}: struct Vec2**2B
+        %t{1}: int*2B = %t{0}: struct Vec2*2B plus %2: int2B
+        %t{2}: int2B = load k{0}: int*2B
+        %t{3}: int2B = %t{2}: int2B plus %3: char1B
+        %t{4}: int2B = load %t{1}: int*2B
+        %t{5}: int2B = %t{4}: int2B plus %t{3}: int2B
+        *(%t{1}: int*2B) = store %t{5}: int2B
+        %t{6}: struct Vec2*2B = load vec{0}: struct Vec2**2B
+        %t{7}: int*2B = %t{6}: struct Vec2*2B plus %2: int2B
+        %t{8}: int2B = load %t{7}: int*2B
+        %t{9}: int2B = %t{8}: int2B minus %1: int2B
+        *(%t{7}: int*2B) = store %t{9}: int2B
+        ret
+        end-def
+        # --- Block main ---
+        def main(): [ret: int2B]
+        a{0}: int*2B = alloca int2B
+        *(a{0}: int*2B) = store %1: int2B
+        vec{1}: struct Vec2*2B = alloca struct Vec24B
+        *(vec{1}: struct Vec2*2B) = store %5: int2B
+        *(vec{1}: struct Vec2*2B + %2) = store %11: int2B
+        %t{11}: struct Vec2*2B = lea vec{1}: struct Vec2*2B
+        call label-offset inc :: (%t{11}: struct Vec2*2B, %10: char1B)
+        %t{12}: struct Vec2*2B = lea vec{1}: struct Vec2*2B
+        %t{13}: int*2B = %t{12}: struct Vec2*2B plus %2: int2B
+        %t{14}: int2B = load %t{13}: int*2B
+        *(a{0}: int*2B) = store %t{14}: int2B
+        asm "xchg dx, dx"
+        %t{15}: int2B = load a{0}: int*2B
+        ret %t{15}: int2B
+        end-def
+    `);
+  });
 });
