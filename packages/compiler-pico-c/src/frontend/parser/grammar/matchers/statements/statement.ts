@@ -6,6 +6,7 @@ import { expressionStatement } from './expressionStatement';
 import { selectionStatement } from './selectionStatement';
 import { iterationStatement } from './iterationStatement';
 import { jumpStatement } from './jumpStatement';
+import { asmStatement } from './asmStatement';
 
 /**
  * statement
@@ -15,6 +16,7 @@ import { jumpStatement } from './jumpStatement';
  *  | selection_statement
  *  | iteration_statement
  *  | jump_statement
+ *  | asm_statement
  *  ;
  */
 export function statement(grammar: CGrammar): ASTCCompilerNode {
@@ -27,5 +29,6 @@ export function statement(grammar: CGrammar): ASTCCompilerNode {
     expression: () => expressionStatement(grammar),
     selection: () => selectionStatement(grammar),
     jump: () => jumpStatement(grammar),
+    asm: () => asmStatement(grammar),
   });
 }

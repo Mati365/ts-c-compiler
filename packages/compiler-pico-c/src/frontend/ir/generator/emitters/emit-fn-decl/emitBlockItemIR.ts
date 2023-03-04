@@ -1,5 +1,6 @@
 import { GroupTreeVisitor } from '@compiler/grammar/tree/TreeGroupedVisitor';
 import {
+  ASTCAsmStatement,
   ASTCAssignmentExpression,
   ASTCBlockItemsList,
   ASTCCompilerKind,
@@ -28,6 +29,7 @@ import { emitExpressionIR } from '../emit-expr';
 import { emitIfStmtIR } from '../emitIfStmtIR';
 import { emitWhileStmtIR, emitDoWhileStmtIR } from '../emit-while-stmt';
 import { emitForStmtIR } from '../emitForStmtIR';
+import { emitAsmStatementIR } from '../emitAsmStatementIR';
 
 type BlockItemIREmitAttrs = IREmitterContextAttrs & {
   node: ASTCCompilerNode;
@@ -41,6 +43,21 @@ export function emitBlockItemIR({
   let result = createBlankStmtResult();
 
   GroupTreeVisitor.ofIterator<ASTCCompilerNode>({
+    [ASTCCompilerKind.AsmStmt]: {
+      enter(asmStmtNode: ASTCAsmStatement) {
+        appendStmtResults(
+          emitAsmStatementIR({
+            node: asmStmtNode,
+            scope,
+            context,
+          }),
+          result,
+        );
+
+        return false;
+      },
+    },
+
     [ASTCCompilerKind.ForStmt]: {
       enter: (forStmt: ASTCForStatement) => {
         const nestedContext = {

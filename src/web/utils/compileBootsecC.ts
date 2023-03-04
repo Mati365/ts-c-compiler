@@ -14,7 +14,6 @@ const attachBootSignatureASM = (asmCode: string): string =>
   mov es, ax
   mov fs, ax
   call @@_fn_main
-  xchg dx, dx
   hlt
 
   ${asmCode}

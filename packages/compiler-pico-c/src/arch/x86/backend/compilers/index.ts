@@ -1,4 +1,5 @@
 export * from './compileAllocInstruction';
+export * from './compileAsmInstruction';
 export * from './compileAssignInstruction';
 export * from './compileCallInstruction';
 export * from './compileDataSegment';
@@ -14,3 +15,4 @@ export * from './compileMathInstruction';
 export * from './compilePhiInstruction';
 export * from './compileRetInstruction';
 export * from './compileStoreInstruction';
+export * from './shared';

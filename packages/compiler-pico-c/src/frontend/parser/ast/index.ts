@@ -2,6 +2,7 @@ export * from './ASTCAbstractDeclarator';
 export * from './ASTCAlignmentSpecifier';
 export * from './ASTCAlignmentSpecifiersList';
 export * from './ASTCArgumentsExpressionList';
+export * from './ASTCAsmStatement';
 export * from './ASTCAssignmentExpression';
 export * from './ASTCBinaryOpNode';
 export * from './ASTCBlockItemsList';
