@@ -15,9 +15,11 @@ describe('Variables initialization', () => {
         @@_fn_main:
         push bp
         mov bp, sp
+        sub sp, 5
         mov word [bp - 2], 4      ; *(a{0}: int*2B) = store %4: int2B
         mov byte [bp - 3], 97     ; *(b{0}: char*2B) = store %97: char1B
         mov word [bp - 5], 2      ; *(c{0}: int*2B) = store %2: int2B
+        mov sp, bp
         pop bp
         ret
       `);
@@ -34,9 +36,11 @@ describe('Variables initialization', () => {
         @@_fn_main:
         push bp
         mov bp, sp
+        sub sp, 8
         mov word [bp - 8], 1      ; *(vecs{0}: struct Vec2[2]*2B) = store %1: int2B
         mov word [bp - 6], 2      ; *(vecs{0}: struct Vec2[2]*2B + %2) = store %2: int2B
         mov word [bp - 2], 4      ; *(vecs{0}: struct Vec2[2]*2B + %6) = store %4: int2B
+        mov sp, bp
         pop bp
         ret
       `);
@@ -56,7 +60,9 @@ describe('Variables initialization', () => {
         @@_fn_main:
         push bp
         mov bp, sp
+        sub sp, 4
         mov word [bp - 4], 4      ; *(b{0}: int*2B) = store %4: int2B
+        mov sp, bp
         pop bp
         ret
       `);
@@ -74,7 +80,9 @@ describe('Variables initialization', () => {
         @@_fn_main:
         push bp
         mov bp, sp
+        sub sp, 10
         mov word [bp - 10], 4     ; *(d{0}: int*2B) = store %4: int2B
+        mov sp, bp
         pop bp
         ret
       `);
@@ -94,6 +102,7 @@ describe('Variables initialization', () => {
         @@_fn_main:
         push bp
         mov bp, sp
+        sub sp, 5
         mov word [bp - 3], 25928  ; *(letters{0}: int*2B) = store %25928: int2B
         mov byte [bp - 1], 0      ; *(letters{0}: char[3]*2B + %2) = store %0: char1B
         lea bx, [bp - 3]          ; %t{0}: char*2B = lea letters{0}: char[3]*2B
@@ -101,6 +110,7 @@ describe('Variables initialization', () => {
         add al, 2                 ; %t{2}: char1B = %t{1}: char1B plus %2: char1B
         movzx cx, al
         mov word [bp - 5], cx     ; *(a{0}: int*2B) = store %t{2}: char1B
+        mov sp, bp
         pop bp
         ret
       `);
@@ -120,12 +130,14 @@ describe('Variables initialization', () => {
         @@_fn_main:
         push bp
         mov bp, sp
+        sub sp, 3
         mov byte [bp - 1], 115    ; *(b{0}: char*2B) = store %115: char1B
         mov al, [bp - 1]
         add al, 3                 ; %t{1}: char1B = %t{0}: char1B plus %3: char1B
         add al, byte [bp - 1]     ; %t{3}: char1B = %t{1}: char1B plus %t{2}: char1B
         movzx bx, al
         mov word [bp - 3], bx     ; *(a{0}: int*2B) = store %t{3}: char1B
+        mov sp, bp
         pop bp
         ret
       `);
@@ -144,6 +156,7 @@ describe('Variables initialization', () => {
           @@_fn_main:
           push bp
           mov bp, sp
+          sub sp, 5
           mov byte [bp - 1], 115    ; *(b{0}: char*2B) = store %115: char1B
           mov word [bp - 3], 1231   ; *(k{0}: int*2B) = store %1231: int2B
           mov al, [bp - 1]
@@ -152,6 +165,7 @@ describe('Variables initialization', () => {
           movzx bx, al
           add bx, word [bp - 3]     ; %t{5}: int2B = %t{3}: char1B plus %t{4}: int2B
           mov word [bp - 5], bx     ; *(a{0}: int*2B) = store %t{5}: int2B
+          mov sp, bp
           pop bp
           ret
       `);
@@ -171,12 +185,14 @@ describe('Variables initialization', () => {
         @@_fn_main:
         push bp
         mov bp, sp
+        sub sp, 12
         mov word [bp - 2], 1      ; *(arr{0}: int[1]*2B) = store %1: int2B
         mov word [bp - 12], 1     ; *(arr2{0}: int[5]*2B) = store %1: int2B
         mov word [bp - 10], 2     ; *(arr2{0}: int[5]*2B + %2) = store %2: int2B
         mov word [bp - 8], 3      ; *(arr2{0}: int[5]*2B + %4) = store %3: int2B
         mov word [bp - 6], 4      ; *(arr2{0}: int[5]*2B + %6) = store %4: int2B
         mov word [bp - 4], 5      ; *(arr2{0}: int[5]*2B + %8) = store %5: int2B
+        mov sp, bp
         pop bp
         ret
       `);
@@ -195,14 +211,15 @@ describe('Variables initialization', () => {
         @@_fn_main:
         push bp
         mov bp, sp
+        sub sp, 8
         mov word [bp - 2], 1      ; *(arr{0}: const int[1]*2B) = store %1: const int2B
         mov bx, @@_c_0_           ; %t{0}: const int*2B = lea c{0}: const int[5]10B
         mov word [bp - 4], bx     ; *(arr2{0}: const int**2B) = store %t{0}: const int*2B
         mov word [bp - 8], 1      ; *(arr3{0}: const int[2]*2B) = store %1: const int2B
         mov word [bp - 6], 2      ; *(arr3{0}: const int[2]*2B + %2) = store %2: const int2B
+        mov sp, bp
         pop bp
         ret
-
         @@_c_0_: db 1, 2, 3, 4, 5
       `);
     });
@@ -218,9 +235,11 @@ describe('Variables initialization', () => {
         @@_fn_main:
         push bp
         mov bp, sp
+        sub sp, 10
         mov word [bp - 8], 4      ; *(vec{0}: struct Vec2[2]*2B + %2) = store %4: int2B
         mov word [bp - 5], 5      ; *(vec{0}: struct Vec2[2]*2B + %5) = store %5: int2B
         mov byte [bp - 1], 7      ; *(vec{0}: struct Vec2[2]*2B + %9) = store %7: char1B
+        mov sp, bp
         pop bp
         ret
       `);
@@ -239,8 +258,10 @@ describe('Variables initialization', () => {
         @@_fn_main:
         push bp
         mov bp, sp
+        sub sp, 2
         mov bx, @@_c_0_           ; %t{0}: const char*2B = lea c{0}: const char[2]2B
         mov word [bp - 2], bx     ; *(letters1{0}: const char**2B) = store %t{0}: const char*2B
+        mov sp, bp
         pop bp
         ret
         @@_c_0_: db 72, 0
@@ -260,12 +281,14 @@ describe('Variables initialization', () => {
         @@_fn_main:
         push bp
         mov bp, sp
+        sub sp, 6
         mov bx, @@_c_0_           ; %t{0}: const char*2B = lea c{0}: const char[5]5B
         mov word [bp - 2], bx     ; *(letters1{0}: const char**2B) = store %t{0}: const char*2B
         mov di, @@_c_1_           ; %t{1}: char*2B = lea c{1}: char[6]6B
         mov word [bp - 4], di     ; *(letters2{0}: char**2B) = store %t{1}: char*2B
         mov si, @@_c_2_           ; %t{2}: const char*2B = lea c{2}: const char[12]12B
         mov word [bp - 6], si     ; *(letters3{0}: const char**2B) = store %t{2}: const char*2B
+        mov sp, bp
         pop bp
         ret
         @@_c_0_: db 72, 101, 108, 108, 0
@@ -286,11 +309,13 @@ describe('Variables initialization', () => {
         @@_fn_main:
         push bp
         mov bp, sp
+        sub sp, 7
         mov word [bp - 5], 25928  ; *(letters1{0}: int*2B) = store %25928: int2B
         mov word [bp - 3], 27756  ; *(letters1{0}: int*2B + %2) = store %27756: int2B
         mov byte [bp - 1], 0      ; *(letters1{0}: char[5]*2B + %4) = store %0: char1B
         mov bx, @@_c_0_           ; %t{0}: const char*2B = lea c{0}: const char[7]7B
         mov word [bp - 7], bx     ; *(letters2{0}: const char**2B) = store %t{0}: const char*2B
+        mov sp, bp
         pop bp
         ret
         @@_c_0_: db 72, 101, 108, 108, 111, 33, 0

@@ -19,22 +19,25 @@ describe('Function call', () => {
         @@_fn_test:
         push bp
         mov bp, sp
+        sub sp, 2
         mov word [bp - 2], 2      ; *(k{0}: int*2B) = store %2: int2B
+        mov sp, bp
         pop bp
         ret
-
         ; def main():
         @@_fn_main:
         push bp
         mov bp, sp
+        sub sp, 6
         mov word [bp - 2], 4      ; *(a{0}: int*2B) = store %4: int2B
         mov ax, [bp - 2]
         add ax, 7                 ; %t{1}: int2B = %t{0}: int2B plus %7: char1B
         mov word [bp - 4], ax     ; *(ks{0}: int*2B) = store %t{1}: int2B
         call @@_fn_test
-        mov bx, [bp - 2]
-        add bx, 10                ; %t{4}: int2B = %t{3}: int2B plus %10: char1B
-        mov word [bp - 6], bx     ; *(k{1}: int*2B) = store %t{4}: int2B
+        mov ax, [bp - 2]
+        add ax, 10                ; %t{4}: int2B = %t{3}: int2B plus %10: char1B
+        mov word [bp - 6], ax     ; *(k{1}: int*2B) = store %t{4}: int2B
+        mov sp, bp
         pop bp
         ret
       `);
@@ -52,18 +55,21 @@ describe('Function call', () => {
         @@_fn_test:
         push bp
         mov bp, sp
+        sub sp, 0
+        mov sp, bp
         pop bp
         ret
-
         ; def main():
         @@_fn_main:
         push bp
         mov bp, sp
+        sub sp, 0
         push 5
         push 4
         push 3
         call @@_fn_test
         add sp, 6
+        mov sp, bp
         pop bp
         ret
       `);
@@ -84,14 +90,17 @@ describe('Function call', () => {
         @@_fn_test:
         push bp
         mov bp, sp
+        sub sp, 0
+        mov sp, bp
         pop bp
         ret
-
         ; def main():
         @@_fn_main:
         push bp
         mov bp, sp
+        sub sp, 2
         mov word [bp - 2], 2      ; *(k{0}: int*2B) = store %2: int2B
+        mov sp, bp
         pop bp
         ret
       `);
@@ -107,20 +116,23 @@ describe('Function call', () => {
         @@_fn_sum:
         push bp
         mov bp, sp
-        mov ax, [bp + 2]
-        add ax, word [bp + 4]     ; %t{2}: int2B = %t{0}: int2B plus %t{1}: int2B
+        sub sp, 0
+        mov ax, [bp + 4]
+        add ax, word [bp + 6]     ; %t{2}: int2B = %t{0}: int2B plus %t{1}: int2B
+        mov sp, bp
         pop bp
         ret 4
-
         ; def main(): [ret: int2B]
         @@_fn_main:
         push bp
         mov bp, sp
+        sub sp, 2
         push 2
         push 1
         call @@_fn_sum
         add ax, 4                 ; %t{5}: int2B = %t{4}: int2B plus %4: char1B
         mov word [bp - 2], ax     ; *(acc{0}: int*2B) = store %t{5}: int2B
+        mov sp, bp
         pop bp
         ret
       `);
@@ -136,21 +148,24 @@ describe('Function call', () => {
         @@_fn_sum:
         push bp
         mov bp, sp
-        mov ax, [bp + 2]
-        mov bx, word [bp + 4]
+        sub sp, 0
+        mov ax, [bp + 4]
+        mov bx, word [bp + 6]
         and bx, 0xff
         add ax, bx                ; %t{2}: int2B = %t{0}: int2B plus %t{1}: char1B
+        mov sp, bp
         pop bp
         ret 4
-
         ; def main():
         @@_fn_main:
         push bp
         mov bp, sp
+        sub sp, 2
         push 97
         push 3
         call @@_fn_sum
         mov word [bp - 2], ax     ; *(k{0}: int*2B) = store %t{4}: int2B
+        mov sp, bp
         pop bp
         ret
       `);
@@ -170,16 +185,20 @@ describe('Function call', () => {
         @@_fn_printf:
         push bp
         mov bp, sp
+        sub sp, 0
+        mov sp, bp
         pop bp
         ret 2
         ; def main(): [ret: int2B]
         @@_fn_main:
         push bp
         mov bp, sp
+        sub sp, 2
         mov bx, @@_c_0_           ; %t{2}: const char*2B = lea c{0}: const char[6]6B
         mov word [bp - 2], bx     ; *(%t{1}: const char**2B) = store %t{2}: const char*2B
         push word [bp - 2]
         call @@_fn_printf
+        mov sp, bp
         pop bp
         ret
         @@_c_0_: db 72, 101, 108, 108, 111, 0
@@ -199,12 +218,15 @@ describe('Function call', () => {
         @@_fn_printf:
         push bp
         mov bp, sp
+        sub sp, 0
+        mov sp, bp
         pop bp
         ret 4
         ; def main(): [ret: int2B]
         @@_fn_main:
         push bp
         mov bp, sp
+        sub sp, 4
         mov bx, @@_c_0_           ; %t{0}: const char*2B = lea c{0}: const char[13]13B
         mov word [bp - 2], bx     ; *(str{1}: const char**2B) = store %t{0}: const char*2B
         mov di, @@_c_1_           ; %t{3}: const char*2B = lea c{1}: const char[6]6B
@@ -213,6 +235,7 @@ describe('Function call', () => {
         push si
         push word [bp - 4]
         call @@_fn_printf
+        mov sp, bp
         pop bp
         ret
         @@_c_0_: db 72, 101, 108, 108, 111, 32, 119, 111, 114, 108, 100, 33, 0
@@ -236,15 +259,19 @@ describe('Function call', () => {
         @@_fn_sum:
         push bp
         mov bp, sp
+        sub sp, 2
         mov word [bp - 2], 6      ; *(out{0}: struct Vec2*2B) = store %6: int2B
-        pop bp
         mov ax, [bp - 2]
+        mov sp, bp
+        pop bp
         ret
         ; def main():
         @@_fn_main:
         push bp
         mov bp, sp
+        sub sp, 0
         call @@_fn_sum
+        mov sp, bp
         pop bp
         ret
       `);
@@ -268,29 +295,40 @@ describe('Function call', () => {
         }
       `).toCompiledAsmBeEqual(`
         cpu 386
-        ; def of_vec(x{0}: int*2B, y{0}: int*2B, %out{0}: struct Vec2*2B):
+        ; def of_vec(x{0}: int*2B, y{0}: int*2B, rvo: %out{0}: struct Vec2*2B):
         @@_fn_of_vec:
         push bp
         mov bp, sp
-        mov bx, word [bp + 6]     ; %t{3}: struct Vec2*2B = assign %out{0}: struct Vec2*2B
-        mov ax, [bp + 2]
-        mov word [bx], ax         ; *(%t{3}: struct Vec2*2B) = store %t{0}: int2B
-        mov cx, [bp + 4]
-        mov word [bx + 2], cx     ; *(%t{3}: struct Vec2*2B + %2) = store %t{1}: int2B
+        sub sp, 4
+        mov ax, [bp + 4]
+        mov word [bp - 4], ax     ; *(v{0}: struct Vec2*2B) = store %t{0}: int2B
+        mov bx, [bp + 6]
+        mov word [bp - 2], bx     ; *(v{0}: struct Vec2*2B + %2) = store %t{1}: int2B
+        ; memcpy v{0}: struct Vec2*2B -> %out{0}: struct Vec2*2B
+        lea di, [bp - 4]
+        mov si, [bp + 8]
+        ; offset = 0B
+        mov cx, word [di]
+        mov word [si], cx
+        ; offset = 2B
+        mov cx, word [di + 2]
+        mov word [si + 2], cx
+        mov sp, bp
         pop bp
         ret 6
-
         ; def main(): [ret: int2B]
         @@_fn_main:
         push bp
         mov bp, sp
-        lea bx, [bp - 4]          ; %t{5}: struct Vec2**2B = lea out{0}: struct Vec2*2B
+        sub sp, 4
+        lea bx, [bp - 4]          ; %t{3}: struct Vec2**2B = lea out{0}: struct Vec2*2B
         push bx
         push 3
         push 2
         call @@_fn_of_vec
         mov word [bp - 4], 1      ; *(out{0}: struct Vec2*2B) = store %1: char1B
         mov word [bp - 2], 7      ; *(out{0}: struct Vec2*2B + %2) = store %7: char1B
+        mov sp, bp
         pop bp
         ret
       `);

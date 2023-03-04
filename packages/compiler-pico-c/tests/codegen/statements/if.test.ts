@@ -17,12 +17,14 @@ describe('If statement', () => {
         @@_fn_main:
         push bp
         mov bp, sp
+        sub sp, 3
         mov byte [bp - 1], 97     ; *(a{0}: char*2B) = store %97: char1B
         cmp byte [bp - 1], 4      ; %t{1}: i1:zf = icmp %t{0}: char1B greater_than %4: char1B
         jng @@_L1                 ; br %t{1}: i1:zf, false: L1
         @@_L2:
         mov word [bp - 3], 0      ; *(k{0}: int*2B) = store %0: int2B
         @@_L1:
+        mov sp, bp
         pop bp
         ret
       `);
@@ -44,6 +46,7 @@ describe('If statement', () => {
         @@_fn_main:
         push bp
         mov bp, sp
+        sub sp, 5
         mov byte [bp - 1], 97     ; *(a{0}: char*2B) = store %97: char1B
         mov word [bp - 3], 4      ; *(b{0}: int*2B) = store %4: int2B
         cmp byte [bp - 1], 4      ; %t{1}: i1:zf = icmp %t{0}: char1B greater_than %4: char1B
@@ -55,6 +58,7 @@ describe('If statement', () => {
         @@_L2:
         mov word [bp - 5], 0      ; *(k{0}: int*2B) = store %0: int2B
         @@_L1:
+        mov sp, bp
         pop bp
         ret
       `);
@@ -76,6 +80,7 @@ describe('If statement', () => {
         @@_fn_main:
         push bp
         mov bp, sp
+        sub sp, 5
         mov byte [bp - 1], 97     ; *(a{0}: char*2B) = store %97: char1B
         mov word [bp - 3], 4      ; *(b{0}: int*2B) = store %4: int2B
         mov ax, word [bp - 1]
@@ -86,6 +91,7 @@ describe('If statement', () => {
         @@_L2:
         mov word [bp - 5], 0      ; *(k{0}: int*2B) = store %0: int2B
         @@_L1:
+        mov sp, bp
         pop bp
         ret
       `);
@@ -106,6 +112,7 @@ describe('If statement', () => {
         @@_fn_main:
         push bp
         mov bp, sp
+        sub sp, 5
         mov byte [bp - 1], 97     ; *(a{0}: char*2B) = store %97: char1B
         mov word [bp - 3], 4      ; *(b{0}: int*2B) = store %4: int2B
         mov ax, word [bp - 1]
@@ -124,6 +131,7 @@ describe('If statement', () => {
         @@_L2:
         mov word [bp - 5], 0      ; *(k{0}: int*2B) = store %0: int2B
         @@_L1:
+        mov sp, bp
         pop bp
         ret
       `);
@@ -148,6 +156,7 @@ describe('If statement', () => {
         @@_fn_main:
         push bp
         mov bp, sp
+        sub sp, 5
         mov byte [bp - 1], 97     ; *(a{0}: char*2B) = store %97: char1B
         cmp byte [bp - 1], 4      ; %t{1}: i1:zf = icmp %t{0}: char1B greater_than %4: char1B
         jng @@_L3                 ; br %t{1}: i1:zf, false: L3
@@ -157,6 +166,7 @@ describe('If statement', () => {
         @@_L3:
         mov word [bp - 5], 4      ; *(j{0}: int*2B) = store %4: int2B
         @@_L1:
+        mov sp, bp
         pop bp
         ret
       `);
@@ -181,6 +191,7 @@ describe('If statement', () => {
         @@_fn_main:
         push bp
         mov bp, sp
+        sub sp, 7
         mov byte [bp - 1], 97     ; *(a{0}: char*2B) = store %97: char1B
         cmp byte [bp - 1], 4      ; %t{1}: i1:zf = icmp %t{0}: char1B greater_than %4: char1B
         jng @@_L3                 ; br %t{1}: i1:zf, false: L3
@@ -196,6 +207,7 @@ describe('If statement', () => {
         @@_L6:
         mov word [bp - 7], 4      ; *(c{0}: int*2B) = store %4: int2B
         @@_L4:
+        mov sp, bp
         pop bp
         ret
       `);

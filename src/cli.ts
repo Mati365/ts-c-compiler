@@ -64,24 +64,13 @@ ccompiler(/* cpp */ `
       }
 
       int magic_shit() {
-        struct Vec2 v = make_vec(6, 2);
-        int k = v.x + v.y;
-        int length = sum(2, 3) + strlen("Hello world!") + sum(5, 5) + max(1, 2) + min(10, 1) + k;
-        int j = 66;
+        int length = strlen("Hello world!") + strlen("abc");
 
-        if (v.x + v.y > 10) {
-          j += 2 + k;
-        }
-
-        if (length == 44) {
-          j += 2;
-        }
-
-        return j;
+        return length;
       }
 
       void main() {
-        int k = magic_shit() * 2;
+        int k = magic_shit();
       }
 `).match({
   ok: result => {

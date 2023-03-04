@@ -83,16 +83,16 @@ describe('Functions IR', () => {
       }
     `).toCompiledIRBeEqual(/* ruby */ `
       # --- Block sum ---
-      def sum(%out{0}: struct Vec2*2B):
-        %t{1}: struct Vec2*2B = assign %out{0}: struct Vec2*2B
-        *(%t{1}: struct Vec2*2B) = store %6: int2B
-        ret
+      def sum(rvo: %out{0}: struct Vec2*2B):
+        out{0}: struct Vec2*2B = alloca struct Vec24B
+        *(out{0}: struct Vec2*2B) = store %6: int2B
+        ret out{0}: struct Vec2*2B
         end-def
         # --- Block main ---
         def main():
-        %t{3}: struct Vec2*2B = alloca struct Vec24B
-        %t{4}: struct Vec2*2B = lea %t{3}: struct Vec2*2B
-        call label-offset sum :: (%t{4}: struct Vec2*2B)
+        %t{1}: struct Vec2*2B = alloca struct Vec24B
+        %t{2}: struct Vec2*2B = lea %t{1}: struct Vec2*2B
+        call label-offset sum :: (%t{2}: struct Vec2*2B)
         ret
         end-def
     `);
@@ -174,24 +174,24 @@ describe('Functions IR', () => {
       }
     `).toCompiledIRBeEqual(/* ruby */ `
         # --- Block of_vec ---
-        def of_vec(x{0}: int*2B, y{0}: int*2B, %out{0}: struct Vec2*2B):
-        %t{3}: struct Vec2*2B = assign %out{0}: struct Vec2*2B
+        def of_vec(x{0}: int*2B, y{0}: int*2B, rvo: %out{0}: struct Vec2*2B):
+        v{0}: struct Vec2*2B = alloca struct Vec24B
         %t{0}: int2B = load x{0}: int*2B
-        *(%t{3}: struct Vec2*2B) = store %t{0}: int2B
+        *(v{0}: struct Vec2*2B) = store %t{0}: int2B
         %t{1}: int2B = load y{0}: int*2B
-        *(%t{3}: struct Vec2*2B + %2) = store %t{1}: int2B
-        ret
+        *(v{0}: struct Vec2*2B + %2) = store %t{1}: int2B
+        ret v{0}: struct Vec2*2B
         end-def
         # --- Block main ---
         def main(): [ret: int2B]
         ptr{0}: struct Vec2(int, int)**2B = alloca struct Vec2(int, int)*2B
-        %t{4}: struct Vec2 of_vec(int, int)*2B = label-offset of_vec
-        *(ptr{0}: struct Vec2(int, int)**2B) = store %t{4}: struct Vec2 of_vec(int, int)*2B
+        %t{2}: struct Vec2 of_vec(int, int)*2B = label-offset of_vec
+        *(ptr{0}: struct Vec2(int, int)**2B) = store %t{2}: struct Vec2 of_vec(int, int)*2B
         vec{0}: struct Vec2*2B = alloca struct Vec24B
-        %t{5}: struct Vec2(int, int)*2B = load ptr{0}: struct Vec2(int, int)**2B
-        %t{6}: struct Vec2(int, int)*2B = %t{5}: struct Vec2(int, int)*2B plus %1: char1B
-        %t{7}: struct Vec2**2B = lea vec{0}: struct Vec2*2B
-        call %t{6}: struct Vec2(int, int)*2B :: (%1: char1B, %2: char1B, %t{7}: struct Vec2**2B)
+        %t{3}: struct Vec2(int, int)*2B = load ptr{0}: struct Vec2(int, int)**2B
+        %t{4}: struct Vec2(int, int)*2B = %t{3}: struct Vec2(int, int)*2B plus %1: char1B
+        %t{5}: struct Vec2**2B = lea vec{0}: struct Vec2*2B
+        call %t{4}: struct Vec2(int, int)*2B :: (%1: char1B, %2: char1B, %t{5}: struct Vec2**2B)
         ret
         end-def
     `);

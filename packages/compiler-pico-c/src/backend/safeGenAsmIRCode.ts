@@ -7,8 +7,6 @@ import { CAbstractArchBackend } from './abstract/CAbstractArchBackend';
 import { CBackendCompilerResult } from './constants/types';
 import { CBackendError, CBackendErrorCode } from './errors/CBackendError';
 
-import { IRResultView } from '../frontend/ir';
-
 type CAbstractBackendConstructor = {
   new (config: CCompilerConfig): CAbstractArchBackend;
 };
@@ -26,8 +24,6 @@ export function genASMIRCode(
 ): Result<CBackendCompilerResult, CBackendError[]> {
   try {
     const CompilerBackend = CCOMPILER_ARCH_BACKENDS[config.arch];
-
-    console.info(IRResultView.serializeToString(ir));
 
     return ok(new CompilerBackend(config).compileIR(ir));
   } catch (e) {
