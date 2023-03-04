@@ -60,6 +60,7 @@ export type IRArgDynamicResolverAttrs = {
   arg: IRInstructionTypedArg;
   size?: number;
   allow?: IRArgDynamicResolverType;
+  allowedRegs?: X86RegName[];
 };
 
 export type IRArgRegResolverAttrs = {
@@ -320,6 +321,7 @@ export class X86BasicRegAllocator {
 
   tryResolveIrArg({
     arg,
+    allowedRegs,
     size = arg.type.getByteSize(),
     allow = ALLOW_ALL_ARG_RESOLVER_METHODS,
   }: IRArgDynamicResolverAttrs): IRDynamicArgAllocatorResult {
@@ -343,6 +345,7 @@ export class X86BasicRegAllocator {
           ...this.tryResolveIRArgAsReg({
             arg,
             size,
+            allowedRegs,
           }),
         };
       }
@@ -366,6 +369,7 @@ export class X86BasicRegAllocator {
           const extendedResult = this.tryResolveIRArgAsAddr(arg, size);
           const outputReg = this.requestReg({
             size,
+            allowedRegs,
           });
 
           return {
@@ -398,6 +402,7 @@ export class X86BasicRegAllocator {
       const result = this.tryResolveIRArgAsReg({
         arg,
         size,
+        allowedRegs,
       });
 
       if (result) {
