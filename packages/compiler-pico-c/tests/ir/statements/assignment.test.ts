@@ -79,6 +79,24 @@ describe('Assignment IR', () => {
           end-def
       `);
     });
+
+    test('Optimized assign with mul by 0', () => {
+      expect(/* cpp */ `
+        void main() {
+          int a = 2;
+          int b = a * 0 + 10;
+        }
+      `).toCompiledIRBeEqual(/* ruby */ `
+        # --- Block main ---
+        def main():
+          a{0}: int*2B = alloca int2B
+          *(a{0}: int*2B) = store %2: int2B
+          b{0}: int*2B = alloca int2B
+          *(b{0}: int*2B) = store %10: char1B
+          ret
+          end-def
+      `);
+    });
   });
 
   describe('Arrays', () => {

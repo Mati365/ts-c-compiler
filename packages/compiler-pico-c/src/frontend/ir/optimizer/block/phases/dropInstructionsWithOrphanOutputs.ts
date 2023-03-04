@@ -2,6 +2,7 @@ import {
   IRInstruction,
   isIRLabelOffsetInstruction,
   isIRLeaInstruction,
+  isIRLoadInstruction,
   isIRMathInstruction,
 } from '../../../instructions';
 
@@ -69,7 +70,8 @@ export function dropInstructionsWithOrphanOutputs(
     if (
       isIRMathInstruction(instruction) ||
       isIRLeaInstruction(instruction) ||
-      isIRLabelOffsetInstruction(instruction)
+      isIRLabelOffsetInstruction(instruction) ||
+      isIRLoadInstruction(instruction)
     ) {
       newInstructions.splice(newInstructions.indexOf(instruction), 1);
     }
