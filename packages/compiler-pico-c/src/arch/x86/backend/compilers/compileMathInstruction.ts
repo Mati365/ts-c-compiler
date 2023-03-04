@@ -69,6 +69,7 @@ export function compileMathInstruction({
       } else if (operator === TokenType.MUL) {
         if (
           rightAllocResult.type === IRArgDynamicResolverType.NUMBER &&
+          rightAllocResult.value > 0 &&
           rightAllocResult.value % 2 === 0
         ) {
           // transform `mul` with arg `2`, `4`, itp. into `shl`

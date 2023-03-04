@@ -1,5 +1,6 @@
 import { TokenType } from '@compiler/lexer/shared';
 import { IRInstruction, isIRMathInstruction } from '../../../instructions';
+
 import { IRInstructionTypedArg } from '../../../variables';
 import { dropConstantInstructionArgs } from '../utils';
 
@@ -25,13 +26,23 @@ export function dropNopMathInstructions(instructions: IRInstruction[]) {
     if (
       instruction.operator === TokenType.MUL &&
       instruction.hasAnyConstantArg() &&
-      !instruction.hasBothConstantArgs() &&
-      instruction.getFirstConstantArg().constant === 0x1
+      !instruction.hasBothConstantArgs()
     ) {
-      replaceArgs[instruction.outputVar.name] = instruction.getFirstVarArg();
-      newInstructions.splice(i, 1);
-      needSecondPass = true;
-      --i;
+      const constantArg = instruction.getFirstConstantArg();
+
+      if (constantArg.constant === 0x1) {
+        // handle `a * 1`
+        replaceArgs[instruction.outputVar.name] = instruction.getFirstVarArg();
+        newInstructions.splice(i, 1);
+        needSecondPass = true;
+        --i;
+      } else if (constantArg.constant === 0x0) {
+        // handle `a * 0`
+        replaceArgs[instruction.outputVar.name] = constantArg;
+        newInstructions.splice(i, 1);
+        needSecondPass = true;
+        --i;
+      }
     }
   }
 

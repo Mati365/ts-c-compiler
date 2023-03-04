@@ -2,7 +2,7 @@ import '../utils';
 
 describe('Increment stmt IR', () => {
   describe('post increment', () => {
-    test('should genenerate i++ IR', () => {
+    test('should generate i++ IR', () => {
       expect(/* cpp */ `void main() { int a; a++; }`)
         .toCompiledIRBeEqual(/* ruby */ `
         # --- Block main ---
@@ -16,7 +16,7 @@ describe('Increment stmt IR', () => {
       `);
     });
 
-    test('should genenerate *ptr++ IR', () => {
+    test('should generate *ptr++ IR', () => {
       expect(/* cpp */ `void main() { int* a; *a++; }`)
         .toCompiledIRBeEqual(/* ruby */ `
         # --- Block main ---
@@ -25,13 +25,12 @@ describe('Increment stmt IR', () => {
           %t{0}: int*2B = load a{0}: int**2B
           %t{1}: int*2B = %t{0}: int*2B plus %2: int2B
           *(a{0}: int**2B) = store %t{1}: int*2B
-          %t{2}: int2B = load %t{0}: int*2B
           ret
           end-def
       `);
     });
 
-    test('should genenerate *(ptr++) IR', () => {
+    test('should generate *(ptr++) IR', () => {
       expect(/* cpp */ `void main() { int* a; *(a++); }`)
         .toCompiledIRBeEqual(/* ruby */ `
         # --- Block main ---
@@ -40,13 +39,12 @@ describe('Increment stmt IR', () => {
           %t{0}: int*2B = load a{0}: int**2B
           %t{1}: int*2B = %t{0}: int*2B plus %2: int2B
           *(a{0}: int**2B) = store %t{1}: int*2B
-          %t{2}: int2B = load %t{0}: int*2B
           ret
           end-def
       `);
     });
 
-    test('should genenerate (*ptr)++ IR', () => {
+    test('should generate (*ptr)++ IR', () => {
       expect(/* cpp */ `void main() { int* a; (*a)++; }`)
         .toCompiledIRBeEqual(/* ruby */ `
         # --- Block main ---
@@ -63,7 +61,7 @@ describe('Increment stmt IR', () => {
   });
 
   describe('pre increment', () => {
-    test('should genenerate ++i IR', () => {
+    test('should generate ++i IR', () => {
       expect(/* cpp */ `void main() { int a; ++a; }`)
         .toCompiledIRBeEqual(/* ruby */ `
         # --- Block main ---
@@ -77,7 +75,7 @@ describe('Increment stmt IR', () => {
       `);
     });
 
-    test('should genenerate ++(*ptr) IR', () => {
+    test('should generate ++(*ptr) IR', () => {
       expect(/* cpp */ `void main() { int* ptr; ++(*ptr); }`)
         .toCompiledIRBeEqual(/* ruby */ `
         # --- Block main ---
@@ -92,7 +90,7 @@ describe('Increment stmt IR', () => {
       `);
     });
 
-    test('should genenerate *(++ptr) IR', () => {
+    test('should generate *(++ptr) IR', () => {
       expect(/* cpp */ `void main() { int* ptr; *(++ptr); }`)
         .toCompiledIRBeEqual(/* ruby */ `
         # --- Block main ---
@@ -101,7 +99,6 @@ describe('Increment stmt IR', () => {
           %t{0}: int*2B = load ptr{0}: int**2B
           %t{1}: int*2B = %t{0}: int*2B plus %2: int2B
           *(ptr{0}: int**2B) = store %t{1}: int*2B
-          %t{2}: int2B = load %t{1}: int*2B
           ret
           end-def
       `);
