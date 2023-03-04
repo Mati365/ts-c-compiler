@@ -12,24 +12,14 @@ export const EditorContainer = () => {
   const cpuRef = useRef<X86CPU>();
   const [asmResult] = useState(() =>
     compileBootsecC(/* c */ `
-  int strlen(const char* str) {
-        for (int i = 0;;++i) {
-          if (*(str + i) == 0) {
-            return i;
-          }
-        }
-
-        return 0;
+      int sub(int x, int y) {
+        return x - y;
       }
 
-      int magic_shit() {
-        int length = 0-(strlen("Hello world!") + strlen("abc")) * 2;
-
-        return length;
-      }
-
-      void main() {
-        int k = magic_shit();
+      int main() {
+        int a = 1;
+        a *= 3 * sub(10, 20);
+        return a;
       }
     `),
   );

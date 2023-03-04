@@ -524,6 +524,7 @@ export class X86ALU extends X86Unit {
             status.of = status.cf; // checkme
           }
         }),
+
       /** MULTIPLIER ax, r/m16 */ 0xf7: () =>
         this.rmByteMultiplierParse(0x2, (val, byte) => {
           if ((byte.reg & 0x6) === 0x6) {
@@ -571,6 +572,83 @@ export class X86ALU extends X86Unit {
             registers.status.of = registers.status.cf;
           }
         }),
+
+      /* IMUL r16,r/m16,imm8 */ 0x6b: (immBits: X86BitsMode = 0x1) => {
+        let source1: number, source2: number, result: number;
+
+        cpu.parseRmByte(
+          (reg, modeReg) => {
+            source1 = X86AbstractCPU.getSignedNumber(registers[<any>reg], 0x2);
+            source2 = X86AbstractCPU.getSignedNumber(
+              cpu.fetchOpcode(),
+              immBits,
+            );
+
+            result = X86AbstractCPU.toUnsignedNumber(source1 * source2, 0x2);
+            registers[<string>X86_REGISTERS[0x2][modeReg]] = result;
+          },
+          (address, reg: string) => {
+            source1 = X86AbstractCPU.getSignedNumber(
+              memIO.read[0x2](address),
+              0x2,
+            );
+
+            source2 = X86AbstractCPU.getSignedNumber(
+              cpu.fetchOpcode(),
+              immBits,
+            );
+
+            result = X86AbstractCPU.toUnsignedNumber(source1 * source2, 0x2);
+            registers[reg] = result;
+          },
+          0x2,
+        );
+
+        const overflow = +(
+          source1 * source2 !==
+          X86AbstractCPU.signExtend(source1 * source2, 0x2, 0x4)
+        );
+
+        registers.status.cf = overflow;
+        registers.status.of = overflow;
+      },
+
+      /* IMUL r16,r/m16,imm16 */ 0x69: () => opcodes[0x6b](0x2),
+
+      /* IMUL r16, r/m16 */ 0x0faf: () => {
+        let source1: number, source2: number, result: number;
+
+        cpu.parseRmByte(
+          (reg, modeReg) => {
+            source1 = X86AbstractCPU.getSignedNumber(registers[<any>reg], 0x2);
+            source2 = X86AbstractCPU.getSignedNumber(
+              registers[<string>X86_REGISTERS[0x2][modeReg]],
+            );
+
+            result = X86AbstractCPU.toUnsignedNumber(source1 * source2, 0x2);
+            registers[<string>X86_REGISTERS[0x2][modeReg]] = result;
+          },
+          (address, reg: string) => {
+            source1 = X86AbstractCPU.getSignedNumber(
+              memIO.read[0x2](address),
+              0x2,
+            );
+            source2 = X86AbstractCPU.getSignedNumber(registers[reg]);
+
+            result = X86AbstractCPU.toUnsignedNumber(source1 * source2, 0x2);
+            registers[reg] = result;
+          },
+          0x2,
+        );
+
+        const overflow = +(
+          source1 * source2 !==
+          X86AbstractCPU.signExtend(source1 * source2, 0x2, 0x4)
+        );
+
+        registers.status.cf = overflow;
+        registers.status.of = overflow;
+      },
     });
   }
 }

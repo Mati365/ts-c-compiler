@@ -492,11 +492,11 @@ export class X86CPU extends X86AbstractCPU {
     const modeRegs = X86_REGISTERS[mode];
     const byte = X86AbstractCPU.decodeRmByte(this.fetchOpcode(0x1, true, true));
 
-    /** Register */
+    // Register
     if (byte.mod === 0x3) {
       regCallback(modeRegs ? modeRegs[byte.rm] : null, byte.reg, byte, mode);
     } else if (memCallback) {
-      /** Adress */
+      // Address
       let address = 0,
         displacement = 0;
 
@@ -504,7 +504,7 @@ export class X86CPU extends X86AbstractCPU {
       if (!byte.mod && byte.rm === 0x6) {
         address = this.fetchOpcode(0x2);
       } else {
-        /** Eight-bit displacement, sign-extended to 16 bits */
+        // Eight-bit displacement, sign-extended to 16 bits
         if (byte.mod === 0x1) {
           displacement = X86AbstractCPU.getSignedNumber(
             this.fetchOpcode(0x1),
@@ -517,7 +517,7 @@ export class X86CPU extends X86AbstractCPU {
           );
         }
 
-        /** Calc address */
+        // Calc address
         const { registers } = this;
         switch (byte.rm) {
           case 0x0:
@@ -553,7 +553,7 @@ export class X86CPU extends X86AbstractCPU {
             this.logger.error('Unknown RM byte address!');
         }
 
-        /** Seg register ss is set with 0x2, 0x3, 0x6 opcodes */
+        // Seg register ss is set with 0x2, 0x3, 0x6 opcodes
         if (byte.rm >= 0x2 && !(0x6 % byte.rm) && segRegister === 'ds') {
           segRegister = 'ss';
         }
@@ -563,9 +563,9 @@ export class X86CPU extends X86AbstractCPU {
         address = this.getMemAddress(segRegister, address);
       }
 
-      /** Callback and address calc */
+      // Callback and address calc
       memCallback(
-        /** Only effective address */
+        // Only effective address
         address,
         modeRegs ? modeRegs[byte.reg] : null,
         byte,
