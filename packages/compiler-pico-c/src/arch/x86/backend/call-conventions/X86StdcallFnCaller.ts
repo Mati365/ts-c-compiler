@@ -3,12 +3,12 @@ import chalk from 'chalk';
 import { CFunctionCallConvention } from '@compiler/pico-c/constants';
 import { IRVariable } from '@compiler/pico-c/frontend/ir/variables';
 
+import { getTypeOffsetByteSize } from '@compiler/pico-c/frontend/ir/utils';
 import { genInstruction, withInlineComment } from '../../asm-utils';
 import { getX86RegByteSize } from '../../constants/regs';
 
 import { compileMemcpy } from '../compilers/shared';
 import { isRegOwnership } from '../reg-allocator/utils';
-import { getStoreOutputByteSize } from '../utils';
 
 import { X86Allocator } from '../X86Allocator';
 import { X86StackFrame } from '../X86StackFrame';
@@ -136,7 +136,7 @@ export class X86StdcallFnCaller implements X86ConventionalFnCaller {
       } else if (declaration.hasReturnValue()) {
         // handle case when we call `return 2`
         const retResolvedArg = allocator.regs.tryResolveIRArgAsReg({
-          size: getStoreOutputByteSize(declaration.returnType, 0),
+          size: getTypeOffsetByteSize(declaration.returnType, 0),
           arg: retInstruction.value,
           allowedRegs: [
             this.getReturnReg({

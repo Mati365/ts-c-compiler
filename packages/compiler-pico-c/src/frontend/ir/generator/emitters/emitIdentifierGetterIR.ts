@@ -47,7 +47,9 @@ import {
   IREmitterContextAttrs,
   IREmitterExpressionVarResult,
 } from './types';
+
 import { IRError, IRErrorCode } from '../../errors/IRError';
+import { getTypeAtOffset } from '../../utils';
 
 type LvalueExpressionIREmitAttrs = IREmitterContextAttrs & {
   node: ASTCCompilerNode;
@@ -231,7 +233,9 @@ export function emitIdentifierGetterIR({
               TokenType.PLUS,
               lastIRVar,
               offsetConstant,
-              (lastIRVar = allocator.allocAddressVariable(lastIRVar.type)),
+              (lastIRVar = allocator.allocAddressVariable(
+                getTypeAtOffset(lastIRVar.type, offsetConstant.constant),
+              )),
             ),
           );
         }
@@ -275,7 +279,9 @@ export function emitIdentifierGetterIR({
               TokenType.PLUS,
               lastIRVar,
               offsetConstant,
-              (lastIRVar = allocator.allocAddressVariable(lastIRVar.type)),
+              (lastIRVar = allocator.allocAddressVariable(
+                getTypeAtOffset(lastIRVar.type, offsetConstant.constant),
+              )),
             ),
           );
         }
