@@ -26,23 +26,69 @@ export function compileMathInstruction({
     allocator: { regs },
   } = context;
 
+  // imul instruction likes only 16bit / 32bit args
+  // so force make it at least that big
+  let biggestArgSize = getBiggerIRArg(leftVar, rightVar).type.getByteSize();
+
   switch (operator) {
+    case TokenType.BIT_SHIFT_RIGHT:
+    case TokenType.BIT_SHIFT_LEFT: {
+      const leftAllocResult = regs.tryResolveIRArgAsReg({
+        size: biggestArgSize,
+        arg: leftVar,
+      });
+
+      if (outputVar.isTemporary()) {
+        regs.ownership.setOwnership(outputVar.name, {
+          reg: leftAllocResult.value,
+        });
+      }
+
+      const rightAllocResult = regs.tryResolveIrArg({
+        size: biggestArgSize,
+        arg: rightVar,
+        allowedRegs: ['cl', 'cx'],
+        allow: IRArgDynamicResolverType.REG | IRArgDynamicResolverType.NUMBER,
+      });
+
+      const opcode = operator === TokenType.BIT_SHIFT_RIGHT ? 'sar' : 'sal';
+      const asm: string[] = [...leftAllocResult.asm, ...rightAllocResult.asm];
+
+      if (rightAllocResult.value === 'cx') {
+        asm.push(
+          withInlineComment(
+            genInstruction(opcode, leftAllocResult.value, 'cl'),
+            instruction.getDisplayName(),
+          ),
+        );
+      } else {
+        asm.push(
+          withInlineComment(
+            genInstruction(
+              opcode,
+              leftAllocResult.value,
+              rightAllocResult.value,
+            ),
+            instruction.getDisplayName(),
+          ),
+        );
+      }
+
+      return asm;
+    }
+
     case TokenType.MUL:
     case TokenType.PLUS:
     case TokenType.MINUS: {
-      // imul instruction likes only 16bit / 32bit args
-      // so force make it at least that big
-      let argSize = getBiggerIRArg(leftVar, rightVar).type.getByteSize();
-
       if (operator === TokenType.MUL) {
-        argSize = Math.max(
-          argSize,
+        biggestArgSize = Math.max(
+          biggestArgSize,
           regs.ownership.getAvailableRegs().general.size,
         );
       }
 
       const leftAllocResult = regs.tryResolveIRArgAsReg({
-        size: argSize,
+        size: biggestArgSize,
         arg: leftVar,
       });
 
@@ -54,7 +100,7 @@ export function compileMathInstruction({
 
       // alloc right variable and perform operation
       const rightAllocResult = regs.tryResolveIrArg({
-        size: argSize,
+        size: biggestArgSize,
         arg: rightVar,
       });
 
@@ -144,9 +190,11 @@ export function compileMathInstruction({
         arg: rightVar,
       });
 
-      regs.ownership.setOwnership(outputVar.name, {
-        reg: leftAllocResult.value,
-      });
+      if (outputVar.isTemporary()) {
+        regs.ownership.setOwnership(outputVar.name, {
+          reg: leftAllocResult.value,
+        });
+      }
 
       return [
         ...leftAllocResult.asm,
