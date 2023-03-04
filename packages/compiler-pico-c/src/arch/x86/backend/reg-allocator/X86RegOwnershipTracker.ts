@@ -52,6 +52,10 @@ export class X86RegOwnershipTracker {
     if (isRegOwnership(item)) {
       const ownerships = this.getOwnershipByReg(item.reg);
 
+      if (item.noPrune) {
+        return;
+      }
+
       if (ownerships.length === 1) {
         this.releaseRegs([item.reg]);
       }
@@ -81,7 +85,30 @@ export class X86RegOwnershipTracker {
     }: IROwnershipValue & { releasePrevAllocatedReg?: boolean },
   ) {
     if (isRegOwnership(value)) {
+      // edge case in phi functions:
+      // if both: value and varName is phi function
+      // do not drop ownership!
+      // example:
+      //    jmp L2
+      //    L1:
+      //    %t{0}: int2B = assign:φ %1: int2B
+      //    jmp L3
+      //    L2:
+      //    %t{1}: char1B = assign:φ %0: int2B
+      //
+      // %t{0} and t{1} can use the same register (ax for example)!
       this.getOwnershipByReg(value.reg).forEach(varName => {
+        const varOwnership = this.ownership[varName];
+
+        // skip if both variables are phi - reused register
+        if (
+          value.noPrune &&
+          isRegOwnership(varOwnership) &&
+          varOwnership.noPrune
+        ) {
+          return;
+        }
+
         delete this.ownership[varName];
       });
 

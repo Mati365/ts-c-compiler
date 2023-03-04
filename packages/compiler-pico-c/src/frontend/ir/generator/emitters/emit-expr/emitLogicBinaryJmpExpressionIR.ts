@@ -6,6 +6,7 @@ import {
   IRJmpInstruction,
   IRLabelInstruction,
 } from '../../../instructions';
+import { IRConstant, isIRConstant } from '../../../variables';
 
 import {
   IREmitterContextAttrs,
@@ -79,39 +80,78 @@ export function emitLogicBinaryJmpExpressionIR({
     }),
   };
 
+  const emitConstantBranch = (
+    variable: IRConstant,
+    branchLabels: LogicBinaryExpressionLabels,
+  ) => {
+    if (variable.constant && branchLabels.ifTrueLabel) {
+      instructions.push(new IRJmpInstruction(branchLabels.ifTrueLabel));
+    }
+
+    if (!variable.constant && branchLabels.ifFalseLabel) {
+      instructions.push(new IRJmpInstruction(branchLabels.ifFalseLabel));
+    }
+  };
+
   if (op === TokenType.OR) {
     appendStmtResults(results.left, result);
+
     if (results.left.output) {
-      instructions.push(
-        new IRBrInstruction(results.left.output, labels.ifTrueLabel),
-      );
+      if (isIRConstant(results.left.output)) {
+        emitConstantBranch(results.left.output, {
+          ifTrueLabel: labels.ifTrueLabel,
+        });
+      } else {
+        instructions.push(
+          new IRBrInstruction(results.left.output, labels.ifTrueLabel),
+        );
+      }
     }
 
     instructions.push(localLabels.rightArgLabel);
     appendStmtResults(results.right, result);
 
     if (results.right.output) {
-      instructions.push(
-        new IRBrInstruction(results.right.output, labels.ifTrueLabel),
-      );
+      if (isIRConstant(results.right.output)) {
+        emitConstantBranch(results.right.output, {
+          ifTrueLabel: labels.ifTrueLabel,
+        });
+      } else {
+        instructions.push(
+          new IRBrInstruction(results.right.output, labels.ifTrueLabel),
+        );
+      }
     }
 
     instructions.push(new IRJmpInstruction(labels.ifFalseLabel));
   } else {
     appendStmtResults(results.left, result);
+
     if (results.left.output) {
-      instructions.push(
-        new IRBrInstruction(results.left.output, null, labels.ifFalseLabel),
-      );
+      if (isIRConstant(results.left.output)) {
+        emitConstantBranch(results.left.output, {
+          ifFalseLabel: labels.ifFalseLabel,
+        });
+      } else {
+        instructions.push(
+          new IRBrInstruction(results.left.output, null, labels.ifFalseLabel),
+        );
+      }
     }
 
     instructions.push(localLabels.rightArgLabel);
     appendStmtResults(results.right, result);
 
     if (results.right.output) {
-      instructions.push(
-        new IRBrInstruction(results.right.output, labels.ifTrueLabel),
-      );
+      if (isIRConstant(results.right.output)) {
+        emitConstantBranch(results.right.output, {
+          ifTrueLabel: labels.ifTrueLabel,
+        });
+      } else {
+        instructions.push(
+          new IRBrInstruction(results.right.output, labels.ifTrueLabel),
+        );
+      }
     }
 
     instructions.push(new IRJmpInstruction(labels.ifFalseLabel));
