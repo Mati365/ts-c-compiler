@@ -3,9 +3,8 @@ import { ccompiler, CCompilerOutput } from '@compiler/pico-c';
 
 ccompiler(/* cpp */ `
   int main() {
-    int a = 1;
-    a *= 1;
-    return a;
+    asm("xchg dx, dx");
+    return 0;
   }
 `).match({
   ok: result => {

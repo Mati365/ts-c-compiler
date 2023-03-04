@@ -38,6 +38,7 @@ export enum CCompilerKeyword {
   DEFAULT = 'default',
   GOTO = 'goto',
   SIZEOF = 'sizeof',
+  ASM = 'asm',
   ALIGN_AS = '_Alignas',
   ALIGN_OF = '_Alignof',
   STATIC_ASSERT = '_Static_assert',

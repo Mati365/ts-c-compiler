@@ -27,6 +27,7 @@ import { compilePhiInstruction } from './compilePhiInstruction';
 import { compileRetInstruction } from './compileRetInstruction';
 import { compileLabelOffsetInstruction } from './compileLabelOffsetInstruction';
 import { compileCallInstruction } from './compileCallInstruction';
+import { compileAsmInstruction } from './compileAsmInstruction';
 
 type FnDeclCompilerBlockFnAttrs = X86CompilerFnAttrs & {
   instruction: IRFnDeclInstruction;
@@ -80,6 +81,10 @@ export function compileFnDeclInstructionsBlock({
 
         case IROpcode.MATH:
           asm.push(...compileMathInstruction(arg));
+          break;
+
+        case IROpcode.ASM:
+          asm.push(...compileAsmInstruction(arg));
           break;
 
         case IROpcode.STORE:

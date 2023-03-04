@@ -1,4 +1,5 @@
 export enum IROpcode {
+  ASM = 'ASM',
   ASSIGN = 'ASSIGN',
   ALLOC = 'ALLOC',
   STORE = 'STORE',

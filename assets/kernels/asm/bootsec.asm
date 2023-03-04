@@ -6,7 +6,6 @@ mov ds, ax
 mov es, ax
 mov fs, ax
 call @@_fn_main
-xchg dx, dx
 hlt
 cpu 386
 ; def sub(x{0}: int*2B, y{0}: int*2B): [ret: int2B]

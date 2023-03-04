@@ -21,9 +21,11 @@ export class ASTCInitializer extends ASTCCompilerNode {
   hasDesignation() {
     return !!this.designation;
   }
+
   hasAssignment() {
     return !!this.assignmentExpression;
   }
+
   hasInitializerList() {
     return !!this.initializers;
   }
