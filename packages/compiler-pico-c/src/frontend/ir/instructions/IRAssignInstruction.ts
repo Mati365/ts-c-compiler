@@ -53,10 +53,15 @@ export class IRAssignInstruction
   }
 
   override getDisplayName(): string {
-    const { outputVar, inputVar } = this;
+    const { outputVar, inputVar, meta } = this;
+    let suffix = '';
+
+    if (meta?.phi) {
+      suffix = chalk.whiteBright(':φ');
+    }
 
     return `${outputVar.getDisplayName()} = ${chalk.yellowBright(
       'assign',
-    )} ${inputVar.getDisplayName()}`;
+    )}${suffix} ${inputVar.getDisplayName()}`;
   }
 }
