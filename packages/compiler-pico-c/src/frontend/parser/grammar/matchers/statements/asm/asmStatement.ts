@@ -48,9 +48,10 @@ export function asmStatement(grammar: CGrammar): ASTCAsmStatement {
   }
 
   // INPUT
+  const hasInput = hasOutput && consumeOptionalNextOperand();
   let inputOperands: ASTCAsmStmtInputOperand[] = null;
 
-  if (hasOutput && consumeOptionalNextOperand()) {
+  if (hasInput && g.currentToken.type !== TokenType.COLON) {
     inputOperands = fetchSplittedProductionsList({
       g: grammar.g,
       prodFn: () => asmInputOperand(grammar),
