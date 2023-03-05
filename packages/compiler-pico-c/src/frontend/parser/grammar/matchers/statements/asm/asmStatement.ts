@@ -12,6 +12,7 @@ import {
 import { fetchSplittedProductionsList } from '../../utils';
 import { asmOutputOperand } from './asmOutputOperand';
 import { asmInputOperand } from './asmInputOperand';
+import { stringLiteral } from '../../types';
 
 /**
  * asm asm-qualifiers ( AssemblerTemplate
@@ -22,14 +23,11 @@ import { asmInputOperand } from './asmInputOperand';
  */
 export function asmStatement(grammar: CGrammar): ASTCAsmStatement {
   const { g } = grammar;
-
   const startToken = g.identifier(CCompilerKeyword.ASM);
+
   g.terminal('(');
 
-  const expression = g.match({
-    type: TokenType.QUOTE,
-  });
-
+  const expression = stringLiteral(grammar);
   const consumeOptionalNextOperand = () =>
     g.match({
       type: TokenType.COLON,
@@ -63,7 +61,7 @@ export function asmStatement(grammar: CGrammar): ASTCAsmStatement {
 
   return new ASTCAsmStatement(
     NodeLocation.fromTokenLoc(startToken.loc),
-    expression.text,
+    expression.stringLiteral,
     outputOperands,
     inputOperands,
   );

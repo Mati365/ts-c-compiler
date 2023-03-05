@@ -8,7 +8,7 @@ export const MOCK_C_FILE = /* c */ `
     int b = 2;
 
     asm(
-      "add %[out], %[in]"
+      "xor ax, ax"
       : [out] "=r" (a)
       : [in] "r" (b)
     );
