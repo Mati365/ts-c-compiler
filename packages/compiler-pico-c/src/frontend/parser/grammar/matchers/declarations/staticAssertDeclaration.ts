@@ -28,5 +28,9 @@ export function staticAssertDeclaration(
   g.terminal(')');
   g.terminalType(TokenType.SEMICOLON);
 
-  return new ASTCStaticAssertDeclaration(expression.loc, expression, literal);
+  return new ASTCStaticAssertDeclaration(
+    expression.loc,
+    expression,
+    literal.stringLiteral,
+  );
 }

@@ -1,3 +1,4 @@
+import { trimLines } from '@compiler/core/utils';
 import { IRAsmInstruction } from '@compiler/pico-c/frontend/ir/instructions';
 import { X86CompilerInstructionFnAttrs } from '../../constants/types';
 
@@ -7,5 +8,5 @@ type AsmInstructionCompilerAttrs =
 export function compileAsmInstruction({
   instruction,
 }: AsmInstructionCompilerAttrs): string[] {
-  return [`# ${instruction.expression}`];
+  return [trimLines(instruction.expression)];
 }

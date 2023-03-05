@@ -304,7 +304,7 @@ describe('Functions IR', () => {
         inc(&vec, 10);
 
         a = vec.y;
-        asm('xchg dx, dx');
+        asm("xchg dx, dx");
         return a;
       }
     `).toCompiledIRBeEqual(/* ruby */ `

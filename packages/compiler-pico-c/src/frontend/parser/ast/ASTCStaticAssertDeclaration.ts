@@ -1,7 +1,6 @@
 import { dumpAttributesToString } from '@compiler/core/utils';
 import { walkOverFields } from '@compiler/grammar/decorators/walkOverFields';
 
-import { Token } from '@compiler/lexer/tokens';
 import { NodeLocation } from '@compiler/grammar/tree/NodeLocation';
 import { ASTCConstantExpression } from './ASTCConstantExpression';
 import { ASTCCompilerKind, ASTCCompilerNode } from './ASTCCompilerNode';
@@ -13,7 +12,7 @@ export class ASTCStaticAssertDeclaration extends ASTCCompilerNode {
   constructor(
     loc: NodeLocation,
     readonly expression: ASTCConstantExpression,
-    readonly literal: Token<string>,
+    readonly literal: string,
   ) {
     super(ASTCCompilerKind.StaticAssertDeclaration, loc);
   }
@@ -22,7 +21,7 @@ export class ASTCStaticAssertDeclaration extends ASTCCompilerNode {
     const { kind, literal } = this;
 
     return dumpAttributesToString(kind, {
-      literal: literal.text,
+      literal,
     });
   }
 }
