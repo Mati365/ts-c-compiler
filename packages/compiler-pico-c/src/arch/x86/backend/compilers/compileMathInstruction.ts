@@ -116,7 +116,8 @@ export function compileMathInstruction({
         if (
           rightAllocResult.type === IRArgDynamicResolverType.NUMBER &&
           rightAllocResult.value > 0 &&
-          rightAllocResult.value % 2 === 0
+          rightAllocResult.value % 2 === 0 &&
+          Number.isInteger(Math.log2(rightAllocResult.value))
         ) {
           // transform `mul` with arg `2`, `4`, itp. into `shl`
           operatorAsm = genInstruction(

@@ -9,6 +9,10 @@ export function setBit(
   return value ? num | (1 << nth) : num & ~(1 << nth);
 }
 
+export function condFlag(cond: boolean, flag: number) {
+  return cond ? flag : 0;
+}
+
 /**
  * Flips nth bit in value, 0 -> 1, 1 -> 0
  */
