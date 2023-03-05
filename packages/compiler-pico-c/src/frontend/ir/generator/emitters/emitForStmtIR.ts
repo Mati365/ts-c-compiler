@@ -79,5 +79,8 @@ export function emitForStmtIR({
     labels.ifFalseLabel,
   );
 
+  result.data.push(...exprResult.data);
+  result.data.push(...contentResult.data);
+
   return result;
 }

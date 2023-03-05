@@ -6,6 +6,7 @@ import {
   X86_FLAGS_OFFSETS,
   X86_FLAGS_MASKS,
   X86_BINARY_MASKS,
+  X86_FLAGS_ALL_ALU_MASK,
 } from './constants/x86';
 
 import { X86CPU } from './X86CPU';
@@ -160,7 +161,7 @@ export class X86ALU extends X86Unit {
     }
 
     /** temp - for cmp and temporary operations */
-    return operator._flagOnly ? l : signed;
+    return operator._flagOnly ? null : signed;
   }
 
   /**
@@ -184,39 +185,33 @@ export class X86ALU extends X86Unit {
       extra: {
         increment: {
           _c: s => s + 1,
-          set:
-            X86_FLAGS_MASKS.of |
-            X86_FLAGS_MASKS.sf |
-            X86_FLAGS_MASKS.zf |
-            X86_FLAGS_MASKS.af |
-            X86_FLAGS_MASKS.pf,
+          set: X86_FLAGS_ALL_ALU_MASK,
         },
         decrement: {
           _c: s => s - 1,
           negativeRightOperand: true,
-          set:
-            X86_FLAGS_MASKS.of |
-            X86_FLAGS_MASKS.sf |
-            X86_FLAGS_MASKS.zf |
-            X86_FLAGS_MASKS.af |
-            X86_FLAGS_MASKS.pf,
+          set: X86_FLAGS_ALL_ALU_MASK,
         },
       },
       /** SBB */ [X86ALUOperator.SBB]: {
         offset: 0x18,
+        set: X86_FLAGS_ALL_ALU_MASK,
         _c: (s, d) => s - d - cpu.registers.status.cf,
       },
       /** ADC */ [X86ALUOperator.ADC]: {
         offset: 0x10,
+        set: X86_FLAGS_ALL_ALU_MASK,
         _c: (s, d) => s + d + cpu.registers.status.cf,
       },
 
       /** + */ [X86ALUOperator.ADD]: {
         offset: 0x00,
+        set: X86_FLAGS_ALL_ALU_MASK,
         _c: (s, d) => s + d,
       },
       /** - */ [X86ALUOperator.SUB]: {
         offset: 0x28,
+        set: X86_FLAGS_ALL_ALU_MASK,
         negativeRightOperand: true,
         _c: (s, d) => s - d,
       },
@@ -239,6 +234,7 @@ export class X86ALU extends X86Unit {
         _c: (s, d) => s ^ d,
       },
       /** = */ [X86ALUOperator.COMPARE]: {
+        set: X86_FLAGS_ALL_ALU_MASK,
         offset: 0x38,
         negativeRightOperand: true,
         _flagOnly: true,
@@ -321,23 +317,28 @@ export class X86ALU extends X86Unit {
           ) => {
             cpu.parseRmByte(
               (reg: string, modeReg) => {
-                registers[reg] = this.exec(
+                const result = this.exec(
                   op,
                   registers[reg],
                   registers[<string>X86_REGISTERS[bits][modeReg]],
                   bits,
                 );
+
+                if (result !== null) {
+                  registers[reg] = result;
+                }
               },
               (address, reg: string) => {
-                memIO.write[bits](
-                  this.exec(
-                    op,
-                    memIO.read[bits](address),
-                    registers[reg],
-                    bits,
-                  ),
-                  address,
+                const result = this.exec(
+                  op,
+                  memIO.read[bits](address),
+                  registers[reg],
+                  bits,
                 );
+
+                if (result !== null) {
+                  registers[reg] = result;
+                }
               },
               bits,
             );
@@ -348,20 +349,28 @@ export class X86ALU extends X86Unit {
             cpu.parseRmByte(
               (reg: string, modeReg) => {
                 const dest: string = X86_REGISTERS[bits][modeReg];
-                registers[dest] = this.exec(
+                const result = this.exec(
                   op,
                   registers[reg],
                   registers[dest],
                   bits,
                 );
+
+                if (result !== null) {
+                  registers[dest] = result;
+                }
               },
               (address, reg: string) => {
-                registers[reg] = this.exec(
+                const result = this.exec(
                   op,
                   registers[reg],
                   memIO.read[bits](address),
                   bits,
                 );
+
+                if (result !== null) {
+                  registers[reg] = result;
+                }
               },
               bits,
             );
@@ -369,12 +378,16 @@ export class X86ALU extends X86Unit {
           /** OPERATOR AL, imm8 */ [0x4 + offset]: (
             bits: X86BitsMode = 0x1,
           ) => {
-            registers[<string>X86_REGISTERS[bits][0]] = this.exec(
+            const result = this.exec(
               op,
               registers[<string>X86_REGISTERS[bits][0]],
               cpu.fetchOpcode(bits),
               bits,
             );
+
+            if (result !== null) {
+              registers[<string>X86_REGISTERS[bits][0]] = result;
+            }
           },
 
           /** OPERATOR AX, imm16  */ [0x5 + offset]: () =>
@@ -452,12 +465,16 @@ export class X86ALU extends X86Unit {
               bits,
             );
 
-            registers[<string>reg] = this.exec(
+            const result = this.exec(
               this.operators[modeReg],
               registers[<string>reg],
               imm,
               bits,
             );
+
+            if (result !== null) {
+              registers[<string>reg] = result;
+            }
           },
           (address, reg, mode) => {
             const imm = X86AbstractCPU.signExtend(
@@ -466,15 +483,16 @@ export class X86ALU extends X86Unit {
               bits,
             );
 
-            memIO.write[bits](
-              this.exec(
-                operators[mode.reg],
-                memIO.read[bits](address),
-                imm,
-                bits,
-              ),
-              address,
+            const result = this.exec(
+              operators[mode.reg],
+              memIO.read[bits](address),
+              imm,
+              bits,
             );
+
+            if (result !== null) {
+              memIO.write[bits](result, address);
+            }
           },
           bits,
         );

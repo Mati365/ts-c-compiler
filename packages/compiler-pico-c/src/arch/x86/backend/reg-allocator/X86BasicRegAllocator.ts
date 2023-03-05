@@ -56,13 +56,6 @@ export type IRDynamicArgAllocatorResult =
   | IRArgAllocatorTypedResult<IRArgDynamicResolverType.MEM, string>
   | IRArgAllocatorTypedResult<IRArgDynamicResolverType.NUMBER, number>;
 
-export type IRArgDynamicResolverAttrs = {
-  arg: IRInstructionTypedArg;
-  size?: number;
-  allow?: IRArgDynamicResolverType;
-  allowedRegs?: X86RegName[];
-};
-
 export type IRArgRegResolverAttrs = {
   arg: IRInstructionTypedArg;
   size?: number;
@@ -70,6 +63,13 @@ export type IRArgRegResolverAttrs = {
   preferRegs?: X86RegName[];
   allowedRegs?: X86RegName[];
   noOwnership?: boolean;
+};
+
+export type IRArgDynamicResolverAttrs = Pick<
+  IRArgRegResolverAttrs,
+  'arg' | 'size' | 'allowedRegs' | 'noOwnership'
+> & {
+  allow?: IRArgDynamicResolverType;
 };
 
 const ALLOW_ALL_ARG_RESOLVER_METHODS =
@@ -322,6 +322,7 @@ export class X86BasicRegAllocator {
   tryResolveIrArg({
     arg,
     allowedRegs,
+    noOwnership,
     size = arg.type.getByteSize(),
     allow = ALLOW_ALL_ARG_RESOLVER_METHODS,
   }: IRArgDynamicResolverAttrs): IRDynamicArgAllocatorResult {
@@ -346,6 +347,7 @@ export class X86BasicRegAllocator {
             arg,
             size,
             allowedRegs,
+            noOwnership,
           }),
         };
       }
@@ -403,6 +405,7 @@ export class X86BasicRegAllocator {
         arg,
         size,
         allowedRegs,
+        noOwnership,
       });
 
       if (result) {

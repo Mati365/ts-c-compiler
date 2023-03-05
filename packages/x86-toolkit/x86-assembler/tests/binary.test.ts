@@ -19,6 +19,7 @@ import MODRM_BIN_TEST from './asm/modrm.asm';
 import BOOTOS_BIN_TEST from './asm/bootos.asm';
 import BOOTSLIDE_BIN_TEST from './asm/bootslide.asm';
 import BOOTMAN_BIN_TEST from './asm/bootman.asm';
+import PRINTF_BIN_TEST from './asm/printf.asm';
 
 import { parseBinaryTestList } from './utils/parseBinaryTestList';
 
@@ -40,6 +41,7 @@ const tests = parseBinaryTestList(
     BOOTOS_BIN_TEST,
     BOOTSLIDE_BIN_TEST,
     BOOTMAN_BIN_TEST,
+    PRINTF_BIN_TEST,
   ].join('\n'),
 );
 

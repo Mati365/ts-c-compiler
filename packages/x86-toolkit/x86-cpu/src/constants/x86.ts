@@ -98,6 +98,14 @@ export const X86_FLAGS_MASKS = R.mapObjIndexed(
   X86_FLAGS_OFFSETS,
 );
 
+export const X86_FLAGS_ALL_ALU_MASK =
+  X86_FLAGS_MASKS.cf |
+  X86_FLAGS_MASKS.of |
+  X86_FLAGS_MASKS.sf |
+  X86_FLAGS_MASKS.zf |
+  X86_FLAGS_MASKS.af |
+  X86_FLAGS_MASKS.pf;
+
 /** CP437 to Unicode conversion table */
 export const CP437_UNICODE_FONT_MAPPING = [
   0x0000, 0x0001, 0x0002, 0x0003, 0x0004, 0x0005, 0x0006, 0x0007, 0x0008,
