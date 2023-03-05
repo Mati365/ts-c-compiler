@@ -6,7 +6,7 @@ import { expressionStatement } from './expressionStatement';
 import { selectionStatement } from './selectionStatement';
 import { iterationStatement } from './iterationStatement';
 import { jumpStatement } from './jumpStatement';
-import { asmStatement } from './asmStatement';
+import { asmStatement } from './asm';
 
 /**
  * statement

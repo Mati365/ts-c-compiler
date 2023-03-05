@@ -4,10 +4,13 @@ export const MOCK_C_FILE = /* c */ `
   // todo3: Add switch
   // todo4: Add global variables
   void main() {
-    int a = 14;
-    int c = 4;
+    int a = 1;
+    int b = 2;
 
-    a <<= c;
-    a >>= 2;
+    asm(
+      "add %[out], %[in]"
+      : [out] "=r" (a)
+      : [in] "r" (b)
+    );
   }
 `;
