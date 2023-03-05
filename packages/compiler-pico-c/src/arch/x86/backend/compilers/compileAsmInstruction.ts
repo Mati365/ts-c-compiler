@@ -7,5 +7,5 @@ type AsmInstructionCompilerAttrs =
 export function compileAsmInstruction({
   instruction,
 }: AsmInstructionCompilerAttrs): string[] {
-  return [instruction.expression];
+  return [`# ${instruction.expression}`];
 }

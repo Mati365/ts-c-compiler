@@ -18,6 +18,7 @@ export class TokensIterator {
   getTokens(): Token[] {
     return this.tokens;
   }
+
   getTokenIndex(): number {
     return this.tokenIndex;
   }

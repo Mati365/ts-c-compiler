@@ -1,4 +1,4 @@
-export * from './asmStatement';
+export * from './asm';
 export * from './compoundStatement';
 export * from './expressionStatement';
 export * from './iterationStatement';
