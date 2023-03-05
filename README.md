@@ -39,18 +39,22 @@ yarn run test
   - [x] Backend
     - [x] IR optimizer
     - [x] X86-16 Code generator
-      - [ ] Register allocator
+      - [x] Register allocator
         - [x] Basic allocation using ownership checking
-        - [ ] Spilling regs and detection lifetime of IR vars
-      - [ ] Compile math integer instruction
-        - [x] Compile `*`, `+`, `-`
-        - [ ] Compile division
+        - [x] Spilling regs and detection lifetime of IR vars
+      - [x] Compile math integer instruction
+        - [x] Compile `*`, `+`, `-`, `/`
+        - [x] Compile `<<`, `>>`
+        - [ ] Compile xor / and / or / not
       - [x] Compile if stmts
       - [x] Compile `while {}`, `do { } while`, `for (...) {}` loops
-      - [ ] Compile pointers
+      - [x] Compile pointers
         - [x] Basic pointer access `*k = 5`
-        - [ ] Array access `k[4]`
-      - [ ] Compile function calls
+        - [x] Array access `k[4]`
+      - [x] Compile function calls
+      - [ ] Compile `asm` tag
+        - [x] Basic `asm` tag without args
+        - [ ] `asm` tag with arguments
 - [x] ASM Compiler
   - [x] NASM syntax instruction compiler matcher with expression eval `mov ax, byte [ds:label+bx+12+(1/3)]`
   - [x] Instruction prefix support `rep movsw`

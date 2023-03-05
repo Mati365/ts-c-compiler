@@ -6,19 +6,12 @@ import { VGARenderLoopDriver } from '@x86-toolkit/cpu/devices/Video/HTML/VGARend
 
 import { ScreenHolder } from './parts';
 import { compileBootsecC } from '../utils';
+import { MOCK_C_FILE } from '../../shared';
 
 export const EditorContainer = () => {
   const screenRef = useRef<HTMLDivElement>();
   const cpuRef = useRef<X86CPU>();
-  const [asmResult] = useState(() =>
-    compileBootsecC(/* c */ `
-      void main() {
-        int a = 14;
-        int b = a < 3 || 1;
-        asm("xchg dx, dx");
-      }
-    `),
-  );
+  const [asmResult] = useState(() => compileBootsecC(MOCK_C_FILE));
 
   useEffect(() => {
     if (!screenRef.current) {
