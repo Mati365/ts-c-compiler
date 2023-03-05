@@ -13,5 +13,5 @@ type AsmStatementIREmitAttrs = IREmitterContextAttrs & {
 export function emitAsmStatementIR({
   node,
 }: AsmStatementIREmitAttrs): IREmitterStmtResult {
-  return createBlankStmtResult([new IRAsmInstruction(node.expression)]);
+  return createBlankStmtResult([new IRAsmInstruction(node.asm)]);
 }
