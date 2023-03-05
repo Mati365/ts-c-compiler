@@ -53,6 +53,9 @@ export enum ASTCCompilerKind {
   ReturnStmt = 'ReturnStmt',
   ExpressionStmt = 'ExpressionStmt',
   AsmStmt = 'AsmStmt',
+  AsmStmtOutputOperands = 'AsmStmtOutputOperands',
+  AsmStmtInputOperands = 'AsmStmtInputOperands',
+  AsmStmtClobbers = 'AsmStmtClobbers',
 
   ParameterDeclaration = 'ParameterDeclaration',
   ParameterDeclarationSpecifier = 'ParameterDeclarationSpecifier',

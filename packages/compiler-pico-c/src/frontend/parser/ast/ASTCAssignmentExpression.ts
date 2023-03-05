@@ -22,12 +22,15 @@ export class ASTCAssignmentExpression extends ASTCCompilerNode {
   isOperatorExpression() {
     return !!this.operator;
   }
+
   isUnaryExpression() {
     return !!this.unaryExpression;
   }
+
   isConditionalExpression() {
     return !!this.conditionalExpression;
   }
+
   hasNestedExpression() {
     return !!this.expression;
   }
