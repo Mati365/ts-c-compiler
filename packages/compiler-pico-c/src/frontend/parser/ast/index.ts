@@ -3,6 +3,8 @@ export * from './ASTCAlignmentSpecifier';
 export * from './ASTCAlignmentSpecifiersList';
 export * from './ASTCArgumentsExpressionList';
 export * from './ASTCAsmStatement';
+export * from './ASTCAsmStmtInputOperands';
+export * from './ASTCAsmStmtOutputOperands';
 export * from './ASTCAssignmentExpression';
 export * from './ASTCBinaryOpNode';
 export * from './ASTCBlockItemsList';
