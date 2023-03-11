@@ -1,5 +1,5 @@
 export * from './compileAllocInstruction';
-export * from './compileAsmInstruction';
+export * from './asm';
 export * from './compileAssignInstruction';
 export * from './compileCallInstruction';
 export * from './compileDataSegment';

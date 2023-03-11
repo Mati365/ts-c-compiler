@@ -6,7 +6,7 @@ import {
 } from '../../parser';
 
 import { IROpcode } from '../constants';
-import { IRVariable } from '../variables';
+import { IRInstructionArg } from '../variables';
 import { IRInstruction, IRInstructionArgs } from './IRInstruction';
 
 export function isIRAsmInstruction(
@@ -18,7 +18,7 @@ export function isIRAsmInstruction(
 type IROperand<C> = {
   [symbolicName: string]: {
     constraint: C;
-    irVar: IRVariable;
+    irVar: IRInstructionArg;
   };
 };
 

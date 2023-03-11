@@ -6,7 +6,7 @@ import { ASTCCompilerKind, ASTCCompilerNode } from '../ASTCCompilerNode';
 import { ASTCAsmStmtInputConstraint } from './ASTCAsmStmtInputConstraint';
 
 @walkOverFields({
-  fields: ['expression', 'constraint'],
+  fields: ['constraint', 'expression'],
 })
 export class ASTCAsmStmtInputOperand extends ASTCCompilerNode {
   constructor(

@@ -128,13 +128,13 @@ export class X86BasicRegAllocator {
       };
     }
 
-    // handles case when we perform resolve arg on plain `a` variable
+    // 1. handles case when we perform resolve arg on plain `a` variable
     // it is forbidden because stack var ownership for this kind of variables
     // should not be ever overridden! Use additional IRLoadInstruction on this variable
     // if you want to resolve it otherwise you will receive only stack address.
     // see: REMEMBER TO CLEANUP REG!
     if (!arg.isTemporary()) {
-      if (!noOwnership) {
+      if (!noOwnership && !allocIfNotFound) {
         throw new CBackendError(CBackendErrorCode.REG_ALLOCATOR_ERROR);
       }
 
@@ -150,7 +150,10 @@ export class X86BasicRegAllocator {
       }
 
       return {
-        asm: [...asm, genInstruction('lea', value, stackAddr)],
+        asm: [
+          ...asm,
+          genInstruction(allocIfNotFound ? 'mov' : 'lea', value, stackAddr),
+        ],
         value,
         size,
       };

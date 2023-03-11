@@ -69,11 +69,17 @@ export class X86Allocator {
   }
 
   genFnTopStackFrame() {
-    return [
+    const asm = [
       genInstruction('push', 'bp'),
       genInstruction('mov', 'bp', 'sp'),
-      genInstruction('sub', 'sp', this._stackFrame.getTotalAllocatedBytes()),
     ];
+
+    const allocBytes = this._stackFrame.getTotalAllocatedBytes();
+    if (allocBytes > 0) {
+      asm.push(genInstruction('sub', 'sp', allocBytes));
+    }
+
+    return asm;
   }
 
   genFnBottomStackFrame() {

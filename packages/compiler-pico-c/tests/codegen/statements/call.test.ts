@@ -55,7 +55,6 @@ describe('Function call', () => {
         @@_fn_test:
         push bp
         mov bp, sp
-        sub sp, 0
         mov sp, bp
         pop bp
         ret
@@ -63,7 +62,6 @@ describe('Function call', () => {
         @@_fn_main:
         push bp
         mov bp, sp
-        sub sp, 0
         push 5
         push 4
         push 3
@@ -90,7 +88,6 @@ describe('Function call', () => {
         @@_fn_test:
         push bp
         mov bp, sp
-        sub sp, 0
         mov sp, bp
         pop bp
         ret
@@ -116,7 +113,6 @@ describe('Function call', () => {
         @@_fn_sum:
         push bp
         mov bp, sp
-        sub sp, 0
         mov ax, [bp + 4]
         add ax, word [bp + 6]     ; %t{2}: int2B = %t{0}: int2B plus %t{1}: int2B
         mov sp, bp
@@ -148,7 +144,6 @@ describe('Function call', () => {
         @@_fn_sum:
         push bp
         mov bp, sp
-        sub sp, 0
         mov ax, [bp + 4]
         mov bx, word [bp + 6]
         and bx, 0xff
@@ -185,7 +180,6 @@ describe('Function call', () => {
         @@_fn_printf:
         push bp
         mov bp, sp
-        sub sp, 0
         mov sp, bp
         pop bp
         ret 2
@@ -218,7 +212,6 @@ describe('Function call', () => {
         @@_fn_printf:
         push bp
         mov bp, sp
-        sub sp, 0
         mov sp, bp
         pop bp
         ret 4
@@ -269,7 +262,6 @@ describe('Function call', () => {
         @@_fn_main:
         push bp
         mov bp, sp
-        sub sp, 0
         call @@_fn_sum
         mov sp, bp
         pop bp

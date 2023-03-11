@@ -27,7 +27,7 @@ import { compilePhiInstruction } from './compilePhiInstruction';
 import { compileRetInstruction } from './compileRetInstruction';
 import { compileLabelOffsetInstruction } from './compileLabelOffsetInstruction';
 import { compileCallInstruction } from './compileCallInstruction';
-import { compileAsmInstruction } from './compileAsmInstruction';
+import { compileAsmInstruction } from './asm';
 
 type FnDeclCompilerBlockFnAttrs = X86CompilerFnAttrs & {
   instruction: IRFnDeclInstruction;

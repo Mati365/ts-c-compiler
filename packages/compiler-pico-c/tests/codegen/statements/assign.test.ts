@@ -60,7 +60,6 @@ describe('Variable assign', () => {
         @@_fn_sum:
         push bp
         mov bp, sp
-        sub sp, 0
         mov sp, bp
         pop bp
         ret
