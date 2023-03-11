@@ -1,6 +1,7 @@
 import { condFlag } from '@compiler/core/utils';
 import { isIRVariable } from '@compiler/pico-c/frontend/ir/variables';
 
+import { X86RegName } from '@x86-toolkit/assembler/index';
 import { IRAsmOutputOperands } from '@compiler/pico-c/frontend/ir/instructions';
 import { IRArgDynamicResolverType } from '../../reg-allocator';
 import { X86CompilerFnAttrs } from '../../../constants/types';
@@ -19,11 +20,12 @@ export function compileAsmOutputs({
   const { allocator } = context;
 
   const asm: { pre: string[]; post: string[] } = { pre: [], post: [] };
+  const allocatedRegs: X86RegName[] = [];
 
   for (const [symbolicName, value] of Object.entries(outputOperands)) {
     const replaceName = `%[${symbolicName}]`;
-    const { flags } = value.constraint;
-    const { irVar } = value;
+    const { irVar, constraint } = value;
+    const { flags } = constraint;
 
     if (!interpolatedExpression.includes(replaceName) || !isIRVariable(irVar)) {
       continue;
@@ -66,13 +68,15 @@ export function compileAsmOutputs({
             ),
           );
 
-          allocator.regs.releaseRegs([regResult.value]);
+          allocatedRegs.push(regResult.value);
         }
 
         continue;
       }
     }
   }
+
+  allocator.regs.releaseRegs(allocatedRegs);
 
   return {
     asm,
