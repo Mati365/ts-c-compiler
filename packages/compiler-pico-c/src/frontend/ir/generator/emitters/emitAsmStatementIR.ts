@@ -14,6 +14,7 @@ import {
 } from './types';
 
 import { emitIdentifierGetterIR } from './emitIdentifierGetterIR';
+import { emitExpressionIR } from './emit-expr';
 
 type AsmStatementIREmitAttrs = IREmitterContextAttrs & {
   node: ASTCAsmStatement;
@@ -52,8 +53,7 @@ export function emitAsmStatementIR({
   const inputOperands = node.inputOperands?.reduce<IRAsmInputOperands>(
     (acc, item) => {
       const symbolicName = item.symbolicName ?? (counter++).toString();
-      const getterResult = emitIdentifierGetterIR({
-        emitValueAtAddress: true,
+      const getterResult = emitExpressionIR({
         node: item.expression,
         scope,
         context,

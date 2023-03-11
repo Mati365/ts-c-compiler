@@ -1,8 +1,8 @@
 import { NodeLocation } from '@compiler/grammar/tree/NodeLocation';
 import { ASTCAsmStmtInputOperand } from '@compiler/pico-c/frontend/parser/ast';
+import { expression } from '../../expressions/expression';
 
 import { CGrammar } from '../../shared';
-import { primaryExpression } from '../../expressions/primaryExpression';
 
 import { asmInputConstraint } from './asmInputConstraint';
 import { asmSymbolicName } from './asmSymbolicName';
@@ -27,13 +27,13 @@ export function asmInputOperand(grammar: CGrammar): ASTCAsmStmtInputOperand {
 
   g.terminal('(');
 
-  const expression = primaryExpression(grammar);
+  const exprResult = expression(grammar);
   const endToken = g.terminal(')');
 
   return new ASTCAsmStmtInputOperand(
     new NodeLocation(startLoc.loc, endToken.loc),
     constraint,
-    expression,
+    exprResult,
     symbolicName,
   );
 }

@@ -13,13 +13,14 @@ import { fetchSplittedProductionsList } from '../../utils';
 import { asmOutputOperand } from './asmOutputOperand';
 import { asmInputOperand } from './asmInputOperand';
 import { stringLiteral } from '../../types';
+import { TreePrintVisitor } from '@compiler/grammar/tree/TreePrintVisitor';
 
 /**
  * asm asm-qualifiers ( AssemblerTemplate
  *                    : OutputOperands
  *                    : InputOperands
  *                    : Clobbers
- *                    : GotoLabels)
+ *                    : GotoLabels);
  */
 export function asmStatement(grammar: CGrammar): ASTCAsmStatement {
   const { g } = grammar;
@@ -58,6 +59,17 @@ export function asmStatement(grammar: CGrammar): ASTCAsmStatement {
 
   g.terminal(')');
   g.terminalType(TokenType.SEMICOLON);
+
+  console.info(
+    TreePrintVisitor.serializeToString(
+      new ASTCAsmStatement(
+        NodeLocation.fromTokenLoc(startToken.loc),
+        expression.stringLiteral,
+        outputOperands,
+        inputOperands,
+      ),
+    ),
+  );
 
   return new ASTCAsmStatement(
     NodeLocation.fromTokenLoc(startToken.loc),
