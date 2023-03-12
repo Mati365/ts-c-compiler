@@ -24,6 +24,7 @@ type IROperand<C> = {
 
 export type IRAsmInputOperands = IROperand<ASTCAsmStmtInputConstraint>;
 export type IRAsmOutputOperands = IROperand<ASTCAsmStmtOutputConstraint>;
+export type IRAsmClobberOperand = string;
 
 /**
  * ASM instruction
@@ -33,6 +34,7 @@ export class IRAsmInstruction extends IRInstruction {
     readonly expression: string,
     readonly outputOperands: IRAsmOutputOperands = {},
     readonly inputOperands: IRAsmInputOperands = {},
+    readonly clobberOperands: IRAsmClobberOperand[] = [],
   ) {
     super(IROpcode.ASM);
   }

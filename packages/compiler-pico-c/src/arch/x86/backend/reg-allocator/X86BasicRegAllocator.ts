@@ -17,8 +17,9 @@ import { isStructLikeType } from '@compiler/pico-c/frontend/analyze';
 import { getByteSizeArgPrefixName } from '@x86-toolkit/assembler/parser/utils';
 import { genInstruction } from '../../asm-utils';
 import {
-  queryFromX86IntRegsMap,
-  X86IntRegsMapQueryResult,
+  queryAndMarkX86RegsMap,
+  queryX86RegsMap,
+  X86RegsMapQueryAndSetResult,
   X86RegLookupQuery,
 } from '../utils';
 
@@ -426,6 +427,10 @@ export class X86BasicRegAllocator {
     return this.ownership.releaseRegs(regs);
   }
 
+  checkIfRegIsAvailable(query: X86RegLookupQuery) {
+    return queryX86RegsMap(query, this.ownership.getAvailableRegs());
+  }
+
   requestReg({
     prefer,
     ...query
@@ -435,24 +440,24 @@ export class X86BasicRegAllocator {
     const defaultAllowedRegs =
       generalRegs.size === query.size ? generalRegs.list : null;
 
-    let result: X86IntRegsMapQueryResult = null;
+    let result: X86RegsMapQueryAndSetResult = null;
 
     if (prefer) {
-      result ||= queryFromX86IntRegsMap(
+      result ||= queryAndMarkX86RegsMap(
         { ...query, allowedRegs: prefer },
         ownership.getAvailableRegs(),
       );
     }
 
     // if there is no preferred regs just pick any free
-    result ||= queryFromX86IntRegsMap(
+    result ||= queryAndMarkX86RegsMap(
       { allowedRegs: defaultAllowedRegs, ...query },
       ownership.getAvailableRegs(),
     );
 
     if (!result) {
       ownership.releaseNotUsedLaterRegs();
-      result = queryFromX86IntRegsMap(
+      result = queryAndMarkX86RegsMap(
         { allowedRegs: defaultAllowedRegs, ...query },
         ownership.getAvailableRegs(),
       );
