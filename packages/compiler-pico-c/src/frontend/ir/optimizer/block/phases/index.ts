@@ -6,5 +6,6 @@ export * from './dropNopMathInstructions';
 export * from './dropOrConcatConstantInstructions';
 export * from './dropRedundantAddressInstructions';
 export * from './dropRedundantLabelInstructions';
+export * from './dropRedundantLoadInstructions';
 export * from './flipMathInstructionsOperands';
 export * from './foldAddressOffsetsInstructions';

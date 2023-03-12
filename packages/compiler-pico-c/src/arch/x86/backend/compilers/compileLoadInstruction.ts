@@ -4,7 +4,6 @@ import {
   CBackendErrorCode,
 } from '@compiler/pico-c/backend/errors/CBackendError';
 
-import { isIRVariable } from '@compiler/pico-c/frontend/ir/variables';
 import { isPointerLikeType } from '@compiler/pico-c/frontend/analyze';
 import { isStackVarOwnership } from '../reg-allocator/utils';
 
@@ -22,10 +21,6 @@ export function compileLoadInstruction({
   const {
     allocator: { regs, stackFrame },
   } = context;
-
-  if (!isIRVariable(inputVar)) {
-    throw new CBackendError(CBackendErrorCode.UNKNOWN_BACKEND_ERROR);
-  }
 
   const asm: string[] = [];
 

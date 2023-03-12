@@ -130,23 +130,23 @@ test('Rainbow Hello World', () => {
     mov al, [bx]              ; %t{23}: const char1B = load %t{22}: const char*2B
     mov byte [bp - 7], al     ; *(c{0}: const char*2B) = store %t{23}: const char1B
     mov cx, [bp - 6]
-    shl cx, 1                 ; %t{26}: int2B = %t{25}: int2B mul %2: char1B
-    mov dx, [bp - 4]
-    add dx, cx                ; %t{27}: int2B = %t{24}: int2B plus %t{26}: int2B
-    mov word [bp - 9], dx     ; *(offset{0}: const int*2B) = store %t{27}: int2B
+    mov dx, cx                ; swap - %t{26}: int2B = %t{20}: int2B mul %2: char1B
+    shl cx, 1                 ; %t{26}: int2B = %t{20}: int2B mul %2: char1B
+    mov di, [bp - 4]
+    add di, cx                ; %t{27}: int2B = %t{24}: int2B plus %t{26}: int2B
+    mov word [bp - 9], di     ; *(offset{0}: const int*2B) = store %t{27}: int2B
     mov ah, [bp - 7]
-    mov di, [bp - 9]
+    mov si, [bp - 9]
     push dx
     push bx
     mov dl, byte [bp + 8]
-    mov bx, di
+    mov bx, si
     mov byte [gs:bx + 1], dl
     mov byte [gs:bx], ah
     pop bx
     pop dx
-    mov ax, [bp - 6]
-    add ax, 1                 ; %t{18}: int2B = %t{17}: int2B plus %1: int2B
-    mov word [bp - 6], ax     ; *(i{0}: int*2B) = store %t{18}: int2B
+    add dx, 1                 ; %t{18}: int2B = %t{20}: int2B plus %1: int2B
+    mov word [bp - 6], dx     ; *(i{0}: int*2B) = store %t{18}: int2B
     jmp @@_L6                 ; jmp L6
     @@_L8:
     mov sp, bp
@@ -166,12 +166,13 @@ test('Rainbow Hello World', () => {
     jge @@_L11                ; br %t{33}: i1:zf, true: L10, false: L11
     @@_L10:
     mov ax, [bp - 2]
-    add ax, 1                 ; %t{39}: int2B = %t{38}: int2B plus %1: char1B
-    mov bx, @@_c_0_           ; %t{41}: const char*2B = lea c{0}: const char[13]13B
-    mov word [bp - 4], bx     ; *(%t{40}: const char**2B) = store %t{41}: const char*2B
+    mov bx, ax                ; swap - %t{39}: int2B = %t{37}: int2B plus %1: char1B
+    add ax, 1                 ; %t{39}: int2B = %t{37}: int2B plus %1: char1B
+    mov di, @@_c_0_           ; %t{41}: const char*2B = lea c{0}: const char[13]13B
+    mov word [bp - 4], di     ; *(%t{40}: const char**2B) = store %t{41}: const char*2B
     push word [bp - 4]
     push ax
-    push word [bp - 2]
+    push bx
     push 0
     call @@_fn_printf
     mov ax, [bp - 2]

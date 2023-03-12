@@ -39,11 +39,25 @@ export class X86VarLifetimeGraph {
       }
     };
 
+    const trackInstructionInputs = (
+      offset: number,
+      instruction: IRInstruction,
+    ) => {
+      for (const inputArg of instruction.getArgs().input) {
+        if (!isIRVariable(inputArg)) {
+          continue;
+        }
+
+        trackVariableUsage(offset, inputArg.name);
+      }
+    };
+
     for (let offset = 0; offset < instructions.length; ++offset) {
       const instruction = instructions[offset];
 
       if (isIRBranchInstruction(instruction)) {
         branchOccurred = true;
+        trackInstructionInputs(offset, instruction);
         continue;
       }
 
@@ -54,13 +68,7 @@ export class X86VarLifetimeGraph {
         }
       }
 
-      for (const inputArg of instruction.getArgs().input) {
-        if (!isIRVariable(inputArg)) {
-          continue;
-        }
-
-        trackVariableUsage(offset, inputArg.name);
-      }
+      trackInstructionInputs(offset, instruction);
     }
 
     return newGraph;

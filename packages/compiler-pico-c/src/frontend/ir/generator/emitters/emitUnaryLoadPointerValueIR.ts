@@ -1,8 +1,8 @@
+import { ASTCCastExpression } from '@compiler/pico-c/frontend/parser';
 import {
   isFuncDeclLikeType,
   isPointerLikeType,
 } from '@compiler/pico-c/frontend/analyze';
-import { ASTCCastExpression } from '@compiler/pico-c/frontend/parser';
 
 import {
   createBlankStmtResult,
@@ -10,7 +10,9 @@ import {
   IREmitterExpressionResult,
 } from './types';
 
+import { IRError, IRErrorCode } from '../../errors/IRError';
 import { IRLoadInstruction } from '../../instructions';
+import { isIRVariable } from '../../variables';
 
 export type UnaryLoadPtrValueIREmitAttrs = IREmitterContextAttrs & {
   castExpression: ASTCCastExpression;
@@ -46,6 +48,10 @@ export function emitUnaryLoadPtrValueIR({
   }
 
   const tmpVar = allocator.allocTmpVariable(baseType);
+  if (!isIRVariable(exprResult.output)) {
+    throw new IRError(IRErrorCode.INCORRECT_UNARY_EXPR);
+  }
+
   result.instructions.push(new IRLoadInstruction(exprResult.output, tmpVar));
 
   return {

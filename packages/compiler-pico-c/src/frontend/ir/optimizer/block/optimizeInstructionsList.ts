@@ -9,6 +9,7 @@ import {
   dropOrConcatConstantInstructions,
   dropRedundantAddressInstructions,
   dropRedundantLabelInstructions,
+  dropRedundantLoadInstructions,
   flipMathInstructionsOperands,
   foldAddressOffsetsInstructions,
 } from './phases';
@@ -19,6 +20,7 @@ type OptimizerConfig = {
 
 const optimizeFlow = compose(
   dropInstructionsWithOrphanOutputs,
+  dropRedundantLoadInstructions,
   concatConstantStoreInstruction,
   foldAddressOffsetsInstructions,
   dropRedundantLabelInstructions,
