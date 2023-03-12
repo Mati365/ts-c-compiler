@@ -57,7 +57,7 @@ export enum ASTCCompilerKind {
   AsmStmtInputOperand = 'AsmStmtInputOperands',
   AsmStmtInputConstraint = 'AsmStmtInputConstraint',
   AsmStmtOutputConstraint = 'AsmStmtOutputConstraint',
-  AsmStmtClobbers = 'AsmStmtClobbers',
+  AsmStmtClobberOperand = 'AsmStmtClobberOperand',
 
   ParameterDeclaration = 'ParameterDeclaration',
   ParameterDeclarationSpecifier = 'ParameterDeclarationSpecifier',

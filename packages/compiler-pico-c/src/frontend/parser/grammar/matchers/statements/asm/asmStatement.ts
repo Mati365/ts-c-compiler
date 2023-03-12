@@ -7,19 +7,21 @@ import {
   ASTCAsmStatement,
   ASTCAsmStmtInputOperand,
   ASTCAsmStmtOutputOperand,
+  ASTCAsmClobberOperand,
 } from '../../../../ast';
 
 import { fetchSplittedProductionsList } from '../../utils';
+import { stringLiteral } from '../../types';
+
 import { asmOutputOperand } from './asmOutputOperand';
 import { asmInputOperand } from './asmInputOperand';
-import { stringLiteral } from '../../types';
+import { asmClobberOperand } from './asmClobberOperand';
 
 /**
  * asm asm-qualifiers ( AssemblerTemplate
  *                    : OutputOperands
  *                    : InputOperands
- *                    : Clobbers
- *                    : GotoLabels);
+ *                    : Clobbers );
  */
 export function asmStatement(grammar: CGrammar): ASTCAsmStatement {
   const { g } = grammar;
@@ -56,6 +58,17 @@ export function asmStatement(grammar: CGrammar): ASTCAsmStatement {
     });
   }
 
+  // CLOBBERS
+  const hasClobbers = hasInput && consumeOptionalNextOperand();
+  let clobberOperands: ASTCAsmClobberOperand[] = null;
+
+  if (hasClobbers && g.currentToken.type !== TokenType.COLON) {
+    clobberOperands = fetchSplittedProductionsList({
+      g: grammar.g,
+      prodFn: () => asmClobberOperand(grammar),
+    });
+  }
+
   g.terminal(')');
   g.terminalType(TokenType.SEMICOLON);
 
@@ -64,5 +77,6 @@ export function asmStatement(grammar: CGrammar): ASTCAsmStatement {
     expression.stringLiteral,
     outputOperands,
     inputOperands,
+    clobberOperands,
   );
 }
