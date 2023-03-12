@@ -76,6 +76,115 @@ void main() {
 }
 ```
 
+Binary output:
+
+```asm
+Assembly:
+
+0x000000  <────╮              55                            push bp
+0x000001       │              89 e5                         mov bp, sp
+0x000003       │              83 ec 02                      sub sp, 0x2
+0x000006       │              c7 46 fe 00 00                mov word [bp-2], 0x0
+0x00000b  <──╮ │              8b 5e 04                      mov bx, word [bp+4]
+0x00000e     │ │              03 5e fe                      add bx, word [bp-2]
+0x000011     │ │              8a 07                         mov al, byte [bx]
+0x000013     │ │              3c 00                         cmp al, 0x0
+0x000015  ─╮ │ │              75 09                         jnz 0x20
+0x000017   │ │ │              8b 46 fe                      mov ax, word [bp-2]
+0x00001a   │ │ │              89 ec                         mov sp, bp
+0x00001c   │ │ │              5d                            pop bp
+0x00001d   │ │ │              c2 02 00                      ret 0x2
+0x000020  <╯ │ │              8b 46 fe                      mov ax, word [bp-2]
+0x000023     │ │              05 01 00                      add ax, 0x1
+0x000026     │ │              89 46 fe                      mov word [bp-2], ax
+0x000029  ───╯ │              eb e0                         jmp 0xb
+0x00002b       │              b8 ff ff                      mov ax, -0x1
+0x00002e       │              89 ec                         mov sp, bp
+0x000030       │              5d                            pop bp
+0x000031       │              c2 02 00                      ret 0x2
+0x000034  <────┼─╮            55                            push bp
+0x000035       │ │            89 e5                         mov bp, sp
+0x000037       │ │            b9 d0 07                      mov cx, 0x7d0
+0x00003a       │ │            b8 00 0f                      mov ax, 0xf00
+0x00003d       │ │            ba 00 b8                      mov dx, 0xb800
+0x000040       │ │            8e c2                         mov es, dx
+0x000042       │ │            31 ff                         xor di, di
+0x000044       │ │            f3 ab                         repz stosw
+0x000046       │ │            89 ec                         mov sp, bp
+0x000048       │ │            5d                            pop bp
+0x000049       │ │            c3                            ret
+0x00004a  <────┼─┼─╮          55                            push bp
+0x00004b       │ │ │          89 e5                         mov bp, sp
+0x00004d       │ │ │          83 ec 09                      sub sp, 0x9
+0x000050       │ │ │          8b 5e 0a                      mov bx, word [bp+10]
+0x000053       │ │ │          53                            push bx
+0x000054  ─────╯ │ │          e8 a9 ff                      call 0x0
+0x000057         │ │          89 46 fe                      mov word [bp-2], ax
+0x00005a         │ │          8b 5e 06                      mov bx, word [bp+6]
+0x00005d         │ │          6b db 50                      imul bx, bx, 0x50
+0x000060         │ │          03 5e 04                      add bx, word [bp+4]
+0x000063         │ │          d1 e3                         shl bx, 0x1
+0x000065         │ │          89 5e fc                      mov word [bp-4], bx
+0x000068         │ │          b8 00 b8                      mov ax, 0xb800
+0x00006b         │ │          8e e8                         mov gs, ax
+0x00006d         │ │          c7 46 fa 00 00                mov word [bp-6], 0x0
+0x000072  <────╮ │ │          8b 46 fe                      mov ax, word [bp-2]
+0x000075       │ │ │          39 46 fa                      cmp word [bp-6], ax
+0x000078  ─╮   │ │ │          7c 02                         jl 0x7c
+0x00007a  ─┼─╮ │ │ │          7d 36                         jge 0xb2
+0x00007c  <╯ │ │ │ │          8b 5e 0a                      mov bx, word [bp+10]
+0x00007f     │ │ │ │          03 5e fa                      add bx, word [bp-6]
+0x000082     │ │ │ │          8a 07                         mov al, byte [bx]
+0x000084     │ │ │ │          88 46 f9                      mov byte [bp-7], al
+0x000087     │ │ │ │          8b 4e fa                      mov cx, word [bp-6]
+0x00008a     │ │ │ │          89 ca                         mov dx, cx
+0x00008c     │ │ │ │          d1 e1                         shl cx, 0x1
+0x00008e     │ │ │ │          8b 7e fc                      mov di, word [bp-4]
+0x000091     │ │ │ │          01 cf                         add di, cx
+0x000093     │ │ │ │          89 7e f7                      mov word [bp-9], di
+0x000096     │ │ │ │          8a 66 f9                      mov ah, byte [bp-7]
+0x000099     │ │ │ │          8b 76 f7                      mov si, word [bp-9]
+0x00009c     │ │ │ │          52                            push dx
+0x00009d     │ │ │ │          8a 56 08                      mov dl, byte [bp+8]
+0x0000a0     │ │ │ │          89 f3                         mov bx, si
+0x0000a2     │ │ │ │          65 88 57 01                   mov byte [gs:bx+1], dl
+0x0000a6     │ │ │ │          65 88 27                      mov byte [gs:bx], ah
+0x0000a9     │ │ │ │          5a                            pop dx
+0x0000aa     │ │ │ │          83 c2 01                      add dx, 0x1
+0x0000ad     │ │ │ │          89 56 fa                      mov word [bp-6], dx
+0x0000b0  ───┼─╯ │ │          eb c0                         jmp 0x72
+0x0000b2  <──╯   │ │          89 ec                         mov sp, bp
+0x0000b4         │ │          5d                            pop bp
+0x0000b5         │ │          c2 08 00                      ret 0x8
+0x0000b8         │ │          55                            push bp
+0x0000b9         │ │          89 e5                         mov bp, sp
+0x0000bb         │ │          83 ec 04                      sub sp, 0x4
+0x0000be  ───────╯ │          e8 73 ff                      call 0x34
+0x0000c1           │          c7 46 fe 00 00                mov word [bp-2], 0x0
+0x0000c6  <────╮   │          83 7e fe 0f                   cmp word [bp-2], 0xf
+0x0000ca  ─╮   │   │          7c 02                         jl 0xce
+0x0000cc  ─┼─╮ │   │          7d 23                         jge 0xf1
+0x0000ce  <╯ │ │   │          8b 46 fe                      mov ax, word [bp-2]
+0x0000d1     │ │   │          89 c3                         mov bx, ax
+0x0000d3     │ │   │          05 01 00                      add ax, 0x1
+0x0000d6     │ │   │          bf f5 00                      mov di, 0xf5
+0x0000d9     │ │   │          89 7e fc                      mov word [bp-4], di
+0x0000dc     │ │   │          ff 76 fc                      push word [bp-4]
+0x0000df     │ │   │          50                            push ax
+0x0000e0     │ │   │          53                            push bx
+0x0000e1     │ │   │          6a 00                         push 0x0
+0x0000e3  ───┼─┼───╯          e8 64 ff                      call 0x4a
+0x0000e6     │ │              8b 46 fe                      mov ax, word [bp-2]
+0x0000e9     │ │              05 01 00                      add ax, 0x1
+0x0000ec     │ │              89 46 fe                      mov word [bp-2], ax
+0x0000ef  ───┼─╯              eb d5                         jmp 0xc6
+0x0000f1  <──╯                89 ec                         mov sp, bp
+0x0000f3                      5d                            pop bp
+0x0000f4                      c3                            ret
+0x0000f5                      48 65 6c 6c 6f 20 77 6f       db 72, 101, 108, 108, 111, 32, 119, 111, 114, 108, 100, 33, 0
+          72 6c 64 21 00
+```
+
 ## ASM syntax
 
 It's pretty similar to NASM syntax (including preprocessor), examples: <br>
