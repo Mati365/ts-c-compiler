@@ -20,6 +20,8 @@ yarn run develop
 
 ## What can be currently compiled?
 
+It will print rainbow list of `Hello World` in 16bit Real Mode.
+
 ```c
 int strlen(const char* str) {
   for (int i = 0;;++i) {
