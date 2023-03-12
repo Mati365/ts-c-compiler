@@ -2,12 +2,13 @@
 // todo2: Add ternary
 // todo3: Add switch
 // todo4: Add global variables
+// todo5: Fix calling fn with copy of struct
 export const MOCK_C_FILE = /* c */ `
   void main() {
     int a = 2;
     a *= 3;
     asm(
-        "mov ax, 2"
+        "xor ax, ax"
         :::"ax"
     );
 

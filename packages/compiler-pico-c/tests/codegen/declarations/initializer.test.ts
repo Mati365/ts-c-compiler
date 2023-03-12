@@ -133,8 +133,9 @@ describe('Variables initialization', () => {
         sub sp, 3
         mov byte [bp - 1], 115    ; *(b{0}: char*2B) = store %115: char1B
         mov al, [bp - 1]
+        mov ah, al                ; swap - %t{1}: char1B = %t{0}: char1B plus %3: char1B
         add al, 3                 ; %t{1}: char1B = %t{0}: char1B plus %3: char1B
-        add al, byte [bp - 1]     ; %t{3}: char1B = %t{1}: char1B plus %t{2}: char1B
+        add al, ah                ; %t{3}: char1B = %t{1}: char1B plus %t{0}: char1B
         movzx bx, al
         mov word [bp - 3], bx     ; *(a{0}: int*2B) = store %t{3}: char1B
         mov sp, bp
@@ -160,8 +161,9 @@ describe('Variables initialization', () => {
           mov byte [bp - 1], 115    ; *(b{0}: char*2B) = store %115: char1B
           mov word [bp - 3], 1231   ; *(k{0}: int*2B) = store %1231: int2B
           mov al, [bp - 1]
+          mov ah, al                ; swap - %t{1}: char1B = %t{0}: char1B plus %3: char1B
           add al, 3                 ; %t{1}: char1B = %t{0}: char1B plus %3: char1B
-          add al, byte [bp - 1]     ; %t{3}: char1B = %t{1}: char1B plus %t{2}: char1B
+          add al, ah                ; %t{3}: char1B = %t{1}: char1B plus %t{0}: char1B
           movzx bx, al
           add bx, word [bp - 3]     ; %t{5}: int2B = %t{3}: char1B plus %t{4}: int2B
           mov word [bp - 5], bx     ; *(a{0}: int*2B) = store %t{5}: int2B

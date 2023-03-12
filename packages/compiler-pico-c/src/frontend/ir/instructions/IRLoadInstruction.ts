@@ -3,7 +3,7 @@ import chalk from 'chalk';
 import { IsOutputInstruction } from '../interfaces';
 import { IROpcode } from '../constants';
 import { IRInstruction, IRInstructionArgs } from './IRInstruction';
-import { IRInstructionTypedArg, IRVariable } from '../variables';
+import { IRVariable } from '../variables';
 
 export function isIRLoadInstruction(
   instruction: IRInstruction,
@@ -22,7 +22,7 @@ export class IRLoadInstruction
   implements IsOutputInstruction
 {
   constructor(
-    readonly inputVar: IRInstructionTypedArg,
+    readonly inputVar: IRVariable,
     readonly outputVar: IRVariable,
     readonly offset: number = 0,
   ) {

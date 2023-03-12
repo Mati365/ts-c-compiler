@@ -34,7 +34,7 @@ describe('Variable assign', () => {
       `);
     });
 
-    test.skip('compiler reuses variable that is already placed in reg', () => {
+    test('compiler reuses variable that is already placed in reg', () => {
       expect(/* cpp */ `
         void main() {
           int a = 2;
@@ -42,6 +42,19 @@ describe('Variable assign', () => {
           a = a + 5;
         }
       `).toCompiledAsmBeEqual(`
+        cpu 386
+        ; def main():
+        @@_fn_main:
+        push bp
+        mov bp, sp
+        sub sp, 2
+        mov word [bp - 2], 2      ; *(a{0}: int*2B) = store %2: int2B
+        mov ax, [bp - 2]
+        add ax, 11                ; %t{3}: int2B = %t{0}: int2B plus %11: char1B
+        mov word [bp - 2], ax     ; *(a{0}: int*2B) = store %t{3}: int2B
+        mov sp, bp
+        pop bp
+        ret
       `);
     });
 
@@ -270,9 +283,8 @@ describe('Variable assign', () => {
         mov di, [bp - 6]          ; %t{3}: struct Vec2*2B = load ptr{0}: struct Vec2**2B
         add di, 2                 ; %t{4}: int*2B = %t{3}: struct Vec2*2B plus %2: int2B
         mov word [di], 5          ; *(%t{4}: int*2B) = store %5: char1B
-        mov si, [bp - 6]          ; %t{5}: struct Vec2*2B = load ptr{0}: struct Vec2**2B
-        add si, 2                 ; %t{6}: int*2B = %t{5}: struct Vec2*2B plus %2: int2B
-        mov ax, [si]              ; %t{7}: int2B = load %t{6}: int*2B
+        add bx, 2                 ; %t{6}: int*2B = %t{0}: struct Vec2*2B plus %2: int2B
+        mov ax, [bx]              ; %t{7}: int2B = load %t{6}: int*2B
         mov word [bp - 8], ax     ; *(d{0}: int*2B) = store %t{7}: int2B
         mov sp, bp
         pop bp

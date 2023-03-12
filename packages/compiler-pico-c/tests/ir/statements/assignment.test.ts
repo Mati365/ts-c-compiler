@@ -45,10 +45,7 @@ describe('Assignment IR', () => {
           i{0}: int*2B = alloca int2B
           *(i{0}: int*2B) = store %0: int2B
           %t{0}: int2B = load i{0}: int*2B
-          %t{1}: int2B = %t{0}: int2B plus %1: int2B
-          *(i{0}: int*2B) = store %t{1}: int2B
-          %t{2}: int2B = load i{0}: int*2B
-          %t{3}: int2B = %t{2}: int2B plus %1: int2B
+          %t{3}: int2B = %t{0}: int2B plus %2: int2B
           *(i{0}: int*2B) = store %t{3}: int2B
           %t{4}: int2B = %t{0}: int2B plus %t{3}: int2B
           *(a{0}: int*2B) = store %t{4}: int2B
@@ -69,11 +66,9 @@ describe('Assignment IR', () => {
           a{0}: int*2B = alloca int2B
           *(a{0}: int*2B) = store %10: int2B
           %t{0}: int2B = load a{0}: int*2B
-          %t{1}: int2B = load a{0}: int*2B
-          %t{2}: int2B = %t{1}: int2B minus %1: char1B
+          %t{2}: int2B = %t{0}: int2B minus %1: char1B
           %t{3}: int2B = %t{0}: int2B mul %t{2}: int2B
-          %t{4}: int2B = load a{0}: int*2B
-          %t{5}: int2B = %t{3}: int2B plus %t{4}: int2B
+          %t{5}: int2B = %t{3}: int2B plus %t{0}: int2B
           *(a{0}: int*2B) = store %t{5}: int2B
           ret
           end-def
@@ -532,8 +527,7 @@ describe('Assignment IR', () => {
           %t{2}: int*2B = %t{1}: struct Vec2*2B plus %2: int2B
           *(%t{2}: int*2B) = store %5: char1B
           d{0}: int*2B = alloca int2B
-          %t{3}: struct Vec2*2B = load ptr{0}: struct Vec2**2B
-          %t{4}: int*2B = %t{3}: struct Vec2*2B plus %2: int2B
+          %t{4}: int*2B = %t{0}: struct Vec2*2B plus %2: int2B
           %t{5}: int2B = load %t{4}: int*2B
           *(d{0}: int*2B) = store %t{5}: int2B
           ret

@@ -22,10 +22,8 @@ describe('Math', () => {
       mov ax, [bp - 2]
       mov cx, [bp - 4]
       sal ax, cl                ; %t{2}: int2B = %t{1}: int2B bit_shift_left %t{0}: int2B
-      mov word [bp - 2], ax     ; *(a{0}: int*2B) = store %t{2}: int2B
-      mov bx, [bp - 2]
-      sar bx, 2                 ; %t{4}: int2B = %t{3}: int2B bit_shift_right %2: char1B
-      mov word [bp - 2], bx     ; *(a{0}: int*2B) = store %t{4}: int2B
+      sar ax, 2                 ; %t{4}: int2B = %t{2}: int2B bit_shift_right %2: char1B
+      mov word [bp - 2], ax     ; *(a{0}: int*2B) = store %t{4}: int2B
       mov sp, bp
       pop bp
       ret

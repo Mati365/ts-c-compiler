@@ -16,8 +16,9 @@ import { tryEvalConstArgsBinaryInstruction } from '../utils/tryEvalConstArgsBina
 /**
  * Optimizes instructions list by eliminate const expr.
  *
- * @see
- *  Input and output on first and last instructions must be preserved!
+ * - Removes constant ASSIGN
+ * - Folds temp constant variables in store instruction
+ * - Evaluate math expressions
  */
 export function dropOrConcatConstantInstructions(
   instructions: IRInstruction[],
