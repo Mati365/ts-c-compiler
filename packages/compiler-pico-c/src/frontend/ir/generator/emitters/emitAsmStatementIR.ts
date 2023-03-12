@@ -71,8 +71,15 @@ export function emitAsmStatementIR({
     {},
   );
 
+  const clobberOperands = (node.clobberOperands ?? []).map(item => item.name);
+
   stmt.instructions.push(
-    new IRAsmInstruction(node.asm, outputOperands, inputOperands),
+    new IRAsmInstruction(
+      node.asm,
+      outputOperands,
+      inputOperands,
+      clobberOperands,
+    ),
   );
 
   return stmt;
