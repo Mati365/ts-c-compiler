@@ -156,11 +156,21 @@ export class X86RegOwnershipTracker {
     );
   }
 
-  getOwnershipByReg(reg: X86RegName) {
+  getOwnershipByReg(reg: X86RegName, lookupInPartials?: boolean) {
     const varNames: string[] = [];
+    const regsParts = this.getAvailableRegs().general.parts;
 
     R.forEachObjIndexed((item, varName) => {
-      if (isRegOwnership(item) && item.reg === reg) {
+      if (!isRegOwnership(item)) {
+        return;
+      }
+
+      if (
+        item.reg === reg ||
+        (lookupInPartials &&
+          (regsParts[item.reg]?.low === reg ||
+            regsParts[item.reg]?.high === reg))
+      ) {
         varNames.push(varName);
       }
     }, this.ownership);
