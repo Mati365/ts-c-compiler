@@ -1,4 +1,8 @@
+import chalk from 'chalk';
+
+import { withInlineComment } from '../../../asm-utils';
 import { condFlag } from '@compiler/core/utils';
+
 import {
   isIRConstant,
   isIRVariable,
@@ -44,7 +48,15 @@ export function compileAsmInputs({
         noOwnership: true,
       });
 
-      asm.push(...resolvedVariable.asm);
+      asm.push(
+        ...resolvedVariable.asm.map(line =>
+          withInlineComment(
+            line,
+            `${chalk.greenBright('asm input')} - ${symbolicName}`,
+          ),
+        ),
+      );
+
       interpolatedExpression = interpolatedExpression.replaceAll(
         replaceName,
         resolvedVariable.value as string,
@@ -61,10 +73,9 @@ export function compileAsmInputs({
     }
   }
 
-  allocator.regs.releaseRegs(allocatedRegs);
-
   return {
     asm,
+    allocatedRegs,
     interpolatedExpression,
   };
 }

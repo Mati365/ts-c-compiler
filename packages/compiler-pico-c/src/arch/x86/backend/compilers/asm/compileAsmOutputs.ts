@@ -1,3 +1,5 @@
+import chalk from 'chalk';
+
 import { condFlag } from '@compiler/core/utils';
 import { isIRVariable } from '@compiler/pico-c/frontend/ir/variables';
 
@@ -5,7 +7,7 @@ import { X86RegName } from '@x86-toolkit/assembler/index';
 import { IRAsmOutputOperands } from '@compiler/pico-c/frontend/ir/instructions';
 import { IRArgDynamicResolverType } from '../../reg-allocator';
 import { X86CompilerFnAttrs } from '../../../constants/types';
-import { genInstruction } from '../../../asm-utils';
+import { genInstruction, withInlineComment } from '../../../asm-utils';
 
 export type AsmOutputsWrapperAsm = { pre: string[]; post: string[] };
 
@@ -37,7 +39,15 @@ export function compileAsmOutputs({
       const memResult = allocator.regs.tryResolveIRArgAsAddr(irVar);
 
       if (memResult) {
-        asm.pre.push(...memResult.asm);
+        asm.pre.push(
+          ...memResult.asm.map(line =>
+            withInlineComment(
+              line,
+              `${chalk.greenBright('asm output [mem]')} - ${symbolicName}`,
+            ),
+          ),
+        );
+
         interpolatedExpression = interpolatedExpression.replaceAll(
           replaceName,
           memResult.value,
@@ -59,7 +69,14 @@ export function compileAsmOutputs({
           regResult.value as string,
         );
 
-        asm.pre.push(...regResult.asm);
+        asm.pre.push(
+          ...regResult.asm.map(line =>
+            withInlineComment(
+              line,
+              `${chalk.greenBright('asm output [reg]')} - ${symbolicName}`,
+            ),
+          ),
+        );
 
         if (!irVar.isTemporary()) {
           asm.post.push(
@@ -78,10 +95,9 @@ export function compileAsmOutputs({
     }
   }
 
-  allocator.regs.releaseRegs(allocatedRegs);
-
   return {
     asm,
     interpolatedExpression,
+    allocatedRegs,
   };
 }

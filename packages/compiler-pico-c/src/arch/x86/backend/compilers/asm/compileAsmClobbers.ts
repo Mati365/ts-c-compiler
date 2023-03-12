@@ -1,11 +1,15 @@
+import chalk from 'chalk';
+import * as R from 'ramda';
+
 import type { IRAsmClobberOperand } from '@compiler/pico-c/frontend/ir/instructions';
 import type { X86RegName } from '@x86-toolkit/cpu/parts';
 
-import { genInstruction } from '../../../asm-utils';
+import { genInstruction, withInlineComment } from '../../../asm-utils';
 import { getX86RegByteSize } from '../../../constants/regs';
 
 import { X86CompilerFnAttrs } from '../../../constants/types';
 import { AsmOutputsWrapperAsm } from './compileAsmOutputs';
+import { isRegOwnership } from '../../reg-allocator/utils';
 
 type AsmClobbersCompilerAttrs = X86CompilerFnAttrs & {
   clobberOperands: IRAsmClobberOperand[];
@@ -22,28 +26,74 @@ export function compileAsmClobbers({
   const asm: AsmOutputsWrapperAsm = { pre: [], post: [] };
 
   clobberOperands.forEach(reg => {
-    const regOwnership = ownership.getOwnershipByReg(reg as X86RegName);
+    const regOwnership = ownership
+      .getOwnershipByReg(reg as X86RegName, true)
+      .filter(varName =>
+        ownership.lifetime.isVariableLaterUsed(
+          allocator.iterator.offset,
+          varName,
+        ),
+      );
+
     if (!regOwnership.length) {
       return;
     }
 
-    const regSize = getX86RegByteSize(reg as X86RegName);
-    const availableAltReg = regs.checkIfRegIsAvailable({
-      size: regSize,
+    const withClobberComment = (line: string) =>
+      withInlineComment(line, `${chalk.greenBright('clobber')} - ${reg}`);
+
+    const clobberedSpecifiedRegSize = getX86RegByteSize(reg as X86RegName);
+    const ownershipHasDifferentRegLength = regOwnership.some(varName => {
+      const varOwnership = ownership.getVarOwnership(varName);
+
+      if (!isRegOwnership(varOwnership)) {
+        return false;
+      }
+
+      return getX86RegByteSize(varOwnership.reg) !== clobberedSpecifiedRegSize;
     });
 
-    if (availableAltReg) {
-      const swappedReg = regs.requestReg({
-        size: regSize,
+    // this condition exists due to edge case in clobber for partial regs
+    // for example: we have variable `int k` stored in `ax` but we specified
+    // that: `al` register is clobbered. We have to detect that case and if
+    // it happens perform `push`/ `pop` rather than `mov`
+    if (ownershipHasDifferentRegLength) {
+      const preservedRegs = R.uniq(
+        regOwnership.flatMap(varName => {
+          const varOwnership = ownership.getVarOwnership(varName);
+
+          return isRegOwnership(varOwnership) ? [varOwnership.reg] : [];
+        }),
+      );
+
+      for (const preservedReg of preservedRegs) {
+        asm.pre.push(withClobberComment(genInstruction('push', preservedReg)));
+        asm.post.unshift(
+          withClobberComment(genInstruction('pop', preservedReg)),
+        );
+      }
+    } else {
+      const availableAltReg = regs.checkIfRegIsAvailable({
+        size: clobberedSpecifiedRegSize,
       });
 
-      asm.pre.push(genInstruction('xchg', reg, swappedReg.value));
-      regOwnership.forEach(varOwnership => {
-        ownership.setOwnership(varOwnership, { reg: swappedReg.value });
-      });
-    } else {
-      asm.pre.push(genInstruction('push', reg));
-      asm.post.push(genInstruction('pop', reg));
+      if (availableAltReg) {
+        const swappedReg = regs.requestReg({
+          size: clobberedSpecifiedRegSize,
+        });
+
+        asm.pre.push(
+          withClobberComment(genInstruction('mov', swappedReg.value, reg)),
+        );
+
+        regs.releaseRegs([reg as X86RegName]);
+        regOwnership.forEach(varOwnership => {
+          ownership.setOwnership(varOwnership, { reg: swappedReg.value });
+        });
+      } else {
+        asm.pre.push(withClobberComment(genInstruction('push', reg)));
+        asm.post.unshift(withClobberComment(genInstruction('pop', reg)));
+      }
     }
   });
 
