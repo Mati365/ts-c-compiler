@@ -76,6 +76,125 @@ void main() {
 }
 ```
 
+IR output:
+
+```ruby
+# --- Block strlen ---
+def strlen(str{0}: const char**2B): [ret: int2B]
+  i{0}: int*2B = alloca int2B
+  *(i{0}: int*2B) = store %0: int2B
+  L1:
+  %t{2}: const char*2B = load str{0}: const char**2B
+  %t{3}: int2B = load i{0}: int*2B
+  %t{4}: const char*2B = %t{2}: const char*2B plus %t{3}: int2B
+  %t{5}: const char1B = load %t{4}: const char*2B
+  %t{6}: i1:zf = icmp %t{5}: const char1B equal %0: char1B
+  br %t{6}: i1:zf, false: L4
+  L5:
+  %t{7}: int2B = load i{0}: int*2B
+  ret %t{7}: int2B
+  L4:
+  %t{0}: int2B = load i{0}: int*2B
+  %t{1}: int2B = %t{0}: int2B plus %1: int2B
+  *(i{0}: int*2B) = store %t{1}: int2B
+  jmp L1
+  L3:
+  ret %-1: char1B
+  end-def
+
+
+# --- Block clear_screen ---
+def clear_screen():
+  asm "mov cx, 0x7d0
+mov ax, 0xF00
+mov dx, 0xB800
+mov es, dx
+xor di, di
+rep stosw
+"
+  ret
+  end-def
+
+
+# --- Block printf ---
+def printf(x{0}: int*2B, y{0}: int*2B, color{0}: char*2B, str{1}: const char**2B):
+  len{0}: int*2B = alloca int2B
+  %t{10}: const char*2B = load str{1}: const char**2B
+  %t{11}: int2B = call label-offset strlen :: (%t{10}: const char*2B)
+  *(len{0}: int*2B) = store %t{11}: int2B
+  origin{0}: int*2B = alloca int2B
+  %t{12}: int2B = load y{0}: int*2B
+  %t{13}: int2B = %t{12}: int2B mul %80: char1B
+  %t{14}: int2B = load x{0}: int*2B
+  %t{15}: int2B = %t{13}: int2B plus %t{14}: int2B
+  %t{16}: int2B = %t{15}: int2B mul %2: char1B
+  *(origin{0}: int*2B) = store %t{16}: int2B
+  asm "mov ax, 0xB800
+mov gs, ax
+"
+  i{0}: int*2B = alloca int2B
+  *(i{0}: int*2B) = store %0: int2B
+  L6:
+  %t{17}: int2B = load i{0}: int*2B
+  %t{18}: int2B = load len{0}: int*2B
+  %t{19}: i1:zf = icmp %t{17}: int2B less_than %t{18}: int2B
+  br %t{19}: i1:zf, true: L7, false: L8
+  L7:
+  c{0}: const char*2B = alloca const char1B
+  %t{22}: const char*2B = load str{1}: const char**2B
+  %t{23}: int2B = load i{0}: int*2B
+  %t{25}: const char*2B = %t{22}: const char*2B plus %t{23}: int2B
+  %t{26}: const char1B = load %t{25}: const char*2B
+  *(c{0}: const char*2B) = store %t{26}: const char1B
+  offset{0}: const int*2B = alloca const int2B
+  %t{27}: int2B = load origin{0}: int*2B
+  %t{29}: int2B = %t{23}: int2B mul %2: char1B
+  %t{30}: int2B = %t{27}: int2B plus %t{29}: int2B
+  *(offset{0}: const int*2B) = store %t{30}: int2B
+  %t{31}: const char1B = load c{0}: const char*2B
+  %t{32}: const int2B = load offset{0}: const int*2B
+  %t{33}: char1B = load color{0}: char*2B
+  asm "mov dl, %[color]
+mov bx, %[offset]
+mov byte [gs:bx + 1], dl
+mov byte [gs:bx], %[c]
+"
+  %t{21}: int2B = %t{23}: int2B plus %1: int2B
+  *(i{0}: int*2B) = store %t{21}: int2B
+  jmp L6
+  L8:
+  ret
+  end-def
+
+
+# --- Block main ---
+def main():
+  call label-offset clear_screen :: ()
+  i{0}: int*2B = alloca int2B
+  *(i{0}: int*2B) = store %0: int2B
+  L9:
+  %t{35}: int2B = load i{0}: int*2B
+  %t{36}: i1:zf = icmp %t{35}: int2B less_than %15: char1B
+  br %t{36}: i1:zf, true: L10, false: L11
+  L10:
+  %t{40}: int2B = load i{0}: int*2B
+  %t{42}: int2B = %t{40}: int2B plus %1: char1B
+  %t{43}: const char**2B = alloca const char*2B
+  %t{44}: const char*2B = lea c{0}: const char[13]13B
+  *(%t{43}: const char**2B) = store %t{44}: const char*2B
+  call label-offset printf :: (%0: char1B, %t{40}: int2B, %t{42}: int2B, %t{43}: const char**2B)
+  %t{37}: int2B = load i{0}: int*2B
+  %t{38}: int2B = %t{37}: int2B plus %1: int2B
+  *(i{0}: int*2B) = store %t{38}: int2B
+  jmp L9
+  L11:
+  ret
+  end-def
+
+# --- Block Data ---
+  c{0}: const char[13]13B = const { 72, 101, 108, 108, 111, 32, 119, 111, 114, 108, 100, 33, 0 }
+```
+
 Binary output:
 
 ```asm
