@@ -5,6 +5,9 @@
 export const MOCK_C_FILE = /* c */ `
   void main() {
     int a = 7;
-    int b = a / 2;
+
+    if (a & 2) {
+      int k = 2;
+    }
   }
 `;

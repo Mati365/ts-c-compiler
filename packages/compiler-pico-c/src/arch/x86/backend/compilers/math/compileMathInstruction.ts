@@ -90,6 +90,7 @@ export function compileMathInstruction({
     }
 
     case TokenType.BIT_OR:
+    case TokenType.BIT_AND:
     case TokenType.POW:
     case TokenType.MUL:
     case TokenType.PLUS:
