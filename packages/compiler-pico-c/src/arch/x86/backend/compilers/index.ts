@@ -2,7 +2,7 @@ export * from './compileAllocInstruction';
 export * from './asm';
 export * from './compileAssignInstruction';
 export * from './compileCallInstruction';
-export * from './compileDataSegment';
+export * from './data';
 export * from './compileFnDeclInstructionsBlock';
 export * from './compileICmpInstruction';
 export * from './compileInstructionsBlock';
