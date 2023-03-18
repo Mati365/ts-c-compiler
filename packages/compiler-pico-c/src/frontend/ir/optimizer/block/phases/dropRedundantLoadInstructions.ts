@@ -3,6 +3,7 @@ import {
   IRInstruction,
   IRLoadInstruction,
   isIRLoadInstruction,
+  isIRRetInstruction,
   isIRStoreInstruction,
 } from '../../../instructions';
 
@@ -72,9 +73,10 @@ export function dropRedundantLoadInstructions(instructions: IRInstruction[]) {
       } else {
         state.srcLoads[inputVar.name] = instruction;
       }
-    } else if (isIRBranchInstruction(instruction)) {
-      flush();
-    } else {
+    } else if (
+      isIRRetInstruction(instruction) ||
+      !isIRBranchInstruction(instruction)
+    ) {
       const optimizedInstruction = dropConstantInstructionArgs(
         state.deadLoadsVarMap,
         instruction,
@@ -90,6 +92,8 @@ export function dropRedundantLoadInstructions(instructions: IRInstruction[]) {
       if (optimizedInstruction) {
         newInstructions[i] = optimizedInstruction;
       }
+    } else {
+      flush();
     }
   }
 
