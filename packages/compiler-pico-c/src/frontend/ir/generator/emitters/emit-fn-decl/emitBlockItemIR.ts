@@ -11,6 +11,7 @@ import {
   ASTCExpressionStatement,
   ASTCForStatement,
   ASTCIfStatement,
+  ASTCSwitchStatement,
 } from '@compiler/pico-c/frontend/parser';
 
 import {
@@ -34,6 +35,7 @@ import { emitIfStmtIR } from '../emitIfStmtIR';
 import { emitWhileStmtIR, emitDoWhileStmtIR } from '../emit-while-stmt';
 import { emitForStmtIR } from '../emitForStmtIR';
 import { emitAsmStatementIR } from '../emitAsmStatementIR';
+import { emitSwitchStmtIR } from '../emitSwitchStmtIR';
 
 type BlockItemIREmitAttrs = IREmitterContextAttrs & {
   node: ASTCCompilerNode;
@@ -155,7 +157,16 @@ export function emitBlockItemIR({
     },
 
     [ASTCCompilerKind.SwitchStmt]: {
-      enter() {
+      enter(switchNode: ASTCSwitchStatement) {
+        appendStmtResults(
+          emitSwitchStmtIR({
+            node: switchNode,
+            context,
+            scope,
+          }),
+          result,
+        );
+
         return false;
       },
     },
