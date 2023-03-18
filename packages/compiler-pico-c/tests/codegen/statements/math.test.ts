@@ -29,4 +29,28 @@ describe('Math', () => {
       ret
     `);
   });
+
+  test('int b = 1 + ~a', () => {
+    expect(/* cpp */ `
+      void main() {
+        int a = 2;
+        int b = 1 + ~a;
+      }
+    `).toCompiledAsmBeEqual(`
+      cpu 386
+      ; def main():
+      @@_fn_main:
+      push bp
+      mov bp, sp
+      sub sp, 4
+      mov word [bp - 2], 2      ; *(a{0}: int*2B) = store %2: int2B
+      mov ax, [bp - 2]
+      xor ax, -1                ; %t{1}: int2B = bit_not %t{0}: int2B
+      add ax, 1                 ; %t{2}: int2B = %t{1}: int2B plus %1: char1B
+      mov word [bp - 4], ax     ; *(b{0}: int*2B) = store %t{2}: int2B
+      mov sp, bp
+      pop bp
+      ret
+    `);
+  });
 });

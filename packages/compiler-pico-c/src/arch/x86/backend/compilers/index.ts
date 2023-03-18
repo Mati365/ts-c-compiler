@@ -11,7 +11,7 @@ export * from './compileLabelInstruction';
 export * from './compileLabelOffsetInstruction';
 export * from './compileLeaInstruction';
 export * from './compileLoadInstruction';
-export * from './compileMathInstruction';
+export * from './math/compileMathInstruction';
 export * from './compilePhiInstruction';
 export * from './compileRetInstruction';
 export * from './compileStoreInstruction';

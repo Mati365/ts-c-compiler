@@ -16,6 +16,7 @@ export * from './IRLabelOffsetInstruction';
 export * from './IRLeaInstruction';
 export * from './IRLoadInstruction';
 export * from './IRMathInstruction';
+export * from './IRMathSingleArgInstruction';
 export * from './IROpInstruction';
 export * from './IRPhiInstruction';
 export * from './IRRetInstruction';

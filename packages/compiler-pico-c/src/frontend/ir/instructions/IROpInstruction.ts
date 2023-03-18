@@ -1,4 +1,3 @@
-import * as R from 'ramda';
 import chalk from 'chalk';
 
 import { IsOutputInstruction } from '../interfaces';
@@ -59,7 +58,7 @@ export class IROpInstruction<O>
 
     let str = [
       leftVar?.getDisplayName(),
-      chalk.yellowBright(R.toLower(operator as any)),
+      chalk.yellowBright((operator as string).toLowerCase()),
       rightVar.getDisplayName(),
     ].join(' ');
 

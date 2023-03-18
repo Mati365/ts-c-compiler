@@ -52,6 +52,7 @@ import {
   IRMathInstruction,
   IRPhiInstruction,
   IRAssignInstruction,
+  IRMathSingleArgInstruction,
 } from '../../../instructions';
 
 import { IRError, IRErrorCode } from '../../../errors/IRError';
@@ -103,13 +104,34 @@ export function emitExpressionIR({
   GroupTreeVisitor.ofIterator<ASTCCompilerNode>({
     [ASTCCompilerKind.CastUnaryExpression]: {
       enter(expr: ASTCCastUnaryExpression) {
-        // -a
         switch (expr.operator) {
+          // ~a
+          case CUnaryCastOperator.BITWISE_NOT: {
+            emitExprResultToStack(
+              emit.expression({
+                node: expr.castExpression,
+                scope,
+                context,
+              }),
+            );
+
+            instructions.push(
+              new IRMathSingleArgInstruction(
+                TokenType.BIT_NOT,
+                argsVarsStack.pop(),
+                allocNextVariable(expr.type),
+              ),
+            );
+
+            return false;
+          }
+
+          // -a
           case CUnaryCastOperator.SUB: {
             emitExprResultToStack(
               emit.expression({
-                scope,
                 node: expr.castExpression,
+                scope,
                 context,
               }),
             );

@@ -6,12 +6,25 @@ import {
   CBackendErrorCode,
 } from '@compiler/pico-c/backend/errors/CBackendError';
 
-import { isIRVariable } from '@compiler/pico-c/frontend/ir/variables';
 import { getBiggerIRArg } from '@compiler/pico-c/frontend/ir/utils';
 
-import { IRArgDynamicResolverType } from '../reg-allocator';
-import { X86CompilerInstructionFnAttrs } from '../../constants/types';
-import { genInstruction, withInlineComment } from '../../asm-utils';
+import { CMathOperator } from '@compiler/pico-c/constants';
+import {
+  IRError,
+  IRErrorCode,
+} from '@compiler/pico-c/frontend/ir/errors/IRError';
+
+import { IRArgDynamicResolverType } from '../../reg-allocator';
+import { X86CompilerInstructionFnAttrs } from '../../../constants/types';
+import { genInstruction, withInlineComment } from '../../../asm-utils';
+import { ensureFunctionNotOverridesOutput } from './ensureFunctionNotOverrideOutput';
+
+const BinaryOperatorX86Opcode: Partial<Record<CMathOperator, string>> = {
+  [TokenType.BIT_OR]: 'xor',
+  [TokenType.BIT_AND]: 'and',
+  [TokenType.PLUS]: 'add',
+  [TokenType.MINUS]: 'sub',
+};
 
 type MathInstructionCompilerAttrs =
   X86CompilerInstructionFnAttrs<IRMathInstruction>;
@@ -22,7 +35,6 @@ export function compileMathInstruction({
 }: MathInstructionCompilerAttrs): string[] {
   const { leftVar, rightVar, outputVar, operator } = instruction;
   const {
-    iterator,
     allocator: { regs },
   } = context;
 
@@ -77,6 +89,7 @@ export function compileMathInstruction({
       return asm;
     }
 
+    case TokenType.BIT_OR:
     case TokenType.POW:
     case TokenType.MUL:
     case TokenType.PLUS:
@@ -106,16 +119,11 @@ export function compileMathInstruction({
       });
 
       let operatorAsm: string = null;
+      const opcode = BinaryOperatorX86Opcode[operator];
 
-      if (operator === TokenType.POW) {
+      if (opcode) {
         operatorAsm = genInstruction(
-          'xor',
-          leftAllocResult.value,
-          rightAllocResult.value,
-        );
-      } else if (operator === TokenType.PLUS) {
-        operatorAsm = genInstruction(
-          'add',
+          opcode,
           leftAllocResult.value,
           rightAllocResult.value,
         );
@@ -141,50 +149,19 @@ export function compileMathInstruction({
           );
         }
       } else {
-        operatorAsm = genInstruction(
-          'sub',
-          leftAllocResult.value,
-          rightAllocResult.value,
-        );
+        throw new IRError(IRErrorCode.UNKNOWN_MATH_OPERATOR);
       }
 
-      const asm: string[] = [...leftAllocResult.asm, ...rightAllocResult.asm];
-
-      // add ax, 1 moves its output to `ax` as a dest
-      // but IR code looks like this: %t{1}: int2B = %t{0}: int2B plus %1: int2B
-      // it means that if `%t{0}` is being overridden after performing operation
-      // in 90% of cases it will not create any problems but there is `++i` and `i++`
-      // statements. The second one returns `%t{0}` which is being overridden.
-      // so we have to perform lookup ahead if something is using `%t{0}`.
-      // if not - do not add any additional instructions
-      // if so - generate additional mov
-      if (
-        isIRVariable(leftVar) &&
-        regs.ownership.lifetime.isVariableLaterUsed(
-          iterator.offset,
-          leftVar.name,
-        )
-      ) {
-        const reg = regs.requestReg({
-          size: leftVar.type.getByteSize(),
-        });
-
-        asm.push(
-          ...reg.asm,
-          withInlineComment(
-            genInstruction('mov', reg.value, leftAllocResult.value),
-            `swap - ${instruction.getDisplayName()}`,
-          ),
-        );
-
-        regs.ownership.setOwnership(leftVar.name, {
-          releasePrevAllocatedReg: false,
-          reg: reg.value,
-        });
-      }
-
-      asm.push(withInlineComment(operatorAsm, instruction.getDisplayName()));
-      return asm;
+      return [
+        ...leftAllocResult.asm,
+        ...rightAllocResult.asm,
+        ...ensureFunctionNotOverridesOutput({
+          leftVar,
+          leftAllocResult,
+          context,
+        }),
+        withInlineComment(operatorAsm, instruction.getDisplayName()),
+      ];
     }
 
     case TokenType.DIV: {

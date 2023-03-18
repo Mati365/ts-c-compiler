@@ -14,6 +14,7 @@ export enum IROpcode {
   FN_DECL_END = 'FN_DECL_END',
   RET = 'RET',
   MATH = 'MATH',
+  MATH_SINGLE = 'MATH_SINGLE',
   LABEL_OFFSET = 'LABEL_OFFSET',
   LEA = 'LEA',
   DEF_CONST = 'DEF_CONST',

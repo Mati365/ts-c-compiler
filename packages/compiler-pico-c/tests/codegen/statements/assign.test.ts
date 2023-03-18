@@ -143,7 +143,7 @@ describe('Variable assign', () => {
         mov word [bp - 5], 5      ; *(vec{0}: struct Vec2[2]*2B + %5) = store %5: int2B
         mov byte [bp - 1], 7      ; *(vec{0}: struct Vec2[2]*2B + %9) = store %7: char1B
         lea bx, [bp - 10]         ; %t{0}: struct Vec2*2B = lea vec{0}: struct Vec2[2]*2B
-        mov ax, bx                ; swap - %t{1}: char*2B = %t{0}: struct Vec2*2B plus %4: int2B
+        mov ax, bx                ; swap
         add bx, 4                 ; %t{1}: char*2B = %t{0}: struct Vec2*2B plus %4: int2B
         mov al, [bx]              ; %t{2}: char1B = load %t{1}: char*2B
         add ax, 5                 ; %t{4}: struct Vec2*2B = %t{0}: struct Vec2*2B plus %5: int2B

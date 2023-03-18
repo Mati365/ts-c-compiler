@@ -17,7 +17,6 @@ import { getX86FnCaller } from '../call-conventions';
 import { compileAllocInstruction } from './compileAllocInstruction';
 import { compileStoreInstruction } from './compileStoreInstruction';
 import { compileLoadInstruction } from './compileLoadInstruction';
-import { compileMathInstruction } from './compileMathInstruction';
 import { compileICmpInstruction } from './compileICmpInstruction';
 import { compileLabelInstruction } from './compileLabelInstruction';
 import { compileJmpInstruction } from './compileJmpInstruction';
@@ -27,6 +26,7 @@ import { compilePhiInstruction } from './compilePhiInstruction';
 import { compileRetInstruction } from './compileRetInstruction';
 import { compileLabelOffsetInstruction } from './compileLabelOffsetInstruction';
 import { compileCallInstruction } from './compileCallInstruction';
+import { compileMathSingleInstruction, compileMathInstruction } from './math';
 import { compileAsmInstruction } from './asm';
 
 type FnDeclCompilerBlockFnAttrs = X86CompilerFnAttrs & {
@@ -77,6 +77,10 @@ export function compileFnDeclInstructionsBlock({
 
         case IROpcode.LEA:
           asm.push(...compileLeaInstruction(arg));
+          break;
+
+        case IROpcode.MATH_SINGLE:
+          asm.push(...compileMathSingleInstruction(arg));
           break;
 
         case IROpcode.MATH:

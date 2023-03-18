@@ -127,7 +127,7 @@ test('Rainbow Hello World', () => {
     mov al, [bx]              ; %t{26}: const char1B = load %t{25}: const char*2B
     mov byte [bp - 7], al     ; *(c{0}: const char*2B) = store %t{26}: const char1B
     mov cx, [bp - 6]
-    mov dx, cx                ; swap - %t{29}: int2B = %t{23}: int2B mul %2: char1B
+    mov dx, cx                ; swap
     shl cx, 1                 ; %t{29}: int2B = %t{23}: int2B mul %2: char1B
     mov di, [bp - 4]
     add di, cx                ; %t{30}: int2B = %t{27}: int2B plus %t{29}: int2B
@@ -161,7 +161,7 @@ test('Rainbow Hello World', () => {
     jge @@_L11                ; br %t{36}: i1:zf, true: L10, false: L11
     @@_L10:
     mov ax, [bp - 2]
-    mov bx, ax                ; swap - %t{42}: int2B = %t{40}: int2B plus %1: char1B
+    mov bx, ax                ; swap
     add ax, 1                 ; %t{42}: int2B = %t{40}: int2B plus %1: char1B
     mov di, @@_c_0_           ; %t{44}: const char*2B = lea c{0}: const char[13]13B
     mov word [bp - 4], di     ; *(%t{43}: const char**2B) = store %t{44}: const char*2B
