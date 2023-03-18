@@ -3,8 +3,9 @@
 // todo: Fix calling fn with copy of struct
 export const MOCK_C_FILE = /* c */ `
   int j;
+  int k[2];
 
   void main() {
-    const int abc[] = { 1, 2, 3, 4 };
+    // int k = 2 + j;
   }
 `;

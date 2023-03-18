@@ -1,22 +1,33 @@
 import {
-  createBlankStmtResult,
-  type IREmitterContextAttrs,
-  type IREmitterStmtResult,
-} from './types';
+  CPrimitiveType,
+  CVariableInitializerTree,
+} from '@compiler/pico-c/frontend/analyze';
+
+import { IRDefDataInstruction, type IRInstruction } from '../../instructions';
+import type { IREmitterContextAttrs } from './types';
 
 type GlobalDeclarationIREmitAttrs = Omit<IREmitterContextAttrs, 'scope'>;
 
 export function emitGlobalDeclarationsIR({
   context,
-}: GlobalDeclarationIREmitAttrs): IREmitterStmtResult {
-  const { globalScope } = context;
+}: GlobalDeclarationIREmitAttrs): IRInstruction[] {
+  const { globalScope, config, allocator } = context;
+  const { arch } = config;
 
-  const result = createBlankStmtResult();
+  const instructions: IRInstruction[] = [];
   const globals = globalScope.getGlobalVariables();
 
-  setTimeout(() => {
-    console.info(globals);
-  });
+  for (const [, variable] of Object.entries(globals)) {
+    const tmpOutputVar = allocator.allocDataVariable(variable.type);
+    const initializer =
+      variable.initializer ??
+      CVariableInitializerTree.ofByteArray({
+        baseType: CPrimitiveType.char(arch),
+        length: variable.type.getByteSize(),
+      });
 
-  return result;
+    instructions.push(new IRDefDataInstruction(initializer, tmpOutputVar));
+  }
+
+  return instructions;
 }

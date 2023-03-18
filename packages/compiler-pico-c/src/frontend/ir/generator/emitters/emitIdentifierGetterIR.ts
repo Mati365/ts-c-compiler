@@ -131,7 +131,7 @@ export function emitIdentifierGetterIR({
 
           lastIRVar = allocator.allocTmpVariable(dataType);
 
-          const constArrayVar = allocator.allocConstDataVariable(dataType);
+          const constArrayVar = allocator.allocDataVariable(dataType);
           const tmpLeaAddressVar = allocator.allocTmpVariable(arrayPtrType);
 
           data.push(

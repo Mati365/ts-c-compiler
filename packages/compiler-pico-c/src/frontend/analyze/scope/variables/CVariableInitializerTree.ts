@@ -5,7 +5,11 @@ import {
   IsWalkableNode,
 } from '@compiler/grammar/tree/AbstractTreeVisitor';
 
-import { isArrayLikeType, isStructLikeType } from '../../types';
+import {
+  isArrayLikeType,
+  isPointerLikeType,
+  isStructLikeType,
+} from '../../types';
 import { ASTCCompilerNode } from '../../../parser/ast/ASTCCompilerNode';
 import { CType } from '../../types/CType';
 
@@ -37,6 +41,13 @@ type CVariableStringInitializerAttrs<C> = {
   text: string;
 };
 
+type CVariableByteInitializerAttrs<C> = {
+  baseType: CType;
+  parentAST?: C;
+  length: number;
+  fill?: number;
+};
+
 /**
  * Recursive map structure of type initializer
  */
@@ -66,6 +77,17 @@ export class CVariableInitializerTree<
     return this._fields;
   }
 
+  static ofByteArray<C extends ASTCCompilerNode>({
+    baseType,
+    parentAST,
+    length,
+    fill = 0,
+  }: CVariableByteInitializerAttrs<C>) {
+    const fields: CVariableInitializerFields = Array(length).fill(fill);
+
+    return new CVariableInitializerTree(baseType, parentAST, fields);
+  }
+
   static ofStringLiteral<C extends ASTCCompilerNode>({
     baseType,
     parentAST,
@@ -92,6 +114,10 @@ export class CVariableInitializerTree<
 
   hasOnlyConstantExpressions() {
     return this._fields.every(isConstantVariableInitializer);
+  }
+
+  getSingleItemByteSize() {
+    return this.getIndexExpectedType(0).getByteSize();
   }
 
   /**
@@ -180,6 +206,10 @@ export class CVariableInitializerTree<
       }
 
       return baseArrayType;
+    }
+
+    if (isPointerLikeType(baseType)) {
+      return baseType.baseType;
     }
 
     return this.getNestedInitializerGroupType();
