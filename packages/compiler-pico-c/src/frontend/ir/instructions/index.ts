@@ -4,7 +4,7 @@ export * from './IRAssignInstruction';
 export * from './IRBrInstruction';
 export * from './IRCallInstruction';
 export * from './IRCommentInstruction';
-export * from './IRDefConstInstruction';
+export * from './IRDefDataInstruction';
 export * from './IRFnDeclInstruction';
 export * from './IRFnEndDeclInstruction';
 export * from './IRICmpInstruction';

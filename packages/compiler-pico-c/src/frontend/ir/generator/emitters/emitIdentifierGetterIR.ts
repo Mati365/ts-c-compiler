@@ -26,7 +26,7 @@ import {
 
 import {
   IRAllocInstruction,
-  IRDefConstInstruction,
+  IRDefDataInstruction,
   IRLabelOffsetInstruction,
   IRLeaInstruction,
   IRLoadInstruction,
@@ -135,7 +135,7 @@ export function emitIdentifierGetterIR({
           const tmpLeaAddressVar = allocator.allocTmpVariable(arrayPtrType);
 
           data.push(
-            new IRDefConstInstruction(
+            new IRDefDataInstruction(
               CVariableInitializerTree.ofStringLiteral({
                 baseType: expr.type,
                 parentAST: expr,

@@ -11,7 +11,7 @@ import {
 import { IRVariable } from '../../../variables';
 import {
   IRAllocInstruction,
-  IRDefConstInstruction,
+  IRDefDataInstruction,
   IRLeaInstruction,
   IRStoreInstruction,
 } from '../../../instructions';
@@ -84,7 +84,7 @@ export function emitVariableInitializerIR({
       const constArrayVar = allocator.allocConstDataVariable(dataType);
       const tmpLeaAddressVar = allocator.allocTmpVariable(arrayPtrType);
 
-      data.push(new IRDefConstInstruction(initializer, constArrayVar));
+      data.push(new IRDefDataInstruction(initializer, constArrayVar));
 
       instructions.push(
         IRAllocInstruction.ofDestPtrVariable(rootIRVar),

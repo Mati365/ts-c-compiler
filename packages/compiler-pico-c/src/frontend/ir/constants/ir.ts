@@ -17,6 +17,6 @@ export enum IROpcode {
   MATH_SINGLE = 'MATH_SINGLE',
   LABEL_OFFSET = 'LABEL_OFFSET',
   LEA = 'LEA',
-  DEF_CONST = 'DEF_CONST',
+  DEF_DATA = 'DEF_DATA',
   COMMENT = 'COMMENT',
 }
