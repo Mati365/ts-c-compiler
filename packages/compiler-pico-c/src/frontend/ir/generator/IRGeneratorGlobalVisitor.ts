@@ -22,6 +22,7 @@ import { IRGeneratorConfig } from '../constants';
 import { IRVariableAllocator } from './IRVariableAllocator';
 import { IRInstructionFactory } from './IRInstructionFactory';
 import { IRFlatCodeSegmentBuilder, IRDataSegmentBuilder } from './segments';
+import { IRGlobalVariablesMap } from './IRGlobalVariablesMap';
 
 /**
  * Root IR generator visitor
@@ -41,9 +42,9 @@ export class IRGeneratorGlobalVisitor extends CScopeVisitor {
     this.allocator = new IRVariableAllocator(config);
     this.context = {
       config,
-      globalScope: null,
       segments: this.segments,
       allocator: this.allocator,
+      globalVariables: new IRGlobalVariablesMap(),
       factory: new IRInstructionFactory(),
       emit: {
         expression: emitExpressionIR,
@@ -84,10 +85,9 @@ export class IRGeneratorGlobalVisitor extends CScopeVisitor {
     const { parentAST } = scope;
 
     if (scope.isGlobal()) {
-      this.context.globalScope = scope;
-
       segments.data.emitBulk(
         emitGlobalDeclarationsIR({
+          globalScope: scope,
           context,
         }),
       );

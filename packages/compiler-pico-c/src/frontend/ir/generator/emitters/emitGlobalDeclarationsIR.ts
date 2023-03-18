@@ -1,23 +1,27 @@
 import {
   CPrimitiveType,
+  CScopeTree,
   CVariableInitializerTree,
 } from '@compiler/pico-c/frontend/analyze';
 
 import { IRDefDataInstruction, type IRInstruction } from '../../instructions';
 import type { IREmitterContextAttrs } from './types';
 
-type GlobalDeclarationIREmitAttrs = Omit<IREmitterContextAttrs, 'scope'>;
+type GlobalDeclarationIREmitAttrs = Omit<IREmitterContextAttrs, 'scope'> & {
+  globalScope: CScopeTree;
+};
 
 export function emitGlobalDeclarationsIR({
   context,
+  globalScope,
 }: GlobalDeclarationIREmitAttrs): IRInstruction[] {
-  const { globalScope, config, allocator } = context;
+  const { config, allocator, globalVariables } = context;
   const { arch } = config;
 
   const instructions: IRInstruction[] = [];
-  const globals = globalScope.getGlobalVariables();
+  const scopeGlobals = globalScope.getGlobalVariables();
 
-  for (const [, variable] of Object.entries(globals)) {
+  for (const [originalVarName, variable] of Object.entries(scopeGlobals)) {
     const tmpOutputVar = allocator.allocDataVariable(variable.type);
     const initializer =
       variable.initializer ??
@@ -27,6 +31,7 @@ export function emitGlobalDeclarationsIR({
       });
 
     instructions.push(new IRDefDataInstruction(initializer, tmpOutputVar));
+    globalVariables.put(originalVarName, tmpOutputVar);
   }
 
   return instructions;
