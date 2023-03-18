@@ -24,7 +24,7 @@ import { expression } from '../expressions/expression';
  *  ;
  */
 export function jumpStatement(grammar: CGrammar): ASTCCompilerNode {
-  const { g } = grammar;
+  const { g, parentNode } = grammar;
   const jumpNode = <ASTCCompilerNode>g.or({
     goto() {
       const node = g.identifier(CCompilerKeyword.GOTO);
@@ -38,9 +38,9 @@ export function jumpStatement(grammar: CGrammar): ASTCCompilerNode {
     continue() {
       const node = g.identifier(CCompilerKeyword.CONTINUE);
 
-      if (!grammar.parentNode.loopStmt) {
+      if (!parentNode.loopStmt) {
         throw new CGrammarError(
-          CGrammarErrorCode.CONTINUE_STMT_NOT_WITHIN_LOOP_OR_SWITCH,
+          CGrammarErrorCode.CONTINUE_STMT_NOT_WITHIN_LOOP,
         );
       }
 
@@ -50,7 +50,7 @@ export function jumpStatement(grammar: CGrammar): ASTCCompilerNode {
     break() {
       const node = g.identifier(CCompilerKeyword.BREAK);
 
-      if (!grammar.parentNode.loopStmt) {
+      if (!parentNode.loopStmt && !parentNode.switchStmt) {
         throw new CGrammarError(
           CGrammarErrorCode.BREAK_STMT_NOT_WITHIN_LOOP_OR_SWITCH,
         );

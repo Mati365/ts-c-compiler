@@ -10,7 +10,7 @@ export class ASTCSwitchStatement extends ASTCCompilerNode {
   constructor(
     loc: NodeLocation,
     readonly expression: ASTCCompilerNode,
-    readonly statement: ASTCCompilerNode,
+    public statement: ASTCCompilerNode,
   ) {
     super(ASTCCompilerKind.SwitchStmt, loc);
   }

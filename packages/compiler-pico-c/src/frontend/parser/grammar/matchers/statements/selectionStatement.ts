@@ -18,7 +18,7 @@ import { expression } from '../expressions/expression';
  *  ;
  */
 export function selectionStatement(grammar: CGrammar): ASTCCompilerNode {
-  const { g, statement } = grammar;
+  const { g, statement, parentNode } = grammar;
 
   return <ASTCCompilerNode>g.or({
     if() {
@@ -47,11 +47,17 @@ export function selectionStatement(grammar: CGrammar): ASTCCompilerNode {
       const valueExpression = expression(grammar);
       g.terminal(')');
 
-      return new ASTCSwitchStatement(
+      const switchStmt = new ASTCSwitchStatement(
         NodeLocation.fromTokenLoc(startToken.loc),
         valueExpression,
-        statement(),
+        null,
       );
+
+      parentNode.switchStmt = switchStmt;
+      switchStmt.statement = statement();
+      parentNode.switchStmt = null;
+
+      return switchStmt;
     },
   });
 }

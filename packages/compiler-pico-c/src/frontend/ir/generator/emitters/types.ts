@@ -1,14 +1,14 @@
-import { CScopeTree } from '@compiler/pico-c/frontend/analyze';
+import type { CScopeTree } from '@compiler/pico-c/frontend/analyze';
 
-import { IRGeneratorConfig } from '../../constants';
-import {
+import type { IRGeneratorConfig } from '../../constants';
+import type {
   IRFnDeclInstruction,
   IRInstruction,
   IRLabelInstruction,
 } from '../../instructions';
 
-import { IRConstant, IRVariable } from '../../variables';
-import { IRVariableAllocator } from '../IRVariableAllocator';
+import type { IRConstant, IRVariable } from '../../variables';
+import type { IRVariableAllocator } from '../IRVariableAllocator';
 
 import type {
   IRFlatCodeSegmentBuilder,

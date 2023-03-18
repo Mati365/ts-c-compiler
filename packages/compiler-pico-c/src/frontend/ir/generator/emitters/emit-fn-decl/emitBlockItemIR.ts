@@ -13,7 +13,6 @@ import {
   ASTCIfStatement,
 } from '@compiler/pico-c/frontend/parser';
 
-import { IRError, IRErrorCode } from '../../../errors/IRError';
 import {
   IRCommentInstruction,
   IRJmpInstruction,
@@ -155,13 +154,15 @@ export function emitBlockItemIR({
       },
     },
 
+    [ASTCCompilerKind.SwitchStmt]: {
+      enter() {
+        return false;
+      },
+    },
+
     [ASTCCompilerKind.ContinueStmt]: {
       enter() {
         const { loopStmt } = context;
-
-        if (!loopStmt) {
-          throw new IRError(IRErrorCode.STMT_NOT_WITHIN_LOOP_OR_SWITCH);
-        }
 
         result.instructions.push(
           new IRCommentInstruction('continue'),
@@ -176,14 +177,11 @@ export function emitBlockItemIR({
       enter() {
         const { loopStmt } = context;
 
-        if (!loopStmt) {
-          throw new IRError(IRErrorCode.STMT_NOT_WITHIN_LOOP_OR_SWITCH);
-        }
+        result.instructions.push(new IRCommentInstruction('break'));
 
-        result.instructions.push(
-          new IRCommentInstruction('break'),
-          new IRJmpInstruction(loopStmt.finallyLabel),
-        );
+        if (loopStmt) {
+          result.instructions.push(new IRJmpInstruction(loopStmt.finallyLabel));
+        }
 
         return false;
       },

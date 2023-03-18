@@ -6,7 +6,7 @@ export enum CGrammarErrorCode {
   INCORRECT_CHAR_LITERAL_LENGTH,
   EMPTY_ENUM_DEFINITION,
   BREAK_STMT_NOT_WITHIN_LOOP_OR_SWITCH,
-  CONTINUE_STMT_NOT_WITHIN_LOOP_OR_SWITCH,
+  CONTINUE_STMT_NOT_WITHIN_LOOP,
 }
 
 export const C_GRAMMAR_ERROR_TRANSLATIONS: Record<CGrammarErrorCode, string> = {
@@ -16,8 +16,8 @@ export const C_GRAMMAR_ERROR_TRANSLATIONS: Record<CGrammarErrorCode, string> = {
   [CGrammarErrorCode.EMPTY_ENUM_DEFINITION]: 'Empty enum definition!',
   [CGrammarErrorCode.BREAK_STMT_NOT_WITHIN_LOOP_OR_SWITCH]:
     'Break stmt should be placed within for-loop or switch!',
-  [CGrammarErrorCode.CONTINUE_STMT_NOT_WITHIN_LOOP_OR_SWITCH]:
-    'Continue stmt should be placed within for-loop or switch!',
+  [CGrammarErrorCode.CONTINUE_STMT_NOT_WITHIN_LOOP]:
+    'Continue stmt should be placed within for-loop!',
 };
 
 /**
