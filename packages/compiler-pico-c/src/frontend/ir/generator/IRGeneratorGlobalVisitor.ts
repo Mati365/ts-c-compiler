@@ -15,6 +15,7 @@ import {
   emitPointerAddressExpression,
   emitBlockItemIR,
   emitVariableInitializerIR,
+  emitGlobalDeclarationsIR,
 } from './emitters';
 
 import { IRGeneratorConfig } from '../constants';
@@ -40,6 +41,7 @@ export class IRGeneratorGlobalVisitor extends CScopeVisitor {
     this.allocator = new IRVariableAllocator(config);
     this.context = {
       config,
+      globalScope: null,
       segments: this.segments,
       allocator: this.allocator,
       factory: new IRInstructionFactory(),
@@ -80,6 +82,13 @@ export class IRGeneratorGlobalVisitor extends CScopeVisitor {
   enter(scope: CScopeTree): void | boolean {
     const { segments, context } = this;
     const { parentAST } = scope;
+
+    if (scope.isGlobal()) {
+      this.context.globalScope = scope;
+      emitGlobalDeclarationsIR({
+        context,
+      });
+    }
 
     if (isFuncDeclLikeType(parentAST?.type)) {
       const { instructions, data } = emitFunctionIR({

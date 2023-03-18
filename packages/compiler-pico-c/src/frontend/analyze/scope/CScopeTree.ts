@@ -46,11 +46,24 @@ export class CScopeTree<C extends ASTCCompilerNode = ASTCCompilerNode>
   get arch() {
     return this._checkerConfig.arch;
   }
+
   get parentAST() {
     return this._parentAST;
   }
+
   get parentScope() {
     return this._parentScope;
+  }
+
+  getGlobalVariables(): Record<string, CVariable> {
+    return R.pickBy(
+      (variable: CVariable) => variable.isGlobal(),
+      this.variables,
+    );
+  }
+
+  getVariables() {
+    return this.variables;
   }
 
   getFunctions() {

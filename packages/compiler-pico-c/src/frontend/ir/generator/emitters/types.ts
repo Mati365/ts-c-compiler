@@ -40,6 +40,7 @@ export type IRGeneratorSegments = {
 };
 
 export type IREmitterContext = {
+  globalScope: CScopeTree;
   segments: IRGeneratorSegments;
   config: IRGeneratorConfig;
   allocator: IRVariableAllocator;
