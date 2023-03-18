@@ -1,5 +1,5 @@
 import { IROpcode } from '@compiler/pico-c/frontend/ir/constants';
-import { IRDefConstInstruction } from '@compiler/pico-c/frontend/ir/instructions';
+import { IRDefDataInstruction } from '@compiler/pico-c/frontend/ir/instructions';
 import { IRDataSegmentBuilderResult } from '@compiler/pico-c/frontend/ir/generator';
 
 import { genDefConst, genLabel } from '../../asm-utils';
@@ -15,9 +15,9 @@ export function compileDataSegment({
 
   for (const instruction of segment.instructions) {
     switch (instruction.opcode) {
-      case IROpcode.DEF_CONST:
+      case IROpcode.DEF_DATA:
         {
-          const defConst = instruction as IRDefConstInstruction;
+          const defConst = instruction as IRDefDataInstruction;
 
           asm.push(
             `${genLabel(defConst.outputVar.name)} ${genDefConst(

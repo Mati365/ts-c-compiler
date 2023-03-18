@@ -1,13 +1,10 @@
-// todo: Add MODULO
 // todo: Add ternary
 // todo: Add global variables
 // todo: Fix calling fn with copy of struct
 export const MOCK_C_FILE = /* c */ `
-  void main() {
-    int a = 7;
+  int j;
 
-    if (a & 2) {
-      int k = 2;
-    }
+  void main() {
+    const int abc[] = { 1, 2, 3, 4 };
   }
 `;

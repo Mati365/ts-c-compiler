@@ -6,18 +6,16 @@ import { IRInstruction, IRInstructionArgs } from './IRInstruction';
 import { IRVariable } from '../variables';
 import { IsOutputInstruction } from '../interfaces';
 
-export type IRConstDefData = number[];
-
-export function isIRDefConstInstruction(
+export function isIRDefDataInstruction(
   instruction: IRInstruction,
-): instruction is IRDefConstInstruction {
-  return instruction.opcode === IROpcode.DEF_CONST;
+): instruction is IRDefDataInstruction {
+  return instruction.opcode === IROpcode.DEF_DATA;
 }
 
 /**
  * Label instruction
  */
-export class IRDefConstInstruction
+export class IRDefDataInstruction
   extends IRInstruction
   implements IsOutputInstruction
 {
@@ -25,11 +23,11 @@ export class IRDefConstInstruction
     readonly initializer: CVariableInitializerTree,
     readonly outputVar: IRVariable,
   ) {
-    super(IROpcode.DEF_CONST);
+    super(IROpcode.DEF_DATA);
   }
 
   override ofArgs({ output = this.outputVar }: IRInstructionArgs) {
-    return new IRDefConstInstruction(this.initializer, output);
+    return new IRDefDataInstruction(this.initializer, output);
   }
 
   override getArgs(): IRInstructionArgs {
