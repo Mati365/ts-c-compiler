@@ -222,7 +222,7 @@ describe('Variables initialization', () => {
         mov sp, bp
         pop bp
         ret
-        @@_c_0_: db 1, 2, 3, 4, 5
+        @@_c_0_: dw 1, 2, 3, 4, 5
       `);
     });
 

@@ -12,7 +12,7 @@ export function compileDefDataInstruction({
 
   return [
     `${genLabel(defConst.outputVar.name)} ${genDefConst(
-      'db',
+      defConst.initializer.getSingleItemByteSize(),
       defConst.initializer.fields as number[],
     )}`,
   ];

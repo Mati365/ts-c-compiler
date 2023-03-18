@@ -85,9 +85,12 @@ export class IRGeneratorGlobalVisitor extends CScopeVisitor {
 
     if (scope.isGlobal()) {
       this.context.globalScope = scope;
-      emitGlobalDeclarationsIR({
-        context,
-      });
+
+      segments.data.emitBulk(
+        emitGlobalDeclarationsIR({
+          context,
+        }),
+      );
     }
 
     if (isFuncDeclLikeType(parentAST?.type)) {

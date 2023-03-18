@@ -81,7 +81,7 @@ export function emitVariableInitializerIR({
         ).ofVirtualArrayPtr(),
       );
 
-      const constArrayVar = allocator.allocConstDataVariable(dataType);
+      const constArrayVar = allocator.allocDataVariable(dataType);
       const tmpLeaAddressVar = allocator.allocTmpVariable(arrayPtrType);
 
       data.push(new IRDefDataInstruction(initializer, constArrayVar));

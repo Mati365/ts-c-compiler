@@ -181,7 +181,7 @@ describe('Variable assign', () => {
         mov sp, bp
         pop bp
         ret
-        @@_c_0_: db 1, 2, 3, 4, 5, 0, 0, 0, 0, 0, 0, 0
+        @@_c_0_: dw 1, 2, 3, 4, 5, 0, 0, 0, 0, 0, 0, 0
       `);
     });
   });
@@ -227,7 +227,7 @@ describe('Variable assign', () => {
         push bp
         mov bp, sp
         sub sp, 2
-        mov word [bp - 2], 2816   ; *(addr{0}: int**2B) = store %2816: int*2B
+        mov word [bp - 2], 2816   ; *(addr{0}: int**2B) = store %2816: int2B
         mov bx, [bp - 2]          ; %t{0}: int*2B = load addr{0}: int**2B
         mov word [bx], 2          ; *(%t{0}: int*2B) = store %2: char1B
         mov sp, bp
@@ -249,7 +249,7 @@ describe('Variable assign', () => {
         push bp
         mov bp, sp
         sub sp, 2
-        mov word [bp - 2], 2816   ; *(addr{0}: char**2B) = store %2816: char*2B
+        mov word [bp - 2], 2816   ; *(addr{0}: char**2B) = store %2816: char1B
         mov bx, [bp - 2]          ; %t{0}: char*2B = load addr{0}: char**2B
         mov byte [bx], 2          ; *(%t{0}: char*2B) = store %2: char1B
         mov sp, bp
