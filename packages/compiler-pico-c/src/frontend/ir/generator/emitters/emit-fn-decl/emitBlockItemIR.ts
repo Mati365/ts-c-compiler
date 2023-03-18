@@ -13,7 +13,12 @@ import {
   ASTCIfStatement,
 } from '@compiler/pico-c/frontend/parser';
 
-import { IRRetInstruction } from '../../../instructions';
+import { IRError, IRErrorCode } from '../../../errors/IRError';
+import {
+  IRCommentInstruction,
+  IRJmpInstruction,
+  IRRetInstruction,
+} from '../../../instructions';
 
 import {
   appendStmtResults,
@@ -146,6 +151,40 @@ export function emitBlockItemIR({
         });
 
         context.allocator.assignIRAllocatorData(nestedContext.allocator);
+        return false;
+      },
+    },
+
+    [ASTCCompilerKind.ContinueStmt]: {
+      enter() {
+        const { loopStmt } = context;
+
+        if (!loopStmt) {
+          throw new IRError(IRErrorCode.STMT_NOT_WITHIN_LOOP_OR_SWITCH);
+        }
+
+        result.instructions.push(
+          new IRCommentInstruction('continue'),
+          new IRJmpInstruction(loopStmt.startLabel),
+        );
+
+        return false;
+      },
+    },
+
+    [ASTCCompilerKind.BreakStmt]: {
+      enter() {
+        const { loopStmt } = context;
+
+        if (!loopStmt) {
+          throw new IRError(IRErrorCode.STMT_NOT_WITHIN_LOOP_OR_SWITCH);
+        }
+
+        result.instructions.push(
+          new IRCommentInstruction('break'),
+          new IRJmpInstruction(loopStmt.finallyLabel),
+        );
+
         return false;
       },
     },

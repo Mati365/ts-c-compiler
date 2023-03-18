@@ -1,7 +1,11 @@
 import { CScopeTree } from '@compiler/pico-c/frontend/analyze';
 
 import { IRGeneratorConfig } from '../../constants';
-import { IRFnDeclInstruction, IRInstruction } from '../../instructions';
+import {
+  IRFnDeclInstruction,
+  IRInstruction,
+  IRLabelInstruction,
+} from '../../instructions';
 
 import { IRConstant, IRVariable } from '../../variables';
 import { IRVariableAllocator } from '../IRVariableAllocator';
@@ -55,6 +59,10 @@ export type IREmitterContext = {
   };
   conditionStmt?: {
     labels: LogicBinaryExpressionLabels;
+  };
+  loopStmt?: {
+    startLabel: IRLabelInstruction;
+    finallyLabel: IRLabelInstruction;
   };
 };
 

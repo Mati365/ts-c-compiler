@@ -16,7 +16,7 @@ export class ASTCForStatement
 
   constructor(
     loc: NodeLocation,
-    readonly statement: ASTCCompilerNode,
+    public statement: ASTCCompilerNode,
     readonly declaration: ASTCCompilerNode,
     readonly condition?: ASTCCompilerNode,
     readonly expression?: ASTCCompilerNode,

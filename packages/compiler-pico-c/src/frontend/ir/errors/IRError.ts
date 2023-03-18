@@ -20,6 +20,7 @@ export enum IRErrorCode {
   MISSING_FUNC_DECL_IN_ALLOCATOR = 'MISSING_FUNC_DECL_IN_ALLOCATOR',
   EXPECTED_CONDITION_FLAG_RESULT = 'EXPECTED_CONDITION_FLAG_RESULT',
   MISSING_END_FUNCTION_DECLARATION = 'MISSING_END_FUNCTION_DECLARATION',
+  STMT_NOT_WITHIN_LOOP_OR_SWITCH = 'STMT_NOT_WITHIN_LOOP_OR_SWITCH',
 }
 
 export const C_IR_ERROR_TRANSLATIONS: Record<IRErrorCode, string> = {
@@ -68,6 +69,9 @@ export const C_IR_ERROR_TRANSLATIONS: Record<IRErrorCode, string> = {
   ),
   [IRErrorCode.MISSING_END_FUNCTION_DECLARATION]: fixme(
     'Missing end function declaration!',
+  ),
+  [IRErrorCode.STMT_NOT_WITHIN_LOOP_OR_SWITCH]: fixme(
+    'Stmt should be placed in for or switch!',
   ),
 };
 

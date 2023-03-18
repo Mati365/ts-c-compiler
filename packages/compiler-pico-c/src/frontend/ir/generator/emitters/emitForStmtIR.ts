@@ -54,7 +54,13 @@ export function emitForStmtIR({
   const contentResult = emit.block({
     node: node.statement,
     scope,
-    context,
+    context: {
+      ...context,
+      loopStmt: {
+        startLabel: labels.ifTrueLabel,
+        finallyLabel: labels.ifFalseLabel,
+      },
+    },
   });
 
   result.instructions.push(

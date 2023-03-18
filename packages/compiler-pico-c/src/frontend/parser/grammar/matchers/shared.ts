@@ -9,11 +9,18 @@ import {
   ASTCAbstractDeclarator,
   ASTCSpecifiersQualifiersList,
   ASTCInitializer,
+  ASTCForStatement,
+  ASTCWhileStatement,
+  ASTCDoWhileStatement,
 } from '../../ast';
 
 export type CGrammarDef = Grammar<CCompilerIdentifier, ASTCCompilerKind>;
 
 export type CGrammar = {
+  parentNode: {
+    loopStmt?: ASTCForStatement | ASTCWhileStatement | ASTCDoWhileStatement;
+  };
+
   g: CGrammarDef;
   declarator(): ASTCDeclarator;
   abstractDeclarator(): ASTCAbstractDeclarator;

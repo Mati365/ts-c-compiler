@@ -24,6 +24,7 @@ const compilerMatcher: GrammarInitializer<
   ASTCCompilerKind
 > = ({ g }) => {
   const grammar: CGrammar = {
+    parentNode: {},
     g,
     declarator: () => declarator(grammar),
     abstractDeclarator: () => abstractDeclarator(grammar),

@@ -2,6 +2,8 @@ import { TokenType } from '@compiler/lexer/shared';
 import { NodeLocation } from '@compiler/grammar/tree/NodeLocation';
 import { CCompilerKeyword } from '@compiler/pico-c/constants';
 import { CGrammar } from '../shared';
+
+import { CGrammarError, CGrammarErrorCode } from '../../errors/CGrammarError';
 import {
   ASTCCompilerNode,
   ASTCBreakStatement,
@@ -36,11 +38,23 @@ export function jumpStatement(grammar: CGrammar): ASTCCompilerNode {
     continue() {
       const node = g.identifier(CCompilerKeyword.CONTINUE);
 
+      if (!grammar.parentNode.loopStmt) {
+        throw new CGrammarError(
+          CGrammarErrorCode.CONTINUE_STMT_NOT_WITHIN_LOOP_OR_SWITCH,
+        );
+      }
+
       return new ASTCContinueStatement(NodeLocation.fromTokenLoc(node.loc));
     },
 
     break() {
       const node = g.identifier(CCompilerKeyword.BREAK);
+
+      if (!grammar.parentNode.loopStmt) {
+        throw new CGrammarError(
+          CGrammarErrorCode.BREAK_STMT_NOT_WITHIN_LOOP_OR_SWITCH,
+        );
+      }
 
       return new ASTCBreakStatement(NodeLocation.fromTokenLoc(node.loc));
     },

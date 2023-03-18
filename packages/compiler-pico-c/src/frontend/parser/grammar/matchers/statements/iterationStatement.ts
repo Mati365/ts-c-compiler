@@ -24,7 +24,7 @@ import { expressionStatement } from './expressionStatement';
  *  ;
  */
 export function iterationStatement(grammar: CGrammar): ASTCCompilerNode {
-  const { g, statement } = grammar;
+  const { g, statement, parentNode } = grammar;
 
   return <ASTCCompilerNode>g.or({
     while() {
@@ -34,16 +34,30 @@ export function iterationStatement(grammar: CGrammar): ASTCCompilerNode {
       const expressionNode = expression(grammar);
       g.terminal(')');
 
-      return new ASTCWhileStatement(
+      const whileStmt = new ASTCWhileStatement(
         NodeLocation.fromTokenLoc(startToken.loc),
         expressionNode,
-        statement(),
+        null,
       );
+
+      parentNode.loopStmt = whileStmt;
+      whileStmt.statement = statement();
+      parentNode.loopStmt = null;
+
+      return whileStmt;
     },
 
     doWhile() {
       const startToken = g.identifier(CCompilerKeyword.DO);
+      const doWhileStmt = new ASTCDoWhileStatement(
+        NodeLocation.fromTokenLoc(startToken.loc),
+        null,
+        null,
+      );
+
+      parentNode.loopStmt = doWhileStmt;
       const statementNode = statement();
+      parentNode.loopStmt = null;
 
       g.identifier(CCompilerKeyword.WHILE);
       g.terminal('(');
@@ -53,11 +67,10 @@ export function iterationStatement(grammar: CGrammar): ASTCCompilerNode {
       g.terminal(')');
       g.terminalType(TokenType.SEMICOLON);
 
-      return new ASTCDoWhileStatement(
-        NodeLocation.fromTokenLoc(startToken.loc),
-        expressionNode,
-        statementNode,
-      );
+      doWhileStmt.expression = expressionNode;
+      doWhileStmt.statement = statementNode;
+
+      return doWhileStmt;
     },
 
     for() {
@@ -87,13 +100,19 @@ export function iterationStatement(grammar: CGrammar): ASTCCompilerNode {
 
       g.terminal(')');
 
-      return new ASTCForStatement(
+      const forStmt = new ASTCForStatement(
         NodeLocation.fromTokenLoc(startToken.loc),
-        statement(),
+        null,
         declarationNode,
         conditionNode,
         expressionNode,
       );
+
+      parentNode.loopStmt = forStmt;
+      forStmt.statement = statement();
+      parentNode.loopStmt = null;
+
+      return forStmt;
     },
   });
 }
