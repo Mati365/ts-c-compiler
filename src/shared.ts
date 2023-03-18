@@ -5,16 +5,6 @@
 export const MOCK_C_FILE = /* c */ `
   void main() {
     int a = 2;
-    int b;
-
-    switch (a) {
-      case 3:
-      b = 6;
-      break;
-
-      case 4:
-      b = 7;
-      break;
-    }
+    int b = a ^ 2;
   }
 `;

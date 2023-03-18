@@ -77,6 +77,7 @@ export function compileMathInstruction({
       return asm;
     }
 
+    case TokenType.POW:
     case TokenType.MUL:
     case TokenType.PLUS:
     case TokenType.MINUS: {
@@ -106,7 +107,13 @@ export function compileMathInstruction({
 
       let operatorAsm: string = null;
 
-      if (operator === TokenType.PLUS) {
+      if (operator === TokenType.POW) {
+        operatorAsm = genInstruction(
+          'xor',
+          leftAllocResult.value,
+          rightAllocResult.value,
+        );
+      } else if (operator === TokenType.PLUS) {
         operatorAsm = genInstruction(
           'add',
           leftAllocResult.value,
