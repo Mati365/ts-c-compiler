@@ -15,9 +15,6 @@ export const MOCK_C_FILE = /* c */ `
       case 4:
       b = 7;
       break;
-
-      default:
-      b = 8;
     }
   }
 `;
