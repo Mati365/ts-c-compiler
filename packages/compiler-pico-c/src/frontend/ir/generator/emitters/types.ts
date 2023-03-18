@@ -33,6 +33,7 @@ import type { IRInstructionFactory } from '../IRInstructionFactory';
 import type { emitLogicExpressionIR } from './emit-expr/emitLogicExpressionIR';
 import type { emitBlockItemIR } from './emit-fn-decl';
 import type { emitVariableInitializerIR } from './emit-initializer';
+import type { IRGlobalVariablesMap } from '../IRGlobalVariablesMap';
 
 export type IRGeneratorSegments = {
   code: IRFlatCodeSegmentBuilder;
@@ -40,7 +41,7 @@ export type IRGeneratorSegments = {
 };
 
 export type IREmitterContext = {
-  globalScope: CScopeTree;
+  globalVariables: IRGlobalVariablesMap;
   segments: IRGeneratorSegments;
   config: IRGeneratorConfig;
   allocator: IRVariableAllocator;
