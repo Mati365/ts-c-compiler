@@ -145,13 +145,13 @@ describe('Variable assign', () => {
         lea bx, [bp - 10]         ; %t{0}: struct Vec2*2B = lea vec{0}: struct Vec2[2]*2B
         mov ax, bx                ; swap
         add bx, 4                 ; %t{1}: char*2B = %t{0}: struct Vec2*2B plus %4: int2B
-        mov al, [bx]              ; %t{2}: char1B = load %t{1}: char*2B
+        mov cl, [bx]              ; %t{2}: char1B = load %t{1}: char*2B
         add ax, 5                 ; %t{4}: struct Vec2*2B = %t{0}: struct Vec2*2B plus %5: int2B
         mov di, ax
         mov ax, [di]              ; %t{5}: int2B = load %t{4}: struct Vec2*2B
-        movzx cx, al
-        add cx, ax                ; %t{6}: int2B = %t{2}: char1B plus %t{5}: int2B
-        mov word [bp - 12], cx    ; *(sum{0}: int*2B) = store %t{6}: int2B
+        movzx dx, cl
+        add dx, ax                ; %t{6}: int2B = %t{2}: char1B plus %t{5}: int2B
+        mov word [bp - 12], dx    ; *(sum{0}: int*2B) = store %t{6}: int2B
         mov sp, bp
         pop bp
         ret

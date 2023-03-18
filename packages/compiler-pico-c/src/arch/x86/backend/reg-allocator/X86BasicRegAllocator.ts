@@ -116,6 +116,7 @@ export class X86BasicRegAllocator {
     if (isIRConstant(arg)) {
       const { asm, value } = this.requestReg({
         prefer: preferRegs,
+        allowedRegs,
         size,
       });
 

@@ -84,7 +84,6 @@ test('Rainbow Hello World', () => {
     mov sp, bp
     pop bp
     ret 2
-
     ; def clear_screen():
     @@_fn_clear_screen:
     push bp
@@ -98,7 +97,6 @@ test('Rainbow Hello World', () => {
     mov sp, bp
     pop bp
     ret
-
     ; def printf(x{0}: int*2B, y{0}: int*2B, color{0}: char*2B, str{1}: const char**2B):
     @@_fn_printf:
     push bp
@@ -147,7 +145,6 @@ test('Rainbow Hello World', () => {
     mov sp, bp
     pop bp
     ret 8
-
     ; def main():
     @@_fn_main:
     push bp
@@ -178,7 +175,6 @@ test('Rainbow Hello World', () => {
     mov sp, bp
     pop bp
     ret
-
     @@_c_0_: db 72, 101, 108, 108, 111, 32, 119, 111, 114, 108, 100, 33, 0
   `);
 });

@@ -1,7 +1,7 @@
 import { X86IntRegTree } from '../../constants/regs';
 
 type SetRegAvailabilityAttrs = {
-  path: X86IntRegTree[];
+  path?: X86IntRegTree[];
   unavailable: boolean;
   list: X86IntRegTree[];
 };
@@ -14,13 +14,35 @@ export function recursiveSetAvailabilityInX86RegMap({
   const origin: X86IntRegTree[] = [...list];
   let reduced: X86IntRegTree[] = origin;
 
-  for (const currentPath of path) {
-    reduced[reduced.indexOf(currentPath)] = {
-      ...currentPath,
-      unavailable,
-    };
+  if (path) {
+    for (let i = 0; i < path.length; ++i) {
+      const currentPath = path[i];
 
-    reduced = currentPath.children;
+      reduced[reduced.indexOf(currentPath)] = {
+        ...currentPath,
+        unavailable,
+      };
+
+      reduced = currentPath.children;
+
+      if (i === path.length - 1 && reduced?.length) {
+        recursiveSetAvailabilityInX86RegMap({
+          list: reduced,
+          unavailable,
+        });
+      }
+    }
+  } else {
+    for (const tree of reduced) {
+      tree.unavailable = unavailable;
+
+      if (tree.children) {
+        tree.children = recursiveSetAvailabilityInX86RegMap({
+          list: tree.children,
+          unavailable,
+        });
+      }
+    }
   }
 
   return origin;

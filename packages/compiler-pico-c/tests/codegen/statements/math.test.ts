@@ -53,4 +53,52 @@ describe('Math', () => {
       ret
     `);
   });
+
+  test('int b = a % 2', () => {
+    expect(/* cpp */ `
+      void main() {
+        int a = 7;
+        int b = a % 2;
+      }
+    `).toCompiledAsmBeEqual(`
+      cpu 386
+      ; def main():
+      @@_fn_main:
+      push bp
+      mov bp, sp
+      sub sp, 4
+      mov word [bp - 2], 7      ; *(a{0}: int*2B) = store %7: int2B
+      mov ax, [bp - 2]
+      mov bx, word 2
+      idiv bx                   ; %t{1}: int2B = %t{0}: int2B mod %2: char1B
+      mov word [bp - 4], dx     ; *(b{0}: int*2B) = store %t{1}: int2B
+      mov sp, bp
+      pop bp
+      ret
+    `);
+  });
+
+  test('int b = a / 2', () => {
+    expect(/* cpp */ `
+      void main() {
+        int a = 7;
+        int b = a / 2;
+      }
+    `).toCompiledAsmBeEqual(`
+      cpu 386
+      ; def main():
+      @@_fn_main:
+      push bp
+      mov bp, sp
+      sub sp, 4
+      mov word [bp - 2], 7      ; *(a{0}: int*2B) = store %7: int2B
+      mov ax, [bp - 2]
+      mov bx, word 2
+      idiv bx                   ; %t{1}: int2B = %t{0}: int2B div %2: char1B
+      mov word [bp - 4], ax     ; *(b{0}: int*2B) = store %t{1}: int2B
+      mov sp, bp
+      pop bp
+      ret
+    `);
+  });
 });

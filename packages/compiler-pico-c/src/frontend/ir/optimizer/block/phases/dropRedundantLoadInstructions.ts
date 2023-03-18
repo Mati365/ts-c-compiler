@@ -55,14 +55,6 @@ export function dropRedundantLoadInstructions(instructions: IRInstruction[]) {
     state = resetLoadState();
   };
 
-  // console.info(
-  //   'PRE:',
-  //   newInstructions.map(s => s.getDisplayName()).join('\n'),
-  //   '\n',
-  //   newInstructions.length,
-  //   '\n',
-  // );
-
   for (let i = 0; i < newInstructions.length; ++i) {
     let instruction = newInstructions[i];
 
@@ -102,14 +94,6 @@ export function dropRedundantLoadInstructions(instructions: IRInstruction[]) {
   }
 
   flush();
-
-  // console.info(
-  //   'POST:',
-  //   newInstructions.map(s => s.getDisplayName()).join('\n'),
-  //   '\n',
-  //   newInstructions.length,
-  //   '\n\n\n',
-  // );
 
   return newInstructions;
 }

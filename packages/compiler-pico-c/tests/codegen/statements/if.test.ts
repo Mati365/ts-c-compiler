@@ -121,11 +121,11 @@ describe('If statement', () => {
         cmp ax, bx                ; %t{2}: i1:zf = icmp %t{0}: char1B greater_than %t{1}: int2B
         jng @@_L1                 ; br %t{2}: i1:zf, false: L1
         @@_L3:
-        mov al, [bp - 1]
-        add al, 4                 ; %t{4}: char1B = %t{3}: char1B plus %4: char1B
-        movzx bx, al
-        mov ax, [bp - 3]
-        cmp bx, ax                ; %t{6}: i1:zf = icmp %t{4}: char1B greater_than %t{5}: int2B
+        mov bl, [bp - 1]
+        add bl, 4                 ; %t{4}: char1B = %t{3}: char1B plus %4: char1B
+        movzx cx, bl
+        mov bx, [bp - 3]
+        cmp cx, bx                ; %t{6}: i1:zf = icmp %t{4}: char1B greater_than %t{5}: int2B
         jg @@_L2                  ; br %t{6}: i1:zf, true: L2
         jmp @@_L1                 ; jmp L1
         @@_L2:

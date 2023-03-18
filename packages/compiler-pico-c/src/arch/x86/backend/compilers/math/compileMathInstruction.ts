@@ -164,25 +164,50 @@ export function compileMathInstruction({
       ];
     }
 
+    case TokenType.MOD:
     case TokenType.DIV: {
-      const leftAllocResult = regs.tryResolveIRArgAsReg({
-        arg: leftVar,
-        allowedRegs: ['dx'],
-      });
+      const allocResult = {
+        remainder: regs.requestReg({ allowedRegs: ['dx'] }),
+        quotient: regs.tryResolveIRArgAsReg({
+          allowedRegs: ['ax'],
+          arg: leftVar,
+        }),
+      };
 
       const rightAllocResult = regs.tryResolveIrArg({
         allow: IRArgDynamicResolverType.REG | IRArgDynamicResolverType.MEM,
+        allowedRegs: ['cx', 'bx'],
         arg: rightVar,
+        size: 2,
       });
 
-      if (outputVar.isTemporary()) {
-        regs.ownership.setOwnership(outputVar.name, {
-          reg: leftAllocResult.value,
-        });
+      if (operator === TokenType.MOD) {
+        // we want remainder in variable
+        if (outputVar.isTemporary()) {
+          regs.ownership.setOwnership(outputVar.name, {
+            reg: allocResult.remainder.value,
+          });
+        } else {
+          regs.releaseRegs([allocResult.remainder.value]);
+        }
+
+        regs.releaseRegs([allocResult.quotient.value]);
+      } else {
+        // we want quotient in variable here
+        if (outputVar.isTemporary()) {
+          regs.ownership.setOwnership(outputVar.name, {
+            reg: allocResult.quotient.value,
+          });
+        } else {
+          regs.releaseRegs([allocResult.quotient.value]);
+        }
+
+        regs.releaseRegs([allocResult.remainder.value]);
       }
 
       return [
-        ...leftAllocResult.asm,
+        ...allocResult.remainder.asm,
+        ...allocResult.quotient.asm,
         ...rightAllocResult.asm,
         withInlineComment(
           genInstruction('idiv', rightAllocResult.value),
