@@ -2,14 +2,20 @@
 // todo: Add global variables
 // todo: Fix calling fn with copy of struct
 export const MOCK_C_FILE = /* c */ `
-  int j[] = { 1, 2, 3 };
-  int s = 3;
+  const char* HELLO_WORLD = "Hello world!";
+
+  int strlen(const char* str) {
+    for (int i = 0;;++i) {
+      if (*(str + i) == 0) {
+        return i;
+      }
+    }
+
+    return -1;
+  }
 
   void main() {
-    j[2] *= s;
-
-    int k = j[2] + 2;
-    int c = j[2] - 2;
-    int sum = (k + c) * (k - c);
+    const char* str = HELLO_WORLD;
+    int k = strlen(str);
   }
 `;

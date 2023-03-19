@@ -13,7 +13,11 @@ import {
   isIRVariable,
 } from '@compiler/pico-c/frontend/ir/variables';
 
-import { isStructLikeType } from '@compiler/pico-c/frontend/analyze';
+import {
+  isPointerLikeType,
+  isStructLikeType,
+} from '@compiler/pico-c/frontend/analyze';
+
 import { getByteSizeArgPrefixName } from '@x86-toolkit/assembler/parser/utils';
 import { genInstruction, genMemAddress } from '../../asm-utils';
 import {
@@ -29,6 +33,7 @@ import { X86RegOwnershipTracker } from './X86RegOwnershipTracker';
 import { isLabelOwnership, isRegOwnership, isStackVarOwnership } from './utils';
 
 import { getX86RegByteSize } from '../../constants/regs';
+import { isImplicitPtrType } from '@compiler/pico-c/frontend/analyze/types/utils';
 
 export type IRArgAllocatorResult<V extends string | number = string | number> =
   {
@@ -346,13 +351,23 @@ export class X86BasicRegAllocator {
     }
 
     if (isLabelOwnership(varOwnership)) {
+      let labelAddr = varOwnership.label;
+
+      if (
+        isPointerLikeType(arg.type) &&
+        !isPointerLikeType(arg.type.baseType) &&
+        !isImplicitPtrType(arg.type.baseType)
+      ) {
+        labelAddr = genMemAddress({
+          expression: labelAddr,
+          size: prefixSizeName,
+        });
+      }
+
       return {
         asm: [],
         size: prefixSize,
-        value: genMemAddress({
-          size: prefixSizeName,
-          expression: varOwnership.label,
-        }),
+        value: labelAddr,
       };
     }
 

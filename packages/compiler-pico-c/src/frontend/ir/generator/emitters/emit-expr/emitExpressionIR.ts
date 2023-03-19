@@ -302,10 +302,7 @@ export function emitExpressionIR({
           const srcVar = allocator.getVariable(name);
 
           if (srcGlobalVar) {
-            const tmpAddressVar = allocNextVariable(
-              CPointerType.ofType(srcGlobalVar.type),
-            );
-
+            const tmpAddressVar = allocNextVariable(srcGlobalVar.type);
             const tmpDestVar = allocNextVariable(srcGlobalVar.type);
 
             instructions.push(

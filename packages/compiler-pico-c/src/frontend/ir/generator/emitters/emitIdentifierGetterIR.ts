@@ -161,9 +161,7 @@ export function emitIdentifierGetterIR({
            * int* ptr = fn_name;
            */
           if (irFunction) {
-            lastIRVar = allocator.allocTmpVariable(
-              CPointerType.ofType(irFunction.type),
-            );
+            lastIRVar = allocator.allocTmpVariable(irFunction.type);
 
             instructions.push(
               new IRLabelOffsetInstruction(
@@ -175,7 +173,7 @@ export function emitIdentifierGetterIR({
             const irVariable = globalVariables.getVariable(name);
 
             // emits LEA for global label
-            lastIRVar = allocator.allocAddressVariable(irVariable.type);
+            lastIRVar = allocator.allocTmpVariable(irVariable.type);
             instructions.push(
               new IRLabelOffsetInstruction(
                 IRLabel.ofName(irVariable.name),
