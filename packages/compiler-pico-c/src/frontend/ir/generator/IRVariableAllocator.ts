@@ -188,7 +188,10 @@ export class IRVariableAllocator {
    * Alloc variable for data segment
    */
   allocDataVariable(type: CType): IRVariable {
-    return this.allocTmpVariable(type, CONST_VAR_PREFIX).ofConstInitialized();
+    return this.allocTmpVariable(
+      CPointerType.ofType(type),
+      CONST_VAR_PREFIX,
+    ).ofConstInitialized();
   }
 
   /**

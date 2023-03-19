@@ -10,14 +10,14 @@ export type IRStackVarOwnership = {
   stackVar: X86StackVariable;
 };
 
-export type IRAddressVarOwnership = {
-  address: string;
+export type IRLabelVarOwnership = {
+  label: string;
 };
 
 export type IROwnershipValue =
   | IRRegOwnership
   | IRStackVarOwnership
-  | IRAddressVarOwnership;
+  | IRLabelVarOwnership;
 
 export type IROwnershipMap = Partial<Record<string, IROwnershipValue>>;
 
@@ -33,8 +33,8 @@ export function isRegOwnership(
   return !!ownership && 'reg' in ownership;
 }
 
-export function isAddressOwnership(
+export function isLabelOwnership(
   ownership: IROwnershipValue,
-): ownership is IRAddressVarOwnership {
-  return !!ownership && 'address' in ownership;
+): ownership is IRLabelVarOwnership {
+  return !!ownership && 'label' in ownership;
 }

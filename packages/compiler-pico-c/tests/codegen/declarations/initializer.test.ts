@@ -215,7 +215,7 @@ describe('Variables initialization', () => {
         mov bp, sp
         sub sp, 8
         mov word [bp - 2], 1      ; *(arr{0}: const int[1]*2B) = store %1: const int2B
-        mov bx, @@_c_0_           ; %t{0}: const int*2B = lea c{0}: const int[5]10B
+        mov bx, @@_c_0_           ; %t{0}: const int*2B = lea c{0}: const int[5]*2B
         mov word [bp - 4], bx     ; *(arr2{0}: const int**2B) = store %t{0}: const int*2B
         mov word [bp - 8], 1      ; *(arr3{0}: const int[2]*2B) = store %1: const int2B
         mov word [bp - 6], 2      ; *(arr3{0}: const int[2]*2B + %2) = store %2: const int2B
@@ -261,7 +261,7 @@ describe('Variables initialization', () => {
         push bp
         mov bp, sp
         sub sp, 2
-        mov bx, @@_c_0_           ; %t{0}: const char*2B = lea c{0}: const char[2]2B
+        mov bx, @@_c_0_           ; %t{0}: const char*2B = lea c{0}: const char[2]*2B
         mov word [bp - 2], bx     ; *(letters1{0}: const char**2B) = store %t{0}: const char*2B
         mov sp, bp
         pop bp
@@ -284,11 +284,11 @@ describe('Variables initialization', () => {
         push bp
         mov bp, sp
         sub sp, 6
-        mov bx, @@_c_0_           ; %t{0}: const char*2B = lea c{0}: const char[5]5B
+        mov bx, @@_c_0_           ; %t{0}: const char*2B = lea c{0}: const char[5]*2B
         mov word [bp - 2], bx     ; *(letters1{0}: const char**2B) = store %t{0}: const char*2B
-        mov di, @@_c_1_           ; %t{1}: char*2B = lea c{1}: char[6]6B
+        mov di, @@_c_1_           ; %t{1}: char*2B = lea c{1}: char[6]*2B
         mov word [bp - 4], di     ; *(letters2{0}: char**2B) = store %t{1}: char*2B
-        mov si, @@_c_2_           ; %t{2}: const char*2B = lea c{2}: const char[12]12B
+        mov si, @@_c_2_           ; %t{2}: const char*2B = lea c{2}: const char[12]*2B
         mov word [bp - 6], si     ; *(letters3{0}: const char**2B) = store %t{2}: const char*2B
         mov sp, bp
         pop bp
@@ -315,7 +315,7 @@ describe('Variables initialization', () => {
         mov word [bp - 5], 25928  ; *(letters1{0}: int*2B) = store %25928: int2B
         mov word [bp - 3], 27756  ; *(letters1{0}: int*2B + %2) = store %27756: int2B
         mov byte [bp - 1], 0      ; *(letters1{0}: char[5]*2B + %4) = store %0: char1B
-        mov bx, @@_c_0_           ; %t{0}: const char*2B = lea c{0}: const char[7]7B
+        mov bx, @@_c_0_           ; %t{0}: const char*2B = lea c{0}: const char[7]*2B
         mov word [bp - 7], bx     ; *(letters2{0}: const char**2B) = store %t{0}: const char*2B
         mov sp, bp
         pop bp

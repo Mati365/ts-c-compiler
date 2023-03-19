@@ -171,7 +171,7 @@ describe('Variable assign', () => {
         push bp
         mov bp, sp
         sub sp, 4
-        mov bx, @@_c_0_           ; %t{0}: const int*2B = lea c{0}: const int[12]24B
+        mov bx, @@_c_0_           ; %t{0}: const int*2B = lea c{0}: const int[12]*2B
         mov word [bp - 2], bx     ; *(array{0}: const int**2B) = store %t{0}: const int*2B
         mov di, [bp - 2]          ; %t{1}: const int*2B = load array{0}: const int**2B
         add di, 6                 ; %t{2}: const int*2B = %t{1}: const int*2B plus %6: int2B

@@ -9,6 +9,7 @@ import { isStackVarOwnership } from '../reg-allocator/utils';
 
 import { X86CompilerInstructionFnAttrs } from '../../constants/types';
 import { genInstruction, withInlineComment } from '../../asm-utils';
+import { IRArgDynamicResolverType } from '../reg-allocator';
 
 type LoadInstructionCompilerAttrs =
   X86CompilerInstructionFnAttrs<IRLoadInstruction>;
@@ -26,7 +27,7 @@ export function compileLoadInstruction({
 
   if (inputVar.isTemporary()) {
     // handle loading pointer to types, such as %t{0} = load %t{1}: int*
-    const input = regs.tryResolveIRArgAsReg({
+    const input = regs.tryResolveIrArg({
       arg: inputVar,
       allowedRegs: regs.ownership.getAvailableRegs().addressing,
     });
@@ -61,7 +62,9 @@ export function compileLoadInstruction({
         genInstruction(
           zeroExtend ? 'movzx' : 'mov',
           reg.value,
-          `[${input.value}]`,
+          input.type === IRArgDynamicResolverType.REG
+            ? `[${input.value}]`
+            : input.value,
         ),
         instruction.getDisplayName(),
       ),
