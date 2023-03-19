@@ -78,7 +78,7 @@ export function emitExpressionIR({
   node,
   scope,
 }: ExpressionIREmitAttrs): IREmitterExpressionResult {
-  const { allocator, emit, config } = context;
+  const { allocator, emit, config, globalVariables } = context;
   const { arch } = config;
 
   const result = createBlankExprResult();
@@ -298,9 +298,21 @@ export function emitExpressionIR({
           const { text: name } = expression.identifier;
 
           const srcFn = allocator.getFunction(name);
+          const srcGlobalVar = globalVariables.getVariable(name);
           const srcVar = allocator.getVariable(name);
 
-          if (srcFn) {
+          if (srcGlobalVar) {
+            const tmpAddressVar = allocNextVariable(
+              CPointerType.ofType(srcGlobalVar.type),
+            );
+
+            const tmpOutputVar = allocNextVariable(srcGlobalVar.type);
+
+            instructions.push(
+              new IRLabelOffsetInstruction(IRLabel.ofName(name), tmpAddressVar),
+              new IRLoadInstruction(tmpAddressVar, tmpOutputVar),
+            );
+          } else if (srcFn) {
             const tmpVar = allocNextVariable(CPointerType.ofType(srcFn.type));
 
             instructions.push(

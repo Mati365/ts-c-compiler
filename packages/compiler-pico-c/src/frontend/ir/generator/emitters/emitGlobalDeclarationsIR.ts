@@ -31,7 +31,7 @@ export function emitGlobalDeclarationsIR({
       });
 
     instructions.push(new IRDefDataInstruction(initializer, tmpOutputVar));
-    globalVariables.put(originalVarName, tmpOutputVar);
+    globalVariables.putVariable(originalVarName, tmpOutputVar);
   }
 
   return instructions;

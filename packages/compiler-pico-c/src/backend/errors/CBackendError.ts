@@ -13,6 +13,7 @@ export enum CBackendErrorCode {
   OFFSET_OVERFLOW = 'ALLOC_OFFSET_OVERFLOW',
   EXPECTED_IR_PTR_BUT_RECEIVE = 'EXPECTED_IR_PTR_BUT_RECEIVE',
   INCORRECT_MEMCPY_ARGS = 'INCORRECT_MEMCPY_ARGS',
+  CALL_ON_NON_CALLABLE_TYPE = 'CALL_ON_NON_CALLABLE_TYPE',
 }
 
 export const C_BACKEND_ERROR_TRANSLATIONS: Record<CBackendErrorCode, string> = {
@@ -39,6 +40,9 @@ export const C_BACKEND_ERROR_TRANSLATIONS: Record<CBackendErrorCode, string> = {
     'Expected IR pointer but received: "%{type}"!',
   ),
   [CBackendErrorCode.INCORRECT_MEMCPY_ARGS]: fixme('Incorrect memcpy args!'),
+  [CBackendErrorCode.CALL_ON_NON_CALLABLE_TYPE]: fixme(
+    'Call on non callable type!',
+  ),
 };
 
 /**

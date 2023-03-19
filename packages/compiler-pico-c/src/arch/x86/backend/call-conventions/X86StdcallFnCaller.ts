@@ -29,12 +29,12 @@ export class X86StdcallFnCaller implements X86ConventionalFnCaller {
    *  Add preserving registers algorithm!
    */
   compileIRFnCall({
+    address,
+    declInstruction,
     context,
-    target,
     callerInstruction,
   }: X86FnCallerCompilerAttrs): string[] {
     const { allocator } = context;
-    const { declaration } = target;
     const { regs } = allocator;
 
     const stack = this.getContextStackInfo(allocator);
@@ -51,24 +51,24 @@ export class X86StdcallFnCaller implements X86ConventionalFnCaller {
       asm.push(...resolvedArg.asm, genInstruction('push', resolvedArg.value));
     }
 
-    asm.push(genInstruction('call', target.asm.label));
+    asm.push(genInstruction('call', address));
 
     // do not reorder! it must be called before `getReturnReg` setOwnership!
     const preservedRegs = this.preserveConventionRegsAsm({
       context,
-      declaration,
+      declInstruction,
     });
 
     // restore result from register (AX is already loaded in `compileIRFnRet`)
     if (
       callerInstruction.outputVar &&
-      !declaration.isVoid() &&
-      declaration.hasReturnValue()
+      !declInstruction.isVoid() &&
+      declInstruction.hasReturnValue()
     ) {
       regs.ownership.setOwnership(callerInstruction.outputVar.name, {
         reg: this.getReturnReg({
           context,
-          declaration,
+          declInstruction,
         }),
       });
     }
@@ -76,7 +76,7 @@ export class X86StdcallFnCaller implements X86ConventionalFnCaller {
     // handle case when we call `sum(void)` with `sum(1, 2, 3)`.
     // Cleanup `1`, .. args stack because `ret` function does not do that
     const argsCountDelta =
-      totalNonRVOArgs - declaration.getArgsWithRVO().length;
+      totalNonRVOArgs - declInstruction.getArgsWithRVO().length;
 
     if (argsCountDelta) {
       asm.push(genInstruction('add', stack.reg, argsCountDelta * stack.size));
@@ -88,12 +88,12 @@ export class X86StdcallFnCaller implements X86ConventionalFnCaller {
   /**
    * Reads all args in `def` instruction
    */
-  allocIRFnDefArgs({ context, declaration }: X86FnBasicCompilerAttrs) {
+  allocIRFnDefArgs({ context, declInstruction }: X86FnBasicCompilerAttrs) {
     const { allocator } = context;
     const { stackFrame, regs } = allocator;
 
     const stack = this.getContextStackInfo(allocator);
-    const args = declaration.getArgsWithRVO();
+    const args = declInstruction.getArgsWithRVO();
 
     for (let i = args.length - 1; i >= 0; --i) {
       const arg = args[i];
@@ -114,34 +114,34 @@ export class X86StdcallFnCaller implements X86ConventionalFnCaller {
    */
   compileIRFnRet({
     context,
-    declaration,
+    declInstruction,
     retInstruction,
   }: X86FnRetCompilerAttrs): string[] {
     const { allocator } = context;
 
     const stack = this.getContextStackInfo(allocator);
-    const totalArgs = declaration.getArgsWithRVO().length;
+    const totalArgs = declInstruction.getArgsWithRVO().length;
     const asm: string[] = [];
 
-    if (!declaration.isVoid() && retInstruction.value) {
-      if (declaration.hasRVO()) {
+    if (!declInstruction.isVoid() && retInstruction.value) {
+      if (declInstruction.hasRVO()) {
         // copy structure A to B
         asm.push(
           ...compileMemcpy({
             context,
-            outputVar: declaration.getRVOOutputVar(),
+            outputVar: declInstruction.getRVOOutputVar(),
             inputVar: retInstruction.value as IRVariable,
           }),
         );
-      } else if (declaration.hasReturnValue()) {
+      } else if (declInstruction.hasReturnValue()) {
         // handle case when we call `return 2`
         const retResolvedArg = allocator.regs.tryResolveIRArgAsReg({
-          size: getTypeOffsetByteSize(declaration.returnType, 0),
+          size: getTypeOffsetByteSize(declInstruction.returnType, 0),
           arg: retInstruction.value,
           allowedRegs: [
             this.getReturnReg({
               context,
-              declaration,
+              declInstruction,
             }),
           ],
         });
@@ -171,9 +171,9 @@ export class X86StdcallFnCaller implements X86ConventionalFnCaller {
     };
   }
 
-  private getReturnReg({ context, declaration }: X86FnBasicCompilerAttrs) {
+  private getReturnReg({ context, declInstruction }: X86FnBasicCompilerAttrs) {
     const regs = context.allocator.regs.ownership.getAvailableRegs();
-    const { returnType } = declaration;
+    const { returnType } = declInstruction;
 
     if (!returnType || returnType.isVoid()) {
       return null;
@@ -184,7 +184,7 @@ export class X86StdcallFnCaller implements X86ConventionalFnCaller {
 
   private preserveConventionRegsAsm({
     context,
-    declaration,
+    declInstruction,
   }: X86FnBasicCompilerAttrs) {
     const {
       allocator: { regs },
@@ -202,7 +202,7 @@ export class X86StdcallFnCaller implements X86ConventionalFnCaller {
 
     const returnReg = this.getReturnReg({
       context,
-      declaration,
+      declInstruction,
     });
 
     if (returnReg) {
