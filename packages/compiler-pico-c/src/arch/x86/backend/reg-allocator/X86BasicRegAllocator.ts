@@ -15,7 +15,7 @@ import {
 
 import { isStructLikeType } from '@compiler/pico-c/frontend/analyze';
 import { getByteSizeArgPrefixName } from '@x86-toolkit/assembler/parser/utils';
-import { genInstruction } from '../../asm-utils';
+import { genInstruction, genMemAddress } from '../../asm-utils';
 import {
   queryAndMarkX86RegsMap,
   queryX86RegsMap,
@@ -26,11 +26,7 @@ import {
 import { X86RegName } from '@x86-toolkit/assembler';
 import { X86Allocator } from '../X86Allocator';
 import { X86RegOwnershipTracker } from './X86RegOwnershipTracker';
-import {
-  isAddressOwnership,
-  isRegOwnership,
-  isStackVarOwnership,
-} from './utils';
+import { isLabelOwnership, isRegOwnership, isStackVarOwnership } from './utils';
 
 import { getX86RegByteSize } from '../../constants/regs';
 
@@ -168,7 +164,7 @@ export class X86BasicRegAllocator {
     if (isIRVariable(arg)) {
       const varOwnership = ownership.getVarOwnership(arg.name);
 
-      if (isAddressOwnership(varOwnership)) {
+      if (isLabelOwnership(varOwnership)) {
         const regResult = this.requestReg({
           prefer: preferRegs,
           size,
@@ -184,7 +180,7 @@ export class X86BasicRegAllocator {
         return {
           size,
           value: regResult.value,
-          asm: [genInstruction('mov', regResult.value, varOwnership.address)],
+          asm: [genInstruction('mov', regResult.value, varOwnership.label)],
         };
       }
 
@@ -328,10 +324,14 @@ export class X86BasicRegAllocator {
 
   tryResolveIRArgAsAddr(
     arg: IRVariable,
-    prefixSize: number = arg.type.getByteSize(),
+    {
+      prefixSize = arg.type.getByteSize(),
+    }: {
+      prefixSize?: number;
+    } = {},
   ): IRArgAllocatorResult<string> {
     const varOwnership = this.ownership.getVarOwnership(arg.name);
-    const prefix = getByteSizeArgPrefixName(prefixSize);
+    const prefixSizeName = getByteSizeArgPrefixName(prefixSize);
 
     if (isStackVarOwnership(varOwnership)) {
       const stackAddr = this.stackFrame.getLocalVarStackRelAddress(
@@ -341,15 +341,18 @@ export class X86BasicRegAllocator {
       return {
         asm: [],
         size: prefixSize,
-        value: `${prefix} ${stackAddr}`,
+        value: `${prefixSizeName} ${stackAddr}`,
       };
     }
 
-    if (isAddressOwnership(varOwnership)) {
+    if (isLabelOwnership(varOwnership)) {
       return {
         asm: [],
         size: prefixSize,
-        value: `${prefix} ${varOwnership.address}`,
+        value: genMemAddress({
+          size: prefixSizeName,
+          expression: varOwnership.label,
+        }),
       };
     }
 
@@ -405,7 +408,9 @@ export class X86BasicRegAllocator {
           hasFlag(IRArgDynamicResolverType.REG, allow) &&
           size > argSize
         ) {
-          const extendedResult = this.tryResolveIRArgAsAddr(arg, size);
+          const extendedResult = this.tryResolveIRArgAsAddr(arg, {
+            prefixSize: size,
+          });
           const outputReg = this.requestReg({
             size,
             allowedRegs,

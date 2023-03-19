@@ -87,12 +87,12 @@ describe('Arrays declarations IR', () => {
         # --- Block main ---
         def main():
           a{0}: const int**2B = alloca const int*2B
-          %t{0}: const int*2B = lea c{0}: const int[5]10B
+          %t{0}: const int*2B = lea c{0}: const int[5]*2B
           *(a{0}: const int**2B) = store %t{0}: const int*2B
           ret
           end-def
           # --- Block Data ---
-          c{0}: const int[5]10B = const { 1, 2, 3, 4, 5 }
+          c{0}: const int[5]*2B = const { 1, 2, 3, 4, 5 }
       `);
     });
 
@@ -126,12 +126,12 @@ describe('Arrays declarations IR', () => {
         # --- Block main ---
         def main():
         str{0}: const char**2B = alloca const char*2B
-        %t{0}: const char*2B = lea c{0}: const char[13]13B
+        %t{0}: const char*2B = lea c{0}: const char[13]*2B
         *(str{0}: const char**2B) = store %t{0}: const char*2B
         ret
         end-def
         # --- Block Data ---
-        c{0}: const char[13]13B = const { 72, 101, 108, 108, 111, 32, 119, 111, 114, 108, 100, 33, 0 }
+        c{0}: const char[13]*2B = const { 72, 101, 108, 108, 111, 32, 119, 111, 114, 108, 100, 33, 0 }
       `);
     });
 

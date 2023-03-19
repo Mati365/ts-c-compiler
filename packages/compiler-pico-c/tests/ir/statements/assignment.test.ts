@@ -147,7 +147,7 @@ describe('Assignment IR', () => {
         # --- Block main ---
         def main():
           arr{0}: const int**2B = alloca const int*2B
-          %t{0}: const int*2B = lea c{0}: const int[6]12B
+          %t{0}: const int*2B = lea c{0}: const int[6]*2B
           *(arr{0}: const int**2B) = store %t{0}: const int*2B
           ptr{0}: int**2B = alloca int*2B
           %t{1}: const int*2B = load arr{0}: const int**2B
@@ -155,7 +155,7 @@ describe('Assignment IR', () => {
           ret
           end-def
           # --- Block Data ---
-          c{0}: const int[6]12B = const { 1, 2, 3, 4, 5, 6 }
+          c{0}: const int[6]*2B = const { 1, 2, 3, 4, 5, 6 }
       `);
     });
 
@@ -192,7 +192,7 @@ describe('Assignment IR', () => {
         # --- Block main ---
         def main():
           array{0}: const int**2B = alloca const int*2B
-          %t{0}: const int*2B = lea c{0}: const int[5]10B
+          %t{0}: const int*2B = lea c{0}: const int[5]*2B
           *(array{0}: const int**2B) = store %t{0}: const int*2B
           sum{0}: int*2B = alloca int2B
           %t{1}: const int*2B = load array{0}: const int**2B
@@ -203,7 +203,7 @@ describe('Assignment IR', () => {
           ret
           end-def
           # --- Block Data ---
-          c{0}: const int[5]10B = const { 1, 2, 3, 4, 5 }
+          c{0}: const int[5]*2B = const { 1, 2, 3, 4, 5 }
       `);
     });
 
@@ -217,7 +217,7 @@ describe('Assignment IR', () => {
         # --- Block main ---
         def main():
           array{0}: const int**2B = alloca const int*2B
-          %t{0}: const int*2B = lea c{0}: const int[12]24B
+          %t{0}: const int*2B = lea c{0}: const int[12]*2B
           *(array{0}: const int**2B) = store %t{0}: const int*2B
           sum{0}: int*2B = alloca int2B
           %t{1}: const int*2B = load array{0}: const int**2B
@@ -228,7 +228,7 @@ describe('Assignment IR', () => {
           ret
           end-def
           # --- Block Data ---
-          c{0}: const int[12]24B = const { 1, 2, 3, 4, 5, null, null, null, null, null, null, null }
+          c{0}: const int[12]*2B = const { 1, 2, 3, 4, 5, null, null, null, null, null, null, null }
       `);
     });
 
@@ -242,7 +242,7 @@ describe('Assignment IR', () => {
         # --- Block main ---
         def main():
           array{0}: const int**2B = alloca const int*2B
-          %t{0}: const int*2B = lea c{0}: const int[12]24B
+          %t{0}: const int*2B = lea c{0}: const int[12]*2B
           *(array{0}: const int**2B) = store %t{0}: const int*2B
           sum{0}: int*2B = alloca int2B
           %t{1}: const int*2B = load array{0}: const int**2B
@@ -253,7 +253,7 @@ describe('Assignment IR', () => {
           ret
           end-def
           # --- Block Data ---
-          c{0}: const int[12]24B = const { 1, 2, 3, 4, 5, null, null, null, null, null, null, null }
+          c{0}: const int[12]*2B = const { 1, 2, 3, 4, 5, null, null, null, null, null, null, null }
       `);
     });
 

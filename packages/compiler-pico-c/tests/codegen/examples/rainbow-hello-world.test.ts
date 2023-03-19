@@ -160,7 +160,7 @@ test('Rainbow Hello World', () => {
     mov ax, [bp - 2]
     mov bx, ax                ; swap
     add ax, 1                 ; %t{42}: int2B = %t{40}: int2B plus %1: char1B
-    mov di, @@_c_0_           ; %t{44}: const char*2B = lea c{0}: const char[13]13B
+    mov di, @@_c_0_           ; %t{44}: const char*2B = lea c{0}: const char[13]*2B
     mov word [bp - 4], di     ; *(%t{43}: const char**2B) = store %t{44}: const char*2B
     push word [bp - 4]
     push ax

@@ -125,7 +125,7 @@ describe('Pointer declarations IR', () => {
         # --- Block main ---
         def main():
           arr{0}: const int**2B = alloca const int*2B
-          %t{0}: const int*2B = lea c{0}: const int[6]12B
+          %t{0}: const int*2B = lea c{0}: const int[6]*2B
           *(arr{0}: const int**2B) = store %t{0}: const int*2B
           ptr{0}: int*2B = alloca int2B
           %t{1}: const int*2B = load arr{0}: const int**2B
@@ -134,7 +134,7 @@ describe('Pointer declarations IR', () => {
           ret
           end-def
           # --- Block Data ---
-          c{0}: const int[6]12B = const { 1, 2, 3, 4, 5, 6 }
+          c{0}: const int[6]*2B = const { 1, 2, 3, 4, 5, 6 }
       `);
     });
 
