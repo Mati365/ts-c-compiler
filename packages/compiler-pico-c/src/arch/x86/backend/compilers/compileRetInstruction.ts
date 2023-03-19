@@ -17,7 +17,7 @@ export function compileRetInstruction({
   fnInstruction,
 }: RetInstructionCompilerAttrs) {
   return getX86FnCaller(fnInstruction.type.callConvention).compileIRFnRet({
-    declaration: fnInstruction,
+    declInstruction: fnInstruction,
     retInstruction: instruction,
     context,
   });

@@ -10,13 +10,10 @@ import {
 
 import { X86Allocator } from './X86Allocator';
 import { X86BackendCompilerContext } from '../constants/types';
-import {
-  X86BackendCompiledFunctions,
-  X86FunctionResolver,
-} from './X86FunctionResolver';
 
 import { compileDataSegment, compileInstructionsBlock } from './compilers';
 import { getCompilerArchDescriptor } from '../../../arch';
+import { X86LabelsResolver } from './X86LabelsResolver';
 
 export class X86ArchBackend extends CAbstractArchBackend {
   static readonly arch = CCompilerArch.X86_16;
@@ -24,12 +21,13 @@ export class X86ArchBackend extends CAbstractArchBackend {
 
   compileIR({ segments }: IRScopeGeneratorResult): CBackendCompilerResult {
     const asm: string[] = [`cpu ${X86ArchBackend.cpu}`];
+    const { labelsResolver, asm: dataAsm } = compileDataSegment({
+      segment: segments.data,
+    });
 
     asm.push(
-      ...this.compileIRFunctions(segments.code),
-      ...compileDataSegment({
-        segment: segments.data,
-      }),
+      ...this.compileIRFunctions(labelsResolver, segments.code),
+      ...dataAsm,
     );
 
     return {
@@ -38,16 +36,14 @@ export class X86ArchBackend extends CAbstractArchBackend {
   }
 
   private compileIRFunctions(
+    labelsResolver: X86LabelsResolver,
     codeSegment: IRFlatCodeSegmentBuilderResult,
   ): string[] {
-    const compiledFunctions: X86BackendCompiledFunctions = {};
+    const asm: string[] = [];
 
     for (const [, fn] of Object.entries(codeSegment.functions)) {
-      const { name } = fn.declaration;
-
       const iterator = IRBlockIterator.of(fn.block.instructions);
       const allocator = new X86Allocator(this.config, iterator);
-      const fnResolver = new X86FunctionResolver(compiledFunctions);
 
       const context: X86BackendCompilerContext = {
         arch: X86ArchBackend.arch,
@@ -55,22 +51,11 @@ export class X86ArchBackend extends CAbstractArchBackend {
         codeSegment,
         iterator,
         allocator,
-        fnResolver,
+        labelsResolver,
       };
 
-      compiledFunctions[name] = {
-        ...fn,
-        asm: {
-          code: compileInstructionsBlock({ context }),
-          label: allocator.getLabel(name),
-        },
-      };
+      asm.push(...compileInstructionsBlock({ context }));
     }
-
-    const asm = Object.values(compiledFunctions).reduce((acc, fn) => {
-      acc.push(...fn.asm.code);
-      return acc;
-    }, [] as string[]);
 
     return asm;
   }

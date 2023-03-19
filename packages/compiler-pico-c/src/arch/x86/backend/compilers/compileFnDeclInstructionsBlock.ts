@@ -37,13 +37,13 @@ export function compileFnDeclInstructionsBlock({
   instruction: fnInstruction,
   context,
 }: FnDeclCompilerBlockFnAttrs): X86CompiledBlockOutput {
-  const { allocator, iterator } = context;
+  const { allocator, iterator, labelsResolver } = context;
 
   const compileFnContent: X86StackFrameContentFn = () => {
     const asm: string[] = [];
 
     getX86FnCaller(fnInstruction.type.callConvention).allocIRFnDefArgs({
-      declaration: fnInstruction,
+      declInstruction: fnInstruction,
       context,
     });
 
@@ -135,9 +135,15 @@ export function compileFnDeclInstructionsBlock({
     };
   };
 
+  const { asmLabel } = labelsResolver.createAndPutLabel({
+    name: fnInstruction.name,
+    type: fnInstruction.type,
+    instruction: fnInstruction,
+  });
+
   const asm = [
     genComment(fnInstruction.getDisplayName()),
-    genLabel(allocator.allocLabel('fn', fnInstruction.name), false),
+    genLabel(asmLabel, false),
     ...allocator.allocStackFrameInstructions(compileFnContent),
   ];
 

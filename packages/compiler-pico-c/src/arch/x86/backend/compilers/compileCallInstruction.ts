@@ -1,6 +1,14 @@
-import { IRCallInstruction } from '@compiler/pico-c/frontend/ir/instructions';
-import { X86CompilerInstructionFnAttrs } from '../../constants/types';
+import {
+  IRCallInstruction,
+  isIRFnDeclInstruction,
+} from '@compiler/pico-c/frontend/ir/instructions';
 
+import {
+  CBackendError,
+  CBackendErrorCode,
+} from '@compiler/pico-c/backend/errors/CBackendError';
+
+import { X86CompilerInstructionFnAttrs } from '../../constants/types';
 import { isIRLabel } from '@compiler/pico-c/frontend/ir/variables';
 import { getX86FnCaller } from '../call-conventions';
 
@@ -11,18 +19,23 @@ export function compileCallInstruction({
   instruction,
   context,
 }: CallInstructionCompilerAttrs) {
-  const { fnResolver } = context;
+  const { labelsResolver } = context;
   const { fnPtr } = instruction;
 
-  const target = isIRLabel(fnPtr)
-    ? fnResolver.tryResolveFnBlock(fnPtr.name)
+  const labelResult = isIRLabel(fnPtr)
+    ? labelsResolver.getLabel(fnPtr.name)
     : null;
 
-  const caller = getX86FnCaller(target.declaration.type.callConvention);
+  if (!isIRFnDeclInstruction(labelResult.instruction)) {
+    throw new CBackendError(CBackendErrorCode.CALL_ON_NON_CALLABLE_TYPE);
+  }
+
+  const caller = getX86FnCaller(labelResult.instruction.type.callConvention);
 
   return caller.compileIRFnCall({
     callerInstruction: instruction,
+    declInstruction: labelResult.instruction,
+    address: labelResult.asmLabel,
     context,
-    target,
   });
 }

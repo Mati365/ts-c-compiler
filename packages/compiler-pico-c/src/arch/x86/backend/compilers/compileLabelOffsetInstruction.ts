@@ -9,9 +9,7 @@ export function compileLabelOffsetInstruction({
   context,
 }: LabelOffsetInstructionCompilerAttrs) {
   const { label } = instruction;
-  const { fnResolver } = context;
+  const { labelsResolver } = context;
 
-  setTimeout(() => {
-    console.info('TODO:', fnResolver.tryResolveFnLabel(label.name));
-  }, 0);
+  console.info('xD', labelsResolver.getLabel(label.name));
 }

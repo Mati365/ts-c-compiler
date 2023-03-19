@@ -5,16 +5,16 @@ import {
 } from '@compiler/pico-c/frontend/ir/instructions';
 
 import { X86BackendCompilerContext } from '../../constants/types';
-import { X86BackendCompiledFunction } from '../X86FunctionResolver';
 
 export type X86FnCallerCompilerAttrs = {
+  address: string;
   context: X86BackendCompilerContext;
-  target: X86BackendCompiledFunction;
+  declInstruction: IRFnDeclInstruction;
   callerInstruction: IRCallInstruction;
 };
 
 export type X86FnBasicCompilerAttrs = {
-  declaration: IRFnDeclInstruction;
+  declInstruction: IRFnDeclInstruction;
   context: X86BackendCompilerContext;
 };
 
