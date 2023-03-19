@@ -264,4 +264,27 @@ describe('Global variables declaration', () => {
       @@_c_0_: db 72, 101, 108, 108, 111, 32, 119, 111, 114, 108, 100, 33, 0
     `);
   });
+
+  test('increment global array with struct', () => {
+    expect(/* cpp */ `
+      struct Vec2 { int x, y; };
+      struct Vec2 arr[] = { { .x = 1, .y = 2 }, { .x = 3, .y = 4 }};
+      void main() {
+        arr[0].x++;
+      }
+    `).toCompiledAsmBeEqual(`
+      cpu 386
+      ; def main():
+      @@_fn_main:
+      push bp
+      mov bp, sp
+      mov ax, word [@@_c_0_]    ; %t{1}: int2B = load %t{0}: int*2B
+      add ax, 1                 ; %t{2}: int2B = %t{1}: int2B plus %1: int2B
+      mov word [@@_c_0_], ax    ; *(%t{0}: int*2B) = store %t{2}: int2B
+      mov sp, bp
+      pop bp
+      ret
+      @@_c_0_: dw 1, 2, 3, 4
+    `);
+  });
 });

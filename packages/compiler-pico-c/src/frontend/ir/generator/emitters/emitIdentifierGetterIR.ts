@@ -247,6 +247,10 @@ export function emitIdentifierGetterIR({
               )),
             ),
           );
+        } else {
+          lastIRVar = lastIRVar.ofType(
+            CPointerType.ofType(getTypeAtOffset(lastIRVar.type, 0)),
+          );
         }
 
         return false;
@@ -292,6 +296,10 @@ export function emitIdentifierGetterIR({
                 getTypeAtOffset(lastIRVar.type, offsetConstant.constant),
               )),
             ),
+          );
+        } else {
+          lastIRVar = lastIRVar.ofType(
+            CPointerType.ofType(getTypeAtOffset(lastIRVar.type, 0)),
           );
         }
 

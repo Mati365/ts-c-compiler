@@ -115,7 +115,7 @@ describe('Variable assign', () => {
         mov word [bp - 4], 1      ; *(vec{0}: struct Vec2*2B) = store %1: int2B
         mov word [bp - 2], 3      ; *(vec{0}: struct Vec2*2B + %2) = store %3: int2B
         lea bx, [bp - 4]          ; %t{0}: struct Vec2*2B = lea vec{0}: struct Vec2*2B
-        mov ax, [bx]              ; %t{1}: int2B = load %t{0}: struct Vec2*2B
+        mov ax, [bx]              ; %t{1}: int2B = load %t{0}: int*2B
         add bx, 2                 ; %t{3}: int*2B = %t{0}: struct Vec2*2B plus %2: int2B
         mov cx, [bx]              ; %t{4}: int2B = load %t{3}: int*2B
         add ax, cx                ; %t{5}: int2B = %t{1}: int2B plus %t{4}: int2B
@@ -148,7 +148,7 @@ describe('Variable assign', () => {
         mov cl, [bx]              ; %t{2}: char1B = load %t{1}: char*2B
         add ax, 5                 ; %t{4}: struct Vec2*2B = %t{0}: struct Vec2*2B plus %5: int2B
         mov di, ax
-        mov ax, [di]              ; %t{5}: int2B = load %t{4}: struct Vec2*2B
+        mov ax, [di]              ; %t{5}: int2B = load %t{4}: int*2B
         movzx dx, cl
         add dx, ax                ; %t{6}: int2B = %t{2}: char1B plus %t{5}: int2B
         mov word [bp - 12], dx    ; *(sum{0}: int*2B) = store %t{6}: int2B

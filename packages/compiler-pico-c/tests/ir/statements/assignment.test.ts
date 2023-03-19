@@ -257,6 +257,31 @@ describe('Assignment IR', () => {
       `);
     });
 
+    test('increment struct item in array', () => {
+      expect(/* cpp */ `
+        void main() {
+          struct Vec2 { int x, y; };
+          struct Vec2 arr[] = { { .x = 1, .y = 2 }, { .x = 3, .y = 4 }};
+          arr[1].x++;
+        }
+      `).toCompiledIRBeEqual(/* ruby */ `
+        # --- Block main ---
+        def main():
+        arr{0}: struct Vec2[2]*2B = alloca struct Vec2[2]8B
+        *(arr{0}: struct Vec2[2]*2B) = store %1: int2B
+        *(arr{0}: struct Vec2[2]*2B + %2) = store %2: int2B
+        *(arr{0}: struct Vec2[2]*2B + %4) = store %3: int2B
+        *(arr{0}: struct Vec2[2]*2B + %6) = store %4: int2B
+        %t{0}: struct Vec2*2B = lea arr{0}: struct Vec2[2]*2B
+        %t{1}: struct Vec2*2B = %t{0}: struct Vec2*2B plus %4: int2B
+        %t{2}: int2B = load %t{1}: int*2B
+        %t{3}: int2B = %t{2}: int2B plus %1: int2B
+        *(arr{0}: struct Vec2[2]*2B + %4) = store %t{3}: int2B
+        ret
+        end-def
+      `);
+    });
+
     test('assignment 1-dimension array with structures', () => {
       expect(/* cpp */ `
         void main() {
@@ -272,7 +297,7 @@ describe('Assignment IR', () => {
           sum{0}: int*2B = alloca int2B
           %t{0}: struct Vec2*2B = lea vec{0}: struct Vec2[2]*2B
           %t{1}: struct Vec2*2B = %t{0}: struct Vec2*2B plus %4: int2B
-          %t{2}: int2B = load %t{1}: struct Vec2*2B
+          %t{2}: int2B = load %t{1}: int*2B
           %t{4}: int*2B = %t{0}: struct Vec2*2B plus %2: int2B
           %t{5}: int2B = load %t{4}: int*2B
           %t{6}: int2B = %t{2}: int2B plus %t{5}: int2B
