@@ -1,12 +1,13 @@
 import { TokenType } from '@compiler/lexer/shared';
-import {
-  IRError,
-  IRErrorCode,
-} from '@compiler/pico-c/frontend/ir/errors/IRError';
 
 import type { IRMathSingleArgInstruction } from '@compiler/pico-c/frontend/ir/instructions';
 import type { X86CompilerInstructionFnAttrs } from '../../../constants/types';
+
 import { genInstruction, withInlineComment } from '../../../asm-utils';
+import {
+  CBackendError,
+  CBackendErrorCode,
+} from '@compiler/pico-c/backend/errors/CBackendError';
 
 type MathSingleInstructionCompilerAttrs =
   X86CompilerInstructionFnAttrs<IRMathSingleArgInstruction>;
@@ -38,7 +39,7 @@ export function compileMathSingleInstruction({
       break;
 
     default:
-      throw new IRError(IRErrorCode.UNKNOWN_MATH_OPERATOR);
+      throw new CBackendError(CBackendErrorCode.UNKNOWN_MATH_OPERATOR);
   }
 
   return [

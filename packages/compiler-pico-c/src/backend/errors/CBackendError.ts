@@ -14,6 +14,7 @@ export enum CBackendErrorCode {
   EXPECTED_IR_PTR_BUT_RECEIVE = 'EXPECTED_IR_PTR_BUT_RECEIVE',
   INCORRECT_MEMCPY_ARGS = 'INCORRECT_MEMCPY_ARGS',
   CALL_ON_NON_CALLABLE_TYPE = 'CALL_ON_NON_CALLABLE_TYPE',
+  UNKNOWN_MATH_OPERATOR = 'UNKNOWN_MATH_OPERATOR',
 }
 
 export const C_BACKEND_ERROR_TRANSLATIONS: Record<CBackendErrorCode, string> = {
@@ -43,6 +44,7 @@ export const C_BACKEND_ERROR_TRANSLATIONS: Record<CBackendErrorCode, string> = {
   [CBackendErrorCode.CALL_ON_NON_CALLABLE_TYPE]: fixme(
     'Call on non callable type!',
   ),
+  [CBackendErrorCode.UNKNOWN_MATH_OPERATOR]: 'Unknown math operator!',
 };
 
 /**

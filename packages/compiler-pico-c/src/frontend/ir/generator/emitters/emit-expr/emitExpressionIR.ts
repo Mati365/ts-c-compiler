@@ -306,11 +306,11 @@ export function emitExpressionIR({
               CPointerType.ofType(srcGlobalVar.type),
             );
 
-            const tmpOutputVar = allocNextVariable(srcGlobalVar.type);
-
             instructions.push(
-              new IRLabelOffsetInstruction(IRLabel.ofName(name), tmpAddressVar),
-              new IRLoadInstruction(tmpAddressVar, tmpOutputVar),
+              new IRLabelOffsetInstruction(
+                IRLabel.ofName(srcGlobalVar.name),
+                tmpAddressVar,
+              ),
             );
           } else if (srcFn) {
             const tmpVar = allocNextVariable(CPointerType.ofType(srcFn.type));

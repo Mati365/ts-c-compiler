@@ -66,7 +66,7 @@ export function emitIdentifierGetterIR({
   context,
   node,
 }: LvalueExpressionIREmitAttrs): LvalueExpressionIREmitResult {
-  const { allocator, config, emit } = context;
+  const { allocator, config, emit, globalVariables } = context;
   const { instructions, data } = createBlankExprResult();
 
   let rootIRVar: IRVariable;
@@ -168,6 +168,17 @@ export function emitIdentifierGetterIR({
             instructions.push(
               new IRLabelOffsetInstruction(
                 IRLabel.ofName(irFunction.name),
+                lastIRVar,
+              ),
+            );
+          } else if (globalVariables.hasVariable(name)) {
+            const irVariable = globalVariables.getVariable(name);
+
+            // emits LEA for global label
+            lastIRVar = allocator.allocAddressVariable(irVariable.type);
+            instructions.push(
+              new IRLabelOffsetInstruction(
+                IRLabel.ofName(irVariable.name),
                 lastIRVar,
               ),
             );

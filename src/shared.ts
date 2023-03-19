@@ -4,12 +4,7 @@
 export const MOCK_C_FILE = /* c */ `
   int j;
 
-  void calc() {
-
-  }
-
   void main() {
-    int k = 2;
-    calc();
+    j = 8;
   }
 `;

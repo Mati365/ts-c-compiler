@@ -26,7 +26,11 @@ import {
 import { X86RegName } from '@x86-toolkit/assembler';
 import { X86Allocator } from '../X86Allocator';
 import { X86RegOwnershipTracker } from './X86RegOwnershipTracker';
-import { isRegOwnership, isStackVarOwnership } from './utils';
+import {
+  isAddressOwnership,
+  isRegOwnership,
+  isStackVarOwnership,
+} from './utils';
 
 import { getX86RegByteSize } from '../../constants/regs';
 
@@ -163,6 +167,26 @@ export class X86BasicRegAllocator {
 
     if (isIRVariable(arg)) {
       const varOwnership = ownership.getVarOwnership(arg.name);
+
+      if (isAddressOwnership(varOwnership)) {
+        const regResult = this.requestReg({
+          prefer: preferRegs,
+          size,
+          allowedRegs,
+        });
+
+        if (!noOwnership) {
+          ownership.setOwnership(arg.name, {
+            reg: regResult.value,
+          });
+        }
+
+        return {
+          size,
+          value: regResult.value,
+          asm: [genInstruction('mov', regResult.value, varOwnership.address)],
+        };
+      }
 
       if (isRegOwnership(varOwnership)) {
         const varOwnershipRegSize = getX86RegByteSize(varOwnership.reg);
@@ -307,21 +331,29 @@ export class X86BasicRegAllocator {
     prefixSize: number = arg.type.getByteSize(),
   ): IRArgAllocatorResult<string> {
     const varOwnership = this.ownership.getVarOwnership(arg.name);
-    if (!isStackVarOwnership(varOwnership)) {
-      return null;
-    }
-
-    const stackAddr = this.stackFrame.getLocalVarStackRelAddress(
-      varOwnership.stackVar.name,
-    );
-
     const prefix = getByteSizeArgPrefixName(prefixSize);
 
-    return {
-      asm: [],
-      size: prefixSize,
-      value: `${prefix} ${stackAddr}`,
-    };
+    if (isStackVarOwnership(varOwnership)) {
+      const stackAddr = this.stackFrame.getLocalVarStackRelAddress(
+        varOwnership.stackVar.name,
+      );
+
+      return {
+        asm: [],
+        size: prefixSize,
+        value: `${prefix} ${stackAddr}`,
+      };
+    }
+
+    if (isAddressOwnership(varOwnership)) {
+      return {
+        asm: [],
+        size: prefixSize,
+        value: `${prefix} ${varOwnership.address}`,
+      };
+    }
+
+    return null;
   }
 
   tryResolveIrArg({

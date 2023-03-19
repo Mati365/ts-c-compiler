@@ -7,12 +7,7 @@ import {
 } from '@compiler/pico-c/backend/errors/CBackendError';
 
 import { getBiggerIRArg } from '@compiler/pico-c/frontend/ir/utils';
-
 import { CMathOperator } from '@compiler/pico-c/constants';
-import {
-  IRError,
-  IRErrorCode,
-} from '@compiler/pico-c/frontend/ir/errors/IRError';
 
 import { IRArgDynamicResolverType } from '../../reg-allocator';
 import { X86CompilerInstructionFnAttrs } from '../../../constants/types';
@@ -150,7 +145,7 @@ export function compileMathInstruction({
           );
         }
       } else {
-        throw new IRError(IRErrorCode.UNKNOWN_MATH_OPERATOR);
+        throw new CBackendError(CBackendErrorCode.UNKNOWN_MATH_OPERATOR);
       }
 
       return [
