@@ -8,7 +8,10 @@ import {
   CTypeCheckErrorCode,
 } from '../../../errors/CTypeCheckError';
 
-import { extractSpecifierType } from '../extractor';
+import {
+  extractSpecifierType,
+  extractNamedEntryFromDeclarator,
+} from '../extractor';
 
 export class ASTCCastExpressionTypeCreator extends ASTCTypeCreator<ASTCCastExpression> {
   kind = ASTCCompilerKind.CastExpression;
@@ -17,9 +20,15 @@ export class ASTCCastExpressionTypeCreator extends ASTCTypeCreator<ASTCCastExpre
     const { context } = this;
     const { typeName, expression } = node;
 
-    const castedType = extractSpecifierType({
+    const { type: castedType } = extractNamedEntryFromDeclarator({
       context,
-      specifier: typeName.specifierList,
+      declarator: typeName.abstractDeclarator,
+      canBeAnonymous: true,
+      skipFnExpressions: true,
+      type: extractSpecifierType({
+        context,
+        specifier: typeName.specifierList,
+      }),
     });
 
     if (!castedType?.isScalar()) {

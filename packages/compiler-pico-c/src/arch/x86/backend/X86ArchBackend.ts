@@ -30,6 +30,8 @@ export class X86ArchBackend extends CAbstractArchBackend {
       ...dataAsm,
     );
 
+    console.info(asm.join('\n'));
+
     return {
       asm: asm.join('\n'),
     };

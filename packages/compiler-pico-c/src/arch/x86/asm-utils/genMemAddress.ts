@@ -3,7 +3,7 @@ import {
   InstructionArgSizeName,
 } from '@x86-toolkit/assembler';
 
-type GenMemAddressConfig = {
+export type GenMemAddressConfig = {
   size?: InstructionArgSizeName;
   segment?: X86SegmentRegName;
   expression: string;

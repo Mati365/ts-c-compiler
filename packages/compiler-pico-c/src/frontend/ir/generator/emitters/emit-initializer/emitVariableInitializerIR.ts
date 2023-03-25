@@ -1,11 +1,8 @@
-import { checkLeftTypeOverlapping } from '@compiler/pico-c/frontend/analyze/checker';
-
 import {
   CArrayType,
   CPointerType,
   CVariable,
-  isArrayLikeType,
-  isPointerLikeType,
+  isStringLiteralTypeInitializer,
 } from '@compiler/pico-c/frontend/analyze';
 
 import { IRVariable } from '../../../variables';
@@ -50,23 +47,12 @@ export function emitVariableInitializerIR({
   const { type, initializer } = variable;
 
   if (variable.isInitialized()) {
-    const isArrayType = isArrayLikeType(type);
-    const isStringPtr =
-      isPointerLikeType(type) &&
-      checkLeftTypeOverlapping(type, CArrayType.ofStringLiteral(config.arch), {
-        implicitCast: false,
-        ignoreConstChecks: true,
-      });
-
     // string pointer is an special case
     // in that kind of array we allocate only one item on stack
     // so any string literal that is longer than one character must be allocated in data segment
     // it is not possible to alloc any other type in similar way
     if (
-      (isStringPtr || isArrayType) &&
-      (!isArrayType || type.getSourceType().isConst()) &&
-      initializer.hasOnlyConstantExpressions() &&
-      initializer.getInitializedFieldsCount() > (isStringPtr ? 1 : 3)
+      isStringLiteralTypeInitializer({ type, arch: config.arch, initializer })
     ) {
       // initializer with const expressions
       const arrayPtrType = CPointerType.ofArray(<CArrayType>type);

@@ -2,6 +2,8 @@ import {
   CPrimitiveType,
   CScopeTree,
   CVariableInitializerTree,
+  isPointerLikeType,
+  isStringLiteralTypeInitializer,
 } from '@compiler/pico-c/frontend/analyze';
 
 import { IRDefDataInstruction, type IRInstruction } from '../../instructions';
@@ -22,13 +24,20 @@ export function emitGlobalDeclarationsIR({
   const scopeGlobals = globalScope.getGlobalVariables();
 
   for (const [originalVarName, variable] of Object.entries(scopeGlobals)) {
-    const tmpOutputVar = allocator.allocDataVariable(variable.type);
+    let tmpOutputVar = allocator.allocDataVariable(variable.type);
     const initializer =
       variable.initializer ??
       CVariableInitializerTree.ofByteArray({
         baseType: CPrimitiveType.char(arch),
         length: variable.type.getByteSize(),
       });
+
+    if (
+      isPointerLikeType(variable.type) &&
+      isStringLiteralTypeInitializer({ type: variable.type, initializer, arch })
+    ) {
+      tmpOutputVar = tmpOutputVar.ofVirtualArrayPtr();
+    }
 
     instructions.push(new IRDefDataInstruction(initializer, tmpOutputVar));
     globalVariables.putVariable(originalVarName, tmpOutputVar);

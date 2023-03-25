@@ -14,6 +14,7 @@ import {
   CONST_VAR_PREFIX,
   TMP_FN_RETURN_VAR_PREFIX,
   TMP_VAR_PREFIX,
+  isIRVariable,
 } from '../variables';
 
 import { IRGeneratorConfig } from '../constants';
@@ -147,28 +148,31 @@ export class IRVariableAllocator {
    * Alloc variable used for example for ptr compute
    */
   allocTmpVariable(
-    type: CType,
+    typeOrVar: CType | IRVariable,
     prefix: string = TMP_VAR_PREFIX,
     initializer?: IRVariableInitializerFn,
   ): IRVariable {
     const { parent } = this;
     if (parent) {
-      return parent.allocTmpVariable(type, prefix);
+      return parent.allocTmpVariable(typeOrVar, prefix);
     }
 
+    const extractedType = isIRVariable(typeOrVar) ? typeOrVar.type : typeOrVar;
     const tmpVar =
       this.getVariable(prefix) ??
       new IRVariable({
         temp: true,
         suffix: -1,
         prefix,
-        type,
+        type: extractedType,
       });
 
-    return this.allocVariable(
-      tmpVar.ofType(type).ofIncrementedSuffix(),
-      initializer,
-    );
+    let generatedVar = tmpVar.ofType(extractedType).ofIncrementedSuffix();
+    if (isIRVariable(typeOrVar) && typeOrVar.virtualArrayPtr) {
+      generatedVar = generatedVar.ofVirtualArrayPtr();
+    }
+
+    return this.allocVariable(generatedVar, initializer);
   }
 
   /**

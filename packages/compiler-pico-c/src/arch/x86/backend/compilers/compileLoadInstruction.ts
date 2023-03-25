@@ -30,6 +30,7 @@ export function compileLoadInstruction({
     const input = regs.tryResolveIrArg({
       arg: inputVar,
       allowedRegs: regs.ownership.getAvailableRegs().addressing,
+      forceLabelMemPtr: true,
     });
 
     if (!isPointerLikeType(inputVar.type)) {

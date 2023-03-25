@@ -13,13 +13,14 @@ import {
   isIRVariable,
 } from '@compiler/pico-c/frontend/ir/variables';
 
-import {
-  isPointerLikeType,
-  isStructLikeType,
-} from '@compiler/pico-c/frontend/analyze';
+import { isStructLikeType } from '@compiler/pico-c/frontend/analyze';
 
 import { getByteSizeArgPrefixName } from '@x86-toolkit/assembler/parser/utils';
-import { genInstruction, genMemAddress } from '../../asm-utils';
+import {
+  genInstruction,
+  genMemAddress,
+  GenMemAddressConfig,
+} from '../../asm-utils';
 import {
   queryAndMarkX86RegsMap,
   queryX86RegsMap,
@@ -30,10 +31,13 @@ import {
 import { X86RegName } from '@x86-toolkit/assembler';
 import { X86Allocator } from '../X86Allocator';
 import { X86RegOwnershipTracker } from './X86RegOwnershipTracker';
-import { isLabelOwnership, isRegOwnership, isStackVarOwnership } from './utils';
-
+import {
+  IRLabelVarOwnership,
+  isLabelOwnership,
+  isRegOwnership,
+  isStackVarOwnership,
+} from './utils';
 import { getX86RegByteSize } from '../../constants/regs';
-import { isImplicitPtrType } from '@compiler/pico-c/frontend/analyze/types/utils';
 
 export type IRArgAllocatorResult<V extends string | number = string | number> =
   {
@@ -69,11 +73,12 @@ export type IRArgRegResolverAttrs = {
   preferRegs?: X86RegName[];
   allowedRegs?: X86RegName[];
   noOwnership?: boolean;
+  forceLabelMemPtr?: boolean;
 };
 
 export type IRArgDynamicResolverAttrs = Pick<
   IRArgRegResolverAttrs,
-  'arg' | 'size' | 'allowedRegs' | 'noOwnership'
+  'arg' | 'size' | 'allowedRegs' | 'noOwnership' | 'forceLabelMemPtr'
 > & {
   allow?: IRArgDynamicResolverType;
 };
@@ -98,15 +103,19 @@ export class X86BasicRegAllocator {
     return this.allocator.stackFrame;
   }
 
-  tryResolveIRArgAsReg({
-    arg,
-    size = arg.type.getByteSize(),
-    preferRegs,
-    allowedRegs,
-    allocIfNotFound,
-    noOwnership,
-  }: IRArgRegResolverAttrs): IRArgAllocatorResult<X86RegName> {
+  tryResolveIRArgAsReg(
+    attrs: IRArgRegResolverAttrs,
+  ): IRArgAllocatorResult<X86RegName> {
     const { stackFrame, ownership } = this;
+    const {
+      arg,
+      size = arg.type.getByteSize(),
+      forceLabelMemPtr,
+      preferRegs,
+      allowedRegs,
+      allocIfNotFound,
+      noOwnership,
+    } = attrs;
 
     const regsParts = ownership.getAvailableRegs().general.parts;
     const requestArgSizeDelta = size - arg.type.getByteSize();
@@ -182,10 +191,14 @@ export class X86BasicRegAllocator {
           });
         }
 
+        const address = this.tryResolveLabelOwnershipAddr(varOwnership, {
+          forceMemPtr: forceLabelMemPtr,
+        });
+
         return {
           size,
           value: regResult.value,
-          asm: [genInstruction('mov', regResult.value, varOwnership.label)],
+          asm: [genInstruction('mov', regResult.value, address)],
         };
       }
 
@@ -327,12 +340,27 @@ export class X86BasicRegAllocator {
     return null;
   }
 
+  tryResolveLabelOwnershipAddr(
+    ownership: IRLabelVarOwnership,
+    addrConfig?: Omit<GenMemAddressConfig, 'expression'> & {
+      forceMemPtr?: boolean;
+    },
+  ) {
+    const { asmLabel, arrayPtr } = ownership;
+
+    return arrayPtr && !addrConfig?.forceMemPtr
+      ? asmLabel
+      : genMemAddress({ expression: asmLabel, ...addrConfig });
+  }
+
   tryResolveIRArgAsAddr(
     arg: IRVariable,
     {
       prefixSize = arg.type.getByteSize(),
+      forceLabelMemPtr,
     }: {
       prefixSize?: number;
+      forceLabelMemPtr?: boolean;
     } = {},
   ): IRArgAllocatorResult<string> {
     const varOwnership = this.ownership.getVarOwnership(arg.name);
@@ -351,36 +379,31 @@ export class X86BasicRegAllocator {
     }
 
     if (isLabelOwnership(varOwnership)) {
-      let labelAddr = varOwnership.label;
-
-      if (
-        isPointerLikeType(arg.type) &&
-        !isPointerLikeType(arg.type.baseType) &&
-        !isImplicitPtrType(arg.type.baseType)
-      ) {
-        labelAddr = genMemAddress({
-          expression: labelAddr,
-          size: prefixSizeName,
-        });
-      }
-
       return {
         asm: [],
         size: prefixSize,
-        value: labelAddr,
+        value: this.tryResolveLabelOwnershipAddr(varOwnership, {
+          size: prefixSizeName,
+          forceMemPtr: forceLabelMemPtr,
+        }),
       };
     }
 
     return null;
   }
 
-  tryResolveIrArg({
-    arg,
-    allowedRegs,
-    noOwnership,
-    size = arg.type.getByteSize(),
-    allow = ALLOW_ALL_ARG_RESOLVER_METHODS,
-  }: IRArgDynamicResolverAttrs): IRDynamicArgAllocatorResult {
+  tryResolveIrArg(
+    attrs: IRArgDynamicResolverAttrs,
+  ): IRDynamicArgAllocatorResult {
+    const {
+      arg,
+      allowedRegs,
+      noOwnership,
+      forceLabelMemPtr,
+      size = arg.type.getByteSize(),
+      allow = ALLOW_ALL_ARG_RESOLVER_METHODS,
+    } = attrs;
+
     const argSize = arg.type.getByteSize();
 
     if (hasFlag(IRArgDynamicResolverType.NUMBER, allow) && isIRConstant(arg)) {
@@ -403,12 +426,15 @@ export class X86BasicRegAllocator {
             size,
             allowedRegs,
             noOwnership,
+            forceLabelMemPtr,
           }),
         };
       }
 
       if (hasFlag(IRArgDynamicResolverType.MEM, allow)) {
-        const result = this.tryResolveIRArgAsAddr(arg);
+        const result = this.tryResolveIRArgAsAddr(arg, {
+          forceLabelMemPtr,
+        });
 
         // handle case when we want to load word but type at the address is byte
         // example:
@@ -425,7 +451,9 @@ export class X86BasicRegAllocator {
         ) {
           const extendedResult = this.tryResolveIRArgAsAddr(arg, {
             prefixSize: size,
+            forceLabelMemPtr,
           });
+
           const outputReg = this.requestReg({
             size,
             allowedRegs,
@@ -463,6 +491,7 @@ export class X86BasicRegAllocator {
         size,
         allowedRegs,
         noOwnership,
+        forceLabelMemPtr,
       });
 
       if (result) {

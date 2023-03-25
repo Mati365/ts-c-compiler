@@ -13,12 +13,15 @@ import {
   CRelOperator,
   CUnaryCastOperator,
 } from '@compiler/pico-c/constants';
+
+import { getBaseTypeIfPtr } from '@compiler/pico-c/frontend/analyze/types/utils';
 import {
   CPointerType,
   CPrimitiveType,
   CType,
   CVariable,
   CVariableInitializerTree,
+  isArrayLikeType,
   isPointerArithmeticType,
   isPointerLikeType,
   isStructLikeType,
@@ -90,7 +93,7 @@ export function emitExpressionIR({
     return variable;
   };
 
-  const allocNextVariable = (nextType: CType = node.type) =>
+  const allocNextVariable = (nextType: CType | IRVariable = node.type) =>
     pushNextVariable(allocator.allocTmpVariable(nextType));
 
   const emitExprResultToStack = (exprResult: IREmitterExpressionResult) => {
@@ -302,16 +305,25 @@ export function emitExpressionIR({
           const srcVar = allocator.getVariable(name);
 
           if (srcGlobalVar) {
-            const tmpAddressVar = allocNextVariable(srcGlobalVar.type);
-            const tmpDestVar = allocNextVariable(srcGlobalVar.type);
+            const tmpAddressVar = allocNextVariable(srcGlobalVar);
 
             instructions.push(
               new IRLabelOffsetInstruction(
                 IRLabel.ofName(srcGlobalVar.name),
                 tmpAddressVar,
               ),
-              new IRLoadInstruction(tmpAddressVar, tmpDestVar),
             );
+
+            if (
+              !isArrayLikeType(getBaseTypeIfPtr(srcGlobalVar.type)) &&
+              !srcGlobalVar.virtualArrayPtr
+            ) {
+              const tmpDestVar = allocNextVariable(srcGlobalVar.type);
+
+              instructions.push(
+                new IRLoadInstruction(tmpAddressVar, tmpDestVar),
+              );
+            }
           } else if (srcFn) {
             const tmpVar = allocNextVariable(CPointerType.ofType(srcFn.type));
 

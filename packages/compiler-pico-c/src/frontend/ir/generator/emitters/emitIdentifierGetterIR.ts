@@ -172,8 +172,8 @@ export function emitIdentifierGetterIR({
           } else if (globalVariables.hasVariable(name)) {
             const irVariable = globalVariables.getVariable(name);
 
-            // emits LEA for global label
-            lastIRVar = allocator.allocTmpVariable(irVariable.type);
+            // emits for global label
+            lastIRVar = allocator.allocTmpVariable(irVariable);
             instructions.push(
               new IRLabelOffsetInstruction(
                 IRLabel.ofName(irVariable.name),

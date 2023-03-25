@@ -11,7 +11,8 @@ export type IRStackVarOwnership = {
 };
 
 export type IRLabelVarOwnership = {
-  label: string;
+  asmLabel: string;
+  arrayPtr: boolean;
 };
 
 export type IROwnershipValue =
@@ -36,5 +37,5 @@ export function isRegOwnership(
 export function isLabelOwnership(
   ownership: IROwnershipValue,
 ): ownership is IRLabelVarOwnership {
-  return !!ownership && 'label' in ownership;
+  return !!ownership && 'asmLabel' in ownership;
 }

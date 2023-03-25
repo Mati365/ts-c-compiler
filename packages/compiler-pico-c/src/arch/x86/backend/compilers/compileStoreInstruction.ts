@@ -42,7 +42,9 @@ export function compileStoreInstruction({
     //  *(%t{4}: struct Vec2*2B) = store %5: char1B
     //  in this case size should be loaded from left side and it should
     //  respect offset size of struct entry (for example `x` might have 1B size)
-    const memPtrAddr = regs.tryResolveIRArgAsAddr(outputVar);
+    const memPtrAddr = regs.tryResolveIRArgAsAddr(outputVar, {
+      forceLabelMemPtr: true,
+    });
 
     if (memPtrAddr) {
       // handle case: %t{1}: const char**2B = alloca const char*2B

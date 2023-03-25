@@ -1,15 +1,16 @@
+// todo: Add resolve as label (see "read array ptr to variable", there should not be `mov`)
+// todo: Peephole optimization in global variables
 // todo: Add ternary
-// todo: Add global variables
 // todo: Fix calling fn with copy of struct
 export const MOCK_C_FILE = /* c */ `
-  struct Vec2 {
-    int x, y;
-  };
+  const char* HELLO_WORLD = "Hello world!";
 
-  struct Vec2 arr[] = { { .x = 1, .y = 2 }, { .x = 3, .y = 4 }};
+  int strlen(const char* str) {
+    return -1;
+  }
 
   void main() {
-    arr[0].x++;
-    arr[1].x++;
+    const char* str = HELLO_WORLD;
+    int k = strlen(str);
   }
 `;

@@ -5,11 +5,13 @@ import {
   IsWalkableNode,
 } from '@compiler/grammar/tree/AbstractTreeVisitor';
 
+import { isImplicitPtrType } from '../../types/utils';
 import {
   isArrayLikeType,
   isPointerLikeType,
   isStructLikeType,
 } from '../../types';
+
 import { ASTCCompilerNode } from '../../../parser/ast/ASTCCompilerNode';
 import { CType } from '../../types/CType';
 
@@ -110,6 +112,16 @@ export class CVariableInitializerTree<
 
   walk(visitor: AbstractTreeVisitor<any>): void {
     this._fields.forEach(visitor.visit.bind(visitor));
+  }
+
+  isNonArrayInitializer() {
+    const { baseType } = this;
+
+    return (
+      isPointerLikeType(baseType) &&
+      !isImplicitPtrType(baseType.baseType) &&
+      this.getInitializedFieldsCount() === 1
+    );
   }
 
   hasOnlyConstantExpressions() {

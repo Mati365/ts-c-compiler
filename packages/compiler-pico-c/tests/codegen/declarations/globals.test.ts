@@ -77,6 +77,30 @@ describe('Global variables declaration', () => {
     `);
   });
 
+  test('read array ptr to variable', () => {
+    expect(/* cpp */ `
+      const int[] arr = { 1, 2, 3 };
+
+      void main() {
+        int* c = arr;
+      }
+    `).toCompiledAsmBeEqual(`
+      cpu 386
+      ; def main():
+      @@_fn_main:
+      push bp
+      mov bp, sp
+      sub sp, 2
+      mov ax, @@_c_0_
+      mov word [bp - 2], ax     ; *(c{1}: int**2B) = store %t{0}: const int[3]*2B
+      mov sp, bp
+      pop bp
+      ret
+
+      @@_c_0_: dw 1, 2, 3
+    `);
+  });
+
   test('advanced global variables arithmetic', () => {
     expect(/* cpp */ `
       int j[] = { 1, 2, 3 };
@@ -127,88 +151,11 @@ describe('Global variables declaration', () => {
     `);
   });
 
-  test('passing implicit pointers as globals to function', () => {
-    expect(/* cpp */ `
-      const char* HELLO_WORLD = "Hello world!";
-      const char HELLO_WORLD2[] = "Hello world2!";
-
-      int strlen(const char* str) {
-        for (int i = 0;;++i) {
-          if (*(str + i) == 0) {
-            return i;
-          }
-        }
-
-        return -1;
-      }
-
-      void main() {
-        int length = strlen(HELLO_WORLD);
-        int length2 = strlen(HELLO_WORLD2);
-      }
-    `).toCompiledAsmBeEqual(`
-      cpu 386
-      ; def strlen(str{0}: const char**2B): [ret: int2B]
-      @@_fn_strlen:
-      push bp
-      mov bp, sp
-      sub sp, 2
-      mov word [bp - 2], 0      ; *(i{0}: int*2B) = store %0: int2B
-      @@_L1:
-      mov bx, [bp + 4]          ; %t{2}: const char*2B = load str{0}: const char**2B
-      add bx, word [bp - 2]     ; %t{4}: const char*2B = %t{2}: const char*2B plus %t{3}: int2B
-      mov al, [bx]              ; %t{5}: const char1B = load %t{4}: const char*2B
-      cmp al, 0                 ; %t{6}: i1:zf = icmp %t{5}: const char1B equal %0: char1B
-      jnz @@_L4                 ; br %t{6}: i1:zf, false: L4
-      @@_L5:
-      mov ax, [bp - 2]
-      mov sp, bp
-      pop bp
-      ret 2
-      @@_L4:
-      mov ax, [bp - 2]
-      add ax, 1                 ; %t{1}: int2B = %t{0}: int2B plus %1: int2B
-      mov word [bp - 2], ax     ; *(i{0}: int*2B) = store %t{1}: int2B
-      jmp @@_L1                 ; jmp L1
-      @@_L3:
-      mov ax, word -1
-      mov sp, bp
-      pop bp
-      ret 2
-
-      ; def main():
-      @@_fn_main:
-      push bp
-      mov bp, sp
-      sub sp, 4
-      mov ax, @@_c_0_           ; %t{11}: const char**2B = load %t{10}: const char**2B
-      push ax
-      call @@_fn_strlen
-      mov word [bp - 2], ax     ; *(length{0}: int*2B) = store %t{12}: int2B
-      mov bx, @@_c_1_           ; %t{15}: const char[14]*2B = load %t{14}: const char[14]*2B
-      push bx
-      call @@_fn_strlen
-      mov word [bp - 4], ax     ; *(length2{0}: int*2B) = store %t{16}: int2B
-      mov sp, bp
-      pop bp
-      ret
-
-      @@_c_0_: db 72, 101, 108, 108, 111, 32, 119, 111, 114, 108, 100, 33, 0
-      @@_c_1_: db 72, 101, 108, 108, 111, 32, 119, 111, 114, 108, 100, 50, 33, 0
-    `);
-  });
-
   test('assign implicit ptr to variable and strlen', () => {
     expect(/* cpp */ `
       const char* HELLO_WORLD = "Hello world!";
 
       int strlen(const char* str) {
-        for (int i = 0;;++i) {
-          if (*(str + i) == 0) {
-            return i;
-          }
-        }
-
         return -1;
       }
 
@@ -222,25 +169,6 @@ describe('Global variables declaration', () => {
       @@_fn_strlen:
       push bp
       mov bp, sp
-      sub sp, 2
-      mov word [bp - 2], 0      ; *(i{0}: int*2B) = store %0: int2B
-      @@_L1:
-      mov bx, [bp + 4]          ; %t{2}: const char*2B = load str{0}: const char**2B
-      add bx, word [bp - 2]     ; %t{4}: const char*2B = %t{2}: const char*2B plus %t{3}: int2B
-      mov al, [bx]              ; %t{5}: const char1B = load %t{4}: const char*2B
-      cmp al, 0                 ; %t{6}: i1:zf = icmp %t{5}: const char1B equal %0: char1B
-      jnz @@_L4                 ; br %t{6}: i1:zf, false: L4
-      @@_L5:
-      mov ax, [bp - 2]
-      mov sp, bp
-      pop bp
-      ret 2
-      @@_L4:
-      mov ax, [bp - 2]
-      add ax, 1                 ; %t{1}: int2B = %t{0}: int2B plus %1: int2B
-      mov word [bp - 2], ax     ; *(i{0}: int*2B) = store %t{1}: int2B
-      jmp @@_L1                 ; jmp L1
-      @@_L3:
       mov ax, word -1
       mov sp, bp
       pop bp
@@ -251,17 +179,18 @@ describe('Global variables declaration', () => {
       push bp
       mov bp, sp
       sub sp, 4
-      mov ax, @@_c_0_           ; %t{10}: const char**2B = load %t{9}: const char**2B
-      mov word [bp - 2], ax     ; *(str{1}: const char**2B) = store %t{10}: const char**2B
-      mov bx, [bp - 2]          ; %t{12}: const char*2B = load str{1}: const char**2B
+      mov ax, [@@_c_0_]
+      mov word [bp - 2], ax     ; *(str{1}: const char**2B) = store %t{1}: const char**2B
+      mov bx, [bp - 2]          ; %t{3}: const char*2B = load str{1}: const char**2B
       push bx
       call @@_fn_strlen
-      mov word [bp - 4], ax     ; *(k{0}: int*2B) = store %t{13}: int2B
+      mov word [bp - 4], ax     ; *(k{0}: int*2B) = store %t{4}: int2B
       mov sp, bp
       pop bp
       ret
 
-      @@_c_0_: db 72, 101, 108, 108, 111, 32, 119, 111, 114, 108, 100, 33, 0
+      @@_c_0_@allocated: db 72, 101, 108, 108, 111, 32, 119, 111, 114, 108, 100, 33, 0
+      @@_c_0_: dw @@_c_0_@allocated
     `);
   });
 
@@ -285,6 +214,102 @@ describe('Global variables declaration', () => {
       pop bp
       ret
       @@_c_0_: dw 1, 2, 3, 4
+    `);
+  });
+
+  test('initialize pointer with constant variable', () => {
+    expect(/* cpp */ `
+      const char* VRAM_ADDR = (char*) 0xB800;
+      const char ptr[] = { 1, 2 };
+
+      void main() {
+        char* ptr2 = VRAM_ADDR;
+      }
+    `).toCompiledAsmBeEqual(`
+      cpu 386
+      ; def main():
+      @@_fn_main:
+      push bp
+      mov bp, sp
+      sub sp, 2
+      mov ax, word [@@_c_0_]    ; %t{1}: const char**2B = load %t{0}: const char**2B
+      mov word [bp - 2], ax     ; *(ptr2{0}: char**2B) = store %t{1}: const char**2B
+      mov sp, bp
+      pop bp
+      ret
+      @@_c_0_: dw 47104
+      @@_c_1_: db 1, 2
+    `);
+  });
+
+  test('initialize with asm tag', () => {
+    expect(/* cpp */ `
+      const char* VRAM_ADDR = (char*) 0xB800;
+
+      void main() {
+        asm(
+          "mov gs, %[vram]\n"
+          :: [vram] "r" (VRAM_ADDR)
+          :"ax"
+        );
+      }
+    `).toCompiledAsmBeEqual(`
+      cpu 386
+      ; def main():
+      @@_fn_main:
+      push bp
+      mov bp, sp
+      mov ax, word [@@_c_0_]    ; %t{1}: const char**2B = load %t{0}: const char**2B
+      mov gs, ax
+      mov sp, bp
+      pop bp
+      ret
+      @@_c_0_: dw 47104
+    `);
+  });
+
+  test('call with string literal virtual array', () => {
+    expect(/* cpp */ `
+      const char* HELLO_WORLD = "Hello world!";
+      const char HELLO_WORLD2[] = "Hello world2!";
+
+      int strlen(const char* str) {
+        return -1;
+      }
+
+      void main() {
+        int length = strlen(HELLO_WORLD);
+        int length2 = strlen(HELLO_WORLD2);
+      }
+    `).toCompiledAsmBeEqual(`
+      cpu 386
+      ; def strlen(str{0}: const char**2B): [ret: int2B]
+      @@_fn_strlen:
+      push bp
+      mov bp, sp
+      mov ax, word -1
+      mov sp, bp
+      pop bp
+      ret 2
+
+      ; def main():
+      @@_fn_main:
+      push bp
+      mov bp, sp
+      sub sp, 4
+      push word [@@_c_0_]
+      call @@_fn_strlen
+      mov word [bp - 2], ax     ; *(length{0}: int*2B) = store %t{3}: int2B
+      push @@_c_1_
+      call @@_fn_strlen
+      mov word [bp - 4], ax     ; *(length2{0}: int*2B) = store %t{6}: int2B
+      mov sp, bp
+      pop bp
+      ret
+
+      @@_c_0_@allocated: db 72, 101, 108, 108, 111, 32, 119, 111, 114, 108, 100, 33, 0
+      @@_c_0_: dw @@_c_0_@allocated
+      @@_c_1_: db 72, 101, 108, 108, 111, 32, 119, 111, 114, 108, 100, 50, 33, 0
     `);
   });
 });
