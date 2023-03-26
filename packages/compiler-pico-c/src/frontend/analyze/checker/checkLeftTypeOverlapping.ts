@@ -80,7 +80,12 @@ export function checkLeftTypeOverlapping(
     const rightPrimitive = isPrimitiveLikeType(right);
 
     // primitive types in C can be implict casted
-    if (leftPrimitive && rightPrimitive) {
+    if (
+      leftPrimitive &&
+      rightPrimitive &&
+      !left.isPointer() &&
+      !right.isPointer()
+    ) {
       return true;
     }
 

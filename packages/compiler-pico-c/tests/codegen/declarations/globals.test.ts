@@ -312,4 +312,78 @@ describe('Global variables declaration', () => {
       @@_c_1_: db 72, 101, 108, 108, 111, 32, 119, 111, 114, 108, 100, 50, 33, 0
     `);
   });
+
+  test('array of strings', () => {
+    expect(/* cpp */ `
+      const char* HELLO_WORLD = "Hello world!";
+      const char HELLO_WORLD2[] = "Hello world2!";
+      const char* HELLO_WORLD3[] = { "Hello world3!" }; // incorrect result
+
+      int strlen(const char* str) {
+        return -1;
+      }
+
+      void main() {
+        int length = strlen(HELLO_WORLD);
+        int length2 = strlen(HELLO_WORLD2);
+      }
+    `).toCompiledAsmBeEqual(`
+    `);
+  });
+
+  test('array of characters with 0 offset', () => {
+    expect(/* cpp */ `
+      const char as[] = "SDASD";
+
+      void main() {
+        char a = as[0];
+      }
+    `).toCompiledAsmBeEqual(`
+        cpu 386
+        ; def main():
+        @@_fn_main:
+        push bp
+        mov bp, sp
+        sub sp, 1
+        mov ax, word [@@_c_0_]    ; %t{1}: const char[5]5B = load %t{0}: const char[5]*2B
+        mov bx, ax
+        mov al, [bx]              ; %t{3}: const char1B = load %t{1}: const char*2B
+        mov byte [bp - 1], al     ; *(a{0}: char*2B) = store %t{3}: const char1B
+        mov sp, bp
+        pop bp
+        ret
+        @@_c_0_:
+        dw @@_c_0_@allocated$0_0
+        @@_c_0_@allocated$0_0: db "SDASD", 0x0
+    `);
+  });
+
+  test('array of characters with 1 offset', () => {
+    expect(/* cpp */ `
+      const char as[] = "SDASD";
+
+      void main() {
+        char a = as[1];
+      }
+    `).toCompiledAsmBeEqual(`
+        cpu 386
+        ; def main():
+        @@_fn_main:
+        push bp
+        mov bp, sp
+        sub sp, 1
+        mov ax, word [@@_c_0_]    ; %t{1}: const char[5]5B = load %t{0}: const char[5]*2B
+        add ax, 1                 ; %t{2}: const char*2B = %t{1}: const char[5]5B plus %1: int2B
+        mov bx, ax
+        mov al, [bx]              ; %t{3}: const char1B = load %t{2}: const char*2B
+        mov byte [bp - 1], al     ; *(a{0}: char*2B) = store %t{3}: const char1B
+        mov sp, bp
+        pop bp
+        ret
+
+        @@_c_0_:
+        dw @@_c_0_@allocated$0_0
+        @@_c_0_@allocated$0_0: db "SDASD", 0x0
+    `);
+  });
 });

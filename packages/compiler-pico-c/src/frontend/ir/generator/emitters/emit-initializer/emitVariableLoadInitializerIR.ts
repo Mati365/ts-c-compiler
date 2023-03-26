@@ -1,5 +1,10 @@
 import * as R from 'ramda';
 
+import {
+  getBaseTypeIfArray,
+  getBaseTypeIfPtr,
+} from '@compiler/pico-c/frontend/analyze/types/utils';
+
 import { isCompilerTreeNode } from '@compiler/pico-c/frontend/parser';
 import {
   CVariableInitializerTree,
@@ -12,11 +17,17 @@ import {
   IREmitterContextAttrs,
   IREmitterStmtResult,
 } from '../types';
+
 import { IRError, IRErrorCode } from '../../../errors/IRError';
 import { IRStoreInstruction } from '../../../instructions';
 import { IRConstant, IRVariable, isIRVariable } from '../../../variables';
 
 import { emitExpressionIR } from '../emit-expr';
+import {
+  emitStringLiteralBlobLocalInitializerIR,
+  emitStringLiteralPtrLocalInitializerIR,
+  StringPtrInitializerLocalIREmitAttrs,
+} from './literal';
 
 type LoadInitializerIREmitAttrs = IREmitterContextAttrs & {
   initializerTree: CVariableInitializerTree;
@@ -32,9 +43,7 @@ export function emitVariableLoadInitializerIR({
   scope,
   context,
 }: LoadInitializerIREmitAttrs): IREmitterStmtResult {
-  const { allocator } = context;
   const result = createBlankStmtResult();
-
   let offset: number = 0;
 
   initializerTree.fields.forEach((initializer, index) => {
@@ -42,48 +51,77 @@ export function emitVariableLoadInitializerIR({
       throw new IRError(IRErrorCode.INCORRECT_INITIALIZER_BLOCK);
     }
 
-    const initializerType = initializerTree.getIndexExpectedType(index);
+    const itemOffsetType = initializerTree.getIndexExpectedType(index);
 
-    if (isCompilerTreeNode(initializer)) {
-      const exprResult = emitExpressionIR({
-        scope,
+    if (R.is(String, initializer)) {
+      const isStringPtr = getBaseTypeIfArray(
+        getBaseTypeIfPtr(destVar.type),
+      ).isPointer();
+
+      const attrs: StringPtrInitializerLocalIREmitAttrs = {
         context,
-        node: initializer,
+        literal: initializer,
         initializerMeta: {
           offset,
           destVar,
-          index,
         },
-      });
+      };
 
-      appendStmtResults(exprResult, result);
+      if (isStringPtr) {
+        // const char* str2[] = { "Hello world2!", "Hello world2!", 0x5 };
+        // const char* HELLO_WORLD2 = "Hello world2!";
+        appendStmtResults(
+          emitStringLiteralPtrLocalInitializerIR(attrs),
+          result,
+        );
 
-      // do not emit store if RVO optimized fn call result is present
-      if (
-        !isIRVariable(exprResult.output) ||
-        !destVar.isShallowEqual(exprResult.output)
-      ) {
+        offset += itemOffsetType.getByteSize();
+      } else {
+        appendStmtResults(
+          emitStringLiteralBlobLocalInitializerIR(attrs),
+          result,
+        );
+
+        offset += initializer.length;
+      }
+    } else {
+      if (isCompilerTreeNode(initializer)) {
+        const exprResult = emitExpressionIR({
+          scope,
+          context,
+          node: initializer,
+          initializerMeta: {
+            offset,
+            destVar,
+            index,
+          },
+        });
+
+        appendStmtResults(exprResult, result);
+
+        // do not emit store if RVO optimized fn call result is present
+        if (
+          !isIRVariable(exprResult.output) ||
+          !destVar.isShallowEqual(exprResult.output)
+        ) {
+          result.instructions.push(
+            new IRStoreInstruction(exprResult.output, destVar, offset),
+          );
+        }
+      } else if (!R.isNil(initializer)) {
+        // int abc[3] = { 1, 2, 3}
+        // constant literals are of type 1
         result.instructions.push(
-          new IRStoreInstruction(exprResult.output, destVar, offset),
+          new IRStoreInstruction(
+            IRConstant.ofConstant(itemOffsetType, initializer),
+            destVar,
+            offset,
+          ),
         );
       }
-    } else if (R.is(String, initializer)) {
-      const argVar = allocator.getVariable(initializer);
 
-      result.instructions.push(new IRStoreInstruction(argVar, destVar, offset));
-    } else if (!R.isNil(initializer)) {
-      // int abc[3] = { 1, 2, 3}
-      // constant literals are of type 1
-      result.instructions.push(
-        new IRStoreInstruction(
-          IRConstant.ofConstant(initializerType, initializer),
-          destVar,
-          offset,
-        ),
-      );
+      offset += itemOffsetType.getByteSize();
     }
-
-    offset += initializerType.getByteSize();
   });
 
   return result;

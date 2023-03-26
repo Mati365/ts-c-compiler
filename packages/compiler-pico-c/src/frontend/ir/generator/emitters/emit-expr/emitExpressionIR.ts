@@ -1,7 +1,10 @@
 import * as R from 'ramda';
 
 import { isLogicOpToken, isRelationOpToken } from '@compiler/lexer/utils';
-import { isImplicitPtrType } from '@compiler/pico-c/frontend/analyze/types/utils';
+import {
+  getBaseTypeIfPtr,
+  isImplicitPtrType,
+} from '@compiler/pico-c/frontend/analyze/types/utils';
 import {
   charToInt,
   tryCastToPointer,
@@ -14,14 +17,10 @@ import {
   CUnaryCastOperator,
 } from '@compiler/pico-c/constants';
 
-import { getBaseTypeIfPtr } from '@compiler/pico-c/frontend/analyze/types/utils';
 import {
   CPointerType,
   CPrimitiveType,
   CType,
-  CVariable,
-  CVariableInitializerTree,
-  isArrayLikeType,
   isPointerArithmeticType,
   isPointerLikeType,
   isStructLikeType,
@@ -70,6 +69,7 @@ import { emitIdentifierGetterIR } from '../emitIdentifierGetterIR';
 import { emitIncExpressionIR } from '../emitIncExpressionIR';
 import { emitFnCallExpressionIR } from '../emit-fn-call-expression';
 import { emitLogicBinaryJmpExpressionIR } from './emitLogicBinaryJmpExpressionIR';
+import { emitStringLiteralPtrLocalInitializerIR } from '../emit-initializer/literal';
 
 export type ExpressionIREmitAttrs = IREmitterContextAttrs & {
   node: ASTCCompilerNode;
@@ -265,22 +265,13 @@ export function emitExpressionIR({
       enter(expression: ASTCPrimaryExpression) {
         if (expression.isStringLiteral()) {
           // handle "hello world" passed as arg to function
-          const variable = CVariable.ofAnonymousInitializer(
-            CVariableInitializerTree.ofStringLiteral({
-              baseType: expression.type,
-              parentAST: expression,
-              text: expression.stringLiteral,
+          emitExprResultToStack(
+            emitStringLiteralPtrLocalInitializerIR({
+              context,
+              loadPtr: true,
+              literal: expression.stringLiteral,
             }),
           );
-
-          const initializerResult = emit.initializer({
-            scope,
-            context,
-            variable,
-          });
-
-          appendStmtResults(initializerResult, result);
-          argsVarsStack.push(initializerResult.output);
         } else if (expression.isCharLiteral()) {
           // handle 'a'
           argsVarsStack.push(
@@ -306,24 +297,17 @@ export function emitExpressionIR({
 
           if (srcGlobalVar) {
             const tmpAddressVar = allocNextVariable(srcGlobalVar);
+            const tmpDestVar = allocNextVariable(
+              getBaseTypeIfPtr(srcGlobalVar.type),
+            );
 
             instructions.push(
               new IRLabelOffsetInstruction(
                 IRLabel.ofName(srcGlobalVar.name),
                 tmpAddressVar,
               ),
+              new IRLoadInstruction(tmpAddressVar, tmpDestVar),
             );
-
-            if (
-              !isArrayLikeType(getBaseTypeIfPtr(srcGlobalVar.type)) &&
-              !srcGlobalVar.virtualArrayPtr
-            ) {
-              const tmpDestVar = allocNextVariable(srcGlobalVar.type);
-
-              instructions.push(
-                new IRLoadInstruction(tmpAddressVar, tmpDestVar),
-              );
-            }
           } else if (srcFn) {
             const tmpVar = allocNextVariable(CPointerType.ofType(srcFn.type));
 

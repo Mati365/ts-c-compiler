@@ -1,3 +1,4 @@
+import { getBaseTypeIfPtr } from '@compiler/pico-c/frontend/analyze/types/utils';
 import { IRAllocInstruction } from '@compiler/pico-c/frontend/ir/instructions';
 import { X86CompilerInstructionFnAttrs } from '../../constants/types';
 
@@ -13,7 +14,11 @@ export function compileAllocInstruction({
     allocator: { stackFrame, regs },
   } = context;
 
+  const stackVar = stackFrame.allocLocalVariable(
+    outputVar.ofType(getBaseTypeIfPtr(outputVar.type)),
+  );
+
   regs.ownership.setOwnership(outputVar.name, {
-    stackVar: stackFrame.allocLocalVariable(outputVar),
+    stackVar,
   });
 }

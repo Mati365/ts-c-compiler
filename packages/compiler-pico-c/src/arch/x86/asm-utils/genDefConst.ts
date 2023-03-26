@@ -6,6 +6,18 @@ export const DefConstType = {
   8: 'dt',
 };
 
+export function getDefConstSizeLabel(size: number) {
+  return DefConstType[size];
+}
+
 export function genDefConst(size: number, values: (number | string)[]): string {
-  return `${DefConstType[size]} ${values.map(val => val ?? 0x0).join(', ')}`;
+  return `${getDefConstSizeLabel(size)} ${values
+    .map(val => {
+      if (typeof val === 'string') {
+        return `"${val}"`;
+      }
+
+      return val ?? 0x0;
+    })
+    .join(', ')}`;
 }

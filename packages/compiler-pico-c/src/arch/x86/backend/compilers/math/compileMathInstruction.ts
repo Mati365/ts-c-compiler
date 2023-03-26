@@ -13,6 +13,7 @@ import { IRArgDynamicResolverType } from '../../reg-allocator';
 import { X86CompilerInstructionFnAttrs } from '../../../constants/types';
 import { genInstruction, withInlineComment } from '../../../asm-utils';
 import { ensureFunctionNotOverridesOutput } from './ensureFunctionNotOverrideOutput';
+import { castToPointerIfArray } from '@compiler/pico-c/frontend/analyze/casts';
 
 const BinaryOperatorX86Opcode: Partial<Record<CMathOperator, string>> = {
   [TokenType.BIT_OR]: 'xor',
@@ -35,7 +36,9 @@ export function compileMathInstruction({
 
   // imul instruction likes only 16bit / 32bit args
   // so force make it at least that big
-  let biggestArgSize = getBiggerIRArg(leftVar, rightVar).type.getByteSize();
+  let biggestArgSize = castToPointerIfArray(
+    getBiggerIRArg(leftVar, rightVar).type,
+  ).getByteSize();
 
   switch (operator) {
     case TokenType.BIT_SHIFT_RIGHT:
@@ -177,6 +180,22 @@ export function compileMathInstruction({
         size: 2,
       });
 
+      const asm = [
+        ...allocResult.remainder.asm,
+        ...allocResult.quotient.asm,
+        ...rightAllocResult.asm,
+        ...ensureFunctionNotOverridesOutput({
+          leftVar,
+          leftAllocResult: allocResult.quotient,
+          context,
+        }),
+        genInstruction('xor', 'dx', 'dx'),
+        withInlineComment(
+          genInstruction('idiv', rightAllocResult.value),
+          instruction.getDisplayName(),
+        ),
+      ];
+
       if (operator === TokenType.MOD) {
         // we want remainder in variable
         if (outputVar.isTemporary()) {
@@ -201,15 +220,7 @@ export function compileMathInstruction({
         regs.releaseRegs([allocResult.remainder.value]);
       }
 
-      return [
-        ...allocResult.remainder.asm,
-        ...allocResult.quotient.asm,
-        ...rightAllocResult.asm,
-        withInlineComment(
-          genInstruction('idiv', rightAllocResult.value),
-          instruction.getDisplayName(),
-        ),
-      ];
+      return asm;
     }
   }
 

@@ -68,7 +68,7 @@ export type IREmitterContext = {
   };
 };
 
-export type IREmiiterInitializerMeta = {
+export type IREmitterInitializerMeta = {
   destVar: IRVariable;
   index: number;
   offset: number;
@@ -77,7 +77,7 @@ export type IREmiiterInitializerMeta = {
 export type IREmitterContextAttrs = {
   scope: CScopeTree;
   context: IREmitterContext;
-  initializerMeta?: IREmiiterInitializerMeta;
+  initializerMeta?: IREmitterInitializerMeta;
 };
 
 export type IREmitterStmtResult = {

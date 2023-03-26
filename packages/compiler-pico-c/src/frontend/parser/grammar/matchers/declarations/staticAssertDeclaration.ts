@@ -23,7 +23,7 @@ export function staticAssertDeclaration(
 
   g.terminalType(TokenType.COMMA);
 
-  const literal = stringLiteral(grammar);
+  const literal = stringLiteral(grammar, { nullTerminator: false });
 
   g.terminal(')');
   g.terminalType(TokenType.SEMICOLON);

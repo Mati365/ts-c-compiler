@@ -77,6 +77,10 @@ export class CPointerType extends CType<CPointerTypeDescriptor> {
     return true;
   }
 
+  override isPrimitive() {
+    return true;
+  }
+
   override isEqual(value: Identity<CPointerTypeDescriptor>): boolean {
     if (!(value instanceof CPointerType)) {
       return false;

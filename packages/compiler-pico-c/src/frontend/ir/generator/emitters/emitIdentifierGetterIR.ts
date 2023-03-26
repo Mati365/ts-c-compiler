@@ -2,10 +2,8 @@ import * as R from 'ramda';
 
 import { TokenType } from '@compiler/lexer/shared';
 import {
-  CArrayType,
   CPointerType,
   CPrimitiveType,
-  CVariableInitializerTree,
   isArrayLikeType,
   isPointerLikeType,
   isStructLikeType,
@@ -25,13 +23,10 @@ import {
 } from '@compiler/pico-c/frontend/parser';
 
 import {
-  IRAllocInstruction,
-  IRDefDataInstruction,
   IRLabelOffsetInstruction,
   IRLeaInstruction,
   IRLoadInstruction,
   IRMathInstruction,
-  IRStoreInstruction,
 } from '../../instructions';
 
 import {
@@ -50,6 +45,7 @@ import {
 
 import { IRError, IRErrorCode } from '../../errors/IRError';
 import { getTypeAtOffset } from '../../utils';
+import { getBaseType } from '@compiler/pico-c/frontend/analyze/types/utils';
 
 type LvalueExpressionIREmitAttrs = IREmitterContextAttrs & {
   node: ASTCCompilerNode;
@@ -115,43 +111,6 @@ export function emitIdentifierGetterIR({
 
     [ASTCCompilerKind.PrimaryExpression]: {
       enter(expr: ASTCPrimaryExpression) {
-        if (expr.isStringLiteral()) {
-          /**
-           * Used in inline string initialization like in:
-           *
-           *  fn("Hello world!");
-           *
-           * todo: Check if it even works!
-           */
-          const arrayPtrType = CPointerType.ofArray(<CArrayType>expr.type);
-          const dataType = CArrayType.ofFlattenDescriptor({
-            type: expr.type,
-            dimensions: [expr.stringLiteral.length],
-          });
-
-          lastIRVar = allocator.allocTmpVariable(dataType);
-
-          const constArrayVar = allocator.allocDataVariable(dataType);
-          const tmpLeaAddressVar = allocator.allocTmpVariable(arrayPtrType);
-
-          data.push(
-            new IRDefDataInstruction(
-              CVariableInitializerTree.ofStringLiteral({
-                baseType: expr.type,
-                parentAST: expr,
-                text: expr.stringLiteral,
-              }),
-              constArrayVar,
-            ),
-          );
-
-          instructions.push(
-            IRAllocInstruction.ofDestPtrVariable(lastIRVar),
-            new IRLeaInstruction(constArrayVar, tmpLeaAddressVar),
-            new IRStoreInstruction(tmpLeaAddressVar, lastIRVar),
-          );
-        }
-
         if (expr.isIdentifier()) {
           const name = expr.identifier.text;
           const irFunction = allocator.getFunction(name);
@@ -184,23 +143,12 @@ export function emitIdentifierGetterIR({
             const irVariable = allocator.getVariable(name);
             rootIRVar ??= irVariable;
 
-            /**
-             * detect this case:
-             *  char array[10] = { 1, 2, 3, 4, 5, 6 };
-             *  array[1] = 2;
-             *
-             * which is transformed into pointer that is pointing
-             * not into te stack but somewhere else
-             */
-            if (irVariable.virtualArrayPtr) {
-              lastIRVar = allocator.allocAddressVariable(irVariable.type);
-              instructions.push(new IRLoadInstruction(irVariable, lastIRVar));
-            } else if (
+            if (
               isPointerLikeType(irVariable.type) &&
               isArrayLikeType(irVariable.type.baseType)
             ) {
               // emits LEA before array[1][2], struct. like expressions
-              lastIRVar = allocator.allocAddressVariable(irVariable.type);
+              lastIRVar = allocator.allocTmpVariable(irVariable.type);
               instructions.push(new IRLeaInstruction(irVariable, lastIRVar));
             } else {
               lastIRVar = irVariable;
@@ -227,7 +175,7 @@ export function emitIdentifierGetterIR({
         instructions.push(
           new IRLoadInstruction(
             lastIRVar,
-            (lastIRVar = allocator.allocAddressVariable(lastIRVar.type)),
+            (lastIRVar = allocator.allocTmpPointer(lastIRVar.type)),
           ),
         );
 
@@ -242,7 +190,7 @@ export function emitIdentifierGetterIR({
               TokenType.PLUS,
               lastIRVar,
               offsetConstant,
-              (lastIRVar = allocator.allocAddressVariable(
+              (lastIRVar = allocator.allocTmpPointer(
                 getTypeAtOffset(lastIRVar.type, offsetConstant.constant),
               )),
             ),
@@ -276,7 +224,7 @@ export function emitIdentifierGetterIR({
           instructions.push(
             new IRLeaInstruction(
               lastIRVar,
-              (lastIRVar = allocator.allocAddressVariable(lastIRVar.type)),
+              (lastIRVar = allocator.allocTmpPointer(lastIRVar.type)),
             ),
           );
         }
@@ -292,7 +240,7 @@ export function emitIdentifierGetterIR({
               TokenType.PLUS,
               lastIRVar,
               offsetConstant,
-              (lastIRVar = allocator.allocAddressVariable(
+              (lastIRVar = allocator.allocTmpPointer(
                 getTypeAtOffset(lastIRVar.type, offsetConstant.constant),
               )),
             ),
@@ -314,16 +262,32 @@ export function emitIdentifierGetterIR({
         }
 
         const parentType = getParentType();
-        let entryByteSize: number = null;
 
-        if (!lastIRVar.isTemporary()) {
-          instructions.push(
-            new IRLoadInstruction(
-              lastIRVar,
-              (lastIRVar = allocator.allocAddressVariable(lastIRVar.type)),
-            ),
+        // handle case for:
+        //  const char* str2[]
+        //  str2[0][0], str2[0] is pointer
+
+        // todo: THERE IS BUG, there are some edge cases
+        if (isPointerLikeType(lastIRVar.type) && !isArrayLikeType(parentType)) {
+          const newLastIRVar = allocator.allocTmpVariable(
+            lastIRVar.type.baseType,
           );
+
+          instructions.push(new IRLoadInstruction(lastIRVar, newLastIRVar));
+          lastIRVar = newLastIRVar;
         }
+
+        //  [<index>]
+        //     ^ compile index
+        const { instructions: exprInstructions, output: exprOutput } =
+          context.emit.expression({
+            node: expr,
+            context,
+            scope,
+          });
+
+        let offsetAddressVar: IRInstructionTypedArg = null;
+        let entryByteSize: number = null;
 
         if (isArrayLikeType(parentType)) {
           entryByteSize = parentType.ofTailDimensions().getByteSize();
@@ -333,15 +297,7 @@ export function emitIdentifierGetterIR({
           throw new IRError(IRErrorCode.ACCESS_ARRAY_INDEX_TO_NON_ARRAY);
         }
 
-        const { instructions: exprInstructions, output: exprOutput } =
-          context.emit.expression({
-            node: expr,
-            context,
-            scope,
-          });
-
         instructions.push(...exprInstructions);
-        let offsetAddressVar: IRInstructionTypedArg = null;
 
         if (isIRVariable(exprOutput)) {
           if (isPointerLikeType(exprOutput.type)) {
@@ -352,7 +308,10 @@ export function emitIdentifierGetterIR({
               entryByteSize,
             );
 
-            offsetAddressVar = allocator.allocAddressVariable(lastIRVar.type);
+            offsetAddressVar = allocator.allocTmpPointer(
+              getBaseType(lastIRVar.type),
+            );
+
             instructions.push(
               new IRMathInstruction(
                 TokenType.MUL,
@@ -362,7 +321,7 @@ export function emitIdentifierGetterIR({
               ),
             );
           }
-        } else if (exprOutput.constant) {
+        } else {
           offsetAddressVar = IRConstant.ofConstant(
             CPrimitiveType.int(config.arch),
             exprOutput.constant * entryByteSize,
@@ -375,7 +334,9 @@ export function emitIdentifierGetterIR({
               TokenType.PLUS,
               lastIRVar,
               offsetAddressVar,
-              (lastIRVar = allocator.allocAddressVariable(lastIRVar.type)),
+              (lastIRVar = allocator.allocTmpPointer(
+                getBaseType(lastIRVar.type),
+              )),
             ),
           );
         }

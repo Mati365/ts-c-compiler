@@ -1,15 +1,17 @@
-import { isPointerLikeType } from '@compiler/pico-c/frontend/analyze';
-
+import type { CCompilerArch } from '@compiler/pico-c/constants';
 import type { IRDefDataInstruction } from '@compiler/pico-c/frontend/ir/instructions';
 import type { X86LabelsResolver } from '../../X86LabelsResolver';
-import { genDefConst } from '../../../asm-utils';
+
+import { compileArrayInitializerDefAsm } from './compileArrayInitializerDef';
 
 type DefInstructionCompilerAttrs = {
+  arch: CCompilerArch;
   instruction: IRDefDataInstruction;
   labelsResolver: X86LabelsResolver;
 };
 
 export function compileDefDataInstruction({
+  arch,
   instruction,
   labelsResolver,
 }: DefInstructionCompilerAttrs): string[] {
@@ -20,35 +22,11 @@ export function compileDefDataInstruction({
     instruction: defConst,
   });
 
-  const { initializer, outputVar } = defConst;
+  const { initializer } = defConst;
 
-  const dataLiteral = (() => {
-    if (
-      initializer.isNonArrayInitializer() &&
-      isPointerLikeType(initializer.baseType)
-    ) {
-      return genDefConst(
-        initializer.baseType.getByteSize(),
-        defConst.initializer.fields as number[],
-      );
-    }
-
-    return genDefConst(
-      defConst.initializer.getSingleItemByteSize(),
-      defConst.initializer.fields as number[],
-    );
-  })();
-
-  if (outputVar.virtualArrayPtr) {
-    const strStringLabel = `${asmLabel}@allocated`;
-
-    return [
-      `${strStringLabel}: ${dataLiteral}`,
-      `${asmLabel}: ${genDefConst(outputVar.type.getByteSize(), [
-        strStringLabel,
-      ])}`,
-    ];
-  }
-
-  return [`${asmLabel}: ${dataLiteral}`];
+  return compileArrayInitializerDefAsm({
+    arch,
+    asmLabel,
+    initializer,
+  });
 }

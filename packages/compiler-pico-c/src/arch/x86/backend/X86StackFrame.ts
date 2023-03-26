@@ -92,10 +92,7 @@ export class X86StackFrame {
     // IR variables are always pointers
     // IR variable that points to stack variable is also pointer
     // so alloc stack byte size should be ca
-    if (
-      (!isIRVariable(variable) || !variable.virtualArrayPtr) &&
-      isPointerLikeType(type)
-    ) {
+    if (!isIRVariable(variable) && isPointerLikeType(type)) {
       return type.baseType.getByteSize();
     }
 
