@@ -32,13 +32,35 @@ export function dropNopMathInstructions(instructions: IRInstruction[]) {
 
       if (constantArg.constant === 0x1) {
         // handle `a * 1`
-        replaceArgs[instruction.outputVar.name] = instruction.getFirstVarArg();
+        replaceArgs[instruction.outputVar.name] = instruction
+          .getFirstVarArg()
+          .ofType(instruction.outputVar.type);
+
         newInstructions.splice(i, 1);
         needSecondPass = true;
         --i;
       } else if (constantArg.constant === 0x0) {
         // handle `a * 0`
         replaceArgs[instruction.outputVar.name] = constantArg;
+        newInstructions.splice(i, 1);
+        needSecondPass = true;
+        --i;
+      }
+    }
+
+    if (
+      instruction.operator === TokenType.PLUS &&
+      instruction.hasAnyConstantArg() &&
+      !instruction.hasBothConstantArgs()
+    ) {
+      const constantArg = instruction.getFirstConstantArg();
+
+      if (constantArg.constant === 0x0) {
+        // handle `a + 0`
+        replaceArgs[instruction.outputVar.name] = instruction
+          .getFirstVarArg()
+          .ofType(instruction.outputVar.type);
+
         newInstructions.splice(i, 1);
         needSecondPass = true;
         --i;

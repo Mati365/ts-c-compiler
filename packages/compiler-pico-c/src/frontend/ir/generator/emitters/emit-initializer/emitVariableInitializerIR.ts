@@ -1,18 +1,6 @@
-import {
-  CArrayType,
-  CPointerType,
-  CVariable,
-  isStringLiteralTypeInitializer,
-} from '@compiler/pico-c/frontend/analyze';
+import { CVariable } from '@compiler/pico-c/frontend/analyze';
 
-import { IRVariable } from '../../../variables';
-import {
-  IRAllocInstruction,
-  IRDefDataInstruction,
-  IRLeaInstruction,
-  IRStoreInstruction,
-} from '../../../instructions';
-
+import { IRAllocInstruction } from '../../../instructions';
 import {
   IREmitterContextAttrs,
   IREmitterExpressionResult,
@@ -40,60 +28,26 @@ export function emitVariableInitializerIR({
   context,
   variable,
 }: InitializerIREmitAttrs): IREmitterExpressionResult {
-  const { allocator, config } = context;
+  const { allocator } = context;
   const result = createBlankExprResult();
 
-  const { instructions, data } = result;
-  const { type, initializer } = variable;
+  const { instructions } = result;
+  const { initializer } = variable;
 
   if (variable.isInitialized()) {
-    // string pointer is an special case
-    // in that kind of array we allocate only one item on stack
-    // so any string literal that is longer than one character must be allocated in data segment
-    // it is not possible to alloc any other type in similar way
-    if (
-      isStringLiteralTypeInitializer({ type, arch: config.arch, initializer })
-    ) {
-      // initializer with const expressions
-      const arrayPtrType = CPointerType.ofArray(<CArrayType>type);
-      const dataType = CArrayType.ofFlattenDescriptor({
-        type: type.getSourceType(),
-        dimensions: [initializer.fields.length],
-      });
+    result.output = allocator.allocAsPointer(variable, allocatedVar => {
+      instructions.push(IRAllocInstruction.ofDestPtrVariable(allocatedVar));
 
-      const rootIRVar = allocator.allocAsPointer(
-        IRVariable.ofScopeVariable(
-          variable.ofType(arrayPtrType),
-        ).ofVirtualArrayPtr(),
+      appendStmtResults(
+        emitVariableLoadInitializerIR({
+          scope,
+          context,
+          initializerTree: initializer,
+          destVar: allocatedVar,
+        }),
+        result,
       );
-
-      const constArrayVar = allocator.allocDataVariable(dataType);
-      const tmpLeaAddressVar = allocator.allocTmpVariable(arrayPtrType);
-
-      data.push(new IRDefDataInstruction(initializer, constArrayVar));
-
-      instructions.push(
-        IRAllocInstruction.ofDestPtrVariable(rootIRVar),
-        new IRLeaInstruction(constArrayVar, tmpLeaAddressVar),
-        new IRStoreInstruction(tmpLeaAddressVar, rootIRVar),
-      );
-
-      result.output = rootIRVar;
-    } else {
-      result.output = allocator.allocAsPointer(variable, allocatedVar => {
-        instructions.push(IRAllocInstruction.ofDestPtrVariable(allocatedVar));
-
-        appendStmtResults(
-          emitVariableLoadInitializerIR({
-            scope,
-            context,
-            initializerTree: initializer,
-            destVar: allocatedVar,
-          }),
-          result,
-        );
-      });
-    }
+    });
   } else {
     // uninitialized variable
     result.output = allocator.allocAsPointer(variable);

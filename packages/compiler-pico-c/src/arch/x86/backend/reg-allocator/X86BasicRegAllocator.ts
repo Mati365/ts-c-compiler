@@ -38,6 +38,7 @@ import {
   isStackVarOwnership,
 } from './utils';
 import { getX86RegByteSize } from '../../constants/regs';
+import { castToPointerIfArray } from '@compiler/pico-c/frontend/analyze/casts';
 
 export type IRArgAllocatorResult<V extends string | number = string | number> =
   {
@@ -109,7 +110,7 @@ export class X86BasicRegAllocator {
     const { stackFrame, ownership } = this;
     const {
       arg,
-      size = arg.type.getByteSize(),
+      size = castToPointerIfArray(arg.type).getByteSize(),
       forceLabelMemPtr,
       preferRegs,
       allowedRegs,
@@ -118,10 +119,11 @@ export class X86BasicRegAllocator {
     } = attrs;
 
     const regsParts = ownership.getAvailableRegs().general.parts;
-    const requestArgSizeDelta = size - arg.type.getByteSize();
+    const requestArgSizeDelta =
+      size - castToPointerIfArray(arg.type).getByteSize();
 
     if (
-      !arg.type.isScalar() &&
+      !castToPointerIfArray(arg.type).isScalar() &&
       (!isStructLikeType(arg.type) || !arg.type.canBeStoredInReg())
     ) {
       throw new CBackendError(CBackendErrorCode.REG_ALLOCATOR_ERROR);
@@ -346,9 +348,9 @@ export class X86BasicRegAllocator {
       forceMemPtr?: boolean;
     },
   ) {
-    const { asmLabel, arrayPtr } = ownership;
+    const { asmLabel } = ownership;
 
-    return arrayPtr && !addrConfig?.forceMemPtr
+    return !addrConfig?.forceMemPtr
       ? asmLabel
       : genMemAddress({ expression: asmLabel, ...addrConfig });
   }

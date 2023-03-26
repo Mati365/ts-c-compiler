@@ -86,8 +86,8 @@ export function emitFnCallExpressionIR({
 
     if (offset) {
       // array initializer
-      const outputSrcAddrVar = allocator.allocAddressVariable();
-      const outputOffsetAddrVar = allocator.allocAddressVariable();
+      const outputSrcAddrVar = allocator.allocPlainAddressVariable();
+      const outputOffsetAddrVar = allocator.allocPlainAddressVariable();
 
       result.instructions.push(
         new IRLeaInstruction(output, outputSrcAddrVar),

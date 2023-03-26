@@ -5,7 +5,6 @@ import {
   IsWalkableNode,
 } from '@compiler/grammar/tree/AbstractTreeVisitor';
 
-import { isImplicitPtrType } from '../../types/utils';
 import {
   isArrayLikeType,
   isPointerLikeType,
@@ -20,6 +19,7 @@ export type CVariableInitializeValue =
   | number
   | CVariableInitializerTree
   | ASTCCompilerNode;
+
 export type CVariableInitializerFields = CVariableInitializeValue[];
 
 export function isConstantVariableInitializer(value: CVariableInitializeValue) {
@@ -28,6 +28,7 @@ export function isConstantVariableInitializer(value: CVariableInitializeValue) {
   }
 
   const type = typeof value;
+
   return type === 'string' || type === 'number';
 }
 
@@ -36,12 +37,6 @@ export function isInitializerTreeValue(
 ): value is CVariableInitializerTree {
   return R.is(Object, value) && R.has('_baseType', value);
 }
-
-type CVariableStringInitializerAttrs<C> = {
-  baseType: CType;
-  parentAST: C;
-  text: string;
-};
 
 type CVariableByteInitializerAttrs<C> = {
   baseType: CType;
@@ -90,38 +85,12 @@ export class CVariableInitializerTree<
     return new CVariableInitializerTree(baseType, parentAST, fields);
   }
 
-  static ofStringLiteral<C extends ASTCCompilerNode>({
-    baseType,
-    parentAST,
-    text,
-  }: CVariableStringInitializerAttrs<C>) {
-    const fields: CVariableInitializerFields = [];
-
-    for (let i = 0; i < text.length; ++i) {
-      fields[i] = text.charCodeAt(i);
-    }
-
-    fields[text.length] = 0x0;
-
-    return new CVariableInitializerTree(baseType, parentAST, fields);
-  }
-
   fill(value: CVariableInitializeValue) {
     this._fields = new Array(this.scalarValuesCount).fill(value);
   }
 
   walk(visitor: AbstractTreeVisitor<any>): void {
     this._fields.forEach(visitor.visit.bind(visitor));
-  }
-
-  isNonArrayInitializer() {
-    const { baseType } = this;
-
-    return (
-      isPointerLikeType(baseType) &&
-      !isImplicitPtrType(baseType.baseType) &&
-      this.getInitializedFieldsCount() === 1
-    );
   }
 
   hasOnlyConstantExpressions() {
@@ -177,19 +146,41 @@ export class CVariableInitializerTree<
     return this._fields[0];
   }
 
+  getFlattenNonLiteralScalarFieldsCount() {
+    const { fields, baseType } = this;
+
+    if (isArrayLikeType(baseType) && isPointerLikeType(baseType.baseType)) {
+      return fields.length;
+    }
+
+    // parse to return non 1 number:
+    // const char str[] = "asdasdasd";
+    return fields.reduce<number>((acc, field) => {
+      if (R.is(String, field)) {
+        return acc + field.length;
+      }
+
+      return acc + 1;
+    }, 0);
+  }
+
   /**
    * Returns type that always has fixed size
    *
    * @example
-   *  int a[] = { 1, 2, 3 }
-   *  => int[3]
+   *  int a[] = { 1, 2, 3 } => int[3]
+   *  const char* str = "Hello" => const char*
+   *  const char str[] = "Hello" => const char[5]
    */
   getFixedSizeBaseType(): CType {
-    const { baseType, fields } = this;
+    const { baseType } = this;
 
     if (isArrayLikeType(baseType) && baseType.isUnknownSize()) {
       return baseType.ofSize(
-        Math.ceil(fields.length / baseType.baseType.scalarValuesCount),
+        Math.ceil(
+          this.getFlattenNonLiteralScalarFieldsCount() /
+            baseType.baseType.scalarValuesCount,
+        ),
       );
     }
 
@@ -218,10 +209,6 @@ export class CVariableInitializerTree<
       }
 
       return baseArrayType;
-    }
-
-    if (isPointerLikeType(baseType)) {
-      return baseType.baseType;
     }
 
     return this.getNestedInitializerGroupType();

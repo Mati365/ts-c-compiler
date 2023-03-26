@@ -204,10 +204,8 @@ export class CTypeInitializerBuilderVisitor extends CInnerTypeTreeVisitor {
     if (stringLiteral) {
       const noSizeCheck = !isPointerLikeType(baseType) || !arrayItem;
 
-      this.appendNextSubtree(
-        this.parseStringValue(node, expectedType, exprValue),
-        noSizeCheck,
-      );
+      this.checkStringValueTypeOrThrow(node, expectedType, exprValue);
+      this.appendNextOffsetValue(exprValue, noSizeCheck);
     } else if (isCompilerTreeNode(exprValue)) {
       this.appendNextOffsetValue(
         this.parseTreeNodeExpressionValue(node, expectedType, exprValue),
@@ -351,11 +349,11 @@ export class CTypeInitializerBuilderVisitor extends CInnerTypeTreeVisitor {
   /**
    * Appends to initializer values such as { "Hello", "World" }
    */
-  private parseStringValue(
+  private checkStringValueTypeOrThrow(
     node: ASTCCompilerNode,
     expectedType: CType,
     text: string,
-  ): CVariableInitializerTree {
+  ) {
     // handle "Hello world" initializers
     const initializedTextType = CArrayType.ofStringLiteral(
       this.arch,
@@ -373,13 +371,6 @@ export class CTypeInitializerBuilderVisitor extends CInnerTypeTreeVisitor {
         },
       );
     }
-
-    // appending to initializer list
-    return CVariableInitializerTree.ofStringLiteral({
-      baseType: expectedType,
-      parentAST: node,
-      text,
-    });
   }
 
   /**

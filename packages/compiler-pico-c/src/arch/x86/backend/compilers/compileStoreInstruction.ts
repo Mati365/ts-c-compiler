@@ -91,6 +91,7 @@ export function compileStoreInstruction({
   if (isIRVariable(value)) {
     let inputReg = regs.tryResolveIRArgAsReg({
       arg: value,
+      forceLabelMemPtr: false,
     });
 
     if (inputReg.size - destAddr.size === 1) {

@@ -167,18 +167,14 @@ export class IRVariableAllocator {
         type: extractedType,
       });
 
-    let generatedVar = tmpVar.ofType(extractedType).ofIncrementedSuffix();
-    if (isIRVariable(typeOrVar) && typeOrVar.virtualArrayPtr) {
-      generatedVar = generatedVar.ofVirtualArrayPtr();
-    }
-
+    const generatedVar = tmpVar.ofType(extractedType).ofIncrementedSuffix();
     return this.allocVariable(generatedVar, initializer);
   }
 
   /**
    * Define variable to LEA output
    */
-  allocAddressVariable(
+  allocPlainAddressVariable(
     baseType: CType = CPrimitiveType.int(this.config.arch),
     prefix: string = TMP_VAR_PREFIX,
   ): IRVariable {

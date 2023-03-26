@@ -5,6 +5,7 @@ import {
 } from '@compiler/pico-c/backend/errors/CBackendError';
 
 import { isPointerLikeType } from '@compiler/pico-c/frontend/analyze';
+import { castToPointerIfArray } from '@compiler/pico-c/frontend/analyze/casts';
 import { isStackVarOwnership } from '../reg-allocator/utils';
 
 import { X86CompilerInstructionFnAttrs } from '../../constants/types';
@@ -39,7 +40,7 @@ export function compileLoadInstruction({
       });
     }
 
-    const outputRegSize = outputVar.type.getByteSize();
+    const outputRegSize = castToPointerIfArray(outputVar.type).getByteSize();
     const regSize = Math.min(
       outputRegSize,
       inputVar.type.baseType.getByteSize(),

@@ -29,7 +29,7 @@ export function asmStatement(grammar: CGrammar): ASTCAsmStatement {
 
   g.terminal('(');
 
-  const expression = stringLiteral(grammar);
+  const expression = stringLiteral(grammar, { nullTerminator: false });
   const consumeOptionalNextOperand = () =>
     g.match({
       type: TokenType.COLON,

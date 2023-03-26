@@ -12,7 +12,6 @@ export type IRStackVarOwnership = {
 
 export type IRLabelVarOwnership = {
   asmLabel: string;
-  arrayPtr: boolean;
 };
 
 export type IROwnershipValue =

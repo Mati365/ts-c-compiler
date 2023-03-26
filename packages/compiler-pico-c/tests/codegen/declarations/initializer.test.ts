@@ -323,5 +323,53 @@ describe('Variables initialization', () => {
         @@_c_0_: db 72, 101, 108, 108, 111, 33, 0
       `);
     });
+
+    test('various array string initializers', () => {
+      expect(/* cpp */ `
+        int strlen(const char* str) {
+          return -1;
+        }
+        void main() {
+          const char* HELLO_WORLD = "Hello world!";
+          const char HELLO_WORLD2[] = "Hello world2!";
+          const char* HELLO_WORLD3[] = { "Hello world3!", "Hello world4!" }; // incorrect result
+
+          int length = strlen(HELLO_WORLD);
+          int length2 = strlen(HELLO_WORLD2);
+        }
+      `).toCompiledAsmBeEqual(`
+      `);
+    });
+
+    test('multidimensional access to string array', () => {
+      expect(/* cpp */ `
+        void main() {
+          const char* str2[] = { "Hello world2!", "Hello world2!", 0x5 };
+          char b = str2[1][1];
+        }
+      `).toCompiledAsmBeEqual(`
+      `);
+    });
+
+    test('initialize literal inside function call', () => {
+      expect(/* cpp */ `
+        int strlen(const char* str) {
+          for (int i = 0;;++i) {
+            char s = str[i];
+
+            if (s == 0) {
+              return i;
+            }
+          }
+
+          return -1;
+        }
+
+        void main() {
+          int length2 = strlen("Hello world 34234!");
+        }
+      `).toCompiledAsmBeEqual(`
+      `);
+    });
   });
 });

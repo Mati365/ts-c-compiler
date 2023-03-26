@@ -22,6 +22,7 @@ export class X86ArchBackend extends CAbstractArchBackend {
   compileIR({ segments }: IRScopeGeneratorResult): CBackendCompilerResult {
     const asm: string[] = [`cpu ${X86ArchBackend.cpu}`];
     const { labelsResolver, asm: dataAsm } = compileDataSegment({
+      arch: X86ArchBackend.arch,
       segment: segments.data,
     });
 
