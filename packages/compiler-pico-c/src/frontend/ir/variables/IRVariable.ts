@@ -18,6 +18,7 @@ export type IRVariableDescriptor = {
   type: CType;
   temp?: boolean;
   constInitialized?: boolean;
+  virtualLocalArrayPtr?: boolean;
 };
 
 /**
@@ -60,6 +61,10 @@ export class IRVariable
 
   get suffix() {
     return this.value.suffix;
+  }
+
+  get virtualLocalArrayPtr() {
+    return this.value.virtualLocalArrayPtr;
   }
 
   get name() {
@@ -124,6 +129,10 @@ export class IRVariable
         suffix: R.dec,
       }),
     );
+  }
+
+  ofVirtualLocalArrayPtr() {
+    return this.map(R.assoc('virtualLocalArrayPtr', true));
   }
 
   ofType(type: CType) {

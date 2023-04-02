@@ -5,6 +5,7 @@ import {
   getBaseTypeIfPtr,
   isImplicitPtrType,
 } from '@compiler/pico-c/frontend/analyze/types/utils';
+
 import {
   charToInt,
   tryCastToPointer,
@@ -69,7 +70,7 @@ import { emitIdentifierGetterIR } from '../emitIdentifierGetterIR';
 import { emitIncExpressionIR } from '../emitIncExpressionIR';
 import { emitFnCallExpressionIR } from '../emit-fn-call-expression';
 import { emitLogicBinaryJmpExpressionIR } from './emitLogicBinaryJmpExpressionIR';
-import { emitStringLiteralPtrLocalInitializerIR } from '../emit-initializer/literal';
+import { emitStringLiteralPtrInitializerIR } from '../emit-initializer/literal';
 
 export type ExpressionIREmitAttrs = IREmitterContextAttrs & {
   node: ASTCCompilerNode;
@@ -266,7 +267,7 @@ export function emitExpressionIR({
         if (expression.isStringLiteral()) {
           // handle "hello world" passed as arg to function
           emitExprResultToStack(
-            emitStringLiteralPtrLocalInitializerIR({
+            emitStringLiteralPtrInitializerIR({
               context,
               literal: expression.stringLiteral,
             }),

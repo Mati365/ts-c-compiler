@@ -3,7 +3,7 @@ import { IRStoreInstruction } from '@compiler/pico-c/frontend/ir/instructions';
 import { IRConstant } from '@compiler/pico-c/frontend/ir/variables';
 
 import { createBlankExprResult, type IREmitterStmtResult } from '../../types';
-import { StringPtrInitializerLocalIREmitAttrs } from './emitStringLiteralPtrLocalInitializerIR';
+import { StringPtrInitializerLocalIREmitAttrs } from './emitStringLiteralPtrInitializerIR';
 
 type StringBlobInitializerLocalIREmitAttrs = Omit<
   StringPtrInitializerLocalIREmitAttrs,

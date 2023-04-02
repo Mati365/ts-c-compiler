@@ -15,18 +15,17 @@ export function compileDefDataInstruction({
   instruction,
   labelsResolver,
 }: DefInstructionCompilerAttrs): string[] {
-  const defConst = instruction as IRDefDataInstruction;
+  const { initializer, outputVar, meta } = instruction;
   const { asmLabel } = labelsResolver.createAndPutLabel({
-    name: defConst.outputVar.name,
-    type: defConst.outputVar.type,
-    instruction: defConst,
+    name: outputVar.name,
+    type: outputVar.type,
+    instruction: instruction,
   });
-
-  const { initializer } = defConst;
 
   return compileArrayInitializerDefAsm({
     arch,
     asmLabel,
     initializer,
+    emitItemLabels: !meta.virtualLocalArrayPtr,
   });
 }

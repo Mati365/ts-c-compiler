@@ -1,10 +1,5 @@
 import * as R from 'ramda';
 
-import {
-  getBaseTypeIfArray,
-  getBaseTypeIfPtr,
-} from '@compiler/pico-c/frontend/analyze/types/utils';
-
 import { isCompilerTreeNode } from '@compiler/pico-c/frontend/parser';
 import {
   CVariableInitializerTree,
@@ -25,9 +20,11 @@ import { IRConstant, IRVariable, isIRVariable } from '../../../variables';
 import { emitExpressionIR } from '../emit-expr';
 import {
   emitStringLiteralBlobLocalInitializerIR,
-  emitStringLiteralPtrLocalInitializerIR,
+  emitStringLiteralPtrInitializerIR,
   StringPtrInitializerLocalIREmitAttrs,
 } from './literal';
+
+import { shouldEmitStringPtrInitializer } from './literal/shouldEmitStringPtrInitializer';
 
 type LoadInitializerIREmitAttrs = IREmitterContextAttrs & {
   initializerTree: CVariableInitializerTree;
@@ -54,10 +51,6 @@ export function emitVariableLoadInitializerIR({
     const itemOffsetType = initializerTree.getIndexExpectedType(index);
 
     if (R.is(String, initializer)) {
-      const isStringPtr = getBaseTypeIfArray(
-        getBaseTypeIfPtr(destVar.type),
-      ).isPointer();
-
       const attrs: StringPtrInitializerLocalIREmitAttrs = {
         context,
         literal: initializer,
@@ -67,13 +60,10 @@ export function emitVariableLoadInitializerIR({
         },
       };
 
-      if (isStringPtr) {
+      if (shouldEmitStringPtrInitializer(destVar.type)) {
         // const char* str2[] = { "Hello world2!", "Hello world2!", 0x5 };
         // const char* HELLO_WORLD2 = "Hello world2!";
-        appendStmtResults(
-          emitStringLiteralPtrLocalInitializerIR(attrs),
-          result,
-        );
+        appendStmtResults(emitStringLiteralPtrInitializerIR(attrs), result);
 
         offset += itemOffsetType.getByteSize();
       } else {

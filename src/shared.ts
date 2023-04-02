@@ -7,28 +7,10 @@
 // todo: Add ternary
 // todo: Fix calling fn with copy of struct
 export const MOCK_C_FILE = /* c */ `
-  int strlen(const char* str) {
-    for (int i = 0;;++i) {
-      if (*(str + i) == 0) {
-        return i;
-      }
-    }
-
-    return -1;
-  }
+  struct Vec2 { int x, y; };
+  struct Vec2 arr[] = { { .x = 1, .y = 2 }, { .x = 3, .y = 4 }};
   void main() {
-    const char* HELLO_WORLD = "Hello world!";
-    const char HELLO_WORLD2[] = "Hello world2!";
-    const char* HELLO_WORLD3[] = { "Hello world3!", "Hello world45623!" }; // incorrect result
-
-    int length = strlen(HELLO_WORLD);
-    asm("xchg dx, dx");
-
-    int length2 = strlen(HELLO_WORLD2);
-    asm("xchg dx, dx");
-
-    int length3 = strlen(HELLO_WORLD3[1]);
-    asm("xchg dx, dx");
+    arr[0].x++;
   }
 `;
 
