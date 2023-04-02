@@ -106,7 +106,7 @@ describe('Variables initialization', () => {
         mov word [bp - 3], 25928  ; *(letters{0}: int*2B) = store %25928: int2B
         mov byte [bp - 1], 0      ; *(letters{0}: char[3]*2B + %2) = store %0: char1B
         lea bx, [bp - 3]          ; %t{0}: char[3]*2B = lea letters{0}: char[3]*2B
-        mov al, [bx]              ; %t{2}: char1B = load %t{0}: char[3]*2B
+        mov al, [bx]              ; %t{2}: char1B = load %t{1}: char[3]*2B
         add al, 2                 ; %t{3}: char1B = %t{2}: char1B plus %2: char1B
         movzx cx, al
         mov word [bp - 5], cx     ; *(a{0}: int*2B) = store %t{3}: char1B
@@ -262,14 +262,13 @@ describe('Variables initialization', () => {
         push bp
         mov bp, sp
         sub sp, 2
-        mov ax, word [@@_c_0_]    ; %t{1}: const char*2B = load %t{0}: const char**2B
-        mov word [bp - 2], ax     ; *(letters1{0}: const char**2B) = store %t{1}: const char*2B
+        mov bx, @@_c_0_           ; %t{0}: const char*2B = lea c{0}: const char[1]*2B
+        mov word [bp - 2], bx     ; *(letters1{0}: const char**2B) = store %t{0}: const char*2B
         mov sp, bp
         pop bp
         ret
         @@_c_0_:
-        dw @@_c_0_@allocated$0_0
-        @@_c_0_@allocated$0_0: db "H"
+        db "H"
       `);
     });
 
@@ -287,24 +286,21 @@ describe('Variables initialization', () => {
         push bp
         mov bp, sp
         sub sp, 6
-        mov ax, word [@@_c_0_]    ; %t{1}: const char*2B = load %t{0}: const char**2B
-        mov word [bp - 2], ax     ; *(letters1{0}: const char**2B) = store %t{1}: const char*2B
-        mov bx, word [@@_c_1_]    ; %t{3}: const char*2B = load %t{2}: const char**2B
-        mov word [bp - 4], bx     ; *(letters2{0}: char**2B) = store %t{3}: const char*2B
-        mov cx, word [@@_c_2_]    ; %t{5}: const char*2B = load %t{4}: const char**2B
-        mov word [bp - 6], cx     ; *(letters3{0}: const char**2B) = store %t{5}: const char*2B
+        mov bx, @@_c_0_           ; %t{0}: const char*2B = lea c{0}: const char[1]*2B
+        mov word [bp - 2], bx     ; *(letters1{0}: const char**2B) = store %t{0}: const char*2B
+        mov di, @@_c_1_           ; %t{1}: char*2B = lea c{1}: char[1]*2B
+        mov word [bp - 4], di     ; *(letters2{0}: char**2B) = store %t{1}: char*2B
+        mov si, @@_c_2_           ; %t{2}: const char*2B = lea c{2}: const char[1]*2B
+        mov word [bp - 6], si     ; *(letters3{0}: const char**2B) = store %t{2}: const char*2B
         mov sp, bp
         pop bp
         ret
         @@_c_0_:
-        dw @@_c_0_@allocated$0_0
-        @@_c_0_@allocated$0_0: db "Hell"
+        db "Hell"
         @@_c_1_:
-        dw @@_c_1_@allocated$0_0
-        @@_c_1_@allocated$0_0: db "Hello"
+        db "Hello"
         @@_c_2_:
-        dw @@_c_2_@allocated$0_0
-        @@_c_2_@allocated$0_0: db "Hello world"
+        db "Hello world"
       `);
     });
 
@@ -394,120 +390,81 @@ describe('Variables initialization', () => {
         push bp
         mov bp, sp
         sub sp, 14
-        mov ax, word [@@_c_0_]    ; %t{10}: const char*2B = load %t{9}: const char**2B
-        mov word [bp - 2], ax     ; *(HELLO_WORLD{0}: const char**2B) = store %t{10}: const char*2B
-        mov bx, @@_c_1_           ; %t{11}: const char*2B = lea c{1}: const char[1]*2B
-        mov word [bp - 4], bx     ; *(HELLO_WORLD2{0}: const char**2B) = store %t{11}: const char*2B
-        mov cx, word [@@_c_2_]    ; %t{13}: const char*2B = load %t{12}: const char**2B
-        mov word [bp - 8], cx     ; *(HELLO_WORLD3{0}: const char*[2]*2B) = store %t{13}: const char*2B
-        mov dx, word [@@_c_3_]    ; %t{15}: const char*2B = load %t{14}: const char**2B
-        mov word [bp - 6], dx     ; *(HELLO_WORLD3{0}: const char*[2]*2B + %2) = store %t{15}: const char*2B
-        mov di, [bp - 2]          ; %t{17}: const char*2B = load HELLO_WORLD{0}: const char**2B
-        push di
+        mov bx, @@_c_0_           ; %t{9}: const char*2B = lea c{0}: const char[1]*2B
+        mov word [bp - 2], bx     ; *(HELLO_WORLD{0}: const char**2B) = store %t{9}: const char*2B
+        mov di, @@_c_1_           ; %t{10}: const char*2B = lea c{1}: const char[1]*2B
+        mov word [bp - 4], di     ; *(HELLO_WORLD2{0}: const char**2B) = store %t{10}: const char*2B
+        mov ax, word [@@_c_2_]    ; %t{12}: const char*2B = load %t{11}: const char**2B
+        mov word [bp - 8], ax     ; *(HELLO_WORLD3{0}: const char*[2]*2B) = store %t{12}: const char*2B
+        mov cx, word [@@_c_3_]    ; %t{14}: const char*2B = load %t{13}: const char**2B
+        mov word [bp - 6], cx     ; *(HELLO_WORLD3{0}: const char*[2]*2B + %2) = store %t{14}: const char*2B
+        mov si, [bp - 2]          ; %t{16}: const char*2B = load HELLO_WORLD{0}: const char**2B
+        push si
         call @@_fn_strlen
-        mov word [bp - 10], ax    ; *(length{0}: int*2B) = store %t{18}: int2B
+        mov word [bp - 10], ax    ; *(length{0}: int*2B) = store %t{17}: int2B
         xchg dx, dx
-        mov bx, [bp - 4]          ; %t{20}: const char*2B = load HELLO_WORLD2{0}: const char**2B
+        mov bx, [bp - 4]          ; %t{19}: const char*2B = load HELLO_WORLD2{0}: const char**2B
         push bx
         call @@_fn_strlen
-        mov word [bp - 12], ax    ; *(length2{0}: int*2B) = store %t{21}: int2B
+        mov word [bp - 12], ax    ; *(length2{0}: int*2B) = store %t{20}: int2B
         xchg dx, dx
-        lea bx, [bp - 8]          ; %t{23}: const char*[2]*2B = lea HELLO_WORLD3{0}: const char*[2]*2B
-        add bx, 2                 ; %t{24}: const char*[2]*2B = %t{23}: const char*[2]*2B plus %2: int2B
-        mov cx, [bx]              ; %t{25}: const char*2B = load %t{24}: const char*[2]*2B
+        lea bx, [bp - 8]          ; %t{22}: const char*[2]*2B = lea HELLO_WORLD3{0}: const char*[2]*2B
+        add bx, 2                 ; %t{23}: const char*[2]*2B = %t{22}: const char*[2]*2B plus %2: int2B
+        mov cx, [bx]              ; %t{24}: const char*2B = load %t{23}: const char*[2]*2B
         push cx
         call @@_fn_strlen
-        mov word [bp - 14], ax    ; *(length3{0}: int*2B) = store %t{26}: int2B
+        mov word [bp - 14], ax    ; *(length3{0}: int*2B) = store %t{25}: int2B
         xchg dx, dx
         mov sp, bp
         pop bp
         ret
         @@_c_0_:
-        dw @@_c_0_@allocated$0_0
-        @@_c_0_@allocated$0_0: db "Hello world!"
+        db "Hello world!"
         @@_c_1_:
         db "Hello world2!"
         @@_c_2_:
-        dw @@_c_2_@allocated$0_0
-        @@_c_2_@allocated$0_0: db "Hello world3!"
+        dw @@_c_2_@str$0_0
+        @@_c_2_@str$0_0: db "Hello world3!"
         @@_c_3_:
-        dw @@_c_3_@allocated$0_0
-        @@_c_3_@allocated$0_0: db "Hello world45623!"
+        dw @@_c_3_@str$0_0
+        @@_c_3_@str$0_0: db "Hello world45623!"
       `);
     });
 
     test('multidimensional access to string array', () => {
       expect(/* cpp */ `
-        int strlen(const char* str) {
-          for (int i = 0;;++i) {
-            if (*(str + i) == 0) {
-              return i;
-            }
-          }
-
-          return -1;
-        }
         void main() {
           const char* str2[] = { "Hello world2!", "Hello world344!", 0x5 };
           char a = str2[1][10];
         }
       `).toCompiledAsmBeEqual(`
         cpu 386
-        ; def strlen(str{0}: const char**2B): [ret: int2B]
-        @@_fn_strlen:
-        push bp
-        mov bp, sp
-        sub sp, 2
-        mov word [bp - 2], 0      ; *(i{0}: int*2B) = store %0: int2B
-        @@_L1:
-        mov bx, [bp + 4]          ; %t{2}: const char*2B = load str{0}: const char**2B
-        add bx, word [bp - 2]     ; %t{4}: const char*2B = %t{2}: const char*2B plus %t{3}: int2B
-        mov al, [bx]              ; %t{5}: const char1B = load %t{4}: const char*2B
-        cmp al, 0                 ; %t{6}: i1:zf = icmp %t{5}: const char1B equal %0: char1B
-        jnz @@_L4                 ; br %t{6}: i1:zf, false: L4
-        @@_L5:
-        mov ax, [bp - 2]
-        mov sp, bp
-        pop bp
-        ret 2
-        @@_L4:
-        mov ax, [bp - 2]
-        add ax, 1                 ; %t{1}: int2B = %t{0}: int2B plus %1: int2B
-        mov word [bp - 2], ax     ; *(i{0}: int*2B) = store %t{1}: int2B
-        jmp @@_L1                 ; jmp L1
-        @@_L3:
-        mov ax, word -1
-        mov sp, bp
-        pop bp
-        ret 2
-
         ; def main():
         @@_fn_main:
         push bp
         mov bp, sp
         sub sp, 7
-        mov ax, word [@@_c_0_]    ; %t{10}: const char*2B = load %t{9}: const char**2B
-        mov word [bp - 6], ax     ; *(str2{0}: const char*[3]*2B) = store %t{10}: const char*2B
-        mov bx, word [@@_c_1_]    ; %t{12}: const char*2B = load %t{11}: const char**2B
-        mov word [bp - 4], bx     ; *(str2{0}: const char*[3]*2B + %2) = store %t{12}: const char*2B
+        mov ax, word [@@_c_0_]    ; %t{1}: const char*2B = load %t{0}: const char**2B
+        mov word [bp - 6], ax     ; *(str2{0}: const char*[3]*2B) = store %t{1}: const char*2B
+        mov bx, word [@@_c_1_]    ; %t{3}: const char*2B = load %t{2}: const char**2B
+        mov word [bp - 4], bx     ; *(str2{0}: const char*[3]*2B + %2) = store %t{3}: const char*2B
         mov word [bp - 2], 5      ; *(str2{0}: const char*[3]*2B + %4) = store %5: const char*2B
-        lea di, [bp - 6]          ; %t{13}: const char*[3]*2B = lea str2{0}: const char*[3]*2B
-        add di, 2                 ; %t{14}: const char*[3]*2B = %t{13}: const char*[3]*2B plus %2: int2B
-        mov cx, [di]              ; %t{15}: const char*[3]6B = load %t{14}: const char*[3]*2B
-        add cx, 10                ; %t{16}: const char**2B = %t{15}: const char*[3]6B plus %10: int2B
+        lea di, [bp - 6]          ; %t{4}: const char*[3]*2B = lea str2{0}: const char*[3]*2B
+        add di, 2                 ; %t{5}: const char*[3]*2B = %t{4}: const char*[3]*2B plus %2: int2B
+        mov cx, [di]              ; %t{6}: const char*[3]6B = load %t{5}: const char*[3]*2B
+        add cx, 10                ; %t{7}: const char**2B = %t{6}: const char*[3]6B plus %10: int2B
         mov si, cx
-        mov cx, [si]              ; %t{17}: const char*2B = load %t{16}: const char**2B
-        mov byte [bp - 7], cl     ; *(a{0}: char*2B) = store %t{17}: const char*2B
+        mov cx, [si]              ; %t{8}: const char*2B = load %t{7}: const char**2B
+        mov byte [bp - 7], cl     ; *(a{0}: char*2B) = store %t{8}: const char*2B
         mov sp, bp
         pop bp
         ret
-
         @@_c_0_:
-        dw @@_c_0_@allocated$0_0
-        @@_c_0_@allocated$0_0: db "Hello world2!"
+        dw @@_c_0_@str$0_0
+        @@_c_0_@str$0_0: db "Hello world2!"
         @@_c_1_:
-        dw @@_c_1_@allocated$0_0
-        @@_c_1_@allocated$0_0: db "Hello world344!"
+        dw @@_c_1_@str$0_0
+        @@_c_1_@str$0_0: db "Hello world344!"
       `);
     });
 
@@ -538,9 +495,10 @@ describe('Variables initialization', () => {
         mov word [bp - 2], 0      ; *(i{0}: int*2B) = store %0: int2B
         @@_L1:
         mov bx, [bp + 4]          ; %t{2}: const char*2B = load str{0}: const char**2B
-        add bx, word [bp - 2]     ; %t{5}: const char*2B = %t{2}: const char*2B plus %t{3}: const char*2B
-        mov al, [bx]              ; %t{6}: const char1B = load %t{5}: const char*2B
-        mov byte [bp - 3], al     ; *(s{0}: char*2B) = store %t{6}: const char1B
+        mov ax, [bp - 2]
+        add bx, ax                ; %t{5}: const char*2B = %t{2}: const char*2B plus %t{4}: const char*2B
+        mov cl, [bx]              ; %t{6}: const char1B = load %t{5}: const char*2B
+        mov byte [bp - 3], cl     ; *(s{0}: char*2B) = store %t{6}: const char1B
         cmp byte [bp - 3], 0      ; %t{8}: i1:zf = icmp %t{7}: char1B equal %0: char1B
         jnz @@_L4                 ; br %t{8}: i1:zf, false: L4
         @@_L5:
@@ -558,7 +516,6 @@ describe('Variables initialization', () => {
         mov sp, bp
         pop bp
         ret 2
-
         ; def main():
         @@_fn_main:
         push bp
@@ -571,10 +528,9 @@ describe('Variables initialization', () => {
         mov sp, bp
         pop bp
         ret
-
         @@_c_0_:
-        dw @@_c_0_@allocated$0_0
-        @@_c_0_@allocated$0_0: db "Hello world 34234!"
+        dw @@_c_0_@str$0_0
+        @@_c_0_@str$0_0: db "Hello world 34234!"
       `);
     });
   });

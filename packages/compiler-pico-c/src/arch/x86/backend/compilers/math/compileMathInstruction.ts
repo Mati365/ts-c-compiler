@@ -14,6 +14,7 @@ import { X86CompilerInstructionFnAttrs } from '../../../constants/types';
 import { genInstruction, withInlineComment } from '../../../asm-utils';
 import { ensureFunctionNotOverridesOutput } from './ensureFunctionNotOverrideOutput';
 import { castToPointerIfArray } from '@compiler/pico-c/frontend/analyze/casts';
+import { isNopMathInstruction } from './isNopMathInstruction';
 
 const BinaryOperatorX86Opcode: Partial<Record<CMathOperator, string>> = {
   [TokenType.BIT_OR]: 'xor',
@@ -120,35 +121,37 @@ export function compileMathInstruction({
       let operatorAsm: string = null;
       const opcode = BinaryOperatorX86Opcode[operator];
 
-      if (opcode) {
-        operatorAsm = genInstruction(
-          opcode,
-          leftAllocResult.value,
-          rightAllocResult.value,
-        );
-      } else if (operator === TokenType.MUL) {
-        if (
-          rightAllocResult.type === IRArgDynamicResolverType.NUMBER &&
-          rightAllocResult.value > 0 &&
-          rightAllocResult.value % 2 === 0 &&
-          Number.isInteger(Math.log2(rightAllocResult.value))
-        ) {
-          // transform `mul` with arg `2`, `4`, itp. into `shl`
+      if (!isNopMathInstruction(instruction)) {
+        if (opcode) {
           operatorAsm = genInstruction(
-            'shl',
-            leftAllocResult.value,
-            Math.log2(rightAllocResult.value),
-          );
-        } else {
-          // compile normal `imul`
-          operatorAsm = genInstruction(
-            'imul',
+            opcode,
             leftAllocResult.value,
             rightAllocResult.value,
           );
+        } else if (operator === TokenType.MUL) {
+          if (
+            rightAllocResult.type === IRArgDynamicResolverType.NUMBER &&
+            rightAllocResult.value > 0 &&
+            rightAllocResult.value % 2 === 0 &&
+            Number.isInteger(Math.log2(rightAllocResult.value))
+          ) {
+            // transform `mul` with arg `2`, `4`, itp. into `shl`
+            operatorAsm = genInstruction(
+              'shl',
+              leftAllocResult.value,
+              Math.log2(rightAllocResult.value),
+            );
+          } else {
+            // compile normal `imul`
+            operatorAsm = genInstruction(
+              'imul',
+              leftAllocResult.value,
+              rightAllocResult.value,
+            );
+          }
+        } else {
+          throw new CBackendError(CBackendErrorCode.UNKNOWN_MATH_OPERATOR);
         }
-      } else {
-        throw new CBackendError(CBackendErrorCode.UNKNOWN_MATH_OPERATOR);
       }
 
       return [
@@ -160,7 +163,7 @@ export function compileMathInstruction({
           context,
         }),
         withInlineComment(operatorAsm, instruction.getDisplayName()),
-      ];
+      ].filter(Boolean);
     }
 
     case TokenType.MOD:

@@ -169,8 +169,8 @@ export class IRVariableAllocator {
 
     let generatedVar = tmpVar.ofType(extractedType).ofIncrementedSuffix();
 
-    if (isIRVariable(typeOrVar) && typeOrVar.virtualLocalArrayPtr) {
-      generatedVar = generatedVar.ofVirtualLocalArrayPtr();
+    if (isIRVariable(typeOrVar) && typeOrVar.virtualArrayPtr) {
+      generatedVar = generatedVar.ofVirtualArrayPtr();
     }
 
     return this.allocVariable(generatedVar, initializer);

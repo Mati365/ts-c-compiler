@@ -15,7 +15,7 @@ type VirtualArrayPtrInitializerCheckAttrs = {
   arch: CCompilerArch;
 };
 
-export function checkIfVirtualLocalArrayPtr({
+export function checkIfVirtualGlobalArrayPtr({
   type,
   arch,
   initializer,
@@ -32,6 +32,6 @@ export function checkIfVirtualLocalArrayPtr({
     (isStringPtr || isArrayType) &&
     (!isArrayType || type.getSourceType().isConst()) &&
     initializer.hasOnlyConstantExpressions() &&
-    initializer.getFlattenNonLiteralScalarFieldsCount() > (isStringPtr ? 1 : 3)
+    initializer.getFlattenNonLiteralScalarFieldsCount() > 1
   );
 }

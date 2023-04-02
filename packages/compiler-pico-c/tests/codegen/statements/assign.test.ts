@@ -227,7 +227,7 @@ describe('Variable assign', () => {
         push bp
         mov bp, sp
         sub sp, 2
-        mov word [bp - 2], 2816   ; *(addr{0}: int**2B) = store %2816: int2B
+        mov word [bp - 2], 2816   ; *(addr{0}: int**2B) = store %2816: int*2B
         mov bx, [bp - 2]          ; %t{0}: int*2B = load addr{0}: int**2B
         mov word [bx], 2          ; *(%t{0}: int*2B) = store %2: char1B
         mov sp, bp

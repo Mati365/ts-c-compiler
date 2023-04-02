@@ -31,12 +31,14 @@ describe('Function call', () => {
         sub sp, 6
         mov word [bp - 2], 4      ; *(a{0}: int*2B) = store %4: int2B
         mov ax, [bp - 2]
+        mov bx, ax                ; swap
         add ax, 7                 ; %t{1}: int2B = %t{0}: int2B plus %7: char1B
         mov word [bp - 4], ax     ; *(ks{0}: int*2B) = store %t{1}: int2B
+        push bx                   ; preserve: %t{0}
         call @@_fn_test
-        mov ax, [bp - 2]
-        add ax, 10                ; %t{4}: int2B = %t{3}: int2B plus %10: char1B
-        mov word [bp - 6], ax     ; *(k{1}: int*2B) = store %t{4}: int2B
+        pop bx                    ; restore: %t{0}
+        add bx, 10                ; %t{4}: int2B = %t{0}: int2B plus %10: char1B
+        mov word [bp - 6], bx     ; *(k{1}: int*2B) = store %t{4}: int2B
         mov sp, bp
         pop bp
         ret
@@ -187,15 +189,15 @@ describe('Function call', () => {
         @@_fn_main:
         push bp
         mov bp, sp
-        sub sp, 2
-        mov bx, @@_c_0_           ; %t{2}: const char*2B = lea c{0}: const char[6]*2B
-        mov word [bp - 2], bx     ; *(%t{1}: const char**2B) = store %t{2}: const char*2B
-        push word [bp - 2]
+        mov ax, word [@@_c_0_]    ; %t{2}: const char*2B = load %t{1}: const char**2B
+        push ax
         call @@_fn_printf
         mov sp, bp
         pop bp
         ret
-        @@_c_0_: db 72, 101, 108, 108, 111, 0
+        @@_c_0_:
+        dw @@_c_0_@str$0_0
+        @@_c_0_@str$0_0: db "Hello"
       `);
     });
 
@@ -219,20 +221,22 @@ describe('Function call', () => {
         @@_fn_main:
         push bp
         mov bp, sp
-        sub sp, 4
-        mov bx, @@_c_0_           ; %t{0}: const char*2B = lea c{0}: const char[13]*2B
+        sub sp, 2
+        mov bx, @@_c_0_           ; %t{0}: const char*2B = lea c{0}: const char[1]*2B
         mov word [bp - 2], bx     ; *(str{1}: const char**2B) = store %t{0}: const char*2B
-        mov di, @@_c_1_           ; %t{3}: const char*2B = lea c{1}: const char[6]*2B
-        mov word [bp - 4], di     ; *(%t{2}: const char**2B) = store %t{3}: const char*2B
-        mov si, [bp - 2]          ; %t{4}: const char*2B = load str{1}: const char**2B
-        push si
-        push word [bp - 4]
+        mov ax, word [@@_c_1_]    ; %t{3}: const char*2B = load %t{2}: const char**2B
+        mov di, [bp - 2]          ; %t{4}: const char*2B = load str{1}: const char**2B
+        push di
+        push ax
         call @@_fn_printf
         mov sp, bp
         pop bp
         ret
-        @@_c_0_: db 72, 101, 108, 108, 111, 32, 119, 111, 114, 108, 100, 33, 0
-        @@_c_1_: db 72, 101, 108, 108, 111, 0
+        @@_c_0_:
+        db "Hello world!"
+        @@_c_1_:
+        dw @@_c_1_@str$0_0
+        @@_c_1_@str$0_0: db "Hello"
       `);
     });
   });

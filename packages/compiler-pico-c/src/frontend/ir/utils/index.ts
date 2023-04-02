@@ -1,3 +1,4 @@
+export * from './checkIfVirtualGlobalArrayPtr';
 export * from './checkIfVirtualLocalArrayPtr';
 export * from './getBiggerIRArg';
 export * from './getSmallerIRArg';

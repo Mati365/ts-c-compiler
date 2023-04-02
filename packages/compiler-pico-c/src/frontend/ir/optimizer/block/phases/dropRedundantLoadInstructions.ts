@@ -74,7 +74,9 @@ export function dropRedundantLoadInstructions(instructions: IRInstruction[]) {
       } else {
         state.srcLoads[inputVar.name] = instruction;
       }
-    } else if (
+    }
+
+    if (
       isIRRetInstruction(instruction) ||
       isIRCallInstruction(instruction) ||
       !isIRBranchInstruction(instruction)

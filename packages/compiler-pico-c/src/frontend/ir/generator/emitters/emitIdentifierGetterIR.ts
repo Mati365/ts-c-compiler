@@ -1,5 +1,7 @@
 import * as R from 'ramda';
 
+import { getBaseType } from '@compiler/pico-c/frontend/analyze/types/utils';
+
 import { TokenType } from '@compiler/lexer/shared';
 import {
   CPointerType,
@@ -45,10 +47,6 @@ import {
 
 import { IRError, IRErrorCode } from '../../errors/IRError';
 import { getTypeAtOffset } from '../../utils';
-import {
-  getBaseType,
-  getBaseTypeIfPtr,
-} from '@compiler/pico-c/frontend/analyze/types/utils';
 
 type LvalueExpressionIREmitAttrs = IREmitterContextAttrs & {
   node: ASTCCompilerNode;
@@ -133,19 +131,15 @@ export function emitIdentifierGetterIR({
             );
           } else if (globalVariables.hasVariable(name)) {
             const srcGlobalVar = globalVariables.getVariable(name);
-            const tmpAddressVar = allocator.allocTmpVariable(srcGlobalVar);
-            const tmpDestVar = allocator.allocTmpVariable(
-              getBaseTypeIfPtr(srcGlobalVar.type),
-            );
+            const tmpAddressVar = allocator.allocTmpVariable(srcGlobalVar.type);
 
             // emits for global label
-            lastIRVar = tmpDestVar;
+            lastIRVar = tmpAddressVar;
             instructions.push(
               new IRLabelOffsetInstruction(
                 IRLabel.ofName(srcGlobalVar.name),
                 tmpAddressVar,
               ),
-              new IRLoadInstruction(tmpAddressVar, tmpDestVar),
             );
           } else {
             const irVariable = allocator.getVariable(name);
@@ -158,7 +152,7 @@ export function emitIdentifierGetterIR({
              * which is transformed into pointer that is pointing
              * not into te stack but somewhere else
              */
-            if (irVariable.virtualLocalArrayPtr) {
+            if (irVariable.virtualArrayPtr) {
               lastIRVar = allocator.allocPlainAddressVariable(irVariable.type);
               instructions.push(new IRLoadInstruction(irVariable, lastIRVar));
             } else if (

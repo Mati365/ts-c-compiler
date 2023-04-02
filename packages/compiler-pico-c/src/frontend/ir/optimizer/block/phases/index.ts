@@ -2,7 +2,6 @@ export * from './concatConstantStoreInstructions';
 export * from './dropConstantLabelOffsetsArgs';
 export * from './dropDeadStoreInstructions';
 export * from './dropInstructionsWithOrphanOutputs';
-export * from './dropNopMathInstructions';
 export * from './dropOrConcatConstantInstructions';
 export * from './dropRedundantAddressInstructions';
 export * from './dropRedundantLabelInstructions';
