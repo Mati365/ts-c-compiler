@@ -101,6 +101,61 @@ describe('Global variables declaration', () => {
     `);
   });
 
+  test('array of string literal pointers', () => {
+    expect(/* cpp */ `
+      const char* as[] = { "SDASD" };
+      void main() {
+        char a = as[0][1];
+      }
+    `).toCompiledAsmBeEqual(`
+      cpu 386
+      ; def main():
+      @@_fn_main:
+      push bp
+      mov bp, sp
+      sub sp, 1
+      mov ax, word [@@_c_0_]    ; %t{2}: const char*[1]2B = load %t{0}: const char*[1]*2B
+      add ax, 1                 ; %t{3}: const char**2B = %t{2}: const char*[1]2B plus %1: int2B
+      mov bx, ax
+      mov ax, [bx]              ; %t{4}: const char*2B = load %t{3}: const char**2B
+      mov byte [bp - 1], al     ; *(a{0}: char*2B) = store %t{4}: const char*2B
+      mov sp, bp
+      pop bp
+      ret
+
+      @@_c_0_:
+      dw @@_c_0_@allocated$0_0
+      @@_c_0_@allocated$0_0: db "SDASD"
+    `);
+  });
+
+  test('array of characters', () => {
+    expect(/* cpp */ `
+      const char as[] = "SDASD";
+      void main() {
+        char a = as[1];
+      }
+    `).toCompiledAsmBeEqual(`
+      cpu 386
+      ; def main():
+      @@_fn_main:
+      push bp
+      mov bp, sp
+      sub sp, 1
+      mov ax, @@_c_0_
+      add ax, 1                 ; %t{1}: const char[6]*2B = %t{0}: const char[6]*2B plus %1: int2B
+      mov bx, ax
+      mov al, [bx]              ; %t{2}: const char1B = load %t{1}: const char[6]*2B
+      mov byte [bp - 1], al     ; *(a{0}: char*2B) = store %t{2}: const char1B
+      mov sp, bp
+      pop bp
+      ret
+
+      @@_c_0_:
+      db "SDASD"
+    `);
+  });
+
   test('advanced global variables arithmetic', () => {
     expect(/* cpp */ `
       int j[] = { 1, 2, 3 };
@@ -202,18 +257,6 @@ describe('Global variables declaration', () => {
         arr[0].x++;
       }
     `).toCompiledAsmBeEqual(`
-      cpu 386
-      ; def main():
-      @@_fn_main:
-      push bp
-      mov bp, sp
-      mov ax, word [@@_c_0_]    ; %t{1}: int2B = load %t{0}: int*2B
-      add ax, 1                 ; %t{2}: int2B = %t{1}: int2B plus %1: int2B
-      mov word [@@_c_0_], ax    ; *(%t{0}: int*2B) = store %t{2}: int2B
-      mov sp, bp
-      pop bp
-      ret
-      @@_c_0_: dw 1, 2, 3, 4
     `);
   });
 
@@ -232,13 +275,15 @@ describe('Global variables declaration', () => {
       push bp
       mov bp, sp
       sub sp, 2
-      mov ax, word [@@_c_0_]    ; %t{1}: const char**2B = load %t{0}: const char**2B
-      mov word [bp - 2], ax     ; *(ptr2{0}: char**2B) = store %t{1}: const char**2B
+      mov ax, word [@@_c_0_]    ; %t{1}: const char*2B = load %t{0}: const char**2B
+      mov word [bp - 2], ax     ; *(ptr2{0}: char**2B) = store %t{1}: const char*2B
       mov sp, bp
       pop bp
       ret
-      @@_c_0_: dw 47104
-      @@_c_1_: db 1, 2
+      @@_c_0_:
+      dw 47104
+      @@_c_1_:
+      db 1, 2
     `);
   });
 
@@ -259,12 +304,13 @@ describe('Global variables declaration', () => {
       @@_fn_main:
       push bp
       mov bp, sp
-      mov ax, word [@@_c_0_]    ; %t{1}: const char**2B = load %t{0}: const char**2B
+      mov ax, word [@@_c_0_]    ; %t{1}: const char*2B = load %t{0}: const char**2B
       mov gs, ax
       mov sp, bp
       pop bp
       ret
-      @@_c_0_: dw 47104
+      @@_c_0_:
+      dw 47104
     `);
   });
 
@@ -291,25 +337,28 @@ describe('Global variables declaration', () => {
       mov sp, bp
       pop bp
       ret 2
-
       ; def main():
       @@_fn_main:
       push bp
       mov bp, sp
       sub sp, 4
-      push word [@@_c_0_]
+      mov ax, word [@@_c_0_]    ; %t{3}: const char*2B = load %t{2}: const char**2B
+      push ax
       call @@_fn_strlen
-      mov word [bp - 2], ax     ; *(length{0}: int*2B) = store %t{3}: int2B
-      push @@_c_1_
+      mov word [bp - 2], ax     ; *(length{0}: int*2B) = store %t{4}: int2B
+      mov bx, word [@@_c_1_]    ; %t{7}: const char[14]14B = load %t{6}: const char[14]*2B
+      push bx
       call @@_fn_strlen
-      mov word [bp - 4], ax     ; *(length2{0}: int*2B) = store %t{6}: int2B
+      mov word [bp - 4], ax     ; *(length2{0}: int*2B) = store %t{8}: int2B
       mov sp, bp
       pop bp
       ret
-
-      @@_c_0_@allocated: db 72, 101, 108, 108, 111, 32, 119, 111, 114, 108, 100, 33, 0
-      @@_c_0_: dw @@_c_0_@allocated
-      @@_c_1_: db 72, 101, 108, 108, 111, 32, 119, 111, 114, 108, 100, 50, 33, 0
+      @@_c_0_:
+      dw @@_c_0_@allocated$0_0
+      @@_c_0_@allocated$0_0: db "Hello world!"
+      @@_c_1_:
+      dw @@_c_1_@allocated$0_0
+      @@_c_1_@allocated$0_0: db "Hello world2!"
     `);
   });
 
@@ -328,6 +377,42 @@ describe('Global variables declaration', () => {
         int length2 = strlen(HELLO_WORLD2);
       }
     `).toCompiledAsmBeEqual(`
+      cpu 386
+      ; def strlen(str{0}: const char**2B): [ret: int2B]
+      @@_fn_strlen:
+      push bp
+      mov bp, sp
+      mov ax, word -1
+      mov sp, bp
+      pop bp
+      ret 2
+
+      ; def main():
+      @@_fn_main:
+      push bp
+      mov bp, sp
+      sub sp, 4
+      mov ax, word [@@_c_0_]    ; %t{3}: const char*2B = load %t{2}: const char**2B
+      push ax
+      call @@_fn_strlen
+      mov word [bp - 2], ax     ; *(length{0}: int*2B) = store %t{4}: int2B
+      mov bx, word [@@_c_1_]    ; %t{7}: const char[14]14B = load %t{6}: const char[14]*2B
+      push bx
+      call @@_fn_strlen
+      mov word [bp - 4], ax     ; *(length2{0}: int*2B) = store %t{8}: int2B
+      mov sp, bp
+      pop bp
+      ret
+
+      @@_c_0_:
+      dw @@_c_0_@allocated$0_0
+      @@_c_0_@allocated$0_0: db "Hello world!"
+      @@_c_1_:
+      dw @@_c_1_@allocated$0_0
+      @@_c_1_@allocated$0_0: db "Hello world2!"
+      @@_c_2_:
+      dw @@_c_2_@allocated$0_0
+      @@_c_2_@allocated$0_0: db "Hello world3!"
     `);
   });
 
@@ -345,7 +430,7 @@ describe('Global variables declaration', () => {
         push bp
         mov bp, sp
         sub sp, 1
-        mov ax, word [@@_c_0_]    ; %t{1}: const char[5]5B = load %t{0}: const char[5]*2B
+        mov ax, word [@@_c_0_]    ; %t{1}: const char[6]6B = load %t{0}: const char[6]*2B
         mov bx, ax
         mov al, [bx]              ; %t{3}: const char1B = load %t{1}: const char*2B
         mov byte [bp - 1], al     ; *(a{0}: char*2B) = store %t{3}: const char1B
@@ -354,7 +439,7 @@ describe('Global variables declaration', () => {
         ret
         @@_c_0_:
         dw @@_c_0_@allocated$0_0
-        @@_c_0_@allocated$0_0: db "SDASD", 0x0
+        @@_c_0_@allocated$0_0: db "SDASD"
     `);
   });
 
@@ -366,24 +451,24 @@ describe('Global variables declaration', () => {
         char a = as[1];
       }
     `).toCompiledAsmBeEqual(`
-        cpu 386
-        ; def main():
-        @@_fn_main:
-        push bp
-        mov bp, sp
-        sub sp, 1
-        mov ax, word [@@_c_0_]    ; %t{1}: const char[5]5B = load %t{0}: const char[5]*2B
-        add ax, 1                 ; %t{2}: const char*2B = %t{1}: const char[5]5B plus %1: int2B
-        mov bx, ax
-        mov al, [bx]              ; %t{3}: const char1B = load %t{2}: const char*2B
-        mov byte [bp - 1], al     ; *(a{0}: char*2B) = store %t{3}: const char1B
-        mov sp, bp
-        pop bp
-        ret
+      cpu 386
+      ; def main():
+      @@_fn_main:
+      push bp
+      mov bp, sp
+      sub sp, 1
+      mov ax, word [@@_c_0_]    ; %t{1}: const char[6]6B = load %t{0}: const char[6]*2B
+      add ax, 1                 ; %t{2}: const char*2B = %t{1}: const char[6]6B plus %1: int2B
+      mov bx, ax
+      mov al, [bx]              ; %t{3}: const char1B = load %t{2}: const char*2B
+      mov byte [bp - 1], al     ; *(a{0}: char*2B) = store %t{3}: const char1B
+      mov sp, bp
+      pop bp
+      ret
 
-        @@_c_0_:
-        dw @@_c_0_@allocated$0_0
-        @@_c_0_@allocated$0_0: db "SDASD", 0x0
+      @@_c_0_:
+      dw @@_c_0_@allocated$0_0
+      @@_c_0_@allocated$0_0: db "SDASD"
     `);
   });
 });

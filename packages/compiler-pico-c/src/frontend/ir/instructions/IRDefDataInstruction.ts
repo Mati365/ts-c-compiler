@@ -6,6 +6,10 @@ import { IRInstruction, IRInstructionArgs } from './IRInstruction';
 import { IRVariable } from '../variables';
 import { IsOutputInstruction } from '../interfaces';
 
+type IRDefDataMeta = {
+  virtualLocalArrayPtr?: boolean;
+};
+
 export function isIRDefDataInstruction(
   instruction: IRInstruction,
 ): instruction is IRDefDataInstruction {
@@ -22,6 +26,7 @@ export class IRDefDataInstruction
   constructor(
     readonly initializer: CVariableInitializerTree,
     readonly outputVar: IRVariable,
+    readonly meta: IRDefDataMeta = {},
   ) {
     super(IROpcode.DEF_DATA);
   }

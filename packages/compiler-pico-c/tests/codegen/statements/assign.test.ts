@@ -249,7 +249,7 @@ describe('Variable assign', () => {
         push bp
         mov bp, sp
         sub sp, 2
-        mov word [bp - 2], 2816   ; *(addr{0}: char**2B) = store %2816: char1B
+        mov word [bp - 2], 2816   ; *(addr{0}: char**2B) = store %2816: char*2B
         mov bx, [bp - 2]          ; %t{0}: char*2B = load addr{0}: char**2B
         mov byte [bx], 2          ; *(%t{0}: char*2B) = store %2: char1B
         mov sp, bp
@@ -277,15 +277,15 @@ describe('Variable assign', () => {
         push bp
         mov bp, sp
         sub sp, 8
-        lea bx, [bp - 4]          ; %t{0}: struct Vec2*2B = lea vec{0}: struct Vec2*2B
-        mov word [bp - 6], bx     ; *(ptr{0}: struct Vec2**2B) = store %t{0}: struct Vec2*2B
+        lea bx, [bp - 4]          ; %t{0}: struct Vec2**2B = lea vec{0}: struct Vec2*2B
+        mov word [bp - 6], bx     ; *(ptr{0}: struct Vec2**2B) = store %t{0}: struct Vec2**2B
         mov word [bp - 2], 6      ; *(vec{0}: struct Vec2*2B + %2) = store %6: char1B
-        mov di, [bp - 6]          ; %t{3}: struct Vec2*2B = load ptr{0}: struct Vec2**2B
-        add di, 2                 ; %t{4}: int*2B = %t{3}: struct Vec2*2B plus %2: int2B
-        mov word [di], 5          ; *(%t{4}: int*2B) = store %5: char1B
-        add bx, 2                 ; %t{6}: int*2B = %t{0}: struct Vec2*2B plus %2: int2B
-        mov ax, [bx]              ; %t{7}: int2B = load %t{6}: int*2B
-        mov word [bp - 8], ax     ; *(d{0}: int*2B) = store %t{7}: int2B
+        mov di, [bp - 6]          ; %t{3}: struct Vec2***2B = load ptr{0}: struct Vec2**2B
+        add di, 2                 ; %t{4}: struct Vec2***2B = %t{3}: struct Vec2***2B plus %2: int2B
+        mov word [di], 5          ; *(%t{4}: struct Vec2***2B) = store %5: char1B
+        add bx, 2                 ; %t{6}: struct Vec2***2B = %t{0}: struct Vec2**2B plus %2: int2B
+        mov ax, [bx]              ; %t{7}: struct Vec2**2B = load %t{6}: struct Vec2***2B
+        mov word [bp - 8], ax     ; *(d{0}: int*2B) = store %t{7}: struct Vec2**2B
         mov sp, bp
         pop bp
         ret

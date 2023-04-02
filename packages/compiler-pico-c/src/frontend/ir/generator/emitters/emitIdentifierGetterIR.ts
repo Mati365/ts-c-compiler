@@ -45,7 +45,10 @@ import {
 
 import { IRError, IRErrorCode } from '../../errors/IRError';
 import { getTypeAtOffset } from '../../utils';
-import { getBaseType } from '@compiler/pico-c/frontend/analyze/types/utils';
+import {
+  getBaseType,
+  getBaseTypeIfPtr,
+} from '@compiler/pico-c/frontend/analyze/types/utils';
 
 type LvalueExpressionIREmitAttrs = IREmitterContextAttrs & {
   node: ASTCCompilerNode;
@@ -129,21 +132,36 @@ export function emitIdentifierGetterIR({
               ),
             );
           } else if (globalVariables.hasVariable(name)) {
-            const irVariable = globalVariables.getVariable(name);
+            const srcGlobalVar = globalVariables.getVariable(name);
+            const tmpAddressVar = allocator.allocTmpVariable(srcGlobalVar);
+            const tmpDestVar = allocator.allocTmpVariable(
+              getBaseTypeIfPtr(srcGlobalVar.type),
+            );
 
             // emits for global label
-            lastIRVar = allocator.allocTmpVariable(irVariable);
+            lastIRVar = tmpDestVar;
             instructions.push(
               new IRLabelOffsetInstruction(
-                IRLabel.ofName(irVariable.name),
-                lastIRVar,
+                IRLabel.ofName(srcGlobalVar.name),
+                tmpAddressVar,
               ),
+              new IRLoadInstruction(tmpAddressVar, tmpDestVar),
             );
           } else {
             const irVariable = allocator.getVariable(name);
             rootIRVar ??= irVariable;
-
-            if (
+            /**
+             * detect this case:
+             *  char array[10] = { 1, 2, 3, 4, 5, 6 };
+             *  array[1] = 2;
+             *
+             * which is transformed into pointer that is pointing
+             * not into te stack but somewhere else
+             */
+            if (irVariable.virtualLocalArrayPtr) {
+              lastIRVar = allocator.allocPlainAddressVariable(irVariable.type);
+              instructions.push(new IRLoadInstruction(irVariable, lastIRVar));
+            } else if (
               isPointerLikeType(irVariable.type) &&
               isArrayLikeType(irVariable.type.baseType)
             ) {

@@ -14,12 +14,14 @@ import {
 
 type ArrayInitializerDefAsmAttrs = {
   asmLabel: string;
+  emitItemLabels?: boolean;
   initializer: CVariableInitializerTree;
   arch: CCompilerArch;
 };
 
 export function compileArrayInitializerDefAsm({
   asmLabel,
+  emitItemLabels = true,
   initializer,
   arch,
 }: ArrayInitializerDefAsmAttrs) {
@@ -51,7 +53,7 @@ export function compileArrayInitializerDefAsm({
   //  [[1, 2], "as", [3]] -> 'db 1, 2' 'dw ptr "as"' 'db 3'
   const asm = groupedDefs.reduce<{ pre: string[]; post: string[] }>(
     (acc, group, index) => {
-      if (typeof group[0] === 'string') {
+      if (typeof group[0] === 'string' && emitItemLabels) {
         for (let i = 0; i < group.length; ++i) {
           const strStringLabel = `${asmLabel}@allocated$${index}_${i}`;
 

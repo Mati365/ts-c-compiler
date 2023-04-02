@@ -52,6 +52,10 @@ export class CVariable extends CNamedTypedEntry<CVariableDescriptor> {
     return this.value.global;
   }
 
+  isLocal() {
+    return !this.isGlobal();
+  }
+
   isInitialized() {
     return !!this.initializer;
   }

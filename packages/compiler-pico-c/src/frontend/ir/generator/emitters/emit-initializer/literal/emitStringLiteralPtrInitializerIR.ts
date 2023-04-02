@@ -35,7 +35,7 @@ export type StringPtrInitializerLocalIREmitAttrs = {
  *  const char* HELLO_WORLD2 = "Hello world2!";
  *  const char* str1 = "Hello world!";
  */
-export function emitStringLiteralPtrLocalInitializerIR({
+export function emitStringLiteralPtrInitializerIR({
   context,
   literal,
   initializerMeta = {},
