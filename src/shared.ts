@@ -7,18 +7,28 @@
 // todo: Add ternary
 // todo: Fix calling fn with copy of struct
 export const MOCK_C_FILE = /* c */ `
-  const char* VRAM_ADDR = 0xB800;
-  const char* KERNEL_INIT_MESSAGES[] = {
-    "Hello world!",
-    "Peppa pig!",
-    "Another cool title!"
-  };
+  int strlen(const char* str) {
+    for (int i = 0;;++i) {
+      if (*(str + i) == 0) {
+        return i;
+      }
+    }
 
-  void kernel_screen_println(const char* str) {
+    return -1;
   }
-
   void main() {
-    kernel_screen_println(KERNEL_INIT_MESSAGES[0]);
+    const char* HELLO_WORLD = "Hello world!";
+    const char HELLO_WORLD2[] = "Hello world2!";
+    const char* HELLO_WORLD3[] = { "Hello world3!", "Hello world45623!" }; // incorrect result
+
+    int length = strlen(HELLO_WORLD);
+    asm("xchg dx, dx");
+
+    int length2 = strlen(HELLO_WORLD2);
+    asm("xchg dx, dx");
+
+    int length3 = strlen(HELLO_WORLD3[1]);
+    asm("xchg dx, dx");
   }
 `;
 

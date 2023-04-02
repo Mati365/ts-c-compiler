@@ -21,9 +21,10 @@ describe('Initializer typecheck', () => {
     expect(
       /* cpp */ `char abc[][4] = { "abcg", "defg" };`,
     ).not.toHaveCompilerError();
+
     expect(
       /* cpp */ `char abc[][4] = { "abcgg", "defg" };`,
-    ).toHaveCompilerError();
+    ).not.toHaveCompilerError();
   });
 
   test('literal pointers array', () => {

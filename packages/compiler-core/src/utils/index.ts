@@ -28,3 +28,4 @@ export * from './padLeftLines';
 export * from './trimLines';
 export * from './assertUnreachable';
 export * from './dropFromHashQueue';
+export * from './stripNonPrintableCharacters';

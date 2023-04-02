@@ -10,6 +10,7 @@ import {
 type CastOverlapCheck = {
   ignoreConstChecks?: boolean;
   implicitCast?: boolean;
+  ignoreArrayLength?: boolean;
 };
 
 /**
@@ -63,7 +64,11 @@ export function checkLeftTypeOverlapping(
   // [left ]char[4] = [right] char*
   if (isArrayLikeType(left)) {
     if (isArrayLikeType(right)) {
-      if (!left.isUnknownSize() && left.size !== right.size) {
+      if (
+        !attrs.ignoreArrayLength &&
+        !left.isUnknownSize() &&
+        left.size !== right.size
+      ) {
         return false;
       }
 
