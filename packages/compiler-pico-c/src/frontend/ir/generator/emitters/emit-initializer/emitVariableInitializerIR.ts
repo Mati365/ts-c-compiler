@@ -65,15 +65,16 @@ export function emitVariableInitializerIR({
       const rootIRVar = allocator.allocAsPointer(
         IRVariable.ofScopeVariable(
           variable.ofType(arrayPtrType),
-        ).ofVirtualLocalArrayPtr(),
+        ).ofVirtualArrayPtr(),
       );
 
       const constArrayVar = allocator.allocDataVariable(dataType);
-      const tmpLeaAddressVar = allocator.allocTmpVariable(arrayPtrType);
+      const tmpLeaAddressVar =
+        allocator.allocPlainAddressVariable(arrayPtrType);
 
       data.push(
         new IRDefDataInstruction(initializer, constArrayVar, {
-          virtualLocalArrayPtr: true,
+          virtualArrayPtr: true,
         }),
       );
 

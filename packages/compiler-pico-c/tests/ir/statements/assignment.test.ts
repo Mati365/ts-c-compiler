@@ -75,7 +75,7 @@ describe('Assignment IR', () => {
       `);
     });
 
-    test('Optimized assign with mul by 0', () => {
+    test('Non-optimized assign with mul by 0', () => {
       expect(/* cpp */ `
         void main() {
           int a = 2;
@@ -84,12 +84,15 @@ describe('Assignment IR', () => {
       `).toCompiledIRBeEqual(/* ruby */ `
         # --- Block main ---
         def main():
-          a{0}: int*2B = alloca int2B
-          *(a{0}: int*2B) = store %2: int2B
-          b{0}: int*2B = alloca int2B
-          *(b{0}: int*2B) = store %10: char1B
-          ret
-          end-def
+        a{0}: int*2B = alloca int2B
+        *(a{0}: int*2B) = store %2: int2B
+        b{0}: int*2B = alloca int2B
+        %t{0}: int2B = load a{0}: int*2B
+        %t{1}: int2B = %t{0}: int2B mul %0: char1B
+        %t{2}: int2B = %t{1}: int2B plus %10: char1B
+        *(b{0}: int*2B) = store %t{2}: int2B
+        ret
+        end-def
       `);
     });
   });
@@ -166,15 +169,15 @@ describe('Assignment IR', () => {
           int sum = array[1] + 3 * 4;
         }
       `).toCompiledIRBeEqual(/* ruby */ `
-        # --- Block main ---
-        def main():
+          # --- Block main ---
+          def main():
           array{0}: int[2]*2B = alloca int[2]4B
           *(array{0}: int[2]*2B) = store %1: int2B
           *(array{0}: int[2]*2B + %2) = store %2: int2B
           sum{0}: int*2B = alloca int2B
-          %t{0}: int*2B = lea array{0}: int[2]*2B
-          %t{1}: int*2B = %t{0}: int*2B plus %2: int2B
-          %t{2}: int2B = load %t{1}: int*2B
+          %t{0}: int[2]*2B = lea array{0}: int[2]*2B
+          %t{1}: int[2]*2B = %t{0}: int[2]*2B plus %2: int2B
+          %t{2}: int2B = load %t{1}: int[2]*2B
           %t{4}: int2B = %t{2}: int2B plus %12: char1B
           *(sum{0}: int*2B) = store %t{4}: int2B
           ret
@@ -240,16 +243,16 @@ describe('Assignment IR', () => {
         }
       `).toCompiledIRBeEqual(/* ruby */ `
         # --- Block main ---
-        def main():
+          def main():
           array{0}: const int**2B = alloca const int*2B
           %t{0}: const int*2B = lea c{0}: const int[12]*2B
           *(array{0}: const int**2B) = store %t{0}: const int*2B
           sum{0}: int*2B = alloca int2B
           %t{1}: const int*2B = load array{0}: const int**2B
-          %t{2}: const int*2B = %t{1}: const int*2B plus %6: int2B
-          %t{3}: const int2B = load %t{2}: const int*2B
-          %t{5}: const int2B = %t{3}: const int2B plus %12: char1B
-          *(sum{0}: int*2B) = store %t{5}: const int2B
+          %t{3}: const int*2B = %t{1}: const int*2B plus %6: int2B
+          %t{4}: const int2B = load %t{3}: const int*2B
+          %t{6}: const int2B = %t{4}: const int2B plus %12: char1B
+          *(sum{0}: int*2B) = store %t{6}: const int2B
           ret
           end-def
           # --- Block Data ---
@@ -272,8 +275,8 @@ describe('Assignment IR', () => {
         *(arr{0}: struct Vec2[2]*2B + %2) = store %2: int2B
         *(arr{0}: struct Vec2[2]*2B + %4) = store %3: int2B
         *(arr{0}: struct Vec2[2]*2B + %6) = store %4: int2B
-        %t{0}: struct Vec2*2B = lea arr{0}: struct Vec2[2]*2B
-        %t{1}: struct Vec2*2B = %t{0}: struct Vec2*2B plus %4: int2B
+        %t{0}: struct Vec2[2]*2B = lea arr{0}: struct Vec2[2]*2B
+        %t{1}: struct Vec2[2]*2B = %t{0}: struct Vec2[2]*2B plus %4: int2B
         %t{2}: int2B = load %t{1}: int*2B
         %t{3}: int2B = %t{2}: int2B plus %1: int2B
         *(arr{0}: struct Vec2[2]*2B + %4) = store %t{3}: int2B
@@ -295,13 +298,13 @@ describe('Assignment IR', () => {
           *(vec{0}: struct Vec2[2]*2B + %2) = store %4: int2B
           *(vec{0}: struct Vec2[2]*2B + %4) = store %5: int2B
           sum{0}: int*2B = alloca int2B
-          %t{0}: struct Vec2*2B = lea vec{0}: struct Vec2[2]*2B
-          %t{1}: struct Vec2*2B = %t{0}: struct Vec2*2B plus %4: int2B
+          %t{0}: struct Vec2[2]*2B = lea vec{0}: struct Vec2[2]*2B
+          %t{1}: struct Vec2[2]*2B = %t{0}: struct Vec2[2]*2B plus %4: int2B
           %t{2}: int2B = load %t{1}: int*2B
-          %t{4}: int*2B = %t{0}: struct Vec2*2B plus %2: int2B
-          %t{5}: int2B = load %t{4}: int*2B
-          %t{6}: int2B = %t{2}: int2B plus %t{5}: int2B
-          *(sum{0}: int*2B) = store %t{6}: int2B
+          %t{5}: int*2B = %t{0}: struct Vec2[2]*2B plus %2: int2B
+          %t{6}: int2B = load %t{5}: int*2B
+          %t{7}: int2B = %t{2}: int2B plus %t{6}: int2B
+          *(sum{0}: int*2B) = store %t{7}: int2B
           ret
           end-def
       `);
@@ -362,8 +365,8 @@ describe('Assignment IR', () => {
           b{0}: int*2B = alloca int2B
           *(b{0}: int*2B) = store %4: int2B
           a{0}: int**2B = alloca int*2B
-          %t{0}: int*2B = lea b{0}: int*2B
-          *(a{0}: int**2B) = store %t{0}: int*2B
+          %t{0}: int**2B = lea b{0}: int*2B
+          *(a{0}: int**2B) = store %t{0}: int**2B
           ret
           end-def
       `);
@@ -377,13 +380,13 @@ describe('Assignment IR', () => {
           (*a) = 5;
         }
       `).toCompiledIRBeEqual(/* ruby */ `
-        # --- Block main ---
+          # --- Block main ---
           def main():
           b{0}: int*2B = alloca int2B
           *(b{0}: int*2B) = store %4: int2B
           a{0}: int**2B = alloca int*2B
-          %t{0}: int*2B = lea b{0}: int*2B
-          *(a{0}: int**2B) = store %t{0}: int*2B
+          %t{0}: int**2B = lea b{0}: int*2B
+          *(a{0}: int**2B) = store %t{0}: int**2B
           %t{1}: int*2B = load a{0}: int**2B
           *(%t{1}: int*2B) = store %5: char1B
           ret
@@ -404,8 +407,8 @@ describe('Assignment IR', () => {
           b{0}: int*2B = alloca int2B
           *(b{0}: int*2B) = store %4: int2B
           a{0}: int**2B = alloca int*2B
-          %t{0}: int*2B = lea b{0}: int*2B
-          *(a{0}: int**2B) = store %t{0}: int*2B
+          %t{0}: int**2B = lea b{0}: int*2B
+          *(a{0}: int**2B) = store %t{0}: int**2B
           c{0}: int*2B = alloca int2B
           %t{1}: int*2B = load a{0}: int**2B
           %t{3}: int*2B = %t{1}: int*2B plus %10: char1B
@@ -424,12 +427,12 @@ describe('Assignment IR', () => {
         }
       `).toCompiledIRBeEqual(/* ruby */ `
         # --- Block main ---
-          def main():
+        def main():
           b{0}: int*2B = alloca int2B
           *(b{0}: int*2B) = store %4: int2B
           a{0}: int**2B = alloca int*2B
-          %t{0}: int*2B = lea b{0}: int*2B
-          *(a{0}: int**2B) = store %t{0}: int*2B
+          %t{0}: int**2B = lea b{0}: int*2B
+          *(a{0}: int**2B) = store %t{0}: int**2B
           c{0}: int*2B = alloca int2B
           %t{1}: int*2B = load a{0}: int**2B
           %t{2}: int2B = load %t{1}: int*2B

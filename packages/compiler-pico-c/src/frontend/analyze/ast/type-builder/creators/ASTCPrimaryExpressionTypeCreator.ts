@@ -3,16 +3,19 @@ import {
   ASTCCompilerKind,
   ASTCPrimaryExpression,
 } from '@compiler/pico-c/frontend/parser/ast';
+
 import {
   CTypeCheckError,
   CTypeCheckErrorCode,
 } from '../../../errors/CTypeCheckError';
+
 import {
   CType,
   CPrimitiveType,
   CPointerType,
   typeofValueOrNode,
 } from '../../../types';
+
 import { ASTCTypeCreator } from './ASTCTypeCreator';
 
 /**

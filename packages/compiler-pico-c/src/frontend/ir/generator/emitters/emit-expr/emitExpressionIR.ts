@@ -297,17 +297,23 @@ export function emitExpressionIR({
 
           if (srcGlobalVar) {
             const tmpAddressVar = allocNextVariable(srcGlobalVar);
-            const tmpDestVar = allocNextVariable(
-              getBaseTypeIfPtr(srcGlobalVar.type),
-            );
 
             instructions.push(
               new IRLabelOffsetInstruction(
                 IRLabel.ofName(srcGlobalVar.name),
                 tmpAddressVar,
               ),
-              new IRLoadInstruction(tmpAddressVar, tmpDestVar),
             );
+
+            if (!srcGlobalVar.virtualArrayPtr) {
+              const tmpDestVar = allocNextVariable(
+                getBaseTypeIfPtr(srcGlobalVar.type),
+              );
+
+              instructions.push(
+                new IRLoadInstruction(tmpAddressVar, tmpDestVar),
+              );
+            }
           } else if (srcFn) {
             const tmpVar = allocNextVariable(CPointerType.ofType(srcFn.type));
 

@@ -59,7 +59,11 @@ export function emitStringLiteralPtrInitializerIR({
 
   result.data.push(
     new IRDefDataInstruction(
-      new CVariableInitializerTree(type, null, [literal]),
+      new CVariableInitializerTree(
+        CArrayType.ofStringLiteral(config.arch, literal.length),
+        null,
+        [literal],
+      ),
       constArrayVar,
     ),
   );

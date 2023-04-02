@@ -7,7 +7,7 @@ import { IRVariable } from '../variables';
 import { IsOutputInstruction } from '../interfaces';
 
 type IRDefDataMeta = {
-  virtualLocalArrayPtr?: boolean;
+  virtualArrayPtr?: boolean;
 };
 
 export function isIRDefDataInstruction(

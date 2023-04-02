@@ -15,7 +15,7 @@ export function compileDefDataInstruction({
   instruction,
   labelsResolver,
 }: DefInstructionCompilerAttrs): string[] {
-  const { initializer, outputVar, meta } = instruction;
+  const { initializer, outputVar } = instruction;
   const { asmLabel } = labelsResolver.createAndPutLabel({
     name: outputVar.name,
     type: outputVar.type,
@@ -26,6 +26,6 @@ export function compileDefDataInstruction({
     arch,
     asmLabel,
     initializer,
-    emitItemLabels: !meta.virtualLocalArrayPtr,
+    destType: outputVar.type,
   });
 }

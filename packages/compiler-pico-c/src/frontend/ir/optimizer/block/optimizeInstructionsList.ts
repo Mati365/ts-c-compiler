@@ -5,7 +5,6 @@ import {
   dropConstantLabelOffsetsArgs,
   dropDeadStoreInstructions,
   dropInstructionsWithOrphanOutputs,
-  dropNopMathInstructions,
   dropOrConcatConstantInstructions,
   dropRedundantAddressInstructions,
   dropRedundantLabelInstructions,
@@ -27,7 +26,6 @@ const optimizeFlow = compose(
   dropDeadStoreInstructions,
   dropOrConcatConstantInstructions,
   dropRedundantAddressInstructions,
-  dropNopMathInstructions,
   flipMathInstructionsOperands,
   dropConstantLabelOffsetsArgs,
 );

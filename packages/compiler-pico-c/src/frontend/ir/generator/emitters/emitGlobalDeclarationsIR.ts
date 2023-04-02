@@ -5,6 +5,8 @@ import {
 } from '@compiler/pico-c/frontend/analyze';
 
 import { IRDefDataInstruction, type IRInstruction } from '../../instructions';
+import { checkIfVirtualGlobalArrayPtr } from '../../utils';
+
 import type { IREmitterContextAttrs } from './types';
 
 type GlobalDeclarationIREmitAttrs = Omit<IREmitterContextAttrs, 'scope'> & {
@@ -29,6 +31,16 @@ export function emitGlobalDeclarationsIR({
         baseType: CPrimitiveType.char(arch),
         length: variable.type.getByteSize(),
       });
+
+    if (
+      checkIfVirtualGlobalArrayPtr({
+        type: variable.type,
+        arch,
+        initializer,
+      })
+    ) {
+      tmpOutputVar = tmpOutputVar.ofVirtualArrayPtr();
+    }
 
     instructions.push(new IRDefDataInstruction(initializer, tmpOutputVar));
     globalVariables.putVariable(originalVarName, tmpOutputVar);
