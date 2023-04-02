@@ -1,6 +1,6 @@
 import stripAnsi from 'strip-ansi';
 
-import { trimLines } from '@compiler/core/utils';
+import { stripNonPrintableCharacters, trimLines } from '@compiler/core/utils';
 import { ccompiler } from '@compiler/pico-c/ccompiler';
 
 export type MatcherResult = {
@@ -41,7 +41,10 @@ function toCompiledAsmBeEqual(
   const formattedAsmCode = normalizeAsmCode(result.unwrap());
 
   return {
-    pass: formattedAsmCode === formattedExpectedCode,
+    pass:
+      stripNonPrintableCharacters(formattedAsmCode) ===
+      stripNonPrintableCharacters(formattedExpectedCode),
+
     message: () =>
       [
         'Code:',

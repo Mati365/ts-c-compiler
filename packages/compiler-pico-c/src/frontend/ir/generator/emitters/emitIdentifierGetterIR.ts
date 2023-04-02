@@ -266,8 +266,6 @@ export function emitIdentifierGetterIR({
         // handle case for:
         //  const char* str2[]
         //  str2[0][0], str2[0] is pointer
-
-        // todo: THERE IS BUG, there are some edge cases
         if (isPointerLikeType(lastIRVar.type) && !isArrayLikeType(parentType)) {
           const newLastIRVar = allocator.allocTmpVariable(
             lastIRVar.type.baseType,

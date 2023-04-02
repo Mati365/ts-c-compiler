@@ -268,7 +268,6 @@ export function emitExpressionIR({
           emitExprResultToStack(
             emitStringLiteralPtrLocalInitializerIR({
               context,
-              loadPtr: true,
               literal: expression.stringLiteral,
             }),
           );

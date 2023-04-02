@@ -9,7 +9,6 @@ import { IRLabel, IRVariable } from '@compiler/pico-c/frontend/ir/variables';
 import {
   IRDefDataInstruction,
   IRLabelOffsetInstruction,
-  IRLeaInstruction,
   IRLoadInstruction,
   IRStoreInstruction,
 } from '../../../../instructions';
@@ -24,7 +23,6 @@ export type StringPtrInitializerLocalIREmitAttrs = {
   context: IREmitterContext;
   literal: string;
   preserveLengthTypeInfo?: boolean;
-  loadPtr?: boolean;
   initializerMeta?: {
     destVar?: IRVariable;
     offset?: number;
@@ -40,7 +38,6 @@ export type StringPtrInitializerLocalIREmitAttrs = {
 export function emitStringLiteralPtrLocalInitializerIR({
   context,
   literal,
-  loadPtr,
   initializerMeta = {},
   preserveLengthTypeInfo,
 }: StringPtrInitializerLocalIREmitAttrs): IREmitterExpressionResult {
@@ -58,6 +55,7 @@ export function emitStringLiteralPtrLocalInitializerIR({
     : type;
 
   const constArrayVar = allocator.allocDataVariable(dataType);
+  const dataLabel = IRLabel.ofName(constArrayVar.name);
 
   result.data.push(
     new IRDefDataInstruction(
@@ -66,26 +64,19 @@ export function emitStringLiteralPtrLocalInitializerIR({
     ),
   );
 
-  if (loadPtr) {
-    const tmpOffsetAddressVar = allocator.allocTmpPointer(arrayPtrType);
-    const tmpLoadAddressVar = allocator.allocTmpVariable(arrayPtrType);
+  const tmpOffsetAddressVar = allocator.allocTmpPointer(arrayPtrType);
+  const tmpLoadAddressVar = allocator.allocTmpVariable(arrayPtrType);
 
-    result.output = tmpLoadAddressVar;
-    result.instructions.push(
-      new IRLabelOffsetInstruction(
-        IRLabel.ofName(constArrayVar.name),
-        tmpOffsetAddressVar,
-      ),
-      new IRLoadInstruction(tmpOffsetAddressVar, tmpLoadAddressVar),
-    );
-  } else if (initializerMeta.destVar) {
-    const tmpLeaAddressVar = allocator.allocTmpVariable(arrayPtrType);
+  result.output = tmpLoadAddressVar;
+  result.instructions.push(
+    new IRLabelOffsetInstruction(dataLabel, tmpOffsetAddressVar),
+    new IRLoadInstruction(tmpOffsetAddressVar, tmpLoadAddressVar),
+  );
 
-    result.output = tmpLeaAddressVar;
+  if (initializerMeta.destVar) {
     result.instructions.push(
-      new IRLeaInstruction(constArrayVar, tmpLeaAddressVar),
       new IRStoreInstruction(
-        tmpLeaAddressVar,
+        tmpLoadAddressVar,
         initializerMeta.destVar,
         initializerMeta.offset,
       ),

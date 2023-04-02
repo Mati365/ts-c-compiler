@@ -170,11 +170,10 @@ export class CTypeInitializerBuilderVisitor extends CInnerTypeTreeVisitor {
       context,
     });
 
-    const exprValue = exprResult.isOk()
+    let exprValue = exprResult.isOk()
       ? exprResult.unwrap()
       : node.assignmentExpression;
 
-    const stringLiteral = R.is(String, exprValue);
     let expectedType: CType;
 
     if (!arrayItem) {
@@ -185,7 +184,7 @@ export class CTypeInitializerBuilderVisitor extends CInnerTypeTreeVisitor {
       expectedType = type;
       this.currentOffset = offset;
     } else {
-      if (stringLiteral) {
+      if (R.is(String, exprValue)) {
         expectedType = tree.getNestedInitializerGroupType();
       } else if (isPrimitiveLikeType(node.type)) {
         expectedType = this.getIndexExpectedType();
@@ -201,10 +200,26 @@ export class CTypeInitializerBuilderVisitor extends CInnerTypeTreeVisitor {
       }
     }
 
-    if (stringLiteral) {
+    if (R.is(String, exprValue)) {
       const noSizeCheck = !isPointerLikeType(baseType) || !arrayItem;
 
       this.checkStringValueTypeOrThrow(node, expectedType, exprValue);
+
+      /**
+       * Handle cases:
+       *
+       *  char str[4] = "ABCD";
+       *
+       * There should not be \null terminator appended
+       */
+      if (isArrayLikeType(expectedType)) {
+        const expectedLength = expectedType.getFlattenSize();
+
+        if (expectedLength > 0) {
+          exprValue = exprValue.substring(0, expectedLength);
+        }
+      }
+
       this.appendNextOffsetValue(exprValue, noSizeCheck);
     } else if (isCompilerTreeNode(exprValue)) {
       this.appendNextOffsetValue(
@@ -360,7 +375,11 @@ export class CTypeInitializerBuilderVisitor extends CInnerTypeTreeVisitor {
       text.length,
     );
 
-    if (!checkLeftTypeOverlapping(expectedType, initializedTextType)) {
+    if (
+      !checkLeftTypeOverlapping(expectedType, initializedTextType, {
+        ignoreArrayLength: true,
+      })
+    ) {
       throw new CTypeCheckError(
         CTypeCheckErrorCode.INCORRECT_INITIALIZED_VARIABLE_TYPE,
         node.loc.start,
