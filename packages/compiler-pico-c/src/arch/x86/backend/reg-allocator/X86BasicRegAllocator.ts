@@ -82,6 +82,7 @@ export type IRArgDynamicResolverAttrs = Pick<
   'arg' | 'size' | 'allowedRegs' | 'noOwnership' | 'forceLabelMemPtr'
 > & {
   allow?: IRArgDynamicResolverType;
+  withoutMemPtrSize?: boolean;
 };
 
 const ALLOW_ALL_ARG_RESOLVER_METHODS =
@@ -360,9 +361,11 @@ export class X86BasicRegAllocator {
     {
       prefixSize = arg.type.getByteSize(),
       forceLabelMemPtr,
+      withoutMemPtrSize,
     }: {
       prefixSize?: number;
       forceLabelMemPtr?: boolean;
+      withoutMemPtrSize?: boolean;
     } = {},
   ): IRArgAllocatorResult<string> {
     const varOwnership = this.ownership.getVarOwnership(arg.name);
@@ -376,7 +379,7 @@ export class X86BasicRegAllocator {
       return {
         asm: [],
         size: prefixSize,
-        value: `${prefixSizeName} ${stackAddr}`,
+        value: withoutMemPtrSize ? stackAddr : `${prefixSizeName} ${stackAddr}`,
       };
     }
 
@@ -385,8 +388,10 @@ export class X86BasicRegAllocator {
         asm: [],
         size: prefixSize,
         value: this.tryResolveLabelOwnershipAddr(varOwnership, {
-          size: prefixSizeName,
           forceMemPtr: forceLabelMemPtr,
+          ...(!withoutMemPtrSize && {
+            size: prefixSizeName,
+          }),
         }),
       };
     }
@@ -402,6 +407,7 @@ export class X86BasicRegAllocator {
       allowedRegs,
       noOwnership,
       forceLabelMemPtr,
+      withoutMemPtrSize,
       size = arg.type.getByteSize(),
       allow = ALLOW_ALL_ARG_RESOLVER_METHODS,
     } = attrs;
@@ -436,6 +442,8 @@ export class X86BasicRegAllocator {
       if (hasFlag(IRArgDynamicResolverType.MEM, allow)) {
         const result = this.tryResolveIRArgAsAddr(arg, {
           forceLabelMemPtr,
+          withoutMemPtrSize,
+          prefixSize: size,
         });
 
         // handle case when we want to load word but type at the address is byte
@@ -454,6 +462,7 @@ export class X86BasicRegAllocator {
           const extendedResult = this.tryResolveIRArgAsAddr(arg, {
             prefixSize: size,
             forceLabelMemPtr,
+            withoutMemPtrSize,
           });
 
           const outputReg = this.requestReg({
@@ -503,6 +512,10 @@ export class X86BasicRegAllocator {
         };
       }
     }
+
+    setTimeout(() => {
+      console.info(hasFlag(IRArgDynamicResolverType.REG, allow), arg);
+    });
 
     throw new CBackendError(CBackendErrorCode.REG_ALLOCATOR_ERROR);
   }

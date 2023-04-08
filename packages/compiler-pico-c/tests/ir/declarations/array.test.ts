@@ -119,7 +119,7 @@ describe('Arrays declarations IR', () => {
       `);
     });
 
-    test('should string as pointer to label', () => {
+    test('should store string as pointer to label', () => {
       expect(/* cpp */ `
         void main() { const char* str = "Hello world!"; }
       `).toCompiledIRBeEqual(/* ruby */ `
@@ -131,7 +131,7 @@ describe('Arrays declarations IR', () => {
         ret
         end-def
         # --- Block Data ---
-        c{0}: const char[13]*2B = const { 72, 101, 108, 108, 111, 32, 119, 111, 114, 108, 100, 33, 0 }
+        c{0}: const char[13]*2B = const { Hello world! }
       `);
     });
 

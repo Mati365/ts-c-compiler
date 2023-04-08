@@ -7,5 +7,5 @@ export function withInlineComment(line: string, msg: string) {
     return line;
   }
 
-  return `${line.padEnd(25)} ${genComment(msg)}`;
+  return `${line.trim().padEnd(25)} ${genComment(msg)}`;
 }

@@ -121,7 +121,7 @@ test('Rainbow Hello World', () => {
     jge @@_L8                 ; br %t{19}: i1:zf, true: L7, false: L8
     @@_L7:
     mov bx, [bp + 10]         ; %t{22}: const char*2B = load str{1}: const char**2B
-    add bx, word [bp - 6]     ; %t{25}: const char*2B = %t{22}: const char*2B plus %t{23}: int2B
+    add bx, word [bp - 6]     ; %t{25}: const char*2B = %t{22}: const char*2B plus %t{24}: const char*2B
     mov al, [bx]              ; %t{26}: const char1B = load %t{25}: const char*2B
     mov byte [bp - 7], al     ; *(c{0}: const char*2B) = store %t{26}: const char1B
     mov cx, [bp - 6]
@@ -149,7 +149,7 @@ test('Rainbow Hello World', () => {
     @@_fn_main:
     push bp
     mov bp, sp
-    sub sp, 4
+    sub sp, 2
     call @@_fn_clear_screen
     mov word [bp - 2], 0      ; *(i{0}: int*2B) = store %0: int2B
     @@_L9:
@@ -160,21 +160,23 @@ test('Rainbow Hello World', () => {
     mov ax, [bp - 2]
     mov bx, ax                ; swap
     add ax, 1                 ; %t{42}: int2B = %t{40}: int2B plus %1: char1B
-    mov di, @@_c_0_           ; %t{44}: const char*2B = lea c{0}: const char[13]*2B
-    mov word [bp - 4], di     ; *(%t{43}: const char**2B) = store %t{44}: const char*2B
-    push word [bp - 4]
+    mov cx, [@@_c_0_]         ; %t{44}: const char*2B = load %t{43}: const char**2B
+    push bx                   ; preserve: %t{40}
+    push cx
     push ax
     push bx
     push 0
     call @@_fn_printf
-    mov ax, [bp - 2]
-    add ax, 1                 ; %t{38}: int2B = %t{37}: int2B plus %1: int2B
-    mov word [bp - 2], ax     ; *(i{0}: int*2B) = store %t{38}: int2B
+    pop bx                    ; restore: %t{40}
+    add bx, 1                 ; %t{38}: int2B = %t{40}: int2B plus %1: int2B
+    mov word [bp - 2], bx     ; *(i{0}: int*2B) = store %t{38}: int2B
     jmp @@_L9                 ; jmp L9
     @@_L11:
     mov sp, bp
     pop bp
     ret
-    @@_c_0_: db 72, 101, 108, 108, 111, 32, 119, 111, 114, 108, 100, 33, 0
+    @@_c_0_:
+    dw @@_c_0_@str$0_0
+    @@_c_0_@str$0_0: db "Hello world!"
   `);
 });

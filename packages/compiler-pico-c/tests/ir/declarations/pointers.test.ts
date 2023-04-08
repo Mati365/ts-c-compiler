@@ -99,12 +99,12 @@ describe('Pointer declarations IR', () => {
         }
       `).toCompiledIRBeEqual(/* ruby */ `
         # --- Block main ---
-        def main():
+          def main():
           a{0}: int*2B = alloca int2B
           *(a{0}: int*2B) = store %123: int2B
           b{0}: int**2B = alloca int*2B
-          %t{0}: int*2B = lea a{0}: int*2B
-          *(b{0}: int**2B) = store %t{0}: int*2B
+          %t{0}: int**2B = lea a{0}: int*2B
+          *(b{0}: int**2B) = store %t{0}: int**2B
           c{0}: int*2B = alloca int2B
           %t{1}: int*2B = load b{0}: int**2B
           %t{2}: int2B = load %t{1}: int*2B
