@@ -83,7 +83,7 @@ export const MOCK_C_FILE = /* c */ `
   void main() {
     kernel_screen_clear();
 
-    for (int i = 0; i < 0xF; ++i) {
+    for (int i = 1; i < 0xF; ++i) {
       kernel_screen_println(i + 1, KERNEL_INIT_MESSAGES[i % 3]);
     }
   }

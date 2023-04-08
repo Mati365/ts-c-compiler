@@ -20,6 +20,7 @@ import {
   genInstruction,
   genMemAddress,
   GenMemAddressConfig,
+  withInlineComment,
 } from '../../asm-utils';
 import {
   queryAndMarkX86RegsMap,
@@ -530,9 +531,13 @@ export class X86BasicRegAllocator {
 
   requestReg({
     prefer,
+    recursiveCall,
     ...query
-  }: X86RegLookupQuery & { prefer?: X86RegName[] }): IRRegReqResult {
-    const { ownership } = this;
+  }: X86RegLookupQuery & {
+    prefer?: X86RegName[];
+    recursiveCall?: boolean;
+  }): IRRegReqResult {
+    const { ownership, stackFrame } = this;
     const { general: generalRegs } = ownership.getAvailableRegs();
     const defaultAllowedRegs =
       generalRegs.size === query.size ? generalRegs.list : null;
@@ -560,9 +565,45 @@ export class X86BasicRegAllocator {
       );
     }
 
+    if (!recursiveCall && recursiveCall) {
+      throw new CBackendError(CBackendErrorCode.REG_ALLOCATOR_ERROR);
+    }
+
     if (!result) {
-      // todo:
-      // - Add spilling register support!
+      if (query.size) {
+        const [reg] = query.allowedRegs ?? ['ax'];
+        const spillVar = stackFrame.allocSpillVariable(query.size);
+        const ownerships = ownership.getOwnershipByReg(reg);
+
+        ownerships.forEach(ownershipName => {
+          ownership.setOwnership(ownershipName, {
+            releasePrevAllocatedReg: true,
+            stackVar: spillVar,
+          });
+        });
+
+        const spillResult = this.requestReg({
+          recursiveCall: true,
+          prefer,
+          ...query,
+        });
+
+        return {
+          ...spillResult,
+          asm: [
+            withInlineComment(
+              genInstruction(
+                'mov',
+                stackFrame.getLocalVarStackRelAddress(spillVar.name),
+                reg,
+              ),
+              'spill!',
+            ),
+            ...spillResult.asm,
+          ],
+        };
+      }
+
       throw new CBackendError(CBackendErrorCode.REG_ALLOCATOR_ERROR);
     }
 

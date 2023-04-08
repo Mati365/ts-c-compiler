@@ -196,6 +196,7 @@ export function compileMathInstruction({
           leftAllocResult: allocResult.quotient,
           context,
         }),
+        genInstruction('xor', 'dx', 'dx'),
         withInlineComment(
           genInstruction('idiv', rightAllocResult.value),
           instruction.getDisplayName(),

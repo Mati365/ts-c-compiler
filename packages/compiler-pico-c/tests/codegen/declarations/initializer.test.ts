@@ -268,7 +268,7 @@ describe('Variables initialization', () => {
         pop bp
         ret
         @@_c_0_:
-        db "H"
+        db "H", 0x0
       `);
     });
 
@@ -296,11 +296,11 @@ describe('Variables initialization', () => {
         pop bp
         ret
         @@_c_0_:
-        db "Hell"
+        db "Hell", 0x0
         @@_c_1_:
-        db "Hello"
+        db "Hello", 0x0
         @@_c_2_:
-        db "Hello world"
+        db "Hello world", 0x0
       `);
     });
 
@@ -326,7 +326,7 @@ describe('Variables initialization', () => {
         pop bp
         ret
         @@_c_0_:
-        db "Hello!"
+        db "Hello!", 0x0
       `);
     });
 
@@ -418,15 +418,15 @@ describe('Variables initialization', () => {
         pop bp
         ret
         @@_c_0_:
-        db "Hello world!"
+        db "Hello world!", 0x0
         @@_c_1_:
-        db "Hello world2!"
+        db "Hello world2!", 0x0
         @@_c_2_:
         dw @@_c_2_@str$0_0
-        @@_c_2_@str$0_0: db "Hello world3!"
+        @@_c_2_@str$0_0: db "Hello world3!", 0x0
         @@_c_3_:
         dw @@_c_3_@str$0_0
-        @@_c_3_@str$0_0: db "Hello world45623!"
+        @@_c_3_@str$0_0: db "Hello world45623!", 0x0
       `);
     });
 
@@ -460,10 +460,10 @@ describe('Variables initialization', () => {
         ret
         @@_c_0_:
         dw @@_c_0_@str$0_0
-        @@_c_0_@str$0_0: db "Hello world2!"
+        @@_c_0_@str$0_0: db "Hello world2!", 0x0
         @@_c_1_:
         dw @@_c_1_@str$0_0
-        @@_c_1_@str$0_0: db "Hello world344!"
+        @@_c_1_@str$0_0: db "Hello world344!", 0x0
       `);
     });
 
@@ -528,7 +528,7 @@ describe('Variables initialization', () => {
         ret
         @@_c_0_:
         dw @@_c_0_@str$0_0
-        @@_c_0_@str$0_0: db "Hello world 34234!"
+        @@_c_0_@str$0_0: db "Hello world 34234!", 0x0
       `);
     });
   });

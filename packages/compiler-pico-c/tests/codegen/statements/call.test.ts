@@ -197,7 +197,7 @@ describe('Function call', () => {
         ret
         @@_c_0_:
         dw @@_c_0_@str$0_0
-        @@_c_0_@str$0_0: db "Hello"
+        @@_c_0_@str$0_0: db "Hello", 0x0
       `);
     });
 
@@ -233,10 +233,10 @@ describe('Function call', () => {
         pop bp
         ret
         @@_c_0_:
-        db "Hello world!"
+        db "Hello world!", 0x0
         @@_c_1_:
         dw @@_c_1_@str$0_0
-        @@_c_1_@str$0_0: db "Hello"
+        @@_c_1_@str$0_0: db "Hello", 0x0
       `);
     });
   });

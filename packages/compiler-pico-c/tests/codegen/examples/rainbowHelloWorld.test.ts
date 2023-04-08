@@ -177,6 +177,6 @@ test('Rainbow Hello World', () => {
     ret
     @@_c_0_:
     dw @@_c_0_@str$0_0
-    @@_c_0_@str$0_0: db "Hello world!"
+    @@_c_0_@str$0_0: db "Hello world!", 0x0
   `);
 });
