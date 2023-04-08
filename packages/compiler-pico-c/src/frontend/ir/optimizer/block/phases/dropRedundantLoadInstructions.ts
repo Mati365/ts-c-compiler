@@ -2,6 +2,7 @@ import { isIRBranchInstruction } from '../../../guards';
 import {
   IRInstruction,
   IRLoadInstruction,
+  isIRAsmInstruction,
   isIRCallInstruction,
   isIRLoadInstruction,
   isIRRetInstruction,
@@ -79,6 +80,7 @@ export function dropRedundantLoadInstructions(instructions: IRInstruction[]) {
     if (
       isIRRetInstruction(instruction) ||
       isIRCallInstruction(instruction) ||
+      isIRAsmInstruction(instruction) ||
       !isIRBranchInstruction(instruction)
     ) {
       const optimizedInstruction = dropConstantInstructionArgs(

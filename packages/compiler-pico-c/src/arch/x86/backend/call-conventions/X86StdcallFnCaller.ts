@@ -3,6 +3,7 @@ import chalk from 'chalk';
 import { CFunctionCallConvention } from '@compiler/pico-c/constants';
 import { IRVariable } from '@compiler/pico-c/frontend/ir/variables';
 
+import { getBaseTypeIfPtr } from '@compiler/pico-c/frontend/analyze/types/utils';
 import { getTypeOffsetByteSize } from '@compiler/pico-c/frontend/ir/utils';
 import { genInstruction, withInlineComment } from '../../asm-utils';
 import { getX86RegByteSize } from '../../constants/regs';
@@ -11,7 +12,6 @@ import { compileMemcpy } from '../compilers/shared';
 import { isRegOwnership } from '../reg-allocator/utils';
 
 import { X86Allocator } from '../X86Allocator';
-import { X86StackFrame } from '../X86StackFrame';
 import {
   X86ConventionalFnCaller,
   X86FnBasicCompilerAttrs,
@@ -97,10 +97,12 @@ export class X86StdcallFnCaller implements X86ConventionalFnCaller {
 
     for (let i = args.length - 1; i >= 0; --i) {
       const arg = args[i];
+      const argAllocSize = getBaseTypeIfPtr(arg.type).getByteSize();
+
       const stackVar = stackFrame.allocRawStackVariable({
         name: arg.name,
+        size: argAllocSize,
         offset: (i + 2) * stack.size,
-        size: X86StackFrame.getStackAllocVariableSize(arg),
       });
 
       regs.ownership.setOwnership(arg.name, {
