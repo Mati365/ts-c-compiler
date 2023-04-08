@@ -9,6 +9,7 @@ import {
   isIRLabelOffsetInstruction,
   isIRLeaInstruction,
 } from '../../instructions';
+
 import { IREmitterContextAttrs, IREmitterExpressionResult } from './types';
 
 export type PointerAddressExpressionIREmitAttrs = IREmitterContextAttrs & {
@@ -34,6 +35,7 @@ export function emitPointerAddressExpression({
   // todo: Check if it is a good solution
   const lastInstruction = R.last(instructions);
   if (
+    !output.isTemporary() &&
     !isIRLabelOffsetInstruction(lastInstruction) &&
     (!isIRLeaInstruction(lastInstruction) ||
       !isPointerLikeType(lastInstruction.inputVar.type) ||

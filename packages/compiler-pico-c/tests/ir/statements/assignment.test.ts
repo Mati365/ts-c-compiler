@@ -518,17 +518,17 @@ describe('Assignment IR', () => {
         }
       `).toCompiledIRBeEqual(/* ruby */ `
         # --- Block main ---
-          def main():
-          vec{0}: struct Vec2*2B = alloca struct Vec24B
-          *(vec{0}: struct Vec2*2B + %2) = store %5: int2B
-          ptr{0}: struct Vec2**2B = alloca struct Vec2*2B
-          %t{0}: struct Vec2**2B = lea vec{0}: struct Vec2*2B
-          *(ptr{0}: struct Vec2**2B) = store %t{0}: struct Vec2**2B
-          %t{1}: struct Vec2***2B = load ptr{0}: struct Vec2**2B
-          %t{2}: struct Vec2***2B = %t{1}: struct Vec2***2B plus %2: int2B
-          *(%t{2}: struct Vec2***2B) = store %5: char1B
-          ret
-          end-def
+        def main():
+        vec{0}: struct Vec2*2B = alloca struct Vec24B
+        *(vec{0}: struct Vec2*2B + %2) = store %5: int2B
+        ptr{0}: struct Vec2**2B = alloca struct Vec2*2B
+        %t{0}: struct Vec2**2B = lea vec{0}: struct Vec2*2B
+        *(ptr{0}: struct Vec2**2B) = store %t{0}: struct Vec2**2B
+        %t{1}: struct Vec2*2B = load ptr{0}: struct Vec2**2B
+        %t{2}: int*2B = %t{1}: struct Vec2*2B plus %2: int2B
+        *(%t{2}: int*2B) = store %5: char1B
+        ret
+        end-def
       `);
     });
 
@@ -546,20 +546,20 @@ describe('Assignment IR', () => {
       `).toCompiledIRBeEqual(/* ruby */ `
         # --- Block main ---
         def main():
-          vec{0}: struct Vec2*2B = alloca struct Vec24B
-          *(vec{0}: struct Vec2*2B + %2) = store %5: int2B
-          ptr{0}: struct Vec2**2B = alloca struct Vec2*2B
-          %t{0}: struct Vec2**2B = lea vec{0}: struct Vec2*2B
-          *(ptr{0}: struct Vec2**2B) = store %t{0}: struct Vec2**2B
-          %t{1}: struct Vec2***2B = load ptr{0}: struct Vec2**2B
-          %t{2}: struct Vec2***2B = %t{1}: struct Vec2***2B plus %2: int2B
-          *(%t{2}: struct Vec2***2B) = store %5: char1B
-          d{0}: int*2B = alloca int2B
-          %t{4}: struct Vec2***2B = %t{0}: struct Vec2**2B plus %2: int2B
-          %t{5}: struct Vec2**2B = load %t{4}: struct Vec2***2B
-          *(d{0}: int*2B) = store %t{5}: struct Vec2**2B
-          ret
-          end-def
+        vec{0}: struct Vec2*2B = alloca struct Vec24B
+        *(vec{0}: struct Vec2*2B + %2) = store %5: int2B
+        ptr{0}: struct Vec2**2B = alloca struct Vec2*2B
+        %t{0}: struct Vec2**2B = lea vec{0}: struct Vec2*2B
+        *(ptr{0}: struct Vec2**2B) = store %t{0}: struct Vec2**2B
+        %t{1}: struct Vec2*2B = load ptr{0}: struct Vec2**2B
+        %t{2}: int*2B = %t{1}: struct Vec2*2B plus %2: int2B
+        *(%t{2}: int*2B) = store %5: char1B
+        d{0}: int*2B = alloca int2B
+        %t{4}: int*2B = %t{0}: struct Vec2**2B plus %2: int2B
+        %t{5}: int2B = load %t{4}: int*2B
+        *(d{0}: int*2B) = store %t{5}: int2B
+        ret
+        end-def
       `);
     });
 

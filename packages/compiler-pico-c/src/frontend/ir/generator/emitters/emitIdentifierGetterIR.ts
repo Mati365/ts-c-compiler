@@ -1,6 +1,9 @@
 import * as R from 'ramda';
 
-import { getBaseType } from '@compiler/pico-c/frontend/analyze/types/utils';
+import {
+  getBaseType,
+  getBaseTypeIfPtr,
+} from '@compiler/pico-c/frontend/analyze/types/utils';
 
 import { TokenType } from '@compiler/lexer/shared';
 import {
@@ -187,7 +190,9 @@ export function emitIdentifierGetterIR({
         instructions.push(
           new IRLoadInstruction(
             lastIRVar,
-            (lastIRVar = allocator.allocTmpPointer(lastIRVar.type)),
+            (lastIRVar = allocator.allocTmpVariable(
+              getBaseTypeIfPtr(lastIRVar.type),
+            )),
           ),
         );
 

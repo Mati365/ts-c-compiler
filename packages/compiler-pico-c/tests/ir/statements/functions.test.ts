@@ -304,38 +304,38 @@ describe('Functions IR', () => {
         return a;
       }
     `).toCompiledIRBeEqual(/* ruby */ `
-        # --- Block inc ---
-        def inc(vec{0}: struct Vec2**2B, k{0}: int*2B):
-        %t{0}: struct Vec2***2B = load vec{0}: struct Vec2**2B
-        %t{1}: struct Vec2***2B = %t{0}: struct Vec2***2B plus %2: int2B
-        %t{2}: int2B = load k{0}: int*2B
-        %t{3}: int2B = %t{2}: int2B plus %3: char1B
-        %t{4}: struct Vec2**2B = load %t{1}: struct Vec2***2B
-        %t{5}: struct Vec2**2B = %t{4}: struct Vec2**2B plus %t{3}: int2B
-        *(%t{1}: struct Vec2***2B) = store %t{5}: struct Vec2**2B
-        %t{7}: struct Vec2***2B = %t{0}: struct Vec2***2B plus %2: int2B
-        %t{8}: struct Vec2**2B = load %t{7}: struct Vec2***2B
-        %t{9}: struct Vec2**2B = %t{8}: struct Vec2**2B minus %2: int2B
-        *(%t{7}: struct Vec2***2B) = store %t{9}: struct Vec2**2B
-        ret
-        end-def
-        # --- Block main ---
-        def main(): [ret: int2B]
-        a{0}: int*2B = alloca int2B
-        *(a{0}: int*2B) = store %1: int2B
-        vec{1}: struct Vec2*2B = alloca struct Vec24B
-        *(vec{1}: struct Vec2*2B) = store %5: int2B
-        *(vec{1}: struct Vec2*2B + %2) = store %11: int2B
-        %t{11}: struct Vec2**2B = lea vec{1}: struct Vec2*2B
-        call label-offset inc :: (%t{11}: struct Vec2**2B, %10: char1B)
-        %t{12}: struct Vec2**2B = lea vec{1}: struct Vec2*2B
-        %t{13}: struct Vec2**2B = %t{12}: struct Vec2**2B plus %2: int2B
-        %t{14}: struct Vec2*2B = load %t{13}: struct Vec2**2B
-        *(a{0}: int*2B) = store %t{14}: struct Vec2*2B
-        asm "xchg dx, dx"
-        %t{15}: int2B = load a{0}: int*2B
-        ret %t{15}: int2B
-        end-def
+      # --- Block inc ---
+      def inc(vec{0}: struct Vec2**2B, k{0}: int*2B):
+      %t{0}: struct Vec2*2B = load vec{0}: struct Vec2**2B
+      %t{1}: int*2B = %t{0}: struct Vec2*2B plus %2: int2B
+      %t{2}: int2B = load k{0}: int*2B
+      %t{3}: int2B = %t{2}: int2B plus %3: char1B
+      %t{4}: int2B = load %t{1}: int*2B
+      %t{5}: int2B = %t{4}: int2B plus %t{3}: int2B
+      *(%t{1}: int*2B) = store %t{5}: int2B
+      %t{7}: int*2B = %t{0}: struct Vec2*2B plus %2: int2B
+      %t{8}: int2B = load %t{7}: int*2B
+      %t{9}: int2B = %t{8}: int2B minus %1: int2B
+      *(%t{7}: int*2B) = store %t{9}: int2B
+      ret
+      end-def
+      # --- Block main ---
+      def main(): [ret: int2B]
+      a{0}: int*2B = alloca int2B
+      *(a{0}: int*2B) = store %1: int2B
+      vec{1}: struct Vec2*2B = alloca struct Vec24B
+      *(vec{1}: struct Vec2*2B) = store %5: int2B
+      *(vec{1}: struct Vec2*2B + %2) = store %11: int2B
+      %t{11}: struct Vec2**2B = lea vec{1}: struct Vec2*2B
+      call label-offset inc :: (%t{11}: struct Vec2**2B, %10: char1B)
+      %t{12}: struct Vec2**2B = lea vec{1}: struct Vec2*2B
+      %t{13}: struct Vec2**2B = %t{12}: struct Vec2**2B plus %2: int2B
+      %t{14}: struct Vec2*2B = load %t{13}: struct Vec2**2B
+      *(a{0}: int*2B) = store %t{14}: struct Vec2*2B
+      asm "xchg dx, dx"
+      %t{15}: int2B = load a{0}: int*2B
+      ret %t{15}: int2B
+      end-def
     `);
   });
 });
