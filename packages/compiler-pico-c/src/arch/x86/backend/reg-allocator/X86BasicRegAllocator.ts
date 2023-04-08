@@ -514,10 +514,6 @@ export class X86BasicRegAllocator {
       }
     }
 
-    setTimeout(() => {
-      console.info(hasFlag(IRArgDynamicResolverType.REG, allow), arg);
-    });
-
     throw new CBackendError(CBackendErrorCode.REG_ALLOCATOR_ERROR);
   }
 

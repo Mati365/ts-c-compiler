@@ -1,4 +1,5 @@
 import chalk from 'chalk';
+import * as R from 'ramda';
 
 import {
   ASTCAsmStmtInputConstraint,
@@ -37,6 +38,24 @@ export class IRAsmInstruction extends IRInstruction {
     readonly clobberOperands: IRAsmClobberOperand[] = [],
   ) {
     super(IROpcode.ASM);
+  }
+
+  override ofArgs({ input }: IRInstructionArgs) {
+    let index = 0;
+    const inputs = R.mapObjIndexed(
+      operand => ({
+        ...operand,
+        irVar: input[index++],
+      }),
+      this.inputOperands,
+    );
+
+    return new IRAsmInstruction(
+      this.expression,
+      this.outputOperands,
+      inputs,
+      this.clobberOperands,
+    );
   }
 
   override getArgs(): IRInstructionArgs {
