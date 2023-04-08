@@ -189,7 +189,7 @@ describe('Function call', () => {
         @@_fn_main:
         push bp
         mov bp, sp
-        mov ax, word [@@_c_0_]    ; %t{2}: const char*2B = load %t{1}: const char**2B
+        mov ax, [@@_c_0_]         ; %t{2}: const char*2B = load %t{1}: const char**2B
         push ax
         call @@_fn_printf
         mov sp, bp
@@ -222,9 +222,9 @@ describe('Function call', () => {
         push bp
         mov bp, sp
         sub sp, 2
-        mov bx, @@_c_0_           ; %t{0}: const char*2B = lea c{0}: const char[1]*2B
+        mov bx, @@_c_0_           ; %t{0}: const char*2B = lea c{0}: const char[13]*2B
         mov word [bp - 2], bx     ; *(str{1}: const char**2B) = store %t{0}: const char*2B
-        mov ax, word [@@_c_1_]    ; %t{3}: const char*2B = load %t{2}: const char**2B
+        mov ax, [@@_c_1_]         ; %t{3}: const char*2B = load %t{2}: const char**2B
         mov di, [bp - 2]          ; %t{4}: const char*2B = load str{1}: const char**2B
         push di
         push ax

@@ -1,6 +1,6 @@
 import stripAnsi from 'strip-ansi';
 
-import { trimLines } from '@compiler/core/utils';
+import { stripNonPrintableCharacters, trimLines } from '@compiler/core/utils';
 
 import { cIRCompiler } from '@compiler/pico-c/frontend/cIRcompiler';
 import { IRResultView } from '@compiler/pico-c/frontend/ir';
@@ -44,7 +44,9 @@ function toCompiledIRBeEqual(
   );
 
   return {
-    pass: formattedIRCode === formattedExpectedCode,
+    pass:
+      stripNonPrintableCharacters(formattedIRCode) ===
+      stripNonPrintableCharacters(formattedExpectedCode),
     message: () =>
       [
         'Code:',

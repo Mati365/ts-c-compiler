@@ -78,13 +78,19 @@ export class X86VarLifetimeGraph {
     return this.graph;
   }
 
-  isVariableLaterUsed(offset: number, varName: string): boolean {
+  isVariableLaterUsed(
+    offset: number,
+    varName: string,
+    exclusive: boolean = true,
+  ): boolean {
     const varGraph = this.graph[varName];
 
     if (!varGraph?.length) {
       return false;
     }
 
-    return last(varGraph).to - offset > 0;
+    const delta = last(varGraph).to - offset;
+
+    return exclusive ? delta > 0 : delta >= 0;
   }
 }

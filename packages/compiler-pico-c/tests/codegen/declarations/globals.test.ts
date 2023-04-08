@@ -15,7 +15,7 @@ describe('Global variables declaration', () => {
       push bp
       mov bp, sp
       sub sp, 2
-      mov ax, word [@@_c_0_]    ; %t{1}: int2B = load %t{0}: int*2B
+      mov ax, [@@_c_0_]         ; %t{1}: int2B = load %t{0}: int*2B
       mov word [bp - 2], ax     ; *(k{0}: int*2B) = store %t{1}: int2B
       mov sp, bp
       pop bp
@@ -67,8 +67,8 @@ describe('Global variables declaration', () => {
       mov bx, ax                ; swap
       add ax, 2                 ; %t{1}: int[3]*2B = %t{0}: int[3]*2B plus %2: int2B
       mov di, ax
-      mov ax, [di]              ; %t{2}: int2B = load %t{1}: int[3]*2B
-      mov word [bp - 2], ax     ; *(k{0}: int*2B) = store %t{2}: int2B
+      mov cx, [di]              ; %t{2}: int2B = load %t{1}: int[3]*2B
+      mov word [bp - 2], cx     ; *(k{0}: int*2B) = store %t{2}: int2B
       add bx, 2                 ; %t{4}: int[3]*2B = %t{0}: int[3]*2B plus %2: int2B
       mov word [bx], 2          ; *(%t{4}: int[3]*2B) = store %2: char1B
       mov sp, bp
@@ -118,13 +118,11 @@ describe('Global variables declaration', () => {
       push bp
       mov bp, sp
       sub sp, 1
-      mov ax, @@_c_0_
-      mov bx, ax
-      mov ax, [bx]              ; %t{2}: const char*[1]2B = load %t{1}: const char*[1]*2B
+      mov ax, [@@_c_0_]         ; %t{2}: const char*[1]2B = load %t{1}: const char*[1]*2B
       add ax, 1                 ; %t{3}: const char**2B = %t{2}: const char*[1]2B plus %1: int2B
       mov di, ax
-      mov ax, [di]              ; %t{4}: const char*2B = load %t{3}: const char**2B
-      mov byte [bp - 1], al     ; *(a{0}: char*2B) = store %t{4}: const char*2B
+      mov bx, [di]              ; %t{4}: const char*2B = load %t{3}: const char**2B
+      mov byte [bp - 1], bl     ; *(a{0}: char*2B) = store %t{4}: const char*2B
       mov sp, bp
       pop bp
       ret
@@ -156,26 +154,26 @@ describe('Global variables declaration', () => {
       mov ax, @@_c_0_
       mov bx, ax                ; swap
       add ax, 4                 ; %t{1}: int[3]*2B = %t{0}: int[3]*2B plus %4: int2B
-      mov cx, word [@@_c_1_]    ; %t{3}: int2B = load %t{2}: int*2B
+      mov cx, [@@_c_1_]         ; %t{3}: int2B = load %t{2}: int*2B
       mov di, ax
-      mov ax, [di]              ; %t{4}: int[3]6B = load %t{1}: int[3]*2B
-      imul ax, cx               ; %t{5}: int[3]6B = %t{4}: int[3]6B mul %t{3}: int2B
-      mov word [di], ax         ; *(%t{1}: int[3]*2B) = store %t{5}: int[3]6B
-      mov dx, bx                ; swap
+      mov dx, [di]              ; %t{4}: int[3]6B = load %t{1}: int[3]*2B
+      imul dx, cx               ; %t{5}: int[3]6B = %t{4}: int[3]6B mul %t{3}: int2B
+      mov word [di], dx         ; *(%t{1}: int[3]*2B) = store %t{5}: int[3]6B
+      mov ax, bx                ; swap
       add bx, 4                 ; %t{7}: int[3]*2B = %t{0}: int[3]*2B plus %4: int2B
-      mov ax, [bx]              ; %t{8}: int2B = load %t{7}: int[3]*2B
-      add ax, 2                 ; %t{9}: int2B = %t{8}: int2B plus %2: char1B
-      mov word [bp - 2], ax     ; *(k{0}: int*2B) = store %t{9}: int2B
-      add dx, 4                 ; %t{11}: int[3]*2B = %t{0}: int[3]*2B plus %4: int2B
-      mov bx, dx
-      mov cx, [bx]              ; %t{12}: int2B = load %t{11}: int[3]*2B
-      sub cx, 2                 ; %t{13}: int2B = %t{12}: int2B minus %2: char1B
-      mov word [bp - 4], cx     ; *(c{1}: int*2B) = store %t{13}: int2B
-      mov dx, [bp - 2]
-      add dx, word [bp - 4]     ; %t{16}: int2B = %t{14}: int2B plus %t{15}: int2B
-      sub ax, cx                ; %t{19}: int2B = %t{9}: int2B minus %t{13}: int2B
-      imul dx, ax               ; %t{20}: int2B = %t{16}: int2B mul %t{19}: int2B
-      mov word [bp - 6], dx     ; *(sum{0}: int*2B) = store %t{20}: int2B
+      mov cx, [bx]              ; %t{8}: int2B = load %t{7}: int[3]*2B
+      add cx, 2                 ; %t{9}: int2B = %t{8}: int2B plus %2: char1B
+      mov word [bp - 2], cx     ; *(k{0}: int*2B) = store %t{9}: int2B
+      add ax, 4                 ; %t{11}: int[3]*2B = %t{0}: int[3]*2B plus %4: int2B
+      mov di, ax
+      mov dx, [di]              ; %t{12}: int2B = load %t{11}: int[3]*2B
+      sub dx, 2                 ; %t{13}: int2B = %t{12}: int2B minus %2: char1B
+      mov word [bp - 4], dx     ; *(c{1}: int*2B) = store %t{13}: int2B
+      mov ax, [bp - 2]
+      add ax, word [bp - 4]     ; %t{16}: int2B = %t{14}: int2B plus %t{15}: int2B
+      sub cx, dx                ; %t{19}: int2B = %t{9}: int2B minus %t{13}: int2B
+      imul ax, cx               ; %t{20}: int2B = %t{16}: int2B mul %t{19}: int2B
+      mov word [bp - 6], ax     ; *(sum{0}: int*2B) = store %t{20}: int2B
       mov sp, bp
       pop bp
       ret
@@ -240,11 +238,9 @@ describe('Global variables declaration', () => {
       @@_fn_main:
       push bp
       mov bp, sp
-      mov ax, @@_c_0_
-      mov bx, ax
-      mov ax, [bx]              ; %t{2}: int2B = load %t{1}: int*2B
+      mov ax, [@@_c_0_]         ; %t{2}: int2B = load %t{1}: int*2B
       add ax, 1                 ; %t{3}: int2B = %t{2}: int2B plus %1: int2B
-      mov word [bx], ax         ; *(%t{1}: int*2B) = store %t{3}: int2B
+      mov word [@@_c_0_], ax    ; *(%t{1}: int*2B) = store %t{3}: int2B
       mov sp, bp
       pop bp
       ret
@@ -268,7 +264,7 @@ describe('Global variables declaration', () => {
       push bp
       mov bp, sp
       sub sp, 2
-      mov ax, word [@@_c_0_]    ; %t{1}: const char*2B = load %t{0}: const char**2B
+      mov ax, [@@_c_0_]         ; %t{1}: const char*2B = load %t{0}: const char**2B
       mov word [bp - 2], ax     ; *(ptr2{0}: char**2B) = store %t{1}: const char*2B
       mov sp, bp
       pop bp
@@ -297,7 +293,7 @@ describe('Global variables declaration', () => {
       @@_fn_main:
       push bp
       mov bp, sp
-      mov ax, word [@@_c_0_]    ; %t{1}: const char*2B = load %t{0}: const char**2B
+      mov ax, [@@_c_0_]         ; %t{1}: const char*2B = load %t{0}: const char**2B
       mov gs, ax
       mov sp, bp
       pop bp
@@ -369,9 +365,7 @@ describe('Global variables declaration', () => {
       push bp
       mov bp, sp
       sub sp, 1
-      mov ax, @@_c_0_
-      mov bx, ax
-      mov al, [bx]              ; %t{2}: const char1B = load %t{1}: const char[6]*2B
+      mov al, [@@_c_0_]         ; %t{2}: const char1B = load %t{1}: const char[6]*2B
       mov byte [bp - 1], al     ; *(a{0}: char*2B) = store %t{2}: const char1B
       mov sp, bp
       pop bp
@@ -397,9 +391,9 @@ describe('Global variables declaration', () => {
         sub sp, 1
         mov ax, @@_c_0_
         add ax, 1                 ; %t{1}: const char[6]*2B = %t{0}: const char[6]*2B plus %1: int2B
-        mov bx, ax
-        mov al, [bx]              ; %t{2}: const char1B = load %t{1}: const char[6]*2B
-        mov byte [bp - 1], al     ; *(a{0}: char*2B) = store %t{2}: const char1B
+        mov di, ax
+        mov bl, [di]              ; %t{2}: const char1B = load %t{1}: const char[6]*2B
+        mov byte [bp - 1], bl     ; *(a{0}: char*2B) = store %t{2}: const char1B
         mov sp, bp
         pop bp
         ret
@@ -426,14 +420,11 @@ describe('Global variables declaration', () => {
       push bp
       mov bp, sp
       sub sp, 2
-      mov ax, @@_c_0_
-      mov bx, ax                ; swap
-      mov di, ax
-      mov ax, [di]              ; %t{2}: int2B = load %t{1}: int*2B
+      mov ax, [@@_c_0_]         ; %t{2}: int2B = load %t{1}: int*2B
       add ax, 1                 ; %t{3}: int2B = %t{2}: int2B plus %1: int2B
-      mov word [di], ax         ; *(%t{1}: int*2B) = store %t{3}: int2B
-      mov cx, [bx]              ; %t{6}: int2B = load %t{5}: int*2B
-      mov word [bp - 2], cx     ; *(k{0}: int*2B) = store %t{6}: int2B
+      mov word [@@_c_0_], ax    ; *(%t{1}: int*2B) = store %t{3}: int2B
+      mov bx, [@@_c_0_]         ; %t{6}: int2B = load %t{5}: int*2B
+      mov word [bp - 2], bx     ; *(k{0}: int*2B) = store %t{6}: int2B
       mov sp, bp
       pop bp
       ret
@@ -469,16 +460,15 @@ describe('Global variables declaration', () => {
       mov bx, ax                ; swap
       add ax, 4                 ; %t{1}: struct Vec2[2]*2B = %t{0}: struct Vec2[2]*2B plus %4: int2B
       mov di, ax
-      mov ax, [di]              ; %t{2}: int2B = load %t{1}: int*2B
-      add ax, 7                 ; %t{3}: int2B = %t{2}: int2B plus %7: char1B
-      mov word [di], ax         ; *(%t{1}: int*2B) = store %t{3}: int2B
+      mov cx, [di]              ; %t{2}: int2B = load %t{1}: int*2B
+      add cx, 7                 ; %t{3}: int2B = %t{2}: int2B plus %7: char1B
+      mov word [di], cx         ; *(%t{1}: int*2B) = store %t{3}: int2B
       add bx, 4                 ; %t{5}: struct Vec2[2]*2B = %t{0}: struct Vec2[2]*2B plus %4: int2B
-      mov cx, [bx]              ; %t{6}: int2B = load %t{5}: int*2B
-      mov word [bp - 2], cx     ; *(k{0}: int*2B) = store %t{6}: int2B
+      mov ax, [bx]              ; %t{6}: int2B = load %t{5}: int*2B
+      mov word [bp - 2], ax     ; *(k{0}: int*2B) = store %t{6}: int2B
       mov sp, bp
       pop bp
       ret
-
       @@_c_0_:
       dw 1, 2, 3, 4
       @@_c_1_:

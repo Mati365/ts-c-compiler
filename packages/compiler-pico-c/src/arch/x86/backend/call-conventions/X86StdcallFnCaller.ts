@@ -198,7 +198,7 @@ export class X86StdcallFnCaller implements X86ConventionalFnCaller {
     };
 
     // preserve already allocated regs on stack
-    ownership.releaseNotUsedLaterRegs();
+    ownership.releaseNotUsedLaterRegs(true);
 
     const returnReg = this.getReturnReg({
       context,

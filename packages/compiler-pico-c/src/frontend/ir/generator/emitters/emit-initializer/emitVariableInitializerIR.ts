@@ -59,7 +59,7 @@ export function emitVariableInitializerIR({
       const arrayPtrType = CPointerType.ofArray(<CArrayType>type);
       const dataType = CArrayType.ofFlattenDescriptor({
         type: type.getSourceType(),
-        dimensions: [initializer.fields.length],
+        dimensions: [initializer.getFlattenNonLiteralScalarFieldsCount()],
       });
 
       const rootIRVar = allocator.allocAsPointer(

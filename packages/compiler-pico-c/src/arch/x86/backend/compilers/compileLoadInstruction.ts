@@ -27,13 +27,6 @@ export function compileLoadInstruction({
   const asm: string[] = [];
 
   if (inputVar.isTemporary()) {
-    // handle loading pointer to types, such as %t{0} = load %t{1}: int*
-    const input = regs.tryResolveIrArg({
-      arg: inputVar,
-      allowedRegs: regs.ownership.getAvailableRegs().addressing,
-      forceLabelMemPtr: true,
-    });
-
     if (!isPointerLikeType(inputVar.type)) {
       throw new CBackendError(CBackendErrorCode.EXPECTED_IR_PTR_BUT_RECEIVE, {
         type: inputVar.type.getDisplayName(),
@@ -46,8 +39,16 @@ export function compileLoadInstruction({
       inputVar.type.baseType.getByteSize(),
     );
 
-    const reg = regs.requestReg({
+    const output = regs.requestReg({
       size: regSize,
+    });
+
+    // handle loading pointer to types, such as %t{0} = load %t{1}: int*
+    const input = regs.tryResolveIrArg({
+      arg: inputVar,
+      allowedRegs: regs.ownership.getAvailableRegs().addressing,
+      forceLabelMemPtr: true,
+      withoutMemPtrSize: true,
     });
 
     // truncate variable size, it happens when:
@@ -56,14 +57,14 @@ export function compileLoadInstruction({
     // letter[0] must be truncated to 1 byte (compiler used to emit `mov ax, [bx]` like instruction)
     const zeroExtend = regSize - outputRegSize === 1;
 
-    regs.ownership.setOwnership(outputVar.name, { reg: reg.value });
+    regs.ownership.setOwnership(outputVar.name, { reg: output.value });
     asm.push(
-      ...reg.asm,
+      ...output.asm,
       ...input.asm,
       withInlineComment(
         genInstruction(
           zeroExtend ? 'movzx' : 'mov',
-          reg.value,
+          output.value,
           input.type === IRArgDynamicResolverType.REG
             ? `[${input.value}]`
             : input.value,

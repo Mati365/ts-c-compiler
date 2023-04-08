@@ -77,6 +77,10 @@ export class X86RegOwnershipTracker {
     });
   }
 
+  aliasOwnership(inputVar: string, outputVar: string) {
+    this.ownership[outputVar] = { ...this.ownership[inputVar] };
+  }
+
   setOwnership(
     inputVar: string,
     {
@@ -125,14 +129,14 @@ export class X86RegOwnershipTracker {
     this.ownership[inputVar] = value;
   }
 
-  releaseNotUsedLaterRegs() {
+  releaseNotUsedLaterRegs(exclusive: boolean = false) {
     const { lifetime, ownership, allocator } = this;
     const { offset } = allocator.iterator;
 
     R.forEachObjIndexed((_, varName) => {
       if (
         isRegOwnership(ownership[varName]) &&
-        !lifetime.isVariableLaterUsed(offset, varName)
+        !lifetime.isVariableLaterUsed(offset, varName, exclusive)
       ) {
         this.dropOwnership(varName);
       }
