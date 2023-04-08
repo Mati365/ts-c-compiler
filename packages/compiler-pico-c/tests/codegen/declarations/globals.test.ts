@@ -128,7 +128,7 @@ describe('Global variables declaration', () => {
       ret
       @@_c_0_:
       dw @@_c_0_@str$0_0
-      @@_c_0_@str$0_0: db "SDASD"
+      @@_c_0_@str$0_0: db "SDASD", 0x0
     `);
   });
 
@@ -221,7 +221,7 @@ describe('Global variables declaration', () => {
       pop bp
       ret
       @@_c_0_:
-      db "Hello world!"
+      db "Hello world!", 0x0
     `);
   });
 
@@ -342,12 +342,12 @@ describe('Global variables declaration', () => {
       pop bp
       ret
       @@_c_0_:
-      db "Hello world!"
+      db "Hello world!", 0x0
       @@_c_1_:
-      db "Hello world2!"
+      db "Hello world2!", 0x0
       @@_c_2_:
       dw @@_c_2_@str$0_0
-      @@_c_2_@str$0_0: db "Hello world3!"
+      @@_c_2_@str$0_0: db "Hello world3!", 0x0
     `);
   });
 
@@ -371,7 +371,7 @@ describe('Global variables declaration', () => {
       pop bp
       ret
       @@_c_0_:
-      db "SDASD"
+      db "SDASD", 0x0
     `);
   });
 
@@ -398,7 +398,7 @@ describe('Global variables declaration', () => {
         pop bp
         ret
         @@_c_0_:
-        db "SDASD"
+        db "SDASD", 0x0
     `);
   });
 
@@ -433,8 +433,8 @@ describe('Global variables declaration', () => {
       @@_c_1_:
       dw @@_c_1_@str$0_0
       dw @@_c_1_@str$0_1
-      @@_c_1_@str$0_0: db "Hello"
-      @@_c_1_@str$0_1: db "World"
+      @@_c_1_@str$0_0: db "Hello", 0x0
+      @@_c_1_@str$0_1: db "World", 0x0
     `);
   });
 
@@ -474,8 +474,8 @@ describe('Global variables declaration', () => {
       @@_c_1_:
       dw @@_c_1_@str$0_0
       dw @@_c_1_@str$0_1
-      @@_c_1_@str$0_0: db "Hello"
-      @@_c_1_@str$0_1: db "World"
+      @@_c_1_@str$0_0: db "Hello", 0x0
+      @@_c_1_@str$0_1: db "World", 0x0
     `);
   });
 });

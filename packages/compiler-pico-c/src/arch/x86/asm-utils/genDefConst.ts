@@ -14,7 +14,7 @@ export function genDefConst(size: number, values: (number | string)[]): string {
   return `${getDefConstSizeLabel(size)} ${values
     .map(val => {
       if (typeof val === 'string') {
-        return `"${val}"`;
+        return `"${val}", 0x0`;
       }
 
       return val ?? 0x0;

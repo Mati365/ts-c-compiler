@@ -23,6 +23,7 @@ export type X86StackVariable = {
 
 export class X86StackFrame {
   private allocated: number = 0;
+  private spilled: number = 0;
   private stackVars: { [id: string]: X86StackVariable } = {};
 
   constructor(readonly config: CCompilerConfig) {}
@@ -63,6 +64,18 @@ export class X86StackFrame {
     };
 
     this.stackVars[variable.name] = stackVar;
+    return stackVar;
+  }
+
+  allocSpillVariable(size: number) {
+    const offset = this.allocBytes(size);
+    const stackVar: X86StackVariable = {
+      name: `spill-${this.spilled++}`,
+      offset,
+      size,
+    };
+
+    this.stackVars[stackVar.name] = stackVar;
     return stackVar;
   }
 
