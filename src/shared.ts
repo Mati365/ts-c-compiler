@@ -7,7 +7,7 @@ export const MOCK_C_FILE = /* c */ `
   };
 
   void inc(const struct Vec2* vec) {
-    vec->y++;
+    (*vec).y += 3;
   }
 
   void main() {
