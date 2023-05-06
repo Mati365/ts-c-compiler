@@ -10,35 +10,35 @@ Multipass portable C lang compiler toolkit with IR code generator including back
 
 ## Toolkit includes
 
-<img src="/doc/editor.png" width="40%" align="right" />
+<img src="/doc/editor.png" width="50%" align="right" />
 
 ### Multipass steps
 
-- [x] Frontend **([source code](https://github.com/Mati365/ts-c-compiler/blob/master/packages/compiler-pico-c/src/frontend/cIRcompiler.ts))**
-  - [x] Lexer **([source code](https://github.com/Mati365/ts-c-compiler/blob/master/packages/compiler-pico-c/src/frontend/parser/lexer/clexer.ts#L37))**
-  - [x] AST creator **([source code](https://github.com/Mati365/ts-c-compiler/blob/master/packages/compiler-pico-c/src/frontend/parser/grammar/grammar.ts))**
-  - [x] Type checking **([source code](https://github.com/Mati365/ts-c-compiler/tree/master/packages/compiler-pico-c/src/frontend/analyze))**
-  - [x] IR generation **([source code](https://github.com/Mati365/ts-c-compiler/tree/master/packages/compiler-pico-c/src/frontend/ir))**
+- [x] Frontend **([source](https://github.com/Mati365/ts-c-compiler/blob/master/packages/compiler-pico-c/src/frontend/cIRcompiler.ts))**
+  - [x] Lexer **([source](https://github.com/Mati365/ts-c-compiler/blob/master/packages/compiler-pico-c/src/frontend/parser/lexer/clexer.ts#L37))**
+  - [x] AST creator **([source](https://github.com/Mati365/ts-c-compiler/blob/master/packages/compiler-pico-c/src/frontend/parser/grammar/grammar.ts))**
+  - [x] Type checking **([source](https://github.com/Mati365/ts-c-compiler/tree/master/packages/compiler-pico-c/src/frontend/analyze))**
+  - [x] IR generation **([source](https://github.com/Mati365/ts-c-compiler/tree/master/packages/compiler-pico-c/src/frontend/ir))**
 
-- [x] Backend **([source code](https://github.com/Mati365/ts-c-compiler/tree/master/packages/compiler-pico-c/src/backend))**
-  - [x] X86 arch backend **([source code](https://github.com/Mati365/ts-c-compiler/tree/master/packages/compiler-pico-c/src/arch/x86))**
-    - [x] X86 Register linear scan allocation **([source code](https://github.com/Mati365/ts-c-compiler/tree/master/packages/compiler-pico-c/src/arch/x86/backend/reg-allocator))**
-    - [x] X86 ASM generators **([source code](https://github.com/Mati365/ts-c-compiler/tree/master/packages/compiler-pico-c/src/arch/x86/backend/compilers))**
+- [x] Backend **([source](https://github.com/Mati365/ts-c-compiler/tree/master/packages/compiler-pico-c/src/backend))**
+  - [x] X86 arch backend **([source](https://github.com/Mati365/ts-c-compiler/tree/master/packages/compiler-pico-c/src/arch/x86))**
+    - [x] X86 Register linear scan allocation **([source](https://github.com/Mati365/ts-c-compiler/tree/master/packages/compiler-pico-c/src/arch/x86/backend/reg-allocator))**
+    - [x] X86 ASM generators **([source](https://github.com/Mati365/ts-c-compiler/tree/master/packages/compiler-pico-c/src/arch/x86/backend/compilers))**
     
 ### X86 Arch support
 
 - [x] 16bit real mode X86 arch support
-  - [x] X86 16bit Multipass Assembler compatible with NASM syntax **([source code](https://github.com/Mati365/ts-c-compiler/tree/master/packages/x86-toolkit/x86-assembler))**
-    - [x] Preprocessor **([source code](https://github.com/Mati365/ts-c-compiler/tree/master/packages/x86-toolkit/x86-assembler/src/preprocessor))** compatible with NASM that supports:
+  - [x] X86 16bit Multipass Assembler compatible with NASM syntax **([source](https://github.com/Mati365/ts-c-compiler/tree/master/packages/x86-toolkit/x86-assembler))**
+    - [x] Preprocessor **([source](https://github.com/Mati365/ts-c-compiler/tree/master/packages/x86-toolkit/x86-assembler/src/preprocessor))** compatible with NASM that supports:
         - [x] Conditions and definitions: `%if`, `%ifn`, `%ifdef`, `%ifndef`, `%else`, `%elif`, `%elifndef`, `%elifdef`, `%elifn`, `%define`, `%undef`
         - [x] Macros: `%macro`, `%define`, `%imacro`
         - [x] Predefined variables: `__TIMES__`
         - [x] Inline expressions calls: `%[__TIMES__]`
       
-  - [x] X86 CPU 16bit Intel 8086 virtual machine **([source code](https://github.com/Mati365/ts-c-compiler/tree/master/packages/x86-toolkit/x86-cpu))**
-    - [x] VGA graphical mode support **([source code](https://github.com/Mati365/ts-c-compiler/blob/master/packages/x86-toolkit/x86-cpu/src/devices/Video/Renderers/VGAGraphicsModeCanvasRenderer.ts))**
-    - [x] VGA text mode support **([source code](https://github.com/Mati365/ts-c-compiler/blob/master/packages/x86-toolkit/x86-cpu/src/devices/Video/Renderers/VGATextModeCanvasRenderer.ts))**
-    
+  - [x] X86 CPU 16bit Intel 8086 virtual machine **([source](https://github.com/Mati365/ts-c-compiler/tree/master/packages/x86-toolkit/x86-cpu))**
+    - [x] VGA graphical mode support **([source](https://github.com/Mati365/ts-c-compiler/blob/master/packages/x86-toolkit/x86-cpu/src/devices/Video/Renderers/VGAGraphicsModeCanvasRenderer.ts))**
+    - [x] VGA text mode support **([source](https://github.com/Mati365/ts-c-compiler/blob/master/packages/x86-toolkit/x86-cpu/src/devices/Video/Renderers/VGATextModeCanvasRenderer.ts))**
+   
 ## What can be currently compiled?
 
 ### Advanced array / pointers expressions
