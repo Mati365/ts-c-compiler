@@ -6,11 +6,11 @@
 [![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg?style=flat-square)](http://makeapullrequest.com)
 [![Known Vulnerabilities](https://snyk.io/test/github/Mati365/i8086.js/badge.svg?targetFile=package.json&style=flat-square)](https://snyk.io/test/github/Mati365/i8086.js?targetFile=package.json)
 
-<p align="center">
-  <img src="/doc/editor.png" width="70%" />
-</p>
-
 Multipass portable C lang compiler toolkit with IR code generator including backend, frontend and optimizer phases. Designed to simple prototyping 16bit toy operating systems and games.
+
+<p align="center">
+  <img src="/doc/editor.png" width="60%" />
+</p>
 
 ## Toolkit includes
 
