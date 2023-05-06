@@ -6,18 +6,39 @@
 [![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg?style=flat-square)](http://makeapullrequest.com)
 [![Known Vulnerabilities](https://snyk.io/test/github/Mati365/i8086.js/badge.svg?targetFile=package.json&style=flat-square)](https://snyk.io/test/github/Mati365/i8086.js?targetFile=package.json)
 
-16 bit ANSI C99 x86 compiler, assembler and virtual machine written entirely in TypeScript. It is designed to help with prototyping small bootsector (or bigger) real mode games 🎮 and apps 💻.
+<img src="/doc/editor.png" width="50%" align="right" />
 
-JavaScript 16bit x86 assembler bundled in emulator is designed to be fully binary compatible with 16bit NASM compiler.
+Multipass portable C lang compiler toolkit with IR code generator including backend, frontend and optimizer phases. Designed to simple prototyping 16bit toy operating systems and games.
 
-<img src="/doc/editor.png" align="right" />
+## Toolkit includes
 
-## Running
+### Multipass steps
 
-```bash
-yarn run develop
-```
+- [x] Frontend **([source code](https://github.com/Mati365/ts-c-compiler/blob/master/packages/compiler-pico-c/src/frontend/cIRcompiler.ts))**
+  - [x] Lexer **([source code](https://github.com/Mati365/ts-c-compiler/blob/master/packages/compiler-pico-c/src/frontend/parser/lexer/clexer.ts#L37))**
+  - [x] AST creator **([source code](https://github.com/Mati365/ts-c-compiler/blob/master/packages/compiler-pico-c/src/frontend/parser/grammar/grammar.ts))**
+  - [x] Type checking **([source code](https://github.com/Mati365/ts-c-compiler/tree/master/packages/compiler-pico-c/src/frontend/analyze))**
+  - [x] IR generation **([source code](https://github.com/Mati365/ts-c-compiler/tree/master/packages/compiler-pico-c/src/frontend/ir))**
 
+- [x] Backend **([source code](https://github.com/Mati365/ts-c-compiler/tree/master/packages/compiler-pico-c/src/backend))**
+  - [x] X86 arch backend **([source code](https://github.com/Mati365/ts-c-compiler/tree/master/packages/compiler-pico-c/src/arch/x86))**
+    - [x] X86 Register linear scan allocation **([source code](https://github.com/Mati365/ts-c-compiler/tree/master/packages/compiler-pico-c/src/arch/x86/backend/reg-allocator))**
+    - [x] X86 ASM generators **([source code](https://github.com/Mati365/ts-c-compiler/tree/master/packages/compiler-pico-c/src/arch/x86/backend/compilers))**
+    
+### X86 Arch support
+
+- [x] 16bit real mode X86 arch support
+  - [x] X86 16bit Multipass Assembler compatible with NASM syntax **([source code](https://github.com/Mati365/ts-c-compiler/tree/master/packages/x86-toolkit/x86-assembler))**
+    - [x] Preprocessor **([source code](https://github.com/Mati365/ts-c-compiler/tree/master/packages/x86-toolkit/x86-assembler/src/preprocessor))** compatible with NASM that supports:
+        - [x] Conditions and definitions: `%if`, `%ifn`, `%ifdef`, `%ifndef`, `%else`, `%elif`, `%elifndef`, `%elifdef`, `%elifn`, `%define`, `%undef`
+        - [x] Macros: `%macro`, `%define`, `%imacro`
+        - [x] Predefined variables: `__TIMES__`
+        - [x] Inline expressions calls: `%[__TIMES__]`
+      
+  - [x] X86 CPU 16bit Intel 8086 virtual machine **([source code](https://github.com/Mati365/ts-c-compiler/tree/master/packages/x86-toolkit/x86-cpu))**
+    - [x] VGA graphical mode support **([source code](https://github.com/Mati365/ts-c-compiler/blob/master/packages/x86-toolkit/x86-cpu/src/devices/Video/Renderers/VGAGraphicsModeCanvasRenderer.ts))**
+    - [x] VGA text mode support **([source code](https://github.com/Mati365/ts-c-compiler/blob/master/packages/x86-toolkit/x86-cpu/src/devices/Video/Renderers/VGATextModeCanvasRenderer.ts))**
+    
 ## What can be currently compiled?
 
 ### Advanced array / pointers expressions
@@ -570,13 +591,7 @@ Binary output:
 It's pretty similar to NASM syntax (including preprocessor), examples: <br>
 https://github.com/Mati365/i8086.js/tree/master/packages/x86-assembler/tests/asm
 
-## Testing
-
-```bash
-yarn run test
-```
-
-## Status
+## Current progress
 
 - [ ] C compiler
   - [x] Frontend
@@ -592,16 +607,20 @@ yarn run test
       - [x] Compile math integer instruction
         - [x] Compile `*`, `+`, `-`, `/`
         - [x] Compile `<<`, `>>`
-        - [ ] Compile xor / and / or / not
+        - [x] Compile xor / and / or / not
       - [x] Compile if stmts
       - [x] Compile `while {}`, `do { } while`, `for (...) {}` loops
       - [x] Compile pointers
         - [x] Basic pointer access `*k = 5`
         - [x] Array access `k[4]`
       - [x] Compile function calls
-      - [ ] Compile `asm` tag
+      - [x] Compile `asm` tag
         - [x] Basic `asm` tag without args
-        - [ ] `asm` tag with arguments
+        - [x] `asm` tag with arguments
+      - [ ] Typedefs
+      - [ ] Unions
+      - [ ] Preprocessor
+      - [ ] Stdlib
 - [x] ASM Compiler
   - [x] NASM syntax instruction compiler matcher with expression eval `mov ax, byte [ds:label+bx+12+(1/3)]`
   - [x] Instruction prefix support `rep movsw`
