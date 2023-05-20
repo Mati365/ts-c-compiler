@@ -13,7 +13,12 @@ import type {
   ASTCWhileStatement,
   ASTCDoWhileStatement,
   ASTCSwitchStatement,
+  ASTCDeclaration,
 } from '../../ast';
+
+export type CGrammarTypedefEntry = {
+  node: ASTCDeclaration;
+};
 
 export type CGrammarDef = Grammar<CCompilerIdentifier, ASTCCompilerKind>;
 
@@ -31,4 +36,6 @@ export type CGrammar = {
   assignmentExpression(): ASTCCompilerNode;
   qualifiersSpecifiers(): ASTCSpecifiersQualifiersList;
   initializer(): ASTCInitializer;
+  registerDeclaration(decl: ASTCDeclaration): void;
+  getTypedefEntry(name: string): CGrammarTypedefEntry;
 };

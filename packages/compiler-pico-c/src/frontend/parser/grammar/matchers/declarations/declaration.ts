@@ -83,5 +83,7 @@ export function declaration(grammar: CGrammar): ASTCDeclaration {
     });
   }
 
-  return new ASTCDeclaration(specifiers.loc, specifiers, initList);
+  const decl = new ASTCDeclaration(specifiers.loc, specifiers, initList);
+  grammar.registerDeclaration(decl);
+  return decl;
 }
