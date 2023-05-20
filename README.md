@@ -26,7 +26,7 @@ Multipass portable C lang compiler toolkit with IR code generator including back
   - [x] X86 arch backend **([source](https://github.com/Mati365/ts-c-compiler/tree/master/packages/compiler-pico-c/src/arch/x86))**
     - [x] X86 Register linear scan allocation **([source](https://github.com/Mati365/ts-c-compiler/tree/master/packages/compiler-pico-c/src/arch/x86/backend/reg-allocator))**
     - [x] X86 ASM generators **([source](https://github.com/Mati365/ts-c-compiler/tree/master/packages/compiler-pico-c/src/arch/x86/backend/compilers))**
-    
+
 ### X86 Arch support
 
 - [x] 16bit real mode X86 arch support
@@ -36,26 +36,26 @@ Multipass portable C lang compiler toolkit with IR code generator including back
         - [x] Macros: `%macro`, `%define`, `%imacro`
         - [x] Predefined variables: `__TIMES__`
         - [x] Inline expressions calls: `%[__TIMES__]`
-      
+
   - [x] X86 CPU 16bit Intel 8086 virtual machine **([source](https://github.com/Mati365/ts-c-compiler/tree/master/packages/x86-toolkit/x86-cpu))**
     - [x] VGA graphical mode support **([source](https://github.com/Mati365/ts-c-compiler/blob/master/packages/x86-toolkit/x86-cpu/src/devices/Video/Renderers/VGAGraphicsModeCanvasRenderer.ts))**
     - [x] VGA text mode support **([source](https://github.com/Mati365/ts-c-compiler/blob/master/packages/x86-toolkit/x86-cpu/src/devices/Video/Renderers/VGATextModeCanvasRenderer.ts))**
-   
+
 ## What can be currently compiled?
 
 ### Advanced array / pointers expressions
 
 ```c
-  struct Vec2 {
+  typedef struct Vec2 {
     char x, y;
-  };
+  } vec2_t;
 
-  void inc(const struct Vec2* vec) {
+  void inc(const vec2_t* vec) {
     vec->y++;
   }
 
   void main() {
-    struct Vec2 v[2] = { { .x =2, .y = 4}, { .x = 1, .y = 5 } };
+    vec2_t v[2] = { { .x =2, .y = 4}, { .x = 1, .y = 5 } };
 
     inc(&v[1]);
 
@@ -611,7 +611,8 @@ https://github.com/Mati365/i8086.js/tree/master/packages/x86-assembler/tests/asm
         - [x] Compile `<<`, `>>`
         - [x] Compile xor / and / or / not
       - [x] Compile if stmts
-      - [x] Compile `while {}`, `do { } while`, `for (...) {}` loops
+      - [x] Compile loops `while {}`, `do { } while`, `for (...) {}`
+      - [x] Compile typedefs
       - [x] Compile pointers
         - [x] Basic pointer access `*k = 5`
         - [x] Array access `k[4]`
@@ -619,7 +620,6 @@ https://github.com/Mati365/i8086.js/tree/master/packages/x86-assembler/tests/asm
       - [x] Compile `asm` tag
         - [x] Basic `asm` tag without args
         - [x] `asm` tag with arguments
-      - [ ] Typedefs
       - [ ] Unions
       - [ ] Preprocessor
       - [ ] Stdlib

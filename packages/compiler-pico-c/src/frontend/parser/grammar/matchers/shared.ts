@@ -17,6 +17,7 @@ import type {
 } from '../../ast';
 
 export type CGrammarTypedefEntry = {
+  name: string;
   node: ASTCDeclaration;
 };
 
