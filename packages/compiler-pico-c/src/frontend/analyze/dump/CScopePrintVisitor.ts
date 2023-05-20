@@ -53,7 +53,7 @@ export class CScopePrintVisitor extends CScopeVisitor {
    * Enters CScopeTree object and prints it
    */
   private dumpScopeTree(tree: CScopeTree): string[] {
-    const { types, variables } = tree.dump();
+    const { types, variables, typedefs } = tree.dump();
     let lines: string[] = [];
 
     if (!R.isEmpty(types)) {
@@ -81,6 +81,16 @@ export class CScopePrintVisitor extends CScopeVisitor {
         chalk.white('+ Variables:'),
         ...R.values(variables).map(variable =>
           chalk.bold.green(`  + ${variable.getDisplayName()};`),
+        ),
+      ];
+    }
+
+    if (!R.isEmpty(typedefs)) {
+      lines = [
+        ...lines,
+        chalk.white('+ Typedefs:'),
+        ...R.values(typedefs).map(typedef =>
+          chalk.bold.green(`  + ${typedef.getDisplayName()};`),
         ),
       ];
     }

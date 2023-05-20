@@ -17,6 +17,7 @@ import {
 
 import { ASTCCompilerNode } from '../../parser/ast/ASTCCompilerNode';
 import { CAbstractNamedType } from '../utils/isNamedType';
+import { CTypedef } from './CTypedef';
 
 type TypeFindAttrs = {
   struct?: boolean;
@@ -34,6 +35,8 @@ export class CScopeTree<C extends ASTCCompilerNode = ASTCCompilerNode>
 {
   private types: Record<string, CType> = {};
   private variables: Record<string, CVariable> = {};
+  private typedefs: Record<string, CTypedef> = {};
+
   private compileTimeConstants: Record<string, number> = {};
   private childScopes: CScopeTree[] = [];
 
@@ -94,11 +97,12 @@ export class CScopeTree<C extends ASTCCompilerNode = ASTCCompilerNode>
    * Returns types / variables
    */
   dump() {
-    const { types, variables } = this;
+    const { types, variables, typedefs } = this;
 
     return {
       types,
       variables,
+      typedefs,
     };
   }
 
@@ -126,6 +130,15 @@ export class CScopeTree<C extends ASTCCompilerNode = ASTCCompilerNode>
 
     compileTimeConstants[name] = value;
     return ok(value);
+  }
+
+  defineTypedef(def: CTypedef): CTypedef {
+    this.typedefs[def.name] = def;
+    return def;
+  }
+
+  defineTypedefs(defs: CTypedef[]) {
+    defs.forEach(this.defineTypedef.bind(this));
   }
 
   /**
@@ -165,7 +178,7 @@ export class CScopeTree<C extends ASTCCompilerNode = ASTCCompilerNode>
   }
 
   /**
-   * Defines signle type in scope
+   * Defines single type in scope
    *
    * @see
    *  If defined is enum - defines also constant compile time integers
@@ -268,6 +281,10 @@ export class CScopeTree<C extends ASTCCompilerNode = ASTCCompilerNode>
     }
 
     return null;
+  }
+
+  findTypedef(name: string): CTypedef {
+    return this.typedefs[name] || this.parentScope?.findTypedef(name);
   }
 
   /**

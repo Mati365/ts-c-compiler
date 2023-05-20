@@ -6,7 +6,9 @@ export const MOCK_C_FILE = /* c */ `
   //   char x, y;
   // } vec2;
   typedef int* a;
+  int y;
 
   int main() {
+    int x;
   }
 `;
