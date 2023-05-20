@@ -3,13 +3,14 @@ import {
   CTypeSpecifier,
 } from '@compiler/pico-c/constants';
 
-import { Token } from '@compiler/lexer/tokens';
+import { Token, TokenType } from '@compiler/lexer/tokens';
 import { NodeLocation } from '@compiler/grammar/tree/NodeLocation';
 import { ASTCTypeSpecifier } from '@compiler/pico-c/frontend/parser/ast';
 import { CGrammar } from '../shared';
 
 import { enumDeclarator } from '../declarations/enumDeclator';
 import { structOrUnionSpecifier } from './structOrUnionSpecifier';
+import { SyntaxError } from '@compiler/grammar/Grammar';
 
 /**
  * type_specifier
@@ -28,13 +29,12 @@ import { structOrUnionSpecifier } from './structOrUnionSpecifier';
  *  ;
  */
 export function typeSpecifier(grammar: CGrammar): ASTCTypeSpecifier {
-  const { g } = grammar;
+  const { g, getTypedefEntry } = grammar;
 
   return <ASTCTypeSpecifier>g.or({
     identifier() {
       const identifierToken = <Token<string>>g.or({
         identifier: () => g.identifier(CCOMPILER_TYPE_SPECIFIERS),
-        // typeName: () => g.nonIdentifierKeyword(),
       });
 
       return new ASTCTypeSpecifier(
@@ -61,6 +61,25 @@ export function typeSpecifier(grammar: CGrammar): ASTCTypeSpecifier {
         null,
         null,
         enumSpecifier,
+      );
+    },
+    typedef() {
+      const nameToken = g.match({
+        type: TokenType.KEYWORD,
+      });
+
+      const typedefEntry = getTypedefEntry(nameToken.text);
+      if (!typedefEntry) {
+        throw new SyntaxError();
+      }
+
+      return new ASTCTypeSpecifier(
+        NodeLocation.fromTokenLoc(nameToken.loc),
+        null,
+        null,
+        null,
+        null,
+        typedefEntry,
       );
     },
   });

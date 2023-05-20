@@ -19,24 +19,35 @@ export class ASTCTypeSpecifiersList
     super(ASTCCompilerKind.TypeSpecifiersList, loc);
   }
 
-  findPrimitiveSpecifiers() {
-    return this.items.filter(item => !!item.specifier);
-  }
-
-  findStructSpecifiers() {
-    return this.items.filter(item => !!item.structOrUnionSpecifier);
-  }
-
-  findEnumSpecifiers() {
-    return this.items.filter(item => !!item.enumSpecifier);
-  }
-
   getGroupedSpecifiers() {
-    return {
-      primitives: this.findPrimitiveSpecifiers(),
-      structs: this.findStructSpecifiers(),
-      enums: this.findEnumSpecifiers(),
+    type Result = {
+      primitives: ASTCTypeSpecifier[];
+      structs: ASTCTypeSpecifier[];
+      enums: ASTCTypeSpecifier[];
+      typedefs: ASTCTypeSpecifier[];
     };
+
+    return this.items.reduce<Result>(
+      (acc, item) => {
+        if (item.specifier) {
+          acc.primitives.push(item);
+        } else if (item.structOrUnionSpecifier) {
+          acc.structs.push(item);
+        } else if (item.enumSpecifier) {
+          acc.enums.push(item);
+        } else if (item.typedefEntry) {
+          acc.typedefs.push(item);
+        }
+
+        return acc;
+      },
+      {
+        primitives: [],
+        structs: [],
+        enums: [],
+        typedefs: [],
+      },
+    );
   }
 
   isEmpty() {

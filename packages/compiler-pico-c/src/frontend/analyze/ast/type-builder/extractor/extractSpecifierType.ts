@@ -38,12 +38,24 @@ export function extractSpecifierType({
   }
 
   const qualifiers: CTypeQualifier[] = typeQualifiers?.items;
-  const { primitives, structs, enums } = typeSpecifiers.getGroupedSpecifiers();
-  const [hasPrimitives, hasStructs, hasEnums] = [
+  const { primitives, structs, enums, typedefs } =
+    typeSpecifiers.getGroupedSpecifiers();
+
+  const [hasPrimitives, hasStructs, hasEnums, hasTypedefs] = [
     !R.isEmpty(primitives),
     !R.isEmpty(structs),
     !R.isEmpty(enums),
+    !R.isEmpty(typedefs),
   ];
+
+  // unsigned <typedef> var = 2; is not supported in GCC
+  if (hasTypedefs) {
+    if (+hasPrimitives + +hasStructs + +hasEnums > 0) {
+      throw new CTypeCheckError(CTypeCheckErrorCode.INCORRECT_TYPE_SPECIFIERS);
+    }
+
+    return context.scope.findType(typedefs[0].typedefEntry.name);
+  }
 
   if (
     +hasPrimitives + +hasStructs + +hasEnums > 1 ||

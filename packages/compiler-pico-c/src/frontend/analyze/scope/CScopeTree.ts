@@ -217,7 +217,7 @@ export class CScopeTree<C extends ASTCCompilerNode = ASTCCompilerNode>
     name: string,
     attrs: TypeFindAttrs = {},
   ): R {
-    const { types, parentScope } = this;
+    const { types, typedefs, parentScope } = this;
     const {
       findInParent = true,
       function: fn,
@@ -226,7 +226,7 @@ export class CScopeTree<C extends ASTCCompilerNode = ASTCCompilerNode>
       enumerator,
     } = attrs;
 
-    const type = types[name];
+    const type = types[name] ?? typedefs[name]?.type;
     if (type) {
       if (
         (primitive && !type.isPrimitive()) ||

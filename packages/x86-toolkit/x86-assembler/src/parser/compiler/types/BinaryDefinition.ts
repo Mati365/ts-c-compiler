@@ -49,7 +49,9 @@ export function encodeDefineToken(byteSize: number, token: Token): number[] {
         }
 
         buffer.push(
-          ...R.reverse(encoder((<FloatNumberToken>token).value.number)),
+          ...(R.reverse(
+            encoder((<FloatNumberToken>token).value.number),
+          ) as any),
         );
       }
       break;

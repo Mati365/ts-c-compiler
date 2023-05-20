@@ -49,7 +49,9 @@ const compilerMatcher: GrammarInitializer<
               return;
             }
 
-            typedefNodes[declaratorNode.identifier.text] = {
+            const name = declaratorNode.identifier.text;
+            typedefNodes[name] = {
+              name,
               node,
             };
 

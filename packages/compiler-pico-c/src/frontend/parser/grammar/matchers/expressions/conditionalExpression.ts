@@ -32,9 +32,11 @@ export function conditionalExpression(grammar: CGrammar): ASTCCompilerNode {
 
   // return logical_or_expression '?' expression ':' conditional_expression
   const trueExpression = expression(grammar);
+
   g.match({
     type: TokenType.COLON,
   });
+
   const falseExpression = conditionalExpression(grammar);
 
   return new ASTCConditionalExpression(

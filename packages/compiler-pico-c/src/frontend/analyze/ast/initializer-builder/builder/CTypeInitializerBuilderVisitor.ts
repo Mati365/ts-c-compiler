@@ -284,7 +284,7 @@ export class CTypeInitializerBuilderVisitor extends CInnerTypeTreeVisitor {
           context,
         }).unwrapOrThrow();
 
-        if (!baseType.isUnknownSize() && constExprResult >= dimensions[0]) {
+        if (!baseType.isUnknownSize() && +constExprResult >= dimensions[0]) {
           throw new CTypeCheckError(
             CTypeCheckErrorCode.INDEX_INITIALIZER_ARRAY_OVERFLOW,
             designation.loc.start,
