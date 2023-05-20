@@ -8,6 +8,7 @@ import {
   CTypeCheckErrorCode,
 } from '../../../errors/CTypeCheckError';
 
+import { CTypedef } from '../../../scope/CTypedef';
 import { isNamedType } from '../../../utils/isNamedType';
 import {
   extractInitDeclaratorTypeVariables,
@@ -54,7 +55,11 @@ export class ASTCDeclarationTypeCreator extends ASTCTypeCreator<ASTCDeclaration>
         }),
       );
 
-      scope.defineVariables(variables).unwrapOrThrow();
+      if (declaration.specifier.storageClassSpecifiers?.isTypedef()) {
+        scope.defineTypedefs(variables.map(CTypedef.ofVariable));
+      } else {
+        scope.defineVariables(variables).unwrapOrThrow();
+      }
     }
 
     return false;
