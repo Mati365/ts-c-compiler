@@ -16,6 +16,10 @@ export class ASTCStorageClassSpecifiersList
     super(ASTCCompilerKind.StorageClassSpecifiersList, loc);
   }
 
+  isTypedef() {
+    return this.items.includes(CStorageClassSpecifier.TYPEDEF);
+  }
+
   isEmpty() {
     return R.isEmpty(this.items);
   }
