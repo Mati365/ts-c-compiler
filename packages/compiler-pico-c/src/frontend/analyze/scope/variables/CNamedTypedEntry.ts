@@ -28,6 +28,7 @@ export class CNamedTypedEntry<
   get name() {
     return this.value.name;
   }
+
   get type() {
     return this.value.type;
   }
@@ -56,6 +57,13 @@ export class CNamedTypedEntry<
     return this.map(value => ({
       ...value,
       type,
+    }));
+  }
+
+  mapType(fn: (type: CType) => CType) {
+    return this.map(value => ({
+      ...value,
+      type: fn(value.type),
     }));
   }
 }

@@ -2,19 +2,24 @@
 // todo: Fix calling fn with copy of struct
 export const MOCK_C_FILE = /* c */ `
   typedef struct Vec2 {
-    char x, y;
+    int x, y;
   } vec2_t;
 
-  void inc(const vec2_t* vec) {
-    vec->y++;
-  }
-
   void main() {
-    vec2_t v[2] = { { .x =2, .y = 4}, { .x = 1, .y = 5 } };
-
-    inc(&v[1]);
-
-    char k = v[1].y + v[0].y;
-    asm("xchg dx, dx");
+    vec2_t a = { .x = 1, .y  = 2};
+    vec2_t b = { .x = 4 };
   }
 `;
+
+// todo (and ternary):
+/**
+  typedef struct Vec2 {
+    int x, y;
+  } vec2_t;
+
+  void main() {
+    vec2_t v, a;
+
+    a = (struct Vec2) { .x = 5 };
+  }
+  */

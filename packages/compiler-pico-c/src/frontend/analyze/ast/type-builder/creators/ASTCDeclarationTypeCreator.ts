@@ -56,7 +56,11 @@ export class ASTCDeclarationTypeCreator extends ASTCTypeCreator<ASTCDeclaration>
       );
 
       if (declaration.specifier.storageClassSpecifiers?.isTypedef()) {
-        scope.defineTypedefs(variables.map(CTypedef.ofVariable));
+        const typedefs = variables.map(variable =>
+          CTypedef.ofVariable(variable).mapType(type => type.ofRegistered()),
+        );
+
+        scope.defineTypedefs(typedefs);
       } else {
         scope.defineVariables(variables).unwrapOrThrow();
       }
