@@ -95,4 +95,30 @@ describe('Typedef declaration', () => {
       ret
     `);
   });
+
+  test('multiple variables use the same typedef', () => {
+    expect(/* cpp */ `
+      typedef struct Vec2 {
+        int x, y;
+      } vec2_t;
+
+      void main() {
+        vec2_t a = { .x = 1, .y  = 2};
+        vec2_t b = { .x = 4 };
+      }
+    `).toCompiledAsmBeEqual(`
+      cpu 386
+      ; def main():
+      @@_fn_main:
+      push bp
+      mov bp, sp
+      sub sp, 8
+      mov word [bp - 4], 1      ; *(a{0}: struct Vec2*2B) = store %1: int2B
+      mov word [bp - 2], 2      ; *(a{0}: struct Vec2*2B + %2) = store %2: int2B
+      mov word [bp - 8], 4      ; *(b{0}: struct Vec2*2B) = store %4: int2B
+      mov sp, bp
+      pop bp
+      ret
+    `);
+  });
 });
