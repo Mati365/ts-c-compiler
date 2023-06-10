@@ -17,6 +17,7 @@ Multipass portable C lang compiler toolkit with IR code generator including back
 ### Multipass steps
 
 - [x] Frontend **([source](https://github.com/Mati365/ts-c-compiler/blob/master/packages/compiler-pico-c/src/frontend/cIRcompiler.ts))**
+
   - [x] Lexer **([source](https://github.com/Mati365/ts-c-compiler/blob/master/packages/compiler-pico-c/src/frontend/parser/lexer/clexer.ts#L37))**
   - [x] AST creator **([source](https://github.com/Mati365/ts-c-compiler/blob/master/packages/compiler-pico-c/src/frontend/parser/grammar/grammar.ts))**
   - [x] Type checking **([source](https://github.com/Mati365/ts-c-compiler/tree/master/packages/compiler-pico-c/src/frontend/analyze))**
@@ -30,12 +31,14 @@ Multipass portable C lang compiler toolkit with IR code generator including back
 ### X86 Arch support
 
 - [x] 16bit real mode X86 arch support
+
   - [x] X86 16bit Multipass Assembler compatible with NASM syntax **([source](https://github.com/Mati365/ts-c-compiler/tree/master/packages/x86-toolkit/x86-assembler))**
+
     - [x] Preprocessor **([source](https://github.com/Mati365/ts-c-compiler/tree/master/packages/x86-toolkit/x86-assembler/src/preprocessor))** compatible with NASM that supports:
-        - [x] Conditions and definitions: `%if`, `%ifn`, `%ifdef`, `%ifndef`, `%else`, `%elif`, `%elifndef`, `%elifdef`, `%elifn`, `%define`, `%undef`
-        - [x] Macros: `%macro`, `%define`, `%imacro`
-        - [x] Predefined variables: `__TIMES__`
-        - [x] Inline expressions calls: `%[__TIMES__]`
+      - [x] Conditions and definitions: `%if`, `%ifn`, `%ifdef`, `%ifndef`, `%else`, `%elif`, `%elifndef`, `%elifdef`, `%elifn`, `%define`, `%undef`
+      - [x] Macros: `%macro`, `%define`, `%imacro`
+      - [x] Predefined variables: `__TIMES__`
+      - [x] Inline expressions calls: `%[__TIMES__]`
 
   - [x] X86 CPU 16bit Intel 8086 virtual machine **([source](https://github.com/Mati365/ts-c-compiler/tree/master/packages/x86-toolkit/x86-cpu))**
     - [x] VGA graphical mode support **([source](https://github.com/Mati365/ts-c-compiler/blob/master/packages/x86-toolkit/x86-cpu/src/devices/Video/Renderers/VGAGraphicsModeCanvasRenderer.ts))**
@@ -46,20 +49,29 @@ Multipass portable C lang compiler toolkit with IR code generator including back
 ### Advanced array / pointers expressions
 
 ```c
-  typedef struct Vec2 {
-    char x, y;
-  } vec2_t;
+  int strlen(const char* str) {
+    for (int i = 0;;++i) {
+      if (*(str + i) == 0) {
+        return i;
+      }
+    }
 
-  void inc(const vec2_t* vec) {
-    vec->y++;
+    return -1;
   }
 
+  typedef struct Box {
+    int x, y;
+    const char* str;
+  } box_t;
+
   void main() {
-    vec2_t v[2] = { { .x =2, .y = 4}, { .x = 1, .y = 5 } };
+    box_t vec[] = { { .y = 5 }, { .x = 4, .str = "ABC" } };
 
-    inc(&v[1]);
+    vec[0].str = "Hello world!";
+    vec[0].y++;
+    vec[1].x += 3;
 
-    char k = v[1].y + v[0].y;
+    int k = vec[1].x * vec[0].y + strlen(vec[0].str);
     asm("xchg dx, dx");
   }
 ```
@@ -67,83 +79,138 @@ Multipass portable C lang compiler toolkit with IR code generator including back
 IR output:
 
 ```ruby
-cpu 386
-; def inc(vec{0}: struct Vec2**2B):
-@@_fn_inc:
-push bp
-mov bp, sp
-mov bx, [bp + 4]          ; %t{0}: struct Vec2*2B = load vec{0}: struct Vec2**2B
-add bx, 1                 ; %t{1}: char*2B = %t{0}: struct Vec2*2B plus %1: int2B
-mov al, [bx]              ; %t{2}: char1B = load %t{1}: char*2B
-movzx cx, al
-add cx, 1                 ; %t{3}: char1B = %t{2}: char1B plus %1: int2B
-mov byte [bx], cl         ; *(%t{1}: char*2B) = store %t{3}: char1B
-mov sp, bp
-pop bp
-ret 2
+# --- Block strlen ---
+def strlen(str{0}: const char**2B): [ret: int2B]
+  i{0}: int*2B = alloca int2B
+  *(i{0}: int*2B) = store %0: int2B
+  L1:
+  %t{2}: const char*2B = load str{0}: const char**2B
+  %t{3}: int2B = load i{0}: int*2B
+  %t{4}: const char*2B = %t{2}: const char*2B plus %t{3}: int2B
+  %t{5}: const char1B = load %t{4}: const char*2B
+  %t{6}: i1:zf = icmp %t{5}: const char1B equal %0: char1B
+  br %t{6}: i1:zf, false: L4
+  L5:
+  %t{7}: int2B = load i{0}: int*2B
+  ret %t{7}: int2B
+  L4:
+  %t{0}: int2B = load i{0}: int*2B
+  %t{1}: int2B = %t{0}: int2B plus %1: int2B
+  *(i{0}: int*2B) = store %t{1}: int2B
+  jmp L1
+  L3:
+  ret %-1: char1B
+  end-def
 
-; def main():
-@@_fn_main:
-push bp
-mov bp, sp
-sub sp, 5
-mov word [bp - 4], 1026   ; *(v{0}: int*2B) = store %1026: int2B
-mov word [bp - 2], 1281   ; *(v{0}: int*2B + %2) = store %1281: int2B
-lea bx, [bp - 4]          ; %t{5}: struct Vec2[2]*2B = lea v{0}: struct Vec2[2]*2B
-add bx, 2                 ; %t{6}: struct Vec2[2]*2B = %t{5}: struct Vec2[2]*2B plus %2: int2B
-push bx
-call @@_fn_inc
-lea bx, [bp - 4]          ; %t{7}: struct Vec2[2]*2B = lea v{0}: struct Vec2[2]*2B
-mov ax, bx                ; swap
-add bx, 3                 ; %t{9}: char*2B = %t{7}: struct Vec2[2]*2B plus %3: int2B
-mov cl, [bx]              ; %t{10}: char1B = load %t{9}: char*2B
-add ax, 1                 ; %t{13}: char*2B = %t{7}: struct Vec2[2]*2B plus %1: int2B
-mov di, ax
-mov ch, [di]              ; %t{14}: char1B = load %t{13}: char*2B
-add cl, ch                ; %t{15}: char1B = %t{10}: char1B plus %t{14}: char1B
-mov byte [bp - 5], cl     ; *(k{0}: char*2B) = store %t{15}: char1B
-xchg dx, dx
-mov sp, bp
-pop bp
-ret
+
+# --- Block main ---
+def main():
+  vec{0}: struct Box[3]*2B = alloca struct Box[3]18B
+  *(vec{0}: struct Box[3]*2B + %2) = store %5: int2B
+  *(vec{0}: struct Box[3]*2B + %6) = store %4: int2B
+  *(vec{0}: int*2B + %10) = store %16961: int2B
+  *(vec{0}: int*2B + %12) = store %67: int2B
+  %t{9}: struct Box[3]*2B = lea vec{0}: struct Box[3]*2B
+  %t{12}: const char**2B = label-offset c{0}
+  %t{13}: const char*2B = load %t{12}: const char**2B
+  *(vec{0}: struct Box[3]*2B + %4) = store %t{13}: const char*2B
+  %t{16}: int*2B = %t{9}: struct Box[3]*2B plus %2: int2B
+  %t{17}: int2B = load %t{16}: int*2B
+  %t{18}: int2B = %t{17}: int2B plus %1: int2B
+  *(vec{0}: struct Box[3]*2B + %2) = store %t{18}: int2B
+  %t{20}: struct Box[3]*2B = %t{9}: struct Box[3]*2B plus %6: int2B
+  %t{21}: int2B = load %t{20}: int*2B
+  %t{22}: int2B = %t{21}: int2B plus %3: char1B
+  *(vec{0}: struct Box[3]*2B + %6) = store %t{22}: int2B
+  k{0}: int*2B = alloca int2B
+  %t{24}: struct Box[3]*2B = %t{9}: struct Box[3]*2B plus %6: int2B
+  %t{25}: int2B = load %t{24}: int*2B
+  %t{28}: int*2B = %t{9}: struct Box[3]*2B plus %2: int2B
+  %t{29}: int2B = load %t{28}: int*2B
+  %t{30}: int2B = %t{25}: int2B mul %t{29}: int2B
+  %t{34}: const char**2B = %t{9}: struct Box[3]*2B plus %4: int2B
+  %t{35}: const char*2B = load %t{34}: const char**2B
+  %t{36}: int2B = call label-offset strlen :: (%t{35}: const char*2B)
+  %t{37}: int2B = %t{30}: int2B plus %t{36}: int2B
+  *(k{0}: int*2B) = store %t{37}: int2B
+  asm "xchg dx, dx"
+  ret
+  end-def
+
+# --- Block Data ---
+  c{0}: const char**2B = const { Hello world! }
 ```
 
 Binary output:
 
 ```asm
-0x000000  <╮                  55                            push bp
-0x000001   │                  89 e5                         mov bp, sp
-0x000003   │                  8b 5e 04                      mov bx, word [bp+4]
-0x000006   │                  83 c3 01                      add bx, 0x1
-0x000009   │                  8a 07                         mov al, byte [bx]
-0x00000b   │                  0f b6 c8                      movzx cx, al
-0x00000e   │                  83 c1 01                      add cx, 0x1
-0x000011   │                  88 0f                         mov byte [bx], cl
-0x000013   │                  89 ec                         mov sp, bp
-0x000015   │                  5d                            pop bp
-0x000016   │                  c2 02 00                      ret 0x2
-0x000019   │                  55                            push bp
-0x00001a   │                  89 e5                         mov bp, sp
-0x00001c   │                  83 ec 05                      sub sp, 0x5
-0x00001f   │                  c7 46 fc 02 04                mov word [bp-4], 0x402
-0x000024   │                  c7 46 fe 01 05                mov word [bp-2], 0x501
-0x000029   │                  8d 5e fc                      lea bx, word [bp-4]
-0x00002c   │                  83 c3 02                      add bx, 0x2
-0x00002f   │                  53                            push bx
-0x000030  ─╯                  e8 cd ff                      call 0x0
-0x000033                      8d 5e fc                      lea bx, word [bp-4]
-0x000036                      89 d8                         mov ax, bx
-0x000038                      83 c3 03                      add bx, 0x3
-0x00003b                      8a 0f                         mov cl, byte [bx]
-0x00003d                      05 01 00                      add ax, 0x1
-0x000040                      89 c7                         mov di, ax
-0x000042                      8a 2d                         mov ch, byte [di]
-0x000044                      00 e9                         add cl, ch
-0x000046                      88 4e fb                      mov byte [bp-5], cl
-0x000049                      87 d2                         xchg dx, dx
-0x00004b                      89 ec                         mov sp, bp
-0x00004d                      5d                            pop bp
-0x00004e                      c3                            ret
+0x000000  <────╮              55                            push bp
+0x000001       │              89 e5                         mov bp, sp
+0x000003       │              83 ec 02                      sub sp, 0x2
+0x000006       │              c7 46 fe 00 00                mov word [bp-2], 0x0
+0x00000b  <──╮ │              8b 5e 04                      mov bx, word [bp+4]
+0x00000e     │ │              03 5e fe                      add bx, word [bp-2]
+0x000011     │ │              8a 07                         mov al, byte [bx]
+0x000013     │ │              3c 00                         cmp al, 0x0
+0x000015  ─╮ │ │              75 09                         jnz 0x20
+0x000017   │ │ │              8b 46 fe                      mov ax, word [bp-2]
+0x00001a   │ │ │              89 ec                         mov sp, bp
+0x00001c   │ │ │              5d                            pop bp
+0x00001d   │ │ │              c2 02 00                      ret 0x2
+0x000020  <╯ │ │              8b 46 fe                      mov ax, word [bp-2]
+0x000023     │ │              05 01 00                      add ax, 0x1
+0x000026     │ │              89 46 fe                      mov word [bp-2], ax
+0x000029  ───╯ │              eb e0                         jmp 0xb
+0x00002b       │              b8 ff ff                      mov ax, -0x1
+0x00002e       │              89 ec                         mov sp, bp
+0x000030       │              5d                            pop bp
+0x000031       │              c2 02 00                      ret 0x2
+0x000034       │              55                            push bp
+0x000035       │              89 e5                         mov bp, sp
+0x000037       │              83 ec 14                      sub sp, 0x14
+0x00003a       │              c7 46 f0 05 00                mov word [bp-16], 0x5
+0x00003f       │              c7 46 f4 04 00                mov word [bp-12], 0x4
+0x000044       │              c7 46 f8 41 42                mov word [bp-8], 0x4241
+0x000049       │              c7 46 fa 43 00                mov word [bp-6], 0x43
+0x00004e       │              8d 5e ee                      lea bx, word [bp-18]
+0x000051       │              a1 a0 00                      mov ax, ds:@@_c_0_
+0x000054       │              89 46 f2                      mov word [bp-14], ax
+0x000057       │              89 d9                         mov cx, bx
+0x000059       │              83 c3 02                      add bx, 0x2
+0x00005c       │              8b 17                         mov dx, word [bx]
+0x00005e       │              83 c2 01                      add dx, 0x1
+0x000061       │              89 56 f0                      mov word [bp-16], dx
+0x000064       │              89 c8                         mov ax, cx
+0x000066       │              83 c1 06                      add cx, 0x6
+0x000069       │              89 cf                         mov di, cx
+0x00006b       │              8b 1d                         mov bx, word [di]
+0x00006d       │              83 c3 03                      add bx, 0x3
+0x000070       │              89 5e f4                      mov word [bp-12], bx
+0x000073       │              89 c1                         mov cx, ax
+0x000075       │              05 06 00                      add ax, 0x6
+0x000078       │              89 c6                         mov si, ax
+0x00007a       │              8b 14                         mov dx, word [si]
+0x00007c       │              89 c8                         mov ax, cx
+0x00007e       │              83 c1 02                      add cx, 0x2
+0x000081       │              89 cf                         mov di, cx
+0x000083       │              8b 1d                         mov bx, word [di]
+0x000085       │              0f af d3                      imul dx, bx
+0x000088       │              05 04 00                      add ax, 0x4
+0x00008b       │              89 c6                         mov si, ax
+0x00008d       │              8b 0c                         mov cx, word [si]
+0x00008f       │              52                            push dx
+0x000090       │              51                            push cx
+0x000091  ─────╯              e8 6c ff                      call 0x0
+0x000094                      5a                            pop dx
+0x000095                      01 c2                         add dx, ax
+0x000097                      89 56 ec                      mov word [bp-20], dx
+0x00009a                      87 d2                         xchg dx, dx
+0x00009c                      89 ec                         mov sp, bp
+0x00009e                      5d                            pop bp
+0x00009f                      c3                            ret
+0x0000a0                      a2 00                         dw @@_c_0_@str$0_0
+0x0000a2                      48 65 6c 6c 6f 20 77 6f       db "hello world!", 0x0
+          72 6c 64 21 00 00
 ```
 
 ### Printing BIOS charset

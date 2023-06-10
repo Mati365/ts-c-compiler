@@ -11,10 +11,13 @@ export const MOCK_C_FILE = /* c */ `
     return -1;
   }
 
-  struct Vec2 { int x, y; const char* str; };
+  typedef struct Box {
+    int x, y;
+    const char* str;
+  } box_t;
 
   void main() {
-    struct Vec2 vec[] = { { .y = 5 }, { .x = 4} };
+    box_t vec[] = { { .y = 5 }, { .x = 4, .str = "ABC" } };
 
     vec[0].str = "Hello world!";
     vec[0].y++;
