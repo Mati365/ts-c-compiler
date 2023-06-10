@@ -453,8 +453,8 @@ describe('Variables initialization', () => {
         mov cx, [di]              ; %t{6}: const char*[3]6B = load %t{5}: const char*[3]*2B
         add cx, 10                ; %t{7}: const char**2B = %t{6}: const char*[3]6B plus %10: int2B
         mov si, cx
-        mov dx, [si]              ; %t{8}: const char*2B = load %t{7}: const char**2B
-        mov byte [bp - 7], dl     ; *(a{0}: char*2B) = store %t{8}: const char*2B
+        mov dl, [si]              ; %t{8}: const char1B = load %t{7}: const char**2B
+        mov byte [bp - 7], dl     ; *(a{0}: char*2B) = store %t{8}: const char1B
         mov sp, bp
         pop bp
         ret

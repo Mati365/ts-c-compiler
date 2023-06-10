@@ -132,6 +132,8 @@ describe('Assignment IR', () => {
         def main():
           array{0}: int[3]*2B = alloca int[3]6B
           *(array{0}: int[3]*2B) = store %1: int2B
+          *(array{0}: int[3]*2B + %2) = store %2: int2B
+          *(array{0}: int[3]*2B + %4) = store %3: int2B
           *(array{0}: int[3]*2B + %2) = store %3: char1B
           *(array{0}: int[3]*2B + %4) = store %4: char1B
           *(array{0}: int[3]*2B + %6) = store %5: char1B
@@ -483,6 +485,7 @@ describe('Assignment IR', () => {
         # --- Block main ---
         def main():
           vec{0}: struct Vec2*2B = alloca struct Vec24B
+          *(vec{0}: struct Vec2*2B + %2) = store %5: int2B
           *(vec{0}: struct Vec2*2B + %2) = store %7: char1B
           ret
           end-def
@@ -497,9 +500,10 @@ describe('Assignment IR', () => {
           vec.k.w = 2;
         }
       `).toCompiledIRBeEqual(/* ruby */ `
-        # --- Block main ---
-        def main():
+          # --- Block main ---
+          def main():
           vec{0}: struct Vec2*2B = alloca struct Vec28B
+          *(vec{0}: struct Vec2*2B + %2) = store %5: int2B
           *(vec{0}: struct Vec2*2B + %2) = store %7: char1B
           *(vec{0}: struct Vec2*2B + %6) = store %2: char1B
           ret
@@ -555,7 +559,8 @@ describe('Assignment IR', () => {
         %t{2}: int*2B = %t{1}: struct Vec2*2B plus %2: int2B
         *(%t{2}: int*2B) = store %5: char1B
         d{0}: int*2B = alloca int2B
-        %t{4}: int*2B = %t{0}: struct Vec2**2B plus %2: int2B
+        %t{3}: struct Vec2*2B = load ptr{0}: struct Vec2**2B
+        %t{4}: int*2B = %t{3}: struct Vec2*2B plus %2: int2B
         %t{5}: int2B = load %t{4}: int*2B
         *(d{0}: int*2B) = store %t{5}: int2B
         ret

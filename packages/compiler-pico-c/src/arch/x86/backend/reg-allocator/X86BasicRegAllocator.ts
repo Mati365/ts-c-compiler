@@ -159,6 +159,7 @@ export class X86BasicRegAllocator {
       }
 
       const { asm, value } = this.requestReg({
+        allowedRegs: attrs.allowedRegs,
         prefer: preferRegs,
         size,
       });

@@ -367,9 +367,7 @@ export function emitIdentifierGetterIR({
     // last variable is `x` from `vec` but `IR` returned `Vec2*`
     // it has to be auto-casted to `int`
     const outputVar = allocator.allocTmpVariable(
-      lastIRVar.type.baseType.isPrimitive()
-        ? lastIRVar.type.baseType
-        : node.type,
+      isArrayLikeType(node.type) ? node.type.getSourceType() : node.type,
     );
 
     instructions.push(new IRLoadInstruction(lastIRVar, outputVar));

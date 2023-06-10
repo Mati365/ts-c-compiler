@@ -32,7 +32,6 @@ describe('Pointers', () => {
       mov sp, bp
       pop bp
       ret 2
-
       ; def main():
       @@_fn_main:
       push bp
@@ -44,8 +43,8 @@ describe('Pointers', () => {
       push bx
       call @@_fn_inc
       lea bx, [bp - 4]          ; %t{5}: struct Vec2**2B = lea v{0}: struct Vec2*2B
-      mov ax, [bx]              ; %t{6}: struct Vec2*2B = load %t{5}: struct Vec2**2B
-      mov word [bp - 6], ax     ; *(k{0}: int*2B) = store %t{6}: struct Vec2*2B
+      mov ax, [bx]              ; %t{6}: int2B = load %t{5}: struct Vec2**2B
+      mov word [bp - 6], ax     ; *(k{0}: int*2B) = store %t{6}: int2B
       xchg dx, dx
       mov sp, bp
       pop bp

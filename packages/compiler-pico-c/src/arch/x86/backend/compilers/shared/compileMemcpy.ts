@@ -40,13 +40,13 @@ export function compileMemcpy({ context, inputVar, outputVar }: MemcpyConfig) {
 
   const srcAddrReg = regs.tryResolveIRArgAsReg({
     arg: inputVar,
-    preferRegs: availableRegs.addressing,
+    allowedRegs: availableRegs.addressing,
     noOwnership: true,
   });
 
   const destAddrReg = regs.tryResolveIRArgAsReg({
     arg: outputVar,
-    preferRegs: availableRegs.addressing,
+    allowedRegs: availableRegs.addressing,
     noOwnership: true,
   });
 

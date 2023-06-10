@@ -221,6 +221,7 @@ export function emitExpressionIR({
           });
 
           const exprResult = emitIncExpressionIR({
+            node,
             pre: isPreInc,
             rootIRVar: irSrcVarExprResult.output,
             context,

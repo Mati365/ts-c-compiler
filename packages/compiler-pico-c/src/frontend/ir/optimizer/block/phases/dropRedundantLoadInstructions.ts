@@ -1,3 +1,4 @@
+import { getSourceNonPtrType } from '@compiler/pico-c/frontend/analyze/types/utils';
 import { isIRBranchInstruction } from '../../../guards';
 import {
   IRInstruction,
@@ -61,7 +62,10 @@ export function dropRedundantLoadInstructions(instructions: IRInstruction[]) {
   for (let i = 0; i < newInstructions.length; ++i) {
     let instruction = newInstructions[i];
 
-    if (isIRLoadInstruction(instruction)) {
+    if (
+      isIRLoadInstruction(instruction) &&
+      getSourceNonPtrType(instruction.inputVar.type).canBeStoredInReg()
+    ) {
       const { inputVar, outputVar } = instruction;
 
       if (state.srcLoads[inputVar.name]) {

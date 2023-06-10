@@ -121,8 +121,8 @@ describe('Global variables declaration', () => {
       mov ax, [@@_c_0_]         ; %t{2}: const char*[1]2B = load %t{1}: const char*[1]*2B
       add ax, 1                 ; %t{3}: const char**2B = %t{2}: const char*[1]2B plus %1: int2B
       mov di, ax
-      mov bx, [di]              ; %t{4}: const char*2B = load %t{3}: const char**2B
-      mov byte [bp - 1], bl     ; *(a{0}: char*2B) = store %t{4}: const char*2B
+      mov bl, [di]              ; %t{4}: const char1B = load %t{3}: const char**2B
+      mov byte [bp - 1], bl     ; *(a{0}: char*2B) = store %t{4}: const char1B
       mov sp, bp
       pop bp
       ret
