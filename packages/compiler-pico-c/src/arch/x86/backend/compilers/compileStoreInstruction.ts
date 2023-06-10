@@ -4,6 +4,7 @@ import {
 } from '@compiler/pico-c/backend/errors/CBackendError';
 
 import { getByteSizeArgPrefixName } from '@x86-toolkit/assembler/parser/utils';
+import { getBaseTypeIfPtr } from '@compiler/pico-c/frontend/analyze/types/utils';
 import { IRStoreInstruction } from '@compiler/pico-c/frontend/ir/instructions';
 
 import {
@@ -12,6 +13,7 @@ import {
 } from '@compiler/pico-c/frontend/ir/variables';
 
 import { getTypeOffsetByteSize } from '@compiler/pico-c/frontend/ir/utils';
+import { compileMemcpy } from './shared';
 
 import { X86CompilerInstructionFnAttrs } from '../../constants/types';
 import {
@@ -89,52 +91,69 @@ export function compileStoreInstruction({
   }
 
   if (isIRVariable(value)) {
-    let inputReg = regs.tryResolveIRArgAsReg({
-      arg: value,
-      forceLabelMemPtr: false,
-    });
-
-    if (inputReg.size - destAddr.size === 1) {
-      // case: *(%t{1}: char*2B) = store %t{2}: int2B
-      // bigger value is loaded in smaller address
-      const part =
-        regs.ownership.getAvailableRegs().general.parts[inputReg.value];
-
-      inputReg = {
-        ...inputReg,
-        size: part.size,
-        value: part.low,
-      };
-    } else if (inputReg.size - destAddr.size === -1) {
-      // case: *(k{0}: int*2B) = store %t{0}: char1B
-      // smaller value is loaded in bigger address
-      const extendedReg = regs.requestReg({
-        size: destAddr.size,
+    // check if variable is struct or something bigger than that
+    if (
+      getBaseTypeIfPtr(value.type).isStruct() &&
+      getBaseTypeIfPtr(outputVar.type).isStruct() &&
+      !value.isTemporary()
+    ) {
+      // copy structure A to B
+      asm.push(
+        ...compileMemcpy({
+          context,
+          outputVar: outputVar,
+          inputVar: value,
+        }),
+      );
+    } else {
+      // simple variables that can be stored inside regs
+      let inputReg = regs.tryResolveIRArgAsReg({
+        arg: value,
+        forceLabelMemPtr: false,
       });
 
-      regs.ownership.setOwnership(value.name, {
-        reg: extendedReg.value,
-      });
+      if (inputReg.size - destAddr.size === 1) {
+        // case: *(%t{1}: char*2B) = store %t{2}: int2B
+        // bigger value is loaded in smaller address
+        const part =
+          regs.ownership.getAvailableRegs().general.parts[inputReg.value];
 
-      // extend value before move
-      inputReg = {
-        asm: [
-          ...inputReg.asm,
-          ...extendedReg.asm,
-          genInstruction('movzx', extendedReg.value, inputReg.value),
-        ],
-        size: extendedReg.size,
-        value: extendedReg.value,
-      };
+        inputReg = {
+          ...inputReg,
+          size: part.size,
+          value: part.low,
+        };
+      } else if (inputReg.size - destAddr.size === -1) {
+        // case: *(k{0}: int*2B) = store %t{0}: char1B
+        // smaller value is loaded in bigger address
+        const extendedReg = regs.requestReg({
+          size: destAddr.size,
+        });
+
+        regs.ownership.setOwnership(value.name, {
+          reg: extendedReg.value,
+        });
+
+        // extend value before move
+        inputReg = {
+          asm: [
+            ...inputReg.asm,
+            ...extendedReg.asm,
+            genInstruction('movzx', extendedReg.value, inputReg.value),
+          ],
+          size: extendedReg.size,
+          value: extendedReg.value,
+        };
+      }
+
+      asm.push(
+        ...inputReg.asm,
+        withInlineComment(
+          genInstruction('mov', destAddr.value, inputReg.value),
+          instruction.getDisplayName(),
+        ),
+      );
     }
-
-    asm.push(
-      ...inputReg.asm,
-      withInlineComment(
-        genInstruction('mov', destAddr.value, inputReg.value),
-        instruction.getDisplayName(),
-      ),
-    );
   } else if (isIRConstant(value)) {
     asm.push(
       withInlineComment(

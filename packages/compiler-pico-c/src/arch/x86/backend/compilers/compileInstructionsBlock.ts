@@ -33,5 +33,7 @@ export function compileInstructionsBlock({
     }
   });
 
+  // console.info(asm.join('\n'));
+
   return asm;
 }

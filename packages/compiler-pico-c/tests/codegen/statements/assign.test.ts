@@ -116,11 +116,11 @@ describe('Variable assign', () => {
         mov word [bp - 4], 1      ; *(vec{0}: struct Vec2*2B) = store %1: int2B
         mov word [bp - 2], 3      ; *(vec{0}: struct Vec2*2B + %2) = store %3: int2B
         lea bx, [bp - 4]          ; %t{0}: struct Vec2**2B = lea vec{0}: struct Vec2*2B
-        mov ax, [bx]              ; %t{1}: struct Vec2*2B = load %t{0}: struct Vec2**2B
+        mov ax, [bx]              ; %t{1}: int2B = load %t{0}: struct Vec2**2B
         add bx, 2                 ; %t{3}: struct Vec2**2B = %t{0}: struct Vec2**2B plus %2: int2B
-        mov cx, [bx]              ; %t{4}: struct Vec2*2B = load %t{3}: struct Vec2**2B
-        add ax, cx                ; %t{5}: struct Vec2*2B = %t{1}: struct Vec2*2B plus %t{4}: struct Vec2*2B
-        mov word [bp - 6], ax     ; *(k{0}: int*2B) = store %t{5}: struct Vec2*2B
+        mov cx, [bx]              ; %t{4}: int2B = load %t{3}: struct Vec2**2B
+        add ax, cx                ; %t{5}: int2B = %t{1}: int2B plus %t{4}: int2B
+        mov word [bp - 6], ax     ; *(k{0}: int*2B) = store %t{5}: int2B
         mov sp, bp
         pop bp
         ret
@@ -187,6 +187,40 @@ describe('Variable assign', () => {
         dw 0, 0, 0, 0, 0, 0, 0
       `);
     });
+
+    test('assign and inc struct member', () => {
+      expect(/* cpp */ `
+        struct Vec2 { int x, y; };
+          void main() {
+          struct Vec2 vec = { .y = 5 };
+
+          vec.y++;
+          vec.y += 3;
+        }
+      `).toCompiledAsmBeEqual(`
+        cpu 386
+        ; def main():
+        @@_fn_main:
+        push bp
+        mov bp, sp
+        sub sp, 4
+        mov word [bp - 2], 5      ; *(vec{0}: struct Vec2*2B + %2) = store %5: int2B
+        lea bx, [bp - 4]          ; %t{0}: struct Vec2**2B = lea vec{0}: struct Vec2*2B
+        mov ax, bx                ; swap
+        add bx, 2                 ; %t{1}: struct Vec2**2B = %t{0}: struct Vec2**2B plus %2: int2B
+        mov cx, [bx]              ; %t{2}: int2B = load %t{1}: struct Vec2**2B
+        add cx, 1                 ; %t{3}: int2B = %t{2}: int2B plus %1: int2B
+        mov word [bp - 2], cx     ; *(vec{0}: struct Vec2*2B + %2) = store %t{3}: int2B
+        add ax, 2                 ; %t{5}: struct Vec2**2B = %t{0}: struct Vec2**2B plus %2: int2B
+        mov di, ax
+        mov dx, [di]              ; %t{6}: struct Vec2*2B = load %t{5}: struct Vec2**2B
+        add dx, 3                 ; %t{7}: struct Vec2*2B = %t{6}: struct Vec2*2B plus %3: char1B
+        mov word [bp - 2], dx     ; *(vec{0}: struct Vec2*2B + %2) = store %t{7}: struct Vec2*2B
+        mov sp, bp
+        pop bp
+        ret
+      `);
+    });
   });
 
   describe('Assign to array item', () => {
@@ -208,10 +242,46 @@ describe('Variable assign', () => {
           mov word [bp - 8], 3      ; *(testArray{0}: int[6]*2B + %4) = store %3: int2B
           mov word [bp - 6], 4      ; *(testArray{0}: int[6]*2B + %6) = store %4: int2B
           mov word [bp - 4], 5      ; *(testArray{0}: int[6]*2B + %8) = store %5: int2B
+          mov word [bp - 2], 6      ; *(testArray{0}: int[6]*2B + %10) = store %6: int2B
           mov word [bp - 2], 123    ; *(testArray{0}: int[6]*2B + %10) = store %123: char1B
           mov sp, bp
           pop bp
           ret
+      `);
+    });
+
+    test('assign and inc array members', () => {
+      expect(/* cpp */ `
+        struct Vec2 { int x, y; };
+          void main() {
+          struct Vec2 vec[] = { { .y = 5 }, { .x = 2} };
+
+          vec[0].y++;
+          vec[1].x += 3;
+        }
+      `).toCompiledAsmBeEqual(`
+        cpu 386
+        ; def main():
+        @@_fn_main:
+        push bp
+        mov bp, sp
+        sub sp, 8
+        mov word [bp - 6], 5      ; *(vec{0}: struct Vec2[2]*2B + %2) = store %5: int2B
+        mov word [bp - 4], 2      ; *(vec{0}: struct Vec2[2]*2B + %4) = store %2: int2B
+        lea bx, [bp - 8]          ; %t{0}: struct Vec2[2]*2B = lea vec{0}: struct Vec2[2]*2B
+        mov ax, bx                ; swap
+        add bx, 2                 ; %t{2}: int*2B = %t{0}: struct Vec2[2]*2B plus %2: int2B
+        mov cx, [bx]              ; %t{3}: int2B = load %t{2}: int*2B
+        add cx, 1                 ; %t{4}: int2B = %t{3}: int2B plus %1: int2B
+        mov word [bp - 6], cx     ; *(vec{0}: struct Vec2[2]*2B + %2) = store %t{4}: int2B
+        add ax, 4                 ; %t{6}: struct Vec2[2]*2B = %t{0}: struct Vec2[2]*2B plus %4: int2B
+        mov di, ax
+        mov dx, [di]              ; %t{7}: int2B = load %t{6}: int*2B
+        add dx, 3                 ; %t{8}: int2B = %t{7}: int2B plus %3: char1B
+        mov word [bp - 4], dx     ; *(vec{0}: struct Vec2[2]*2B + %4) = store %t{8}: int2B
+        mov sp, bp
+        pop bp
+        ret
       `);
     });
   });
@@ -280,18 +350,176 @@ describe('Variable assign', () => {
         push bp
         mov bp, sp
         sub sp, 8
+        mov word [bp - 2], 5      ; *(vec{0}: struct Vec2*2B + %2) = store %5: int2B
         lea bx, [bp - 4]          ; %t{0}: struct Vec2**2B = lea vec{0}: struct Vec2*2B
         mov word [bp - 6], bx     ; *(ptr{0}: struct Vec2**2B) = store %t{0}: struct Vec2**2B
         mov word [bp - 2], 6      ; *(vec{0}: struct Vec2*2B + %2) = store %6: char1B
         mov di, [bp - 6]          ; %t{3}: struct Vec2*2B = load ptr{0}: struct Vec2**2B
         add di, 2                 ; %t{4}: int*2B = %t{3}: struct Vec2*2B plus %2: int2B
         mov word [di], 5          ; *(%t{4}: int*2B) = store %5: char1B
-        add bx, 2                 ; %t{6}: int*2B = %t{0}: struct Vec2**2B plus %2: int2B
-        mov ax, [bx]              ; %t{7}: int2B = load %t{6}: int*2B
+        mov si, [bp - 6]          ; %t{5}: struct Vec2*2B = load ptr{0}: struct Vec2**2B
+        add si, 2                 ; %t{6}: int*2B = %t{5}: struct Vec2*2B plus %2: int2B
+        mov ax, [si]              ; %t{7}: int2B = load %t{6}: int*2B
         mov word [bp - 8], ax     ; *(d{0}: int*2B) = store %t{7}: int2B
         mov sp, bp
         pop bp
         ret
+      `);
+    });
+  });
+
+  describe('Struct', () => {
+    test('assign struct to struct', () => {
+      expect(/* cpp */ `
+        typedef struct Vec2 {
+          int x, y;
+        } vec2_t;
+
+        void main() {
+          vec2_t a = { .x = 6, .y  = 2};
+          vec2_t b = a;
+
+          a.x += 2;
+          b.x += 9;
+
+          int k = b.x + a.x;
+          asm("xchg dx, dx");
+        }
+      `).toCompiledAsmBeEqual(`
+        cpu 386
+        ; def main():
+        @@_fn_main:
+        push bp
+        mov bp, sp
+        sub sp, 10
+        mov word [bp - 4], 6      ; *(a{0}: struct Vec2*2B) = store %6: int2B
+        mov word [bp - 2], 2      ; *(a{0}: struct Vec2*2B + %2) = store %2: int2B
+        ; memcpy a{0}: struct Vec2*2B -> b{0}: struct Vec2*2B
+        lea bx, [bp - 4]
+        lea di, [bp - 8]
+        ; offset = 0B
+        mov ax, word [bx]
+        mov word [di], ax
+        ; offset = 2B
+        mov ax, word [bx + 2]
+        mov word [di + 2], ax
+        lea bx, [bp - 4]          ; %t{0}: struct Vec2**2B = lea a{0}: struct Vec2*2B
+        mov ax, [bx]              ; %t{1}: struct Vec2*2B = load %t{0}: struct Vec2**2B
+        add ax, 2                 ; %t{2}: struct Vec2*2B = %t{1}: struct Vec2*2B plus %2: char1B
+        mov word [bp - 4], ax     ; *(a{0}: struct Vec2*2B) = store %t{2}: struct Vec2*2B
+        lea di, [bp - 8]          ; %t{3}: struct Vec2**2B = lea b{0}: struct Vec2*2B
+        mov cx, [di]              ; %t{4}: struct Vec2*2B = load %t{3}: struct Vec2**2B
+        add cx, 9                 ; %t{5}: struct Vec2*2B = %t{4}: struct Vec2*2B plus %9: char1B
+        mov word [bp - 8], cx     ; *(b{0}: struct Vec2*2B) = store %t{5}: struct Vec2*2B
+        mov dx, [di]              ; %t{7}: int2B = load %t{3}: struct Vec2**2B
+        mov ax, [bx]              ; %t{9}: int2B = load %t{0}: struct Vec2**2B
+        add dx, ax                ; %t{10}: int2B = %t{7}: int2B plus %t{9}: int2B
+        mov word [bp - 10], dx    ; *(k{0}: int*2B) = store %t{10}: int2B
+        xchg dx, dx
+        mov sp, bp
+        pop bp
+        ret
+      `);
+    });
+  });
+
+  describe('Mix', () => {
+    test('const char* as struct member and strlen', () => {
+      expect(/* cpp */ `
+        int strlen(const char* str) {
+          for (int i = 0;;++i) {
+            if (*(str + i) == 0) {
+              return i;
+            }
+          }
+
+          return -1;
+        }
+
+        struct Vec2 { int x, y; const char* str; };
+
+        void main() {
+          struct Vec2 vec[] = { { .y = 5 }, { .x = 4} };
+
+          vec[0].str = "Hello world!";
+          vec[0].y++;
+          vec[1].x += 3;
+
+          int k = vec[1].x + strlen(vec[0].str);
+          asm("xchg dx, dx");
+        }
+      `).toCompiledAsmBeEqual(`
+        cpu 386
+        ; def strlen(str{0}: const char**2B): [ret: int2B]
+        @@_fn_strlen:
+        push bp
+        mov bp, sp
+        sub sp, 2
+        mov word [bp - 2], 0      ; *(i{0}: int*2B) = store %0: int2B
+        @@_L1:
+        mov bx, [bp + 4]          ; %t{2}: const char*2B = load str{0}: const char**2B
+        add bx, word [bp - 2]     ; %t{4}: const char*2B = %t{2}: const char*2B plus %t{3}: int2B
+        mov al, [bx]              ; %t{5}: const char1B = load %t{4}: const char*2B
+        cmp al, 0                 ; %t{6}: i1:zf = icmp %t{5}: const char1B equal %0: char1B
+        jnz @@_L4                 ; br %t{6}: i1:zf, false: L4
+        @@_L5:
+        mov ax, [bp - 2]
+        mov sp, bp
+        pop bp
+        ret 2
+        @@_L4:
+        mov ax, [bp - 2]
+        add ax, 1                 ; %t{1}: int2B = %t{0}: int2B plus %1: int2B
+        mov word [bp - 2], ax     ; *(i{0}: int*2B) = store %t{1}: int2B
+        jmp @@_L1                 ; jmp L1
+        @@_L3:
+        mov ax, word -1
+        mov sp, bp
+        pop bp
+        ret 2
+
+        ; def main():
+        @@_fn_main:
+        push bp
+        mov bp, sp
+        sub sp, 14
+        mov word [bp - 10], 5     ; *(vec{0}: struct Vec2[2]*2B + %2) = store %5: int2B
+        mov word [bp - 6], 4      ; *(vec{0}: struct Vec2[2]*2B + %6) = store %4: int2B
+        lea bx, [bp - 12]         ; %t{9}: struct Vec2[2]*2B = lea vec{0}: struct Vec2[2]*2B
+        mov ax, [@@_c_0_]         ; %t{13}: const char*2B = load %t{12}: const char**2B
+        mov word [bp - 8], ax     ; *(vec{0}: struct Vec2[2]*2B + %4) = store %t{13}: const char*2B
+        mov cx, bx                ; swap
+        add bx, 2                 ; %t{16}: int*2B = %t{9}: struct Vec2[2]*2B plus %2: int2B
+        mov dx, [bx]              ; %t{17}: int2B = load %t{16}: int*2B
+        add dx, 1                 ; %t{18}: int2B = %t{17}: int2B plus %1: int2B
+        mov word [bp - 10], dx    ; *(vec{0}: struct Vec2[2]*2B + %2) = store %t{18}: int2B
+        mov ax, cx                ; swap
+        add cx, 6                 ; %t{20}: struct Vec2[2]*2B = %t{9}: struct Vec2[2]*2B plus %6: int2B
+        mov di, cx
+        mov bx, [di]              ; %t{21}: int2B = load %t{20}: int*2B
+        add bx, 3                 ; %t{22}: int2B = %t{21}: int2B plus %3: char1B
+        mov word [bp - 6], bx     ; *(vec{0}: struct Vec2[2]*2B + %6) = store %t{22}: int2B
+        mov cx, ax                ; swap
+        add ax, 6                 ; %t{24}: struct Vec2[2]*2B = %t{9}: struct Vec2[2]*2B plus %6: int2B
+        mov si, ax
+        mov dx, [si]              ; %t{25}: int2B = load %t{24}: int*2B
+        add cx, 4                 ; %t{29}: const char**2B = %t{9}: struct Vec2[2]*2B plus %4: int2B
+        mov bx, cx
+        mov ax, [bx]              ; %t{30}: const char*2B = load %t{29}: const char**2B
+        push dx                   ; preserve: %t{25}
+        push ax
+        call @@_fn_strlen
+        pop dx                    ; restore: %t{25}
+        add dx, ax                ; %t{32}: int2B = %t{25}: int2B plus %t{31}: int2B
+        mov word [bp - 14], dx    ; *(k{0}: int*2B) = store %t{32}: int2B
+        xchg dx, dx
+        mov sp, bp
+        pop bp
+        ret
+
+        @@_c_0_:
+        dw @@_c_0_@str$0_0
+        @@_c_0_@str$0_0: db "Hello world!", 0x0
       `);
     });
   });

@@ -1,4 +1,5 @@
 import { TokenType } from '@compiler/lexer/shared';
+import { ASTCCompilerNode } from '@compiler/pico-c/frontend/parser';
 import {
   CPrimitiveType,
   isPointerLikeType,
@@ -10,11 +11,13 @@ import {
   IRMathInstruction,
   IRStoreInstruction,
 } from '../../instructions';
+
 import { IRConstant, IRVariable } from '../../variables';
 import { IREmitterContextAttrs, IREmitterExpressionVarResult } from './types';
 import { IRError, IRErrorCode } from '../../errors/IRError';
 
 type IncExpressionIREmitAttrs = Pick<IREmitterContextAttrs, 'context'> & {
+  node: ASTCCompilerNode;
   sign: number;
   rootIRVar: IRVariable;
   pre?: boolean;
@@ -23,6 +26,7 @@ type IncExpressionIREmitAttrs = Pick<IREmitterContextAttrs, 'context'> & {
 export function emitIncExpressionIR({
   context,
   sign,
+  node,
   rootIRVar,
   pre,
 }: IncExpressionIREmitAttrs): IREmitterExpressionVarResult {
@@ -33,12 +37,10 @@ export function emitIncExpressionIR({
     throw new IRError(IRErrorCode.UNABLE_INC_NON_PTR_TYPE);
   }
 
-  const irSrcVar = allocator.allocTmpVariable(type.baseType);
-  const irTmpVar = allocator.allocTmpVariable(irSrcVar.type);
+  const irSrcVar = allocator.allocTmpVariable(node.type);
+  const irTmpVar = allocator.allocTmpVariable(node.type);
 
-  const incValue = isPointerLikeType(irSrcVar.type)
-    ? irSrcVar.type.getByteSize()
-    : 1;
+  const incValue = isPointerLikeType(node.type) ? node.type.getByteSize() : 1;
 
   const instructions: IRInstruction[] = [
     new IRLoadInstruction(rootIRVar, irSrcVar),

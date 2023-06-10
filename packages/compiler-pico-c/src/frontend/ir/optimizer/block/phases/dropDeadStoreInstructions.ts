@@ -1,3 +1,4 @@
+import { getBaseTypeIfPtr } from '@compiler/pico-c/frontend/analyze/types/utils';
 import { isIRVariable } from '../../../variables';
 import { isIRBranchInstruction } from '../../../guards';
 import {
@@ -43,7 +44,10 @@ export function dropDeadStoreInstructions(instructions: IRInstruction[]) {
 
       dropNotUsedStoreInstructions(cachedInstructions);
       delete cachedStore[name];
-    } else if (isIRStoreInstruction(instruction)) {
+    } else if (
+      isIRStoreInstruction(instruction) &&
+      getBaseTypeIfPtr(instruction.outputVar.type).canBeStoredInReg()
+    ) {
       const name = `${instruction.outputVar.name}-${instruction.offset}`;
       (cachedStore[name] ||= []).push(instruction);
     }
