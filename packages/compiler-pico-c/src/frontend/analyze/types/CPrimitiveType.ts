@@ -39,8 +39,11 @@ export type CPrimitiveTypeSourceParserAttrs = {
   specifiers?: CTypeSpecifier[];
 };
 
-export function isPrimitiveLikeType(type: CType): type is CPrimitiveType {
-  return type?.isPrimitive();
+export function isPrimitiveLikeType(
+  type: CType,
+  strict: boolean = false,
+): type is CPrimitiveType {
+  return type?.isPrimitive() && (!strict || 'isUnsigned' in type);
 }
 
 /**
@@ -94,7 +97,7 @@ export class CPrimitiveType extends CType<CPrimitiveTypeDescriptor> {
   }
 
   isSigned() {
-    return !this.hasSpecifierType(CSpecBitmap.signed);
+    return !this.hasSpecifierType(CSpecBitmap.unsigned);
   }
 
   isUnsigned() {
