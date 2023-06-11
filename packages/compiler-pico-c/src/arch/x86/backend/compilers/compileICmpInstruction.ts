@@ -1,3 +1,6 @@
+import { getBiggerIRArg } from '@compiler/pico-c/frontend/ir/utils';
+import { isPrimitiveLikeType } from '@compiler/pico-c/frontend/analyze';
+
 import { CRelOperator } from '@compiler/pico-c/constants';
 import { TokenType } from '@compiler/lexer/shared';
 import {
@@ -18,8 +21,6 @@ import {
 
 import { IRArgDynamicResolverType } from '../reg-allocator';
 import { X86CompilerInstructionFnAttrs } from '../../constants/types';
-import { getBiggerIRArg } from '@compiler/pico-c/frontend/ir/utils';
-import { isPrimitiveLikeType } from '@compiler/pico-c/frontend/analyze';
 
 const OPERATOR_JMP_INSTRUCTIONS: Record<
   CRelOperator,
