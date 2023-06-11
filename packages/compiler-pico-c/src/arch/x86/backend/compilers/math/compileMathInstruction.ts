@@ -115,6 +115,10 @@ export function compileMathInstruction({
       const leftAllocResult = regs.tryResolveIRArgAsReg({
         size: biggestArgSize,
         arg: leftVar,
+        ...(isUnsigned &&
+          operator === TokenType.MUL && {
+            allowedRegs: ['ax'],
+          }),
       });
 
       if (outputVar.isTemporary()) {
@@ -151,6 +155,9 @@ export function compileMathInstruction({
             leftAllocResult.value,
             Math.log2(rightAllocResult.value),
           );
+        } else if (isUnsigned) {
+          // compile normal `mul` (ax is first predefined arg, look at `leftAllocResult`)
+          operatorAsm = genInstruction('mul', rightAllocResult.value);
         } else {
           // compile normal `imul`
           operatorAsm = genInstruction(
