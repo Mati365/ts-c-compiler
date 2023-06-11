@@ -3,7 +3,9 @@
 export const MOCK_C_FILE = /* c */ `
   int strlen(const char* str) {
     for (int i = 0;;++i) {
-      if (*(str + i) == 0) {
+      char s = str[i];
+
+      if (s == 0) {
         return i;
       }
     }
@@ -11,20 +13,8 @@ export const MOCK_C_FILE = /* c */ `
     return -1;
   }
 
-  typedef struct Box {
-    int x, y;
-    const char* str;
-  } box_t;
-
   void main() {
-    box_t vec[] = { { .y = 5 }, { .x = 4, .str = "ABC" } };
-
-    vec[0].str = "Hello world!";
-    vec[0].y++;
-    vec[1].x += 3;
-
-    int k = vec[1].x * vec[0].y + strlen(vec[0].str);
-    asm("xchg dx, dx");
+    int length2 = strlen("Hello world 34234!");
   }
 `;
 

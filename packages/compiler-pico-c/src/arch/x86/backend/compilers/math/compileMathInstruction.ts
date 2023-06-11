@@ -14,8 +14,10 @@ import { X86CompilerInstructionFnAttrs } from '../../../constants/types';
 import { genInstruction, withInlineComment } from '../../../asm-utils';
 import { ensureFunctionNotOverridesOutput } from './ensureFunctionNotOverrideOutput';
 import { castToPointerIfArray } from '@compiler/pico-c/frontend/analyze/casts';
+
 import { isNopMathInstruction } from './isNopMathInstruction';
 import { isIRVariable } from '@compiler/pico-c/frontend/ir/variables';
+import { isPrimitiveLikeType } from '@compiler/pico-c/frontend/analyze';
 
 const BinaryOperatorX86Opcode: Partial<Record<CMathOperator, string>> = {
   [TokenType.BIT_OR]: 'xor',
@@ -35,6 +37,9 @@ export function compileMathInstruction({
   const {
     allocator: { regs },
   } = context;
+
+  const isUnsigned =
+    isPrimitiveLikeType(outputVar.type, true) && outputVar.type.isUnsigned();
 
   // imul instruction likes only 16bit / 32bit args
   // so force make it at least that big
@@ -196,9 +201,9 @@ export function compileMathInstruction({
           leftAllocResult: allocResult.quotient,
           context,
         }),
-        genInstruction('xor', 'dx', 'dx'),
+        isUnsigned ? genInstruction('xor', 'dx', 'dx') : genInstruction('cdq'),
         withInlineComment(
-          genInstruction('idiv', rightAllocResult.value),
+          genInstruction(isUnsigned ? 'div' : 'idiv', rightAllocResult.value),
           instruction.getDisplayName(),
         ),
       ];
