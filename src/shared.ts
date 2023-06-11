@@ -1,20 +1,13 @@
 // todo: Add ternary
 // todo: Fix calling fn with copy of struct
 export const MOCK_C_FILE = /* c */ `
-  int strlen(const char* str) {
-    for (int i = 0;;++i) {
-      char s = str[i];
-
-      if (s == 0) {
-        return i;
-      }
-    }
-
-    return -1;
-  }
-
   void main() {
-    int length2 = strlen("Hello world 34234!");
+    int a = 3, b = 1;
+
+    if (a <= b) {
+      int k;
+      k = 7;
+    }
   }
 `;
 

@@ -19,14 +19,36 @@ import {
 import { IRArgDynamicResolverType } from '../reg-allocator';
 import { X86CompilerInstructionFnAttrs } from '../../constants/types';
 import { getBiggerIRArg } from '@compiler/pico-c/frontend/ir/utils';
+import { isPrimitiveLikeType } from '@compiler/pico-c/frontend/analyze';
 
-const OPERATOR_JMP_INSTRUCTIONS: Record<CRelOperator, [string, string]> = {
-  [TokenType.GREATER_THAN]: ['jg', 'jng'],
-  [TokenType.GREATER_EQ_THAN]: ['jge', 'jnge'],
-  [TokenType.LESS_THAN]: ['jl', 'jge'],
-  [TokenType.LESS_EQ_THAN]: ['jle', 'jg'],
-  [TokenType.EQUAL]: ['jz', 'jnz'],
-  [TokenType.DIFFERS]: ['jnz', 'jz'],
+const OPERATOR_JMP_INSTRUCTIONS: Record<
+  CRelOperator,
+  Record<'signed' | 'unsigned', [string, string]>
+> = {
+  [TokenType.GREATER_THAN]: {
+    signed: ['jg', 'jng'],
+    unsigned: ['ja', 'jbe'],
+  },
+  [TokenType.GREATER_EQ_THAN]: {
+    signed: ['jge', 'jnge'],
+    unsigned: ['jb', 'jnae'],
+  },
+  [TokenType.LESS_THAN]: {
+    signed: ['jl', 'jge'],
+    unsigned: ['jb', 'jnb'],
+  },
+  [TokenType.LESS_EQ_THAN]: {
+    signed: ['jle', 'jg'],
+    unsigned: ['jbe', 'ja'],
+  },
+  [TokenType.EQUAL]: {
+    signed: ['jz', 'jnz'],
+    unsigned: ['jz', 'jnz'],
+  },
+  [TokenType.DIFFERS]: {
+    signed: ['jnz', 'jz'],
+    unsigned: ['jnz', 'jz'],
+  },
 };
 
 type ICmpInstructionCompilerAttrs =
@@ -76,8 +98,12 @@ export function compileICmpInstruction({
     ),
   ];
 
+  const isUnsigned =
+    isPrimitiveLikeType(instruction.leftVar.type, true) &&
+    instruction.leftVar.type.isUnsigned();
+
   const [ifTrueInstruction, ifFalseInstruction] =
-    OPERATOR_JMP_INSTRUCTIONS[operator];
+    OPERATOR_JMP_INSTRUCTIONS[operator][isUnsigned ? 'unsigned' : 'signed'];
 
   if (brInstruction.ifTrue) {
     asm.push(
