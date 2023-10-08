@@ -5,7 +5,11 @@ export const MOCK_C_FILE = /* c */ `
     int k = 4;
     int s = 10;
 
-    int a = k > s ? 1 : 2;
+    int d1 = -2;
+    int d2 = 11;
+
+    int a = k < s ? d1 + d2 > 10 ? 666 : 4 : 2;
+    asm("xchg dx, dx");
   }
 `;
 
