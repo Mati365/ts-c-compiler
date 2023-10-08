@@ -33,6 +33,7 @@ import {
   ASTCCastUnaryExpression,
   ASTCCompilerKind,
   ASTCCompilerNode,
+  ASTCConditionalExpression,
   ASTCPostfixExpression,
   ASTCPrimaryExpression,
 } from '@compiler/pico-c/frontend/parser';
@@ -71,6 +72,7 @@ import { emitIncExpressionIR } from '../emitIncExpressionIR';
 import { emitFnCallExpressionIR } from '../emit-fn-call-expression';
 import { emitLogicBinaryJmpExpressionIR } from './emitLogicBinaryJmpExpressionIR';
 import { emitStringLiteralPtrInitializerIR } from '../emit-initializer/literal';
+import { emitConditionalExpressionIR } from './emitConditionalExpressionIR';
 
 export type ExpressionIREmitAttrs = IREmitterContextAttrs & {
   node: ASTCCompilerNode;
@@ -376,6 +378,19 @@ export function emitExpressionIR({
           emitExprResultToStack(exprResult);
         }
 
+        return false;
+      },
+    },
+
+    [ASTCCompilerKind.ConditionalExpression]: {
+      enter: (conditionalExpr: ASTCConditionalExpression) => {
+        const exprResult = emitConditionalExpressionIR({
+          node: conditionalExpr,
+          scope,
+          context,
+        });
+
+        emitExprResultToStack(exprResult);
         return false;
       },
     },

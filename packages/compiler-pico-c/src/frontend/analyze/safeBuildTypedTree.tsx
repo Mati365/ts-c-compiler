@@ -1,6 +1,6 @@
 import { Result, ok, err } from '@compiler/core/monads/Result';
 
-import { serializeTypedTreeToString } from '../parser';
+// import { serializeTypedTreeToString } from '../parser';
 
 import { CTypeCheckError, CTypeCheckErrorCode } from './errors/CTypeCheckError';
 import { CTypeCheckConfig } from './constants';
@@ -20,7 +20,7 @@ export function safeBuildTypedTree(
   config: CTypeCheckConfig,
   tree: ASTCTreeNode,
 ): Result<ScopeTreeBuilderResult, CTypeCheckError[]> {
-  console.info(serializeTypedTreeToString(tree));
+  // console.info(serializeTypedTreeToString(tree));
 
   try {
     const { scope } = new CTypeAnalyzeVisitor(config).visit(tree);
