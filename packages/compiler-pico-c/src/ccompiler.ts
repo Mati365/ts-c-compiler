@@ -1,77 +1,11 @@
 import { ok } from '@compiler/core/monads/Result';
-import { asm } from '@x86-toolkit/assembler/asm';
 
-import { dumpAttributesToString, timingsToString } from '@compiler/core/utils';
-
-import { TableBinaryView } from '@x86-toolkit/assembler/parser/compiler/view/TableBinaryView';
-import { TreePrintVisitor } from '@compiler/grammar/tree/TreePrintVisitor';
-import {
-  CCompilerTimings,
-  createCCompilerTimings,
-} from './frontend/utils/createCCompilerTimings';
+import { createCCompilerTimings } from './frontend/utils/createCCompilerTimings';
 import { CCompilerConfig, CCompilerArch } from './constants/config';
 
-import { ASTCCompilerNode } from './frontend/parser/ast';
-import { IRResultView, IRCodeBuilderResult } from './frontend/ir';
-
-import { isNewScopeASTNode } from './frontend/analyze/interfaces';
-import { CScopeTree, CScopePrintVisitor } from './frontend/analyze';
-
 import { cIRCompiler } from './frontend';
-import { CBackendCompilerResult, genASMIRCode } from './backend';
-
-/**
- * Output of compilation
- */
-export class CCompilerOutput {
-  constructor(
-    readonly code: string,
-    readonly ast: ASTCCompilerNode,
-    readonly scope: CScopeTree,
-    readonly ir: IRCodeBuilderResult,
-    readonly codegen: CBackendCompilerResult,
-    readonly timings: CCompilerTimings,
-  ) {}
-
-  static serializeTypedTree(ast: ASTCCompilerNode): string {
-    return TreePrintVisitor.serializeToString<ASTCCompilerNode>(ast, {
-      formatterFn: node =>
-        dumpAttributesToString(node.toString(), {
-          type: node.type?.toString(),
-          scoped: isNewScopeASTNode(node) || null,
-        }),
-    });
-  }
-
-  dump() {
-    const { scope, code, ir, timings, ast, codegen } = this;
-
-    console.info(
-      [
-        'Time:',
-        `${timingsToString(timings)}\n`,
-        'Source:',
-        code,
-        'Syntax tree:\n',
-        CCompilerOutput.serializeTypedTree(ast),
-        'Scope tree:\n',
-        CScopePrintVisitor.serializeToString(scope),
-        '\nIR:',
-        '',
-        IRResultView.serializeToString(ir),
-        '\nCodegen:',
-        '',
-        codegen.asm,
-        '\nAssembly:',
-        '',
-        TableBinaryView.serializeToString(
-          asm(codegen.asm, { preprocessor: true }),
-        ),
-        '',
-      ].join('\n'),
-    );
-  }
-}
+import { genASMIRCode } from './backend';
+import { CCompilerOutput } from './output/CCompilerOutput';
 
 /**
  * Main compiler entry, compiles code to binary

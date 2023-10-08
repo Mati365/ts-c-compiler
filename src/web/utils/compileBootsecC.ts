@@ -1,5 +1,7 @@
 import { identity } from 'ramda';
-import { CCompilerOutput, ccompiler } from '@compiler/pico-c';
+import { ccompiler } from '@compiler/pico-c';
+import { serializeTypedTreeToString } from '@compiler/pico-c/frontend/parser';
+
 import { CompilerOutput, asm } from '@x86-toolkit/assembler';
 import { trimLines } from '@compiler/core/utils';
 
@@ -34,7 +36,7 @@ export const compileBootsecC = (code: string) =>
       ok: identity,
       err: (error: any) => {
         if (error?.[0]?.tree) {
-          console.info(CCompilerOutput.serializeTypedTree(error[0].tree));
+          console.info(serializeTypedTreeToString(error[0].tree));
         }
 
         console.error(error);

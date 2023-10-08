@@ -2,8 +2,10 @@
 // todo: Fix calling fn with copy of struct
 export const MOCK_C_FILE = /* c */ `
   void main() {
-    unsigned int d, e;
-    unsigned int f = d * e;
+    int k = 4;
+    int s = 10;
+
+    int a = k > s ? 1 : 2;
   }
 `;
 
