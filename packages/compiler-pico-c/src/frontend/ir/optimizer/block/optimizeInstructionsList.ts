@@ -11,6 +11,7 @@ import {
   dropRedundantLoadInstructions,
   flipMathInstructionsOperands,
   foldAddressOffsetsInstructions,
+  reassignPhiInstructions,
 } from './phases';
 
 type OptimizerConfig = {
@@ -28,6 +29,7 @@ const optimizeFlow = compose(
   dropRedundantAddressInstructions,
   flipMathInstructionsOperands,
   dropConstantLabelOffsetsArgs,
+  reassignPhiInstructions,
 );
 
 export function optimizeInstructionsList(

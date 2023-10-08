@@ -92,4 +92,36 @@ describe('Ternary assign', () => {
         end-def
     `);
   });
+
+  test('advanced with negative optimized numbers', () => {
+    expect(/* cpp */ `
+      void main() {
+        int k = 5;
+        int s = k > 50 ? -1 : 2;
+
+        asm("xchg dx, dx");
+      }
+    `).toCompiledIRBeEqual(/* ruby */ `
+      # --- Block main ---
+      def main():
+        k{0}: int*2B = alloca int2B
+        *(k{0}: int*2B) = store %5: int2B
+        s{0}: int*2B = alloca int2B
+        %t{0}: char1B = alloca char1B
+        %t{1}: int2B = load k{0}: int*2B
+        %t{2}: i1:zf = icmp %t{1}: int2B greater_than %50: char1B
+        br %t{2}: i1:zf, false: L3
+        L2:
+        %t{3}: char1B = assign:φ %-1: char1B
+        jmp L1
+        L3:
+        %t{4}: char1B = assign:φ %2: char1B
+        L1:
+        %t{0}: char1B = φ(%t{3}: char1B, %t{4}: char1B)
+        *(s{0}: int*2B) = store %t{0}: char1B
+        asm "xchg dx, dx"
+        ret
+        end-def
+    `);
+  });
 });

@@ -5,6 +5,12 @@ import { IROpcode } from '../constants';
 import { IRInstruction, IRInstructionArgs } from './IRInstruction';
 import { IRVariable } from '../variables';
 
+export function isIRPhiInstruction(
+  instruction: IRInstruction,
+): instruction is IRPhiInstruction {
+  return instruction.opcode === IROpcode.PHI;
+}
+
 /**
  * PHI instruction
  */
