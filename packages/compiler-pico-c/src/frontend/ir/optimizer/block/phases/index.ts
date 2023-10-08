@@ -8,3 +8,4 @@ export * from './dropRedundantLabelInstructions';
 export * from './dropRedundantLoadInstructions';
 export * from './flipMathInstructionsOperands';
 export * from './foldAddressOffsetsInstructions';
+export * from './reassignPhiInstructions';

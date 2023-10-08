@@ -1,14 +1,35 @@
 // todo: Add ternary
 // todo: Fix calling fn with copy of struct
 export const MOCK_C_FILE = /* c */ `
+  int strlen(const char* str) {
+    for (int i = 0;;++i) {
+      if (*(str + i) == 0) {
+        return i;
+      }
+    }
+
+    return -1;
+  }
+
+  typedef struct Box {
+    int x, y;
+    const char* str;
+  } box_t;
+
+  int max (int a, int b) {
+    return a > b ? a : b;
+  }
+
   void main() {
-    int k = 4;
-    int s = 10;
+    box_t vec[] = { { .y = 5 }, { .x = 4, .str = "ABC" } };
 
-    int d1 = -2;
-    int d2 = 11;
+    vec[0].str = "Hello world!";
+    vec[0].y++;
+    vec[1].x += 3;
 
-    int a = k < s ? d1 + d2 > 10 ? 666 : 4 : 2;
+    int k = vec[1].x * vec[0].y + strlen(vec[0].str);
+    int d = max(666, k * 20);
+
     asm("xchg dx, dx");
   }
 `;
