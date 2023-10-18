@@ -149,7 +149,7 @@ Multipass portable C lang compiler toolkit with IR code generator including back
 
 </details>
 
-<details>
+<details open>
   <summary><strong>Binary output</strong></summary>
 
   ```asm
