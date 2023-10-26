@@ -15,8 +15,9 @@ Multipass portable C lang compiler toolkit with IR code generator including back
 1. Reasonable assembly code quality in NASM syntax
 2. Simple prototyping boot sector games
 3. Designed especially for old-school 16bit computers with Intel 80286 (and newer) CPU and produces only simple ASM instructions
-4. Backend / Frontend architecture that allows you to add new backends in TypeScript for your own CPU
-5. Slow compile times - feel the vibe of old computing
+4. Backend / Frontend architecture that allows you to add new backends in TypeScript (especially useful for homebrew FPGA CPU)
+5. Peephole optimization of IR code, precompute of constant expressions during compile time and optimizer phase 
+6. Slow compile times - feel the vibe of old computing
 
 ## What can be currently compiled?
 
