@@ -6,9 +6,14 @@ import {
   toIEEE754Single,
   toIEEE754Double,
   toIEEE754Extended,
-} from '@ts-c/core';
+} from '@ts-c-compiler/core';
 
-import { Token, TokenType, NumberToken, FloatNumberToken } from '@ts-c/lexer';
+import {
+  Token,
+  TokenType,
+  NumberToken,
+  FloatNumberToken,
+} from '@ts-c-compiler/lexer';
 
 import { safeKeywordResultRPN } from '../utils';
 

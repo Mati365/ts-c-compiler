@@ -1,4 +1,4 @@
-import { TokenType } from '@ts-c/lexer';
+import { TokenType } from '@ts-c-compiler/lexer';
 
 import type { IRMathSingleArgInstruction } from 'frontend/ir/instructions';
 import type { X86CompilerInstructionFnAttrs } from '../../../constants/types';

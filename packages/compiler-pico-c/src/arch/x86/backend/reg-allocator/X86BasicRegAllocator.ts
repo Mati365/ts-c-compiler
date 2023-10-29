@@ -1,6 +1,6 @@
-import { BINARY_MASKS } from '@ts-c/core';
+import { BINARY_MASKS } from '@ts-c-compiler/core';
 
-import { hasFlag } from '@ts-c/core';
+import { hasFlag } from '@ts-c-compiler/core';
 import { CBackendError, CBackendErrorCode } from 'backend/errors/CBackendError';
 
 import {
@@ -12,7 +12,7 @@ import {
 
 import { isStructLikeType } from 'frontend/analyze';
 
-import { getByteSizeArgPrefixName } from '@ts-c/x86-assembler';
+import { getByteSizeArgPrefixName } from '@ts-c-compiler/x86-assembler';
 import {
   genInstruction,
   genMemAddress,
@@ -26,7 +26,7 @@ import {
   X86RegLookupQuery,
 } from '../utils';
 
-import { X86RegName } from '@ts-c/x86-assembler';
+import { X86RegName } from '@ts-c-compiler/x86-assembler';
 import { X86Allocator } from '../X86Allocator';
 import { X86RegOwnershipTracker } from './X86RegOwnershipTracker';
 import {
@@ -231,7 +231,8 @@ export class X86BasicRegAllocator {
             });
           }
 
-          const movOpcode = requestArgSizeDelta ? 'movzx' : 'mov';
+          const movOpcode =
+            regResult.size - varOwnershipRegSize === 1 ? 'movzx' : 'mov';
 
           return {
             size,

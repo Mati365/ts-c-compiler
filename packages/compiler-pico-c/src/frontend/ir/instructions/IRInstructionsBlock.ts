@@ -1,6 +1,6 @@
 import * as R from 'ramda';
 
-import { Identity } from '@ts-c/core';
+import { Identity } from '@ts-c-compiler/core';
 import { IRInstruction } from './IRInstruction';
 import { IRBranchRelations } from './IRBrInstruction';
 

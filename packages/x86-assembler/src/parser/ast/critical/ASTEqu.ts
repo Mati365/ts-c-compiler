@@ -1,5 +1,5 @@
-import { Token, TokenType } from '@ts-c/lexer';
-import { NodeLocation } from '@ts-c/grammar';
+import { Token, TokenType } from '@ts-c-compiler/lexer';
+import { NodeLocation } from '@ts-c-compiler/grammar';
 import { ParserError, ParserErrorCode } from '../../../shared/ParserError';
 
 import { ASTAsmParser } from '../ASTAsmParser';

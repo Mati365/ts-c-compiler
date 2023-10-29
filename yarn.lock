@@ -585,6 +585,11 @@
     style-mod "^4.1.0"
     w3c-keyname "^2.2.4"
 
+"@commander-js/extra-typings@^11.1.0":
+  version "11.1.0"
+  resolved "https://registry.yarnpkg.com/@commander-js/extra-typings/-/extra-typings-11.1.0.tgz#dd19fcb8cc6e33ede237fc1b7af96c70833d8f93"
+  integrity sha512-GuvZ38d23H+7Tz2C9DhzCepivsOsky03s5NI+KCy7ke1FNUvsJ2oO47scQ9YaGGhgjgNW5OYYNSADmbjcSoIhw==
+
 "@commitlint/cli@^17.4.0":
   version "17.8.1"
   resolved "https://registry.yarnpkg.com/@commitlint/cli/-/cli-17.8.1.tgz#10492114a022c91dcfb1d84dac773abb3db76d33"

@@ -1,6 +1,6 @@
 import * as R from 'ramda';
 
-import { Size, RGBColor } from '@ts-c/core';
+import { Size, RGBColor } from '@ts-c-compiler/core';
 import { VGA } from './VGA';
 import { VGAFontPack } from './VGAConstants';
 

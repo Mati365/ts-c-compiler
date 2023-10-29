@@ -1,4 +1,4 @@
-import { TokenType } from '@ts-c/lexer';
+import { TokenType } from '@ts-c-compiler/lexer';
 import { ASTCCompilerNode } from 'frontend/parser';
 import { CPrimitiveType, isPointerLikeType } from 'frontend/analyze';
 

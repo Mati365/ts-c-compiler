@@ -1,7 +1,7 @@
-import { dumpAttributesToString } from '@ts-c/core';
-import { walkOverFields } from '@ts-c/grammar';
+import { dumpAttributesToString } from '@ts-c-compiler/core';
+import { walkOverFields } from '@ts-c-compiler/grammar';
 
-import { NodeLocation } from '@ts-c/grammar';
+import { NodeLocation } from '@ts-c-compiler/grammar';
 import { ASTCCompilerKind, ASTCCompilerNode } from '../ASTCCompilerNode';
 import { ASTCAsmStmtInputConstraint } from './ASTCAsmStmtInputConstraint';
 

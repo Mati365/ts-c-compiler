@@ -3,9 +3,9 @@ import chalk from 'chalk';
 
 import { getIRTypeDisplayName } from '../dump/getIRTypeDisplayName';
 
-import { IsPrintable } from '@ts-c/core';
-import { Identity } from '@ts-c/core';
-import { PartialBy } from '@ts-c/core';
+import { IsPrintable } from '@ts-c-compiler/core';
+import { Identity } from '@ts-c-compiler/core';
+import { PartialBy } from '@ts-c-compiler/core';
 import { CPointerType, CType, CVariable } from '../../analyze';
 
 export function isIRVariable(obj: any): obj is IRVariable {

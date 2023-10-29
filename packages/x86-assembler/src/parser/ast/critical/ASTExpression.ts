@@ -1,4 +1,4 @@
-import { Result, ok, err } from '@ts-c/core';
+import { Result, ok, err } from '@ts-c-compiler/core';
 
 export { ok, err };
 

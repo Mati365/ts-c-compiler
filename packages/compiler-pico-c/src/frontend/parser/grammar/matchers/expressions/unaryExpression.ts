@@ -4,9 +4,9 @@ import {
   CUnaryCastOperator,
 } from '#constants';
 
-import { NodeLocation } from '@ts-c/grammar';
-import { Token } from '@ts-c/lexer';
-import { TokenType } from '@ts-c/lexer';
+import { NodeLocation } from '@ts-c-compiler/grammar';
+import { Token } from '@ts-c-compiler/lexer';
+import { TokenType } from '@ts-c-compiler/lexer';
 import { CGrammar } from '../shared';
 import {
   ASTCUnaryExpression,

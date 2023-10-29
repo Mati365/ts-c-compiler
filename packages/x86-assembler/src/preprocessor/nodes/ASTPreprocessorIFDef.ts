@@ -1,7 +1,7 @@
 import * as R from 'ramda';
 
-import { NodeLocation } from '@ts-c/grammar';
-import { TreeVisitor } from '@ts-c/grammar';
+import { NodeLocation } from '@ts-c-compiler/grammar';
+import { TreeVisitor } from '@ts-c-compiler/grammar';
 
 import { ASTPreprocessorKind, ASTPreprocessorNode } from '../constants';
 

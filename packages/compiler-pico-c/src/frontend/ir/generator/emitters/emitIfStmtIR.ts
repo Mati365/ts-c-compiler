@@ -1,4 +1,4 @@
-import { TokenType } from '@ts-c/lexer';
+import { TokenType } from '@ts-c-compiler/lexer';
 import { CPrimitiveType } from 'frontend/analyze';
 import { ASTCIfStatement } from 'frontend/parser';
 

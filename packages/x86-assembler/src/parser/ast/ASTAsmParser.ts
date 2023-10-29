@@ -1,9 +1,9 @@
-import { isWhitespace } from '@ts-c/lexer';
+import { isWhitespace } from '@ts-c-compiler/lexer';
 
-import { TokensIterator } from '@ts-c/grammar';
-import { Token, TokenType } from '@ts-c/lexer';
-import { Result, err, ok } from '@ts-c/core';
-import { CompilerError } from '@ts-c/core';
+import { TokensIterator } from '@ts-c-compiler/grammar';
+import { Token, TokenType } from '@ts-c-compiler/lexer';
+import { Result, err, ok } from '@ts-c-compiler/core';
+import { CompilerError } from '@ts-c-compiler/core';
 
 import { ParserError, ParserErrorCode } from '../../shared/ParserError';
 import { ASTAsmNode } from './ASTAsmNode';

@@ -1,6 +1,6 @@
 {
-  "name": "@ts-c/rpn",
-  "version": "0.0.2",
+  "name": "@ts-c-compiler/rpn",
+  "version": "1.0.0",
   "type": "module",
   "private": true,
   "license": "MIT",
@@ -20,8 +20,8 @@
     }
   },
   "dependencies": {
-    "@ts-c/core": "*",
-    "@ts-c/lexer": "*"
+    "@ts-c-compiler/core": "*",
+    "@ts-c-compiler/lexer": "*"
   },
   "scripts": {
     "clean": "rm -rf ./dist",

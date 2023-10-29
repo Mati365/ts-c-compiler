@@ -1,4 +1,4 @@
-import { Result, CompilerError, err, ok } from '@ts-c/core';
+import { Result, CompilerError, err, ok } from '@ts-c-compiler/core';
 import { lexer, type LexerConfig } from './lexer';
 import type { Token } from './tokens';
 

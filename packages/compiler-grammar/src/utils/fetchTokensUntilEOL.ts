@@ -1,4 +1,4 @@
-import { isLineTerminatorToken, type Token } from '@ts-c/lexer';
+import { isLineTerminatorToken, type Token } from '@ts-c-compiler/lexer';
 import { TokensIterator } from '../tree/TokensIterator';
 import { fetchTokensUntil } from './fetchTokensUntil';
 

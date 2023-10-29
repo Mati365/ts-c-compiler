@@ -1,4 +1,4 @@
-import { assertUnreachable } from '@ts-c/core';
+import { assertUnreachable } from '@ts-c-compiler/core';
 
 import { CCompilerArch, CCompilerConfig } from '../../../constants';
 import type { IRBlockIterator } from '../../../frontend/ir/iterator';

@@ -1,7 +1,7 @@
-import { fixme } from '@ts-c/core';
+import { fixme } from '@ts-c-compiler/core';
 
-import { Option, none, some } from '@ts-c/core';
-import { TokenType } from '@ts-c/lexer';
+import { Option, none, some } from '@ts-c-compiler/core';
+import { TokenType } from '@ts-c-compiler/lexer';
 
 import { IRError, IRErrorCode } from '../../../errors/IRError';
 import { IRConstant, isIRConstant, isIRVariable } from '../../../variables';

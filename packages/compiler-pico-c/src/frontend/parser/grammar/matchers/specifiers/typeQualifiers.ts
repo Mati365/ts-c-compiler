@@ -1,8 +1,8 @@
 import * as R from 'ramda';
 
-import { NodeLocation } from '@ts-c/grammar';
+import { NodeLocation } from '@ts-c-compiler/grammar';
 import { CTypeQualifier } from '#constants';
-import { SyntaxError } from '@ts-c/grammar';
+import { SyntaxError } from '@ts-c-compiler/grammar';
 import { ASTCTypeQualifiersList } from 'frontend/parser/ast';
 import { CGrammar } from '../shared';
 

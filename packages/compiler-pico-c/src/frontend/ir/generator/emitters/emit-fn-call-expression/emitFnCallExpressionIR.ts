@@ -4,7 +4,7 @@ import {
   isPointerLikeType,
 } from 'frontend/analyze';
 import { ASTCPostfixExpression } from 'frontend/parser';
-import { TokenType } from '@ts-c/lexer';
+import { TokenType } from '@ts-c-compiler/lexer';
 
 import { IRError, IRErrorCode } from '../../../errors/IRError';
 import {

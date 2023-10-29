@@ -1,10 +1,10 @@
 import * as R from 'ramda';
 
-import { joinTokensWithSpaces } from '@ts-c/lexer';
+import { joinTokensWithSpaces } from '@ts-c-compiler/lexer';
 
-import { Token } from '@ts-c/lexer';
-import { NodeLocation } from '@ts-c/grammar';
-import { TreeVisitor } from '@ts-c/grammar';
+import { Token } from '@ts-c-compiler/lexer';
+import { NodeLocation } from '@ts-c-compiler/grammar';
+import { TreeVisitor } from '@ts-c-compiler/grammar';
 
 import { ASTPreprocessorKind, ASTPreprocessorNode } from '../constants';
 

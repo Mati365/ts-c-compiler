@@ -1,4 +1,4 @@
-import { TokenType } from '@ts-c/lexer';
+import { TokenType } from '@ts-c-compiler/lexer';
 import { CGrammar } from '../shared';
 import { ASTCTreeNode } from '../../../ast';
 

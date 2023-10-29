@@ -1,6 +1,6 @@
 import { CMathOperator } from '#constants';
-import { Option, none, some } from '@ts-c/core';
-import { TokenType } from '@ts-c/lexer';
+import { Option, none, some } from '@ts-c-compiler/core';
+import { TokenType } from '@ts-c-compiler/lexer';
 
 import { IROpcode } from '../constants';
 import { IROpInstruction } from './IROpInstruction';

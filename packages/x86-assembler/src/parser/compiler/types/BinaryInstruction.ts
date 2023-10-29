@@ -1,6 +1,6 @@
 import * as R from 'ramda';
 
-import { extractNthByte, roundToPowerOfTwo } from '@ts-c/core';
+import { extractNthByte, roundToPowerOfTwo } from '@ts-c-compiler/core';
 
 import { RMByte, RMAddressingMode } from '../../../constants';
 

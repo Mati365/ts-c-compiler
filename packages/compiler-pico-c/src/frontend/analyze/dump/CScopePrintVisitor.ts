@@ -1,7 +1,7 @@
 import * as R from 'ramda';
 import chalk from 'chalk';
 
-import { padLeftLines } from '@ts-c/core';
+import { padLeftLines } from '@ts-c-compiler/core';
 
 import { CScopeTree } from '../scope/CScopeTree';
 import { CScopeVisitor } from '../scope/CScopeVisitor';

@@ -1,5 +1,5 @@
-import { Option, none, some } from '@ts-c/core';
-import { evalMathOp, isMathOpToken } from '@ts-c/lexer';
+import { Option, none, some } from '@ts-c-compiler/core';
+import { evalMathOp, isMathOpToken } from '@ts-c-compiler/lexer';
 
 import { IRMathInstruction } from '../../../instructions';
 import { isIRConstant } from '../../../variables';

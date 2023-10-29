@@ -1,5 +1,5 @@
-import { Token } from '@ts-c/lexer';
-import { NodeLocation } from '@ts-c/grammar';
+import { Token } from '@ts-c-compiler/lexer';
+import { NodeLocation } from '@ts-c-compiler/grammar';
 import { ASTCCompilerKind } from './ASTCCompilerNode';
 import { ASTCStructSpecifier } from './ASTCStructSpecifier';
 import { ASTCStructDeclarationList } from './ASTCStructDeclarationList';

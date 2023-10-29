@@ -1,8 +1,8 @@
-import { hasFlag } from '@ts-c/core';
+import { hasFlag } from '@ts-c-compiler/core';
 import { getCompilerArchDescriptor } from 'arch';
 
-import { IsPrintable } from '@ts-c/core';
-import { Identity, Result, ok } from '@ts-c/core';
+import { IsPrintable } from '@ts-c-compiler/core';
+import { Identity, Result, ok } from '@ts-c-compiler/core';
 import { CCompilerArch, CTypeQualifier } from '#constants';
 import {
   CTypeCheckError,

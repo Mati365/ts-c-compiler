@@ -2,7 +2,7 @@ import * as R from 'ramda';
 
 import { getBaseType, getBaseTypeIfPtr } from 'frontend/analyze/types/utils';
 
-import { TokenType } from '@ts-c/lexer';
+import { TokenType } from '@ts-c-compiler/lexer';
 import {
   CPointerType,
   CPrimitiveType,
@@ -12,7 +12,7 @@ import {
 } from 'frontend/analyze';
 
 import { CUnaryCastOperator } from '#constants';
-import { GroupTreeVisitor } from '@ts-c/grammar';
+import { GroupTreeVisitor } from '@ts-c-compiler/grammar';
 import {
   ASTCCastUnaryExpression,
   ASTCCompilerKind,

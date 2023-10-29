@@ -1,8 +1,8 @@
 import * as R from 'ramda';
 
-import { X86RegName, toUnsignedNumber } from '@ts-c/x86-assembler';
-import { mutableOmitChildKeys } from '@ts-c/core';
-import { UnmountCallback } from '@ts-c/core';
+import { X86RegName, toUnsignedNumber } from '@ts-c-compiler/x86-assembler';
+import { mutableOmitChildKeys } from '@ts-c-compiler/core';
+import { UnmountCallback } from '@ts-c-compiler/core';
 
 import { Logger } from '../Logger';
 import { X86InterruptsSet, X86Interrupt } from './X86Interrupt';

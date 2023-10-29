@@ -1,6 +1,11 @@
 import * as R from 'ramda';
 
-import { TokenLocation, TokenType, Token, TokenKind } from '@ts-c/lexer';
+import {
+  TokenLocation,
+  TokenType,
+  Token,
+  TokenKind,
+} from '@ts-c-compiler/lexer';
 
 import { BranchAddressingType } from '../../../types';
 

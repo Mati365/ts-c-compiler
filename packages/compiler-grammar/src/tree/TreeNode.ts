@@ -1,7 +1,7 @@
 import * as R from 'ramda';
 
-import { dumpAttributesToString } from '@ts-c/core';
-import { TokenType } from '@ts-c/lexer';
+import { dumpAttributesToString } from '@ts-c-compiler/core';
+import { TokenType } from '@ts-c-compiler/lexer';
 
 import { walkOverFields } from '../decorators/walkOverFields';
 import { NodeLocation } from './NodeLocation';

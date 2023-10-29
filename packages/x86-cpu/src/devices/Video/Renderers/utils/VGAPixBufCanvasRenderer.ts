@@ -1,4 +1,4 @@
-import { MemoryRegionRange } from '@ts-c/x86-assembler';
+import { MemoryRegionRange } from '@ts-c-compiler/x86-assembler';
 import { VGACanvasRenderer } from './VGACanvasRenderer';
 
 /**

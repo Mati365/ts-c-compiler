@@ -1,11 +1,11 @@
 import * as R from 'ramda';
 
-import { rpn } from '@ts-c/rpn';
-import { MathErrorCode } from '@ts-c/rpn';
+import { rpn } from '@ts-c-compiler/rpn';
+import { MathErrorCode } from '@ts-c-compiler/rpn';
 
-import { Result } from '@ts-c/core';
-import { MathParserConfig } from '@ts-c/rpn';
-import { Token, TokenType, NumberToken } from '@ts-c/lexer';
+import { Result } from '@ts-c-compiler/core';
+import { MathParserConfig } from '@ts-c-compiler/rpn';
+import { Token, TokenType, NumberToken } from '@ts-c-compiler/lexer';
 
 import {
   ok,

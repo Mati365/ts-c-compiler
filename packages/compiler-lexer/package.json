@@ -1,6 +1,6 @@
 {
-  "name": "@ts-c/lexer",
-  "version": "0.0.2",
+  "name": "@ts-c-compiler/lexer",
+  "version": "1.0.0",
   "type": "module",
   "private": true,
   "license": "MIT",
@@ -20,7 +20,7 @@
     }
   },
   "dependencies": {
-    "@ts-c/core": "*"
+    "@ts-c-compiler/core": "*"
   },
   "scripts": {
     "clean": "rm -rf ./dist",

@@ -1,12 +1,12 @@
-import { getMSbit } from '@ts-c/core';
-import { BINARY_MASKS } from '@ts-c/core';
+import { getMSbit } from '@ts-c-compiler/core';
+import { BINARY_MASKS } from '@ts-c-compiler/core';
 import {
   X86BitsMode,
   RMByte,
   toUnsignedNumber,
   signExtend,
   getSignedNumber,
-} from '@ts-c/x86-assembler';
+} from '@ts-c-compiler/x86-assembler';
 
 import {
   X86_REGISTERS,

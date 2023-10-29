@@ -1,6 +1,6 @@
 {
-  "name": "@ts-c/x86-cpu",
-  "version": "0.0.2",
+  "name": "@ts-c-compiler/x86-cpu",
+  "version": "1.0.0",
   "type": "module",
   "private": true,
   "license": "MIT",
@@ -20,7 +20,7 @@
     }
   },
   "dependencies": {
-    "@ts-c/x86-assembler": "*"
+    "@ts-c-compiler/x86-assembler": "*"
   },
   "scripts": {
     "clean": "rm -rf ./dist",

@@ -1,6 +1,6 @@
 import * as R from 'ramda';
 
-import { isLogicOpToken, isRelationOpToken } from '@ts-c/lexer';
+import { isLogicOpToken, isRelationOpToken } from '@ts-c-compiler/lexer';
 import {
   getBaseTypeIfPtr,
   isImplicitPtrType,
@@ -8,7 +8,7 @@ import {
 
 import { charToInt, tryCastToPointer } from 'frontend/analyze/casts';
 
-import { TokenType } from '@ts-c/lexer';
+import { TokenType } from '@ts-c-compiler/lexer';
 import { CMathOperator, CRelOperator, CUnaryCastOperator } from '#constants';
 
 import {
@@ -31,7 +31,7 @@ import {
   ASTCPrimaryExpression,
 } from 'frontend/parser';
 
-import { GroupTreeVisitor } from '@ts-c/grammar';
+import { GroupTreeVisitor } from '@ts-c-compiler/grammar';
 import { getBiggerIRArg } from '../../../utils';
 import {
   appendStmtResults,

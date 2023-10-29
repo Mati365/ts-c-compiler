@@ -1,4 +1,4 @@
-import { Result, err, ok } from '@ts-c/core';
+import { Result, err, ok } from '@ts-c-compiler/core';
 import { X86ArchBackend } from '../arch/x86';
 
 import { CCompilerArch, CCompilerConfig } from '../constants';

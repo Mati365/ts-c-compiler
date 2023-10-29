@@ -1,8 +1,8 @@
 import * as R from 'ramda';
 
-import { dumpCompilerAttrs } from '@ts-c/core';
+import { dumpCompilerAttrs } from '@ts-c-compiler/core';
 
-import { Result, err, ok } from '@ts-c/core';
+import { Result, err, ok } from '@ts-c-compiler/core';
 import { CCompilerArch } from '#constants';
 import {
   CTypeCheckError,

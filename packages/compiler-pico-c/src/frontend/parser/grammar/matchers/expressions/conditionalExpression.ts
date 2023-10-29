@@ -1,5 +1,5 @@
-import { TokenType } from '@ts-c/lexer';
-import { SyntaxError } from '@ts-c/grammar';
+import { TokenType } from '@ts-c-compiler/lexer';
+import { SyntaxError } from '@ts-c-compiler/grammar';
 import { CGrammar } from '../shared';
 import { ASTCConditionalExpression, ASTCCompilerNode } from '../../../ast';
 

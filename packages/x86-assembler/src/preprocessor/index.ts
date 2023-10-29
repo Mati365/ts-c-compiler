@@ -1,8 +1,8 @@
 /* eslint-disable no-use-before-define, @typescript-eslint/no-use-before-define */
-import { Result, err, ok } from '@ts-c/core';
-import { CompilerError } from '@ts-c/core';
+import { Result, err, ok } from '@ts-c-compiler/core';
+import { CompilerError } from '@ts-c-compiler/core';
 
-import { TreePrintVisitor } from '@ts-c/grammar';
+import { TreePrintVisitor } from '@ts-c-compiler/grammar';
 import { ASTPreprocessorNode } from './constants';
 import { PreprocessorErrorCode } from './PreprocessorError';
 import {

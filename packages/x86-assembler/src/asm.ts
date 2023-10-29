@@ -1,7 +1,7 @@
-import { Result, ok } from '@ts-c/core';
-import { CompilerError } from '@ts-c/core';
+import { Result, ok } from '@ts-c-compiler/core';
+import { CompilerError } from '@ts-c-compiler/core';
 
-import { formatDate, formatTime } from '@ts-c/core';
+import { formatDate, formatTime } from '@ts-c-compiler/core';
 import { createAssemblerTimings } from './utils/createAssemblerTimings';
 import { safeResultPreprocessor, PreprocessorResult } from './preprocessor';
 import { PreprocessorInterpreterConfig } from './preprocessor/interpreter/PreprocessorInterpreter';

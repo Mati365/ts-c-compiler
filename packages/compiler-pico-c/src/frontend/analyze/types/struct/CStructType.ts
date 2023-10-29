@@ -1,9 +1,9 @@
 import * as R from 'ramda';
 
-import { dropNewLines, dumpCompilerAttrs } from '@ts-c/core';
-import { memoizeMethod } from '@ts-c/core';
+import { dropNewLines, dumpCompilerAttrs } from '@ts-c-compiler/core';
+import { memoizeMethod } from '@ts-c-compiler/core';
 
-import { Identity, Result, ok, err } from '@ts-c/core';
+import { Identity, Result, ok, err } from '@ts-c-compiler/core';
 import { CCompilerArch, CStructAlign } from '#constants';
 import { CType } from '../CType';
 import { CNamedTypedEntry } from '../../scope/variables/CNamedTypedEntry';

@@ -1,8 +1,8 @@
 {
-  "name": "@ts-c/compiler",
-  "version": "0.0.2",
+  "name": "@ts-c-compiler/compiler",
+  "version": "1.0.0",
   "type": "module",
-  "private": true,
+  "private": false,
   "license": "MIT",
   "main": "./dist/cjs/index.js",
   "module": "./dist/esm/index.js",
@@ -20,10 +20,10 @@
     }
   },
   "dependencies": {
-    "@ts-c/core": "*",
-    "@ts-c/lexer": "*",
-    "@ts-c/rpn": "*",
-    "@ts-c/x86-assembler": "*"
+    "@ts-c-compiler/core": "*",
+    "@ts-c-compiler/lexer": "*",
+    "@ts-c-compiler/rpn": "*",
+    "@ts-c-compiler/x86-assembler": "*"
   },
   "scripts": {
     "clean": "rm -rf ./dist",
@@ -36,5 +36,8 @@
   "files": [
     "dist/",
     "src/"
-  ]
+  ],
+  "publishConfig": {
+    "access": "public"
+  }
 }

@@ -1,8 +1,8 @@
 import * as R from 'ramda';
 
-import { Result, err, ok } from '@ts-c/core';
-import { CompilerError } from '@ts-c/core';
-import { NumberToken, Token } from '@ts-c/lexer';
+import { Result, err, ok } from '@ts-c-compiler/core';
+import { CompilerError } from '@ts-c-compiler/core';
+import { NumberToken, Token } from '@ts-c-compiler/lexer';
 
 import {
   MIN_COMPILER_REG_LENGTH,

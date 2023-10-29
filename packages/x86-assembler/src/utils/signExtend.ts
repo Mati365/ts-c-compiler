@@ -1,4 +1,4 @@
-import { BINARY_MASKS, getMSbit } from '@ts-c/core';
+import { BINARY_MASKS, getMSbit } from '@ts-c-compiler/core';
 import type { X86BitsMode } from '../constants';
 
 export const signExtend = (

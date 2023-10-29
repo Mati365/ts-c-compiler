@@ -1,4 +1,4 @@
-import { Token, NumberToken, NumberTokenValue } from '@ts-c/lexer';
+import { Token, NumberToken, NumberTokenValue } from '@ts-c-compiler/lexer';
 
 import { ParserError, ParserErrorCode } from '../../../../shared/ParserError';
 import {

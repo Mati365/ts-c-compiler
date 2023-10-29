@@ -1,9 +1,9 @@
 import * as R from 'ramda';
 
-import { findByName, dumpCompilerAttrs } from '@ts-c/core';
+import { findByName, dumpCompilerAttrs } from '@ts-c-compiler/core';
 
 import { CFunctionCallConvention } from '#constants';
-import { Identity } from '@ts-c/core';
+import { Identity } from '@ts-c-compiler/core';
 import { ASTCBlockItemsList } from 'frontend';
 
 import { isPointerLikeType } from '../CPointerType';

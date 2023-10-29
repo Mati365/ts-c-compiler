@@ -1,7 +1,7 @@
 import * as R from 'ramda';
 
-import { SyntaxError } from '@ts-c/grammar';
-import { TokenType } from '@ts-c/lexer';
+import { SyntaxError } from '@ts-c-compiler/grammar';
+import { TokenType } from '@ts-c-compiler/lexer';
 import {
   ASTCDeclaration,
   ASTCInitDeclarator,

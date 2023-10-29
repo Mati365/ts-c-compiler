@@ -1,8 +1,8 @@
 import * as R from 'ramda';
 
-import { Size, RGBColor, Vec2D } from '@ts-c/core';
-import { reverseByte } from '@ts-c/core';
-import { ByteMemRegionAccessor } from '@ts-c/x86-assembler';
+import { Size, RGBColor, Vec2D } from '@ts-c-compiler/core';
+import { reverseByte } from '@ts-c-compiler/core';
+import { ByteMemRegionAccessor } from '@ts-c-compiler/x86-assembler';
 
 import { X86UuidAbstractDevice } from '../../parts';
 import { VirtualMemBlockDriver } from '../../memory';

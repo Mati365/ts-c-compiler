@@ -1,5 +1,5 @@
-import { NodeLocation } from '@ts-c/grammar';
-import { TokenType } from '@ts-c/lexer';
+import { NodeLocation } from '@ts-c-compiler/grammar';
+import { TokenType } from '@ts-c-compiler/lexer';
 import { ASTCInitDeclarator, ASTCInitializer } from 'frontend/parser/ast';
 import { CGrammar } from '../shared';
 import { declarator } from './declarator';

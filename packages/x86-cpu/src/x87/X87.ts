@@ -1,6 +1,6 @@
 /* eslint-disable max-len */
 import Long from 'long';
-import { getSignedNumber } from '@ts-c/x86-assembler';
+import { getSignedNumber } from '@ts-c-compiler/x86-assembler';
 
 import { X86Unit } from '../X86Unit';
 import { X87RegsStore, X87Tag } from './X87Regs';

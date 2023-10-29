@@ -1,5 +1,5 @@
-import { NodeLocation } from '@ts-c/grammar';
-import { SyntaxError } from '@ts-c/grammar';
+import { NodeLocation } from '@ts-c-compiler/grammar';
+import { SyntaxError } from '@ts-c-compiler/grammar';
 import { CGrammar } from '../shared';
 import {
   ASTCDirectAbstractDeclarator,

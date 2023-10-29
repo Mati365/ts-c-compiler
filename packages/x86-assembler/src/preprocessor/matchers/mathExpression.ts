@@ -1,7 +1,7 @@
 /* eslint-disable no-use-before-define, @typescript-eslint/no-use-before-define */
-import { TokenType, NumberToken, Token } from '@ts-c/lexer';
-import { NodeLocation } from '@ts-c/grammar';
-import { SyntaxError } from '@ts-c/grammar';
+import { TokenType, NumberToken, Token } from '@ts-c-compiler/lexer';
+import { NodeLocation } from '@ts-c-compiler/grammar';
+import { SyntaxError } from '@ts-c-compiler/grammar';
 
 import { ASTPreprocessorBinaryOpNode } from '../nodes/ASTPreprocessorBinaryOpNode';
 import { ASTPreprocessorValueNode } from '../nodes/ASTPreprocessorValueNode';

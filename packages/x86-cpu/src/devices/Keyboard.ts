@@ -1,4 +1,4 @@
-import { UnionStruct, bits } from '@ts-c/core';
+import { UnionStruct, bits } from '@ts-c-compiler/core';
 import { X86CPU } from '../X86CPU';
 import { PIT } from './PIT/PIT';
 

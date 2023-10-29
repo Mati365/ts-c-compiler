@@ -2,9 +2,13 @@ import * as R from 'ramda';
 
 import { getCompilerArchDescriptor } from 'arch';
 
-import { concatNonEmptyStrings, hasFlag, numberByteSize } from '@ts-c/core';
+import {
+  concatNonEmptyStrings,
+  hasFlag,
+  numberByteSize,
+} from '@ts-c-compiler/core';
 
-import { Result, err, ok } from '@ts-c/core';
+import { Result, err, ok } from '@ts-c-compiler/core';
 import { CCompilerArch, CTypeQualifier, CTypeSpecifier } from '#constants';
 
 import {

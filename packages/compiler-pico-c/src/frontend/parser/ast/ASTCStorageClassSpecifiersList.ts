@@ -1,9 +1,9 @@
 import * as R from 'ramda';
 
-import { dumpAttributesToString } from '@ts-c/core';
+import { dumpAttributesToString } from '@ts-c-compiler/core';
 
-import { IsEmpty } from '@ts-c/core';
-import { NodeLocation } from '@ts-c/grammar';
+import { IsEmpty } from '@ts-c-compiler/core';
+import { NodeLocation } from '@ts-c-compiler/grammar';
 
 import { CStorageClassSpecifier } from '#constants';
 import { ASTCCompilerKind, ASTCCompilerNode } from './ASTCCompilerNode';

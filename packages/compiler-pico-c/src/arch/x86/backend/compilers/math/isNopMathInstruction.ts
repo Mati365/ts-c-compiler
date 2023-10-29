@@ -1,4 +1,4 @@
-import { TokenType } from '@ts-c/lexer';
+import { TokenType } from '@ts-c-compiler/lexer';
 import { IRMathInstruction } from 'frontend/ir/instructions';
 
 export function isNopMathInstruction(instruction: IRMathInstruction): boolean {

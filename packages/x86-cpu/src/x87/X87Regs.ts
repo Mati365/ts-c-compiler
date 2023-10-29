@@ -1,7 +1,10 @@
 import * as R from 'ramda';
 
-import { getBit, setBit } from '@ts-c/core';
-import { X87_STACK_REGS_COUNT, toUnsignedNumber } from '@ts-c/x86-assembler';
+import { getBit, setBit } from '@ts-c-compiler/core';
+import {
+  X87_STACK_REGS_COUNT,
+  toUnsignedNumber,
+} from '@ts-c-compiler/x86-assembler';
 
 import { RegistersDebugDump, X86RegsStore } from '../parts';
 import { X87Error, X87ErrorCode } from './X87Error';

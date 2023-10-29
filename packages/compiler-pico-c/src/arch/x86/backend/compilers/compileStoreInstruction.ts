@@ -1,6 +1,6 @@
 import { CBackendError, CBackendErrorCode } from 'backend/errors/CBackendError';
 
-import { getByteSizeArgPrefixName } from '@ts-c/x86-assembler';
+import { getByteSizeArgPrefixName } from '@ts-c-compiler/x86-assembler';
 import { getBaseTypeIfPtr } from 'frontend/analyze/types/utils';
 import { IRStoreInstruction } from 'frontend/ir/instructions';
 

@@ -1,13 +1,13 @@
 import * as R from 'ramda';
 
 import { RegisterToken } from '../../../../parser/lexer/tokens';
-import { TokenType, TokenKind, Token } from '@ts-c/lexer';
+import { TokenType, TokenKind, Token } from '@ts-c-compiler/lexer';
 
 import {
   numberByteSize,
   roundToPowerOfTwo,
   signedNumberByteSize,
-} from '@ts-c/core';
+} from '@ts-c-compiler/core';
 
 import { assignLabelsToTokens } from '../../../utils';
 import { asmLexer } from '../../../lexer/asmLexer';

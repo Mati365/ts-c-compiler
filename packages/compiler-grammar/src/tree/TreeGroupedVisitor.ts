@@ -1,6 +1,6 @@
 import * as R from 'ramda';
 
-import { Newable } from '@ts-c/core';
+import { Newable } from '@ts-c-compiler/core';
 import { TreeNode } from './TreeNode';
 import { TreeVisitor } from './TreeVisitor';
 

@@ -1,5 +1,5 @@
 import { ASTCCompilerKind, ASTCBinaryOpNode } from 'frontend/parser/ast';
-import { TokenType } from '@ts-c/lexer';
+import { TokenType } from '@ts-c-compiler/lexer';
 
 import { ASTCTypeCreator } from './ASTCTypeCreator';
 import {

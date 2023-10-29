@@ -1,5 +1,5 @@
-import { BinaryOpNode } from '@ts-c/grammar';
-import { TokenType } from '@ts-c/lexer';
+import { BinaryOpNode } from '@ts-c-compiler/grammar';
+import { TokenType } from '@ts-c-compiler/lexer';
 import { ASTPreprocessorNode, ASTPreprocessorKind } from '../constants';
 
 import {
@@ -8,7 +8,7 @@ import {
   InterpreterResult,
 } from '../interpreter/PreprocessorInterpreter';
 
-export { createBinOpIfBothSidesPresent } from '@ts-c/grammar';
+export { createBinOpIfBothSidesPresent } from '@ts-c-compiler/grammar';
 
 /**
  * Transforms tree into for that second argument contains operator,

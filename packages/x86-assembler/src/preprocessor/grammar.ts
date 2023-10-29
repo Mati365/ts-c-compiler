@@ -1,6 +1,6 @@
 /* eslint-disable no-use-before-define, @typescript-eslint/no-use-before-define */
-import { isLineTerminatorToken } from '@ts-c/lexer';
-import { mapObjectKeys } from '@ts-c/core';
+import { isLineTerminatorToken } from '@ts-c-compiler/lexer';
+import { mapObjectKeys } from '@ts-c-compiler/core';
 
 import {
   TokenType,
@@ -8,13 +8,17 @@ import {
   Token,
   TokenKind,
   NumberFormat,
-} from '@ts-c/lexer';
-import { Grammar, GrammarInitializer, SyntaxError } from '@ts-c/grammar';
-import { NodeLocation } from '@ts-c/grammar';
-import { IdentifiersMap } from '@ts-c/lexer';
+} from '@ts-c-compiler/lexer';
+import {
+  Grammar,
+  GrammarInitializer,
+  SyntaxError,
+} from '@ts-c-compiler/grammar';
+import { NodeLocation } from '@ts-c-compiler/grammar';
+import { IdentifiersMap } from '@ts-c-compiler/lexer';
 
-import { empty } from '@ts-c/grammar';
-import { fetchTokensUntilEOL } from '@ts-c/grammar';
+import { empty } from '@ts-c-compiler/grammar';
+import { fetchTokensUntilEOL } from '@ts-c-compiler/grammar';
 import { isReservedKeyword } from '../parser/utils';
 import { logicExpression, mathExpression } from './matchers';
 

@@ -1,6 +1,6 @@
-import { Token } from '@ts-c/lexer';
-import { Result } from '@ts-c/core';
-import { CompilerError } from '@ts-c/core';
+import { Token } from '@ts-c-compiler/lexer';
+import { Result } from '@ts-c-compiler/core';
+import { CompilerError } from '@ts-c-compiler/core';
 
 import { ASTAsmParser, ASTAsmTree } from './ASTAsmParser';
 

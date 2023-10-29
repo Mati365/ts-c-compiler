@@ -1,11 +1,11 @@
 import chalk from 'chalk';
 
 import { withInlineComment } from '../../../asm-utils';
-import { condFlag } from '@ts-c/core';
+import { condFlag } from '@ts-c-compiler/core';
 
 import { isIRConstant, isIRVariable } from 'frontend/ir/variables';
 
-import { X86RegName } from '@ts-c/x86-assembler';
+import { X86RegName } from '@ts-c-compiler/x86-assembler';
 import { IRAsmInputOperands } from 'frontend/ir/instructions';
 import { IRArgDynamicResolverType } from '../../reg-allocator';
 import { X86CompilerFnAttrs } from '../../../constants/types';

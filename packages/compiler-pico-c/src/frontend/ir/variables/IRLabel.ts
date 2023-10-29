@@ -1,7 +1,7 @@
 import chalk from 'chalk';
 
-import { IsPrintable } from '@ts-c/core';
-import { Identity } from '@ts-c/core';
+import { IsPrintable } from '@ts-c-compiler/core';
+import { Identity } from '@ts-c-compiler/core';
 
 export function isIRLabel(obj: any): obj is IRLabel {
   return !!obj?.value?.name;

@@ -1,4 +1,4 @@
-import { TokenType } from '@ts-c/lexer';
+import { TokenType } from '@ts-c-compiler/lexer';
 import { CCompilerKeyword } from '#constants';
 import { ASTCStaticAssertDeclaration } from '../../../ast/ASTCStaticAssertDeclaration';
 import { CGrammar } from '../shared';

@@ -1,6 +1,6 @@
 import * as R from 'ramda';
 
-import { arrayToHexString } from '@ts-c/core';
+import { arrayToHexString } from '@ts-c-compiler/core';
 import { asm, AssemblerConfig } from '../../src/asm';
 
 export type BinaryOutputObject = {

@@ -1,8 +1,8 @@
 /* eslint-disable no-use-before-define, @typescript-eslint/no-use-before-define */
-import { empty } from '@ts-c/grammar';
-import { isRelationOpToken } from '@ts-c/lexer';
+import { empty } from '@ts-c-compiler/grammar';
+import { isRelationOpToken } from '@ts-c-compiler/lexer';
 
-import { TokenType } from '@ts-c/lexer';
+import { TokenType } from '@ts-c-compiler/lexer';
 import {
   ASTPreprocessorBinaryOpNode,
   createBinOpIfBothSidesPresent,

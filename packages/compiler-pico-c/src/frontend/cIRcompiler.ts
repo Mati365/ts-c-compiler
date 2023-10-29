@@ -1,4 +1,4 @@
-import { ok } from '@ts-c/core';
+import { ok } from '@ts-c-compiler/core';
 
 import {
   CCompilerTimer,

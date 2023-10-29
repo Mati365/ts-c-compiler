@@ -1,4 +1,4 @@
-import { safeFirstMatch } from '@ts-c/core';
+import { safeFirstMatch } from '@ts-c-compiler/core';
 import { TokenLocation, TokenType } from '../../shared';
 import { Token } from '../Token';
 

@@ -1,6 +1,6 @@
 import * as R from 'ramda';
 
-import { UnionStruct, bits } from '@ts-c/core';
+import { UnionStruct, bits } from '@ts-c-compiler/core';
 import { VGAIndexedReg } from './VGAConstants';
 
 /** @see {@link http://www.osdever.net/FreeVGA/vga/attrreg.htm} */

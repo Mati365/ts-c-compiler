@@ -1,6 +1,6 @@
 import * as R from 'ramda';
 
-import { TreeVisitorsMap } from '@ts-c/grammar';
+import { TreeVisitorsMap } from '@ts-c-compiler/grammar';
 
 import { ASTC_TYPE_CREATORS } from './creators';
 import { ASTCCompilerNode } from '../../../parser/ast/ASTCCompilerNode';

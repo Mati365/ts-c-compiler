@@ -1,4 +1,4 @@
-import { NodeLocation } from '@ts-c/grammar';
+import { NodeLocation } from '@ts-c-compiler/grammar';
 
 import {
   CCOMPILER_STRUCT_LIKE_SPECIFIERS,

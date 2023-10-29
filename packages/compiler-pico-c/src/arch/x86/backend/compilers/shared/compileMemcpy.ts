@@ -2,7 +2,7 @@ import { CBackendError, CBackendErrorCode } from 'backend/errors/CBackendError';
 
 import { isPointerLikeType } from 'frontend/analyze';
 import { IRVariable } from 'frontend/ir/variables';
-import { getByteSizeArgPrefixName } from '@ts-c/x86-assembler';
+import { getByteSizeArgPrefixName } from '@ts-c-compiler/x86-assembler';
 
 import { genComment, genInstruction, genMemAddress } from '../../../asm-utils';
 import { X86CompilerFnAttrs } from '../../../constants/types';

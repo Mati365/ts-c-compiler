@@ -1,6 +1,6 @@
 import stripAnsi from 'strip-ansi';
 
-import { stripNonPrintableCharacters, trimLines } from '@ts-c/core';
+import { stripNonPrintableCharacters, trimLines } from '@ts-c-compiler/core';
 import { ccompiler } from '../../../src/ccompiler';
 
 export type MatcherResult = {

@@ -1,9 +1,9 @@
 import * as R from 'ramda';
 
-import { joinTokensWithSpaces } from '@ts-c/lexer';
+import { joinTokensWithSpaces } from '@ts-c-compiler/lexer';
 
-import { NodeLocation } from '@ts-c/grammar';
-import { Token, TokenType } from '@ts-c/lexer';
+import { NodeLocation } from '@ts-c-compiler/grammar';
+import { Token, TokenType } from '@ts-c-compiler/lexer';
 
 import { PreprocessorError, PreprocessorErrorCode } from '../PreprocessorError';
 

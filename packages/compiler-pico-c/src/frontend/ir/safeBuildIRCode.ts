@@ -1,4 +1,4 @@
-import { Result, err, ok } from '@ts-c/core';
+import { Result, err, ok } from '@ts-c-compiler/core';
 
 import { CScopeTree } from '../analyze';
 import { IRGeneratorConfig } from './constants';

@@ -1,6 +1,6 @@
 {
-  "name": "@ts-c/cli",
-  "version": "0.0.2",
+  "name": "@ts-c-compiler/cli",
+  "version": "1.0.0",
   "private": false,
   "license": "MIT",
   "scripts": {
@@ -12,8 +12,8 @@
     "lint": "npx eslint src/ -c ./.eslintrc.yml",
     "publish": "yarn build:production && npx changeset && npx changeset version && npx changeset publish"
   },
-  "dependencies": {
-    "@ts-c/compiler": "*"
+  "devDependencies": {
+    "@ts-c-compiler/compiler": "*"
   },
   "bin": {
     "ts-c": "dist/bin/cli.js"

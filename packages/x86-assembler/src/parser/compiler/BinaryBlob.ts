@@ -1,6 +1,6 @@
 import * as R from 'ramda';
 
-import { arrayToHex } from '@ts-c/core';
+import { arrayToHex } from '@ts-c-compiler/core';
 import { X86Compiler } from './X86Compiler';
 
 export const toMultilineBinaryBlockString = R.compose(

@@ -1,5 +1,5 @@
-import { Result, ok, err } from '@ts-c/core';
-import { Token } from '@ts-c/lexer';
+import { Result, ok, err } from '@ts-c-compiler/core';
+import { Token } from '@ts-c-compiler/lexer';
 import { ASTCTreeNode } from '../ast';
 import { CGrammarError, CGrammarErrorCode } from './errors/CGrammarError';
 import { createCCompilerGrammar } from './grammar';

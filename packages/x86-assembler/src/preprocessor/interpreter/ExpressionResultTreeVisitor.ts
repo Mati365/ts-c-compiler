@@ -1,11 +1,11 @@
 import * as R from 'ramda';
 
-import { isMathOpToken, evalMathOp } from '@ts-c/lexer';
-import { isRelationOpToken, evalRelationOp } from '@ts-c/lexer';
-import { isLogicOpToken, evalLogicOp } from '@ts-c/lexer';
+import { isMathOpToken, evalMathOp } from '@ts-c-compiler/lexer';
+import { isRelationOpToken, evalRelationOp } from '@ts-c-compiler/lexer';
+import { isLogicOpToken, evalLogicOp } from '@ts-c-compiler/lexer';
 
-import { NumberToken } from '@ts-c/lexer';
-import { TreeVisitor } from '@ts-c/grammar';
+import { NumberToken } from '@ts-c-compiler/lexer';
+import { TreeVisitor } from '@ts-c-compiler/grammar';
 
 import { PreprocessorError, PreprocessorErrorCode } from '../PreprocessorError';
 

@@ -1,7 +1,7 @@
 import * as R from 'ramda';
 
-import { parseNumberToken, isQuote } from '@ts-c/lexer';
-import { reduceTextToBitset } from '@ts-c/core';
+import { parseNumberToken, isQuote } from '@ts-c-compiler/lexer';
+import { reduceTextToBitset } from '@ts-c-compiler/core';
 
 import { MathOperator } from './MathOperators';
 import { MathError, MathErrorCode } from './MathError';

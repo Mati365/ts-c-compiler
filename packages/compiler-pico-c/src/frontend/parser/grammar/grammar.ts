@@ -1,7 +1,7 @@
 import { CCompilerIdentifier } from '#constants';
-import { Grammar, GrammarInitializer } from '@ts-c/grammar';
-import { SyntaxError } from '@ts-c/grammar';
-import { GroupTreeVisitor } from '@ts-c/grammar';
+import { Grammar, GrammarInitializer } from '@ts-c-compiler/grammar';
+import { SyntaxError } from '@ts-c-compiler/grammar';
+import { GroupTreeVisitor } from '@ts-c-compiler/grammar';
 
 import { ASTCCompilerKind, ASTCCompilerNode } from '../ast/ASTCCompilerNode';
 

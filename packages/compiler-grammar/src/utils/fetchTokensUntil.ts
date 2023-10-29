@@ -1,4 +1,4 @@
-import { Token, TokenType, isEOFToken } from '@ts-c/lexer';
+import { Token, TokenType, isEOFToken } from '@ts-c-compiler/lexer';
 import type { TokensIterator } from '../tree/TokensIterator';
 
 /**

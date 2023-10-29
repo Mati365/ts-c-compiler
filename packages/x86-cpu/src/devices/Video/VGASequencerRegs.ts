@@ -1,5 +1,5 @@
-import { UnionStruct, bits } from '@ts-c/core';
-import { MemoryRegionRange } from '@ts-c/x86-assembler';
+import { UnionStruct, bits } from '@ts-c-compiler/core';
+import { MemoryRegionRange } from '@ts-c-compiler/x86-assembler';
 import { CHARSET_MEMORY_MAPS, VGAIndexedReg } from './VGAConstants';
 
 /**

@@ -9,7 +9,7 @@ import {
   isMathOpToken,
   isNumericToken,
   isRelationOpToken,
-} from '@ts-c/lexer';
+} from '@ts-c-compiler/lexer';
 
 import { CUnaryCastOperator } from '#constants';
 import {

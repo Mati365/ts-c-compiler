@@ -1,7 +1,7 @@
 /* eslint-disable no-use-before-define, @typescript-eslint/no-use-before-define */
-import { TokenType } from '@ts-c/lexer';
+import { TokenType } from '@ts-c-compiler/lexer';
 import { ASTCInitializer } from 'frontend/parser/ast';
-import { NodeLocation } from '@ts-c/grammar';
+import { NodeLocation } from '@ts-c-compiler/grammar';
 import { CGrammar } from '../shared';
 
 import { assignmentExpression } from '../expressions/assignmentExpression';

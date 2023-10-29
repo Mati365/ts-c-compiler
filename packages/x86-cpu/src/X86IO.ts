@@ -1,4 +1,4 @@
-import { X86BitsMode } from '@ts-c/x86-assembler';
+import { X86BitsMode } from '@ts-c-compiler/x86-assembler';
 
 import { X86_REGISTERS } from './constants/x86';
 

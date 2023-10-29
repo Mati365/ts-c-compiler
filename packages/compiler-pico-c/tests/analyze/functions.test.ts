@@ -1,4 +1,4 @@
-import { GrammarErrorCode } from '@ts-c/grammar';
+import { GrammarErrorCode } from '@ts-c-compiler/grammar';
 import { CTypeCheckErrorCode } from './utils';
 
 describe('Function typecheck', () => {

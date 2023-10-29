@@ -1,4 +1,4 @@
-import { replaceNthByte, extractNthByte } from '@ts-c/core';
+import { replaceNthByte, extractNthByte } from '@ts-c-compiler/core';
 
 import { X86UuidAbstractDevice } from '../../parts/X86AbstractDevice';
 

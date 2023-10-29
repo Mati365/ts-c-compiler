@@ -1,6 +1,6 @@
 import * as R from 'ramda';
 
-import { Result, err, ok, tryReduce } from '@ts-c/core';
+import { Result, err, ok, tryReduce } from '@ts-c-compiler/core';
 import {
   CTypeCheckError,
   CTypeCheckErrorCode,

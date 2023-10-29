@@ -1,6 +1,6 @@
 import * as R from 'ramda';
 
-import { roundedSignedNumberByteSize } from '@ts-c/core';
+import { roundedSignedNumberByteSize } from '@ts-c-compiler/core';
 
 import { X86BitsMode } from '../../../../../constants';
 import { InstructionArgType, BranchAddressingType } from '../../../../../types';

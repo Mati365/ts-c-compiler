@@ -1,15 +1,15 @@
-import { lexer, LexerConfig, TokenParsersMap } from '@ts-c/lexer';
-import { safeResultLexer } from '@ts-c/lexer';
+import { lexer, LexerConfig, TokenParsersMap } from '@ts-c-compiler/lexer';
+import { safeResultLexer } from '@ts-c-compiler/lexer';
 
-import { Result } from '@ts-c/core';
-import { LexerError } from '@ts-c/lexer';
+import { Result } from '@ts-c-compiler/core';
+import { LexerError } from '@ts-c-compiler/lexer';
 import {
   Token,
   TokenType,
   TokenLocation,
   NumberToken,
   FloatNumberToken,
-} from '@ts-c/lexer';
+} from '@ts-c-compiler/lexer';
 
 import {
   SizeOverrideToken,

@@ -1,5 +1,5 @@
-import { Grammar } from '@ts-c/grammar';
-import { TreeNode } from '@ts-c/grammar';
+import { Grammar } from '@ts-c-compiler/grammar';
+import { TreeNode } from '@ts-c-compiler/grammar';
 import { CCompilerIdentifier } from '#constants';
 
 import type { CType } from '../../analyze/types/CType';

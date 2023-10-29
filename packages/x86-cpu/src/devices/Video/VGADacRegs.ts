@@ -1,4 +1,4 @@
-import { UnionStruct, bits } from '@ts-c/core';
+import { UnionStruct, bits } from '@ts-c-compiler/core';
 
 /**
  * @see {@link http://www.osdever.net/FreeVGA/vga/colorreg.htm}

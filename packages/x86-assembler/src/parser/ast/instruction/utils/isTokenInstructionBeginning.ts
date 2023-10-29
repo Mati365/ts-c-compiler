@@ -1,4 +1,4 @@
-import { TokenType, Token } from '@ts-c/lexer';
+import { TokenType, Token } from '@ts-c-compiler/lexer';
 import {
   InstructionPrefix,
   COMPILER_INSTRUCTIONS_SET,

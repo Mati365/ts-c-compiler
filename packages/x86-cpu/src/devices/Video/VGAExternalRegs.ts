@@ -1,4 +1,4 @@
-import { UnionStruct, bits } from '@ts-c/core';
+import { UnionStruct, bits } from '@ts-c-compiler/core';
 
 /**
  * Misc Output Register (Read at 3CCh, Write at 3C2h)

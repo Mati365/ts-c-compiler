@@ -1,6 +1,6 @@
 import { CCompilerArch, CCompilerConfig } from '#constants';
 import { isPointerLikeType } from 'frontend/analyze';
-import { assertUnreachable } from '@ts-c/core';
+import { assertUnreachable } from '@ts-c-compiler/core';
 
 import {
   IRInstructionTypedArg,

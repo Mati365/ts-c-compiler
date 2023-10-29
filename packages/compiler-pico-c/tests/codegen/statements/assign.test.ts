@@ -25,7 +25,7 @@ describe('Variable assign', () => {
         movzx cx, al
         shl cx, 1                 ; %t{3}: char1B = %t{2}: char1B mul %2: char1B
         mov ax, [bp - 5]
-        movzx dx, cx
+        mov dx, cx
         add ax, dx                ; %t{5}: int2B = %t{4}: int2B plus %t{3}: char1B
         mov word [bp - 5], ax     ; *(a{0}: int*2B) = store %t{5}: int2B
         mov sp, bp

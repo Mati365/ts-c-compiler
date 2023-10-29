@@ -1,9 +1,9 @@
 import * as R from 'ramda';
 
-import { rpn } from '@ts-c/rpn';
-import { MathErrorCode } from '@ts-c/rpn';
+import { rpn } from '@ts-c-compiler/rpn';
+import { MathErrorCode } from '@ts-c-compiler/rpn';
 
-import { Token, NumberFormat, NumberToken } from '@ts-c/lexer';
+import { Token, NumberFormat, NumberToken } from '@ts-c-compiler/lexer';
 
 import { ParserErrorCode, ParserError } from '../../shared/ParserError';
 import { ASTLabelAddrResolver } from '../ast/instruction/ASTResolvableArg';

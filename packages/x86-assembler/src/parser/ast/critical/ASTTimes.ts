@@ -1,9 +1,9 @@
 import * as R from 'ramda';
 
-import { isLineTerminatorToken } from '@ts-c/lexer';
+import { isLineTerminatorToken } from '@ts-c-compiler/lexer';
 
-import { Token } from '@ts-c/lexer';
-import { NodeLocation } from '@ts-c/grammar';
+import { Token } from '@ts-c-compiler/lexer';
+import { NodeLocation } from '@ts-c-compiler/grammar';
 
 import { ParserError, ParserErrorCode } from '../../../shared/ParserError';
 import { ASTAsmParser, ASTAsmTree } from '../ASTAsmParser';

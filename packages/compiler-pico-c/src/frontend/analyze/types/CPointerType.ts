@@ -1,6 +1,6 @@
-import { concatNonEmptyStrings } from '@ts-c/core';
+import { concatNonEmptyStrings } from '@ts-c-compiler/core';
 
-import { Identity } from '@ts-c/core';
+import { Identity } from '@ts-c-compiler/core';
 import { CCompilerArch } from '#constants';
 
 import { CArrayType, isArrayLikeType } from './CArrayType';

@@ -1,5 +1,5 @@
-import { SyntaxError } from '@ts-c/grammar';
-import { NodeLocation } from '@ts-c/grammar';
+import { SyntaxError } from '@ts-c-compiler/grammar';
+import { NodeLocation } from '@ts-c-compiler/grammar';
 import {
   ASTCCompilerNode,
   ASTCSpecifiersQualifiersList,

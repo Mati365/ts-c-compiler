@@ -1,15 +1,15 @@
 import { CCOMPILER_IDENTIFIERS_MAP } from '#constants';
 
-import { FloatNumberToken, NumberToken, TokenType } from '@ts-c/lexer';
+import { FloatNumberToken, NumberToken, TokenType } from '@ts-c-compiler/lexer';
 
 import {
   LexerConfig,
   TokenParsersMap,
   TokenTerminalCharactersMap,
   TERMINAL_CHARACTERS,
-} from '@ts-c/lexer';
+} from '@ts-c-compiler/lexer';
 
-import { safeResultLexer } from '@ts-c/lexer';
+import { safeResultLexer } from '@ts-c-compiler/lexer';
 import { cComentParser, cMergeNumbersTokens } from './parsers';
 
 export const CCOMPILER_TERMINAL_CHARACTERS: TokenTerminalCharactersMap = {

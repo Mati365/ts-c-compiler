@@ -15,7 +15,7 @@ import {
   IRPhiInstruction,
 } from '../../../instructions';
 import { LogicBinaryExpressionLabels } from './emitLogicBinaryJmpExpressionIR';
-import { TokenType } from '@ts-c/lexer';
+import { TokenType } from '@ts-c-compiler/lexer';
 import { IRConstant } from '../../../variables';
 import { CPrimitiveType } from 'frontend/analyze';
 

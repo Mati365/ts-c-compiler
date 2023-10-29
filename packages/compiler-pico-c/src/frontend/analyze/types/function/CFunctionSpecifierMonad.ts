@@ -1,8 +1,8 @@
-import { hasFlag } from '@ts-c/core';
+import { hasFlag } from '@ts-c-compiler/core';
 
-import { Identity, Result, ok } from '@ts-c/core';
+import { Identity, Result, ok } from '@ts-c-compiler/core';
 import { CFunctionSpecifier } from '#constants';
-import { IsPrintable } from '@ts-c/core';
+import { IsPrintable } from '@ts-c-compiler/core';
 
 import {
   CTypeCheckError,

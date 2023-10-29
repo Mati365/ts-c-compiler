@@ -1,5 +1,5 @@
-import { TokenType } from '@ts-c/lexer';
-import { NodeLocation } from '@ts-c/grammar';
+import { TokenType } from '@ts-c-compiler/lexer';
+import { NodeLocation } from '@ts-c-compiler/grammar';
 import { CCompilerKeyword } from '#constants';
 import { CGrammar } from '../shared';
 import {

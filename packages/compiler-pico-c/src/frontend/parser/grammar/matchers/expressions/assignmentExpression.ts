@@ -1,6 +1,6 @@
 import { CAssignOperator, CCOMPILER_ASSIGN_OPERATORS } from '#constants';
 import { ASTCAssignmentExpression } from 'frontend/parser/ast';
-import { Token } from '@ts-c/lexer';
+import { Token } from '@ts-c-compiler/lexer';
 import { CGrammar } from '../shared';
 import { unaryExpression } from './unaryExpression';
 import { conditionalExpression } from './conditionalExpression';

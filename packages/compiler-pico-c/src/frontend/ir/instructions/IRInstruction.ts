@@ -1,4 +1,4 @@
-import { IsPrintable } from '@ts-c/core';
+import { IsPrintable } from '@ts-c-compiler/core';
 import { IROpcode } from '../constants';
 import { IRInstructionArg, IRVariable } from '../variables';
 

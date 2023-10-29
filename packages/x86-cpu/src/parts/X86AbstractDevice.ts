@@ -1,7 +1,7 @@
 import * as R from 'ramda';
 
-import { UnmountCallback } from '@ts-c/core';
-import { MemoryRegionRange, X86RegName } from '@ts-c/x86-assembler';
+import { UnmountCallback } from '@ts-c-compiler/core';
+import { MemoryRegionRange, X86RegName } from '@ts-c-compiler/x86-assembler';
 
 import { X86_MAPPED_VM_MEM } from '../constants/x86';
 

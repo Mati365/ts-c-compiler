@@ -1,4 +1,4 @@
-import { CompilerError } from '@ts-c/core';
+import { CompilerError } from '@ts-c-compiler/core';
 import { CompilerFinalResult, CompilerOutput } from '../compile';
 
 /**
