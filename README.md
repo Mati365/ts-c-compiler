@@ -1,3 +1,7 @@
+<p align='center'>
+  <img src='doc/logo.png' alt='Banner' width='168px'>
+</p>
+
 # ts-c-compiler
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg?style=flat-square)](https://opensource.org/licenses/MIT)
@@ -5,8 +9,6 @@
 ![GitHub issues](https://img.shields.io/github/issues/mati365/i8086.js?style=flat-square)
 [![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg?style=flat-square)](http://makeapullrequest.com)
 [![Known Vulnerabilities](https://snyk.io/test/github/Mati365/i8086.js/badge.svg?targetFile=package.json&style=flat-square)](https://snyk.io/test/github/Mati365/i8086.js?targetFile=package.json)
-
-<img src='doc/logo.png' alt='Banner' width='220px' align='right'>
 
 Multipass portable C lang compiler toolkit with IR code generator including backend, frontend, and optimizer phases. Designed to simple prototyping 16bit toy operating systems and games.
 
