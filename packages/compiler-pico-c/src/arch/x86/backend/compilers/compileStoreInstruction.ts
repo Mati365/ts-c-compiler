@@ -1,18 +1,12 @@
-import {
-  CBackendError,
-  CBackendErrorCode,
-} from '@compiler/pico-c/backend/errors/CBackendError';
+import { CBackendError, CBackendErrorCode } from 'backend/errors/CBackendError';
 
-import { getByteSizeArgPrefixName } from '@x86-toolkit/assembler/parser/utils';
-import { getBaseTypeIfPtr } from '@compiler/pico-c/frontend/analyze/types/utils';
-import { IRStoreInstruction } from '@compiler/pico-c/frontend/ir/instructions';
+import { getByteSizeArgPrefixName } from '@ts-c/x86-assembler';
+import { getBaseTypeIfPtr } from 'frontend/analyze/types/utils';
+import { IRStoreInstruction } from 'frontend/ir/instructions';
 
-import {
-  isIRConstant,
-  isIRVariable,
-} from '@compiler/pico-c/frontend/ir/variables';
+import { isIRConstant, isIRVariable } from 'frontend/ir/variables';
 
-import { getTypeOffsetByteSize } from '@compiler/pico-c/frontend/ir/utils';
+import { getTypeOffsetByteSize } from 'frontend/ir/utils';
 import { compileMemcpy } from './shared';
 
 import { X86CompilerInstructionFnAttrs } from '../../constants/types';

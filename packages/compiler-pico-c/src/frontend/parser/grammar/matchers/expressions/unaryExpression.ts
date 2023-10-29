@@ -2,11 +2,11 @@ import {
   CCompilerKeyword,
   CCOMPILER_UNARY_OPERATORS,
   CUnaryCastOperator,
-} from '@compiler/pico-c/constants';
+} from '#constants';
 
-import { NodeLocation } from '@compiler/grammar/tree/NodeLocation';
-import { Token } from '@compiler/lexer/tokens';
-import { TokenType } from '@compiler/lexer/shared';
+import { NodeLocation } from '@ts-c/grammar';
+import { Token } from '@ts-c/lexer';
+import { TokenType } from '@ts-c/lexer';
 import { CGrammar } from '../shared';
 import {
   ASTCUnaryExpression,

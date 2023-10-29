@@ -1,8 +1,8 @@
-import { dumpAttributesToString } from '@compiler/core/utils';
-import { joinTokensTexts } from '@compiler/lexer/utils';
+import { dumpAttributesToString } from '@ts-c/core';
+import { joinTokensTexts } from '@ts-c/lexer';
 
-import { NodeLocation } from '@compiler/grammar/tree/NodeLocation';
-import { Token } from '@compiler/lexer/tokens';
+import { NodeLocation } from '@ts-c/grammar';
+import { Token } from '@ts-c/lexer';
 import { ASTCCompilerKind, ASTCCompilerNode } from './ASTCCompilerNode';
 
 export class ASTCIdentifiersList extends ASTCCompilerNode {

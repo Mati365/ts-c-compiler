@@ -1,5 +1,5 @@
-import { NodeLocation } from '@compiler/grammar/tree/NodeLocation';
-import { TokenType } from '@compiler/lexer/shared';
+import { NodeLocation } from '@ts-c/grammar';
+import { TokenType } from '@ts-c/lexer';
 import { CGrammar } from '../shared';
 import { ASTCCompilerKind, ASTCTreeNode, ASTCValueNode } from '../../../ast';
 

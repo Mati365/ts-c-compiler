@@ -1,4 +1,4 @@
-import { NodeLocation } from '@compiler/grammar/tree/NodeLocation';
+import { NodeLocation } from '@ts-c/grammar';
 import { ASTCDesignatorList, ASTCDesignator } from '../../../ast';
 import { CGrammar } from '../shared';
 

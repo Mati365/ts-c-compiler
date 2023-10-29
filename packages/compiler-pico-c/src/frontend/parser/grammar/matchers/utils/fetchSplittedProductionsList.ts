@@ -1,7 +1,7 @@
 import * as R from 'ramda';
 
-import { SyntaxError } from '@compiler/grammar/Grammar';
-import { TokenType } from '@compiler/lexer/shared';
+import { SyntaxError } from '@ts-c/grammar';
+import { TokenType } from '@ts-c/lexer';
 import { CGrammar } from '../shared';
 
 type SplittedProductionsListAttrs<T> = {

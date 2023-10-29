@@ -1,21 +1,18 @@
 import * as R from 'ramda';
 
-import {
-  getBaseType,
-  getBaseTypeIfPtr,
-} from '@compiler/pico-c/frontend/analyze/types/utils';
+import { getBaseType, getBaseTypeIfPtr } from 'frontend/analyze/types/utils';
 
-import { TokenType } from '@compiler/lexer/shared';
+import { TokenType } from '@ts-c/lexer';
 import {
   CPointerType,
   CPrimitiveType,
   isArrayLikeType,
   isPointerLikeType,
   isStructLikeType,
-} from '@compiler/pico-c/frontend/analyze';
+} from 'frontend/analyze';
 
-import { CUnaryCastOperator } from '@compiler/pico-c/constants';
-import { GroupTreeVisitor } from '@compiler/grammar/tree/TreeGroupedVisitor';
+import { CUnaryCastOperator } from '#constants';
+import { GroupTreeVisitor } from '@ts-c/grammar';
 import {
   ASTCCastUnaryExpression,
   ASTCCompilerKind,
@@ -25,7 +22,7 @@ import {
   ASTCPostfixExpression,
   ASTCPostfixPtrExpression,
   ASTCPrimaryExpression,
-} from '@compiler/pico-c/frontend/parser';
+} from 'frontend/parser';
 
 import {
   IRLabelOffsetInstruction,

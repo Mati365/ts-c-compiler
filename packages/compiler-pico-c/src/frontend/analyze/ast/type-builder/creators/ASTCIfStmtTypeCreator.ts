@@ -1,7 +1,4 @@
-import {
-  ASTCCompilerKind,
-  ASTCIfStatement,
-} from '@compiler/pico-c/frontend/parser/ast';
+import { ASTCCompilerKind, ASTCIfStatement } from 'frontend/parser/ast';
 import { ASTCTypeCreator } from './ASTCTypeCreator';
 
 export class ASTCIfStmtTypeCreator extends ASTCTypeCreator<ASTCIfStatement> {

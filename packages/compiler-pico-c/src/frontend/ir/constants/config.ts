@@ -1,4 +1,4 @@
-import { CCompilerArch } from '@compiler/pico-c/constants';
+import { CCompilerArch } from '#constants';
 import { IROptimizerConfig } from '../optimizer/constants/types';
 
 export type IRGeneratorConfig = {

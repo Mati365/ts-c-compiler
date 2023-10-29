@@ -1,14 +1,15 @@
 import * as R from 'ramda';
 
-import { safeArray } from '@compiler/core/utils/safeArray';
-import { lexer, IdentifiersMap } from '@compiler/lexer/lexer';
+import { safeArray } from '@ts-c/core';
 import {
+  lexer,
+  IdentifiersMap,
   TokenType,
   Token,
   NumberToken,
   FloatNumberToken,
   TokenKind,
-} from '@compiler/lexer/tokens';
+} from '@ts-c/lexer';
 
 import { TokensIterator } from './tree/TokensIterator';
 import { GrammarErrorCode, GrammarError } from './GrammarError';

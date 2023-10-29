@@ -1,23 +1,20 @@
-import { TokenType } from '@compiler/lexer/shared';
-import { IRMathInstruction } from '@compiler/pico-c/frontend/ir/instructions';
+import { TokenType } from '@ts-c/lexer';
+import { IRMathInstruction } from 'frontend/ir/instructions';
 
-import {
-  CBackendError,
-  CBackendErrorCode,
-} from '@compiler/pico-c/backend/errors/CBackendError';
+import { CBackendError, CBackendErrorCode } from 'backend/errors/CBackendError';
 
-import { getBiggerIRArg } from '@compiler/pico-c/frontend/ir/utils';
-import { CMathOperator } from '@compiler/pico-c/constants';
+import { getBiggerIRArg } from 'frontend/ir/utils';
+import { CMathOperator } from '#constants';
 
 import { IRArgDynamicResolverType } from '../../reg-allocator';
 import { X86CompilerInstructionFnAttrs } from '../../../constants/types';
 import { genInstruction, withInlineComment } from '../../../asm-utils';
 import { ensureFunctionNotOverridesOutput } from './ensureFunctionNotOverrideOutput';
-import { castToPointerIfArray } from '@compiler/pico-c/frontend/analyze/casts';
+import { castToPointerIfArray } from 'frontend/analyze/casts';
 
 import { isNopMathInstruction } from './isNopMathInstruction';
-import { isIRVariable } from '@compiler/pico-c/frontend/ir/variables';
-import { isPrimitiveLikeType } from '@compiler/pico-c/frontend/analyze';
+import { isIRVariable } from 'frontend/ir/variables';
+import { isPrimitiveLikeType } from 'frontend/analyze';
 
 const BinaryOperatorX86Opcode: Partial<Record<CMathOperator, string>> = {
   [TokenType.BIT_OR]: 'xor',

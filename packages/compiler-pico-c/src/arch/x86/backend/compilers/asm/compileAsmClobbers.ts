@@ -1,8 +1,8 @@
 import chalk from 'chalk';
 import * as R from 'ramda';
 
-import type { IRAsmClobberOperand } from '@compiler/pico-c/frontend/ir/instructions';
-import type { X86RegName } from '@x86-toolkit/cpu/parts';
+import type { X86RegName } from '@ts-c/x86-assembler';
+import type { IRAsmClobberOperand } from 'frontend/ir/instructions';
 
 import { genInstruction, withInlineComment } from '../../../asm-utils';
 import { getX86RegByteSize } from '../../../constants/regs';

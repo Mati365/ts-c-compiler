@@ -1,4 +1,4 @@
-import { IRJmpInstruction } from '@compiler/pico-c/frontend/ir/instructions';
+import { IRJmpInstruction } from 'frontend/ir/instructions';
 
 import { X86CompilerInstructionFnAttrs } from '../../constants/types';
 import {

@@ -1,0 +1,13 @@
+{
+  "extends": "../../tsconfig.json",
+  "include": ["src/"],
+  "compilerOptions": {
+    "baseUrl": "src",
+    "module": "ES2015",
+    "moduleResolution": "Bundler",
+    "paths": {
+      "#constants": ["constants"],
+      "#constants/*": ["constants/*"]
+    }
+  }
+}

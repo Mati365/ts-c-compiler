@@ -1,4 +1,4 @@
-import { CStructAlign } from '@compiler/pico-c/constants';
+import { CStructAlign } from '#constants';
 import { CType, CTypeDescriptor } from '../../CType';
 import {
   CNamedTypedEntry,

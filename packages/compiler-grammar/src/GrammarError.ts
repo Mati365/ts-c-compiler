@@ -1,5 +1,5 @@
-import { CompilerError } from '@compiler/core/shared/CompilerError';
-import { TokenLocation } from '@compiler/lexer/tokens';
+import { CompilerError } from '@ts-c/core';
+import { TokenLocation } from '@ts-c/lexer';
 
 export enum GrammarErrorCode {
   SYNTAX_ERROR,

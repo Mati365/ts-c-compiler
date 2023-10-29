@@ -1,5 +1,5 @@
-import { SyntaxError } from '@compiler/grammar/Grammar';
-import { NodeLocation } from '@compiler/grammar/tree/NodeLocation';
+import { SyntaxError } from '@ts-c/grammar';
+import { NodeLocation } from '@ts-c/grammar';
 import {
   ASTCAlignmentSpecifiersList,
   ASTCCompilerNode,
@@ -8,7 +8,7 @@ import {
   ASTCStorageClassSpecifiersList,
   ASTCTypeQualifiersList,
   ASTCTypeSpecifiersList,
-} from '@compiler/pico-c/frontend/parser/ast';
+} from 'frontend/parser/ast';
 
 import { CGrammar } from '../shared';
 

@@ -1,7 +1,7 @@
-import { CCompilerIdentifier } from '@compiler/pico-c/constants';
-import { Grammar, GrammarInitializer } from '@compiler/grammar/Grammar';
-import { SyntaxError } from '@compiler/grammar/Grammar';
-import { GroupTreeVisitor } from '@compiler/grammar/tree/TreeGroupedVisitor';
+import { CCompilerIdentifier } from '#constants';
+import { Grammar, GrammarInitializer } from '@ts-c/grammar';
+import { SyntaxError } from '@ts-c/grammar';
+import { GroupTreeVisitor } from '@ts-c/grammar';
 
 import { ASTCCompilerKind, ASTCCompilerNode } from '../ast/ASTCCompilerNode';
 

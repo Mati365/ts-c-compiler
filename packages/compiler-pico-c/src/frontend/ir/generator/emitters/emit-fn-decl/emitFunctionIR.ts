@@ -1,7 +1,7 @@
 import * as R from 'ramda';
 
-import { CFunctionDeclType } from '@compiler/pico-c/frontend/analyze';
-import { ASTCFunctionDefinition } from '@compiler/pico-c/frontend/parser';
+import { CFunctionDeclType } from 'frontend/analyze';
+import { ASTCFunctionDefinition } from 'frontend/parser';
 import {
   IRFnEndDeclInstruction,
   IRRetInstruction,

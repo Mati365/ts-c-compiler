@@ -1,4 +1,4 @@
-import { Result, ok, err } from '@compiler/core/monads/Result';
+import { Result, ok, err } from '@ts-c/core';
 
 // import { serializeTypedTreeToString } from '../parser';
 

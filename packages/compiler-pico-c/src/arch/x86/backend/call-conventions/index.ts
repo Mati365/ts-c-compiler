@@ -1,4 +1,4 @@
-import { CFunctionCallConvention } from '@compiler/pico-c/constants';
+import { CFunctionCallConvention } from '#constants';
 
 import type { X86ConventionalFnCaller } from './X86ConventionalFnCaller';
 import { X86StdcallFnCaller } from './X86StdcallFnCaller';

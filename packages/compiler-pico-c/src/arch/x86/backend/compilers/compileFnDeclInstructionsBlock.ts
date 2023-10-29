@@ -1,9 +1,9 @@
-import { IROpcode } from '@compiler/pico-c/frontend/ir/constants';
+import { IROpcode } from 'frontend/ir/constants';
 import {
   IRCommentInstruction,
   IRFnDeclInstruction,
   isIRLabelInstruction,
-} from '@compiler/pico-c/frontend/ir/instructions';
+} from 'frontend/ir/instructions';
 
 import { X86StackFrameContentFn } from '../X86Allocator';
 import {

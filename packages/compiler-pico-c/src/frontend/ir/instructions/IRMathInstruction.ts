@@ -1,6 +1,6 @@
-import { CMathOperator } from '@compiler/pico-c/constants';
-import { Option, none, some } from '@compiler/core/monads';
-import { TokenType } from '@compiler/lexer/shared';
+import { CMathOperator } from '#constants';
+import { Option, none, some } from '@ts-c/core';
+import { TokenType } from '@ts-c/lexer';
 
 import { IROpcode } from '../constants';
 import { IROpInstruction } from './IROpInstruction';

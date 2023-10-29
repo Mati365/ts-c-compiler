@@ -1,5 +1,5 @@
-import { TokenType } from '@compiler/lexer/shared';
-import { ASTCBinaryOpNode } from '@compiler/pico-c/frontend/parser';
+import { TokenType } from '@ts-c/lexer';
+import { ASTCBinaryOpNode } from 'frontend/parser';
 
 import {
   IRBrInstruction,

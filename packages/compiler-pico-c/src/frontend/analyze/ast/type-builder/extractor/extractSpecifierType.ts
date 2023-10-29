@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/no-use-before-define */
 import * as R from 'ramda';
 
-import { CTypeQualifier } from '@compiler/pico-c/constants';
+import { CTypeQualifier } from '#constants';
 import {
   CTypeCheckError,
   CTypeCheckErrorCode,

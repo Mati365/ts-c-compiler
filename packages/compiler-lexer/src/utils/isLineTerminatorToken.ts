@@ -1,4 +1,5 @@
-import { TokenType, Token } from '../tokens';
+import { TokenType } from '../shared/TokenTypes';
+import type { Token } from '../tokens';
 
 /**
  * Used for check when stop parsing

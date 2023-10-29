@@ -1,4 +1,4 @@
-import { Result, err, ok } from '@compiler/core/monads';
+import { Result, err, ok } from '@ts-c/core';
 import { ASTCCompilerNode } from '../../../parser/ast';
 import { CTypeCheckError } from '../../errors/CTypeCheckError';
 import { CTypeAnalyzeContext } from '../type-builder/CTypeAnalyzeContext';

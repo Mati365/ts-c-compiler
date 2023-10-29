@@ -1,5 +1,5 @@
-import { isCompilerTreeNode } from '@compiler/pico-c/frontend/parser';
-import { CCompilerArch } from '@compiler/pico-c/constants';
+import { isCompilerTreeNode } from 'frontend/parser';
+import { CCompilerArch } from '#constants';
 
 import { CPrimitiveType } from '../CPrimitiveType';
 import { CType } from '../CType';

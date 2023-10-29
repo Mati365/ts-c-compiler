@@ -1,7 +1,7 @@
 import * as R from 'ramda';
 
-import { IsEmpty } from '@compiler/core/interfaces/IsEmpty';
-import { NodeLocation } from '@compiler/grammar/tree/NodeLocation';
+import { IsEmpty } from '@ts-c/core';
+import { NodeLocation } from '@ts-c/grammar';
 import { ASTCCompilerKind, ASTCCompilerNode } from './ASTCCompilerNode';
 import { IsNewScopeASTNode } from '../../analyze/interfaces';
 import { CScopeTree } from '../../analyze';

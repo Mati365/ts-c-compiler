@@ -1,4 +1,4 @@
-import { getBaseTypeIfPtr } from '@compiler/pico-c/frontend/analyze/types/utils';
+import { getBaseTypeIfPtr } from 'frontend/analyze/types/utils';
 import { isIRVariable } from '../../../variables';
 import { isIRBranchInstruction } from '../../../guards';
 import {

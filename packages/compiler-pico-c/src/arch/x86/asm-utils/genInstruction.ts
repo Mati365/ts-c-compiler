@@ -1,5 +1,5 @@
 import * as R from 'ramda';
-import { X86PrefixName } from '@x86-toolkit/assembler';
+import { X86PrefixName } from '@ts-c/x86-assembler';
 
 export function genInstruction(
   mnemonic: [X86PrefixName, string] | string,

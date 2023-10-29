@@ -1,10 +1,10 @@
 import * as R from 'ramda';
 
-import { dumpAttributesToString } from '@compiler/core/utils';
-import { walkOverFields } from '@compiler/grammar/decorators/walkOverFields';
+import { dumpAttributesToString } from '@ts-c/core';
+import { walkOverFields } from '@ts-c/grammar';
 
-import { Token } from '@compiler/lexer/tokens';
-import { NodeLocation } from '@compiler/grammar/tree/NodeLocation';
+import { Token } from '@ts-c/lexer';
+import { NodeLocation } from '@ts-c/grammar';
 import { ASTCCompilerNode, ASTCCompilerKind } from './ASTCCompilerNode';
 import { ASTCPrimaryExpression } from './ASTCPrimaryExpression';
 import { ASTCExpression } from './ASTCExpression';

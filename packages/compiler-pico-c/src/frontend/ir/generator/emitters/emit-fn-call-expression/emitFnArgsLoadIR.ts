@@ -1,10 +1,10 @@
-import { GroupTreeVisitor } from '@compiler/grammar/tree/TreeGroupedVisitor';
+import { GroupTreeVisitor } from '@ts-c/grammar';
 
 import {
   ASTCAssignmentExpression,
   ASTCCompilerKind,
   ASTCCompilerNode,
-} from '@compiler/pico-c/frontend/parser';
+} from 'frontend/parser';
 
 import { IRInstructionTypedArg } from '../../../variables';
 import {

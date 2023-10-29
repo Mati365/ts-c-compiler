@@ -10,26 +10,6 @@ ignorePatterns:
   - node_modules
   - dist
 
-settings:
-  import/resolver:
-    alias:
-      {
-        map:
-          [
-            ['@compiler/core', './packages/compiler-core/src/'],
-            ['@compiler/lexer', './packages/compiler-lexer/src/'],
-            ['@compiler/grammar', './packages/compiler-grammar/src/'],
-            ['@compiler/rpn', './packages/compiler-rpn/src/'],
-            [
-              '@x86-toolkit/assembler',
-              './packages/x86-toolkit/x86-assembler/src/',
-            ],
-            ['@x86-toolkit/cpu', './packages/x86-toolkit/x86-cpu/src'],
-            ['@compiler/pico-c', './packages/compiler-pico-c/src/'],
-          ],
-        extensions: ['.js', '.ts', '.tsx', '.scss', '.json'],
-      }
-
 overrides:
   - files: ['*.test.ts', '*.test.tsx']
     rules:
@@ -101,6 +81,7 @@ rules:
     ['error', { 'allowTaggedTemplates': true, 'allowShortCircuit': true }]
   '@typescript-eslint/indent': 0
   '@typescript-eslint/brace-style': 0
+  '@typescript-eslint/no-throw-literal': 0
   react/destructuring-assignment: 0
   react/forbid-prop-types: 0
   react/prefer-stateless-function: [1, { 'ignorePureComponents': true }]

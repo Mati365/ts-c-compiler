@@ -1,4 +1,4 @@
-import { ASTCDeclarator } from '@compiler/pico-c/frontend/parser/ast';
+import { ASTCDeclarator } from 'frontend/parser/ast';
 import { CGrammar } from '../shared';
 import { pointer } from './pointer';
 import { directDeclarator } from './directDeclarator';

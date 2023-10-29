@@ -1,10 +1,10 @@
 /* eslint-disable @typescript-eslint/no-use-before-define, no-use-before-define */
-import { empty } from '@compiler/grammar/matchers';
-import { safeArray } from '@compiler/core/utils';
-import { eatLeftRecursiveOperators } from '@compiler/grammar/utils';
+import { empty } from '@ts-c/grammar';
+import { safeArray } from '@ts-c/core';
+import { eatLeftRecursiveOperators } from '@ts-c/grammar';
 
-import { CanBeArray } from '@compiler/core/types';
-import { TokenType } from '@compiler/lexer/shared';
+import { CanBeArray } from '@ts-c/core';
+import { TokenType } from '@ts-c/lexer';
 import { CGrammar } from '../shared';
 import {
   ASTCBinaryOpNode,

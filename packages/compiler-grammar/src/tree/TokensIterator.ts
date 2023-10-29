@@ -1,4 +1,4 @@
-import { Token } from '@compiler/lexer/tokens';
+import { Token } from '@ts-c/lexer';
 
 export type TokensList = Token[] | IterableIterator<Token>;
 

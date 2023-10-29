@@ -1,6 +1,6 @@
 import * as R from 'ramda';
 
-import { safeFirstMatch } from '@compiler/core/utils/safeFirstMatch';
+import { safeFirstMatch } from '@ts-c/core';
 import { isSign } from './matchCharacter';
 
 const safeNumberMatch = (regex: RegExp, radix: number) =>

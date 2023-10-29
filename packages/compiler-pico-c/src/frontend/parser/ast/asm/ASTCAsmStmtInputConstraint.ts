@@ -1,5 +1,5 @@
-import { dumpAttributesToString } from '@compiler/core/utils';
-import { NodeLocation } from '@compiler/grammar/tree/NodeLocation';
+import { dumpAttributesToString } from '@ts-c/core';
+import { NodeLocation } from '@ts-c/grammar';
 import { ASTCCompilerKind, ASTCCompilerNode } from '../ASTCCompilerNode';
 
 export type AsmInputConstraintFlags = {

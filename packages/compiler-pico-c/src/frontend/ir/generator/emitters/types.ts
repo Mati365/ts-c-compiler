@@ -1,4 +1,4 @@
-import type { CScopeTree } from '@compiler/pico-c/frontend/analyze';
+import type { CScopeTree } from 'frontend/analyze';
 
 import type { IRGeneratorConfig } from '../../constants';
 import type {

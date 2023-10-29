@@ -1,9 +1,9 @@
 import * as R from 'ramda';
 
-import { walkOverFields } from '@compiler/grammar/decorators/walkOverFields';
+import { walkOverFields } from '@ts-c/grammar';
 
-import { IsEmpty } from '@compiler/core/interfaces/IsEmpty';
-import { NodeLocation } from '@compiler/grammar/tree/NodeLocation';
+import { IsEmpty } from '@ts-c/core';
+import { NodeLocation } from '@ts-c/grammar';
 
 import { ASTCCompilerKind, ASTCCompilerNode } from './ASTCCompilerNode';
 import { ASTCTypeSpecifier } from './ASTCTypeSpecifier';

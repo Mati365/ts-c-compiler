@@ -1,4 +1,4 @@
-import { ASTCAsmStatement } from '@compiler/pico-c/frontend/parser';
+import { ASTCAsmStatement } from 'frontend/parser';
 
 import {
   IRAsmInputOperands,

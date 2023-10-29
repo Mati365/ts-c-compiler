@@ -2,7 +2,7 @@ import {
   IRCallInstruction,
   IRFnDeclInstruction,
   IRRetInstruction,
-} from '@compiler/pico-c/frontend/ir/instructions';
+} from 'frontend/ir/instructions';
 
 import { X86BackendCompilerContext } from '../../constants/types';
 

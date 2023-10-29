@@ -1,4 +1,4 @@
-import { ASTCWhileStatement } from '@compiler/pico-c/frontend/parser';
+import { ASTCWhileStatement } from 'frontend/parser';
 import { IRBrInstruction, IRJmpInstruction } from '../../../instructions';
 
 import {

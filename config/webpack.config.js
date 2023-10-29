@@ -5,7 +5,7 @@ const CircularDependencyPlugin = require('circular-dependency-plugin');
 const ESLintPlugin = require('eslint-webpack-plugin');
 const HtmlWebpackPlugin = require('html-webpack-plugin');
 
-const PRODUCTION_MODE = process.env.NODE_ENV === 'production';
+const PRODUCTION_MODE = process.env.NODE_ENV !== 'development';
 
 const rootResolve = pkgPath =>
   path.resolve(process.cwd(), path.join('./', pkgPath));

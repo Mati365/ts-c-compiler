@@ -1,4 +1,4 @@
-import type { ASTCConditionalExpression } from '@compiler/pico-c/frontend';
+import type { ASTCConditionalExpression } from 'frontend';
 import {
   IREmitterContextAttrs,
   IREmitterExpressionResult,
@@ -15,9 +15,9 @@ import {
   IRPhiInstruction,
 } from '../../../instructions';
 import { LogicBinaryExpressionLabels } from './emitLogicBinaryJmpExpressionIR';
-import { TokenType } from '@compiler/lexer/shared';
+import { TokenType } from '@ts-c/lexer';
 import { IRConstant } from '../../../variables';
-import { CPrimitiveType } from '@compiler/pico-c/frontend/analyze';
+import { CPrimitiveType } from 'frontend/analyze';
 
 type LogicExpressionIREmitAttrs = IREmitterContextAttrs & {
   node: ASTCConditionalExpression;

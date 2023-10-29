@@ -1,10 +1,7 @@
 import * as R from 'ramda';
 
-import { Result, ok, err, tryFold } from '@compiler/core/monads';
-import {
-  AbstractTreeVisitor,
-  IsWalkableNode,
-} from '@compiler/grammar/tree/AbstractTreeVisitor';
+import { Result, ok, err, tryFold } from '@ts-c/core';
+import { AbstractTreeVisitor, IsWalkableNode } from '@ts-c/grammar';
 
 import { CTypeCheckConfig } from '../constants';
 import { CType, CPrimitiveType, isEnumLikeType } from '../types';

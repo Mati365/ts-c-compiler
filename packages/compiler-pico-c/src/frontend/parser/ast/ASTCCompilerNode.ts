@@ -1,6 +1,6 @@
-import { Grammar } from '@compiler/grammar/Grammar';
-import { TreeNode } from '@compiler/grammar/tree/TreeNode';
-import { CCompilerIdentifier } from '@compiler/pico-c/constants';
+import { Grammar } from '@ts-c/grammar';
+import { TreeNode } from '@ts-c/grammar';
+import { CCompilerIdentifier } from '#constants';
 
 import type { CType } from '../../analyze/types/CType';
 

@@ -1,8 +1,5 @@
-import {
-  ASTCFunctionDefinition,
-  ASTCCompilerKind,
-} from '@compiler/pico-c/frontend/parser/ast';
-import { CFunctionCallConvention } from '@compiler/pico-c/constants';
+import { ASTCFunctionDefinition, ASTCCompilerKind } from 'frontend/parser/ast';
+import { CFunctionCallConvention } from '#constants';
 import { ASTCTypeCreator } from './ASTCTypeCreator';
 
 import { extractNamedEntryFromDeclaration } from '../../type-builder';

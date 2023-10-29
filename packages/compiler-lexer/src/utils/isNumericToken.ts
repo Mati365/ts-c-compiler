@@ -1,4 +1,4 @@
-import { TokenType } from '../shared';
+import { TokenType } from '../shared/TokenTypes';
 
 export function isNumericToken(type: TokenType): boolean {
   switch (type) {

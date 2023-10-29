@@ -1,9 +1,9 @@
-import { hasFlag } from '@compiler/core/utils';
+import { hasFlag } from '@ts-c/core';
 
-import { Identity, Result, ok } from '@compiler/core/monads';
-import { IsPrintable } from '@compiler/core/interfaces';
+import { Identity, Result, ok } from '@ts-c/core';
+import { IsPrintable } from '@ts-c/core';
 
-import { CStorageClassSpecifier } from '@compiler/pico-c/constants';
+import { CStorageClassSpecifier } from '#constants';
 import {
   CTypeCheckError,
   CTypeCheckErrorCode,

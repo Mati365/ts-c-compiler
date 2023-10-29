@@ -1,9 +1,9 @@
-import { NodeLocation } from '@compiler/grammar/tree/NodeLocation';
-import { TokenType } from '@compiler/lexer/shared';
+import { NodeLocation } from '@ts-c/grammar';
+import { TokenType } from '@ts-c/lexer';
 import {
   AsmInputConstraintFlags,
   ASTCAsmStmtInputConstraint,
-} from '@compiler/pico-c/frontend/parser/ast';
+} from 'frontend/parser/ast';
 
 import { CGrammar } from '../../shared';
 

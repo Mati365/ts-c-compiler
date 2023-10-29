@@ -1,4 +1,4 @@
-import { TokenType } from '../tokens';
+import { TokenType } from '../shared/TokenTypes';
 
 /**
  * Checks if token can perform numeric expression

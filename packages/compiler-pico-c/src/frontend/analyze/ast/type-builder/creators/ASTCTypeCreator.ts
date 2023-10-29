@@ -1,8 +1,5 @@
-import {
-  ASTCCompilerNode,
-  ASTCCompilerKind,
-} from '@compiler/pico-c/frontend/parser/ast';
-import { InlineTreeVisitor } from '@compiler/grammar/tree/TreeGroupedVisitor';
+import { ASTCCompilerNode, ASTCCompilerKind } from 'frontend/parser/ast';
+import { InlineTreeVisitor } from '@ts-c/grammar';
 
 import type { CTypeAnalyzeVisitor } from '../CTypeAnalyzeVisitor';
 

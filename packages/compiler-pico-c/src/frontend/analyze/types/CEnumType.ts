@@ -1,9 +1,9 @@
 import * as R from 'ramda';
 
-import { dumpCompilerAttrs } from '@compiler/core/utils';
+import { dumpCompilerAttrs } from '@ts-c/core';
 
-import { Result, err, ok } from '@compiler/core/monads';
-import { CCompilerArch } from '@compiler/pico-c/constants';
+import { Result, err, ok } from '@ts-c/core';
+import { CCompilerArch } from '#constants';
 import {
   CTypeCheckError,
   CTypeCheckErrorCode,

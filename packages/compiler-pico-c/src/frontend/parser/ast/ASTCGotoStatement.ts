@@ -1,7 +1,7 @@
-import { dumpAttributesToString } from '@compiler/core/utils';
+import { dumpAttributesToString } from '@ts-c/core';
 
-import { NodeLocation } from '@compiler/grammar/tree/NodeLocation';
-import { Token } from '@compiler/lexer/tokens';
+import { NodeLocation } from '@ts-c/grammar';
+import { Token } from '@ts-c/lexer';
 import { ASTCCompilerKind, ASTCCompilerNode } from './ASTCCompilerNode';
 
 export class ASTCGotoStatement extends ASTCCompilerNode {

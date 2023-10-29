@@ -1,6 +1,5 @@
-import { Token, TokenType } from '@compiler/lexer/tokens';
-import { TokensIterator } from '@compiler/grammar/tree/TokensIterator';
-import { isEOFToken } from '@compiler/lexer/utils';
+import { Token, TokenType, isEOFToken } from '@ts-c/lexer';
+import type { TokensIterator } from '../tree/TokensIterator';
 
 /**
  * Fetch tokens until breakFn is not true

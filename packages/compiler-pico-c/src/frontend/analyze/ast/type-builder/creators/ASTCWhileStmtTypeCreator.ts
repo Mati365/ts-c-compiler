@@ -1,7 +1,4 @@
-import {
-  ASTCCompilerKind,
-  ASTCWhileStatement,
-} from '@compiler/pico-c/frontend/parser/ast';
+import { ASTCCompilerKind, ASTCWhileStatement } from 'frontend/parser/ast';
 import { ASTCTypeCreator } from './ASTCTypeCreator';
 
 export class ASTCWhileStmtTypeCreator extends ASTCTypeCreator<ASTCWhileStatement> {

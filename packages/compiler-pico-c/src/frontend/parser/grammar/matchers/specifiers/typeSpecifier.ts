@@ -1,16 +1,13 @@
-import {
-  CCOMPILER_TYPE_SPECIFIERS,
-  CTypeSpecifier,
-} from '@compiler/pico-c/constants';
+import { CCOMPILER_TYPE_SPECIFIERS, CTypeSpecifier } from '#constants';
 
-import { Token, TokenType } from '@compiler/lexer/tokens';
-import { NodeLocation } from '@compiler/grammar/tree/NodeLocation';
-import { ASTCTypeSpecifier } from '@compiler/pico-c/frontend/parser/ast';
+import { Token, TokenType } from '@ts-c/lexer';
+import { NodeLocation } from '@ts-c/grammar';
+import { ASTCTypeSpecifier } from 'frontend/parser/ast';
 import { CGrammar } from '../shared';
 
 import { enumDeclarator } from '../declarations/enumDeclator';
 import { structOrUnionSpecifier } from './structOrUnionSpecifier';
-import { SyntaxError } from '@compiler/grammar/Grammar';
+import { SyntaxError } from '@ts-c/grammar';
 
 /**
  * type_specifier

@@ -1,13 +1,10 @@
-import { TokenType } from '@compiler/lexer/shared';
+import { TokenType } from '@ts-c/lexer';
 
-import type { IRMathSingleArgInstruction } from '@compiler/pico-c/frontend/ir/instructions';
+import type { IRMathSingleArgInstruction } from 'frontend/ir/instructions';
 import type { X86CompilerInstructionFnAttrs } from '../../../constants/types';
 
 import { genInstruction, withInlineComment } from '../../../asm-utils';
-import {
-  CBackendError,
-  CBackendErrorCode,
-} from '@compiler/pico-c/backend/errors/CBackendError';
+import { CBackendError, CBackendErrorCode } from 'backend/errors/CBackendError';
 
 type MathSingleInstructionCompilerAttrs =
   X86CompilerInstructionFnAttrs<IRMathSingleArgInstruction>;

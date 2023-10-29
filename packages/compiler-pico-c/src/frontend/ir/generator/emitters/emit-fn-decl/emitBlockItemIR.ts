@@ -1,4 +1,4 @@
-import { GroupTreeVisitor } from '@compiler/grammar/tree/TreeGroupedVisitor';
+import { GroupTreeVisitor } from '@ts-c/grammar';
 import {
   ASTCAsmStatement,
   ASTCAssignmentExpression,
@@ -12,7 +12,7 @@ import {
   ASTCForStatement,
   ASTCIfStatement,
   ASTCSwitchStatement,
-} from '@compiler/pico-c/frontend/parser';
+} from 'frontend/parser';
 
 import {
   IRCommentInstruction,

@@ -1,7 +1,7 @@
 import stripAnsi from 'strip-ansi';
 
-import { stripNonPrintableCharacters, trimLines } from '@compiler/core/utils';
-import { ccompiler } from '@compiler/pico-c/ccompiler';
+import { stripNonPrintableCharacters, trimLines } from '@ts-c/core';
+import { ccompiler } from 'ccompiler';
 
 export type MatcherResult = {
   pass: boolean;

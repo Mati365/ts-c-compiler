@@ -1,11 +1,8 @@
-import { IRLoadInstruction } from '@compiler/pico-c/frontend/ir/instructions';
-import {
-  CBackendError,
-  CBackendErrorCode,
-} from '@compiler/pico-c/backend/errors/CBackendError';
+import { IRLoadInstruction } from 'frontend/ir/instructions';
+import { CBackendError, CBackendErrorCode } from 'backend/errors/CBackendError';
 
-import { isPointerLikeType } from '@compiler/pico-c/frontend/analyze';
-import { castToPointerIfArray } from '@compiler/pico-c/frontend/analyze/casts';
+import { isPointerLikeType } from 'frontend/analyze';
+import { castToPointerIfArray } from 'frontend/analyze/casts';
 import { isStackVarOwnership } from '../reg-allocator/utils';
 
 import { X86CompilerInstructionFnAttrs } from '../../constants/types';

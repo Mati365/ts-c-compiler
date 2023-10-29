@@ -1,5 +1,5 @@
-import { getBaseTypeIfPtr } from '@compiler/pico-c/frontend/analyze/types/utils';
-import { IRAllocInstruction } from '@compiler/pico-c/frontend/ir/instructions';
+import { getBaseTypeIfPtr } from 'frontend/analyze/types/utils';
+import { IRAllocInstruction } from 'frontend/ir/instructions';
 import { X86CompilerInstructionFnAttrs } from '../../constants/types';
 
 type AllocInstructionCompilerAttrs =

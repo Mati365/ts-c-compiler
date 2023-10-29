@@ -1,7 +1,4 @@
-import {
-  ASTCCompilerKind,
-  ASTCPostfixExpression,
-} from '@compiler/pico-c/frontend/parser/ast';
+import { ASTCCompilerKind, ASTCPostfixExpression } from 'frontend/parser/ast';
 import { CFunctionDeclType, isFuncDeclLikeType } from '../../../types/function';
 import {
   CTypeCheckError,

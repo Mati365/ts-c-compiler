@@ -1,6 +1,6 @@
 import * as R from 'ramda';
 
-import { X86RegName } from '@x86-toolkit/assembler';
+import { X86RegName } from '@ts-c/x86-assembler';
 
 import { createX86RegsMap, RegsMap } from '../../constants/regs';
 import { restoreInX86IntRegsMap, setAvailabilityInRegsMap } from '../utils';

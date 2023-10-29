@@ -1,4 +1,4 @@
-import { AbstractTreeVisitor } from '@compiler/grammar/tree/AbstractTreeVisitor';
+import { AbstractTreeVisitor } from '@ts-c/grammar';
 import { CScopeTree } from './CScopeTree';
 
 export class CScopeVisitor extends AbstractTreeVisitor<CScopeTree> {}

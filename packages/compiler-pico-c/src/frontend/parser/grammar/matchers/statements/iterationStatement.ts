@@ -1,6 +1,6 @@
-import { TokenType } from '@compiler/lexer/shared';
-import { NodeLocation } from '@compiler/grammar/tree/NodeLocation';
-import { CCompilerKeyword } from '@compiler/pico-c/constants';
+import { TokenType } from '@ts-c/lexer';
+import { NodeLocation } from '@ts-c/grammar';
+import { CCompilerKeyword } from '#constants';
 import { CGrammar } from '../shared';
 import {
   ASTCCompilerNode,

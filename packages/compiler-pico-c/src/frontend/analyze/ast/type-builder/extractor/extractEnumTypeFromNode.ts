@@ -1,4 +1,4 @@
-import { ASTCEnumSpecifier } from '@compiler/pico-c/frontend/parser';
+import { ASTCEnumSpecifier } from 'frontend/parser';
 import { CEnumType, CPrimitiveType } from '../../../types';
 import {
   CTypeCheckError,

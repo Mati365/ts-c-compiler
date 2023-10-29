@@ -1,6 +1,6 @@
-import { NodeLocation } from '@compiler/grammar/tree/NodeLocation';
-import { TokenType } from '@compiler/lexer/shared';
-import { CCompilerKeyword } from '@compiler/pico-c/constants';
+import { NodeLocation } from '@ts-c/grammar';
+import { TokenType } from '@ts-c/lexer';
+import { CCompilerKeyword } from '#constants';
 
 import { CGrammar } from '../../shared';
 import {

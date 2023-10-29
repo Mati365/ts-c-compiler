@@ -1,7 +1,4 @@
-import {
-  ASTCCompilerKind,
-  ASTCCastExpression,
-} from '@compiler/pico-c/frontend/parser/ast';
+import { ASTCCompilerKind, ASTCCastExpression } from 'frontend/parser/ast';
 import { ASTCTypeCreator } from './ASTCTypeCreator';
 import {
   CTypeCheckError,

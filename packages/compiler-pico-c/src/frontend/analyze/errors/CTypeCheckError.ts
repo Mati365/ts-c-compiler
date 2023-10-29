@@ -1,5 +1,5 @@
-import { CompilerError, fixme } from '@compiler/core/shared/CompilerError';
-import { TokenLocation } from '@compiler/lexer/shared';
+import { CompilerError, fixme } from '@ts-c/core';
+import { TokenLocation } from '@ts-c/lexer';
 
 export enum CTypeCheckErrorCode {
   TYPECHECK_ERROR,

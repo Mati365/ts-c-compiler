@@ -1,7 +1,7 @@
-import { asm } from '@x86-toolkit/assembler/asm';
+import { asm } from '@ts-c/x86-assembler';
 
-import { timingsToString } from '@compiler/core/utils';
-import { TableBinaryView } from '@x86-toolkit/assembler/parser/compiler/view/TableBinaryView';
+import { timingsToString } from '@ts-c/core';
+import { TableBinaryView } from '@ts-c/x86-assembler';
 
 import type { CCompilerTimings } from '../frontend/utils/createCCompilerTimings';
 import type { ASTCCompilerNode } from '../frontend/parser/ast';

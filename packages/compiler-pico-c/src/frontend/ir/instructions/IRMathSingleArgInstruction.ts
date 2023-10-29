@@ -1,6 +1,6 @@
 import chalk from 'chalk';
 
-import { CMathOperator } from '@compiler/pico-c/constants';
+import { CMathOperator } from '#constants';
 
 import { IROpcode } from '../constants';
 import { IRInstruction, IRInstructionArgs } from './IRInstruction';

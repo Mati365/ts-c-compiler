@@ -1,9 +1,6 @@
-import {
-  CAssignOperator,
-  CCOMPILER_ASSIGN_OPERATORS,
-} from '@compiler/pico-c/constants';
-import { ASTCAssignmentExpression } from '@compiler/pico-c/frontend/parser/ast';
-import { Token } from '@compiler/lexer/tokens';
+import { CAssignOperator, CCOMPILER_ASSIGN_OPERATORS } from '#constants';
+import { ASTCAssignmentExpression } from 'frontend/parser/ast';
+import { Token } from '@ts-c/lexer';
 import { CGrammar } from '../shared';
 import { unaryExpression } from './unaryExpression';
 import { conditionalExpression } from './conditionalExpression';

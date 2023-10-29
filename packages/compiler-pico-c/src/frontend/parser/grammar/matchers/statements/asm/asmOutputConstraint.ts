@@ -1,10 +1,10 @@
-import { SyntaxError } from '@compiler/grammar/Grammar';
-import { NodeLocation } from '@compiler/grammar/tree/NodeLocation';
-import { TokenType } from '@compiler/lexer/shared';
+import { SyntaxError } from '@ts-c/grammar';
+import { NodeLocation } from '@ts-c/grammar';
+import { TokenType } from '@ts-c/lexer';
 import {
   AsmOutputConstraintFlags,
   ASTCAsmStmtOutputConstraint,
-} from '@compiler/pico-c/frontend/parser/ast';
+} from 'frontend/parser/ast';
 
 import { CGrammar } from '../../shared';
 

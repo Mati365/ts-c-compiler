@@ -1,5 +1,5 @@
-import type { Grammar } from '@compiler/grammar/Grammar';
-import type { CCompilerIdentifier } from '@compiler/pico-c/constants';
+import type { Grammar } from '@ts-c/grammar';
+import type { CCompilerIdentifier } from '#constants';
 import type {
   ASTCStmt,
   ASTCUnaryExpression,

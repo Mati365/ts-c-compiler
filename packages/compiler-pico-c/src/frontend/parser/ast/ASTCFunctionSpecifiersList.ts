@@ -1,11 +1,11 @@
 import * as R from 'ramda';
 
-import { dumpAttributesToString } from '@compiler/core/utils';
+import { dumpAttributesToString } from '@ts-c/core';
 
-import { IsEmpty } from '@compiler/core/interfaces/IsEmpty';
-import { NodeLocation } from '@compiler/grammar/tree/NodeLocation';
+import { IsEmpty } from '@ts-c/core';
+import { NodeLocation } from '@ts-c/grammar';
 
-import { CFunctionSpecifier } from '@compiler/pico-c/constants';
+import { CFunctionSpecifier } from '#constants';
 import { ASTCCompilerKind, ASTCCompilerNode } from './ASTCCompilerNode';
 
 export class ASTCFunctionSpecifiersList

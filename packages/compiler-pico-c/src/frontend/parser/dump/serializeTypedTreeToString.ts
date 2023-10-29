@@ -1,5 +1,5 @@
-import { dumpAttributesToString } from '@compiler/core/utils';
-import { TreePrintVisitor } from '@compiler/grammar/tree/TreePrintVisitor';
+import { dumpAttributesToString } from '@ts-c/core';
+import { TreePrintVisitor } from '@ts-c/grammar';
 
 import { ASTCCompilerNode } from '../ast';
 import { isNewScopeASTNode } from '../../analyze/interfaces';

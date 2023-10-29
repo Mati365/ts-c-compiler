@@ -1,5 +1,5 @@
-import { Result, ok, err } from '@compiler/core/monads/Result';
-import { Token } from '@compiler/lexer/tokens';
+import { Result, ok, err } from '@ts-c/core';
+import { Token } from '@ts-c/lexer';
 import { ASTCTreeNode } from '../ast';
 import { CGrammarError, CGrammarErrorCode } from './errors/CGrammarError';
 import { createCCompilerGrammar } from './grammar';

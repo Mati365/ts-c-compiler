@@ -1,7 +1,4 @@
-import {
-  CCOMPILER_TYPE_QUALIFIERS,
-  CTypeQualifier,
-} from '@compiler/pico-c/constants';
+import { CCOMPILER_TYPE_QUALIFIERS, CTypeQualifier } from '#constants';
 
 import { CGrammar } from '../shared';
 

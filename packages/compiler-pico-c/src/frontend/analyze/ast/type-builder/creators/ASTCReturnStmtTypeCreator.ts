@@ -1,7 +1,4 @@
-import {
-  ASTCCompilerKind,
-  ASTCReturnStatement,
-} from '@compiler/pico-c/frontend/parser/ast';
+import { ASTCCompilerKind, ASTCReturnStatement } from 'frontend/parser/ast';
 import { CType, CPrimitiveType } from '../../../types';
 import {
   CTypeCheckError,

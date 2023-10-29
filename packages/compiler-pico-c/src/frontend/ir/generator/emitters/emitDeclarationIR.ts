@@ -1,9 +1,9 @@
-import { GroupTreeVisitor } from '@compiler/grammar/tree/TreeGroupedVisitor';
+import { GroupTreeVisitor } from '@ts-c/grammar';
 import {
   ASTCCompilerKind,
   ASTCCompilerNode,
   ASTCDirectDeclarator,
-} from '@compiler/pico-c/frontend/parser';
+} from 'frontend/parser';
 
 import { emitVariableInitializerIR } from './emit-initializer/emitVariableInitializerIR';
 import {

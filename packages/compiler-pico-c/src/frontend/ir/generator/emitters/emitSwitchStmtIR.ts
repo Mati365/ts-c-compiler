@@ -1,12 +1,12 @@
-import { GroupTreeVisitor } from '@compiler/grammar/tree/TreeGroupedVisitor';
-import { TokenType } from '@compiler/lexer/shared';
+import { GroupTreeVisitor } from '@ts-c/grammar';
+import { TokenType } from '@ts-c/lexer';
 import {
   ASTCCompilerKind,
   type ASTCDefaultCaseStatement,
   type ASTCCaseStatement,
   type ASTCCompilerNode,
   type ASTCSwitchStatement,
-} from '@compiler/pico-c/frontend/parser';
+} from 'frontend/parser';
 
 import {
   IRBrInstruction,

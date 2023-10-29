@@ -1,4 +1,4 @@
-import { TokenType } from '../tokens';
+import { TokenType } from '../shared/TokenTypes';
 
 /**
  * Check for operators >, <, <=, >=, ==

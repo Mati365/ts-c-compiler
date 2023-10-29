@@ -1,7 +1,4 @@
-import {
-  ASTCCompilerKind,
-  ASTCDoWhileStatement,
-} from '@compiler/pico-c/frontend/parser/ast';
+import { ASTCCompilerKind, ASTCDoWhileStatement } from 'frontend/parser/ast';
 import { ASTCTypeCreator } from './ASTCTypeCreator';
 
 export class ASTCDoWhileStmtTypeCreator extends ASTCTypeCreator<ASTCDoWhileStatement> {

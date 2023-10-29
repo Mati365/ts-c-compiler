@@ -1,4 +1,4 @@
-import { ASTCStructSpecifier } from '@compiler/pico-c/frontend/parser';
+import { ASTCStructSpecifier } from 'frontend/parser';
 import {
   CTypeCheckError,
   CTypeCheckErrorCode,

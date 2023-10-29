@@ -1,8 +1,8 @@
 import * as R from 'ramda';
 
-import { NodeLocation } from '@compiler/grammar/tree/NodeLocation';
-import { TokenType } from '@compiler/lexer/tokens';
-import { CCompilerKeyword } from '@compiler/pico-c/constants';
+import { NodeLocation } from '@ts-c/grammar';
+import { TokenType } from '@ts-c/lexer';
+import { CCompilerKeyword } from '#constants';
 
 import { constantExpression } from '../expressions/constantExpression';
 

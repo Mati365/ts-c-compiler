@@ -1,6 +1,6 @@
 import * as R from 'ramda';
 
-import { SyntaxError } from '@compiler/grammar/Grammar';
+import { SyntaxError } from '@ts-c/grammar';
 import { ASTCStructDeclaration, ASTCStructDeclarationList } from '../../../ast';
 import { CGrammar } from '../shared';
 

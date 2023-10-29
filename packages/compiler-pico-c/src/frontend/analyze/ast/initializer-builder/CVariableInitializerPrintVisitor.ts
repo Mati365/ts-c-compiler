@@ -1,4 +1,4 @@
-import { isTreeNode } from '@compiler/grammar/tree/TreeNode';
+import { isTreeNode } from '@ts-c/grammar';
 
 import { CVariableInitializerVisitor } from './CVariableInitializerVisitor';
 import {

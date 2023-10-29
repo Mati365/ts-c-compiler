@@ -1,8 +1,4 @@
-import {
-  CArrayType,
-  CPointerType,
-  CVariable,
-} from '@compiler/pico-c/frontend/analyze';
+import { CArrayType, CPointerType, CVariable } from 'frontend/analyze';
 
 import { IRVariable } from '../../../variables';
 import {

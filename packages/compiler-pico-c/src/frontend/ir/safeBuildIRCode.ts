@@ -1,4 +1,4 @@
-import { Result, err, ok } from '@compiler/core/monads';
+import { Result, err, ok } from '@ts-c/core';
 
 import { CScopeTree } from '../analyze';
 import { IRGeneratorConfig } from './constants';

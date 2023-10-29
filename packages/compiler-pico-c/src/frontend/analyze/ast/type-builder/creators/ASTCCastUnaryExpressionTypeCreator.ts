@@ -1,8 +1,5 @@
-import { CUnaryCastOperator } from '@compiler/pico-c/constants';
-import {
-  ASTCCompilerKind,
-  ASTCCastUnaryExpression,
-} from '@compiler/pico-c/frontend/parser/ast';
+import { CUnaryCastOperator } from '#constants';
+import { ASTCCompilerKind, ASTCCastUnaryExpression } from 'frontend/parser/ast';
 
 import { isImplicitPtrType } from '../../../types/utils';
 

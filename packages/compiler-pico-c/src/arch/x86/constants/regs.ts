@@ -1,10 +1,7 @@
-import { CCompilerArch } from '@compiler/pico-c/constants';
-import { X86IntBitsMode, X86RegName } from '@x86-toolkit/assembler';
-import { COMPILER_REGISTERS_SET } from '@x86-toolkit/assembler/constants';
-import {
-  X87StackRegName,
-  X87_STACK_REGISTERS,
-} from '@x86-toolkit/cpu/x87/X87Regs';
+import { CCompilerArch } from '#constants';
+import { X86IntBitsMode, X86RegName } from '@ts-c/x86-assembler';
+import { COMPILER_REGISTERS_SET } from '@ts-c/x86-assembler';
+import { X87StackRegName, X87_STACK_REGISTERS } from '@ts-c/x86-assembler';
 
 export type X86RegsParts = {
   size: number;

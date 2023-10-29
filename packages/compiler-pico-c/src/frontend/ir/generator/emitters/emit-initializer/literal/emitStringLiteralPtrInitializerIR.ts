@@ -2,9 +2,9 @@ import {
   CArrayType,
   CPointerType,
   CVariableInitializerTree,
-} from '@compiler/pico-c/frontend/analyze';
+} from 'frontend/analyze';
 
-import { IRLabel, IRVariable } from '@compiler/pico-c/frontend/ir/variables';
+import { IRLabel, IRVariable } from 'frontend/ir/variables';
 
 import {
   IRDefDataInstruction,

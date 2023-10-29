@@ -1,4 +1,4 @@
-import { CCompilerArch } from '@compiler/pico-c/constants';
+import { CCompilerArch } from '#constants';
 import { CType, CTypeDescriptor } from './CType';
 
 export enum CFlag {

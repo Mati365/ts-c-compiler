@@ -1,6 +1,7 @@
-import { assertUnreachable } from '@compiler/core/utils';
-import { CCompilerArch, CCompilerConfig } from '@compiler/pico-c/constants';
-import { IRBlockIterator } from '@compiler/pico-c/frontend/ir/iterator/IRBlockIterator';
+import { assertUnreachable } from '@ts-c/core';
+
+import { CCompilerArch, CCompilerConfig } from '../../../constants';
+import type { IRBlockIterator } from '../../../frontend/ir/iterator';
 
 import { X86StackFrame } from './X86StackFrame';
 import { X86BasicRegAllocator } from './reg-allocator';
@@ -41,11 +42,8 @@ export class X86Allocator {
     this._stackFrame = new X86StackFrame(config);
 
     switch (arch) {
-      case CCompilerArch.X86_16: {
-        const content = contentFn();
-
-        return [...this.genFnTopStackFrame(), ...content.asm];
-      }
+      case CCompilerArch.X86_16:
+        return [...this.genFnTopStackFrame(), ...contentFn().asm];
 
       default:
         assertUnreachable(arch);

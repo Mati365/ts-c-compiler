@@ -1,5 +1,5 @@
-import { NodeLocation } from '@compiler/grammar/tree/NodeLocation';
-import { ASTCAsmStmtInputOperand } from '@compiler/pico-c/frontend/parser/ast';
+import { NodeLocation } from '@ts-c/grammar';
+import { ASTCAsmStmtInputOperand } from 'frontend/parser/ast';
 import { expression } from '../../expressions/expression';
 
 import { CGrammar } from '../../shared';

@@ -1,5 +1,5 @@
-import type { CCompilerArch } from '@compiler/pico-c/constants';
-import type { IRDefDataInstruction } from '@compiler/pico-c/frontend/ir/instructions';
+import type { CCompilerArch } from '#constants';
+import type { IRDefDataInstruction } from 'frontend/ir/instructions';
 import type { X86LabelsResolver } from '../../X86LabelsResolver';
 
 import { compileArrayInitializerDefAsm } from './compileArrayInitializerDef';

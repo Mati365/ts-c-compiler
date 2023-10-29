@@ -1,17 +1,14 @@
-import { CCompilerArch, CCompilerConfig } from '@compiler/pico-c/constants';
-import { isPointerLikeType } from '@compiler/pico-c/frontend/analyze';
-import { assertUnreachable } from '@compiler/core/utils';
+import { CCompilerArch, CCompilerConfig } from '#constants';
+import { isPointerLikeType } from 'frontend/analyze';
+import { assertUnreachable } from '@ts-c/core';
 
 import {
   IRInstructionTypedArg,
   IRVariable,
   isIRVariable,
-} from '@compiler/pico-c/frontend/ir/variables';
+} from 'frontend/ir/variables';
 
-import {
-  CBackendError,
-  CBackendErrorCode,
-} from '@compiler/pico-c/backend/errors/CBackendError';
+import { CBackendError, CBackendErrorCode } from 'backend/errors/CBackendError';
 
 import { genMemAddress } from '../asm-utils';
 

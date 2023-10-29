@@ -1,7 +1,7 @@
 import {
   CCOMPILER_STORAGE_CLASS_SPECIFIERS,
   CStorageClassSpecifier,
-} from '@compiler/pico-c/constants';
+} from '#constants';
 
 import { CGrammar } from '../shared';
 

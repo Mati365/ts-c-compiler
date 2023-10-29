@@ -1,4 +1,4 @@
-import { IRLabelInstruction } from '@compiler/pico-c/frontend/ir/instructions';
+import { IRLabelInstruction } from 'frontend/ir/instructions';
 import { X86CompilerInstructionFnAttrs } from '../../constants/types';
 import { genLabel } from '../../asm-utils';
 

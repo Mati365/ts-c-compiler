@@ -1,7 +1,4 @@
-import {
-  ASTCDeclarationSpecifier,
-  ASTCDeclarator,
-} from '@compiler/pico-c/frontend/parser/ast';
+import { ASTCDeclarationSpecifier, ASTCDeclarator } from 'frontend/parser/ast';
 
 import { CType } from '../../../types/CType';
 import { CNamedTypedEntry } from '../../../scope/variables/CNamedTypedEntry';

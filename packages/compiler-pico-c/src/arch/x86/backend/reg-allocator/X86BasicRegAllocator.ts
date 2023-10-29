@@ -1,21 +1,18 @@
-import { BINARY_MASKS } from '@compiler/core/constants';
+import { BINARY_MASKS } from '@ts-c/core';
 
-import { hasFlag } from '@compiler/core/utils';
-import {
-  CBackendError,
-  CBackendErrorCode,
-} from '@compiler/pico-c/backend/errors/CBackendError';
+import { hasFlag } from '@ts-c/core';
+import { CBackendError, CBackendErrorCode } from 'backend/errors/CBackendError';
 
 import {
   IRInstructionTypedArg,
   IRVariable,
   isIRConstant,
   isIRVariable,
-} from '@compiler/pico-c/frontend/ir/variables';
+} from 'frontend/ir/variables';
 
-import { isStructLikeType } from '@compiler/pico-c/frontend/analyze';
+import { isStructLikeType } from 'frontend/analyze';
 
-import { getByteSizeArgPrefixName } from '@x86-toolkit/assembler/parser/utils';
+import { getByteSizeArgPrefixName } from '@ts-c/x86-assembler';
 import {
   genInstruction,
   genMemAddress,
@@ -29,7 +26,7 @@ import {
   X86RegLookupQuery,
 } from '../utils';
 
-import { X86RegName } from '@x86-toolkit/assembler';
+import { X86RegName } from '@ts-c/x86-assembler';
 import { X86Allocator } from '../X86Allocator';
 import { X86RegOwnershipTracker } from './X86RegOwnershipTracker';
 import {
@@ -39,7 +36,7 @@ import {
   isStackVarOwnership,
 } from './utils';
 import { getX86RegByteSize } from '../../constants/regs';
-import { castToPointerIfArray } from '@compiler/pico-c/frontend/analyze/casts';
+import { castToPointerIfArray } from 'frontend/analyze/casts';
 
 export type IRArgAllocatorResult<V extends string | number = string | number> =
   {

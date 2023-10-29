@@ -1,10 +1,10 @@
-import { GroupTreeVisitor } from '@compiler/grammar/tree/TreeGroupedVisitor';
+import { GroupTreeVisitor } from '@ts-c/grammar';
 import {
   ASTCCompilerKind,
   ASTCCompilerNode,
   ASTCExpression,
   ASTCExpressionStatement,
-} from '@compiler/pico-c/frontend/parser';
+} from 'frontend/parser';
 
 import { emitExpressionIR } from './emit-expr';
 import {

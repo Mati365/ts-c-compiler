@@ -1,7 +1,4 @@
-import {
-  X86SegmentRegName,
-  InstructionArgSizeName,
-} from '@x86-toolkit/assembler';
+import { X86SegmentRegName, InstructionArgSizeName } from '@ts-c/x86-assembler';
 
 export type GenMemAddressConfig = {
   size?: InstructionArgSizeName;

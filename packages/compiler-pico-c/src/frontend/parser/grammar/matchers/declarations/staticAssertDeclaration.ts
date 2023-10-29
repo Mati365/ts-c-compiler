@@ -1,5 +1,5 @@
-import { TokenType } from '@compiler/lexer/shared';
-import { CCompilerKeyword } from '@compiler/pico-c/constants';
+import { TokenType } from '@ts-c/lexer';
+import { CCompilerKeyword } from '#constants';
 import { ASTCStaticAssertDeclaration } from '../../../ast/ASTCStaticAssertDeclaration';
 import { CGrammar } from '../shared';
 

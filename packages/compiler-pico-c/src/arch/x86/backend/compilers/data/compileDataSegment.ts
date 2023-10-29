@@ -1,7 +1,7 @@
-import { IROpcode } from '@compiler/pico-c/frontend/ir/constants';
-import { IRDefDataInstruction } from '@compiler/pico-c/frontend/ir/instructions';
-import { IRDataSegmentBuilderResult } from '@compiler/pico-c/frontend/ir/generator';
-import { CCompilerArch } from '@compiler/pico-c/constants';
+import { IROpcode } from 'frontend/ir/constants';
+import { IRDefDataInstruction } from 'frontend/ir/instructions';
+import { IRDataSegmentBuilderResult } from 'frontend/ir/generator';
+import { CCompilerArch } from '#constants';
 
 import { X86LabelsResolver } from '../../X86LabelsResolver';
 import { compileDefDataInstruction } from './compileDefDataInstruction';

@@ -1,4 +1,4 @@
-import { CRelOperator } from '@compiler/pico-c/constants';
+import { CRelOperator } from '#constants';
 
 import { IROpcode } from '../constants';
 import { IROpInstruction } from './IROpInstruction';

@@ -1,7 +1,7 @@
 import {
   ASTCCompilerKind,
   ASTCAssignmentExpression,
-} from '@compiler/pico-c/frontend/parser/ast';
+} from 'frontend/parser/ast';
 
 import { checkLeftTypeOverlapping } from '../../../checker';
 import {

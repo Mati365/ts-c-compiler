@@ -1,10 +1,7 @@
-import { ASTCAssignmentExpression } from '@compiler/pico-c/frontend/parser';
-import {
-  CAssignOperator,
-  CCOMPILER_ASSIGN_MATH_OPERATORS,
-} from '@compiler/pico-c/constants';
+import { ASTCAssignmentExpression } from 'frontend/parser';
+import { CAssignOperator, CCOMPILER_ASSIGN_MATH_OPERATORS } from '#constants';
 
-import { getBaseTypeIfPtr } from '@compiler/pico-c/frontend/analyze/types/utils';
+import { getBaseTypeIfPtr } from 'frontend/analyze/types/utils';
 
 import {
   IRLoadInstruction,

@@ -1,4 +1,0 @@
-{
-  "name": "@x86-toolkit/assembler",
-  "main": "src/asm.ts"
-}

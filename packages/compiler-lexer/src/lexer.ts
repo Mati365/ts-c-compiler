@@ -10,13 +10,8 @@ import {
 } from './utils/matchCharacter';
 
 import { LexerError, LexerErrorCode } from './shared/LexerError';
-import {
-  Token,
-  TokenType,
-  TokenLocation,
-  TokenKind,
-  IdentifierToken,
-} from './tokens';
+import { TokenType, TokenLocation, TokenKind } from './shared';
+import { Token, IdentifierToken } from './tokens';
 
 export type IdentifiersMap = Record<string, number | string>;
 

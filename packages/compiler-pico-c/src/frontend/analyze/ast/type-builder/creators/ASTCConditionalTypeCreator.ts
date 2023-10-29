@@ -1,7 +1,7 @@
 import {
   ASTCCompilerKind,
   ASTCConditionalExpression,
-} from '@compiler/pico-c/frontend/parser/ast';
+} from 'frontend/parser/ast';
 
 import { ASTCTypeCreator } from './ASTCTypeCreator';
 

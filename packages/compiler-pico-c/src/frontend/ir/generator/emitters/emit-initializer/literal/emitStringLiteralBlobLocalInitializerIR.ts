@@ -1,6 +1,6 @@
-import { CPrimitiveType } from '@compiler/pico-c/frontend/analyze';
-import { IRStoreInstruction } from '@compiler/pico-c/frontend/ir/instructions';
-import { IRConstant } from '@compiler/pico-c/frontend/ir/variables';
+import { CPrimitiveType } from 'frontend/analyze';
+import { IRStoreInstruction } from 'frontend/ir/instructions';
+import { IRConstant } from 'frontend/ir/variables';
 
 import { createBlankExprResult, type IREmitterStmtResult } from '../../types';
 import { StringPtrInitializerLocalIREmitAttrs } from './emitStringLiteralPtrInitializerIR';

@@ -1,4 +1,4 @@
-import { CCompilerArch } from '@compiler/pico-c/constants';
+import { CCompilerArch } from '#constants';
 
 export type CTypeCheckConfig = {
   arch: CCompilerArch;

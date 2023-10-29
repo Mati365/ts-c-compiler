@@ -1,7 +1,6 @@
 import * as R from 'ramda';
 
-import { X86RegName } from '@x86-toolkit/assembler';
-import { X87StackRegName } from '@x86-toolkit/cpu/x87/X87Regs';
+import { X86RegName, X87StackRegName } from '@ts-c/x86-assembler';
 import { RegsMap, X86IntRegTree } from '../../constants/regs';
 
 import {

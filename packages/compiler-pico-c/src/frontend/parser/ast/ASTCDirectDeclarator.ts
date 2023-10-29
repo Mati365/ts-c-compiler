@@ -1,9 +1,9 @@
-import { walkOverFields } from '@compiler/grammar/decorators/walkOverFields';
-import { dumpAttributesToString } from '@compiler/core/utils';
+import { walkOverFields } from '@ts-c/grammar';
+import { dumpAttributesToString } from '@ts-c/core';
 
-import { IsEmpty } from '@compiler/core/interfaces/IsEmpty';
-import { Token } from '@compiler/lexer/tokens';
-import { NodeLocation } from '@compiler/grammar/tree/NodeLocation';
+import { IsEmpty } from '@ts-c/core';
+import { Token } from '@ts-c/lexer';
+import { NodeLocation } from '@ts-c/grammar';
 
 import { ASTCCompilerKind, ASTCCompilerNode } from './ASTCCompilerNode';
 import { ASTCIdentifiersList } from './ASTCIdentifiersList';

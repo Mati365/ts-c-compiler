@@ -1,6 +1,6 @@
-import { NodeLocation } from '@compiler/grammar/tree/NodeLocation';
+import { NodeLocation } from '@ts-c/grammar';
 
-import { CCompilerKeyword } from '@compiler/pico-c/constants';
+import { CCompilerKeyword } from '#constants';
 import { CGrammar } from '../shared';
 import {
   ASTCCompilerNode,

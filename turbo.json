@@ -2,12 +2,11 @@
   "$schema": "https://turbo.build/schema.json",
   "pipeline": {
     "clean": {
-      "cache": false,
       "dependsOn": [],
       "outputs": []
     },
     "build": {
-      "dependsOn": ["^build", "clean"],
+      "dependsOn": ["^build", "^clean"],
       "outputs": ["dist/**"]
     },
     "dev": {

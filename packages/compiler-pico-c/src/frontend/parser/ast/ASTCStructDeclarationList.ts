@@ -1,4 +1,4 @@
-import { NodeLocation } from '@compiler/grammar/tree/NodeLocation';
+import { NodeLocation } from '@ts-c/grammar';
 import { ASTCStructDeclaration } from './ASTCStructDeclaration';
 import { ASTCCompilerKind, ASTCCompilerNode } from './ASTCCompilerNode';
 

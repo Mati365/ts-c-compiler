@@ -1,8 +1,5 @@
-import {
-  CBackendError,
-  CBackendErrorCode,
-} from '@compiler/pico-c/backend/errors/CBackendError';
-import { IRPhiInstruction } from '@compiler/pico-c/frontend/ir/instructions';
+import { CBackendError, CBackendErrorCode } from 'backend/errors/CBackendError';
+import { IRPhiInstruction } from 'frontend/ir/instructions';
 
 import { X86CompilerInstructionFnAttrs } from '../../constants/types';
 import { IRRegOwnership, isRegOwnership } from '../reg-allocator/utils';

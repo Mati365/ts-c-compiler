@@ -1,7 +1,7 @@
 import * as R from 'ramda';
 
 import { ccompiler, CCompilerConfig } from '@compiler/pico-c';
-export * from '@compiler/pico-c/frontend/analyze';
+export * from 'frontend/analyze';
 
 export type MatcherResult = {
   pass: boolean;

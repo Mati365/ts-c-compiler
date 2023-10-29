@@ -2,9 +2,9 @@ import {
   CPrimitiveType,
   isFuncDeclLikeType,
   isPointerLikeType,
-} from '@compiler/pico-c/frontend/analyze';
-import { ASTCPostfixExpression } from '@compiler/pico-c/frontend/parser';
-import { TokenType } from '@compiler/lexer/shared';
+} from 'frontend/analyze';
+import { ASTCPostfixExpression } from 'frontend/parser';
+import { TokenType } from '@ts-c/lexer';
 
 import { IRError, IRErrorCode } from '../../../errors/IRError';
 import {

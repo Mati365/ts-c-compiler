@@ -1,12 +1,12 @@
-import { IRBlockIterator } from '@compiler/pico-c/frontend/ir/iterator/IRBlockIterator';
-import { CCompilerArch } from '@compiler/pico-c/constants';
-import { CAbstractArchBackend } from '@compiler/pico-c/backend/abstract/CAbstractArchBackend';
-import { CBackendCompilerResult } from '@compiler/pico-c/backend/constants/types';
+import { IRBlockIterator } from 'frontend/ir/iterator/IRBlockIterator';
+import { CCompilerArch } from '#constants';
+import { CAbstractArchBackend } from 'backend/abstract/CAbstractArchBackend';
+import { CBackendCompilerResult } from 'backend/constants/types';
 
 import {
   IRScopeGeneratorResult,
   IRFlatCodeSegmentBuilderResult,
-} from '@compiler/pico-c/frontend/ir/generator';
+} from 'frontend/ir/generator';
 
 import { X86Allocator } from './X86Allocator';
 import { X86BackendCompilerContext } from '../constants/types';

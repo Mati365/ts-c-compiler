@@ -1,8 +1,5 @@
-import { TokenType } from '@compiler/lexer/shared';
-import {
-  ASTCCompilerKind,
-  ASTCPrimaryExpression,
-} from '@compiler/pico-c/frontend/parser/ast';
+import { TokenType } from '@ts-c/lexer';
+import { ASTCCompilerKind, ASTCPrimaryExpression } from 'frontend/parser/ast';
 
 import {
   CTypeCheckError,

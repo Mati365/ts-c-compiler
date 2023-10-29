@@ -1,6 +1,6 @@
-import { NodeLocation } from '@compiler/grammar/tree/NodeLocation';
-import { TokenKind, TokenType } from '@compiler/lexer/shared';
-import { ASTCAsmClobberOperand } from '@compiler/pico-c/frontend/parser/ast';
+import { NodeLocation } from '@ts-c/grammar';
+import { TokenKind, TokenType } from '@ts-c/lexer';
+import { ASTCAsmClobberOperand } from 'frontend/parser/ast';
 
 import { CGrammar } from '../../shared';
 

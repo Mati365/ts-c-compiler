@@ -1,4 +1,4 @@
-import { TokenType } from '@compiler/lexer/shared';
+import { TokenType } from '@ts-c/lexer';
 import { CGrammar } from '../shared';
 import { CReducePostfixOperatorsVisitor } from '../utils/CReducePostfixOperatorVisitor';
 import { ASTCTreeNode } from '../../../ast';

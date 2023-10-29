@@ -1,7 +1,4 @@
-import {
-  CCOMPILER_FUNCTION_SPECIFIERS,
-  CFunctionSpecifier,
-} from '@compiler/pico-c/constants';
+import { CCOMPILER_FUNCTION_SPECIFIERS, CFunctionSpecifier } from '#constants';
 
 import { CGrammar } from '../shared';
 

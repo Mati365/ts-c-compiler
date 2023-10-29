@@ -1,5 +1,5 @@
-import { NodeLocation } from '@compiler/grammar/tree/NodeLocation';
-import { ASTCPointer } from '@compiler/pico-c/frontend/parser/ast';
+import { NodeLocation } from '@ts-c/grammar';
+import { ASTCPointer } from 'frontend/parser/ast';
 import { CGrammar } from '../shared';
 
 import { typeQualifiers } from '../specifiers/typeQualifiers';

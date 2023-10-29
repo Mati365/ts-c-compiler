@@ -1,11 +1,8 @@
-import {
-  CBackendError,
-  CBackendErrorCode,
-} from '@compiler/pico-c/backend/errors/CBackendError';
+import { CBackendError, CBackendErrorCode } from 'backend/errors/CBackendError';
 
-import { isPointerLikeType } from '@compiler/pico-c/frontend/analyze';
-import { IRVariable } from '@compiler/pico-c/frontend/ir/variables';
-import { getByteSizeArgPrefixName } from '@x86-toolkit/assembler/parser/utils';
+import { isPointerLikeType } from 'frontend/analyze';
+import { IRVariable } from 'frontend/ir/variables';
+import { getByteSizeArgPrefixName } from '@ts-c/x86-assembler';
 
 import { genComment, genInstruction, genMemAddress } from '../../../asm-utils';
 import { X86CompilerFnAttrs } from '../../../constants/types';

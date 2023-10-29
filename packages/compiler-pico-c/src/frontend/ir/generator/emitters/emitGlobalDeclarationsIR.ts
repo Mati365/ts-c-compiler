@@ -2,7 +2,7 @@ import {
   CPrimitiveType,
   CScopeTree,
   CVariableInitializerTree,
-} from '@compiler/pico-c/frontend/analyze';
+} from 'frontend/analyze';
 
 import { IRDefDataInstruction, type IRInstruction } from '../../instructions';
 import { checkIfVirtualGlobalArrayPtr } from '../../utils';

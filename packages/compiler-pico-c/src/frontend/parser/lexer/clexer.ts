@@ -1,19 +1,15 @@
-import { CCOMPILER_IDENTIFIERS_MAP } from '@compiler/pico-c/constants';
+import { CCOMPILER_IDENTIFIERS_MAP } from '#constants';
 
-import {
-  FloatNumberToken,
-  NumberToken,
-  TokenType,
-} from '@compiler/lexer/tokens';
+import { FloatNumberToken, NumberToken, TokenType } from '@ts-c/lexer';
 
 import {
   LexerConfig,
   TokenParsersMap,
   TokenTerminalCharactersMap,
   TERMINAL_CHARACTERS,
-} from '@compiler/lexer/lexer';
+} from '@ts-c/lexer';
 
-import { safeResultLexer } from '@compiler/lexer/safeResultLexer';
+import { safeResultLexer } from '@ts-c/lexer';
 import { cComentParser, cMergeNumbersTokens } from './parsers';
 
 export const CCOMPILER_TERMINAL_CHARACTERS: TokenTerminalCharactersMap = {

@@ -1,7 +1,4 @@
-import {
-  CPointerType,
-  CPrimitiveType,
-} from '@compiler/pico-c/frontend/analyze';
+import { CPointerType, CPrimitiveType } from 'frontend/analyze';
 
 import {
   IRInstruction,

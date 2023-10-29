@@ -1,9 +1,6 @@
-import { NodeLocation } from '@compiler/grammar/tree/NodeLocation';
-import { TokenType } from '@compiler/lexer/shared';
-import {
-  ASTCInitDeclarator,
-  ASTCInitializer,
-} from '@compiler/pico-c/frontend/parser/ast';
+import { NodeLocation } from '@ts-c/grammar';
+import { TokenType } from '@ts-c/lexer';
+import { ASTCInitDeclarator, ASTCInitializer } from 'frontend/parser/ast';
 import { CGrammar } from '../shared';
 import { declarator } from './declarator';
 import { initializer } from './initializer';

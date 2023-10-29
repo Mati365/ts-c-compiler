@@ -1,7 +1,7 @@
-import { IRAssignInstruction } from '@compiler/pico-c/frontend/ir/instructions';
+import { IRAssignInstruction } from 'frontend/ir/instructions';
 import { X86CompilerInstructionFnAttrs } from '../../constants/types';
 import { genInstruction, withInlineComment } from '../../asm-utils';
-import { isIRConstant } from '@compiler/pico-c/frontend/ir/variables';
+import { isIRConstant } from 'frontend/ir/variables';
 
 type AssignInstructionCompilerAttrs =
   X86CompilerInstructionFnAttrs<IRAssignInstruction>;

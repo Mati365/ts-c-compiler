@@ -1,9 +1,9 @@
-import { NodeLocation } from '@compiler/grammar/tree/NodeLocation';
+import { NodeLocation } from '@ts-c/grammar';
 
 import {
   CCOMPILER_STRUCT_LIKE_SPECIFIERS,
   CStructLikeSpecifiers,
-} from '@compiler/pico-c/constants';
+} from '#constants';
 
 import {
   ASTCStructDeclarationList,

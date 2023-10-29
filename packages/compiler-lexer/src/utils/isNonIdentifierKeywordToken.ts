@@ -1,4 +1,4 @@
-import { Token } from '../tokens/Token';
+import type { Token } from '../tokens/Token';
 import { TokenType } from '../shared/TokenTypes';
 
 export function isNonIdentifierKeywordToken(token: Token) {

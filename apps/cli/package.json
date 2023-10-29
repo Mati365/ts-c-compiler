@@ -12,6 +12,9 @@
     "lint": "npx eslint src/ -c ./.eslintrc.yml",
     "publish": "yarn build:production && npx changeset && npx changeset version && npx changeset publish"
   },
+  "dependencies": {
+    "@ts-c/compiler": "*"
+  },
   "bin": {
     "ts-c": "dist/bin/cli.js"
   },

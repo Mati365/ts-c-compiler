@@ -1,13 +1,13 @@
 import * as R from 'ramda';
 
-import { CFunctionCallConvention } from '@compiler/pico-c/constants';
+import { CFunctionCallConvention } from '#constants';
 import {
   ASTCAbstractDeclarator,
   ASTCCompilerKind,
   ASTCDeclarator,
   ASTCDirectDeclarator,
   ASTCDirectDeclaratorFnExpression,
-} from '@compiler/pico-c/frontend/parser/ast';
+} from 'frontend/parser/ast';
 
 import type { TypeExtractorFns } from '../constants/types';
 import { evalConstantExpression } from '../../expression-eval';

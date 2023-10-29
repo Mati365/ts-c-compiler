@@ -1,8 +1,5 @@
-import {
-  numberByteSize,
-  roundToPowerOfTwo,
-} from '@compiler/core/utils/numberByteSize';
-import { parseNumberToken } from '@compiler/lexer/utils/parseNumberToken';
+import { numberByteSize, roundToPowerOfTwo } from '@ts-c/core';
+import { parseNumberToken } from '../../utils';
 
 import { TokenType, TokenLocation } from '../../shared';
 import { Token } from '../Token';
@@ -40,6 +37,7 @@ export class NumberToken<O = any> extends Token<NumberTokenValue, O> {
 
   static parse(token: string, loc: TokenLocation) {
     const numberInfo = parseNumberToken(token);
+
     if (numberInfo !== null) {
       return new NumberToken(
         token,

@@ -1,4 +1,4 @@
-import { TokenType } from '@compiler/lexer/tokens';
+import { TokenType } from '@ts-c/lexer';
 import { BinaryOpNode, TreeNode } from '../tree/TreeNode';
 import { Grammar } from '../Grammar';
 

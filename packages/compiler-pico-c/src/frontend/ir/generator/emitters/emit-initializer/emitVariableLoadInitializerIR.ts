@@ -1,10 +1,10 @@
 import * as R from 'ramda';
 
-import { isCompilerTreeNode } from '@compiler/pico-c/frontend/parser';
+import { isCompilerTreeNode } from 'frontend/parser';
 import {
   CVariableInitializerTree,
   isInitializerTreeValue,
-} from '@compiler/pico-c/frontend/analyze';
+} from 'frontend/analyze';
 
 import {
   appendStmtResults,

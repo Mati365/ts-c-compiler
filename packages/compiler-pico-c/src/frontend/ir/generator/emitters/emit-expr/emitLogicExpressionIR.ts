@@ -1,4 +1,4 @@
-import { ASTCCompilerNode } from '@compiler/pico-c/frontend/parser';
+import { ASTCCompilerNode } from 'frontend/parser';
 
 import { IREmitterContextAttrs } from '../types';
 import { BinaryExpressionCondInstructions } from './emitLogicBinaryJmpExpressionIR';

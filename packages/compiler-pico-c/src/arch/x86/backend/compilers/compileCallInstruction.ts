@@ -1,19 +1,13 @@
 import {
   IRCallInstruction,
   isIRFnDeclInstruction,
-} from '@compiler/pico-c/frontend/ir/instructions';
+} from 'frontend/ir/instructions';
 
-import {
-  CBackendError,
-  CBackendErrorCode,
-} from '@compiler/pico-c/backend/errors/CBackendError';
+import { CBackendError, CBackendErrorCode } from 'backend/errors/CBackendError';
 
-import { getSourceNonPtrType } from '@compiler/pico-c/frontend/analyze/types/utils';
-import {
-  isIRLabel,
-  isIRVariable,
-} from '@compiler/pico-c/frontend/ir/variables';
-import { isFuncDeclLikeType } from '@compiler/pico-c/frontend/analyze';
+import { getSourceNonPtrType } from 'frontend/analyze/types/utils';
+import { isIRLabel, isIRVariable } from 'frontend/ir/variables';
+import { isFuncDeclLikeType } from 'frontend/analyze';
 
 import { X86CompilerInstructionFnAttrs } from '../../constants/types';
 import { getX86FnCaller } from '../call-conventions';

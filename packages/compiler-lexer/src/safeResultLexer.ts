@@ -1,8 +1,6 @@
-import { Result, err, ok } from '@compiler/core/monads/Result';
-import { CompilerError } from '@compiler/core/shared/CompilerError';
-
-import { lexer, LexerConfig } from './lexer';
-import { Token } from './tokens';
+import { Result, CompilerError, err, ok } from '@ts-c/core';
+import { lexer, type LexerConfig } from './lexer';
+import type { Token } from './tokens';
 
 /**
  * Lexer that returns Result instead of throwable call

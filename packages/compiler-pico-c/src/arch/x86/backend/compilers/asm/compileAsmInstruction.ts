@@ -1,5 +1,5 @@
-import { trimLines } from '@compiler/core/utils';
-import { IRAsmInstruction } from '@compiler/pico-c/frontend/ir/instructions';
+import { trimLines } from '@ts-c/core';
+import { IRAsmInstruction } from 'frontend/ir/instructions';
 
 import { X86CompilerInstructionFnAttrs } from '../../../constants/types';
 import { compileAsmClobbers } from './compileAsmClobbers';

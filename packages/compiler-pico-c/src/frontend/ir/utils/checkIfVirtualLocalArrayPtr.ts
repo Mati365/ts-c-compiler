@@ -1,6 +1,6 @@
-import { CCompilerArch } from '@compiler/pico-c/constants';
+import { CCompilerArch } from '#constants';
 
-import { checkLeftTypeOverlapping } from '@compiler/pico-c/frontend/analyze/checker/checkLeftTypeOverlapping';
+import { checkLeftTypeOverlapping } from 'frontend/analyze/checker/checkLeftTypeOverlapping';
 import type { CVariableInitializerTree } from '../../analyze';
 import {
   isArrayLikeType,

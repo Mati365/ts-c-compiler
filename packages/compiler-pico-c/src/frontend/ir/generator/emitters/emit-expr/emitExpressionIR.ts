@@ -1,22 +1,15 @@
 import * as R from 'ramda';
 
-import { isLogicOpToken, isRelationOpToken } from '@compiler/lexer/utils';
+import { isLogicOpToken, isRelationOpToken } from '@ts-c/lexer';
 import {
   getBaseTypeIfPtr,
   isImplicitPtrType,
-} from '@compiler/pico-c/frontend/analyze/types/utils';
+} from 'frontend/analyze/types/utils';
 
-import {
-  charToInt,
-  tryCastToPointer,
-} from '@compiler/pico-c/frontend/analyze/casts';
+import { charToInt, tryCastToPointer } from 'frontend/analyze/casts';
 
-import { TokenType } from '@compiler/lexer/shared';
-import {
-  CMathOperator,
-  CRelOperator,
-  CUnaryCastOperator,
-} from '@compiler/pico-c/constants';
+import { TokenType } from '@ts-c/lexer';
+import { CMathOperator, CRelOperator, CUnaryCastOperator } from '#constants';
 
 import {
   CPointerType,
@@ -25,7 +18,7 @@ import {
   isPointerArithmeticType,
   isPointerLikeType,
   isStructLikeType,
-} from '@compiler/pico-c/frontend/analyze';
+} from 'frontend/analyze';
 
 import {
   ASTCAssignmentExpression,
@@ -36,9 +29,9 @@ import {
   ASTCConditionalExpression,
   ASTCPostfixExpression,
   ASTCPrimaryExpression,
-} from '@compiler/pico-c/frontend/parser';
+} from 'frontend/parser';
 
-import { GroupTreeVisitor } from '@compiler/grammar/tree/TreeGroupedVisitor';
+import { GroupTreeVisitor } from '@ts-c/grammar';
 import { getBiggerIRArg } from '../../../utils';
 import {
   appendStmtResults,

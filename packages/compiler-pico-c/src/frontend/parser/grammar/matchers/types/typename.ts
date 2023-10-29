@@ -1,4 +1,4 @@
-import { ASTCTypeName } from '@compiler/pico-c/frontend/parser/ast';
+import { ASTCTypeName } from 'frontend/parser/ast';
 import { CGrammar } from '../shared';
 
 /**

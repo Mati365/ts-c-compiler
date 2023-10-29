@@ -1,10 +1,10 @@
 import chalk from 'chalk';
 
-import { condFlag } from '@compiler/core/utils';
-import { isIRVariable } from '@compiler/pico-c/frontend/ir/variables';
+import { condFlag } from '@ts-c/core';
+import { isIRVariable } from 'frontend/ir/variables';
 
-import { X86RegName } from '@x86-toolkit/assembler/index';
-import { IRAsmOutputOperands } from '@compiler/pico-c/frontend/ir/instructions';
+import { X86RegName } from '@ts-c/x86-assembler';
+import { IRAsmOutputOperands } from 'frontend/ir/instructions';
 import { IRArgDynamicResolverType } from '../../reg-allocator';
 import { X86CompilerFnAttrs } from '../../../constants/types';
 import { genInstruction, withInlineComment } from '../../../asm-utils';

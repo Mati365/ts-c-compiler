@@ -1,7 +1,7 @@
 import {
   IRFnDeclInstruction,
   IRRetInstruction,
-} from '@compiler/pico-c/frontend/ir/instructions';
+} from 'frontend/ir/instructions';
 
 import { X86CompilerInstructionFnAttrs } from '../../constants/types';
 import { getX86FnCaller } from '../call-conventions';

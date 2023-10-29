@@ -1,4 +1,4 @@
-import { CompilerError } from '@compiler/core/shared/CompilerError';
+import { CompilerError } from '@ts-c/core';
 
 export enum MathErrorCode {
   MISSING_LEFT_BRACKET,

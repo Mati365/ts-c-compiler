@@ -1,4 +1,4 @@
-import { X86RegName } from '@x86-toolkit/assembler/index';
+import { X86RegName } from '@ts-c/x86-assembler';
 import { X86IntRegTree } from '../../constants/regs';
 
 export type X86RegLookupQuery = {

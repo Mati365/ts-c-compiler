@@ -1,7 +1,4 @@
-import {
-  ASTCCompilerKind,
-  ASTCUnaryExpression,
-} from '@compiler/pico-c/frontend/parser/ast';
+import { ASTCCompilerKind, ASTCUnaryExpression } from 'frontend/parser/ast';
 
 import { ASTCTypeCreator } from './ASTCTypeCreator';
 

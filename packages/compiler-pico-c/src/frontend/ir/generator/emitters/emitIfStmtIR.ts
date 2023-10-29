@@ -1,6 +1,6 @@
-import { TokenType } from '@compiler/lexer/shared';
-import { CPrimitiveType } from '@compiler/pico-c/frontend/analyze';
-import { ASTCIfStatement } from '@compiler/pico-c/frontend/parser';
+import { TokenType } from '@ts-c/lexer';
+import { CPrimitiveType } from 'frontend/analyze';
+import { ASTCIfStatement } from 'frontend/parser';
 
 import {
   IRBrInstruction,

@@ -1,17 +1,11 @@
-import { getBiggerIRArg } from '@compiler/pico-c/frontend/ir/utils';
-import { isPrimitiveLikeType } from '@compiler/pico-c/frontend/analyze';
+import { getBiggerIRArg } from 'frontend/ir/utils';
+import { isPrimitiveLikeType } from 'frontend/analyze';
 
-import { CRelOperator } from '@compiler/pico-c/constants';
-import { TokenType } from '@compiler/lexer/shared';
-import {
-  CBackendError,
-  CBackendErrorCode,
-} from '@compiler/pico-c/backend/errors/CBackendError';
+import { CRelOperator } from '#constants';
+import { TokenType } from '@ts-c/lexer';
+import { CBackendError, CBackendErrorCode } from 'backend/errors/CBackendError';
 
-import {
-  IRICmpInstruction,
-  isIRBrInstruction,
-} from '@compiler/pico-c/frontend/ir/instructions';
+import { IRICmpInstruction, isIRBrInstruction } from 'frontend/ir/instructions';
 
 import {
   genInstruction,

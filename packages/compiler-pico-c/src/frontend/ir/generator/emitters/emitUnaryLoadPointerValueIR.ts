@@ -1,8 +1,5 @@
-import { ASTCCastExpression } from '@compiler/pico-c/frontend/parser';
-import {
-  isFuncDeclLikeType,
-  isPointerLikeType,
-} from '@compiler/pico-c/frontend/analyze';
+import { ASTCCastExpression } from 'frontend/parser';
+import { isFuncDeclLikeType, isPointerLikeType } from 'frontend/analyze';
 
 import {
   createBlankStmtResult,

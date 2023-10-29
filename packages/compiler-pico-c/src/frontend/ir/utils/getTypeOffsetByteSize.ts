@@ -1,4 +1,4 @@
-import { CType } from '@compiler/pico-c/frontend/analyze';
+import { CType } from 'frontend/analyze';
 import { getTypeAtOffset } from './getTypeAtOffset';
 
 export const getTypeOffsetByteSize = (type: CType, offset: number) => {

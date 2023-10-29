@@ -1,4 +1,4 @@
-import { ok } from '@compiler/core/monads/Result';
+import { ok } from '@ts-c/core';
 
 import { createCCompilerTimings } from './frontend/utils/createCCompilerTimings';
 import { CCompilerConfig, CCompilerArch } from './constants/config';

@@ -1,6 +1,6 @@
 import * as R from 'ramda';
 
-import { hasFlag } from '@compiler/core/utils';
+import { hasFlag } from '@ts-c/core';
 
 /**
  * 0b0110 => ['long', 'short']

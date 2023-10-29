@@ -1,9 +1,9 @@
-import { hasFlag } from '@compiler/core/utils';
-import { getCompilerArchDescriptor } from '@compiler/pico-c/arch';
+import { hasFlag } from '@ts-c/core';
+import { getCompilerArchDescriptor } from 'arch';
 
-import { IsPrintable } from '@compiler/core/interfaces';
-import { Identity, Result, ok } from '@compiler/core/monads';
-import { CCompilerArch, CTypeQualifier } from '@compiler/pico-c/constants';
+import { IsPrintable } from '@ts-c/core';
+import { Identity, Result, ok } from '@ts-c/core';
+import { CCompilerArch, CTypeQualifier } from '#constants';
 import {
   CTypeCheckError,
   CTypeCheckErrorCode,

@@ -1,9 +1,9 @@
 import * as R from 'ramda';
 
-import { isImplicitPtrType } from '@compiler/pico-c/frontend/analyze/types/utils';
-import { isPointerLikeType } from '@compiler/pico-c/frontend/analyze';
+import { isImplicitPtrType } from 'frontend/analyze/types/utils';
+import { isPointerLikeType } from 'frontend/analyze';
 
-import { ASTCCastUnaryExpression } from '@compiler/pico-c/frontend/parser';
+import { ASTCCastUnaryExpression } from 'frontend/parser';
 import {
   IRLeaInstruction,
   isIRLabelOffsetInstruction,

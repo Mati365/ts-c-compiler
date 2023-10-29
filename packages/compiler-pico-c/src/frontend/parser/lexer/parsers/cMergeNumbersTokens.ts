@@ -1,4 +1,4 @@
-import { FloatNumberToken, Token, TokenType } from '@compiler/lexer/tokens';
+import { FloatNumberToken, Token, TokenType } from '@ts-c/lexer';
 
 function isFloatingPointPartToken(token: Token) {
   if (!token) {

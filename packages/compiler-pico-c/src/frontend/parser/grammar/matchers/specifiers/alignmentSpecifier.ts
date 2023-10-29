@@ -1,4 +1,4 @@
-import { CCompilerKeyword } from '@compiler/pico-c/constants';
+import { CCompilerKeyword } from '#constants';
 import { ASTCAlignmentSpecifier } from '../../../ast';
 import { CGrammar } from '../shared';
 

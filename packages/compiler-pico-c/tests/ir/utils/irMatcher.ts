@@ -1,9 +1,9 @@
 import stripAnsi from 'strip-ansi';
 
-import { stripNonPrintableCharacters, trimLines } from '@compiler/core/utils';
+import { stripNonPrintableCharacters, trimLines } from '@ts-c/core';
 
-import { cIRCompiler } from '@compiler/pico-c/frontend/cIRcompiler';
-import { IRResultView } from '@compiler/pico-c/frontend/ir';
+import { cIRCompiler } from 'frontend/cIRcompiler';
+import { IRResultView } from 'frontend/ir';
 
 export type MatcherResult = {
   pass: boolean;

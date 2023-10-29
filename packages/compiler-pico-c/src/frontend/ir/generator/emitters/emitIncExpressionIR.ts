@@ -1,9 +1,6 @@
-import { TokenType } from '@compiler/lexer/shared';
-import { ASTCCompilerNode } from '@compiler/pico-c/frontend/parser';
-import {
-  CPrimitiveType,
-  isPointerLikeType,
-} from '@compiler/pico-c/frontend/analyze';
+import { TokenType } from '@ts-c/lexer';
+import { ASTCCompilerNode } from 'frontend/parser';
+import { CPrimitiveType, isPointerLikeType } from 'frontend/analyze';
 
 import {
   IRInstruction,

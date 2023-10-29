@@ -1,4 +1,4 @@
-import { CompilerError } from '@compiler/core/shared/CompilerError';
+import { CompilerError } from '@ts-c/core';
 import { TokenLocation } from './TokenLocation';
 
 export enum LexerErrorCode {

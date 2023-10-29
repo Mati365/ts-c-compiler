@@ -1,11 +1,11 @@
 import { last } from 'ramda';
 
-import { isOutputInstruction } from '@compiler/pico-c/frontend/ir/interfaces';
-import { isIRBranchInstruction } from '@compiler/pico-c/frontend/ir/guards';
-import { isIRVariable } from '@compiler/pico-c/frontend/ir/variables';
+import { isOutputInstruction } from 'frontend/ir/interfaces';
+import { isIRBranchInstruction } from 'frontend/ir/guards';
+import { isIRVariable } from 'frontend/ir/variables';
 
-import { Range } from '@compiler/core/types';
-import { IRInstruction } from '@compiler/pico-c/frontend/ir/instructions';
+import { Range } from '@ts-c/core';
+import { IRInstruction } from 'frontend/ir/instructions';
 
 type X86VarLifetimeOffset = Range;
 type X86VarGraph = Record<string, X86VarLifetimeOffset[]>;

@@ -1,7 +1,7 @@
 import {
   IRInstruction,
   isIRFnEndDeclInstruction,
-} from '@compiler/pico-c/frontend/ir/instructions';
+} from 'frontend/ir/instructions';
 
 export class IRBlockIterator {
   private _offset: number = 0;

@@ -1,5 +1,5 @@
-import { CType } from '@compiler/pico-c/frontend/analyze';
-import { IRInstruction } from '@compiler/pico-c/frontend/ir/instructions';
+import { CType } from 'frontend/analyze';
+import { IRInstruction } from 'frontend/ir/instructions';
 import { genLabelName } from '../asm-utils';
 
 type X86LabelValue = {

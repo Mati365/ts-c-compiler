@@ -1,4 +1,4 @@
-import { CompilerError, fixme } from '@compiler/core/shared';
+import { CompilerError, fixme } from '@ts-c/core';
 
 export enum CBackendErrorCode {
   UNKNOWN_BACKEND_ERROR = 'UNKNOWN_BACKEND_ERROR',

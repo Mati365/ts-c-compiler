@@ -1,5 +1,5 @@
-import { TokenType } from '@compiler/lexer/shared';
-import { IRMathInstruction } from '@compiler/pico-c/frontend/ir/instructions';
+import { TokenType } from '@ts-c/lexer';
+import { IRMathInstruction } from 'frontend/ir/instructions';
 
 export function isNopMathInstruction(instruction: IRMathInstruction): boolean {
   switch (instruction.operator) {

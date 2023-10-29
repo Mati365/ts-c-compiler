@@ -1,11 +1,11 @@
 import * as R from 'ramda';
 
-import { CCompilerArch } from '@compiler/pico-c/constants';
+import { CCompilerArch } from '#constants';
 import {
   CPrimitiveType,
   CType,
   CVariableInitializerTree,
-} from '@compiler/pico-c/frontend/analyze';
+} from 'frontend/analyze';
 
 import {
   genDefConst,
@@ -15,7 +15,7 @@ import {
 import {
   getBaseTypeIfArray,
   getBaseTypeIfPtr,
-} from '@compiler/pico-c/frontend/analyze/types/utils';
+} from 'frontend/analyze/types/utils';
 
 type ArrayInitializerDefAsmAttrs = {
   asmLabel: string;

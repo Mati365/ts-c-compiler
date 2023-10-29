@@ -1,6 +1,7 @@
 import * as R from 'ramda';
 
 import {
+  NumberToken,
   evalLogicOp,
   evalMathOp,
   evalRelationOp,
@@ -8,16 +9,15 @@ import {
   isMathOpToken,
   isNumericToken,
   isRelationOpToken,
-} from '@compiler/lexer/utils';
+} from '@ts-c/lexer';
 
-import { NumberToken } from '@compiler/lexer/tokens';
-import { CUnaryCastOperator } from '@compiler/pico-c/constants';
+import { CUnaryCastOperator } from '#constants';
 import {
   ASTCCompilerKind,
   ASTCBinaryOpNode,
   ASTCPrimaryExpression,
   ASTCCastUnaryExpression,
-} from '@compiler/pico-c/frontend/parser/ast';
+} from 'frontend/parser/ast';
 
 import { CInnerTypeTreeVisitor } from '../../type-builder/CInnerTypeTreeVisitor';
 import {

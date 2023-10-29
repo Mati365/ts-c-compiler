@@ -1,7 +1,4 @@
-import {
-  IRInstructionTypedArg,
-  isIRVariable,
-} from '@compiler/pico-c/frontend/ir/variables';
+import { IRInstructionTypedArg, isIRVariable } from 'frontend/ir/variables';
 
 import { genInstruction, withInlineComment } from '../../../asm-utils';
 

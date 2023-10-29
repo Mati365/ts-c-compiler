@@ -1,4 +1,4 @@
-import { TokenType } from '@compiler/lexer/shared/TokenTypes';
+import { TokenType } from '@ts-c/lexer';
 import { ASTCFunctionDefinition } from '../../../ast';
 import { CGrammar } from '../shared';
 

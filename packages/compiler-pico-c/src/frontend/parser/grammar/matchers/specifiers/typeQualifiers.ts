@@ -1,9 +1,9 @@
 import * as R from 'ramda';
 
-import { NodeLocation } from '@compiler/grammar/tree/NodeLocation';
-import { CTypeQualifier } from '@compiler/pico-c/constants';
-import { SyntaxError } from '@compiler/grammar/Grammar';
-import { ASTCTypeQualifiersList } from '@compiler/pico-c/frontend/parser/ast';
+import { NodeLocation } from '@ts-c/grammar';
+import { CTypeQualifier } from '#constants';
+import { SyntaxError } from '@ts-c/grammar';
+import { ASTCTypeQualifiersList } from 'frontend/parser/ast';
 import { CGrammar } from '../shared';
 
 import { matchTypeQualifier } from './typeQualifier';

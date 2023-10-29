@@ -1,4 +1,4 @@
-import { NodeLocation } from '@compiler/grammar/tree/NodeLocation';
+import { NodeLocation } from '@ts-c/grammar';
 import { ASTCCompilerKind, ASTCCompilerNode } from './ASTCCompilerNode';
 
 export class ASTCBreakStatement extends ASTCCompilerNode {

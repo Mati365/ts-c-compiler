@@ -1,4 +1,38 @@
 {
-  "name": "@emulator/compiler-rpn",
-  "main": "src/rpn.ts"
+  "name": "@ts-c/rpn",
+  "version": "0.0.2",
+  "type": "module",
+  "private": true,
+  "license": "MIT",
+  "main": "./dist/cjs/index.js",
+  "module": "./dist/esm/index.js",
+  "types": "./dist/cjs/index.d.ts",
+  "exports": {
+    ".": {
+      "import": {
+        "types": "./dist/esm/index.d.ts",
+        "default": "./dist/esm/index.js"
+      },
+      "require": {
+        "types": "./dist/cjs/index.d.ts",
+        "default": "./dist/cjs/index.js"
+      }
+    }
+  },
+  "dependencies": {
+    "@ts-c/core": "*",
+    "@ts-c/lexer": "*"
+  },
+  "scripts": {
+    "clean": "rm -rf ./dist",
+    "dev": "npx rollup --watch --config rollup.config.mjs",
+    "build": "npx rollup --config rollup.config.mjs",
+    "lint": "npx eslint --max-warnings=0 src/",
+    "test": "npx jest --passWithNoTests --c ./jest.config.mjs",
+    "check:types": "npx tsc --noEmit"
+  },
+  "files": [
+    "dist/",
+    "src/"
+  ]
 }

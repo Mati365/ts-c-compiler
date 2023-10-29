@@ -1,19 +1,11 @@
 import * as R from 'ramda';
 
-import { getCompilerArchDescriptor } from '@compiler/pico-c/arch';
+import { getCompilerArchDescriptor } from 'arch';
 
-import {
-  concatNonEmptyStrings,
-  hasFlag,
-  numberByteSize,
-} from '@compiler/core/utils';
+import { concatNonEmptyStrings, hasFlag, numberByteSize } from '@ts-c/core';
 
-import { Result, err, ok } from '@compiler/core/monads';
-import {
-  CCompilerArch,
-  CTypeQualifier,
-  CTypeSpecifier,
-} from '@compiler/pico-c/constants';
+import { Result, err, ok } from '@ts-c/core';
+import { CCompilerArch, CTypeQualifier, CTypeSpecifier } from '#constants';
 
 import {
   CTypeCheckError,

@@ -1,7 +1,7 @@
-import { concatNonEmptyStrings } from '@compiler/core/utils';
+import { concatNonEmptyStrings } from '@ts-c/core';
 
-import { Identity } from '@compiler/core/monads';
-import { CCompilerArch } from '@compiler/pico-c/constants';
+import { Identity } from '@ts-c/core';
+import { CCompilerArch } from '#constants';
 
 import { CArrayType, isArrayLikeType } from './CArrayType';
 import { CType, CTypeDescriptor } from './CType';

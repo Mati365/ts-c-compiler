@@ -1,7 +1,4 @@
-import {
-  ASTCCastExpression,
-  ASTCTreeNode,
-} from '@compiler/pico-c/frontend/parser/ast';
+import { ASTCCastExpression, ASTCTreeNode } from 'frontend/parser/ast';
 import { CGrammar } from '../shared';
 import { typename } from '../types';
 

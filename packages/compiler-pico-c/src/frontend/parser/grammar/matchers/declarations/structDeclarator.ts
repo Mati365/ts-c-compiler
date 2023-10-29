@@ -1,5 +1,5 @@
 /* eslint-disable no-use-before-define, @typescript-eslint/no-use-before-define */
-import { TokenType } from '@compiler/lexer/shared';
+import { TokenType } from '@ts-c/lexer';
 import { CGrammar } from '../shared';
 import { ASTCStructDeclaratorList, ASTCStructDeclarator } from '../../../ast';
 

@@ -1,4 +1,4 @@
-import { Token } from '../tokens';
+import type { Token } from '../tokens';
 
 /**
  * Fetches tokens list that might contain

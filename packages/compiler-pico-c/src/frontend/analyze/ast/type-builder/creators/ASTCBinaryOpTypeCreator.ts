@@ -1,8 +1,5 @@
-import {
-  ASTCCompilerKind,
-  ASTCBinaryOpNode,
-} from '@compiler/pico-c/frontend/parser/ast';
-import { TokenType } from '@compiler/lexer/shared';
+import { ASTCCompilerKind, ASTCBinaryOpNode } from 'frontend/parser/ast';
+import { TokenType } from '@ts-c/lexer';
 
 import { ASTCTypeCreator } from './ASTCTypeCreator';
 import {

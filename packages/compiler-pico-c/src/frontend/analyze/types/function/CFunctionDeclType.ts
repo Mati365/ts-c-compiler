@@ -1,10 +1,10 @@
 import * as R from 'ramda';
 
-import { findByName, dumpCompilerAttrs } from '@compiler/core/utils';
+import { findByName, dumpCompilerAttrs } from '@ts-c/core';
 
-import { CFunctionCallConvention } from '@compiler/pico-c/constants';
-import { Identity } from '@compiler/core/monads';
-import { ASTCBlockItemsList } from '@compiler/pico-c/frontend';
+import { CFunctionCallConvention } from '#constants';
+import { Identity } from '@ts-c/core';
+import { ASTCBlockItemsList } from 'frontend';
 
 import { isPointerLikeType } from '../CPointerType';
 

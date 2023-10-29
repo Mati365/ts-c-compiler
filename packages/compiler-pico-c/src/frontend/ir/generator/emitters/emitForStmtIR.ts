@@ -1,4 +1,4 @@
-import { ASTCForStatement } from '@compiler/pico-c/frontend/parser';
+import { ASTCForStatement } from 'frontend/parser';
 import { IRBrInstruction, IRJmpInstruction } from '../../instructions';
 
 import {

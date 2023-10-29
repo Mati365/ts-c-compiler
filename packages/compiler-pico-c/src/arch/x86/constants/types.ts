@@ -1,8 +1,8 @@
-import type { CCompilerArch } from '@compiler/pico-c/constants';
-import type { IRFlatCodeSegmentBuilderResult } from '@compiler/pico-c/frontend/ir/generator';
+import type { CCompilerArch } from '#constants';
+import type { IRFlatCodeSegmentBuilderResult } from 'frontend/ir/generator';
 
-import type { IRInstruction } from '@compiler/pico-c/frontend/ir/instructions';
-import type { IRBlockIterator } from '@compiler/pico-c/frontend/ir/iterator/IRBlockIterator';
+import type { IRInstruction } from 'frontend/ir/instructions';
+import type { IRBlockIterator } from 'frontend/ir/iterator/IRBlockIterator';
 import type { CArchDescriptor } from '../../types';
 import type { X86Allocator } from '../backend/X86Allocator';
 import type { X86LabelsResolver } from '../backend/X86LabelsResolver';

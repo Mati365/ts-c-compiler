@@ -1,10 +1,10 @@
 import chalk from 'chalk';
 
-import { CFunctionCallConvention } from '@compiler/pico-c/constants';
-import { IRVariable } from '@compiler/pico-c/frontend/ir/variables';
+import { CFunctionCallConvention } from '#constants';
+import { IRVariable } from 'frontend/ir/variables';
 
-import { getBaseTypeIfPtr } from '@compiler/pico-c/frontend/analyze/types/utils';
-import { getTypeOffsetByteSize } from '@compiler/pico-c/frontend/ir/utils';
+import { getBaseTypeIfPtr } from 'frontend/analyze/types/utils';
+import { getTypeOffsetByteSize } from 'frontend/ir/utils';
 import { genInstruction, withInlineComment } from '../../asm-utils';
 import { getX86RegByteSize } from '../../constants/regs';
 

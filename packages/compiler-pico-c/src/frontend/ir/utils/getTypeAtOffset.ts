@@ -1,13 +1,9 @@
 import {
   getBaseTypeIfPtr,
   getSourceNonArrayType,
-} from '@compiler/pico-c/frontend/analyze/types/utils';
+} from 'frontend/analyze/types/utils';
 
-import {
-  CType,
-  isArrayLikeType,
-  isStructLikeType,
-} from '@compiler/pico-c/frontend/analyze';
+import { CType, isArrayLikeType, isStructLikeType } from 'frontend/analyze';
 
 export const getTypeAtOffset = (
   type: CType,

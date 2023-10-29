@@ -1,4 +1,4 @@
-import { CStructAlign } from '@compiler/pico-c/constants';
+import { CStructAlign } from '#constants';
 import { StructFieldAlignFn } from '../constants/types';
 import { getPackedAlignEntryOffset } from './getPackedAlignEntryOffset';
 

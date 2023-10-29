@@ -5,7 +5,7 @@ import {
   CStorageClassSpecifier,
   CCOMPILER_INTEGRAL_SPECIFIERS,
   CCOMPILER_FLOATING_SPECIFIERS,
-} from '@compiler/pico-c/constants/lang';
+} from 'constants/lang';
 
 export const CSpecBitmap: Record<CTypeSpecifier, number> = {
   [CTypeSpecifier.SIGNED]: 1,
