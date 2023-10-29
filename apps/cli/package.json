@@ -1,0 +1,7 @@
+{
+  "name": "@ts-c/cli",
+  "version": "0.0.1",
+  "bin": {
+    "ts-c": "dist/bin/cli.js"
+  }
+}

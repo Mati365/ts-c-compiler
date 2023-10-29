@@ -1,4 +1,5 @@
 const path = require('path');
+const webpack = require('webpack');
 const nodeExternals = require('webpack-node-externals');
 const NodemonPlugin = require('nodemon-webpack-plugin');
 const CircularDependencyPlugin = require('circular-dependency-plugin');
@@ -7,10 +8,10 @@ const HtmlWebpackPlugin = require('html-webpack-plugin');
 
 const PRODUCTION_MODE = process.env.NODE_ENV === 'production';
 
-const pkgResolve = pkgPath =>
-  path.resolve(__dirname, path.join('../packages/', pkgPath));
-const srcResolve = pkgPath =>
-  path.resolve(__dirname, path.join('../src/', pkgPath));
+const rootResolve = pkgPath =>
+  path.resolve(__dirname, path.join('../', pkgPath));
+
+const pkgResolve = pkgPath => rootResolve(path.join('packages', pkgPath));
 
 const createConfig = ({
   nodemon,
@@ -26,7 +27,7 @@ const createConfig = ({
   watch: !PRODUCTION_MODE,
   devtool: PRODUCTION_MODE ? 'cheap-source-map' : 'eval-source-map',
   entry: {
-    [entryName]: srcResolve(mainFile),
+    [entryName]: rootResolve(mainFile),
   },
   output: {
     filename: outputFile,
@@ -102,10 +103,6 @@ const createConfig = ({
       '@compiler/pico-c': pkgResolve('compiler-pico-c/src'),
       '@x86-toolkit/cpu': pkgResolve('x86-toolkit/x86-cpu/src'),
       '@x86-toolkit/assembler': pkgResolve('x86-toolkit/x86-assembler/src/'),
-      '@ui/context-state': pkgResolve('ui-context-state/src'),
-      '@ui/webapp': pkgResolve('ui-webapp/src'),
-      '@client': srcResolve('client'),
-      '@server': srcResolve('server'),
     },
     ...(target !== 'node' && {
       fallback: {
@@ -120,14 +117,11 @@ module.exports = [
   createConfig({
     target: 'node',
     entryName: 'cli',
-    mainFile: 'cli.ts',
-    outputFile: 'cli.js',
+    mainFile: 'apps/cli/index.ts',
+    outputFile: 'bin/cli.js',
     nodemon: true,
-  }),
-  createConfig({
-    entryName: 'web',
-    mainFile: 'web/index.tsx',
-    outputFile: 'web.js',
-    nodemon: false,
+    plugins: [
+      new webpack.BannerPlugin({ banner: '#!/usr/bin/env node', raw: true }),
+    ],
   }),
 ];
