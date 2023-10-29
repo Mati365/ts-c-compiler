@@ -1,5 +1,14 @@
 # @ts-c-compiler/grammar
 
+## 1.0.1
+
+### Patch Changes
+
+- Add bootsector output option
+- Updated dependencies
+  - @ts-c-compiler/core@1.0.1
+  - @ts-c-compiler/lexer@1.0.1
+
 ## 1.0.0
 
 ### Major Changes

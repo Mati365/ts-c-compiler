@@ -1,5 +1,13 @@
 # @ts-c-compiler/x86-cpu
 
+## 1.0.1
+
+### Patch Changes
+
+- Add bootsector output option
+- Updated dependencies
+  - @ts-c-compiler/x86-assembler@1.0.1
+
 ## 1.0.0
 
 ### Major Changes

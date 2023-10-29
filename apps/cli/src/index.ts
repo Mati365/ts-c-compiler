@@ -2,13 +2,21 @@ import fs from 'node:fs';
 import { program } from '@commander-js/extra-typings';
 
 import { TableBinaryView, asm } from '@ts-c-compiler/x86-assembler';
-import { ccompiler, serializeTypedTreeToString } from '@ts-c-compiler/compiler';
+import {
+  ccompiler,
+  serializeTypedTreeToString,
+  wrapWithX86BootsectorAsm,
+} from '@ts-c-compiler/compiler';
 
 program
   .argument('<source>', 'Relative or absolute path to source file')
   .option('-o, --output <string>', 'Relative path to your output binary')
   .option('-ps, --print-assembly', 'Print assembly output')
   .option('-d, --debug', 'Print AST tree and assembly output')
+  .option(
+    '-b, --bootsector',
+    'Generate 512B bootsector output. Remember to have main entrypoint.',
+  )
   .action((source, options) => {
     const srcFile = fs.readFileSync(source, { encoding: 'utf8', flag: 'r' });
 
@@ -18,7 +26,13 @@ program
           result.dump();
         }
 
-        const asmResult = asm(result.codegen.asm, {
+        let asmRaw = result.codegen.asm;
+
+        if (options.bootsector) {
+          asmRaw = wrapWithX86BootsectorAsm(asmRaw);
+        }
+
+        const asmResult = asm(asmRaw, {
           preprocessor: true,
         });
 

@@ -37,6 +37,7 @@ Options:
   -o, --output <string>  Relative path to your output binary
   -ps, --print-assembly  Print assembly output
   -d, --debug            Print AST tree and assembly output
+  -b, --bootsector       Generate 512B bootsector output. Remember to have main entrypoint.
   -h, --help             display help for command
 ```
 
