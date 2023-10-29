@@ -12,6 +12,8 @@
 
 Multipass portable C lang compiler toolkit with IR code generator including backend, frontend, and optimizer phases. Designed to simple prototyping 16bit toy operating systems and games.
 
+**🚧 Warn! The project is unstable so please do not use it on production!**
+
 ## What does it offer? ⭐
 
 1. Reasonable assembly code quality in NASM syntax
