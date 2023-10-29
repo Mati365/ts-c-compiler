@@ -21,9 +21,7 @@ Multipass portable C lang compiler toolkit with IR code generator including back
 5. Peephole optimization of IR code, precompute of constant expressions during compile time and optimizer phase
 6. Slow compile times - feel the vibe of old computing
 
-## Usage
-
-Install:
+## Install
 
 ```bash
 yarn add @ts-c-compiler/cli
