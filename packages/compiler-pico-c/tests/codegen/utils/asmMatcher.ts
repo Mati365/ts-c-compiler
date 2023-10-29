@@ -1,7 +1,7 @@
 import stripAnsi from 'strip-ansi';
 
 import { stripNonPrintableCharacters, trimLines } from '@ts-c/core';
-import { ccompiler } from 'ccompiler';
+import { ccompiler } from '../../../src/ccompiler';
 
 export type MatcherResult = {
   pass: boolean;
@@ -11,7 +11,7 @@ export type MatcherResult = {
 declare global {
   namespace jest {
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    interface Matchers<R = any> {
+    interface Matchers<R = void> {
       toCompiledAsmBeEqual(asm: string): MatcherResult;
     }
   }

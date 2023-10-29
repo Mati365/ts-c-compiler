@@ -2,8 +2,8 @@ import stripAnsi from 'strip-ansi';
 
 import { stripNonPrintableCharacters, trimLines } from '@ts-c/core';
 
-import { cIRCompiler } from 'frontend/cIRcompiler';
-import { IRResultView } from 'frontend/ir';
+import { cIRCompiler } from '../../../src/frontend';
+import { IRResultView } from '../../../src/frontend/ir';
 
 export type MatcherResult = {
   pass: boolean;
@@ -13,7 +13,7 @@ export type MatcherResult = {
 declare global {
   namespace jest {
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    interface Matchers<R = any> {
+    interface Matchers<R = void, T = {}> {
       toCompiledIRBeEqual(ir: string): MatcherResult;
     }
   }

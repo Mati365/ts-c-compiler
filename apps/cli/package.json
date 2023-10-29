@@ -6,9 +6,9 @@
   "scripts": {
     "clean": "rm -rf ./dist",
     "build": "npx webpack --config=webpack.config.js",
-    "develop": "NODE_ENV=development yarn run build",
+    "dev": "NODE_ENV=development yarn run build",
     "build:production": "NODE_ENV=production yarn run build",
-    "test": "npx jest --c ../../config/jest.config.js",
+    "test": "NODE_OPTIONS=--experimental-vm-modules npx jest --passWithNoTests --c ./jest.config.mjs",
     "lint": "npx eslint src/ -c ./.eslintrc.yml",
     "publish": "yarn build:production && npx changeset && npx changeset version && npx changeset publish"
   },

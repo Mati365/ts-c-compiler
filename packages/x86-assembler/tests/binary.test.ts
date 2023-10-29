@@ -2,8 +2,8 @@
 
 import * as R from 'ramda';
 
+import { arrayToHexString } from '@ts-c/core';
 import { asm } from '../src/asm';
-import { arrayToHexString } from '@ts-c/core/src/utils/arrayToHexString';
 
 import TIMES_TEST_LIST from './asm/times.asm';
 import TETROS_TEST_LIST from './asm/tetros.asm';

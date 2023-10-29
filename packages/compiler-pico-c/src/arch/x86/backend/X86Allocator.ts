@@ -42,8 +42,11 @@ export class X86Allocator {
     this._stackFrame = new X86StackFrame(config);
 
     switch (arch) {
-      case CCompilerArch.X86_16:
-        return [...this.genFnTopStackFrame(), ...contentFn().asm];
+      case CCompilerArch.X86_16: {
+        const content = contentFn();
+
+        return [...this.genFnTopStackFrame(), ...content.asm];
+      }
 
       default:
         assertUnreachable(arch);
@@ -57,6 +60,7 @@ export class X86Allocator {
     ];
 
     const allocBytes = this._stackFrame.getTotalAllocatedBytes();
+
     if (allocBytes > 0) {
       asm.push(genInstruction('sub', 'sp', allocBytes));
     }

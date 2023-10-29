@@ -16,7 +16,7 @@ jobs:
 
       - uses: actions/setup-node@v2
         with:
-          node-version: '16.x'
+          node-version: '20.x'
 
       - uses: actions/cache@v2
         id: yarn-cache
@@ -31,6 +31,15 @@ jobs:
 
       - name: Install modules
         run: yarn install --frozen-lockfile
+
+      - name: Build
+        run: yarn build
+
+      - name: Check types
+        run: yarn check:types
+
+      - name: Lint
+        run: yarn lint
 
       - name: Run tests
         run: yarn test

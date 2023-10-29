@@ -10,8 +10,6 @@ const PRODUCTION_MODE = process.env.NODE_ENV !== 'development';
 const rootResolve = pkgPath =>
   path.resolve(process.cwd(), path.join('./', pkgPath));
 
-const pkgResolve = pkgPath => rootResolve(path.join('../../packages', pkgPath));
-
 exports.createConfig = ({
   nodemon,
   target,
@@ -62,6 +60,10 @@ exports.createConfig = ({
         options: {
           onlyCompileBundledFiles: true,
           configFile: path.resolve(__dirname, '../tsconfig.json'),
+          compilerOptions: {
+            module: 'esnext',
+            moduleResolution: 'node',
+          },
         },
       },
     ],
@@ -94,15 +96,6 @@ exports.createConfig = ({
   ],
   resolve: {
     extensions: ['.tsx', '.ts', '.js', '.jsx'],
-    alias: {
-      '@compiler/core': pkgResolve('compiler-core/src/'),
-      '@compiler/lexer': pkgResolve('compiler-lexer/src/'),
-      '@compiler/grammar': pkgResolve('compiler-grammar/src/'),
-      '@compiler/rpn': pkgResolve('compiler-rpn/src/'),
-      '@compiler/pico-c': pkgResolve('compiler-pico-c/src'),
-      '@x86-toolkit/cpu': pkgResolve('x86-toolkit/x86-cpu/src'),
-      '@x86-toolkit/assembler': pkgResolve('x86-toolkit/x86-assembler/src/'),
-    },
     ...(target !== 'node' && {
       fallback: {
         path: false,

@@ -27,7 +27,7 @@
     "dev": "npx rollup --watch --config rollup.config.mjs",
     "build": "npx rollup --config rollup.config.mjs",
     "lint": "npx eslint --max-warnings=0 src/",
-    "test": "npx jest --passWithNoTests --c ./jest.config.mjs",
+    "test": "NODE_OPTIONS=--experimental-vm-modules npx jest --passWithNoTests --c ./jest.config.mjs",
     "check:types": "npx tsc --noEmit"
   },
   "files": [

@@ -3,8 +3,7 @@
   "include": ["src/"],
   "compilerOptions": {
     "baseUrl": "src",
-    "module": "ES2015",
-    "moduleResolution": "Bundler",
+    "module": "CommonJS",
     "paths": {
       "#constants": ["constants"],
       "#constants/*": ["constants/*"]

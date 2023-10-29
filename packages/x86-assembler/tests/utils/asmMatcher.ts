@@ -15,7 +15,7 @@ export type MatcherResult = {
 declare global {
   namespace jest {
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    interface Matchers<R = any> {
+    interface Matchers<R = void> {
       toOutputsBinary(match: BinaryOutputObject): MatcherResult;
       toHaveCompilerError(errorCode: number): MatcherResult;
     }

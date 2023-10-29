@@ -1,7 +1,7 @@
 import * as R from 'ramda';
 
-import { ccompiler, CCompilerConfig } from '@compiler/pico-c';
-export * from 'frontend/analyze';
+import { ccompiler, CCompilerConfig } from '../../../src';
+export * from '../../../src/frontend/analyze';
 
 export type MatcherResult = {
   pass: boolean;
@@ -11,7 +11,7 @@ export type MatcherResult = {
 declare global {
   namespace jest {
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    interface Matchers<R = any> {
+    interface Matchers<R = void> {
       toHaveCompilerError(errorCode?: number): MatcherResult;
     }
   }

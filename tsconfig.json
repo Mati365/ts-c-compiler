@@ -7,29 +7,7 @@
     "esModuleInterop": true,
     "experimentalDecorators": true,
     "downlevelIteration": true,
-    "baseUrl": "./packages",
-    "paths": {
-      "@compiler/core": ["compiler-core/src/"],
-      "@compiler/core/*": ["compiler-core/src/*"],
-
-      "@compiler/lexer": ["compiler-lexer/src/"],
-      "@compiler/lexer/*": ["compiler-lexer/src/*"],
-
-      "@compiler/grammar": ["compiler-grammar/src/"],
-      "@compiler/grammar/*": ["compiler-grammar/src/*"],
-
-      "@compiler/rpn": ["compiler-rpn/src/"],
-      "@compiler/rpn/*": ["compiler-rpn/src/*"],
-
-      "@x86-toolkit/assembler": ["x86-toolkit/x86-assembler/src/"],
-      "@x86-toolkit/assembler/*": ["x86-toolkit/x86-assembler/src/*"],
-
-      "@x86-toolkit/cpu": ["x86-toolkit/x86-cpu/src/"],
-      "@x86-toolkit/cpu/*": ["x86-toolkit/x86-cpu/src/*"],
-
-      "@compiler/pico-c": ["compiler-pico-c/src/"],
-      "@compiler/pico-c/*": ["compiler-pico-c/src/*"]
-    }
+    "baseUrl": "./packages"
   },
   "exclude": ["node_modules/**/*"]
 }
