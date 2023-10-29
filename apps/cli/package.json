@@ -1,7 +1,21 @@
 {
   "name": "@ts-c/cli",
-  "version": "0.0.1",
+  "version": "0.0.2",
+  "private": false,
+  "license": "MIT",
+  "scripts": {
+    "clean": "rm -rf ./dist",
+    "build": "npx webpack --config=webpack.config.js",
+    "develop": "NODE_ENV=development yarn run build",
+    "build:production": "NODE_ENV=production yarn run build",
+    "test": "npx jest --c ../../config/jest.config.js",
+    "lint": "npx eslint src/ -c ./.eslintrc.yml",
+    "publish": "yarn build:production && npx changeset && npx changeset version && npx changeset publish"
+  },
   "bin": {
     "ts-c": "dist/bin/cli.js"
+  },
+  "publishConfig": {
+    "access": "public"
   }
 }

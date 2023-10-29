@@ -1,5 +1,4 @@
 const path = require('path');
-const webpack = require('webpack');
 const nodeExternals = require('webpack-node-externals');
 const NodemonPlugin = require('nodemon-webpack-plugin');
 const CircularDependencyPlugin = require('circular-dependency-plugin');
@@ -9,11 +8,11 @@ const HtmlWebpackPlugin = require('html-webpack-plugin');
 const PRODUCTION_MODE = process.env.NODE_ENV === 'production';
 
 const rootResolve = pkgPath =>
-  path.resolve(__dirname, path.join('../', pkgPath));
+  path.resolve(process.cwd(), path.join('./', pkgPath));
 
-const pkgResolve = pkgPath => rootResolve(path.join('packages', pkgPath));
+const pkgResolve = pkgPath => rootResolve(path.join('../../packages', pkgPath));
 
-const createConfig = ({
+exports.createConfig = ({
   nodemon,
   target,
   entryName,
@@ -32,7 +31,7 @@ const createConfig = ({
   output: {
     filename: outputFile,
     publicPath: '',
-    path: path.resolve(__dirname, '../dist', outputPath || ''),
+    path: rootResolve(path.join('./dist', outputPath || '')),
   },
   module: {
     rules: [
@@ -112,16 +111,3 @@ const createConfig = ({
     }),
   },
 });
-
-module.exports = [
-  createConfig({
-    target: 'node',
-    entryName: 'cli',
-    mainFile: 'apps/cli/index.ts',
-    outputFile: 'bin/cli.js',
-    nodemon: true,
-    plugins: [
-      new webpack.BannerPlugin({ banner: '#!/usr/bin/env node', raw: true }),
-    ],
-  }),
-];
