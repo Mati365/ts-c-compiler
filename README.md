@@ -65,6 +65,14 @@ npx ts-c ./main.c -ps
 0x00000e                      c3                            ret
 ```
 
+## What is not working? 🚧
+
+- [ ] Preprocessor (`#include`, `#define`, `#if` etc.)
+- [ ] Unions
+- [ ] Bitfields
+- [ ] Linker (ability to compile multiple source files at once)
+- [ ] ... and many other things
+
 ## What can be currently compiled?
 
 ### Advanced array / pointers / ternary expressions
