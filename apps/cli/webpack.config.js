@@ -6,7 +6,12 @@ module.exports = createConfig({
   entryName: 'cli',
   mainFile: 'src/index.ts',
   outputFile: 'bin/cli.js',
-  nodemon: true,
+  nodemon: {
+    enabled: true,
+    attrs: {
+      args: ['./.mock/main.c', '-d'],
+    },
+  },
   plugins: [
     new webpack.BannerPlugin({ banner: '#!/usr/bin/env node', raw: true }),
   ],

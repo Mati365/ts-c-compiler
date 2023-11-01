@@ -11,7 +11,7 @@ const rootResolve = pkgPath =>
   path.resolve(process.cwd(), path.join('./', pkgPath));
 
 exports.createConfig = ({
-  nodemon,
+  nodemon = {},
   target,
   entryName,
   mainFile,
@@ -86,10 +86,11 @@ exports.createConfig = ({
     }),
     new CircularDependencyPlugin(),
     ...plugins,
-    ...(nodemon
+    ...(nodemon?.enabled
       ? [
           new NodemonPlugin({
             watch: 'dist',
+            ...nodemon.attrs,
           }),
         ]
       : []),
