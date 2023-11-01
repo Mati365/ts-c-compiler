@@ -1,3 +1,5 @@
+import 'source-map-support/register';
+
 import fs from 'node:fs';
 import * as E from 'fp-ts/Either';
 import { pipe } from 'fp-ts/function';

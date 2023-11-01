@@ -3,7 +3,7 @@
 import * as R from 'ramda';
 
 import { arrayToHexString } from '@ts-c-compiler/core';
-import { asm } from '../src/asm';
+import { unsafeAsm } from '../src/asm';
 
 import TIMES_TEST_LIST from './asm/times.asm';
 import TETROS_TEST_LIST from './asm/tetros.asm';
@@ -49,11 +49,9 @@ describe('binary output compare', () => {
   R.forEach(
     ({ test, bin, code }) =>
       it(test, () => {
-        const result = asm(code);
+        const result = unsafeAsm()(code);
 
-        expect(arrayToHexString(result.unwrap().output.getBinary(), '')).toBe(
-          bin,
-        );
+        expect(arrayToHexString(result.output.getBinary(), '')).toBe(bin);
       }),
     tests,
   );

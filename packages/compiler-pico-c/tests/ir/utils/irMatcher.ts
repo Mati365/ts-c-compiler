@@ -1,4 +1,5 @@
 import stripAnsi from 'strip-ansi';
+import * as E from 'fp-ts/Either';
 
 import { stripNonPrintableCharacters, trimLines } from '@ts-c-compiler/core';
 
@@ -27,20 +28,21 @@ function toCompiledIRBeEqual(
   source: string,
   expectedIR: string,
 ): MatcherResult {
-  const result = cIRCompiler(source);
-  if (result.isErr()) {
+  const result = cIRCompiler()(source);
+
+  if (E.isLeft(result)) {
     return {
       pass: false,
       message: () =>
         `Compilation failed with ${
-          result.unwrapErr()?.[0]?.code || '<unknown>'
+          result.left?.[0]?.code || '<unknown>'
         } error code!`,
     };
   }
 
   const formattedExpectedCode = normalizeIRCode(expectedIR);
   const formattedIRCode = normalizeIRCode(
-    IRResultView.serializeToString(result.unwrap().ir),
+    IRResultView.serializeToString(result.right.ir),
   );
 
   return {

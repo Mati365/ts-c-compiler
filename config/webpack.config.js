@@ -22,7 +22,7 @@ exports.createConfig = ({
   target,
   mode: PRODUCTION_MODE ? 'production' : 'development',
   watch: !PRODUCTION_MODE,
-  devtool: PRODUCTION_MODE ? 'cheap-source-map' : 'eval-source-map',
+  devtool: 'source-map',
   entry: {
     [entryName]: rootResolve(mainFile),
   },
@@ -34,12 +34,23 @@ exports.createConfig = ({
   module: {
     rules: [
       {
+        test: /\.js$/,
+        enforce: 'pre',
+        use: ['source-map-loader'],
+      },
+      {
         test: /\.asm$/i,
         use: 'raw-loader',
       },
       {
         test: /\.(bin|flp)/,
         use: 'arraybuffer-loader',
+      },
+      {
+        test: /\.m?js$/,
+        resolve: {
+          fullySpecified: false,
+        },
       },
       {
         test: /\.(png|jpe?g|gif|ttf|svg)$/,
@@ -63,6 +74,8 @@ exports.createConfig = ({
           compilerOptions: {
             module: 'esnext',
             moduleResolution: 'node',
+            declaration: false,
+            declarationMap: false,
           },
         },
       },

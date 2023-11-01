@@ -39,7 +39,7 @@ function toHaveCompilerError(
     };
   }
 
-  const err = E.isLeft(parseResult);
+  const err = parseResult.left;
   const pass = (() => {
     if (R.isNil(code)) {
       return true;

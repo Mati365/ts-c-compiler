@@ -83,24 +83,22 @@ export const asm =
     );
   };
 
-/**
- * Compiles asm instruction without result,
- * it can crash if provided code is incorrect.
- *
- * Use it only in internal JITs etc.
- */
-export const unsafeASM =
+export const unsafeAsm =
   (config: AssemblerConfig = {}) =>
-  (code: string): number[] => {
-    const maybeResult = pipe(
-      code,
-      asm(config),
-      E.map(({ output }) => output.getBinary()),
-    );
+  (code: string) => {
+    const maybeResult = pipe(code, asm(config));
 
     if (E.isLeft(maybeResult)) {
       throw maybeResult.left;
     }
 
     return maybeResult.right;
+  };
+
+export const unsafeAsmBinary =
+  (config: AssemblerConfig = {}) =>
+  (code: string): number[] => {
+    const raw = unsafeAsm(config)(code);
+
+    return raw.output.getBinary();
   };

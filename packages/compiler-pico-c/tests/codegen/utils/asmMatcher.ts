@@ -1,4 +1,6 @@
 import stripAnsi from 'strip-ansi';
+import { pipe } from 'fp-ts/function';
+import * as E from 'fp-ts/Either';
 
 import { stripNonPrintableCharacters, trimLines } from '@ts-c-compiler/core';
 import { ccompiler } from '../../../src/ccompiler';
@@ -25,20 +27,24 @@ function toCompiledAsmBeEqual(
   source: string,
   expectedIR: string,
 ): MatcherResult {
-  const result = ccompiler(source).map(({ codegen }) => codegen.asm);
+  const result = pipe(
+    source,
+    ccompiler(),
+    E.map(({ codegen }) => codegen.asm),
+  );
 
-  if (result.isErr()) {
+  if (E.isLeft(result)) {
     return {
       pass: false,
       message: () =>
         `Compilation failed with ${
-          result.unwrapErr()?.[0]?.code || '<unknown>'
+          result.left?.[0]?.code || '<unknown>'
         } error code!`,
     };
   }
 
   const formattedExpectedCode = normalizeAsmCode(expectedIR);
-  const formattedAsmCode = normalizeAsmCode(result.unwrap());
+  const formattedAsmCode = normalizeAsmCode(result.right);
 
   return {
     pass:

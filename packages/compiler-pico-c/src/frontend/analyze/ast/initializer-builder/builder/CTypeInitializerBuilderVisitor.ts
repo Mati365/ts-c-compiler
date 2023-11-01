@@ -35,6 +35,7 @@ import {
   ConstantOperationResult,
   evalConstantExpression,
 } from '../../expression-eval';
+
 import { checkLeftTypeOverlapping } from '../../../checker';
 
 /**

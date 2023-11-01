@@ -259,32 +259,32 @@ describe('Initializer typecheck', () => {
 
   test('advanced nested initializers', () => {
     expect(/* cpp */ `
+      struct {
+        int x[5];
         struct {
-          int x[5];
-          struct {
-            int y, x;
+          int y, x;
 
-            struct {
-              int maslo, ser;
-            } chleb;
-          } part;
-          int z;
-        } vec = {
-          1, 2, 3,
-          .part = {
-            .y = 6,
-            .chleb = { 1, 2 }
-          },
-          .z = 7,
-        };
-      `).not.toHaveCompilerError();
+          struct {
+            int maslo, ser;
+          } chleb;
+        } part;
+        int z;
+      } vec = {
+        1, 2, 3,
+        .part = {
+          .y = 6,
+          .chleb = { 1, 2 }
+        },
+        .z = 7,
+      };
+    `).not.toHaveCompilerError();
   });
 
   test('dynamic variable initializer', () => {
     expect(/* cpp */ `
-        int d = 5;
-        int acc = d + 4;
-      `).not.toHaveCompilerError();
+      int d = 5;
+      int acc = d + 4;
+    `).not.toHaveCompilerError();
   });
 
   test('dynamic missing variable initializer', () => {
@@ -295,15 +295,15 @@ describe('Initializer typecheck', () => {
 
   test('dynamic initializer typecheck fails if try to assign structure to int', () => {
     expect(/* cpp */ `
-        struct Vec2 { int x, y; } abc = { .x = 5 };
-        int acc = abc + 4;
-      `).toHaveCompilerError(CTypeCheckErrorCode.OPERATOR_SIDES_TYPES_MISMATCH);
+      struct Vec2 { int x, y; } abc = { .x = 5 };
+      int acc = abc + 4;
+    `).toHaveCompilerError(CTypeCheckErrorCode.OPERATOR_SIDES_TYPES_MISMATCH);
   });
 
   test('assign flatten array to multidimensional array', () => {
     expect(/* cpp */ `
-        int a[3][1] = { 1, 2, 3 };
-        int b[2][3][1] = { 1, 2, 3 };
-      `).not.toHaveCompilerError();
+      int a[3][1] = { 1, 2, 3 };
+      int b[2][3][1] = { 1, 2, 3 };
+    `).not.toHaveCompilerError();
   });
 });

@@ -7,7 +7,7 @@ import {
   X86BitsMode,
   toUnsignedNumber,
   getSignedNumber,
-  unsafeASM,
+  unsafeAsmBinary,
   X86RegName,
   SegmentedAddress,
 } from '@ts-c-compiler/x86-assembler';
@@ -128,8 +128,8 @@ export class X86CPU extends X86AbstractCPU {
     });
 
     // jmp to reset vector
-    memIO.writeBytesBE(0xffff0, unsafeASM()('jmp 0xF000:0x0000'));
-    memIO.writeBytesBE(0xf0000, unsafeASM()(FAKE_BIOS));
+    memIO.writeBytesBE(0xffff0, unsafeAsmBinary()('jmp 0xF000:0x0000'));
+    memIO.writeBytesBE(0xf0000, unsafeAsmBinary()(FAKE_BIOS));
 
     Object.assign(registers, {
       cs: 0xffff,

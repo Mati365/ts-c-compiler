@@ -17,6 +17,9 @@ export const createPackageRollupConfig = () => ({
   ],
   plugins: [
     typescript({
+      sourceMap: true,
+      inlineSources: true,
+      inlineSourceMap: true,
       tsconfig: './tsconfig.json',
       tsconfigOverride: {
         compilerOptions: {
