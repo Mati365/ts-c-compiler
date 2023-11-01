@@ -3,7 +3,7 @@ import resolve from '@rollup/plugin-node-resolve';
 
 export const createPackageRollupConfig = () => ({
   input: 'src/index.ts',
-  external: [/node_modules/],
+  external: [/(node_modules|@ts-c-compiler)/],
   cache: false,
   output: [
     {
