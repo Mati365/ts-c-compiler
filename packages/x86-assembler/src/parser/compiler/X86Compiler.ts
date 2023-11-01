@@ -1,6 +1,6 @@
 import * as R from 'ramda';
+import * as E from 'fp-ts/Either';
 
-import { Result, err, ok } from '@ts-c-compiler/core';
 import { CompilerError } from '@ts-c-compiler/core';
 import { NumberToken, Token } from '@ts-c-compiler/lexer';
 
@@ -628,15 +628,15 @@ export class X86Compiler {
   /**
    * Transform provided AST nodes array into binary blobs
    */
-  compile(): Result<SecondPassResult, CompilerError[]> {
+  compile(): E.Either<CompilerError[], SecondPassResult> {
     if (!this.tree) {
       return null;
     }
 
     try {
-      return ok(this.secondPass(this.firstPass()));
+      return E.right(this.secondPass(this.firstPass()));
     } catch (e) {
-      return err([e]);
+      return E.left([e]);
     }
   }
 }

@@ -1,4 +1,5 @@
 import * as R from 'ramda';
+import * as E from 'fp-ts/Either';
 
 import { arrayToHexString } from '@ts-c-compiler/core';
 import { asm, AssemblerConfig } from '../../src/asm';
@@ -29,15 +30,16 @@ function toOutputsBinary(
   received: string,
   binary: BinaryOutputObject,
 ): MatcherResult {
-  const result = asm(received);
-  if (result.isErr()) {
+  const result = asm()(received);
+
+  if (E.isLeft(result)) {
     return {
       pass: false,
-      message: () => `Compilation failed! ${result.unwrapErr()}`,
+      message: () => `Compilation failed! ${result.left}`,
     };
   }
 
-  const { blobs } = result.unwrap().output;
+  const { blobs } = result.right.output;
   for (const [offset, code] of Object.entries(binary)) {
     const blob = blobs.get(+offset);
     if (!blob) {
@@ -73,10 +75,10 @@ function toHaveCompilerError(
   code: number,
 ): MatcherResult {
   const parseResult = R.is(Array, received)
-    ? asm(received[0], <AssemblerConfig>received[1])
-    : asm(<string>received);
+    ? asm(received[1] as AssemblerConfig)(received[0])
+    : asm()(received);
 
-  if (parseResult.isOk()) {
+  if (E.isRight(parseResult)) {
     return {
       pass: false,
       message: () =>
@@ -86,7 +88,7 @@ function toHaveCompilerError(
     };
   }
 
-  const err = parseResult.unwrapErr();
+  const err = parseResult.left;
   const pass = this.equals(
     err,
     expect.arrayContaining([

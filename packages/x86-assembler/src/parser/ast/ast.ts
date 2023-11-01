@@ -1,8 +1,5 @@
 import { Token } from '@ts-c-compiler/lexer';
-import { Result } from '@ts-c-compiler/core';
-import { CompilerError } from '@ts-c-compiler/core';
-
-import { ASTAsmParser, ASTAsmTree } from './ASTAsmParser';
+import { ASTAsmParser } from './ASTAsmParser';
 
 import { ASTInstruction } from './instruction/ASTInstruction';
 import { ASTLabel } from './critical/ASTLabel';
@@ -23,9 +20,7 @@ export const ASTNodesParsers = [
 /**
  * Root of evil
  */
-export function ast(
-  tokensIterator: Token[] | IterableIterator<Token>,
-): Result<ASTAsmTree, CompilerError[]> {
+export function ast(tokensIterator: Token[] | IterableIterator<Token>) {
   const parser = new ASTAsmParser(ASTNodesParsers, tokensIterator);
 
   return parser.getTree();

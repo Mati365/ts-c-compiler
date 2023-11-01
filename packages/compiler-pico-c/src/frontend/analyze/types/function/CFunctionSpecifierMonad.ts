@@ -1,13 +1,16 @@
-import { hasFlag } from '@ts-c-compiler/core';
+import * as E from 'fp-ts/Either';
+import { pipe } from 'fp-ts/function';
 
-import { Identity, Result, ok } from '@ts-c-compiler/core';
-import { CFunctionSpecifier } from '#constants';
+import { hasFlag } from '@ts-c-compiler/core';
+import { Identity } from '@ts-c-compiler/core';
 import { IsPrintable } from '@ts-c-compiler/core';
 
+import { CFunctionSpecifier } from '#constants';
 import {
   CTypeCheckError,
   CTypeCheckErrorCode,
 } from '../../errors/CTypeCheckError';
+
 import { CFuncSpecBitmap } from '../../constants/bitmaps';
 import { bitsetToKeywords, parseKeywordsToBitset } from '../../utils';
 
@@ -65,18 +68,18 @@ export class CFunctionSpecifierMonad
    */
   static ofParserSource(
     specifiers: CFunctionSpecifier[],
-  ): Result<CFunctionSpecifierMonad, CTypeCheckError> {
-    const specifiersResult = parseKeywordsToBitset({
-      errorCode: CTypeCheckErrorCode.UNKNOWN_SPECIFIERS_KEYWORD,
-      bitmap: CFuncSpecBitmap,
-      keywords: specifiers,
-    });
-
-    return specifiersResult.andThen(parsedSpecifier =>
-      ok(
-        new CFunctionSpecifierMonad({
-          specifiers: parsedSpecifier,
-        }),
+  ): E.Either<CTypeCheckError, CFunctionSpecifierMonad> {
+    return pipe(
+      parseKeywordsToBitset({
+        errorCode: CTypeCheckErrorCode.UNKNOWN_SPECIFIERS_KEYWORD,
+        bitmap: CFuncSpecBitmap,
+        keywords: specifiers,
+      }),
+      E.map(
+        parsedSpecifier =>
+          new CFunctionSpecifierMonad({
+            specifiers: parsedSpecifier,
+          }),
       ),
     );
   }

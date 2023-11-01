@@ -1,3 +1,5 @@
+import { unwrapEitherOrThrow } from '@ts-c-compiler/core';
+
 import { ASTCDeclaration, ASTCCompilerKind } from 'frontend/parser/ast';
 import { ASTCTypeCreator } from './ASTCTypeCreator';
 import {
@@ -37,7 +39,7 @@ export class ASTCDeclarationTypeCreator extends ASTCTypeCreator<ASTCDeclaration>
     }
 
     if (isNamedType(baseType) && !baseType.isRegistered()) {
-      scope.defineType(baseType).unwrapOrThrow();
+      unwrapEitherOrThrow(scope.defineType(baseType));
     }
 
     if (initList) {
@@ -59,7 +61,7 @@ export class ASTCDeclarationTypeCreator extends ASTCTypeCreator<ASTCDeclaration>
 
         scope.defineTypedefs(typedefs);
       } else {
-        scope.defineVariables(variables).unwrapOrThrow();
+        unwrapEitherOrThrow(scope.defineVariables(variables));
       }
     }
 

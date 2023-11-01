@@ -1,6 +1,4 @@
-import { Result, ok, err } from '@ts-c-compiler/core';
-
-// import { serializeTypedTreeToString } from '../parser';
+import * as E from 'fp-ts/Either';
 
 import { CTypeCheckError, CTypeCheckErrorCode } from './errors/CTypeCheckError';
 import { CTypeCheckConfig } from './constants';
@@ -8,7 +6,7 @@ import { ASTCTreeNode } from '../parser/ast';
 import { CTypeAnalyzeVisitor } from './ast';
 import { CScopeTree } from './scope';
 
-type ScopeTreeBuilderResult = {
+export type ScopeTreeBuilderResult = {
   scope: CScopeTree;
   tree: ASTCTreeNode;
 };
@@ -16,23 +14,20 @@ type ScopeTreeBuilderResult = {
 /**
  * Returns result monad from tree assign
  */
-export function safeBuildTypedTree(
-  config: CTypeCheckConfig,
-  tree: ASTCTreeNode,
-): Result<ScopeTreeBuilderResult, CTypeCheckError[]> {
-  // console.info(serializeTypedTreeToString(tree));
+export const safeBuildTypedTree =
+  (config: CTypeCheckConfig) =>
+  (tree: ASTCTreeNode): E.Either<CTypeCheckError[], ScopeTreeBuilderResult> => {
+    try {
+      const { scope } = new CTypeAnalyzeVisitor(config).visit(tree);
 
-  try {
-    const { scope } = new CTypeAnalyzeVisitor(config).visit(tree);
+      return E.right({
+        scope,
+        tree,
+      });
+    } catch (e) {
+      e.code = e.code ?? CTypeCheckErrorCode.TYPECHECK_ERROR;
+      e.tree = tree;
 
-    return ok({
-      scope,
-      tree,
-    });
-  } catch (e) {
-    e.code = e.code ?? CTypeCheckErrorCode.TYPECHECK_ERROR;
-    e.tree = tree;
-
-    return err([e]);
-  }
-}
+      return E.left([e]);
+    }
+  };

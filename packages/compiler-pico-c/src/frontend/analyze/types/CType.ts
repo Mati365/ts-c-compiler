@@ -1,8 +1,10 @@
+import * as E from 'fp-ts/Either';
+
 import { hasFlag } from '@ts-c-compiler/core';
 import { getCompilerArchDescriptor } from 'arch';
 
 import { IsPrintable } from '@ts-c-compiler/core';
-import { Identity, Result, ok } from '@ts-c-compiler/core';
+import { Identity } from '@ts-c-compiler/core';
 import { CCompilerArch, CTypeQualifier } from '#constants';
 import {
   CTypeCheckError,
@@ -222,9 +224,9 @@ export abstract class CType<T extends CTypeDescriptor = CTypeDescriptor>
    */
   static qualifiersToBitset(
     qualifiers: CTypeQualifier[],
-  ): Result<number, CTypeCheckError> {
+  ): E.Either<CTypeCheckError, number> {
     if (!qualifiers) {
-      return ok(0);
+      return E.right(0);
     }
 
     return parseKeywordsToBitset({

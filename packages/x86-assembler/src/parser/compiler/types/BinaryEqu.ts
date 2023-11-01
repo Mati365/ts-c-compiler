@@ -1,4 +1,5 @@
 import * as R from 'ramda';
+import * as E from 'fp-ts/Either';
 
 import { safeKeywordResultRPN } from '../utils';
 
@@ -36,8 +37,8 @@ export class BinaryEqu extends BinaryBlob<ASTEqu> {
       ast.expression,
     );
 
-    if (result.isOk()) {
-      this.value = result.unwrap();
+    if (E.isRight(result)) {
+      this.value = result.right;
     } else {
       this.value = null;
     }

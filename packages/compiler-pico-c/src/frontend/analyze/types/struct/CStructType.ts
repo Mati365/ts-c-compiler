@@ -1,9 +1,10 @@
 import * as R from 'ramda';
+import * as E from 'fp-ts/Either';
 
 import { dropNewLines, dumpCompilerAttrs } from '@ts-c-compiler/core';
 import { memoizeMethod } from '@ts-c-compiler/core';
 
-import { Identity, Result, ok, err } from '@ts-c-compiler/core';
+import { Identity } from '@ts-c-compiler/core';
 import { CCompilerArch, CStructAlign } from '#constants';
 import { CType } from '../CType';
 import { CNamedTypedEntry } from '../../scope/variables/CNamedTypedEntry';
@@ -59,14 +60,14 @@ export class CStructType extends CType<CStructTypeDescriptor> {
   ofAppendedField(
     entry: CNamedTypedEntry,
     bitset?: number,
-  ): Result<CStructType, CTypeCheckError> {
+  ): E.Either<CTypeCheckError, CStructType> {
     const alignerFn = this.getAlignerFn();
 
     return this.bind(value => {
       const { name } = entry;
 
       if (this.getField(name)) {
-        return err(
+        return E.left(
           new CTypeCheckError(
             CTypeCheckErrorCode.REDEFINITION_OF_STRUCT_ENTRY,
             null,
@@ -91,7 +92,7 @@ export class CStructType extends CType<CStructTypeDescriptor> {
         }),
       ];
 
-      return ok(
+      return E.right(
         new CStructType({
           ...value,
           fields: new Map([...fieldsList, newEntry]),

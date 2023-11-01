@@ -1,5 +1,6 @@
+import * as O from 'fp-ts/Option';
+
 import { CMathOperator } from '#constants';
-import { Option, none, some } from '@ts-c-compiler/core';
 import { TokenType } from '@ts-c-compiler/lexer';
 
 import { IROpcode } from '../constants';
@@ -40,17 +41,17 @@ export class IRMathInstruction extends IROpInstruction<CMathOperator> {
     );
   }
 
-  tryFlipConstantsToRight(): Option<IRMathInstruction> {
+  tryFlipConstantsToRight(): O.Option<IRMathInstruction> {
     if (!this.hasAnyConstantArg() || this.hasBothConstantArgs()) {
-      return none();
+      return O.none;
     }
 
     const { operator, outputVar } = this;
     if (operator !== TokenType.PLUS && operator !== TokenType.MUL) {
-      return none();
+      return O.none;
     }
 
-    return some(
+    return O.some(
       new IRMathInstruction(
         operator,
         this.getFirstVarArg(),

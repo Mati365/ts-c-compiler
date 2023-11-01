@@ -3,6 +3,8 @@
   "include": ["src/"],
   "compilerOptions": {
     "baseUrl": "src",
-    "module": "CommonJS"
+    "module": "CommonJS",
+    "declaration": false,
+    "declarationMap": false
   }
 }

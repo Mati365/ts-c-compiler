@@ -1,8 +1,9 @@
-import { Result, err, ok } from '@ts-c-compiler/core';
+import * as E from 'fp-ts/Either';
 import { X86ArchBackend } from '../arch/x86';
 
 import { CCompilerArch, CCompilerConfig } from '../constants';
 // import { IRResultView } from '../frontend/ir';
+
 import { IRScopeGeneratorResult } from '../frontend/ir/generator';
 import { CAbstractArchBackend } from './abstract/CAbstractArchBackend';
 import { CBackendCompilerResult } from './constants/types';
@@ -22,16 +23,16 @@ const CCOMPILER_ARCH_BACKENDS: Record<
 export function genASMIRCode(
   config: CCompilerConfig,
   ir: IRScopeGeneratorResult,
-): Result<CBackendCompilerResult, CBackendError[]> {
+): E.Either<CBackendError[], CBackendCompilerResult> {
   try {
     const CompilerBackend = CCOMPILER_ARCH_BACKENDS[config.arch];
 
     // console.info(IRResultView.serializeToString(ir));
 
-    return ok(new CompilerBackend(config).compileIR(ir));
+    return E.right(new CompilerBackend(config).compileIR(ir));
   } catch (e) {
     e.code = e.code ?? CBackendErrorCode.UNKNOWN_BACKEND_ERROR;
 
-    return err([e]);
+    return E.left([e]);
   }
 }

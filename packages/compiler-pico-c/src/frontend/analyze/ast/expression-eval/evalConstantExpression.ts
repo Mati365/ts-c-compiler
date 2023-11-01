@@ -1,4 +1,5 @@
-import { Result, err, ok } from '@ts-c-compiler/core';
+import * as E from 'fp-ts/Either';
+
 import { ASTCCompilerNode } from '../../../parser/ast';
 import { CTypeCheckError } from '../../errors/CTypeCheckError';
 import { CTypeAnalyzeContext } from '../type-builder/CTypeAnalyzeContext';
@@ -15,9 +16,9 @@ type EvalExpressionAttrs = {
 export function evalConstantExpression({
   context,
   expression,
-}: EvalExpressionAttrs): Result<ConstantOperationResult, CTypeCheckError> {
+}: EvalExpressionAttrs): E.Either<CTypeCheckError, ConstantOperationResult> {
   if (!expression) {
-    return ok(null);
+    return E.left(null);
   }
 
   try {
@@ -25,8 +26,8 @@ export function evalConstantExpression({
       .setContext(context)
       .visit(expression);
 
-    return ok(visitor.value);
+    return E.right(visitor.value);
   } catch (e) {
-    return err(e);
+    return E.left(e);
   }
 }

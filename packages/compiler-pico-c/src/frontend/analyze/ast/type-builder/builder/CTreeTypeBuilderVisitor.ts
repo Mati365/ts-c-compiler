@@ -1,4 +1,6 @@
 import * as R from 'ramda';
+import { pipe } from 'fp-ts/function';
+import { unwrapEitherOrThrow } from '@ts-c-compiler/core';
 
 import { CFunctionCallConvention } from '#constants';
 import {
@@ -16,6 +18,7 @@ import {
   CTypeCheckError,
   CTypeCheckErrorCode,
 } from '../../../errors/CTypeCheckError';
+
 import { CInnerTypeTreeVisitor } from '../CInnerTypeTreeVisitor';
 import { CNamedTypedEntry } from '../../../scope/variables/CNamedTypedEntry';
 import { CVariable } from '../../../scope';
@@ -79,9 +82,10 @@ export class CTreeTypeBuilderVisitor extends CInnerTypeTreeVisitor {
     while (pointerNode) {
       this.type = CPointerType.ofType(
         this.type,
-        CType.qualifiersToBitset(
-          pointerNode.typeQualifierList?.items,
-        ).unwrapOrThrow(),
+        pipe(
+          CType.qualifiersToBitset(pointerNode.typeQualifierList?.items),
+          unwrapEitherOrThrow,
+        ),
       );
 
       pointerNode = pointerNode.pointer;
@@ -106,10 +110,13 @@ export class CTreeTypeBuilderVisitor extends CInnerTypeTreeVisitor {
 
       const size =
         assignmentExpression &&
-        +evalConstantExpression({
-          context: this.context,
-          expression: <any>assignmentExpression,
-        }).unwrapOrThrow();
+        +pipe(
+          evalConstantExpression({
+            context: this.context,
+            expression: <any>assignmentExpression,
+          }),
+          unwrapEitherOrThrow,
+        );
 
       if (!R.isNil(size) && size <= 0) {
         throw new CTypeCheckError(CTypeCheckErrorCode.INVALID_ARRAY_SIZE);

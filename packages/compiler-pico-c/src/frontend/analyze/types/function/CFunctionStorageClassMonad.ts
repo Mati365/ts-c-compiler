@@ -1,6 +1,8 @@
-import { hasFlag } from '@ts-c-compiler/core';
+import { pipe } from 'fp-ts/function';
+import * as E from 'fp-ts/Either';
 
-import { Identity, Result, ok } from '@ts-c-compiler/core';
+import { hasFlag } from '@ts-c-compiler/core';
+import { Identity } from '@ts-c-compiler/core';
 import { IsPrintable } from '@ts-c-compiler/core';
 
 import { CStorageClassSpecifier } from '#constants';
@@ -77,18 +79,18 @@ export class CStorageClassMonad
    */
   static ofParserSource(
     specifiers: CStorageClassSpecifier[],
-  ): Result<CStorageClassMonad, CTypeCheckError> {
-    const specifiersResult = parseKeywordsToBitset({
-      errorCode: CTypeCheckErrorCode.UNKNOWN_SPECIFIERS_KEYWORD,
-      bitmap: CStorageSpecBitmap,
-      keywords: specifiers,
-    });
-
-    return specifiersResult.andThen(parsedSpecifier =>
-      ok(
-        new CStorageClassMonad({
-          specifiers: parsedSpecifier,
-        }),
+  ): E.Either<CTypeCheckError, CStorageClassMonad> {
+    return pipe(
+      parseKeywordsToBitset({
+        errorCode: CTypeCheckErrorCode.UNKNOWN_SPECIFIERS_KEYWORD,
+        bitmap: CStorageSpecBitmap,
+        keywords: specifiers,
+      }),
+      E.map(
+        parsedSpecifier =>
+          new CStorageClassMonad({
+            specifiers: parsedSpecifier,
+          }),
       ),
     );
   }

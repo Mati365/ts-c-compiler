@@ -1,7 +1,8 @@
-import { CCOMPILER_IDENTIFIERS_MAP } from '#constants';
+import * as E from 'fp-ts/Either';
+import { pipe } from 'fp-ts/function';
 
+import { safeResultLexer } from '@ts-c-compiler/lexer';
 import { FloatNumberToken, NumberToken, TokenType } from '@ts-c-compiler/lexer';
-
 import {
   LexerConfig,
   TokenParsersMap,
@@ -9,8 +10,8 @@ import {
   TERMINAL_CHARACTERS,
 } from '@ts-c-compiler/lexer';
 
-import { safeResultLexer } from '@ts-c-compiler/lexer';
 import { cComentParser, cMergeNumbersTokens } from './parsers';
+import { CCOMPILER_IDENTIFIERS_MAP } from '#constants';
 
 export const CCOMPILER_TERMINAL_CHARACTERS: TokenTerminalCharactersMap = {
   ...TERMINAL_CHARACTERS,
@@ -30,9 +31,10 @@ export type CLexerConfig = LexerConfig;
 /**
  * Lexer for C-like language
  */
-export function clexer(config: CLexerConfig, code: string) {
-  const result = safeResultLexer(
-    {
+export const clexer = (config: CLexerConfig) => (code: string) =>
+  pipe(
+    code,
+    safeResultLexer({
       identifiers: CCOMPILER_IDENTIFIERS_MAP,
       tokensParsers: CCOMPILER_TOKEN_PARSERS,
       terminalCharacters: CCOMPILER_TERMINAL_CHARACTERS,
@@ -42,9 +44,6 @@ export function clexer(config: CLexerConfig, code: string) {
       ignoreSpecifiersCase: false,
       signOperatorsAsSeparateTokens: true,
       ...config,
-    },
-    code,
+    }),
+    E.map(cMergeNumbersTokens),
   );
-
-  return result.map(cMergeNumbersTokens);
-}

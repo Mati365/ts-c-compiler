@@ -1,4 +1,5 @@
 import * as R from 'ramda';
+import * as E from 'fp-ts/Either';
 
 import {
   ASTCCompilerKind,
@@ -170,8 +171,8 @@ export class CTypeInitializerBuilderVisitor extends CInnerTypeTreeVisitor {
       context,
     });
 
-    let exprValue = exprResult.isOk()
-      ? exprResult.unwrap()
+    let exprValue = E.isRight(exprResult)
+      ? exprResult.right
       : node.assignmentExpression;
 
     let expectedType: CType;
@@ -282,9 +283,19 @@ export class CTypeInitializerBuilderVisitor extends CInnerTypeTreeVisitor {
         const constExprResult = evalConstantExpression({
           expression: constantExpression,
           context,
-        }).unwrapOrThrow();
+        });
 
-        if (!baseType.isUnknownSize() && +constExprResult >= dimensions[0]) {
+        if (E.isLeft(constExprResult)) {
+          throw new CTypeCheckError(
+            CTypeCheckErrorCode.UNABLE_EVAL_CONST_EXPRESSION,
+            designation.loc.start,
+          );
+        }
+
+        if (
+          !baseType.isUnknownSize() &&
+          +constExprResult.right >= dimensions[0]
+        ) {
           throw new CTypeCheckError(
             CTypeCheckErrorCode.INDEX_INITIALIZER_ARRAY_OVERFLOW,
             designation.loc.start,
@@ -293,7 +304,7 @@ export class CTypeInitializerBuilderVisitor extends CInnerTypeTreeVisitor {
 
         baseType = baseType.ofTailDimensions();
         offset +=
-          +constExprResult *
+          +constExprResult.right *
           dimensions.reduce((acc, num, index) => (index ? acc * num : 1), 1) *
           type.scalarValuesCount;
       }

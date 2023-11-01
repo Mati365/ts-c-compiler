@@ -1,6 +1,7 @@
-import { fixme } from '@ts-c-compiler/core';
+import * as O from 'fp-ts/Option';
+import { pipe } from 'fp-ts/function';
 
-import { Option, none, some } from '@ts-c-compiler/core';
+import { fixme } from '@ts-c-compiler/core';
 import { TokenType } from '@ts-c-compiler/lexer';
 
 import { IRError, IRErrorCode } from '../../../errors/IRError';
@@ -71,14 +72,21 @@ type InstructionConcatArgs = {
 export function tryConcatMathInstructions({
   a,
   b,
-}: InstructionConcatArgs): Option<IRInstruction> {
+}: InstructionConcatArgs): O.Option<IRInstruction> {
   if (!a || !b) {
-    return none();
+    return O.none;
   }
 
   if (isIRMathInstruction(a) && isIRMathInstruction(b)) {
-    const flippedA = a.tryFlipConstantsToRight().unwrapOr<IRMathInstruction>(a);
-    const flippedB = b.tryFlipConstantsToRight().unwrapOr<IRMathInstruction>(b);
+    const flippedA = pipe(
+      a.tryFlipConstantsToRight(),
+      O.getOrElse(() => a),
+    );
+
+    const flippedB = pipe(
+      b.tryFlipConstantsToRight(),
+      O.getOrElse(() => b),
+    );
 
     const aArg = isIRConstant(flippedA.rightVar) && flippedA.rightVar;
     const bArg = isIRConstant(flippedB.rightVar) && flippedB.rightVar;
@@ -90,7 +98,7 @@ export function tryConcatMathInstructions({
       !flippedB.leftVar.isShallowEqual(flippedA.outputVar) ||
       !canConcatOperators(flippedA.operator, flippedB.operator)
     ) {
-      return none();
+      return O.none;
     }
 
     if (flippedA.hasBothConstantArgs() || flippedB.hasBothConstantArgs()) {
@@ -112,7 +120,7 @@ export function tryConcatMathInstructions({
       [TokenType.MINUS, TokenType.PLUS].includes(flippedA.operator) &&
       Math.sign(evalResult) === -1
     ) {
-      return some(
+      return O.some(
         new IRMathInstruction(
           flipOperator(flippedA.operator),
           flippedA.getFirstVarArg(),
@@ -122,7 +130,7 @@ export function tryConcatMathInstructions({
       );
     }
 
-    return some(
+    return O.some(
       new IRMathInstruction(
         flippedA.operator,
         flippedA.getFirstVarArg(),
@@ -132,5 +140,5 @@ export function tryConcatMathInstructions({
     );
   }
 
-  return none();
+  return O.none;
 }

@@ -1,6 +1,7 @@
 import * as R from 'ramda';
+import * as E from 'fp-ts/Either';
 
-import { Result, err, ok, tryReduce } from '@ts-c-compiler/core';
+import { tryReduceEithers } from '@ts-c-compiler/core';
 import {
   CTypeCheckError,
   CTypeCheckErrorCode,
@@ -18,23 +19,22 @@ type KeywordsParserAttrs = {
  * @example
  *  ['long', 'short'] => 0b0110
  */
-export function parseKeywordsToBitset({
+export const parseKeywordsToBitset = ({
   bitmap,
   keywords,
   errorCode,
-}: KeywordsParserAttrs): Result<number, CTypeCheckError> {
-  return tryReduce(
+}: KeywordsParserAttrs): E.Either<CTypeCheckError, number> =>
+  tryReduceEithers(
     (acc, keyword) => {
       const bitFlag: number = bitmap[keyword] as any;
 
       // do not allow to redefine specifier! it is syntax error!
       if (R.isNil(bitFlag) || (acc & bitFlag) !== 0) {
-        return err(new CTypeCheckError(errorCode));
+        return E.left(new CTypeCheckError(errorCode));
       }
 
-      return ok(acc | bitFlag);
+      return E.right(acc | bitFlag);
     },
     0,
     keywords || [],
   );
-}

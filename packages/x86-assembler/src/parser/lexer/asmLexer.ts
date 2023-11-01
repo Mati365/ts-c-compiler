@@ -1,8 +1,6 @@
 import { lexer, LexerConfig, TokenParsersMap } from '@ts-c-compiler/lexer';
 import { safeResultLexer } from '@ts-c-compiler/lexer';
 
-import { Result } from '@ts-c-compiler/core';
-import { LexerError } from '@ts-c-compiler/lexer';
 import {
   Token,
   TokenType,
@@ -38,31 +36,17 @@ export const TOKEN_PARSERS: TokenParsersMap = Object.freeze({
 /**
  * Lexer for assembler lang
  */
-export function asmLexer(
-  lexerConfig: LexerConfig,
-  code: string,
-): IterableIterator<Token> {
-  return lexer(
-    {
-      tokensParsers: TOKEN_PARSERS,
-      ...lexerConfig,
-    },
-    code,
-  );
-}
+export const asmLexer = (lexerConfig?: LexerConfig) =>
+  lexer({
+    tokensParsers: TOKEN_PARSERS,
+    ...lexerConfig,
+  });
 
 /**
  * ASM lexer that does not throw errors
  */
-export function safeResultAsmLexer(
-  lexerConfig: LexerConfig,
-  code: string,
-): Result<Token[], LexerError[]> {
-  return safeResultLexer(
-    {
-      tokensParsers: TOKEN_PARSERS,
-      ...lexerConfig,
-    },
-    code,
-  );
-}
+export const safeResultAsmLexer = (lexerConfig?: LexerConfig) =>
+  safeResultLexer({
+    tokensParsers: TOKEN_PARSERS,
+    ...lexerConfig,
+  });

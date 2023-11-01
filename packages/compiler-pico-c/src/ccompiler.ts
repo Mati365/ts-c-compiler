@@ -1,4 +1,5 @@
-import { ok } from '@ts-c-compiler/core';
+import * as E from 'fp-ts/Either';
+import { pipe } from 'fp-ts/function';
 
 import { createCCompilerTimings } from './frontend/utils/createCCompilerTimings';
 import { CCompilerConfig, CCompilerArch } from './constants/config';
@@ -14,33 +15,39 @@ import { CCompilerOutput } from './output/CCompilerOutput';
  *  Flow:
  *  Lexer -> ASTGenerator -> ASTIRCompiler -> X86CodeGen
  */
-export function ccompiler(
-  code: string,
-  ccompilerConfig: CCompilerConfig = {
-    arch: CCompilerArch.X86_16,
-    optimization: {
-      enabled: true,
+export const ccompiler =
+  (
+    ccompilerConfig: CCompilerConfig = {
+      arch: CCompilerArch.X86_16,
+      optimization: {
+        enabled: true,
+      },
     },
-  },
-) {
-  const timings = createCCompilerTimings();
+  ) =>
+  (code: string) => {
+    const timings = createCCompilerTimings();
 
-  return cIRCompiler(code, {
-    ...ccompilerConfig,
-    timings,
-  })
-    .andThen(
-      timings.add('codegen', ({ ir, ...result }) =>
-        genASMIRCode(ccompilerConfig, ir).andThen(codegen =>
-          ok({
-            ...result,
-            codegen,
-            ir,
-          }),
+    return pipe(
+      code,
+      cIRCompiler({
+        ...ccompilerConfig,
+        timings,
+      }),
+      E.chainW(
+        timings.chainIO('codegen', ({ ir, ...result }) =>
+          pipe(
+            genASMIRCode(ccompilerConfig, ir),
+            E.map(codegen => ({
+              ...result,
+              codegen,
+              ir,
+            })),
+          ),
         ),
       ),
-    )
-    .andThen(({ tree, scope, ir, codegen }) =>
-      ok(new CCompilerOutput(code, tree, scope, ir, codegen, timings.unwrap())),
+      E.map(
+        ({ tree, scope, ir, codegen }) =>
+          new CCompilerOutput(code, tree, scope, ir, codegen, timings.unwrap()),
+      ),
     );
-}
+  };

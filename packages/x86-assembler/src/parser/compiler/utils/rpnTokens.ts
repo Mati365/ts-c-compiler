@@ -1,17 +1,12 @@
 import * as R from 'ramda';
+import * as E from 'fp-ts/Either';
 
 import { rpn } from '@ts-c-compiler/rpn';
 import { MathErrorCode } from '@ts-c-compiler/rpn';
 
-import { Result } from '@ts-c-compiler/core';
 import { MathParserConfig } from '@ts-c-compiler/rpn';
 import { Token, TokenType, NumberToken } from '@ts-c-compiler/lexer';
-
-import {
-  ok,
-  err,
-  ASTExpressionParserError,
-} from '../../ast/critical/ASTExpression';
+import { ASTExpressionParserError } from '../../ast/critical/ASTExpression';
 
 /**
  * Concat all tokens text into one string
@@ -75,13 +70,13 @@ export function rpnTokens(tokens: Token[], parserConfig?: MathParserConfig) {
 export function safeKeywordResultRPN(
   config: MathParserConfig,
   tokens: Token[] | string,
-): Result<number, ASTExpressionParserError> {
+): E.Either<ASTExpressionParserError, number> {
   try {
     if (R.is(String, tokens)) {
-      return ok(rpn(<string>tokens, config));
+      return E.right(rpn(<string>tokens, config));
     }
 
-    return ok(rpnTokens(<Token[]>tokens, config));
+    return E.right(rpnTokens(<Token[]>tokens, config));
   } catch (e) {
     if (tokens[0] instanceof Token) {
       e.loc = tokens[0].loc;
@@ -94,6 +89,6 @@ export function safeKeywordResultRPN(
       throw e;
     }
 
-    return err(ASTExpressionParserError.UNRESOLVED_LABEL);
+    return E.left(ASTExpressionParserError.UNRESOLVED_LABEL);
   }
 }
