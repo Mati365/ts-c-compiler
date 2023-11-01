@@ -18,7 +18,7 @@ export function evalConstantExpression({
   expression,
 }: EvalExpressionAttrs): E.Either<CTypeCheckError, ConstantOperationResult> {
   if (!expression) {
-    return E.left(null);
+    return E.right(null);
   }
 
   try {

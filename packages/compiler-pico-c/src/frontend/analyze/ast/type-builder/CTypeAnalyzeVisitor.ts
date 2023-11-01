@@ -48,9 +48,11 @@ export class CTypeAnalyzeVisitor extends CInnerTypeTreeVisitor {
   get scope() {
     return this.context.scope;
   }
+
   get arch() {
     return this.context.config.arch;
   }
+
   get currentAnalyzed() {
     return this.context.currentAnalyzed;
   }

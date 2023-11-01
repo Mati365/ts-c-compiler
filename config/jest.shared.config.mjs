@@ -30,6 +30,8 @@ export const createJestConfig = ({ rootDir }) => {
             ...compilerOptions,
             module: 'EsNext',
             moduleResolution: 'NodeNext',
+            declaration: false,
+            declarationMap: false,
           },
         },
       ],

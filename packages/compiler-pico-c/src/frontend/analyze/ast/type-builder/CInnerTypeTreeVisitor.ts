@@ -10,6 +10,7 @@ export abstract class CInnerTypeTreeVisitor<
   get arch() {
     return this.context.config.arch;
   }
+
   get scope() {
     return this.context.scope;
   }
