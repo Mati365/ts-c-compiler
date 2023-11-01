@@ -135,238 +135,240 @@ export type LexerConfig = {
  * @see
  *  It contains also lexer logic!
  */
-export function* lexer(
-  config: LexerConfig,
-  code: string,
-): IterableIterator<Token> {
-  const {
-    commentParser,
-    allowBracketPrefixKeyword,
-    terminalCharacters = TERMINAL_CHARACTERS,
-    ignoreEOL,
-    appendEOF = true,
-    signOperatorsAsSeparateTokens = false,
-    consumeBracketContent = true,
-  } = config;
+export const lexer = (config: LexerConfig) =>
+  function* (code: string): IterableIterator<Token> {
+    const {
+      commentParser,
+      allowBracketPrefixKeyword,
+      terminalCharacters = TERMINAL_CHARACTERS,
+      ignoreEOL,
+      appendEOF = true,
+      signOperatorsAsSeparateTokens = false,
+      consumeBracketContent = true,
+    } = config;
 
-  const { length } = code;
-  const location = new TokenLocation();
+    const { length } = code;
+    const location = new TokenLocation();
 
-  let tokenBuffer = '';
-  let offset = 0;
+    let tokenBuffer = '';
+    let offset = 0;
 
-  function* appendToken(token: Token): Iterable<Token> {
-    if (!token) {
-      return;
-    }
-
-    tokenBuffer = '';
-    yield token;
-  }
-
-  /**
-   * Handles single character terminals such as a b c
-   */
-  function* appendCharToken(
-    type: TokenType,
-    character: string,
-  ): IterableIterator<Token> {
-    if (tokenBuffer.length) {
-      const trimmedTokenBuffer = R.trim(tokenBuffer);
-
-      if (trimmedTokenBuffer.length) {
-        // it clears tokenBuffer
-        yield* appendToken(parseToken(config, location, trimmedTokenBuffer));
+    function* appendToken(token: Token): Iterable<Token> {
+      if (!token) {
+        return;
       }
 
       tokenBuffer = '';
+      yield token;
     }
 
-    yield* appendToken(new Token(type, null, character, location.clone()));
-  }
+    /**
+     * Handles single character terminals such as a b c
+     */
+    function* appendCharToken(
+      type: TokenType,
+      character: string,
+    ): IterableIterator<Token> {
+      if (tokenBuffer.length) {
+        const trimmedTokenBuffer = R.trim(tokenBuffer);
 
-  /**
-   * Handles sequention of characters like "abc asd"
-   */
-  function* appendTokenWithSpaces(
-    type: TokenType,
-    kind: TokenKind,
-    fetchUntil: (str: string) => boolean,
-  ): Iterable<Token> {
-    tokenBuffer = '';
+        if (trimmedTokenBuffer.length) {
+          // it clears tokenBuffer
+          yield* appendToken(parseToken(config, location, trimmedTokenBuffer));
+        }
 
-    for (; ; ++offset) {
-      if (fetchUntil(code[offset])) {
-        break;
+        tokenBuffer = '';
       }
 
-      if (offset >= length) {
-        throw new LexerError(LexerErrorCode.UNTERMINATED_STRING);
-      }
-
-      tokenBuffer += code[offset];
+      yield* appendToken(new Token(type, null, character, location.clone()));
     }
 
-    yield* appendToken(new Token(type, kind, tokenBuffer, location.clone()));
-    tokenBuffer = '';
-  }
+    /**
+     * Handles sequention of characters like "abc asd"
+     */
+    function* appendTokenWithSpaces(
+      type: TokenType,
+      kind: TokenKind,
+      fetchUntil: (str: string) => boolean,
+    ): Iterable<Token> {
+      tokenBuffer = '';
 
-  /**
-   * Parses single character, appends it to token buffer and conditionally flushes
-   */
-  function* parseCharacter(character: string, eol: boolean) {
-    // break line character
-    if (character === '\\') {
-      offset++;
-      for (; offset < code.length; ++offset) {
-        if (isNewline(code[offset])) {
-          ++offset;
+      for (; ; ++offset) {
+        if (fetchUntil(code[offset])) {
           break;
         }
+
+        if (offset >= length) {
+          throw new LexerError(LexerErrorCode.UNTERMINATED_STRING);
+        }
+
+        tokenBuffer += code[offset];
       }
-      return;
+
+      yield* appendToken(new Token(type, kind, tokenBuffer, location.clone()));
+      tokenBuffer = '';
     }
 
-    // ignore line, it is comment
-    if (commentParser) {
-      const newOffset = commentParser(code, offset, character);
-      if (newOffset !== null) {
-        offset = newOffset;
+    /**
+     * Parses single character, appends it to token buffer and conditionally flushes
+     */
+    function* parseCharacter(character: string, eol: boolean) {
+      // break line character
+      if (character === '\\') {
+        offset++;
+        for (; offset < code.length; ++offset) {
+          if (isNewline(code[offset])) {
+            ++offset;
+            break;
+          }
+        }
         return;
       }
-    } else if (isComment(character)) {
-      for (; offset < length; ++offset) {
-        if (isNewline(code[offset + 1])) {
-          break;
+
+      // ignore line, it is comment
+      if (commentParser) {
+        const newOffset = commentParser(code, offset, character);
+        if (newOffset !== null) {
+          offset = newOffset;
+          return;
         }
-      }
-      return;
-    }
-
-    // special tokens that might contain spaces inside them
-    const quote = matchQuote(character);
-    if (quote) {
-      if (tokenBuffer) {
-        throw new LexerError(LexerErrorCode.UNKNOWN_TOKEN, null, {
-          token: tokenBuffer,
-        });
+      } else if (isComment(character)) {
+        for (; offset < length; ++offset) {
+          if (isNewline(code[offset + 1])) {
+            break;
+          }
+        }
+        return;
       }
 
-      offset++;
-      yield* appendTokenWithSpaces(TokenType.QUOTE, quote, R.equals(character));
-      return;
-    }
+      // special tokens that might contain spaces inside them
+      const quote = matchQuote(character);
+      if (quote) {
+        if (tokenBuffer) {
+          throw new LexerError(LexerErrorCode.UNKNOWN_TOKEN, null, {
+            token: tokenBuffer,
+          });
+        }
 
-    const bracket = matchBracket(character);
-    if (bracket) {
-      if (tokenBuffer) {
-        // handle case test[123]
-        if (allowBracketPrefixKeyword && character === '(') {
-          // if empty character
+        offset++;
+        yield* appendTokenWithSpaces(
+          TokenType.QUOTE,
+          quote,
+          R.equals(character),
+        );
+        return;
+      }
+
+      const bracket = matchBracket(character);
+      if (bracket) {
+        if (tokenBuffer) {
+          // handle case test[123]
+          if (allowBracketPrefixKeyword && character === '(') {
+            // if empty character
+            yield* appendToken(
+              new Token(
+                TokenType.KEYWORD,
+                TokenKind.BRACKET_PREFIX,
+                tokenBuffer,
+                location.clone(),
+              ),
+            );
+          } else {
+            yield* appendToken(parseToken(config, location, tokenBuffer));
+          }
+        }
+
+        if (consumeBracketContent) {
+          const flippedBracket = flipBracket(character);
+          let nesting = 1;
+
+          offset++;
+          yield* appendTokenWithSpaces(TokenType.BRACKET, bracket, c => {
+            if (c === character) {
+              nesting++;
+            } else if (c === flippedBracket) {
+              nesting--;
+            }
+
+            return nesting <= 0;
+          });
+        } else {
           yield* appendToken(
-            new Token(
-              TokenType.KEYWORD,
-              TokenKind.BRACKET_PREFIX,
-              tokenBuffer,
-              location.clone(),
-            ),
+            new Token(TokenType.BRACKET, bracket, character, location.clone()),
+          );
+        }
+
+        return;
+      }
+
+      // end of line
+      if (eol && !ignoreEOL) {
+        yield* appendCharToken(TokenType.EOL, character);
+      } else {
+        // handle ++, && etc. two byte terminals
+        const binarySeparator = character + code[offset + 1];
+        const ternarySeparator = binarySeparator + code[offset + 2];
+
+        if (terminalCharacters[ternarySeparator]) {
+          offset += 2;
+          yield* appendCharToken(
+            terminalCharacters[ternarySeparator],
+            ternarySeparator,
+          );
+        } else if (terminalCharacters[binarySeparator]) {
+          offset++;
+          yield* appendCharToken(
+            terminalCharacters[binarySeparator],
+            binarySeparator,
           );
         } else {
-          yield* appendToken(parseToken(config, location, tokenBuffer));
-        }
-      }
-
-      if (consumeBracketContent) {
-        const flippedBracket = flipBracket(character);
-        let nesting = 1;
-
-        offset++;
-        yield* appendTokenWithSpaces(TokenType.BRACKET, bracket, c => {
-          if (c === character) {
-            nesting++;
-          } else if (c === flippedBracket) {
-            nesting--;
-          }
-
-          return nesting <= 0;
-        });
-      } else {
-        yield* appendToken(
-          new Token(TokenType.BRACKET, bracket, character, location.clone()),
-        );
-      }
-
-      return;
-    }
-
-    // end of line
-    if (eol && !ignoreEOL) {
-      yield* appendCharToken(TokenType.EOL, character);
-    } else {
-      // handle ++, && etc. two byte terminals
-      const binarySeparator = character + code[offset + 1];
-      const ternarySeparator = binarySeparator + code[offset + 2];
-
-      if (terminalCharacters[ternarySeparator]) {
-        offset += 2;
-        yield* appendCharToken(
-          terminalCharacters[ternarySeparator],
-          ternarySeparator,
-        );
-      } else if (terminalCharacters[binarySeparator]) {
-        offset++;
-        yield* appendCharToken(
-          terminalCharacters[binarySeparator],
-          binarySeparator,
-        );
-      } else {
-        // handle single character terminals
-        const separator = terminalCharacters[character];
-        if (separator) {
-          // numbers - +1, -2, - 2, + 2
-          if (
-            !signOperatorsAsSeparateTokens &&
-            (separator === TokenType.PLUS || separator === TokenType.MINUS) &&
-            Number.isInteger(+code[offset + 1])
-          ) {
+          // handle single character terminals
+          const separator = terminalCharacters[character];
+          if (separator) {
+            // numbers - +1, -2, - 2, + 2
+            if (
+              !signOperatorsAsSeparateTokens &&
+              (separator === TokenType.PLUS || separator === TokenType.MINUS) &&
+              Number.isInteger(+code[offset + 1])
+            ) {
+              tokenBuffer += character;
+            } else {
+              yield* appendCharToken(separator, character);
+            }
+          } else if (!isWhitespace(character)) {
+            // append character and find matching token
             tokenBuffer += character;
-          } else {
-            yield* appendCharToken(separator, character);
+          } else if (tokenBuffer.length) {
+            // if empty character
+            yield* appendToken(parseToken(config, location, tokenBuffer));
           }
-        } else if (!isWhitespace(character)) {
-          // append character and find matching token
-          tokenBuffer += character;
-        } else if (tokenBuffer.length) {
-          // if empty character
-          yield* appendToken(parseToken(config, location, tokenBuffer));
         }
       }
     }
-  }
 
-  for (; offset < length; ) {
-    const character = code[offset];
-    const eol = isNewline(character);
-    const preParseOffset = offset;
+    for (; offset < length; ) {
+      const character = code[offset];
+      const eol = isNewline(character);
+      const preParseOffset = offset;
 
-    yield* parseCharacter(character, eol);
+      yield* parseCharacter(character, eol);
 
-    // used for logger
-    ++offset;
-    if (eol) {
-      location.column = 0;
-      location.row++;
-    } else {
-      location.column += offset - preParseOffset;
+      // used for logger
+      ++offset;
+      if (eol) {
+        location.column = 0;
+        location.row++;
+      } else {
+        location.column += offset - preParseOffset;
+      }
     }
-  }
 
-  if (tokenBuffer) {
-    yield* appendToken(parseToken(config, location, tokenBuffer));
-  }
+    if (tokenBuffer) {
+      yield* appendToken(parseToken(config, location, tokenBuffer));
+    }
 
-  // end of file
-  if (appendEOF) {
-    yield* appendCharToken(TokenType.EOF, null);
-  }
-}
+    // end of file
+    if (appendEOF) {
+      yield* appendCharToken(TokenType.EOF, null);
+    }
+  };

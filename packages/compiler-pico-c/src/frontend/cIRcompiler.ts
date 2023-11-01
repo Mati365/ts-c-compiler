@@ -1,45 +1,51 @@
-import { ok } from '@ts-c-compiler/core';
+import * as E from 'fp-ts/Either';
+import { pipe } from 'fp-ts/function';
 
+import { CCompilerConfig, CCompilerArch } from '../constants/config';
 import {
   CCompilerTimer,
   createCCompilerTimings,
 } from './utils/createCCompilerTimings';
-import { CCompilerConfig, CCompilerArch } from '../constants/config';
 
 import { safeGenerateTree, clexer } from './parser';
 import { safeBuildIRCode } from './ir';
-import { safeBuildTypedTree } from './analyze';
+import { safeBuildTypedTree, type ScopeTreeBuilderResult } from './analyze';
 
 type IRCompilerConfig = CCompilerConfig & {
   timings?: CCompilerTimer;
 };
 
-export function cIRCompiler(
-  code: string,
-  {
-    timings = createCCompilerTimings(),
-    ...ccompilerConfig
-  }: IRCompilerConfig = {
-    arch: CCompilerArch.X86_16,
-    optimization: {
-      enabled: true,
+export const cIRCompiler =
+  (
+    {
+      timings = createCCompilerTimings(),
+      ...ccompilerConfig
+    }: IRCompilerConfig = {
+      arch: CCompilerArch.X86_16,
+      optimization: {
+        enabled: true,
+      },
     },
-  },
-) {
-  return timings
-    .add('lexer', clexer)(ccompilerConfig.lexer, code)
-    .andThen(timings.add('ast', safeGenerateTree))
-    .andThen(
-      timings.add('analyze', tree => safeBuildTypedTree(ccompilerConfig, tree)),
-    )
-    .andThen(
-      timings.add('ir', result =>
-        safeBuildIRCode(ccompilerConfig, result.scope).andThen(ir =>
-          ok({
-            ir,
-            ...result,
-          }),
+  ) =>
+  (code: string) =>
+    pipe(
+      code,
+      timings.chainIO('lexer', clexer(ccompilerConfig.lexer)),
+      E.chain(timings.chainIO('ast', safeGenerateTree)),
+      E.chainW(timings.chainIO('analyze', safeBuildTypedTree(ccompilerConfig))),
+      E.chainW(
+        timings.chainIO(
+          'analyze',
+          ({ scope, ...analyzeResult }: ScopeTreeBuilderResult) =>
+            pipe(
+              scope,
+              safeBuildIRCode(ccompilerConfig),
+              E.map(ir => ({
+                ...analyzeResult,
+                scope,
+                ir,
+              })),
+            ),
         ),
       ),
     );
-}

@@ -1,9 +1,10 @@
-import { Result, ok, err } from '@ts-c-compiler/core';
-
-export { ok, err };
+import type * as E from 'fp-ts/Either';
 
 export enum ASTExpressionParserError {
   UNRESOLVED_LABEL,
 }
 
-export type ASTExpressionParserResult<T> = Result<T, ASTExpressionParserError>;
+export type ASTExpressionParserResult<T> = E.Either<
+  ASTExpressionParserError,
+  T
+>;

@@ -1,4 +1,5 @@
 import * as R from 'ramda';
+import * as E from 'fp-ts/Either';
 
 import { RegisterToken } from '../../../../parser/lexer/tokens';
 import { TokenType, TokenKind, Token } from '@ts-c-compiler/lexer';
@@ -14,11 +15,7 @@ import { asmLexer } from '../../../lexer/asmLexer';
 import { safeKeywordResultRPN } from '../../../compiler/utils';
 
 import { ASTLabelAddrResolver } from '../ASTResolvableArg';
-import {
-  ASTExpressionParserResult,
-  ok,
-  err,
-} from '../../critical/ASTExpression';
+import { ASTExpressionParserResult } from '../../critical/ASTExpression';
 
 import { ParserError, ParserErrorCode } from '../../../../shared/ParserError';
 import {
@@ -55,13 +52,10 @@ function parseMemExpression(
   expression: string,
 ): ASTExpressionParserResult<MemAddressDescription> {
   let tokens = Array.from(
-    asmLexer(
-      {
-        appendEOF: false,
-        signOperatorsAsSeparateTokens: true,
-      },
-      expression,
-    ),
+    asmLexer({
+      appendEOF: false,
+      signOperatorsAsSeparateTokens: true,
+    })(expression),
   );
 
   const addressDescription: MemAddressDescription = {
@@ -112,12 +106,13 @@ function parseMemExpression(
         },
         [expr],
       );
-      if (scaleResult.isErr()) {
-        return err(scaleResult.unwrapErr());
+      if (E.isLeft(scaleResult)) {
+        return scaleResult;
       }
 
       // calc scale
-      const scale = scaleResult.unwrap();
+      const scale = scaleResult.right;
+
       if (!isValidScale(scale)) {
         throw new ParserError(ParserErrorCode.INCORRECT_SCALE, null, { scale });
       }
@@ -161,11 +156,11 @@ function parseMemExpression(
       tokens,
     );
 
-    if (dispResult.isErr()) {
-      return err(dispResult.unwrapErr());
+    if (E.isLeft(dispResult)) {
+      return dispResult;
     }
 
-    addressDescription.disp = dispResult.unwrap();
+    addressDescription.disp = dispResult.right;
   }
 
   if (addressDescription.disp !== null) {
@@ -188,7 +183,7 @@ function parseMemExpression(
     addressDescription.signedByteSize = 0;
   }
 
-  return ok(addressDescription);
+  return E.right(addressDescription);
 }
 
 /**
@@ -260,10 +255,8 @@ export class ASTInstructionMemPtrArg extends ASTInstructionArg<MemAddressDescrip
     }
 
     const parsedMemResult = parseMemExpression(labelResolver, phrase);
-    if (parsedMemResult.isOk()) {
-      const parsedMem = parsedMemResult.unwrap();
-
-      this.value = parsedMem;
+    if (E.isRight(parsedMemResult)) {
+      this.value = parsedMemResult.right;
       this.resolved = true;
     }
 

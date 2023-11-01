@@ -1,6 +1,8 @@
 import * as R from 'ramda';
+import * as E from 'fp-ts/Either';
+import * as A from 'fp-ts/Array';
+import { pipe } from 'fp-ts/function';
 
-import { Result, ok, err, tryFold } from '@ts-c-compiler/core';
 import { AbstractTreeVisitor, IsWalkableNode } from '@ts-c-compiler/grammar';
 
 import { CTypeCheckConfig } from '../constants';
@@ -109,12 +111,12 @@ export class CScopeTree<C extends ASTCCompilerNode = ASTCCompilerNode>
   defineCompileTimeConstant(
     name: string,
     value: number,
-  ): Result<number, CTypeCheckError> {
+  ): E.Either<CTypeCheckError, number> {
     const { compileTimeConstants } = this;
 
     const constant = this.findCompileTimeConstant(name);
     if (!R.isNil(constant)) {
-      return err(
+      return E.left(
         new CTypeCheckError(
           CTypeCheckErrorCode.REDEFINITION_OF_COMPILE_CONSTANT,
           null,
@@ -126,7 +128,7 @@ export class CScopeTree<C extends ASTCCompilerNode = ASTCCompilerNode>
     }
 
     compileTimeConstants[name] = value;
-    return ok(value);
+    return E.right(value);
   }
 
   defineTypedef(def: CTypedef): CTypedef {
@@ -144,12 +146,12 @@ export class CScopeTree<C extends ASTCCompilerNode = ASTCCompilerNode>
    * @see
    *  Performs auto-cast
    */
-  defineVariable(variable: CVariable): Result<CVariable, CTypeCheckError> {
+  defineVariable(variable: CVariable): E.Either<CTypeCheckError, CVariable> {
     const { variables } = this;
     const { name } = variable;
 
     if (this.findVariable(name, false)) {
-      return err(
+      return E.left(
         new CTypeCheckError(
           CTypeCheckErrorCode.REDEFINITION_OF_VARIABLE,
           null,
@@ -162,7 +164,8 @@ export class CScopeTree<C extends ASTCCompilerNode = ASTCCompilerNode>
 
     const mappedVariable = variable.ofGlobalScope(this.isGlobal());
     variables[name] = mappedVariable;
-    return ok(mappedVariable);
+
+    return E.right(mappedVariable);
   }
 
   /**
@@ -170,8 +173,12 @@ export class CScopeTree<C extends ASTCCompilerNode = ASTCCompilerNode>
    */
   defineVariables(
     variables: CVariable[],
-  ): Result<CVariable[], CTypeCheckError> {
-    return tryFold(variable => this.defineVariable(variable), [], variables);
+  ): E.Either<CTypeCheckError, CVariable[]> {
+    return pipe(
+      variables,
+      A.map(variable => this.defineVariable(variable)),
+      A.sequence(E.Applicative),
+    );
   }
 
   /**
@@ -180,11 +187,11 @@ export class CScopeTree<C extends ASTCCompilerNode = ASTCCompilerNode>
    * @see
    *  If defined is enum - defines also constant compile time integers
    */
-  defineType(type: CAbstractNamedType): Result<CType, CTypeCheckError> {
+  defineType(type: CAbstractNamedType): E.Either<CTypeCheckError, CType> {
     const { types } = this;
 
     if (type.name && types[type.name]) {
-      return err(
+      return E.left(
         new CTypeCheckError(CTypeCheckErrorCode.REDEFINITION_OF_TYPE, null, {
           name: type.name,
         }),
@@ -203,7 +210,7 @@ export class CScopeTree<C extends ASTCCompilerNode = ASTCCompilerNode>
       });
     }
 
-    return ok(registeredType);
+    return E.right(registeredType);
   }
 
   /**

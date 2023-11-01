@@ -1,4 +1,7 @@
 import fs from 'node:fs';
+import * as E from 'fp-ts/Either';
+import { pipe } from 'fp-ts/function';
+
 import { program } from '@commander-js/extra-typings';
 
 import { TableBinaryView, asm } from '@ts-c-compiler/x86-assembler';
@@ -20,41 +23,45 @@ program
   .action((source, options) => {
     const srcFile = fs.readFileSync(source, { encoding: 'utf8', flag: 'r' });
 
-    ccompiler(srcFile).match({
-      ok: result => {
-        if (options.debug) {
-          result.dump();
-        }
+    pipe(
+      srcFile,
+      ccompiler(),
+      E.match(
+        (error: any) => {
+          if (options.debug && error?.[0]?.tree) {
+            console.info(serializeTypedTreeToString(error[0].tree));
+          }
 
-        let asmRaw = result.codegen.asm;
+          console.error(error);
+          process.exit(1);
+        },
+        result => {
+          if (options.debug) {
+            result.dump();
+          }
 
-        if (options.bootsector) {
-          asmRaw = wrapWithX86BootsectorAsm(asmRaw);
-        }
+          let asmRaw = result.codegen.asm;
 
-        const asmResult = asm(asmRaw, {
-          preprocessor: true,
-        });
+          if (options.bootsector) {
+            asmRaw = wrapWithX86BootsectorAsm(asmRaw);
+          }
 
-        if (options.printAssembly) {
-          console.info(TableBinaryView.serializeToString(asmResult));
-        }
+          const asmResult = asm({
+            preprocessor: true,
+          })(asmRaw);
 
-        if (options.output) {
-          fs.writeFileSync(
-            options.output,
-            Buffer.from(asmResult.unwrapOrThrow().output.getBinary()),
-          );
-        }
-      },
-      err: (error: any) => {
-        if (options.debug && error?.[0]?.tree) {
-          console.info(serializeTypedTreeToString(error[0].tree));
-        }
+          if (options.printAssembly) {
+            console.info(TableBinaryView.serializeToString(asmResult));
+          }
 
-        console.error(error);
-        process.exit(1);
-      },
-    });
+          if (options.output && E.isRight(asmResult)) {
+            fs.writeFileSync(
+              options.output,
+              Buffer.from(asmResult.right.output.getBinary()),
+            );
+          }
+        },
+      ),
+    );
   })
   .parse();

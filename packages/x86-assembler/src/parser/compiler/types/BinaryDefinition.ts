@@ -1,4 +1,5 @@
 import * as R from 'ramda';
+import * as E from 'fp-ts/Either';
 
 import {
   extractBytesFromText,
@@ -176,12 +177,12 @@ export class BinaryDefinition extends BinaryBlob<ASTDef> {
         args[argIndex].text,
       );
 
-      if (!result.isOk()) {
+      if (E.isLeft(result)) {
         ++offsetIndex;
         continue;
       }
 
-      const offsetBytes = extractMultipleNumberBytes(byteSize, result.unwrap());
+      const offsetBytes = extractMultipleNumberBytes(byteSize, result.right);
       for (let i = 0; i < offsetBytes.length; ++i) {
         binary[offset + i] = offsetBytes[i];
       }

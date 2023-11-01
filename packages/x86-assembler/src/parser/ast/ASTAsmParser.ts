@@ -1,8 +1,9 @@
+import * as E from 'fp-ts/Either';
+
 import { isWhitespace } from '@ts-c-compiler/lexer';
 
 import { TokensIterator } from '@ts-c-compiler/grammar';
 import { Token, TokenType } from '@ts-c-compiler/lexer';
-import { Result, err, ok } from '@ts-c-compiler/core';
 import { CompilerError } from '@ts-c-compiler/core';
 
 import { ParserError, ParserErrorCode } from '../../shared/ParserError';
@@ -52,7 +53,7 @@ export class ASTAsmParser extends TokensIterator {
   /**
    * Fetches array of matched instructions, labels etc
    */
-  getTree(): Result<ASTAsmTree, CompilerError[]> {
+  getTree(): E.Either<CompilerError[], ASTAsmTree> {
     const { nodeParsers } = this;
     const tree = new ASTAsmTree();
     const errors: CompilerError[] = [];
@@ -90,6 +91,6 @@ export class ASTAsmParser extends TokensIterator {
       return true;
     });
 
-    return errors.length ? err(errors) : ok(tree);
+    return errors.length ? E.left(errors) : E.right(tree);
   }
 }

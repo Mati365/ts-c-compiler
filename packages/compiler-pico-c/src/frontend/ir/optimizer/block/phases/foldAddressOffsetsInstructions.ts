@@ -1,9 +1,11 @@
 import { isNil } from 'ramda';
+import { pipe } from 'fp-ts/function';
+import * as O from 'fp-ts/Option';
+
 import { isIRBranchInstruction } from '../../../guards';
 import {
   IRInstruction,
   IRLeaInstruction,
-  IRMathInstruction,
   isIRLeaInstruction,
   isIRMathInstruction,
   isIRStoreInstruction,
@@ -81,19 +83,23 @@ export function foldAddressOffsetsInstructions(instructions: IRInstruction[]) {
         continue;
       }
 
-      const mathInstruction = prevInstruction
-        .tryFlipConstantsToRight()
-        .unwrapOr<IRMathInstruction>(null);
+      const mathInstruction = pipe(
+        prevInstruction.tryFlipConstantsToRight(),
+        O.toNullable,
+      );
 
       if (!mathInstruction) {
         continue;
       }
 
-      const evalResult = tryEvalConstArgsBinaryInstruction({
-        operator: mathInstruction.operator,
-        leftVar: IRConstant.ofConstant(mathInstruction.leftVar.type, 0x0),
-        rightVar: mathInstruction.rightVar,
-      }).unwrapOr<null>(null);
+      const evalResult = pipe(
+        tryEvalConstArgsBinaryInstruction({
+          operator: mathInstruction.operator,
+          leftVar: IRConstant.ofConstant(mathInstruction.leftVar.type, 0x0),
+          rightVar: mathInstruction.rightVar,
+        }),
+        O.toNullable,
+      );
 
       if (isNil(evalResult)) {
         break;

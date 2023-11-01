@@ -1,3 +1,6 @@
+import { pipe } from 'fp-ts/function';
+import { unwrapEitherOrThrow } from '@ts-c-compiler/core';
+
 import { ASTCStructSpecifier } from 'frontend/parser';
 import {
   CTypeCheckError,
@@ -47,12 +50,18 @@ export function extractStructTypeFromNode({
         type,
       });
 
-      const bitset = +evalConstantExpression({
-        expression: structDeclarator.expression,
-        context,
-      }).unwrapOrThrow();
+      const bitset = +pipe(
+        evalConstantExpression({
+          expression: structDeclarator.expression,
+          context,
+        }),
+        unwrapEitherOrThrow,
+      );
 
-      structType = structType.ofAppendedField(entry, bitset).unwrapOrThrow();
+      structType = pipe(
+        structType.ofAppendedField(entry, bitset),
+        unwrapEitherOrThrow,
+      );
     });
   });
 

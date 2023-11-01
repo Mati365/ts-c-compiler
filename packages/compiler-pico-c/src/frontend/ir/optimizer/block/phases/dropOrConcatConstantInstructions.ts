@@ -1,3 +1,5 @@
+import * as O from 'fp-ts/Option';
+
 import {
   IRAssignInstruction,
   IRInstruction,
@@ -75,9 +77,9 @@ export function dropOrConcatConstantInstructions(
     if (isIRMathInstruction(instruction)) {
       const evalResult = tryEvalConstArgsBinaryInstruction(instruction);
 
-      if (evalResult.isSome()) {
+      if (O.isSome(evalResult)) {
         newInstructions[i] = new IRAssignInstruction(
-          IRConstant.ofConstant(instruction.leftVar.type, evalResult.unwrap()),
+          IRConstant.ofConstant(instruction.leftVar.type, evalResult.value),
           instruction.outputVar,
           {
             virtual: true,
@@ -93,8 +95,8 @@ export function dropOrConcatConstantInstructions(
       b: instruction,
     });
 
-    if (concatedInstruction.isSome()) {
-      newInstructions[i - 1] = concatedInstruction.unwrap();
+    if (O.isSome(concatedInstruction)) {
+      newInstructions[i - 1] = concatedInstruction.value;
       newInstructions.splice(i, 1);
       --i;
     } else {

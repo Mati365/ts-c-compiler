@@ -1,4 +1,4 @@
-import { Result, err, ok } from '@ts-c-compiler/core';
+import * as E from 'fp-ts/Either';
 
 import { CScopeTree } from '../analyze';
 import { IRGeneratorConfig } from './constants';
@@ -10,18 +10,17 @@ import { optimizeIRResult } from './optimizer';
 
 export type IRCodeBuilderResult = IRScopeGeneratorResult;
 
-export function safeBuildIRCode(
-  config: IRGeneratorConfig,
-  tree: CScopeTree,
-): Result<IRCodeBuilderResult, IRError[]> {
-  try {
-    const ir = new IRGeneratorGlobalVisitor(config).visit(tree).flush();
-    const optimizedIr = optimizeIRResult(config.optimization, ir);
+export const safeBuildIRCode =
+  (config: IRGeneratorConfig) =>
+  (scope: CScopeTree): E.Either<IRError[], IRCodeBuilderResult> => {
+    try {
+      const ir = new IRGeneratorGlobalVisitor(config).visit(scope).flush();
+      const optimizedIr = optimizeIRResult(config.optimization, ir);
 
-    return ok(optimizedIr);
-  } catch (e) {
-    e.code = e.code ?? IRErrorCode.GENERATOR_ERROR;
+      return E.right(optimizedIr);
+    } catch (e) {
+      e.code = e.code ?? IRErrorCode.GENERATOR_ERROR;
 
-    return err([e]);
-  }
-}
+      return E.left([e]);
+    }
+  };

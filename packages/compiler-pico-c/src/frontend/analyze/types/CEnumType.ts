@@ -1,13 +1,14 @@
 import * as R from 'ramda';
+import * as E from 'fp-ts/Either';
 
 import { dumpCompilerAttrs } from '@ts-c-compiler/core';
 
-import { Result, err, ok } from '@ts-c-compiler/core';
 import { CCompilerArch } from '#constants';
 import {
   CTypeCheckError,
   CTypeCheckErrorCode,
 } from '../errors/CTypeCheckError';
+
 import { CType, CTypeDescriptor } from './CType';
 import { CPrimitiveType } from './CPrimitiveType';
 
@@ -50,10 +51,10 @@ export class CEnumType extends CType<CEnumDescriptor> {
   ofAppendedField(
     name: string,
     value: number,
-  ): Result<CEnumType, CTypeCheckError> {
+  ): E.Either<CTypeCheckError, CEnumType> {
     return this.bind(state => {
       if (this.hasField(name)) {
-        return err(
+        return E.left(
           new CTypeCheckError(
             CTypeCheckErrorCode.REDEFINITION_OF_ENUM_ENTRY,
             null,
@@ -64,7 +65,7 @@ export class CEnumType extends CType<CEnumDescriptor> {
         );
       }
 
-      return ok(
+      return E.right(
         new CEnumType({
           ...state,
           fields: new Map([...this.getFieldsList(), [name, value]]),

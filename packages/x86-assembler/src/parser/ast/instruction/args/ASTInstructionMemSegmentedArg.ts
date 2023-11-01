@@ -1,11 +1,10 @@
+import * as E from 'fp-ts/Either';
 import { Token, NumberToken, NumberTokenValue } from '@ts-c-compiler/lexer';
 
 import { ParserError, ParserErrorCode } from '../../../../shared/ParserError';
 import {
   ASTExpressionParserResult,
   ASTExpressionParserError,
-  ok,
-  err,
 } from '../../critical/ASTExpression';
 
 import { InstructionArgSize, InstructionArgType } from '../../../../types';
@@ -31,12 +30,9 @@ export function parseSegmentedMemExpression(
   expression: string,
 ): ASTExpressionParserResult<ASTSegmentedAddressDescription> {
   let tokens = Array.from(
-    asmLexer(
-      {
-        appendEOF: false,
-      },
-      expression,
-    ),
+    asmLexer({
+      appendEOF: false,
+    })(expression),
   );
 
   if (tokens?.length !== 3) {
@@ -62,7 +58,7 @@ export function parseSegmentedMemExpression(
         expression,
       });
     } else {
-      return err(ASTExpressionParserError.UNRESOLVED_LABEL);
+      return E.left(ASTExpressionParserError.UNRESOLVED_LABEL);
     }
   }
 
@@ -85,7 +81,9 @@ export function parseSegmentedMemExpression(
     });
   }
 
-  return ok(new ASTSegmentedAddressDescription(segment.value, offset.value));
+  return E.right(
+    new ASTSegmentedAddressDescription(segment.value, offset.value),
+  );
 }
 
 /**
@@ -131,8 +129,8 @@ export class ASTInstructionMemSegmentedArg extends ASTInstructionArg<ASTSegmente
 
     const parsedMemResult = parseSegmentedMemExpression(labelResolver, phrase);
 
-    if (parsedMemResult.isOk()) {
-      const parsedMem = parsedMemResult.unwrap();
+    if (E.isRight(parsedMemResult)) {
+      const parsedMem = parsedMemResult.right;
       const { byteSize: offsetByteSize } = parsedMem.offset;
 
       // prefixed size only includes offset

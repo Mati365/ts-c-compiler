@@ -1,3 +1,4 @@
+import * as O from 'fp-ts/Option';
 import { IRInstruction, isIRMathInstruction } from '../../../instructions';
 
 /**
@@ -24,8 +25,8 @@ export function flipMathInstructionsOperands(instructions: IRInstruction[]) {
     }
 
     const flipResult = instruction.tryFlipConstantsToRight();
-    if (flipResult.isSome()) {
-      newInstructions[i] = flipResult.unwrap();
+    if (O.isSome(flipResult)) {
+      newInstructions[i] = flipResult.value;
     }
   }
 

@@ -55,6 +55,7 @@ export enum CTypeCheckErrorCode {
   WRONG_POINTER_MATH_OPERATOR,
   INCORRECT_POINTER_SIDES_TYPES,
   PROVIDED_TYPE_MUST_BE_POINTER,
+  UNABLE_EVAL_CONST_EXPRESSION,
 }
 
 export const C_TYPE_CHECK_ERROR_TRANSLATIONS: Record<
@@ -162,6 +163,8 @@ export const C_TYPE_CHECK_ERROR_TRANSLATIONS: Record<
     'Incorrect pointer operator types! Cannot perform "%{operator}" operation between "%{left}" and "%{right}"!',
   [CTypeCheckErrorCode.PROVIDED_TYPE_MUST_BE_POINTER]:
     'Provided type must be pointer "%{typeName}"!',
+  [CTypeCheckErrorCode.UNABLE_EVAL_CONST_EXPRESSION]:
+    'Unable eval constant expression!',
 };
 
 /**

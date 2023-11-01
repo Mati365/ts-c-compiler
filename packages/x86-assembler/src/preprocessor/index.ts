@@ -1,8 +1,9 @@
 /* eslint-disable no-use-before-define, @typescript-eslint/no-use-before-define */
-import { Result, err, ok } from '@ts-c-compiler/core';
-import { CompilerError } from '@ts-c-compiler/core';
+import * as E from 'fp-ts/Either';
 
+import { CompilerError } from '@ts-c-compiler/core';
 import { TreePrintVisitor } from '@ts-c-compiler/grammar';
+
 import { ASTPreprocessorNode } from './constants';
 import { PreprocessorErrorCode } from './PreprocessorError';
 import {
@@ -30,31 +31,29 @@ export class PreprocessorResult {
 /**
  * Exec preprocessor on phrase
  */
-export function preprocessor(
-  code: string,
-  config: PreprocessorInterpreterConfig = DEFAULT_PREPROCESSOR_CONFIG,
-): PreprocessorResult {
-  const interpreter = new PreprocessorInterpreter(config);
-  if (config.preExec) {
-    interpreter.exec(config.preExec);
-  }
+export const preprocessor =
+  (config: PreprocessorInterpreterConfig = DEFAULT_PREPROCESSOR_CONFIG) =>
+  (code: string): PreprocessorResult => {
+    const interpreter = new PreprocessorInterpreter(config);
+    if (config.preExec) {
+      interpreter.exec(config.preExec);
+    }
 
-  const [resultCode, stmt] = interpreter.exec(code);
-  return new PreprocessorResult(stmt, resultCode);
-}
+    const [resultCode, stmt] = interpreter.exec(code);
+    return new PreprocessorResult(stmt, resultCode);
+  };
 
 /**
  * Preprocessor that does not throw errors
  */
-export function safeResultPreprocessor(
-  code: string,
-  config: PreprocessorInterpreterConfig = DEFAULT_PREPROCESSOR_CONFIG,
-): Result<PreprocessorResult, CompilerError[]> {
-  try {
-    return ok(preprocessor(code, config));
-  } catch (e) {
-    e.code = e.code ?? PreprocessorErrorCode.GRAMMAR_SYNTAX_ERROR;
+export const safeResultPreprocessor =
+  (config: PreprocessorInterpreterConfig = DEFAULT_PREPROCESSOR_CONFIG) =>
+  (code: string): E.Either<CompilerError[], PreprocessorResult> => {
+    try {
+      return E.right(preprocessor(config)(code));
+    } catch (e) {
+      e.code = e.code ?? PreprocessorErrorCode.GRAMMAR_SYNTAX_ERROR;
 
-    return err([e]);
-  }
-}
+      return E.left([e]);
+    }
+  };

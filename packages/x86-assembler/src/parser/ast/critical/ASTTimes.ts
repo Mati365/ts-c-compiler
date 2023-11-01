@@ -1,4 +1,5 @@
 import * as R from 'ramda';
+import * as E from 'fp-ts/Either';
 
 import { isLineTerminatorToken } from '@ts-c-compiler/lexer';
 
@@ -79,8 +80,8 @@ export class ASTTimes extends KindASTAsmNode(ASTNodeKind.TIMES) {
     // try generate AST for repeated instruction
     const repatedNodesTreeResult = parser.fork(repeatedNodeTokens).getTree();
 
-    if (repatedNodesTreeResult.isOk()) {
-      const repatedNodesTree = repatedNodesTreeResult.unwrap();
+    if (E.isRight(repatedNodesTreeResult)) {
+      const repatedNodesTree = repatedNodesTreeResult.right;
 
       if (!repatedNodesTree?.astNodes?.[0]) {
         throw new ParserError(
@@ -103,6 +104,6 @@ export class ASTTimes extends KindASTAsmNode(ASTNodeKind.TIMES) {
     }
 
     // raise error, it should be single error because single instruction
-    throw repatedNodesTreeResult.unwrapErr()[0];
+    throw repatedNodesTreeResult.left[0];
   }
 }

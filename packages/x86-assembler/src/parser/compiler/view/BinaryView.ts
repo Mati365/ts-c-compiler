@@ -1,3 +1,6 @@
+import * as E from 'fp-ts/Either';
+import { pipe } from 'fp-ts/function';
+
 import { CompilerError } from '@ts-c-compiler/core';
 import { CompilerFinalResult, CompilerOutput } from '../compile';
 
@@ -33,9 +36,12 @@ export class BinaryView<ResultType, SerializeArgs = never> {
    * Serializes view into result type
    */
   serialize(args?: SerializeArgs): ResultType {
-    return this.compilerResult.match({
-      ok: output => this.success(output, args),
-      err: output => this.error(output, args),
-    });
+    return pipe(
+      this.compilerResult,
+      E.match(
+        output => this.error(output, args),
+        output => this.success(output, args),
+      ),
+    );
   }
 }

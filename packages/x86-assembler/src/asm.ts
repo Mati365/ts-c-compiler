@@ -1,19 +1,13 @@
-import { Result, ok } from '@ts-c-compiler/core';
-import { CompilerError } from '@ts-c-compiler/core';
+import * as E from 'fp-ts/Either';
+import { pipe } from 'fp-ts/function';
 
+import { CompilerError } from '@ts-c-compiler/core';
 import { formatDate, formatTime } from '@ts-c-compiler/core';
+
 import { createAssemblerTimings } from './utils/createAssemblerTimings';
 import { safeResultPreprocessor, PreprocessorResult } from './preprocessor';
 import { PreprocessorInterpreterConfig } from './preprocessor/interpreter/PreprocessorInterpreter';
-import {
-  compile,
-  ast,
-  safeResultAsmLexer,
-  CompilerFinalResult,
-  CompilerOutput,
-} from './parser';
-
-export { CompilerFinalResult, CompilerOutput };
+import { compile, ast, safeResultAsmLexer } from './parser';
 
 export type AssemblerConfig = {
   preprocessor?: boolean;
@@ -44,40 +38,50 @@ export function genPreExecPreprocessorCode() {
 /**
  * Compile ASM file
  */
-export function asm(
-  code: string,
-  { preprocessor = true }: AssemblerConfig = {},
-): CompilerFinalResult {
-  const timings = createAssemblerTimings();
+export const asm =
+  ({ preprocessor = true }: AssemblerConfig = {}) =>
+  (code: string) => {
+    const timings = createAssemblerTimings();
 
-  let preprocessorResult: Result<PreprocessorResult, CompilerError[]> = null;
-  if (preprocessor) {
-    const preprocessorConfig: PreprocessorInterpreterConfig = {
-      preExec: genPreExecPreprocessorCode(),
-      grammarConfig: {
-        prefixChar: '%',
-      },
-    };
+    let preprocessorResult: E.Either<
+      CompilerError[],
+      PreprocessorResult
+    > | null = null;
 
-    preprocessorResult = timings.add('preprocessor', safeResultPreprocessor)(
-      code,
-      preprocessorConfig,
+    if (preprocessor) {
+      const preprocessorConfig: PreprocessorInterpreterConfig = {
+        preExec: genPreExecPreprocessorCode(),
+        grammarConfig: {
+          prefixChar: '%',
+        },
+      };
+
+      preprocessorResult = pipe(
+        code,
+        timings.chainIO(
+          'preprocessor',
+          safeResultPreprocessor(preprocessorConfig),
+        ),
+      );
+    } else {
+      preprocessorResult = E.right(new PreprocessorResult(null, code));
+    }
+
+    return pipe(
+      preprocessorResult,
+      E.chainW(
+        timings.chainIO('lexer', ({ result }) =>
+          safeResultAsmLexer({})(result),
+        ),
+      ),
+      E.chainW(timings.chainIO('ast', ast)),
+      E.chainW(timings.chainIO('compiler', compile)),
+      E.map(result => ({
+        ...result,
+        timings: timings.unwrap(),
+      })),
     );
-  } else {
-    preprocessorResult = ok(new PreprocessorResult(null, code));
-  }
-
-  return preprocessorResult
-    .andThen(
-      timings.add('lexer', ({ result }) => safeResultAsmLexer(null, result)),
-    )
-    .andThen(timings.add('ast', ast))
-    .andThen(timings.add('compiler', compile))
-    .andThen(result => {
-      result.timings = timings.unwrap();
-      return ok(result);
-    });
-}
+  };
 
 /**
  * Compiles asm instruction without result,
@@ -85,9 +89,18 @@ export function asm(
  *
  * Use it only in internal JITs etc.
  */
-export function unsafeASM(
-  code: string,
-  config: AssemblerConfig = {},
-): number[] {
-  return asm(code, config).unwrap().output.getBinary();
-}
+export const unsafeASM =
+  (config: AssemblerConfig = {}) =>
+  (code: string): number[] => {
+    const maybeResult = pipe(
+      code,
+      asm(config),
+      E.map(({ output }) => output.getBinary()),
+    );
+
+    if (E.isLeft(maybeResult)) {
+      throw maybeResult.left;
+    }
+
+    return maybeResult.right;
+  };

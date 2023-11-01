@@ -1,4 +1,5 @@
 import * as R from 'ramda';
+import * as E from 'fp-ts/Either';
 
 import { ccompiler, CCompilerConfig } from '../../../src';
 export * from '../../../src/frontend/analyze';
@@ -25,10 +26,10 @@ function toHaveCompilerError(
   code?: number,
 ): MatcherResult {
   const parseResult = R.is(Array, received)
-    ? ccompiler(received[0], received[1] as CCompilerConfig)
-    : ccompiler(received as string);
+    ? ccompiler(received[1] as CCompilerConfig)(received[0])
+    : ccompiler()(received as string);
 
-  if (parseResult.isOk()) {
+  if (E.isRight(parseResult)) {
     return {
       pass: false,
       message: () =>
@@ -38,7 +39,7 @@ function toHaveCompilerError(
     };
   }
 
-  const err = parseResult.unwrapErr();
+  const err = E.isLeft(parseResult);
   const pass = (() => {
     if (R.isNil(code)) {
       return true;

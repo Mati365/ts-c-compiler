@@ -1,4 +1,6 @@
 import * as R from 'ramda';
+import * as E from 'fp-ts/Either';
+import { pipe } from 'fp-ts/function';
 
 import { getCompilerArchDescriptor } from 'arch';
 
@@ -8,7 +10,6 @@ import {
   numberByteSize,
 } from '@ts-c-compiler/core';
 
-import { Result, err, ok } from '@ts-c-compiler/core';
 import { CCompilerArch, CTypeQualifier, CTypeSpecifier } from '#constants';
 
 import {
@@ -175,23 +176,23 @@ export class CPrimitiveType extends CType<CPrimitiveTypeDescriptor> {
    */
   static validate(
     type: CPrimitiveType,
-  ): Result<CPrimitiveType, CTypeCheckError> {
+  ): E.Either<CTypeCheckError, CPrimitiveType> {
     const byteSize = type.getByteSize();
     if (!R.isNil(byteSize)) {
-      return ok(type);
+      return E.right(type);
     }
 
     if (type.isVoid()) {
       if (type.specifiers !== CSpecBitmap.void || type.qualifiers) {
-        return err(
+        return E.left(
           new CTypeCheckError(CTypeCheckErrorCode.INCORRECT_VOID_SPECIFIERS),
         );
       }
 
-      return ok(type);
+      return E.right(type);
     }
 
-    return err(
+    return E.left(
       new CTypeCheckError(CTypeCheckErrorCode.INCORRECT_TYPE_SPECIFIERS),
     );
   }
@@ -216,27 +217,30 @@ export class CPrimitiveType extends CType<CPrimitiveTypeDescriptor> {
    */
   static ofParserSource(
     attrs: CPrimitiveTypeSourceParserAttrs,
-  ): Result<CPrimitiveType, CTypeCheckError> {
+  ): E.Either<CTypeCheckError, CPrimitiveType> {
     const specifiersResult = parseKeywordsToBitset({
       errorCode: CTypeCheckErrorCode.UNKNOWN_SPECIFIERS_KEYWORD,
       bitmap: CSpecBitmap,
       keywords: attrs.specifiers,
     });
 
-    return specifiersResult.andThen(specifiers => {
-      const qualifiersResult = CType.qualifiersToBitset(attrs.qualifiers);
+    return pipe(
+      specifiersResult,
+      E.chainW(specifiers => {
+        const qualifiersResult = CType.qualifiersToBitset(attrs.qualifiers);
 
-      if (qualifiersResult.isErr()) {
-        return err(qualifiersResult.unwrapErr());
-      }
+        if (E.isLeft(qualifiersResult)) {
+          return qualifiersResult;
+        }
 
-      return this.validate(
-        new CPrimitiveType({
-          arch: attrs.arch,
-          qualifiers: qualifiersResult.unwrap(),
-          specifiers,
-        }),
-      );
-    });
+        return this.validate(
+          new CPrimitiveType({
+            arch: attrs.arch,
+            qualifiers: qualifiersResult.right,
+            specifiers,
+          }),
+        );
+      }),
+    );
   }
 }

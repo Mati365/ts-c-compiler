@@ -1,5 +1,6 @@
-import { Result, ok, err } from '@ts-c-compiler/core';
+import * as E from 'fp-ts/Either';
 import { Token } from '@ts-c-compiler/lexer';
+
 import { ASTCTreeNode } from '../ast';
 import { CGrammarError, CGrammarErrorCode } from './errors/CGrammarError';
 import { createCCompilerGrammar } from './grammar';
@@ -16,12 +17,12 @@ export function generateTree(tokens: Token[]): ASTCTreeNode {
  */
 export function safeGenerateTree(
   tokens: Token[],
-): Result<ASTCTreeNode, CGrammarError[]> {
+): E.Either<CGrammarError[], ASTCTreeNode> {
   try {
-    return ok(generateTree(tokens));
+    return E.right(generateTree(tokens));
   } catch (e) {
     e.code = e.code ?? CGrammarErrorCode.SYNTAX_ERROR;
 
-    return err([e]);
+    return E.left([e]);
   }
 }

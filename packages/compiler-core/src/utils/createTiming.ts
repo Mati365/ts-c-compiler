@@ -18,29 +18,23 @@ export function createTiming<T extends Record<string, number>>(startValues: T) {
   };
 
   return {
-    add<K extends keyof T, A extends Array<any>, U>(
-      key: K,
-      fn: (...args: A) => U,
-    ) {
-      return (...args: A): U => {
+    chainIO:
+      <K extends keyof T, A extends Array<any>, R>(
+        key: K,
+        io: (...args: A) => R,
+      ) =>
+      (...args: A): R => {
         const start = Date.now();
-        const result: U = fn(...args);
+        const result: R = io(...args);
 
         values[key] = <any>(Date.now() - start); // fixme
 
         return result;
-      };
-    },
-    unwrap(): T & { total: number } {
-      return {
-        ...values,
-        total: R.reduce(
-          (acc, [, val]) => acc + (val || 0),
-          0,
-          R.toPairs(values),
-        ),
-      };
-    },
+      },
+    unwrap: (): T & { total: number } => ({
+      ...values,
+      total: R.reduce((acc, [, val]) => acc + (val || 0), 0, R.toPairs(values)),
+    }),
     toString: () => timingsToString(values),
   };
 }

@@ -1,3 +1,6 @@
+import { pipe } from 'fp-ts/function';
+import { unwrapEitherOrThrow } from '@ts-c-compiler/core';
+
 import { ASTCFunctionDefinition, ASTCCompilerKind } from 'frontend/parser/ast';
 import { CFunctionCallConvention } from '#constants';
 import { ASTCTypeCreator } from './ASTCTypeCreator';
@@ -25,7 +28,7 @@ export class ASTCFunctionDefTypeCreator extends ASTCTypeCreator<ASTCFunctionDefi
     if (fnType) {
       const newScope = new CFunctionScope(fnType, config, node);
 
-      scope.defineType(fnType).unwrapOrThrow();
+      unwrapEitherOrThrow(scope.defineType(fnType));
 
       currentAnalyzed.fnType = fnType;
       analyzeVisitor
@@ -62,13 +65,19 @@ export class ASTCFunctionDefTypeCreator extends ASTCTypeCreator<ASTCFunctionDefi
       ),
     );
 
-    const specifier = CFunctionSpecifierMonad.ofParserSource(
-      fnDefinition.specifier.functionSpecifiers?.items || [],
-    ).unwrapOrThrow();
+    const specifier = pipe(
+      CFunctionSpecifierMonad.ofParserSource(
+        fnDefinition.specifier.functionSpecifiers?.items || [],
+      ),
+      unwrapEitherOrThrow,
+    );
 
-    const storage = CStorageClassMonad.ofParserSource(
-      fnDefinition.specifier.storageClassSpecifiers?.items || [],
-    ).unwrapOrThrow();
+    const storage = pipe(
+      CStorageClassMonad.ofParserSource(
+        fnDefinition.specifier.storageClassSpecifiers?.items || [],
+      ),
+      unwrapEitherOrThrow,
+    );
 
     return new CFunctionDeclType({
       definition: fnDefinition.content,

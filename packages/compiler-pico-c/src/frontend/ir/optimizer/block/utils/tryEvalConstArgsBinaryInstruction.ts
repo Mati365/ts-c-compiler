@@ -1,4 +1,4 @@
-import { Option, none, some } from '@ts-c-compiler/core';
+import * as O from 'fp-ts/Option';
 import { evalMathOp, isMathOpToken } from '@ts-c-compiler/lexer';
 
 import { IRMathInstruction } from '../../../instructions';
@@ -13,14 +13,14 @@ export function tryEvalConstArgsBinaryInstruction({
   operator,
   leftVar,
   rightVar,
-}: ConstInstructionEvalAttrs): Option<number> {
+}: ConstInstructionEvalAttrs): O.Option<number> {
   if (!isIRConstant(leftVar) || !isIRConstant(rightVar)) {
-    return none();
+    return O.none;
   }
 
   if (isMathOpToken(operator)) {
-    return some(evalMathOp(operator, [leftVar.constant, rightVar.constant]));
+    return O.some(evalMathOp(operator, [leftVar.constant, rightVar.constant]));
   }
 
-  return none();
+  return O.none;
 }

@@ -1,11 +1,14 @@
 /* eslint-disable @typescript-eslint/no-use-before-define */
 import * as R from 'ramda';
+import { pipe } from 'fp-ts/function';
+import { unwrapEitherOrThrow } from '@ts-c-compiler/core';
 
 import { CTypeQualifier } from '#constants';
 import {
   CTypeCheckError,
   CTypeCheckErrorCode,
 } from '../../../errors/CTypeCheckError';
+
 import { CType, CPrimitiveType } from '../../../types';
 import { CTreeTypeBuilderVisitor } from '../builder/CTreeTypeBuilderVisitor';
 import { CNamedTypedEntry } from '../../../scope/variables/CNamedTypedEntry';
@@ -66,11 +69,14 @@ export function extractSpecifierType({
   }
 
   if (hasPrimitives) {
-    return CPrimitiveType.ofParserSource({
-      arch: context.config.arch,
-      specifiers: R.pluck('specifier', primitives),
-      qualifiers,
-    }).unwrapOrThrow();
+    return pipe(
+      CPrimitiveType.ofParserSource({
+        arch: context.config.arch,
+        specifiers: R.pluck('specifier', primitives),
+        qualifiers,
+      }),
+      unwrapEitherOrThrow,
+    );
   }
 
   if (hasEnums || hasStructs) {

@@ -3,6 +3,8 @@
     "jsx": "react",
     "target": "ES2021",
     "module": "CommonJS",
+    "declaration": true,
+    "declarationMap": true,
     "resolveJsonModule": true,
     "esModuleInterop": true,
     "experimentalDecorators": true,

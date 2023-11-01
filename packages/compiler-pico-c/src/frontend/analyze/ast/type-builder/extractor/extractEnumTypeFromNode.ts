@@ -1,9 +1,13 @@
+import { pipe } from 'fp-ts/function';
+import { unwrapEitherOrThrow } from '@ts-c-compiler/core';
+
 import { ASTCEnumSpecifier } from 'frontend/parser';
 import { CEnumType, CPrimitiveType } from '../../../types';
 import {
   CTypeCheckError,
   CTypeCheckErrorCode,
 } from '../../../errors/CTypeCheckError';
+
 import { TypeExtractorAttrs } from '../constants/types';
 
 import { evalConstantExpression } from '../../expression-eval';
@@ -31,10 +35,13 @@ export function extractEnumTypeFromNode({
     prevEnumEntryValue = prevEnumEntryValue ?? 0;
 
     if (enumeration.expression) {
-      const exprResult = +evalConstantExpression({
-        expression: enumeration.expression,
-        context,
-      }).unwrapOrThrow();
+      const exprResult = pipe(
+        evalConstantExpression({
+          expression: enumeration.expression,
+          context,
+        }),
+        unwrapEitherOrThrow,
+      );
 
       const resultType = CPrimitiveType.typeofValue(arch, exprResult);
 
@@ -52,8 +59,9 @@ export function extractEnumTypeFromNode({
       prevEnumEntryValue = exprResult;
     }
 
-    return acc
-      .ofAppendedField(enumeration.name.text, prevEnumEntryValue++)
-      .unwrapOrThrow();
+    return pipe(
+      acc.ofAppendedField(enumeration.name.text, prevEnumEntryValue++),
+      unwrapEitherOrThrow,
+    );
   }, blankEnum);
 }

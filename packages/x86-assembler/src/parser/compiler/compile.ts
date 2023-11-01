@@ -1,4 +1,6 @@
-import { Result, ok } from '@ts-c-compiler/core';
+import * as E from 'fp-ts/Either';
+import { pipe } from 'fp-ts/function';
+
 import { CompilerError } from '@ts-c-compiler/core';
 
 import { AssemblerTimings } from '../../utils/createAssemblerTimings';
@@ -12,7 +14,7 @@ export type CompilerOutput = {
   timings?: AssemblerTimings;
 };
 
-export type CompilerFinalResult = Result<CompilerOutput, CompilerError[]>;
+export type CompilerFinalResult = E.Either<CompilerError[], CompilerOutput>;
 
 /**
  * Transform array of nodes into binary
@@ -20,10 +22,11 @@ export type CompilerFinalResult = Result<CompilerOutput, CompilerError[]>;
 export function compile(tree: ASTAsmTree): CompilerFinalResult {
   const compiler = new X86Compiler(tree);
 
-  return compiler.compile().andThen(output =>
-    ok({
+  return pipe(
+    compiler.compile(),
+    E.map(output => ({
       compiler,
       output,
-    }),
+    })),
   );
 }

@@ -107,20 +107,17 @@ export class Grammar<I, K = string> extends TokensIterator {
       const { identifiers } = this.config;
 
       this.tokens = Array.from(
-        lexer(
-          {
-            identifiers,
-            consumeBracketContent: false,
-            allowBracketPrefixKeyword: true,
-            signOperatorsAsSeparateTokens: true,
-            tokensParsers: {
-              [TokenType.NUMBER]: NumberToken.parse,
-              [TokenType.FLOAT_NUMBER]: FloatNumberToken.parse,
-              [TokenType.KEYWORD]: R.T,
-            },
+        lexer({
+          identifiers,
+          consumeBracketContent: false,
+          allowBracketPrefixKeyword: true,
+          signOperatorsAsSeparateTokens: true,
+          tokensParsers: {
+            [TokenType.NUMBER]: NumberToken.parse,
+            [TokenType.FLOAT_NUMBER]: FloatNumberToken.parse,
+            [TokenType.KEYWORD]: R.T,
           },
-          <string>code,
-        ),
+        })(code as string),
       );
     } else {
       this.tokens = <Token[]>code;
