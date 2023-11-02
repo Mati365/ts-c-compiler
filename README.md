@@ -75,6 +75,61 @@ npx ts-c ./main.c -ps
 
 ## What can be currently compiled?
 
+### Simple function calls with peephole optimization
+
+```c
+  int sum(int x) {
+    return x * 2 / 4;
+  }
+
+  int main() {
+    return sum(3);
+  }
+```
+
+<details>
+  <summary><strong>IR Output</strong></summary>
+
+```ruby
+# --- Block sum ---
+def sum(x{0}: int*2B): [ret: int2B]
+  %t{0}: int2B = load x{0}: int*2B
+  %t{2}: int2B = %t{0}: int2B div %2: char1B
+  ret %t{2}: int2B
+  end-def
+
+
+# --- Block main ---
+def main(): [ret: int2B]
+  %t{4}: int2B = call label-offset sum :: (%3: char1B)
+  ret %t{4}: int2B
+  end-def
+```
+
+</details>
+
+<details open>
+  <summary><strong>Binary output</strong></summary>
+
+```asm
+0x000000  <╮                  55                            push bp
+0x000001   │                  89 e5                         mov bp, sp
+0x000003   │                  8b 46 04                      mov ax, word [bp+4]
+0x000006   │                  d1 e8                         shr ax, 0x1
+0x000008   │                  89 ec                         mov sp, bp
+0x00000a   │                  5d                            pop bp
+0x00000b   │                  c2 02 00                      ret 0x2
+0x00000e   │                  55                            push bp
+0x00000f   │                  89 e5                         mov bp, sp
+0x000011   │                  6a 03                         push 0x3
+0x000013  ─╯                  e8 ea ff                      call 0x0
+0x000016                      89 ec                         mov sp, bp
+0x000018                      5d                            pop bp
+0x000019                      c3                            ret
+```
+
+</details>
+
 ### Advanced array / pointers / ternary expressions
 
 ```c

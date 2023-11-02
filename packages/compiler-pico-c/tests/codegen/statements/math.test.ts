@@ -86,21 +86,53 @@ describe('Math', () => {
         int b = a / 2;
       }
     `).toCompiledAsmBeEqual(`
-        cpu 386
-        ; def main():
-        @@_fn_main:
-        push bp
-        mov bp, sp
-        sub sp, 4
-        mov word [bp - 2], 7      ; *(a{0}: int*2B) = store %7: int2B
-        mov ax, [bp - 2]
-        mov bx, word 2
-        cdq
-        idiv bx                   ; %t{1}: int2B = %t{0}: int2B div %2: char1B
-        mov word [bp - 4], ax     ; *(b{0}: int*2B) = store %t{1}: int2B
-        mov sp, bp
-        pop bp
-        ret
+      cpu 386
+      ; def main():
+      @@_fn_main:
+      push bp
+      mov bp, sp
+      sub sp, 4
+      mov word [bp - 2], 7      ; *(a{0}: int*2B) = store %7: int2B
+      mov ax, [bp - 2]
+      shr ax, 1                 ; %t{1}: int2B = %t{0}: int2B div %2: char1B
+      mov word [bp - 4], ax     ; *(b{0}: int*2B) = store %t{1}: int2B
+      mov sp, bp
+      pop bp
+      ret
+    `);
+  });
+
+  test('int b = a / 2', () => {
+    expect(/* cpp */ `
+      int sum(int x) {
+        return x * 2 / 4;
+      }
+
+      int main() {
+        return sum(3);
+      }
+
+    `).toCompiledAsmBeEqual(`
+      cpu 386
+      ; def sum(x{0}: int*2B): [ret: int2B]
+      @@_fn_sum:
+      push bp
+      mov bp, sp
+      mov ax, [bp + 4]
+      shr ax, 1                 ; %t{2}: int2B = %t{0}: int2B div %2: char1B
+      mov sp, bp
+      pop bp
+      ret 2
+
+      ; def main(): [ret: int2B]
+      @@_fn_main:
+      push bp
+      mov bp, sp
+      push 3
+      call @@_fn_sum
+      mov sp, bp
+      pop bp
+      ret
     `);
   });
 });

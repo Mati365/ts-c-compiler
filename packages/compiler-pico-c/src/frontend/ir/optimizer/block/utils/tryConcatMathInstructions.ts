@@ -4,6 +4,8 @@ import { pipe } from 'fp-ts/function';
 import { fixme } from '@ts-c-compiler/core';
 import { TokenType } from '@ts-c-compiler/lexer';
 
+import { isPrimitiveLikeType } from 'frontend/analyze';
+
 import { IRError, IRErrorCode } from '../../../errors/IRError';
 import { IRConstant, isIRConstant, isIRVariable } from '../../../variables';
 import {
@@ -125,6 +127,35 @@ export function tryConcatMathInstructions({
           flipOperator(flippedA.operator),
           flippedA.getFirstVarArg(),
           IRConstant.ofConstant(aArg.type, -evalResult),
+          flippedB.outputVar,
+        ),
+      );
+    }
+
+    /**
+     * Sometimes optimizer produces float point mul result.
+     * Try to detect it and optimize to plain divide.
+     *
+     * @example
+     *  Transforms:
+     *
+     *  %t{2}: int2B = %t{0}: int2B mul %0.5: char1B
+     *
+     *  To:
+     *
+     *  %t{2}: int2B = %t{0}: int2B div %2: char1B
+     */
+    if (
+      flippedA.operator === TokenType.MUL &&
+      !Number.isInteger(evalResult) &&
+      isPrimitiveLikeType(aArg.type) &&
+      !aArg.type.isFloating()
+    ) {
+      return O.some(
+        new IRMathInstruction(
+          TokenType.DIV,
+          flippedA.getFirstVarArg(),
+          IRConstant.ofConstant(aArg.type, 1 / evalResult),
           flippedB.outputVar,
         ),
       );

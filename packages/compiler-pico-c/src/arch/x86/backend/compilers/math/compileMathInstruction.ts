@@ -13,7 +13,7 @@ import { ensureFunctionNotOverridesOutput } from './ensureFunctionNotOverrideOut
 import { castToPointerIfArray } from 'frontend/analyze/casts';
 
 import { isNopMathInstruction } from './isNopMathInstruction';
-import { isIRVariable } from 'frontend/ir/variables';
+import { isIRConstant, isIRVariable } from 'frontend/ir/variables';
 import { isPrimitiveLikeType } from 'frontend/analyze';
 
 const BinaryOperatorX86Opcode: Partial<Record<CMathOperator, string>> = {
@@ -181,6 +181,41 @@ export function compileMathInstruction({
 
     case TokenType.MOD:
     case TokenType.DIV: {
+      // detect if we can perform div into mul
+      if (
+        operator === TokenType.DIV &&
+        isIRConstant(rightVar) &&
+        rightVar.constant > 0 &&
+        rightVar.constant % 2 === 0 &&
+        Number.isInteger(Math.log2(rightVar.constant))
+      ) {
+        const leftAllocResult = regs.tryResolveIRArgAsReg({
+          size: biggestArgSize,
+          arg: leftVar,
+        });
+
+        regs.ownership.setOwnership(outputVar.name, {
+          reg: leftAllocResult.value,
+        });
+
+        return [
+          ...leftAllocResult.asm,
+          ...ensureFunctionNotOverridesOutput({
+            leftVar,
+            leftAllocResult,
+            context,
+          }),
+          withInlineComment(
+            genInstruction(
+              'shr',
+              leftAllocResult.value,
+              Math.log2(rightVar.constant),
+            ),
+            instruction.getDisplayName(),
+          ),
+        ];
+      }
+
       const allocResult = {
         remainder: regs.requestReg({ allowedRegs: ['dx'] }),
         quotient: regs.tryResolveIRArgAsReg({
