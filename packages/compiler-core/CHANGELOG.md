@@ -1,5 +1,11 @@
 # @ts-c-compiler/core
 
+## 1.1.0
+
+### Minor Changes
+
+- Add peephole div optimizations
+
 ## 1.0.1
 
 ### Patch Changes

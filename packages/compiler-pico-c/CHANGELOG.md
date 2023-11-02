@@ -1,5 +1,19 @@
 # @ts-c-compiler/compiler
 
+## 1.1.0
+
+### Minor Changes
+
+- Add peephole div optimizations
+
+### Patch Changes
+
+- Updated dependencies
+  - @ts-c-compiler/core@1.1.0
+  - @ts-c-compiler/lexer@1.1.0
+  - @ts-c-compiler/rpn@1.1.0
+  - @ts-c-compiler/x86-assembler@1.1.0
+
 ## 1.0.1
 
 ### Patch Changes
