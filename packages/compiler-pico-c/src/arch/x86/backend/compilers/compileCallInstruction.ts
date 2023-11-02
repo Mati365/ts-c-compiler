@@ -1,12 +1,13 @@
 import {
   IRCallInstruction,
+  IRFnDeclInstruction,
   isIRFnDeclInstruction,
 } from 'frontend/ir/instructions';
 
 import { CBackendError, CBackendErrorCode } from 'backend/errors/CBackendError';
 
 import { getSourceNonPtrType } from 'frontend/analyze/types/utils';
-import { isIRLabel, isIRVariable } from 'frontend/ir/variables';
+import { IRVariable, isIRLabel, isIRVariable } from 'frontend/ir/variables';
 import { isFuncDeclLikeType } from 'frontend/analyze';
 
 import { X86CompilerInstructionFnAttrs } from '../../constants/types';
@@ -40,10 +41,11 @@ export function compileCallInstruction({
     });
   }
 
+  // handle pointer call
   if (isIRVariable(fnPtr)) {
-    const nonPtrType = getSourceNonPtrType(fnPtr.type);
+    const nonPtrFnType = getSourceNonPtrType(fnPtr.type);
 
-    if (!nonPtrType || !isFuncDeclLikeType(nonPtrType)) {
+    if (!nonPtrFnType || !isFuncDeclLikeType(nonPtrFnType)) {
       throw new CBackendError(CBackendErrorCode.CALL_ON_NON_CALLABLE_TYPE);
     }
 
@@ -51,10 +53,21 @@ export function compileCallInstruction({
       arg: fnPtr,
     });
 
-    const caller = getX86FnCaller(nonPtrType.callConvention);
+    const caller = getX86FnCaller(nonPtrFnType.callConvention);
+    const declInstruction = new IRFnDeclInstruction(
+      nonPtrFnType,
+      '<anonymous>',
+      nonPtrFnType.args.map(IRVariable.ofScopeVariable),
+      nonPtrFnType.returnType,
+    );
 
-    console.info({ address, caller });
-    throw new Error('TODO: Add implementation!');
+    // todo: RVO?
+    return caller.compileIRFnCall({
+      callerInstruction: instruction,
+      declInstruction,
+      address: address.value as string,
+      context,
+    });
   }
 
   throw new CBackendError(CBackendErrorCode.CALL_ON_NON_CALLABLE_TYPE);

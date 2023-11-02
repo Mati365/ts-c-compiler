@@ -11,6 +11,7 @@ const rootResolve = pkgPath =>
   path.resolve(process.cwd(), path.join('./', pkgPath));
 
 exports.createConfig = ({
+  optimize,
   nodemon = {},
   target,
   entryName,
@@ -20,7 +21,7 @@ exports.createConfig = ({
   plugins = [],
 }) => ({
   target,
-  mode: PRODUCTION_MODE ? 'production' : 'development',
+  mode: optimize || PRODUCTION_MODE ? 'production' : 'development',
   watch: !PRODUCTION_MODE,
   devtool: 'source-map',
   entry: {

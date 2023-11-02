@@ -130,6 +130,92 @@ def main(): [ret: int2B]
 
 </details>
 
+### Function pointers
+
+```c
+  int sum(int x, int y) {
+    return x + y * 2;
+  }
+
+  int addPtr(int (*functionPtr)(int, int)) {
+    return (*functionPtr)(2, 3);
+  }
+
+  int main() {
+    int sum = addPtr(sum);
+  }
+```
+
+<details>
+  <summary><strong>IR Output</strong></summary>
+
+```ruby
+# --- Block sum ---
+def sum(x{0}: int*2B, y{0}: int*2B): [ret: int2B]
+  %t{0}: int2B = load x{0}: int*2B
+  %t{1}: int2B = load y{0}: int*2B
+  %t{2}: int2B = %t{1}: int2B mul %2: char1B
+  %t{3}: int2B = %t{0}: int2B plus %t{2}: int2B
+  ret %t{3}: int2B
+  end-def
+
+
+# --- Block addPtr ---
+def addPtr(functionPtr{0}: int(int, int)**2B): [ret: int2B]
+  %t{4}: int(int, int)*2B = load functionPtr{0}: int(int, int)**2B
+  %t{5}: int2B = call %t{4}: int(int, int)*2B :: (%2: char1B, %3: char1B)
+  ret %t{5}: int2B
+  end-def
+
+
+# --- Block main ---
+def main(): [ret: int2B]
+  sum{0}: int*2B = alloca int2B
+  %t{7}: int sum(int, int)*2B = label-offset sum
+  %t{8}: int2B = call label-offset addPtr :: (%t{7}: int sum(int, int)*2B)
+  *(sum{0}: int*2B) = store %t{8}: int2B
+  ret
+  end-def
+```
+
+</details>
+
+<details open>
+  <summary><strong>Binary output</strong></summary>
+
+```asm
+0x000000                      55                            push bp
+0x000001                      89 e5                         mov bp, sp
+0x000003                      8b 46 06                      mov ax, word [bp+6]
+0x000006                      d1 e0                         shl ax, 0x1
+0x000008                      8b 5e 04                      mov bx, word [bp+4]
+0x00000b                      01 c3                         add bx, ax
+0x00000d                      89 d8                         mov ax, bx
+0x00000f                      89 ec                         mov sp, bp
+0x000011                      5d                            pop bp
+0x000012                      c2 04 00                      ret 0x4
+0x000015  <╮                  55                            push bp
+0x000016   │                  89 e5                         mov bp, sp
+0x000018   │                  8b 5e 04                      mov bx, word [bp+4]
+0x00001b   │                  6a 03                         push 0x3
+0x00001d   │                  6a 02                         push 0x2
+0x00001f   │                  ff d3                         call bx
+0x000021   │                  89 ec                         mov sp, bp
+0x000023   │                  5d                            pop bp
+0x000024   │                  c2 02 00                      ret 0x2
+0x000027   │                  55                            push bp
+0x000028   │                  89 e5                         mov bp, sp
+0x00002a   │                  83 ec 02                      sub sp, 0x2
+0x00002d   │                  6a 00                         push 0x0
+0x00002f  ─╯                  e8 e3 ff                      call 0x15
+0x000032                      89 46 fe                      mov word [bp-2], ax
+0x000035                      89 ec                         mov sp, bp
+0x000037                      5d                            pop bp
+0x000038                      c3                            ret
+```
+
+</details>
+
 ### Advanced array / pointers / ternary expressions
 
 ```c
