@@ -7,6 +7,7 @@ import {
   createCCompilerTimings,
 } from './utils/createCCompilerTimings';
 
+import { safePreprocess } from './preprocessor';
 import { safeGenerateTree, clexer } from './parser';
 import { safeBuildIRCode } from './ir';
 import { safeBuildTypedTree, type ScopeTreeBuilderResult } from './analyze';
@@ -31,7 +32,8 @@ export const cIRCompiler =
     pipe(
       code,
       timings.chainIO('lexer', clexer(ccompilerConfig.lexer)),
-      E.chain(timings.chainIO('ast', safeGenerateTree)),
+      E.chain(timings.chainIO('preprocessor', safePreprocess)),
+      E.chainW(timings.chainIO('ast', safeGenerateTree)),
       E.chainW(timings.chainIO('analyze', safeBuildTypedTree(ccompilerConfig))),
       E.chainW(
         timings.chainIO(

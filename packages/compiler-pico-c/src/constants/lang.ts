@@ -165,13 +165,16 @@ export const CCOMPILER_FLOATING_SPECIFIERS: CTypeSpecifier[] = [
 export const CCOMPILER_STRUCT_LIKE_SPECIFIERS = $enum(
   CStructLikeSpecifiers,
 ).getValues();
+
 export const CCOMPILER_FUNCTION_SPECIFIERS =
   $enum(CFunctionSpecifier).getValues();
+
 export const CCOMPILER_TYPE_SPECIFIERS = $enum(CTypeSpecifier).getValues();
 export const CCOMPILER_TYPE_QUALIFIERS = $enum(CTypeQualifier).getValues();
 export const CCOMPILER_STORAGE_CLASS_SPECIFIERS = $enum(
   CStorageClassSpecifier,
 ).getValues();
+
 export const CCOMPILER_UNARY_OPERATORS = $enum(CUnaryCastOperator).getValues();
 export const CCOMPILER_ASSIGN_OPERATORS = $enum(CAssignOperator).getValues();
 

@@ -1,8 +1,8 @@
-import { CCompilerIdentifier } from '#constants';
 import { Grammar, GrammarInitializer } from '@ts-c-compiler/grammar';
 import { SyntaxError } from '@ts-c-compiler/grammar';
 import { GroupTreeVisitor } from '@ts-c-compiler/grammar';
 
+import { CCompilerIdentifier } from '#constants';
 import { ASTCCompilerKind, ASTCCompilerNode } from '../ast/ASTCCompilerNode';
 
 import {
@@ -79,11 +79,10 @@ const compilerMatcher: GrammarInitializer<
   return () => translationUnit(grammar);
 };
 
-export function createCCompilerGrammar() {
-  return Grammar.build(
+export const createCCompilerGrammar = () =>
+  Grammar.build(
     {
       ignoreMatchCallNesting: true,
     },
     compilerMatcher,
   );
-}
