@@ -79,6 +79,7 @@ export class Grammar<I, K = string> extends TokensIterator {
   getRootProduction() {
     return this.rootProduction;
   }
+
   getTree() {
     return this.tree;
   }
@@ -103,9 +104,9 @@ export class Grammar<I, K = string> extends TokensIterator {
    * Produces grammar tree
    */
   process(code: string | Token[]): TreeNode<K> {
-    if (R.is(String, code)) {
-      const { identifiers } = this.config;
+    const { identifiers } = this.config;
 
+    if (R.is(String, code)) {
       this.tokens = Array.from(
         lexer({
           identifiers,
@@ -121,6 +122,14 @@ export class Grammar<I, K = string> extends TokensIterator {
       );
     } else {
       this.tokens = <Token[]>code;
+
+      if (identifiers) {
+        this.tokens = this.tokens.map(token => {
+          const identifier = identifiers[token.text];
+
+          return identifier ? token.ofIdentifier(identifier) : token;
+        });
+      }
     }
 
     try {
@@ -256,7 +265,7 @@ export class Grammar<I, K = string> extends TokensIterator {
     // check if exists occurs when check types
     // throws error anyway because null token mismatch type
     const { ignoreCase } = this.config;
-    const token: Token = this.fetchRelativeToken(0, false);
+    const token: Token = this.currentToken;
 
     if (!token) {
       return null;

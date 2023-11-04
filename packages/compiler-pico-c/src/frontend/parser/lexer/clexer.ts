@@ -40,7 +40,6 @@ export const clexer = (config: CLexerConfig) => (code: string) =>
       terminalCharacters: CCOMPILER_TERMINAL_CHARACTERS,
       commentParser: cComentParser,
       consumeBracketContent: false,
-      ignoreEOL: true,
       ignoreSpecifiersCase: false,
       signOperatorsAsSeparateTokens: true,
       ...config,
