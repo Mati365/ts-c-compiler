@@ -6,6 +6,7 @@ import { createTiming } from '@ts-c-compiler/core';
 export const createCCompilerTimings = () =>
   createTiming({
     lexer: 0,
+    preprocessor: 0,
     ast: 0,
     analyze: 0,
     ir: 0,
