@@ -103,7 +103,8 @@ exports.createConfig = ({
     ...(nodemon?.enabled
       ? [
           new NodemonPlugin({
-            watch: 'dist',
+            watch: [rootResolve('dist'), rootResolve('.mock')],
+            ext: 'js,njk,json,c,ts',
             ...nodemon.attrs,
           }),
         ]
