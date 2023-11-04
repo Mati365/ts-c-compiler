@@ -44,6 +44,12 @@ export class Token<V = any, O = any> {
     return !!this.originalToken;
   }
 
+  ofIdentifier(value: V) {
+    const { type, text, loc } = this;
+
+    return new Token(type, TokenKind.IDENTIFIER, text, loc, value);
+  }
+
   fork(newText: string = this.text, loc: TokenLocation = this.loc): Token<V> {
     const { type, kind, value } = this;
 

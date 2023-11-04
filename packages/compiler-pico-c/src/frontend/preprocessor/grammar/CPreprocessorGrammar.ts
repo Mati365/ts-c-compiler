@@ -1,6 +1,11 @@
 import { Grammar, GrammarInitializer } from '@ts-c-compiler/grammar';
-import { CPreprocessorIdentifier } from './CPreprocessorIdentifiers';
-import { ASTCPreprocessorKind } from '../ast';
+import {
+  CPreprocessorIdentifier,
+  C_PREPROCESSOR_IDENTIFIERS_MAP,
+} from './CPreprocessorIdentifiers';
+
+import { ASTCCodeBlockNode, ASTCPreprocessorKind } from '../ast';
+import { codeBlockMatcher, defineMatcher } from './matchers';
 
 export class CPreprocessorGrammarDef extends Grammar<
   CPreprocessorIdentifier,
@@ -9,6 +14,7 @@ export class CPreprocessorGrammarDef extends Grammar<
 
 export type CPreprocessorGrammar = {
   g: CPreprocessorGrammarDef;
+  codeBlock(): ASTCCodeBlockNode;
 };
 
 const preprocessorMatcher: GrammarInitializer<
@@ -17,16 +23,21 @@ const preprocessorMatcher: GrammarInitializer<
 > = ({ g }) => {
   const grammar: CPreprocessorGrammar = {
     g,
+    codeBlock: () => codeBlockMatcher(grammar),
   };
 
-  console.info(grammar);
-  return () => null;
+  return () =>
+    g.matchList({
+      define: () => defineMatcher(grammar),
+      codeBlock: () => codeBlockMatcher(grammar),
+    });
 };
 
-export const createCCompilerGrammar = () =>
+export const createCPreprocessorGrammar = () =>
   Grammar.build(
     {
       ignoreMatchCallNesting: true,
+      identifiers: C_PREPROCESSOR_IDENTIFIERS_MAP,
     },
     preprocessorMatcher,
   );

@@ -6,7 +6,6 @@ module.exports = createConfig({
   entryName: 'cli',
   mainFile: 'src/index.ts',
   outputFile: 'bin/cli.js',
-  optimize: true,
   nodemon: {
     enabled: true,
     attrs: {
