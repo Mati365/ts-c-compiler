@@ -75,6 +75,50 @@ npx ts-c ./main.c -ps
 
 ## What can be currently compiled?
 
+### Simple macros with constant expressions optimization
+
+```c
+#define min(a,b) ((a)<(b)?(a):(b))
+#define max(a,b) ((a)>(b)?(a):(b))
+
+int main() {
+  int k = min(10, 11);
+  int j = max(11, 12);
+}
+```
+
+<details>
+  <summary><strong>IR Output</strong></summary>
+
+```ruby
+# --- Block main ---
+def main(): [ret: int2B]
+  k{0}: int*2B = alloca int2B
+  *(k{0}: int*2B) = store %10: int2B
+  j{0}: int*2B = alloca int2B
+  *(j{0}: int*2B) = store %12: int2B
+  ret
+  end-def
+```
+
+</details>
+
+<details open>
+  <summary><strong>Binary output</strong></summary>
+
+```asm
+0x000000                      55                            push bp
+0x000001                      89 e5                         mov bp, sp
+0x000003                      83 ec 04                      sub sp, 0x4
+0x000006                      c7 46 fe 0a 00                mov word [bp-2], 0xa
+0x00000b                      c7 46 fc 0c 00                mov word [bp-4], 0xc
+0x000010                      89 ec                         mov sp, bp
+0x000012                      5d                            pop bp
+0x000013                      c3                            ret
+```
+
+</details>
+
 ### Simple function calls with peephole optimization
 
 ```c
