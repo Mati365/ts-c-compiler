@@ -1,7 +1,5 @@
-import { pipe } from 'fp-ts/function';
-
 import { NodeLocation, fetchTokensUntilEOL } from '@ts-c-compiler/grammar';
-import { TokenType, joinTokensTexts } from '@ts-c-compiler/lexer';
+import { TokenType } from '@ts-c-compiler/lexer';
 
 import type { CPreprocessorGrammar } from '../CPreprocessorGrammar';
 
@@ -44,9 +42,7 @@ export const defineMatcher = ({ g }: CPreprocessorGrammar): ASTCDefineNode => {
     g.terminal(')');
   }
 
-  const expression = pipe(fetchTokensUntilEOL(g), tokens =>
-    joinTokensTexts('', tokens),
-  );
+  const expression = fetchTokensUntilEOL(g);
 
   return new ASTCDefineNode(
     NodeLocation.fromTokenLoc(identifier.loc),

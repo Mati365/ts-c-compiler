@@ -1,3 +1,5 @@
+import { pipe } from 'fp-ts/function';
+
 import { Token } from '@ts-c-compiler/lexer';
 import { NodeLocation } from '@ts-c-compiler/grammar';
 
@@ -12,7 +14,7 @@ export class ASTCCodeBlockNode extends ASTCPreprocessorTreeNode {
     super(ASTCPreprocessorKind.CodeBlock, loc);
   }
 
-  override exec({ interpreter }: CInterpreterContext): void {
-    interpreter.appendParsedTokens(this.content);
+  override exec({ appendFinalTokens, evalTokens }: CInterpreterContext): void {
+    pipe(this.content, evalTokens, appendFinalTokens);
   }
 }
