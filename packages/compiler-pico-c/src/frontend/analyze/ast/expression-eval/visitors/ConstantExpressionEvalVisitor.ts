@@ -17,6 +17,7 @@ import {
   ASTCBinaryOpNode,
   ASTCPrimaryExpression,
   ASTCCastUnaryExpression,
+  ASTCConditionalExpression,
 } from 'frontend/parser/ast';
 
 import { CInnerTypeTreeVisitor } from '../../type-builder/CInnerTypeTreeVisitor';
@@ -46,6 +47,13 @@ export class ConstantExpressionEvalVisitor extends CInnerTypeTreeVisitor {
         },
       },
 
+      [ASTCCompilerKind.ConditionalExpression]: {
+        enter: (node: ASTCConditionalExpression) => {
+          this.performConditionalOp(node);
+          return false;
+        },
+      },
+
       [ASTCCompilerKind.BinaryOperator]: {
         leave: (node: ASTCBinaryOpNode) => {
           this.performBinaryOp(node);
@@ -62,6 +70,29 @@ export class ConstantExpressionEvalVisitor extends CInnerTypeTreeVisitor {
 
   get value() {
     return R.last(this.expressionArgs);
+  }
+
+  /**
+   * Performs `10 < 11 ? 10 : 11` ternary evaluation
+   */
+  private performConditionalOp(node: ASTCConditionalExpression) {
+    const result = new ConstantExpressionEvalVisitor()
+      .setContext(this.context)
+      .visit(node.logicalExpression).value;
+
+    const branchResult = (() => {
+      if (result) {
+        return new ConstantExpressionEvalVisitor()
+          .setContext(this.context)
+          .visit(node.trueExpression).value;
+      }
+
+      return new ConstantExpressionEvalVisitor()
+        .setContext(this.context)
+        .visit(node.falseExpression).value;
+    })();
+
+    this.expressionArgs.push(branchResult);
   }
 
   /**
