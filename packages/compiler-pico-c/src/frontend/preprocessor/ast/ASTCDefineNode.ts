@@ -1,4 +1,5 @@
 import { NodeLocation } from '@ts-c-compiler/grammar';
+import type { Token } from '@ts-c-compiler/lexer';
 
 import type { CInterpreterContext } from '../interpreter';
 import {
@@ -11,14 +12,14 @@ export class ASTCDefineNode extends ASTCPreprocessorTreeNode {
     loc: NodeLocation,
     readonly name: string,
     readonly args: string[],
-    readonly expression: string,
+    readonly expression: Token[],
   ) {
     super(ASTCPreprocessorKind.Define, loc);
   }
 
-  override exec({ interpreter }: CInterpreterContext): void {
+  override exec({ defineMacro }: CInterpreterContext): void {
     const { name, args, expression } = this;
 
-    interpreter.defineMacro(name, { args, expression });
+    defineMacro(name, { args, expression });
   }
 }

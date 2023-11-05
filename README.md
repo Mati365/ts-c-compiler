@@ -78,11 +78,13 @@ npx ts-c ./main.c -ps
 ### Simple function calls with peephole optimization
 
 ```c
-  int sum(int x) {
+  #define int16_t int
+
+  int16_t sum(int x) {
     return x * 2 / 4;
   }
 
-  int main() {
+  int16_t main() {
     return sum(3);
   }
 ```
