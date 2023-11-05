@@ -4,7 +4,12 @@ import {
   C_PREPROCESSOR_IDENTIFIERS_MAP,
 } from './CPreprocessorIdentifiers';
 
-import { ASTCCodeBlockNode, ASTCPreprocessorKind } from '../ast';
+import {
+  ASTCCodeBlockNode,
+  ASTCPreprocessorKind,
+  ASTCPreprocessorTreeNode,
+} from '../ast';
+
 import { codeBlockMatcher, defineMatcher } from './matchers';
 
 export class CPreprocessorGrammarDef extends Grammar<
@@ -15,6 +20,7 @@ export class CPreprocessorGrammarDef extends Grammar<
 export type CPreprocessorGrammar = {
   g: CPreprocessorGrammarDef;
   codeBlock(): ASTCCodeBlockNode;
+  translationUnit(): ASTCPreprocessorTreeNode[];
 };
 
 const preprocessorMatcher: GrammarInitializer<
@@ -24,13 +30,14 @@ const preprocessorMatcher: GrammarInitializer<
   const grammar: CPreprocessorGrammar = {
     g,
     codeBlock: () => codeBlockMatcher(grammar),
+    translationUnit: () =>
+      g.matchList({
+        define: () => defineMatcher(grammar),
+        codeBlock: () => codeBlockMatcher(grammar),
+      }) as ASTCPreprocessorTreeNode[],
   };
 
-  return () =>
-    g.matchList({
-      define: () => defineMatcher(grammar),
-      codeBlock: () => codeBlockMatcher(grammar),
-    });
+  return grammar.translationUnit;
 };
 
 export const createCPreprocessorGrammar = () =>

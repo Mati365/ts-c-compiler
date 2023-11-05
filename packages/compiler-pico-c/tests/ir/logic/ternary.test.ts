@@ -124,4 +124,19 @@ describe('Ternary assign', () => {
         end-def
     `);
   });
+
+  test('constant eval of ternary operator', () => {
+    expect(/* cpp */ `
+      int main() {
+        int k = 6 < 10 ? 16 : 6;
+      }
+    `).toCompiledIRBeEqual(/* ruby */ `
+      # --- Block main ---
+      def main(): [ret: int2B]
+        k{0}: int*2B = alloca int2B
+        *(k{0}: int*2B) = store %16: int2B
+        ret
+        end-def
+    `);
+  });
 });
