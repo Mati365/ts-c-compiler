@@ -52,6 +52,8 @@ export const evalTokens =
         ...execMacro(args)(macro),
         ...newTokens.slice(i + 1),
       ];
+
+      i = 0; // allow recursive macro execution
     }
 
     return newTokens;
