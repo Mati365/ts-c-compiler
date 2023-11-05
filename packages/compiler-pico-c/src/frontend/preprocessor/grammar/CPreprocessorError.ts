@@ -3,6 +3,7 @@ import { TokenLocation } from '@ts-c-compiler/lexer';
 
 export enum CPreprocessorErrorCode {
   SYNTAX_ERROR,
+  ARG_PARSER_ERROR,
 }
 
 export const C_PREPROCESSOR_ERROR_TRANSLATIONS: Record<
@@ -10,6 +11,8 @@ export const C_PREPROCESSOR_ERROR_TRANSLATIONS: Record<
   string
 > = {
   [CPreprocessorErrorCode.SYNTAX_ERROR]: 'Syntax error!',
+  [CPreprocessorErrorCode.ARG_PARSER_ERROR]:
+    'Arg parser error for macro "%{macro}"!',
 };
 
 export class CPreprocessorError extends CompilerError<
