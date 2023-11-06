@@ -78,13 +78,20 @@ npx ts-c ./main.c -ps
 ### Simple macros with constant expressions optimization
 
 ```c
+#define PRINT_SUM 1
 #define min(a,b) ((a)<(b)?(a):(b))
 #define max(a,b) ((a)>(b)?(a):(b))
 #define sum(a,b) (min(a, b) + max(a, b))
 
-int main() {
-  int k = sum(10, 6);
-}
+#ifdef PRINT_SUM
+  int main() {
+    int k = sum(10, 6);
+  }
+#else
+  int main() {
+    int k = 2;
+  }
+#endif
 ```
 
 <details>
