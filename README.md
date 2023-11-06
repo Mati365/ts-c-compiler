@@ -79,14 +79,19 @@ npx ts-c ./main.c -ps
 
 ```c
 #define PRINT_SUM 1
+#define A 1
+#define B 1
+
 #define min(a,b) ((a)<(b)?(a):(b))
 #define max(a,b) ((a)>(b)?(a):(b))
 #define sum(a,b) (min(a, b) + max(a, b))
 
 #ifdef PRINT_SUM
-  int main() {
-    int k = sum(10, 6);
-  }
+  #if A + B == 12 || A - B == 0
+    int main() {
+      int k = sum(10, 6);
+    }
+  #endif
 #else
   int main() {
     int k = 2;
