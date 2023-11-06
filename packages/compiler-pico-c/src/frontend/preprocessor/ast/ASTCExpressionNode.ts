@@ -12,9 +12,9 @@ import { CInterpreterContext } from '../interpreter';
  * @example
  *  expr1 && expr2 && expr3 > expr2
  */
-export class ASTCLogicExpressionNode extends ASTCPreprocessorTreeNode {
+export class ASTCExpressionNode extends ASTCPreprocessorTreeNode {
   constructor(loc: NodeLocation, public expression: ASTCPreprocessorTreeNode) {
-    super(ASTCPreprocessorKind.LogicExpression, loc);
+    super(ASTCPreprocessorKind.Expression, loc);
   }
 
   walk(visitor: TreeVisitor<ASTCPreprocessorTreeNode>): void {
@@ -25,7 +25,7 @@ export class ASTCLogicExpressionNode extends ASTCPreprocessorTreeNode {
     }
   }
 
-  override exec(ctx: CInterpreterContext): void {
-    console.info(ctx);
+  override exec(ctx: CInterpreterContext) {
+    return ctx.evalExpression(this.expression);
   }
 }

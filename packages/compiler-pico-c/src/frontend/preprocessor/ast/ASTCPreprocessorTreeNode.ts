@@ -8,7 +8,7 @@ export type ASTCExecResult = number | string | boolean | void;
 
 export enum ASTCPreprocessorKind {
   CodeBlock = 'CodeBlock',
-  LogicExpression = 'LogicExpression',
+  Expression = 'Expression',
   BinaryOperator = 'BinaryOperator',
   If = 'If',
   IfDef = 'IfDef',

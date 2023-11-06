@@ -7,7 +7,9 @@ import { ASTCPreprocessorTreeNode } from '../ast';
 import { CInterpreterContext } from './types/CPreprocessorInterpretable';
 
 import type { CPreprocessorMacro } from './types/CPreprocessorMacro';
+
 import { evalTokens } from './evalTokens';
+import { ExpressionResultTreeVisitor } from './ExpressionResultTreeVisitor';
 
 export type CPreprocessorScope = {
   macros: Record<string, CPreprocessorMacro>;
@@ -27,6 +29,11 @@ export const preprocessTokens = (tokens: Token[]) => {
     },
     appendFinalTokens: finalTokens => {
       reduced.push(...finalTokens);
+    },
+    evalExpression: expression => {
+      const visitor = new ExpressionResultTreeVisitor(ctx);
+
+      return visitor.visit(expression).value;
     },
   };
 
