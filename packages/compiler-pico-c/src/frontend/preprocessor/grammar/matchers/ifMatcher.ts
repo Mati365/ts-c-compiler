@@ -4,7 +4,8 @@ import { TokenType } from '@ts-c-compiler/lexer';
 import type { CPreprocessorGrammar } from '../CPreprocessorGrammar';
 
 import { CPreprocessorIdentifier } from '../CPreprocessorIdentifiers';
-import { ASTCIfNode } from 'frontend/preprocessor/ast';
+import { ASTCIfNode, ASTCExpressionNode } from 'frontend/preprocessor/ast';
+
 import { logicExpression } from './expressions';
 
 export const ifMatcher = ({ g, stmt }: CPreprocessorGrammar): ASTCIfNode => {
@@ -31,7 +32,7 @@ export const ifMatcher = ({ g, stmt }: CPreprocessorGrammar): ASTCIfNode => {
 
   return new ASTCIfNode(
     NodeLocation.fromTokenLoc(identifier.loc),
-    expression,
+    new ASTCExpressionNode(expression.loc, expression),
     trueStmt,
     falseStmt,
   );

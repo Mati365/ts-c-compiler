@@ -6,6 +6,8 @@ export enum CPreprocessorErrorCode {
   ARG_PARSER_ERROR,
   MISSING_ENDIF,
   INCORRECT_VALUE_EXPRESSION,
+  INCORRECT_EXPRESSION,
+  EXPRESSION_MISMATCH_ARGS_TYPES,
 }
 
 export const C_PREPROCESSOR_ERROR_TRANSLATIONS: Record<
@@ -18,6 +20,9 @@ export const C_PREPROCESSOR_ERROR_TRANSLATIONS: Record<
   [CPreprocessorErrorCode.MISSING_ENDIF]: 'Missing endif!',
   [CPreprocessorErrorCode.INCORRECT_VALUE_EXPRESSION]:
     'Incorrect value expression!',
+  [CPreprocessorErrorCode.INCORRECT_EXPRESSION]: 'Incorrect expression!',
+  [CPreprocessorErrorCode.EXPRESSION_MISMATCH_ARGS_TYPES]:
+    'Expression mismatch args types!',
 };
 
 export class CPreprocessorError extends CompilerError<
