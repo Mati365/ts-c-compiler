@@ -7,6 +7,7 @@ import type {
 export enum ASTCPreprocessorKind {
   CodeBlock = 'CodeBlock',
   IfDef = 'IfDef',
+  IfNotDef = 'IfNotDef',
   Define = 'Define',
   Stmt = 'Stmt',
 }
