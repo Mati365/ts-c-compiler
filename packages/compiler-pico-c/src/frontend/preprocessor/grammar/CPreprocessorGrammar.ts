@@ -10,7 +10,12 @@ import {
   ASTCStmtNode,
 } from '../ast';
 
-import { codeBlockMatcher, defineMatcher, ifDefMatcher } from './matchers';
+import {
+  codeBlockMatcher,
+  defineMatcher,
+  ifDefMatcher,
+  ifNotDefMatcher,
+} from './matchers';
 
 export class CPreprocessorGrammarDef extends Grammar<
   CPreprocessorIdentifier,
@@ -31,6 +36,7 @@ const preprocessorMatcher: GrammarInitializer<
     stmt: () => {
       const children = g.matchList({
         ifDef: () => ifDefMatcher(grammar),
+        ifNotDef: () => ifNotDefMatcher(grammar),
         define: () => defineMatcher(grammar),
         codeBlock: () => codeBlockMatcher(grammar),
         empty,
