@@ -1,8 +1,9 @@
-import { Token } from '@ts-c-compiler/lexer';
+import * as R from 'ramda';
+
+import { Token, TokenType } from '@ts-c-compiler/lexer';
 import { createCPreprocessorGrammar } from '../grammar';
 
-import { TreeNode, TreeVisitor } from '@ts-c-compiler/grammar';
-import { ASTCPreprocessorTreeNode, isPreprocessorTreeNode } from '../ast';
+import { ASTCPreprocessorTreeNode } from '../ast';
 import { CInterpreterContext } from './types/CPreprocessorInterpretable';
 
 import type { CPreprocessorMacro } from './types/CPreprocessorMacro';
@@ -20,6 +21,7 @@ export const preprocessTokens = (tokens: Token[]) => {
 
   const ctx: CInterpreterContext = {
     evalTokens: evalTokens(scope),
+    isDefined: (name: string) => name in scope.macros,
     defineMacro: (name: string, macro: CPreprocessorMacro) => {
       scope.macros[name] = macro;
     },
@@ -28,18 +30,14 @@ export const preprocessTokens = (tokens: Token[]) => {
     },
   };
 
-  const visitor = new (class extends TreeVisitor<ASTCPreprocessorTreeNode> {
-    enter(node: TreeNode) {
-      if (isPreprocessorTreeNode(node)) {
-        node.exec(ctx);
-      }
-    }
-  })();
+  const tree = createCPreprocessorGrammar().process(tokens)
+    .children[0] as ASTCPreprocessorTreeNode;
 
-  const tree = createCPreprocessorGrammar().process(
-    tokens,
-  ) as ASTCPreprocessorTreeNode;
+  tree.exec(ctx);
 
-  visitor.visit(tree);
+  if (R.last(reduced)?.type !== TokenType.EOF) {
+    reduced.push(new Token(TokenType.EOF, null, null, null));
+  }
+
   return reduced;
 };
