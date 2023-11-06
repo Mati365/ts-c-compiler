@@ -4,6 +4,7 @@ import { TokenLocation } from '@ts-c-compiler/lexer';
 export enum CPreprocessorErrorCode {
   SYNTAX_ERROR,
   ARG_PARSER_ERROR,
+  MISSING_ENDIF,
 }
 
 export const C_PREPROCESSOR_ERROR_TRANSLATIONS: Record<
@@ -13,6 +14,7 @@ export const C_PREPROCESSOR_ERROR_TRANSLATIONS: Record<
   [CPreprocessorErrorCode.SYNTAX_ERROR]: 'Syntax error!',
   [CPreprocessorErrorCode.ARG_PARSER_ERROR]:
     'Arg parser error for macro "%{macro}"!',
+  [CPreprocessorErrorCode.MISSING_ENDIF]: 'Missing endif!',
 };
 
 export class CPreprocessorError extends CompilerError<

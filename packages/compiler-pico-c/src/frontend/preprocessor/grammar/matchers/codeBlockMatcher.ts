@@ -16,17 +16,30 @@ import type { CPreprocessorGrammar } from '../CPreprocessorGrammar';
 export const codeBlockMatcher = ({
   g,
 }: CPreprocessorGrammar): ASTCCodeBlockNode => {
-  const tokens: Token[] = pipe(
-    fetchTokensUntil(isPreprocessorIdentifierLikeToken, g),
-    A.filter(token => token.type !== TokenType.EOL),
+  const tokensWithEOLs: Token[] = fetchTokensUntil(
+    isPreprocessorIdentifierLikeToken,
+    g,
+    true,
   );
 
-  if (!tokens.length) {
+  if (!tokensWithEOLs.length) {
     throw new SyntaxError();
   }
 
+  const filteredTokens = pipe(
+    tokensWithEOLs,
+    A.filter(token => token.type !== TokenType.EOL),
+  );
+
+  if (!filteredTokens.length) {
+    return new ASTCCodeBlockNode(
+      NodeLocation.fromTokenLoc(tokensWithEOLs[0].loc),
+      [],
+    );
+  }
+
   return new ASTCCodeBlockNode(
-    NodeLocation.fromTokenLoc(tokens[0].loc),
-    tokens,
+    NodeLocation.fromTokenLoc(filteredTokens[0].loc),
+    filteredTokens,
   );
 };

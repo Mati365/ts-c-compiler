@@ -1,16 +1,16 @@
-import { Grammar, GrammarInitializer } from '@ts-c-compiler/grammar';
+import { Grammar, GrammarInitializer, empty } from '@ts-c-compiler/grammar';
 import {
   CPreprocessorIdentifier,
   C_PREPROCESSOR_IDENTIFIERS_MAP,
 } from './CPreprocessorIdentifiers';
 
 import {
-  ASTCCodeBlockNode,
   ASTCPreprocessorKind,
   ASTCPreprocessorTreeNode,
+  ASTCStmtNode,
 } from '../ast';
 
-import { codeBlockMatcher, defineMatcher } from './matchers';
+import { codeBlockMatcher, defineMatcher, ifDefMatcher } from './matchers';
 
 export class CPreprocessorGrammarDef extends Grammar<
   CPreprocessorIdentifier,
@@ -19,8 +19,7 @@ export class CPreprocessorGrammarDef extends Grammar<
 
 export type CPreprocessorGrammar = {
   g: CPreprocessorGrammarDef;
-  codeBlock(): ASTCCodeBlockNode;
-  translationUnit(): ASTCPreprocessorTreeNode[];
+  stmt(): ASTCStmtNode;
 };
 
 const preprocessorMatcher: GrammarInitializer<
@@ -29,21 +28,24 @@ const preprocessorMatcher: GrammarInitializer<
 > = ({ g }) => {
   const grammar: CPreprocessorGrammar = {
     g,
-    codeBlock: () => codeBlockMatcher(grammar),
-    translationUnit: () =>
-      g.matchList({
+    stmt: () => {
+      const children = g.matchList({
+        ifDef: () => ifDefMatcher(grammar),
         define: () => defineMatcher(grammar),
         codeBlock: () => codeBlockMatcher(grammar),
-      }) as ASTCPreprocessorTreeNode[],
+        empty,
+      }) as ASTCPreprocessorTreeNode[];
+
+      return new ASTCStmtNode(children[0]?.loc, children);
+    },
   };
 
-  return grammar.translationUnit;
+  return grammar.stmt;
 };
 
 export const createCPreprocessorGrammar = () =>
   Grammar.build(
     {
-      ignoreMatchCallNesting: true,
       identifiers: C_PREPROCESSOR_IDENTIFIERS_MAP,
     },
     preprocessorMatcher,

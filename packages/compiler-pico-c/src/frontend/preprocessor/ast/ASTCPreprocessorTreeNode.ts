@@ -6,7 +6,9 @@ import type {
 
 export enum ASTCPreprocessorKind {
   CodeBlock = 'CodeBlock',
+  IfDef = 'IfDef',
   Define = 'Define',
+  Stmt = 'Stmt',
 }
 
 export class ASTCPreprocessorTreeNode<

@@ -5,6 +5,12 @@ import type { IdentifiersMap } from '@ts-c-compiler/lexer';
 
 export enum CPreprocessorIdentifier {
   DEFINE = '#define',
+  IF_DEF = '#ifdef',
+  IF_NOT_DEF = '#ifndef',
+  IF = '#if',
+  ELSE = '#else',
+  ELIF = '#elif',
+  ENDIF = '#endif',
 }
 
 export const C_PREPROCESSOR_IDENTIFIERS_MAP: IdentifiersMap = R.fromPairs(
