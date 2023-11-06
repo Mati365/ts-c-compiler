@@ -5,6 +5,7 @@ export enum CPreprocessorErrorCode {
   SYNTAX_ERROR,
   ARG_PARSER_ERROR,
   MISSING_ENDIF,
+  INCORRECT_VALUE_EXPRESSION,
 }
 
 export const C_PREPROCESSOR_ERROR_TRANSLATIONS: Record<
@@ -15,6 +16,8 @@ export const C_PREPROCESSOR_ERROR_TRANSLATIONS: Record<
   [CPreprocessorErrorCode.ARG_PARSER_ERROR]:
     'Arg parser error for macro "%{macro}"!',
   [CPreprocessorErrorCode.MISSING_ENDIF]: 'Missing endif!',
+  [CPreprocessorErrorCode.INCORRECT_VALUE_EXPRESSION]:
+    'Incorrect value expression!',
 };
 
 export class CPreprocessorError extends CompilerError<

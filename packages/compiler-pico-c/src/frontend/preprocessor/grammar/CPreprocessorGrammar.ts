@@ -14,6 +14,7 @@ import {
   codeBlockMatcher,
   defineMatcher,
   ifDefMatcher,
+  ifMatcher,
   ifNotDefMatcher,
 } from './matchers';
 
@@ -35,6 +36,7 @@ const preprocessorMatcher: GrammarInitializer<
     g,
     stmt: () => {
       const children = g.matchList({
+        if: () => ifMatcher(grammar),
         ifDef: () => ifDefMatcher(grammar),
         ifNotDef: () => ifNotDefMatcher(grammar),
         define: () => defineMatcher(grammar),

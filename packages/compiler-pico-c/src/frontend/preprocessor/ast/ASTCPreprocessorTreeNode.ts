@@ -4,12 +4,18 @@ import type {
   CInterpreterContext,
 } from '../interpreter';
 
+export type ASTCExecResult = number | string | boolean | void;
+
 export enum ASTCPreprocessorKind {
   CodeBlock = 'CodeBlock',
+  LogicExpression = 'LogicExpression',
+  BinaryOperator = 'BinaryOperator',
+  If = 'If',
   IfDef = 'IfDef',
   IfNotDef = 'IfNotDef',
   Define = 'Define',
   Stmt = 'Stmt',
+  Value = 'Value',
 }
 
 export class ASTCPreprocessorTreeNode<
@@ -19,7 +25,7 @@ export class ASTCPreprocessorTreeNode<
   implements CPreprocessorInterpretable
 {
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  exec(ctx: CInterpreterContext): void {
+  exec(ctx: CInterpreterContext): ASTCExecResult {
     return null;
   }
 }
