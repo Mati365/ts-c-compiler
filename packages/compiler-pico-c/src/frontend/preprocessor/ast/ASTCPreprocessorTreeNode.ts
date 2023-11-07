@@ -11,6 +11,7 @@ export enum ASTCPreprocessorKind {
   Expression = 'Expression',
   BinaryOperator = 'BinaryOperator',
   If = 'If',
+  Elif = 'Elif',
   IfDef = 'IfDef',
   IfNotDef = 'IfNotDef',
   Define = 'Define',

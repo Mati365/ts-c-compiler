@@ -16,6 +16,7 @@ import {
   ifDefMatcher,
   ifMatcher,
   ifNotDefMatcher,
+  ifFalseStmtMatcher,
 } from './matchers';
 
 export class CPreprocessorGrammarDef extends Grammar<
@@ -26,6 +27,7 @@ export class CPreprocessorGrammarDef extends Grammar<
 export type CPreprocessorGrammar = {
   g: CPreprocessorGrammarDef;
   stmt(): ASTCStmtNode;
+  falseIfStmt(): ASTCPreprocessorTreeNode;
 };
 
 const preprocessorMatcher: GrammarInitializer<
@@ -34,6 +36,7 @@ const preprocessorMatcher: GrammarInitializer<
 > = ({ g }) => {
   const grammar: CPreprocessorGrammar = {
     g,
+    falseIfStmt: () => ifFalseStmtMatcher(grammar),
     stmt: () => {
       const children = g.matchList({
         if: () => ifMatcher(grammar),

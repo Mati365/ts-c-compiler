@@ -4,14 +4,14 @@ import { TokenType } from '@ts-c-compiler/lexer';
 import type { CPreprocessorGrammar } from '../CPreprocessorGrammar';
 
 import { CPreprocessorIdentifier } from '../CPreprocessorIdentifiers';
-import { ASTCIfNode, ASTCExpressionNode } from 'frontend/preprocessor/ast';
+import { ASTCExpressionNode, ASTCElifNode } from 'frontend/preprocessor/ast';
 
 import { logicExpression } from './expressions';
 
-export const ifMatcher = (ctx: CPreprocessorGrammar): ASTCIfNode => {
+export const elifMatcher = (ctx: CPreprocessorGrammar): ASTCElifNode => {
   const { g, stmt, falseIfStmt } = ctx;
 
-  const identifier = g.identifier(CPreprocessorIdentifier.IF);
+  const identifier = g.identifier(CPreprocessorIdentifier.ELIF);
   const expression = logicExpression(g);
 
   g.match({
@@ -21,12 +21,7 @@ export const ifMatcher = (ctx: CPreprocessorGrammar): ASTCIfNode => {
   const trueStmt = stmt();
   const falseStmt = falseIfStmt();
 
-  g.identifier(CPreprocessorIdentifier.ENDIF);
-  g.match({
-    type: TokenType.EOL,
-  });
-
-  return new ASTCIfNode(
+  return new ASTCElifNode(
     NodeLocation.fromTokenLoc(identifier.loc),
     new ASTCExpressionNode(expression.loc, expression),
     trueStmt,
