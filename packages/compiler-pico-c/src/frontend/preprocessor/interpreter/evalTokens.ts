@@ -1,7 +1,8 @@
 import { Token, TokenType } from '@ts-c-compiler/lexer';
-import { CInterpreterScope } from './interpret';
 
+import type { CInterpreterScope } from './createInterpreterContext';
 import type { CPreprocessorMacroArgTokens } from './types';
+
 import { execMacro } from './execMacro';
 import { CPreprocessorError, CPreprocessorErrorCode } from '../grammar';
 
