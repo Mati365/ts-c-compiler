@@ -25,7 +25,7 @@ export const C_PREPROCESSOR_ERROR_TRANSLATIONS: Record<
   [CPreprocessorErrorCode.EXPRESSION_MISMATCH_ARGS_TYPES]:
     'Expression mismatch args types!',
   [CPreprocessorErrorCode.CANNOT_INCLUDE_FILE]:
-    'Cannot include file "%{path}"!',
+    'Cannot include file "%{name}"!',
 };
 
 export class CPreprocessorError extends CompilerError<

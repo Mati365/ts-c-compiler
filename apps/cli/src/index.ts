@@ -3,15 +3,17 @@ import 'source-map-support/register';
 import fs from 'node:fs';
 import * as E from 'fp-ts/Either';
 import { pipe } from 'fp-ts/function';
-
 import { program } from '@commander-js/extra-typings';
 
 import { TableBinaryView, asm } from '@ts-c-compiler/x86-assembler';
 import {
+  CCompilerArch,
   ccompiler,
   serializeTypedTreeToString,
   wrapWithX86BootsectorAsm,
 } from '@ts-c-compiler/compiler';
+
+import { NodeFsIncludeResolver } from './NodeFsIncludeResolver';
 
 program
   .argument('<source>', 'Relative or absolute path to source file')
@@ -27,7 +29,15 @@ program
 
     pipe(
       srcFile,
-      ccompiler(),
+      ccompiler({
+        arch: CCompilerArch.X86_16,
+        optimization: {
+          enabled: true,
+        },
+        preprocessor: {
+          fsIncludeResolver: new NodeFsIncludeResolver(),
+        },
+      }),
       E.match(
         (error: any) => {
           if (options.debug && error?.[0]?.tree) {
