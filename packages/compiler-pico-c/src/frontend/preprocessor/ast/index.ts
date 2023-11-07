@@ -1,6 +1,7 @@
 export * from './ASTCBinaryOpNode';
 export * from './ASTCCodeBlockNode';
 export * from './ASTCDefineNode';
+export * from './ASTCElifNode';
 export * from './ASTCExpressionNode';
 export * from './ASTCIfDefNode';
 export * from './ASTCIfNode';

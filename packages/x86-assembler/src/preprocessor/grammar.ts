@@ -9,6 +9,7 @@ import {
   TokenKind,
   NumberFormat,
 } from '@ts-c-compiler/lexer';
+
 import {
   Grammar,
   GrammarInitializer,

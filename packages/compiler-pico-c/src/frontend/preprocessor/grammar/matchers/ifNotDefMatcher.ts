@@ -6,10 +6,9 @@ import type { CPreprocessorGrammar } from '../CPreprocessorGrammar';
 import { CPreprocessorIdentifier } from '../CPreprocessorIdentifiers';
 import { ASTCIfDefNode, ASTCIfNotDefNode } from 'frontend/preprocessor/ast';
 
-export const ifNotDefMatcher = ({
-  g,
-  stmt,
-}: CPreprocessorGrammar): ASTCIfDefNode => {
+export const ifNotDefMatcher = (ctx: CPreprocessorGrammar): ASTCIfDefNode => {
+  const { g, stmt, falseIfStmt } = ctx;
+
   const identifier = g.identifier(CPreprocessorIdentifier.IF_NOT_DEF);
   const name = g.match({
     type: TokenType.KEYWORD,
@@ -20,13 +19,7 @@ export const ifNotDefMatcher = ({
   });
 
   const trueStmt = stmt();
-  const falseStmt = (() => {
-    if (g.identifier(CPreprocessorIdentifier.ELSE, true)) {
-      return stmt();
-    }
-
-    return null;
-  })();
+  const falseStmt = falseIfStmt();
 
   g.identifier(CPreprocessorIdentifier.ENDIF);
   g.match({
