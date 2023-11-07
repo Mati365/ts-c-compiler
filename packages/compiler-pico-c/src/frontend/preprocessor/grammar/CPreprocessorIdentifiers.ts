@@ -10,6 +10,7 @@ export enum CPreprocessorIdentifier {
   IF = '#if',
   ELSE = '#else',
   ELIF = '#elif',
+  ELIF_DEF = '#elifdef',
   ENDIF = '#endif',
 }
 
