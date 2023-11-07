@@ -67,10 +67,9 @@ npx ts-c ./main.c -ps
 
 ## What is not working? 🚧
 
-- [ ] Preprocessor (`#include`, `#define`, `#if` etc.)
+- [ ] Linker (ability to compile multiple source files at once)
 - [ ] Unions
 - [ ] Bitfields
-- [ ] Linker (ability to compile multiple source files at once)
 - [ ] ... and many other things
 
 ## What can be currently compiled?
@@ -78,6 +77,8 @@ npx ts-c ./main.c -ps
 ### Simple macros with constant expressions optimization
 
 ```c
+#include "file.h"
+
 #define PRINT_SUM 1
 #define A 1
 #define B 1

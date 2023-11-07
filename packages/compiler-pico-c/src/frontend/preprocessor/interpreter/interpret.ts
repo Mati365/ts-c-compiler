@@ -4,48 +4,48 @@ import { Token, TokenType } from '@ts-c-compiler/lexer';
 import { createCPreprocessorGrammar } from '../grammar';
 
 import { ASTCPreprocessorTreeNode } from '../ast';
-import { CPreprocessorConfig, CInterpreterContext } from './types';
+import { CPreprocessorConfig } from './types';
 
-import type { CPreprocessorMacro } from './types/CPreprocessorMacro';
+import {
+  createInterpreterContext,
+  type CInterpreterScope,
+} from './createInterpreterContext';
 
-import { evalTokens } from './evalTokens';
-import { ExpressionResultTreeVisitor } from './ExpressionResultTreeVisitor';
+export type CPreprocessorInterpreter = (
+  config: CPreprocessorConfig & {
+    forwardedScope?: CInterpreterScope;
+  },
+) => (tokens: Token[]) => Token[];
 
-export type CInterpreterScope = {
-  macros: Record<string, CPreprocessorMacro>;
-};
+export const interpret: CPreprocessorInterpreter =
+  ({ forwardedScope, ...config }) =>
+  tokens => {
+    const scope: CInterpreterScope = forwardedScope ?? {
+      macros: {},
+    };
 
-export const interpret = (config: CPreprocessorConfig) => (tokens: Token[]) => {
-  const reduced: Token[] = [];
-  const scope: CInterpreterScope = {
-    macros: {},
+    let { reduced, ctx } = createInterpreterContext({
+      scope,
+      currentFilePath: config.currentFilePath,
+      fsIncludeResolver: config.fsIncludeResolver,
+      interpretIncludedTokens: includedFilePath =>
+        interpret({
+          ...config,
+          forwardedScope: scope,
+          currentFilePath: includedFilePath,
+        }),
+    });
+
+    const tree = createCPreprocessorGrammar().process(tokens)
+      .children[0] as ASTCPreprocessorTreeNode;
+
+    tree.exec(ctx);
+
+    if (forwardedScope) {
+      reduced = reduced.filter(token => token.type !== TokenType.EOF);
+    } else if (R.last(reduced)?.type !== TokenType.EOF) {
+      reduced.push(new Token(TokenType.EOF, null, null, null));
+    }
+
+    return reduced;
   };
-
-  const ctx: CInterpreterContext = {
-    config,
-    evalTokens: evalTokens(scope),
-    isDefined: (name: string) => name in scope.macros,
-    defineMacro: (name: string, macro: CPreprocessorMacro) => {
-      scope.macros[name] = macro;
-    },
-    appendFinalTokens: finalTokens => {
-      reduced.push(...finalTokens);
-    },
-    evalExpression: expression => {
-      const visitor = new ExpressionResultTreeVisitor(ctx);
-
-      return visitor.visit(expression).value;
-    },
-  };
-
-  const tree = createCPreprocessorGrammar().process(tokens)
-    .children[0] as ASTCPreprocessorTreeNode;
-
-  tree.exec(ctx);
-
-  if (R.last(reduced)?.type !== TokenType.EOF) {
-    reduced.push(new Token(TokenType.EOF, null, null, null));
-  }
-
-  return reduced;
-};
