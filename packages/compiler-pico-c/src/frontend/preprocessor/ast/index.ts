@@ -3,6 +3,7 @@ export * from './ASTCCodeBlockNode';
 export * from './ASTCDefineNode';
 export * from './ASTCElifDefNode';
 export * from './ASTCElifNode';
+export * from './ASTCElifNotDefNode';
 export * from './ASTCExpressionNode';
 export * from './ASTCIfDefNode';
 export * from './ASTCIfNode';
