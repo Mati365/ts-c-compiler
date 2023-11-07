@@ -1,6 +1,7 @@
+import { pipe } from 'fp-ts/function';
 import { rpn } from '@ts-c-compiler/rpn';
 
-import { Token, NumberToken } from '@ts-c-compiler/lexer';
+import { Token, joinTokensWithSpaces } from '@ts-c-compiler/lexer';
 import { ValueNode, type NodeLocation } from '@ts-c-compiler/grammar';
 
 import type {
@@ -30,19 +31,12 @@ export class ASTCValueNode<T extends Token[] = any>
   }
 
   exec({ evalTokens }: CInterpreterContext): ASTCExecResult {
-    const resultTokens = evalTokens(this.value);
-    const [token] = resultTokens;
+    const parsed = pipe(this.value, evalTokens, joinTokensWithSpaces, rpn);
 
-    if (token instanceof NumberToken) {
-      return token.value.number;
-    }
-
-    // handle string, keyword tokens usually emited from macros
-    const parsed = rpn(token.text);
     if (Number.isNaN(parsed)) {
       throw new CPreprocessorError(
         CPreprocessorErrorCode.INCORRECT_VALUE_EXPRESSION,
-        token.loc,
+        this.loc.start,
       );
     }
 

@@ -1,8 +1,8 @@
 import { Token } from '@ts-c-compiler/lexer';
-import { CPreprocessorMacro, CPreprocessorMacroArgToken } from './types';
+import { CPreprocessorMacro, CPreprocessorMacroArgTokens } from './types';
 
 export const execMacro =
-  (args: CPreprocessorMacroArgToken[]) =>
+  (args: CPreprocessorMacroArgTokens[]) =>
   (macro: CPreprocessorMacro): Token[] => {
     if (!args.length) {
       return macro.expression;
@@ -17,8 +17,12 @@ export const execMacro =
       };
 
       for (let tokenIndex = 0; tokenIndex < expression.length; ++tokenIndex) {
-        if (macro.expression[tokenIndex]?.text === arg.name) {
-          expression[tokenIndex] = arg.value;
+        if (expression[tokenIndex]?.text === arg.name) {
+          expression = [
+            ...expression.slice(0, tokenIndex),
+            ...arg.value,
+            ...expression.slice(tokenIndex + 1),
+          ];
         }
       }
     }
