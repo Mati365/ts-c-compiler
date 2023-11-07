@@ -11,6 +11,7 @@ export enum CPreprocessorIdentifier {
   ELSE = '#else',
   ELIF = '#elif',
   ELIF_DEF = '#elifdef',
+  ELIF_NOT_DEF = '#elifndef',
   ENDIF = '#endif',
 }
 

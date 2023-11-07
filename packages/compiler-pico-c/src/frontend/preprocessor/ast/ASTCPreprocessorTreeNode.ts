@@ -14,6 +14,7 @@ export enum ASTCPreprocessorKind {
   ElIf = 'ElIf',
   IfDef = 'IfDef',
   ElIfDef = 'ElIfDef',
+  ElIfNotDef = 'ElIfNotDef',
   IfNotDef = 'IfNotDef',
   Define = 'Define',
   Stmt = 'Stmt',
