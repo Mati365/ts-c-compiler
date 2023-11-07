@@ -498,6 +498,172 @@ def main():
 
 </details>
 
+### Bubble sort
+
+```c
+void bubble_sort(int a[], int n) {
+  int i = 0, j = 0, tmp;
+  for (i = 0; i < n; i++) {   // loop n times - 1 per element
+    for (j = 0; j < n - i - 1; j++) { // last i elements are sorted already
+      if (a[j] > a[j + 1]) {  // swop if order is broken
+        tmp = a[j];
+        a[j] = a[j + 1];
+        a[j + 1] = tmp;
+      }
+    }
+  }
+}
+```
+
+<details>
+  <summary><strong>IR Output</strong></summary>
+
+```ruby
+# --- Block bubble_sort ---
+def bubble_sort(a{0}: int[]*2B, n{0}: int*2B):
+  i{0}: int*2B = alloca int2B
+  *(i{0}: int*2B) = store %0: int2B
+  j{0}: int*2B = alloca int2B
+  *(j{0}: int*2B) = store %0: int2B
+  tmp{0}: int*2B = alloca int2B
+  L1:
+  %t{0}: int2B = load i{0}: int*2B
+  %t{1}: int2B = load n{0}: int*2B
+  %t{2}: i1:zf = icmp %t{0}: int2B less_than %t{1}: int2B
+  br %t{2}: i1:zf, true: L2, false: L3
+  L2:
+  %t{5}: int2B = load j{0}: int*2B
+  %t{6}: int2B = load n{0}: int*2B
+  %t{7}: int2B = load i{0}: int*2B
+  %t{8}: int2B = %t{6}: int2B minus %t{7}: int2B
+  %t{9}: int2B = %t{8}: int2B minus %1: char1B
+  %t{10}: i1:zf = icmp %t{5}: int2B less_than %t{9}: int2B
+  br %t{10}: i1:zf, true: L5, false: L6
+  L5:
+  %t{13}: int[]*2B = lea a{0}: int[]*2B
+  %t{14}: int2B = load j{0}: int*2B
+  %t{15}: int[]*2B = %t{14}: int2B mul %2: int2B
+  %t{16}: int[]*2B = %t{13}: int[]*2B plus %t{15}: int[]*2B
+  %t{17}: int2B = load %t{16}: int[]*2B
+  %t{20}: int2B = %t{14}: int2B plus %1: char1B
+  %t{21}: int[]*2B = %t{20}: int2B mul %2: int2B
+  %t{22}: int[]*2B = %t{13}: int[]*2B plus %t{21}: int[]*2B
+  %t{23}: int2B = load %t{22}: int[]*2B
+  %t{24}: i1:zf = icmp %t{17}: int2B greater_than %t{23}: int2B
+  br %t{24}: i1:zf, false: L7
+  L8:
+  %t{25}: int[]*2B = lea a{0}: int[]*2B
+  %t{26}: int2B = load j{0}: int*2B
+  %t{27}: int[]*2B = %t{26}: int2B mul %2: int2B
+  %t{28}: int[]*2B = %t{25}: int[]*2B plus %t{27}: int[]*2B
+  %t{29}: int2B = load %t{28}: int[]*2B
+  *(tmp{0}: int*2B) = store %t{29}: int2B
+  %t{32}: int[]*2B = %t{26}: int2B mul %2: int2B
+  %t{33}: int[]*2B = %t{25}: int[]*2B plus %t{32}: int[]*2B
+  %t{36}: int2B = %t{26}: int2B plus %1: char1B
+  %t{37}: int[]*2B = %t{36}: int2B mul %2: int2B
+  %t{38}: int[]*2B = %t{25}: int[]*2B plus %t{37}: int[]*2B
+  %t{39}: int2B = load %t{38}: int[]*2B
+  *(%t{33}: int[]*2B) = store %t{39}: int2B
+  %t{42}: int2B = %t{26}: int2B plus %1: char1B
+  %t{43}: int[]*2B = %t{42}: int2B mul %2: int2B
+  %t{44}: int[]*2B = %t{25}: int[]*2B plus %t{43}: int[]*2B
+  %t{45}: int2B = load tmp{0}: int*2B
+  *(%t{44}: int[]*2B) = store %t{45}: int2B
+  L7:
+  %t{11}: int2B = load j{0}: int*2B
+  %t{12}: int2B = %t{11}: int2B plus %1: int2B
+  *(j{0}: int*2B) = store %t{12}: int2B
+  jmp L2
+  L6:
+  %t{3}: int2B = load i{0}: int*2B
+  %t{4}: int2B = %t{3}: int2B plus %1: int2B
+  *(i{0}: int*2B) = store %t{4}: int2B
+  jmp L1
+  L3:
+  ret
+  end-def
+```
+
+</details>
+
+<details>
+  <summary><strong>Binary output</strong></summary>
+
+```asm
+0x000000                      55                            push bp
+0x000001                      89 e5                         mov bp, sp
+0x000003                      83 ec 0a                      sub sp, 0xa
+0x000006                      c7 46 fe 00 00                mov word [bp-2], 0x0
+0x00000b                      c7 46 fc 00 00                mov word [bp-4], 0x0
+0x000010  <────────╮          8b 46 06                      mov ax, word [bp+6]
+0x000013           │          39 46 fe                      cmp word [bp-2], ax
+0x000016  ─╮       │          7c 04                         jl 0x1c
+0x000018  ─┼─╮     │          0f 8d 89 00                   jge 0xa5
+0x00001c  <╯<┼───╮ │          8b 46 06                      mov ax, word [bp+6]
+0x00001f     │   │ │          2b 46 fe                      sub ax, word [bp-2]
+0x000022     │   │ │          2d 01 00                      sub ax, 0x1
+0x000025     │   │ │          39 46 fc                      cmp word [bp-4], ax
+0x000028  ─╮ │   │ │          7c 02                         jl 0x2c
+0x00002a  ─┼─┼─╮ │ │          7d 6d                         jge 0x99
+0x00002c  <╯ │ │ │ │          8d 5e 04                      lea bx, word [bp+4]
+0x00002f     │ │ │ │          8b 46 fc                      mov ax, word [bp-4]
+0x000032     │ │ │ │          89 c1                         mov cx, ax
+0x000034     │ │ │ │          d1 e0                         shl ax, 0x1
+0x000036     │ │ │ │          89 da                         mov dx, bx
+0x000038     │ │ │ │          01 c3                         add bx, ax
+0x00003a     │ │ │ │          8b 07                         mov ax, word [bx]
+0x00003c     │ │ │ │          83 c1 01                      add cx, 0x1
+0x00003f     │ │ │ │          d1 e1                         shl cx, 0x1
+0x000041     │ │ │ │          01 ca                         add dx, cx
+0x000043     │ │ │ │          89 d7                         mov di, dx
+0x000045     │ │ │ │          8b 1d                         mov bx, word [di]
+0x000047     │ │ │ │          39 d8                         cmp ax, bx
+0x000049  ─╮ │ │ │ │          7e 43                         jng 0x8e
+0x00004b   │ │ │ │ │          8d 5e 04                      lea bx, word [bp+4]
+0x00004e   │ │ │ │ │          8b 46 fc                      mov ax, word [bp-4]
+0x000051   │ │ │ │ │          89 c1                         mov cx, ax
+0x000053   │ │ │ │ │          d1 e0                         shl ax, 0x1
+0x000055   │ │ │ │ │          89 da                         mov dx, bx
+0x000057   │ │ │ │ │          01 c3                         add bx, ax
+0x000059   │ │ │ │ │          8b 07                         mov ax, word [bx]
+0x00005b   │ │ │ │ │          89 46 fa                      mov word [bp-6], ax
+0x00005e   │ │ │ │ │          89 c8                         mov ax, cx
+0x000060   │ │ │ │ │          d1 e1                         shl cx, 0x1
+0x000062   │ │ │ │ │          89 d3                         mov bx, dx
+0x000064   │ │ │ │ │          01 ca                         add dx, cx
+0x000066   │ │ │ │ │          89 c1                         mov cx, ax
+0x000068   │ │ │ │ │          05 01 00                      add ax, 0x1
+0x00006b   │ │ │ │ │          d1 e0                         shl ax, 0x1
+0x00006d   │ │ │ │ │          89 46 f8                      mov word [bp-8], ax
+0x000070   │ │ │ │ │          89 d8                         mov ax, bx
+0x000072   │ │ │ │ │          01 c3                         add bx, ax
+0x000074   │ │ │ │ │          89 46 f6                      mov word [bp-10], ax
+0x000077   │ │ │ │ │          8b 07                         mov ax, word [bx]
+0x000079   │ │ │ │ │          89 d7                         mov di, dx
+0x00007b   │ │ │ │ │          89 05                         mov word [di], ax
+0x00007d   │ │ │ │ │          83 c1 01                      add cx, 0x1
+0x000080   │ │ │ │ │          d1 e1                         shl cx, 0x1
+0x000082   │ │ │ │ │          8b 56 f6                      mov dx, word [bp-10]
+0x000085   │ │ │ │ │          01 ca                         add dx, cx
+0x000087   │ │ │ │ │          89 d6                         mov si, dx
+0x000089   │ │ │ │ │          8b 56 fa                      mov dx, word [bp-6]
+0x00008c   │ │ │ │ │          89 14                         mov word [si], dx
+0x00008e  <╯ │ │ │ │          8b 46 fc                      mov ax, word [bp-4]
+0x000091     │ │ │ │          05 01 00                      add ax, 0x1
+0x000094     │ │ │ │          89 46 fc                      mov word [bp-4], ax
+0x000097  ───┼─┼─╯ │          eb 83                         jmp 0x1c
+0x000099  <──┼─╯   │          8b 46 fe                      mov ax, word [bp-2]
+0x00009c     │     │          05 01 00                      add ax, 0x1
+0x00009f     │     │          89 46 fe                      mov word [bp-2], ax
+0x0000a2  ───┼─────╯          e9 6b ff                      jmp 0x10
+0x0000a5  <──╯                89 ec                         mov sp, bp
+0x0000a7                      5d                            pop bp
+0x0000a8                      c2 04 00                      ret 0x4
+```
+
+</details>
+
 ### Printing BIOS charset
 
 Printing BIOS charset:

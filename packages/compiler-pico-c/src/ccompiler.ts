@@ -29,10 +29,13 @@ export const ccompiler =
 
     return pipe(
       code,
-      cIRCompiler({
-        ...ccompilerConfig,
-        timings,
-      }),
+      timings.chainIO(
+        'ir',
+        cIRCompiler({
+          ...ccompilerConfig,
+          timings,
+        }),
+      ),
       E.chainW(
         timings.chainIO('codegen', ({ ir, ...result }) =>
           pipe(
