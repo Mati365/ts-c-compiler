@@ -1,12 +1,12 @@
 import { Token, TokenType } from '@ts-c-compiler/lexer';
-import { CPreprocessorScope } from './preprocessTokens';
+import { CInterpreterScope } from './interpret';
 
 import type { CPreprocessorMacroArgTokens } from './types';
 import { execMacro } from './execMacro';
 import { CPreprocessorError, CPreprocessorErrorCode } from '../grammar';
 
 export const evalTokens =
-  (scope: CPreprocessorScope) =>
+  (scope: CInterpreterScope) =>
   (tokens: Token[]): Token[] => {
     let newTokens = [...tokens];
 

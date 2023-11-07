@@ -11,13 +11,13 @@ import type { CPreprocessorMacro } from './types/CPreprocessorMacro';
 import { evalTokens } from './evalTokens';
 import { ExpressionResultTreeVisitor } from './ExpressionResultTreeVisitor';
 
-export type CPreprocessorScope = {
+export type CInterpreterScope = {
   macros: Record<string, CPreprocessorMacro>;
 };
 
-export const preprocessTokens = (tokens: Token[]) => {
+export const interpret = (tokens: Token[]) => {
   const reduced: Token[] = [];
-  const scope: CPreprocessorScope = {
+  const scope: CInterpreterScope = {
     macros: {},
   };
 
