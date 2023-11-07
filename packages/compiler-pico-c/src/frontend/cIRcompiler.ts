@@ -32,7 +32,12 @@ export const cIRCompiler =
     pipe(
       code,
       timings.chainIO('lexer', clexer(ccompilerConfig.lexer)),
-      E.chain(timings.chainIO('preprocessor', safePreprocess)),
+      E.chain(
+        timings.chainIO(
+          'preprocessor',
+          safePreprocess(ccompilerConfig.preprocessor),
+        ),
+      ),
       E.chainW(timings.chainIO('ast', safeGenerateTree)),
       E.chainW(timings.chainIO('analyze', safeBuildTypedTree(ccompilerConfig))),
       E.chainW(
