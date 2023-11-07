@@ -5,13 +5,13 @@ import type {
 } from 'frontend/preprocessor/ast';
 
 import type { CPreprocessorMacro } from './CPreprocessorMacro';
-import type { CPreprocessorConfig } from './CPreprocessorConfig';
+import type { CInterpreterSourcePath } from './CInterpreterIncludeResolver';
 
 export type CInterpreterContext = {
-  config: CPreprocessorConfig;
   isDefined(name: string): boolean;
   defineMacro(name: string, macro: CPreprocessorMacro): void;
   evalTokens(tokens: Token[]): Token[];
   evalExpression(expression: ASTCPreprocessorTreeNode): ASTCExecResult;
   appendFinalTokens(tokens: Token[]): void;
+  includeFile(path: CInterpreterSourcePath): void;
 };

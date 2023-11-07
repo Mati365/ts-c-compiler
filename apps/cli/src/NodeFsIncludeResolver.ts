@@ -1,3 +1,5 @@
+import { readFileSync } from 'node:fs';
+import { join, dirname } from 'node:path';
 import * as E from 'fp-ts/Either';
 
 import {
@@ -9,13 +11,26 @@ import {
 } from '@ts-c-compiler/compiler';
 
 export class NodeFsIncludeResolver implements CInterpreterIncludeResolver {
-  read(
-    path: CInterpreterSourcePath,
-  ): E.Either<CPreprocessorError, CInterpreterSourceFile> {
-    return E.left(
-      new CPreprocessorError(CPreprocessorErrorCode.CANNOT_INCLUDE_FILE, null, {
-        name: path.filename,
-      }),
-    );
-  }
+  read =
+    (currentFilePath: string) =>
+    (
+      path: CInterpreterSourcePath,
+    ): E.Either<CPreprocessorError, CInterpreterSourceFile> => {
+      const absolutePath = join(dirname(currentFilePath), path.filename);
+
+      return E.tryCatch(
+        () => ({
+          content: readFileSync(absolutePath, { encoding: 'utf8' }),
+          absolutePath,
+        }),
+        () =>
+          new CPreprocessorError(
+            CPreprocessorErrorCode.CANNOT_INCLUDE_FILE,
+            null,
+            {
+              name: absolutePath,
+            },
+          ),
+      );
+    };
 }

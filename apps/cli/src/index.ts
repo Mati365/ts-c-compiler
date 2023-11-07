@@ -35,6 +35,7 @@ program
           enabled: true,
         },
         preprocessor: {
+          currentFilePath: source,
           fsIncludeResolver: new NodeFsIncludeResolver(),
         },
       }),

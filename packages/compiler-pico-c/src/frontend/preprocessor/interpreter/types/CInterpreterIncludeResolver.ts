@@ -7,11 +7,14 @@ export type CInterpreterSourcePath = {
 };
 
 export type CInterpreterSourceFile = {
+  absolutePath: string;
   content: string;
 };
 
 export type CInterpreterIncludeResolver = {
-  read(
+  read: (
+    currentFilePath: string,
+  ) => (
     path: CInterpreterSourcePath,
-  ): Either<CPreprocessorError, CInterpreterSourceFile>;
+  ) => Either<CPreprocessorError, CInterpreterSourceFile>;
 };
