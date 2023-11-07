@@ -18,7 +18,7 @@ export type CPreprocessorInterpreter = (
 ) => (tokens: Token[]) => Token[];
 
 export const interpret: CPreprocessorInterpreter =
-  ({ forwardedScope, ...config }) =>
+  ({ forwardedScope, ...config } = {}) =>
   tokens => {
     const scope: CInterpreterScope = forwardedScope ?? {
       macros: {},

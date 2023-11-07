@@ -1,6 +1,6 @@
 import type { CInterpreterIncludeResolver } from './CInterpreterIncludeResolver';
 
 export type CPreprocessorConfig = {
-  currentFilePath: string;
+  currentFilePath?: string;
   fsIncludeResolver?: CInterpreterIncludeResolver;
 };
