@@ -8,6 +8,7 @@ export enum CPreprocessorErrorCode {
   INCORRECT_VALUE_EXPRESSION,
   INCORRECT_EXPRESSION,
   EXPRESSION_MISMATCH_ARGS_TYPES,
+  CANNOT_INCLUDE_FILE,
 }
 
 export const C_PREPROCESSOR_ERROR_TRANSLATIONS: Record<
@@ -23,6 +24,8 @@ export const C_PREPROCESSOR_ERROR_TRANSLATIONS: Record<
   [CPreprocessorErrorCode.INCORRECT_EXPRESSION]: 'Incorrect expression!',
   [CPreprocessorErrorCode.EXPRESSION_MISMATCH_ARGS_TYPES]:
     'Expression mismatch args types!',
+  [CPreprocessorErrorCode.CANNOT_INCLUDE_FILE]:
+    'Cannot include file "%{path}"!',
 };
 
 export class CPreprocessorError extends CompilerError<

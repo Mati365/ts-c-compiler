@@ -4,7 +4,7 @@ import { Token, TokenType } from '@ts-c-compiler/lexer';
 import { createCPreprocessorGrammar } from '../grammar';
 
 import { ASTCPreprocessorTreeNode } from '../ast';
-import { CInterpreterContext } from './types/CPreprocessorInterpretable';
+import { CPreprocessorConfig, CInterpreterContext } from './types';
 
 import type { CPreprocessorMacro } from './types/CPreprocessorMacro';
 
@@ -15,11 +15,13 @@ export type CInterpreterScope = {
   macros: Record<string, CPreprocessorMacro>;
 };
 
-export const interpret = (tokens: Token[]) => {
+export const interpret = (config: CPreprocessorConfig) => (tokens: Token[]) => {
   const reduced: Token[] = [];
   const scope: CInterpreterScope = {
     macros: {},
   };
+
+  console.info(config);
 
   const ctx: CInterpreterContext = {
     evalTokens: evalTokens(scope),
