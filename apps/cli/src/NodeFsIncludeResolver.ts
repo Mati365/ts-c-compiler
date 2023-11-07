@@ -14,7 +14,7 @@ export class NodeFsIncludeResolver implements CInterpreterIncludeResolver {
   ): E.Either<CPreprocessorError, CInterpreterSourceFile> {
     return E.left(
       new CPreprocessorError(CPreprocessorErrorCode.CANNOT_INCLUDE_FILE, null, {
-        name: path.name,
+        name: path.filename,
       }),
     );
   }

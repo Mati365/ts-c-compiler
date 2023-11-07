@@ -10,6 +10,7 @@ export enum ASTCPreprocessorKind {
   CodeBlock = 'CodeBlock',
   Expression = 'Expression',
   BinaryOperator = 'BinaryOperator',
+  Include = 'Include',
   If = 'If',
   ElIf = 'ElIf',
   IfDef = 'IfDef',

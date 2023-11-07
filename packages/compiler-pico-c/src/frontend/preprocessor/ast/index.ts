@@ -8,6 +8,7 @@ export * from './ASTCExpressionNode';
 export * from './ASTCIfDefNode';
 export * from './ASTCIfNode';
 export * from './ASTCIfNotDefNode';
+export * from './ASTCIncludeNode';
 export * from './ASTCPreprocessorTreeNode';
 export * from './ASTCStmtNode';
 export * from './ASTCValueNode';

@@ -2,8 +2,8 @@ import type { Either } from 'fp-ts/Either';
 import { CPreprocessorError } from 'frontend/preprocessor/grammar';
 
 export type CInterpreterSourcePath = {
-  global: boolean;
-  name: string;
+  system: boolean;
+  filename: string;
 };
 
 export type CInterpreterSourceFile = {

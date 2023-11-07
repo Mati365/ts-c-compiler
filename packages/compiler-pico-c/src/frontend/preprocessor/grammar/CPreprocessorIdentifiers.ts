@@ -13,6 +13,7 @@ export enum CPreprocessorIdentifier {
   ELIF_DEF = '#elifdef',
   ELIF_NOT_DEF = '#elifndef',
   ENDIF = '#endif',
+  INCLUDE = '#include',
 }
 
 export const C_PREPROCESSOR_IDENTIFIERS_MAP: IdentifiersMap = R.fromPairs(

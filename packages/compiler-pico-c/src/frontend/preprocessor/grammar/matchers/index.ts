@@ -8,3 +8,4 @@ export * from './ifDefMatcher';
 export * from './ifFalseStmtMatcher';
 export * from './ifMatcher';
 export * from './ifNotDefMatcher';
+export * from './includeMatcher';

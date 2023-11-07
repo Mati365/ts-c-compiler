@@ -17,6 +17,7 @@ import {
   ifMatcher,
   ifNotDefMatcher,
   ifFalseStmtMatcher,
+  includeMatcher,
 } from './matchers';
 
 export class CPreprocessorGrammarDef extends Grammar<
@@ -44,6 +45,7 @@ const preprocessorMatcher: GrammarInitializer<
         ifNotDef: () => ifNotDefMatcher(grammar),
         define: () => defineMatcher(grammar),
         codeBlock: () => codeBlockMatcher(grammar),
+        include: () => includeMatcher(grammar),
         empty,
       }) as ASTCPreprocessorTreeNode[];
 

@@ -21,9 +21,8 @@ export const interpret = (config: CPreprocessorConfig) => (tokens: Token[]) => {
     macros: {},
   };
 
-  console.info(config);
-
   const ctx: CInterpreterContext = {
+    config,
     evalTokens: evalTokens(scope),
     isDefined: (name: string) => name in scope.macros,
     defineMacro: (name: string, macro: CPreprocessorMacro) => {
