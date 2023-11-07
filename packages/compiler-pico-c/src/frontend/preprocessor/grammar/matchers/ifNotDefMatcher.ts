@@ -4,9 +4,11 @@ import { TokenType } from '@ts-c-compiler/lexer';
 import type { CPreprocessorGrammar } from '../CPreprocessorGrammar';
 
 import { CPreprocessorIdentifier } from '../CPreprocessorIdentifiers';
-import { ASTCIfDefNode, ASTCIfNotDefNode } from 'frontend/preprocessor/ast';
+import { ASTCIfNotDefNode } from 'frontend/preprocessor/ast';
 
-export const ifNotDefMatcher = (ctx: CPreprocessorGrammar): ASTCIfDefNode => {
+export const ifNotDefMatcher = (
+  ctx: CPreprocessorGrammar,
+): ASTCIfNotDefNode => {
   const { g, stmt, falseIfStmt } = ctx;
 
   const identifier = g.identifier(CPreprocessorIdentifier.IF_NOT_DEF);

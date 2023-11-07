@@ -5,8 +5,10 @@ import type {
 } from 'frontend/preprocessor/ast';
 
 import type { CPreprocessorMacro } from './CPreprocessorMacro';
+import type { CPreprocessorConfig } from './CPreprocessorConfig';
 
 export type CInterpreterContext = {
+  config: CPreprocessorConfig;
   isDefined(name: string): boolean;
   defineMacro(name: string, macro: CPreprocessorMacro): void;
   evalTokens(tokens: Token[]): Token[];
