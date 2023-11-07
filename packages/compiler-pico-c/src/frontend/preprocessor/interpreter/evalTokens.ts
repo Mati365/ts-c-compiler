@@ -1,7 +1,7 @@
 import { Token, TokenType } from '@ts-c-compiler/lexer';
 import { CPreprocessorScope } from './preprocessTokens';
 
-import type { CPreprocessorMacroArgToken } from './types';
+import type { CPreprocessorMacroArgTokens } from './types';
 import { execMacro } from './execMacro';
 import { CPreprocessorError, CPreprocessorErrorCode } from '../grammar';
 
@@ -19,30 +19,49 @@ export const evalTokens =
       }
 
       const start = i;
-      const args: CPreprocessorMacroArgToken[] = [];
+      const args: CPreprocessorMacroArgTokens[] = [];
 
       if (
         newTokens[i + 1]?.text === '(' &&
         newTokens[i + 1].loc.column - token.loc.column - token.text.length === 0
       ) {
+        let nesting = 0;
+        let arg: CPreprocessorMacroArgTokens = [];
+
         i += 2;
 
         for (; i < newTokens.length; ++i) {
-          args.push(newTokens[i]);
+          const nextToken = newTokens[i + 1];
 
-          if (newTokens[i + 1]?.text === ')') {
-            ++i;
-            break;
+          arg.push(newTokens[i]);
+
+          if (newTokens[i].text === '(') {
+            nesting++;
+          } else if (newTokens[i].text === ')') {
+            nesting--;
           }
 
-          if (newTokens[i + 1]?.type === TokenType.COMMA) {
-            i++;
-          } else {
+          if (!nextToken) {
             throw new CPreprocessorError(
               CPreprocessorErrorCode.ARG_PARSER_ERROR,
               token.loc,
               { macro: token.text },
             );
+          }
+
+          if (!nesting) {
+            if (nextToken.text === ')') {
+              args.push(evalTokens(scope)(arg));
+              arg = [];
+              i++;
+              break;
+            }
+
+            if (nextToken.type === TokenType.COMMA) {
+              args.push(evalTokens(scope)(arg));
+              arg = [];
+              i++;
+            }
           }
         }
       }
