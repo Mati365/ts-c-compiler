@@ -92,6 +92,10 @@ npx ts-c ./main.c -ps
       int k = sum(10, 6);
     }
   #endif
+#elifdef ABC
+  int s = 2;
+#elifndef DBEF
+  int k = 3;
 #else
   int main() {
     int k = 2;
