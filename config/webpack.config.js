@@ -3,7 +3,6 @@ const nodeExternals = require('webpack-node-externals');
 const NodemonPlugin = require('nodemon-webpack-plugin');
 const CircularDependencyPlugin = require('circular-dependency-plugin');
 const ESLintPlugin = require('eslint-webpack-plugin');
-const HtmlWebpackPlugin = require('html-webpack-plugin');
 
 const PRODUCTION_MODE = process.env.NODE_ENV !== 'development';
 
@@ -14,6 +13,7 @@ exports.createConfig = ({
   optimize,
   nodemon = {},
   target,
+  configDir,
   entryName,
   mainFile,
   outputFile,
@@ -29,7 +29,7 @@ exports.createConfig = ({
   },
   output: {
     filename: outputFile,
-    publicPath: '',
+    publicPath: '/public',
     path: rootResolve(path.join('./dist', outputPath || '')),
   },
   module: {
@@ -71,7 +71,9 @@ exports.createConfig = ({
         exclude: /node_modules/,
         options: {
           onlyCompileBundledFiles: true,
-          configFile: path.resolve(__dirname, '../tsconfig.json'),
+          configFile: configDir
+            ? path.resolve(configDir, 'tsconfig.json')
+            : path.resolve(__dirname, '../tsconfig.json'),
           compilerOptions: {
             module: 'esnext',
             moduleResolution: 'node',
@@ -87,13 +89,6 @@ exports.createConfig = ({
     __dirname: false,
   },
   plugins: [
-    ...(target === 'node'
-      ? []
-      : [
-          new HtmlWebpackPlugin({
-            title: 'Emulator',
-          }),
-        ]),
     new ESLintPlugin({
       extensions: ['js', 'jsx', 'ts', 'tsx'],
       exclude: ['node_modules'],

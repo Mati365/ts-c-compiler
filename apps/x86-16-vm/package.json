@@ -1,0 +1,26 @@
+{
+  "name": "@ts-c-compiler/x86-16-vm",
+  "version": "1.1.0",
+  "private": false,
+  "license": "MIT",
+  "scripts": {
+    "clean": "rm -rf ./dist",
+    "build": "npx webpack --config=webpack.config.js",
+    "dev": "NODE_OPTIONS=\"--enable-source-maps --stack-trace-limit=1000\" NODE_ENV=development yarn run build",
+    "build:production": "NODE_ENV=production yarn run build",
+    "test": "NODE_OPTIONS=--experimental-vm-modules npx jest --passWithNoTests --c ./jest.config.mjs",
+    "lint": "npx eslint src/ -c ./.eslintrc.yml",
+    "publish": "yarn build:production && npx changeset && npx changeset version && npx changeset publish"
+  },
+  "devDependencies": {
+    "@ts-c-compiler/compiler": "*",
+    "express": "^4.18.2",
+    "styled-components": "^6.1.1"
+  },
+  "bin": {
+    "run-x86_16-vm": "dist/bin/server.js"
+  },
+  "publishConfig": {
+    "access": "public"
+  }
+}

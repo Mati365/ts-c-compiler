@@ -23,6 +23,7 @@ export * from './mutableOmitChildKeys';
 export * from './numberByteSize';
 export * from './padLeftLines';
 export * from './removeNullValues';
+export * from './replaceEscapeSequences';
 export * from './safeArray';
 export * from './safeFirstMatch';
 export * from './serializers';
