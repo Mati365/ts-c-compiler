@@ -3,7 +3,6 @@ const nodeExternals = require('webpack-node-externals');
 const NodemonPlugin = require('nodemon-webpack-plugin');
 const CircularDependencyPlugin = require('circular-dependency-plugin');
 const ESLintPlugin = require('eslint-webpack-plugin');
-const HtmlWebpackPlugin = require('html-webpack-plugin');
 
 const PRODUCTION_MODE = process.env.NODE_ENV !== 'development';
 
@@ -87,13 +86,6 @@ exports.createConfig = ({
     __dirname: false,
   },
   plugins: [
-    ...(target === 'node'
-      ? []
-      : [
-          new HtmlWebpackPlugin({
-            title: 'Emulator',
-          }),
-        ]),
     new ESLintPlugin({
       extensions: ['js', 'jsx', 'ts', 'tsx'],
       exclude: ['node_modules'],

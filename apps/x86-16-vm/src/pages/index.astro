@@ -1,0 +1,13 @@
+---
+import { buffer } from 'node:stream/consumers';
+import Layout from '../layouts/Layout.astro';
+import { Screen } from '../components';
+
+const binary = await buffer(process.stdin);
+---
+
+<Layout title='X86-16bit emulator'>
+  <div class='fixed left-0 top-0 w-full h-full flex items-center justify-center'>
+    <Screen binary={binary} client:load />
+  </div>
+</Layout>

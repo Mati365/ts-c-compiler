@@ -132,3 +132,4 @@ dist
 .turbo
 .swc
 .mock
+.astro/

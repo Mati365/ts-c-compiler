@@ -46,6 +46,12 @@ Options:
 
 ### Example
 
+Compile `main.c` and open `x86-16` runner:
+
+```bash
+npx ts-c ./main.c -b > npx run-x86_16-vm
+```
+
 Compile `main.c` to x86-16 binary:
 
 ```bash
