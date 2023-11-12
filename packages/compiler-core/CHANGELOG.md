@@ -1,5 +1,11 @@
 # @ts-c-compiler/core
 
+## 1.2.0
+
+### Minor Changes
+
+- Add web vm
+
 ## 1.1.0
 
 ### Minor Changes

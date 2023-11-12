@@ -1,5 +1,16 @@
 # @ts-c-compiler/lexer
 
+## 1.2.0
+
+### Minor Changes
+
+- Add web vm
+
+### Patch Changes
+
+- Updated dependencies
+  - @ts-c-compiler/core@1.2.0
+
 ## 1.1.0
 
 ### Minor Changes

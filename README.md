@@ -26,7 +26,7 @@ Multipass portable C lang compiler toolkit with IR code generator including back
 ## Install
 
 ```bash
-yarn add @ts-c-compiler/cli
+yarn add @ts-c-compiler/cli @ts-c-compiler/x86-16-vm
 ```
 
 ```bash

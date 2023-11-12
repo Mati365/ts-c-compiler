@@ -1,5 +1,16 @@
 # @ts-c-compiler/x86-cpu
 
+## 1.2.0
+
+### Minor Changes
+
+- Add web vm
+
+### Patch Changes
+
+- Updated dependencies
+  - @ts-c-compiler/x86-assembler@1.2.0
+
 ## 1.1.0
 
 ### Minor Changes
