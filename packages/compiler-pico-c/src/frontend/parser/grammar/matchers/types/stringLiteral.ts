@@ -1,5 +1,6 @@
 import { NodeLocation } from '@ts-c-compiler/grammar';
 import { TokenKind, TokenType } from '@ts-c-compiler/lexer';
+import { replaceEscapeSequences } from '@ts-c-compiler/core';
 
 import { ASTCPrimaryExpression } from '../../../ast';
 import { CGrammar } from '../shared';
@@ -33,6 +34,8 @@ export function stringLiteral(
     text += g.currentToken.text;
     g.consume();
   } while (true);
+
+  text = replaceEscapeSequences(text);
 
   if (nullTerminator) {
     text = `${text}\0`;

@@ -40,11 +40,17 @@ Options:
   -o, --output <string>  Relative path to your output binary
   -d, --debug            Print AST tree and assembly output
   -ps, --print-assembly  Print assembly output
-  -b, --bootsector       Generate 512B bootsector output. Remember to have main entrypoint.
+  -bs, --bootsector      Generate 512B bootsector output. Remember to have main entrypoint.
   -h, --help             display help for command
 ```
 
 ### Example
+
+Compile `main.c` and boot-it in 16bit VM available in web-browser:
+
+```bash
+npx ts-c ./apps/cli/.mock/main.c --bootsector --binary | APP_PORT=3002 npx run-x86_16-vm
+```
 
 Compile `main.c` to x86-16 binary:
 

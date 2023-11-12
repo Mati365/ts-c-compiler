@@ -37,7 +37,7 @@ program
     ]),
   )
   .option(
-    '-b, --bootsector',
+    '-bs, --bootsector',
     'Generate 512B bootsector output. Remember to have main entrypoint.',
   )
   .action((source, options) => {
@@ -104,7 +104,8 @@ program
             );
           }
         },
-        () => {
+        error => {
+          console.error(error);
           process.exit(1);
         },
       ),
