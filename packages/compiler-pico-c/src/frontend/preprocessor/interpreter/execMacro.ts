@@ -1,27 +1,57 @@
-import { Token } from '@ts-c-compiler/lexer';
+import { Token, TokenType } from '@ts-c-compiler/lexer';
 import { CPreprocessorMacro, CPreprocessorMacroArgTokens } from './types';
 
 export const execMacro =
-  (args: CPreprocessorMacroArgTokens[]) =>
+  (callArgs: CPreprocessorMacroArgTokens[]) =>
   (macro: CPreprocessorMacro): Token[] => {
-    if (!args.length) {
+    if (!callArgs.length) {
       return macro.expression;
     }
 
     let expression = [...macro.expression];
+    let callArgIndex = 0;
 
-    for (let argIndex = 0; argIndex < macro.args.length; ++argIndex) {
-      const arg = {
-        name: macro.args[argIndex],
-        value: args[argIndex],
-      };
+    for (let defArgIndex = 0; defArgIndex < macro.args.length; ++defArgIndex) {
+      const argDef = macro.args[defArgIndex];
 
-      for (let tokenIndex = 0; tokenIndex < expression.length; ++tokenIndex) {
-        if (expression[tokenIndex]?.text === arg.name) {
+      for (
+        let exprTokenIndex = 0;
+        exprTokenIndex < expression.length;
+        ++exprTokenIndex
+      ) {
+        if (expression[exprTokenIndex]?.text !== argDef.name) {
+          continue;
+        }
+
+        // handle "..." variadic macros
+        if (argDef.va) {
+          let vaArgs: Token[] = [];
+
+          for (; callArgIndex < callArgs.length; ++callArgIndex) {
+            vaArgs.push(...callArgs[callArgIndex]);
+
+            if (callArgIndex + 1 < callArgs.length) {
+              vaArgs.push(
+                new Token(
+                  TokenType.COMMA,
+                  null,
+                  null,
+                  callArgs[callArgIndex][0].loc,
+                ),
+              );
+            }
+          }
+
           expression = [
-            ...expression.slice(0, tokenIndex),
-            ...arg.value,
-            ...expression.slice(tokenIndex + 1),
+            ...expression.slice(0, exprTokenIndex),
+            ...vaArgs,
+            ...expression.slice(exprTokenIndex + 1),
+          ];
+        } else {
+          expression = [
+            ...expression.slice(0, exprTokenIndex),
+            ...callArgs[callArgIndex++],
+            ...expression.slice(exprTokenIndex + 1),
           ];
         }
       }

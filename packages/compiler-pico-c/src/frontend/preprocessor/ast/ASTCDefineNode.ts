@@ -7,11 +7,16 @@ import {
   ASTCPreprocessorTreeNode,
 } from './ASTCPreprocessorTreeNode';
 
+export type ASTCDefineArg = {
+  name: string;
+  va: boolean;
+};
+
 export class ASTCDefineNode extends ASTCPreprocessorTreeNode {
   constructor(
     loc: NodeLocation,
     readonly name: string,
-    readonly args: string[],
+    readonly args: ASTCDefineArg[],
     readonly expression: Token[],
   ) {
     super(ASTCPreprocessorKind.Define, loc);
