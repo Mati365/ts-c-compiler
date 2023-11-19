@@ -91,6 +91,8 @@ npx ts-c ./main.c -ps
 #define B 1
 
 #define esum(...) sum(__VA_ARGS__)
+#define internal_fn(name) internal_ ## name
+
 #define min(a,b) ((a)<(b)?(a):(b))
 #define max(a,b) ((a)>(b)?(a):(b))
 #define sum(a,b) (min(a, b) + max(a, b))
@@ -106,7 +108,7 @@ npx ts-c ./main.c -ps
 #elifndef DBEF
   int k = 3;
 #else
-  int main() {
+  int internal_fn(main)() {
     int k = 2;
   }
 #endif
