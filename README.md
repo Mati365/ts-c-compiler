@@ -90,6 +90,7 @@ npx ts-c ./main.c -ps
 #define A 1
 #define B 1
 
+#define esum(...) sum(__VA_ARGS__)
 #define min(a,b) ((a)<(b)?(a):(b))
 #define max(a,b) ((a)>(b)?(a):(b))
 #define sum(a,b) (min(a, b) + max(a, b))

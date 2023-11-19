@@ -64,6 +64,9 @@ export const TERMINAL_CHARACTERS: TokenTerminalCharactersMap = {
   '&=': TokenType.AND_ASSIGN,
   '^=': TokenType.XOR_ASSIGN,
   '|=': TokenType.OR_ASSIGN,
+
+  // other
+  '...': TokenType.ELLIPSIS,
 };
 
 /**

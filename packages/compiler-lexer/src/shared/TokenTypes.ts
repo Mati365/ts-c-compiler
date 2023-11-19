@@ -16,6 +16,7 @@ export enum TokenType {
   EOL = 'EOL',
   EOF = 'EOF',
   DOT = 'DOT',
+  ELLIPSIS = 'ELLIPSIS',
 
   // Assign
   ASSIGN = 'ASSIGN',
