@@ -5,6 +5,7 @@ import type { CPreprocessorMacroArgTokens } from './types';
 
 import { execMacro } from './execMacro';
 import { CPreprocessorError, CPreprocessorErrorCode } from '../grammar';
+import { concatTokens } from './concatTokens';
 
 export const evalTokens =
   (scope: CInterpreterScope) =>
@@ -76,5 +77,5 @@ export const evalTokens =
       i = 0; // allow recursive macro execution
     }
 
-    return newTokens;
+    return concatTokens(newTokens);
   };
