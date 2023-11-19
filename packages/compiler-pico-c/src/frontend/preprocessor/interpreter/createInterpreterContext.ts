@@ -11,6 +11,7 @@ import { clexer } from '../../parser/lexer/clexer';
 import { evalTokens } from './evalTokens';
 
 import { ExpressionResultTreeVisitor } from './ExpressionResultTreeVisitor';
+import { CInternalCompilerFsResolver } from '../../../fs';
 import { CPreprocessorError, CPreprocessorErrorCode } from '../grammar';
 
 export type CInterpreterScope = {
@@ -39,14 +40,14 @@ export const createInterpreterContext = ({
     defineMacro: (name: string, macro: CPreprocessorMacro) => {
       scope.macros[name] = macro;
     },
+
     appendFinalTokens: finalTokens => {
       reduced.push(...finalTokens);
     },
-    evalExpression: expression => {
-      const visitor = new ExpressionResultTreeVisitor(ctx);
 
-      return visitor.visit(expression).value;
-    },
+    evalExpression: expression =>
+      new ExpressionResultTreeVisitor(ctx).visit(expression).value,
+
     includeFile: path => {
       if (!fsIncludeResolver) {
         throw new CPreprocessorError(
@@ -59,7 +60,13 @@ export const createInterpreterContext = ({
       pipe(
         E.Do,
         E.bind('resolverOutput', () =>
-          fsIncludeResolver.read(currentFilePath)(path),
+          pipe(
+            new CInternalCompilerFsResolver().read()(path),
+            E.fold(
+              () => fsIncludeResolver.read(currentFilePath)(path),
+              E.right,
+            ),
+          ),
         ),
         E.bindW('tokens', ({ resolverOutput }) =>
           clexer({})(resolverOutput.content),
