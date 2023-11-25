@@ -18,6 +18,7 @@ import {
   ASTCPrimaryExpression,
   ASTCCastUnaryExpression,
   ASTCConditionalExpression,
+  ASTCSizeofUnaryExpression,
 } from 'frontend/parser/ast';
 
 import { CInnerTypeTreeVisitor } from '../../type-builder/CInnerTypeTreeVisitor';
@@ -41,6 +42,13 @@ export class ConstantExpressionEvalVisitor extends CInnerTypeTreeVisitor {
 
   constructor() {
     super({
+      [ASTCCompilerKind.SizeofUnaryExpression]: {
+        leave: (node: ASTCSizeofUnaryExpression) => {
+          this.expressionArgs.push(node.extractedType.getByteSize());
+          return false;
+        },
+      },
+
       [ASTCCompilerKind.CastUnaryExpression]: {
         leave: (node: ASTCCastUnaryExpression) => {
           this.performUnaryOp(node);

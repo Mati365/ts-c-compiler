@@ -5,8 +5,10 @@ import { unwrapEitherOrThrow } from '@ts-c-compiler/core';
 import { CFunctionCallConvention } from '#constants';
 import {
   ASTCAbstractDeclarator,
+  ASTCAssignmentExpression,
   ASTCCompilerKind,
   ASTCDeclarator,
+  ASTCDirectAbstractDeclarator,
   ASTCDirectDeclarator,
   ASTCDirectDeclaratorFnExpression,
 } from 'frontend/parser/ast';
@@ -45,6 +47,14 @@ export class CTreeTypeBuilderVisitor extends CInnerTypeTreeVisitor {
 
   constructor(private type: CType, private readonly attrs: CTypeBuilderAttrs) {
     super({
+      [ASTCCompilerKind.DirectAbstractDeclarator]: {
+        enter: (node: ASTCDirectAbstractDeclarator) => {
+          this.extractDirectAbstractDeclarator(node);
+          this.visit(node.directAbstractDeclarator);
+          return false;
+        },
+      },
+
       [ASTCCompilerKind.AbstractDeclarator]: {
         enter: (node: ASTCAbstractDeclarator) => {
           this.extractDeclaratorPointers(node);
@@ -92,6 +102,50 @@ export class CTreeTypeBuilderVisitor extends CInnerTypeTreeVisitor {
     }
   }
 
+  private extractArrayExpression(
+    assignmentExpression: ASTCAssignmentExpression,
+  ) {
+    const { type: baseType } = this;
+    const size =
+      assignmentExpression &&
+      +pipe(
+        evalConstantExpression({
+          context: this.context,
+          expression: <any>assignmentExpression,
+        }),
+        unwrapEitherOrThrow,
+      );
+
+    if (!R.isNil(size) && size <= 0) {
+      throw new CTypeCheckError(CTypeCheckErrorCode.INVALID_ARRAY_SIZE);
+    }
+
+    if (isArrayLikeType(baseType)) {
+      if (R.isNil(baseType.size) && R.isNil(size)) {
+        throw new CTypeCheckError(
+          CTypeCheckErrorCode.INCOMPLETE_ARRAY_SIZE,
+          null,
+          {
+            typeName: baseType.getDisplayName(),
+          },
+        );
+      }
+
+      this.type = baseType.ofPrependedDimension(size);
+    } else {
+      this.type = new CArrayType({
+        baseType,
+        size,
+      });
+    }
+  }
+
+  private extractDirectAbstractDeclarator(node: ASTCDirectAbstractDeclarator) {
+    if (node.isArrayExpression()) {
+      this.extractArrayExpression(node.arrayExpression.assignmentExpression);
+    }
+  }
+
   /**
    * Enters DirectDeclarator node
    */
@@ -105,41 +159,7 @@ export class CTreeTypeBuilderVisitor extends CInnerTypeTreeVisitor {
       this.visit(node.directDeclarator);
       return false;
     } else if (node.isArrayExpression()) {
-      const { type: baseType } = this;
-      const { assignmentExpression } = node.arrayExpression;
-
-      const size =
-        assignmentExpression &&
-        +pipe(
-          evalConstantExpression({
-            context: this.context,
-            expression: <any>assignmentExpression,
-          }),
-          unwrapEitherOrThrow,
-        );
-
-      if (!R.isNil(size) && size <= 0) {
-        throw new CTypeCheckError(CTypeCheckErrorCode.INVALID_ARRAY_SIZE);
-      }
-
-      if (isArrayLikeType(baseType)) {
-        if (R.isNil(baseType.size) && R.isNil(size)) {
-          throw new CTypeCheckError(
-            CTypeCheckErrorCode.INCOMPLETE_ARRAY_SIZE,
-            null,
-            {
-              typeName: baseType.getDisplayName(),
-            },
-          );
-        }
-
-        this.type = baseType.ofPrependedDimension(size);
-      } else {
-        this.type = new CArrayType({
-          baseType,
-          size,
-        });
-      }
+      this.extractArrayExpression(node.arrayExpression.assignmentExpression);
     }
   }
 

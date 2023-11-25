@@ -56,4 +56,12 @@ export class ASTCDirectAbstractDeclarator extends ASTCCompilerNode {
   ) {
     super(ASTCCompilerKind.DirectAbstractDeclarator, loc);
   }
+
+  isArrayExpression() {
+    return !!this.arrayExpression;
+  }
+
+  isFnExpression() {
+    return !!this.fnExpression;
+  }
 }

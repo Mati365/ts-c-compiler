@@ -2,6 +2,8 @@ import { dumpAttributesToString } from '@ts-c-compiler/core';
 import { walkOverFields } from '@ts-c-compiler/grammar';
 
 import { NodeLocation } from '@ts-c-compiler/grammar';
+
+import { CType } from 'frontend/analyze';
 import { CUnaryCastOperator } from '#constants';
 import { ASTCCompilerKind, ASTCCompilerNode } from './ASTCCompilerNode';
 import { ASTCTypeName } from './ASTCTypeName';
@@ -36,6 +38,8 @@ export class ASTCDecUnaryExpression extends ASTCCompilerNode {
   fields: ['typeName', 'unaryExpression'],
 })
 export class ASTCSizeofUnaryExpression extends ASTCCompilerNode {
+  extractedType: CType | null = null;
+
   constructor(
     loc: NodeLocation,
     readonly typeName?: ASTCTypeName,

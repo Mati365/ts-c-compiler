@@ -65,7 +65,7 @@ export enum ASTCCompilerKind {
   UnionSpecifier = 'UnionSpecifier',
 
   AbstractDeclarator = 'AbstractDeclarator',
-  DirectAbstractDeclarator = 'AbstractDeclarator',
+  DirectAbstractDeclarator = 'DirectAbstractDeclarator',
   DirectAbstractDeclaratorArrayExpression = 'DirectAbstractDeclaratorArrayExpression',
   DirectAbstractDeclaratorFnExpression = 'DirectAbstractDeclaratorFnExpression',
 
