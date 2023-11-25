@@ -29,6 +29,7 @@ import {
   ASTCConditionalExpression,
   ASTCPostfixExpression,
   ASTCPrimaryExpression,
+  ASTCSizeofUnaryExpression,
 } from 'frontend/parser';
 
 import { GroupTreeVisitor } from '@ts-c-compiler/grammar';
@@ -101,6 +102,19 @@ export function emitExpressionIR({
   };
 
   GroupTreeVisitor.ofIterator<ASTCCompilerNode>({
+    [ASTCCompilerKind.SizeofUnaryExpression]: {
+      enter(expr: ASTCSizeofUnaryExpression) {
+        argsVarsStack.push(
+          IRConstant.ofConstant(
+            CPrimitiveType.int(arch),
+            expr.extractedType.getByteSize(),
+          ),
+        );
+
+        return false;
+      },
+    },
+
     [ASTCCompilerKind.CastUnaryExpression]: {
       enter(expr: ASTCCastUnaryExpression) {
         switch (expr.operator) {
