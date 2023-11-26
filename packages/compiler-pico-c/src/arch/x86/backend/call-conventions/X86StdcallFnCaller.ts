@@ -172,7 +172,13 @@ export class X86StdcallFnCaller implements X86ConventionalFnCaller {
           isIRVariable(retInstruction.value) &&
           allocator.regs.ownership.getVarOwnership(retInstruction.value.name);
 
-        if (isRegOwnership(usedOwnership) && usedOwnership.reg !== returnReg) {
+        if (
+          isRegOwnership(usedOwnership) &&
+          usedOwnership.reg !== returnReg &&
+          getX86RegByteSize(returnReg) -
+            getX86RegByteSize(usedOwnership.reg) ===
+            1
+        ) {
           asm.push(genInstruction('movzx', returnReg, usedOwnership.reg));
         } else {
           // handle case when we call `return 2`
