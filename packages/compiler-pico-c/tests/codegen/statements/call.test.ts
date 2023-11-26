@@ -466,4 +466,41 @@ describe('Function call', () => {
       ret
     `);
   });
+
+  test('call with autocased char -> int return type in function', () => {
+    expect(/* cpp */ `
+      int sum_char (char a, char b) {
+        return a + b;
+      }
+
+      int main() {
+        int sum = sum_char(1, 2);
+      }
+    `).toCompiledAsmBeEqual(`
+      cpu 386
+      ; def sum_char(a{0}: char*2B, b{0}: char*2B): [ret: int2B]
+      @@_fn_sum_char:
+      push bp
+      mov bp, sp
+      mov al, [bp + 4]
+      add al, byte [bp + 6]     ; %t{2}: char1B = %t{0}: char1B plus %t{1}: char1B
+      movzx ax, al
+      mov sp, bp
+      pop bp
+      ret 4
+
+      ; def main(): [ret: int2B]
+      @@_fn_main:
+      push bp
+      mov bp, sp
+      sub sp, 2
+      push 2
+      push 1
+      call @@_fn_sum_char
+      mov word [bp - 2], ax     ; *(sum{0}: int*2B) = store %t{4}: int2B
+      mov sp, bp
+      pop bp
+      ret
+    `);
+  });
 });

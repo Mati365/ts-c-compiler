@@ -161,19 +161,29 @@ export class X86StdcallFnCaller implements X86ConventionalFnCaller {
           }),
         );
       } else if (declInstruction.hasReturnValue()) {
-        // handle case when we call `return 2`
-        const retResolvedArg = allocator.regs.tryResolveIRArgAsReg({
-          size: getTypeOffsetByteSize(declInstruction.returnType, 0),
-          arg: retInstruction.value,
-          allowedRegs: [
-            this.getReturnReg({
-              context,
-              declInstruction,
-            }),
-          ],
+        const returnReg = this.getReturnReg({
+          context,
+          declInstruction,
         });
 
-        asm.push(...retResolvedArg.asm);
+        // handle case when `ax` is already used by `retInstruction.value`
+        // but with slightly different size (1 byte but we want to return 2 bytes)
+        const usedOwnership =
+          isIRVariable(retInstruction.value) &&
+          allocator.regs.ownership.getVarOwnership(retInstruction.value.name);
+
+        if (isRegOwnership(usedOwnership) && usedOwnership.reg !== returnReg) {
+          asm.push(genInstruction('movzx', returnReg, usedOwnership.reg));
+        } else {
+          // handle case when we call `return 2`
+          const retResolvedArg = allocator.regs.tryResolveIRArgAsReg({
+            size: getTypeOffsetByteSize(declInstruction.returnType, 0),
+            arg: retInstruction.value,
+            allowedRegs: [returnReg],
+          });
+
+          asm.push(...retResolvedArg.asm);
+        }
       }
     }
 

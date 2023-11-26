@@ -560,7 +560,7 @@ export class X86BasicRegAllocator {
       );
     }
 
-    if (!recursiveCall && recursiveCall) {
+    if (!result && recursiveCall) {
       throw new CBackendError(CBackendErrorCode.REG_ALLOCATOR_ERROR);
     }
 
