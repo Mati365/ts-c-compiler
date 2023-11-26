@@ -106,7 +106,24 @@ npx ts-c ./main.c -ps
 #elifdef ABC
   int s = 2;
 #elifndef DBEF
-  int k = 3;
+  struct Vec2 { int x, y; };
+
+  struct Vec2 sum_vec(int k, struct Vec2 vec, int x) {
+    struct Vec2 result = {
+      .x = k + vec.x * vec.y - x,
+      .y = vec.y * 3
+    };
+
+    return result;
+  }
+
+  int main() {
+    struct Vec2 vec = { .x = 4, .y = 3 };
+    struct Vec2 k = sum_vec(2, vec, 5);
+
+    int d = k.x + k.y;
+    asm("xchg dx, dx");
+  }
 #else
   int internal_fn(main)() {
     int k = 2;
