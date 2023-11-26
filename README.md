@@ -165,6 +165,222 @@ def main(): [ret: int2B]
 
 </details>
 
+### Advanced structures with recursive calls
+
+```c
+int fibbonacci(int n)
+{
+  if (n == 1)
+    return 0;
+
+  if (n <= 3)
+    return 1;
+
+  return fibbonacci(n-1) + fibbonacci(n-2);
+}
+
+struct Vec2 { int x, y; };
+
+struct Vec2 sum_vec(int k, struct Vec2 vec, int x) {
+  struct Vec2 result = {
+    .x = k + vec.x * vec.y - x,
+    .y = vec.y * 3 + (fibbonacci(10) * 2 + fibbonacci(10) * 15)
+  };
+
+  return result;
+}
+
+int main() {
+  struct Vec2 vec = { .x = 4, .y = 3 };
+  struct Vec2 k = sum_vec(2, vec, 5);
+
+  int d = k.x + k.y;
+  asm("xchg dx, dx");
+}
+```
+
+<details>
+  <summary><strong>IR Output</strong></summary>
+
+```ruby
+# --- Block fibbonacci ---
+def fibbonacci(n{0}: int*2B): [ret: int2B]
+  %t{0}: int2B = load n{0}: int*2B
+  %t{1}: i1:zf = icmp %t{0}: int2B equal %1: char1B
+  br %t{1}: i1:zf, false: L1
+  L2:
+  ret %0: char1B
+  L1:
+  %t{2}: int2B = load n{0}: int*2B
+  %t{3}: i1:zf = icmp %t{2}: int2B less_eq_than %3: char1B
+  br %t{3}: i1:zf, false: L3
+  L4:
+  ret %1: char1B
+  L3:
+  %t{5}: int2B = load n{0}: int*2B
+  %t{6}: int2B = %t{5}: int2B minus %1: char1B
+  %t{7}: int2B = call label-offset fibbonacci :: (%t{6}: int2B)
+  %t{10}: int2B = %t{5}: int2B minus %2: char1B
+  %t{11}: int2B = call label-offset fibbonacci :: (%t{10}: int2B)
+  %t{12}: int2B = %t{7}: int2B plus %t{11}: int2B
+  ret %t{12}: int2B
+  end-def
+
+
+# --- Block sum_vec ---
+def sum_vec(k{0}: int*2B, vec{0}: struct Vec2*2B, x{0}: int*2B, rvo: %out{0}: struct Vec2*2B):
+  result{0}: struct Vec2*2B = alloca struct Vec24B
+  %t{13}: int2B = load k{0}: int*2B
+  %t{14}: struct Vec2**2B = lea vec{0}: struct Vec2*2B
+  %t{15}: int2B = load %t{14}: struct Vec2**2B
+  %t{17}: struct Vec2**2B = %t{14}: struct Vec2**2B plus %2: int2B
+  %t{18}: int2B = load %t{17}: struct Vec2**2B
+  %t{19}: int2B = %t{15}: int2B mul %t{18}: int2B
+  %t{20}: int2B = %t{13}: int2B plus %t{19}: int2B
+  %t{21}: int2B = load x{0}: int*2B
+  %t{22}: int2B = %t{20}: int2B minus %t{21}: int2B
+  *(result{0}: struct Vec2*2B) = store %t{22}: int2B
+  %t{24}: struct Vec2**2B = %t{14}: struct Vec2**2B plus %2: int2B
+  %t{25}: int2B = load %t{24}: struct Vec2**2B
+  %t{26}: int2B = %t{25}: int2B mul %3: char1B
+  %t{28}: int2B = call label-offset fibbonacci :: (%10: char1B)
+  %t{29}: int2B = %t{28}: int2B mul %2: char1B
+  %t{31}: int2B = call label-offset fibbonacci :: (%10: char1B)
+  %t{32}: int2B = %t{31}: int2B mul %15: char1B
+  %t{33}: int2B = %t{29}: int2B plus %t{32}: int2B
+  %t{34}: int2B = %t{26}: int2B plus %t{33}: int2B
+  *(result{0}: struct Vec2*2B + %2) = store %t{34}: int2B
+  ret result{0}: struct Vec2*2B
+  end-def
+
+
+# --- Block main ---
+def main(): [ret: int2B]
+  vec{1}: struct Vec2*2B = alloca struct Vec24B
+  *(vec{1}: struct Vec2*2B) = store %4: int2B
+  *(vec{1}: struct Vec2*2B + %2) = store %3: int2B
+  k{1}: struct Vec2*2B = alloca struct Vec24B
+  %t{36}: struct Vec2**2B = lea k{1}: struct Vec2*2B
+  call label-offset sum_vec :: (%2: char1B, vec{1}: struct Vec2*2B, %5: char1B, %t{36}: struct Vec2**2B)
+  d{0}: int*2B = alloca int2B
+  %t{37}: struct Vec2**2B = lea k{1}: struct Vec2*2B
+  %t{38}: int2B = load %t{37}: struct Vec2**2B
+  %t{40}: struct Vec2**2B = %t{37}: struct Vec2**2B plus %2: int2B
+  %t{41}: int2B = load %t{40}: struct Vec2**2B
+  %t{42}: int2B = %t{38}: int2B plus %t{41}: int2B
+  *(d{0}: int*2B) = store %t{42}: int2B
+  asm "xchg dx, dx"
+  ret
+  end-def
+```
+
+</details>
+
+<details open>
+  <summary><strong>Binary output</strong></summary>
+
+```asm
+0x000000  <──╮<╮<╮<╮          55                            push bp
+0x000001     │ │ │ │          89 e5                         mov bp, sp
+0x000003     │ │ │ │          83 7e 04 01                   cmp word [bp+4], 0x1
+0x000007  ─╮ │ │ │ │          75 09                         jnz 0x12
+0x000009   │ │ │ │ │          b8 00 00                      mov ax, 0x0
+0x00000c   │ │ │ │ │          89 ec                         mov sp, bp
+0x00000e   │ │ │ │ │          5d                            pop bp
+0x00000f   │ │ │ │ │          c2 02 00                      ret 0x2
+0x000012  <╯ │ │ │ │          83 7e 04 03                   cmp word [bp+4], 0x3
+0x000016  ─╮ │ │ │ │          7f 09                         jg 0x21
+0x000018   │ │ │ │ │          b8 01 00                      mov ax, 0x1
+0x00001b   │ │ │ │ │          89 ec                         mov sp, bp
+0x00001d   │ │ │ │ │          5d                            pop bp
+0x00001e   │ │ │ │ │          c2 02 00                      ret 0x2
+0x000021  <╯ │ │ │ │          8b 46 04                      mov ax, word [bp+4]
+0x000024     │ │ │ │          89 c3                         mov bx, ax
+0x000026     │ │ │ │          2d 01 00                      sub ax, 0x1
+0x000029     │ │ │ │          53                            push bx
+0x00002a     │ │ │ │          50                            push ax
+0x00002b  ───╯ │ │ │          e8 d2 ff                      call 0x0
+0x00002e       │ │ │          5b                            pop bx
+0x00002f       │ │ │          83 eb 02                      sub bx, 0x2
+0x000032       │ │ │          91                            xchg ax, cx
+0x000033       │ │ │          51                            push cx
+0x000034       │ │ │          53                            push bx
+0x000035  ─────╯ │ │          e8 c8 ff                      call 0x0
+0x000038         │ │          59                            pop cx
+0x000039         │ │          01 c1                         add cx, ax
+0x00003b         │ │          89 c8                         mov ax, cx
+0x00003d         │ │          89 ec                         mov sp, bp
+0x00003f         │ │          5d                            pop bp
+0x000040         │ │          c2 02 00                      ret 0x2
+0x000043  <╮     │ │          55                            push bp
+0x000044   │     │ │          89 e5                         mov bp, sp
+0x000046   │     │ │          83 ec 04                      sub sp, 0x4
+0x000049   │     │ │          8d 5e 06                      lea bx, word [bp+6]
+0x00004c   │     │ │          8b 07                         mov ax, word [bx]
+0x00004e   │     │ │          89 d9                         mov cx, bx
+0x000050   │     │ │          83 c3 02                      add bx, 0x2
+0x000053   │     │ │          8b 17                         mov dx, word [bx]
+0x000055   │     │ │          0f af c2                      imul ax, dx
+0x000058   │     │ │          8b 7e 04                      mov di, word [bp+4]
+0x00005b   │     │ │          01 c7                         add di, ax
+0x00005d   │     │ │          2b 7e 0a                      sub di, word [bp+10]
+0x000060   │     │ │          89 7e fc                      mov word [bp-4], di
+0x000063   │     │ │          83 c1 02                      add cx, 0x2
+0x000066   │     │ │          89 cb                         mov bx, cx
+0x000068   │     │ │          8b 07                         mov ax, word [bx]
+0x00006a   │     │ │          6b c0 03                      imul ax, ax, 0x3
+0x00006d   │     │ │          93                            xchg ax, bx
+0x00006e   │     │ │          53                            push bx
+0x00006f   │     │ │          6a 0a                         push 0xa
+0x000071  ─┼─────╯ │          e8 8c ff                      call 0x0
+0x000074   │       │          5b                            pop bx
+0x000075   │       │          d1 e0                         shl ax, 0x1
+0x000077   │       │          91                            xchg ax, cx
+0x000078   │       │          53                            push bx
+0x000079   │       │          51                            push cx
+0x00007a   │       │          6a 0a                         push 0xa
+0x00007c  ─┼───────╯          e8 81 ff                      call 0x0
+0x00007f   │                  59                            pop cx
+0x000080   │                  5b                            pop bx
+0x000081   │                  6b c0 0f                      imul ax, ax, 0xf
+0x000084   │                  01 c1                         add cx, ax
+0x000086   │                  01 cb                         add bx, cx
+0x000088   │                  89 5e fe                      mov word [bp-2], bx
+0x00008b   │                  8d 7e fc                      lea di, word [bp-4]
+0x00008e   │                  8b 76 0c                      mov si, word [bp+12]
+0x000091   │                  8b 15                         mov dx, word [di]
+0x000093   │                  89 14                         mov word [si], dx
+0x000095   │                  8b 55 02                      mov dx, word [di+2]
+0x000098   │                  89 54 02                      mov word [si+2], dx
+0x00009b   │                  89 ec                         mov sp, bp
+0x00009d   │                  5d                            pop bp
+0x00009e   │                  c2 08 00                      ret 0x8
+0x0000a1   │                  55                            push bp
+0x0000a2   │                  89 e5                         mov bp, sp
+0x0000a4   │                  83 ec 0a                      sub sp, 0xa
+0x0000a7   │                  c7 46 fc 04 00                mov word [bp-4], 0x4
+0x0000ac   │                  c7 46 fe 03 00                mov word [bp-2], 0x3
+0x0000b1   │                  8d 5e f8                      lea bx, word [bp-8]
+0x0000b4   │                  53                            push bx
+0x0000b5   │                  6a 05                         push 0x5
+0x0000b7   │                  ff 76 fe                      push word [bp-2]
+0x0000ba   │                  ff 76 fc                      push word [bp-4]
+0x0000bd   │                  6a 02                         push 0x2
+0x0000bf  ─╯                  e8 81 ff                      call 0x43
+0x0000c2                      8d 5e f8                      lea bx, word [bp-8]
+0x0000c5                      8b 07                         mov ax, word [bx]
+0x0000c7                      83 c3 02                      add bx, 0x2
+0x0000ca                      8b 0f                         mov cx, word [bx]
+0x0000cc                      01 c8                         add ax, cx
+0x0000ce                      89 46 f6                      mov word [bp-10], ax
+0x0000d1                      87 d2                         xchg dx, dx
+0x0000d3                      89 ec                         mov sp, bp
+0x0000d5                      5d                            pop bp
+0x0000d6                      c3                            ret
+```
+
+</details>
+
 ### Simple function calls with peephole optimization
 
 ```c
