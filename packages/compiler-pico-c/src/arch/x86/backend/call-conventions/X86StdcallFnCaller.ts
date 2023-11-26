@@ -1,15 +1,18 @@
 import chalk from 'chalk';
 
 import { CFunctionCallConvention } from '#constants';
-import { IRVariable } from 'frontend/ir/variables';
+import { IRVariable, isIRVariable } from 'frontend/ir/variables';
+import { CBackendError, CBackendErrorCode } from 'backend/errors/CBackendError';
+import { isStructLikeType } from 'frontend/analyze';
 
 import { getBaseTypeIfPtr } from 'frontend/analyze/types/utils';
 import { getTypeOffsetByteSize } from 'frontend/ir/utils';
-import { genInstruction, withInlineComment } from '../../asm-utils';
 import { getX86RegByteSize } from '../../constants/regs';
+import { genInstruction, withInlineComment } from '../../asm-utils';
 
-import { compileMemcpy } from '../compilers/shared';
+import { compileMemcpy, compileStackMemcpy } from '../compilers/shared';
 import { isRegOwnership } from '../reg-allocator/utils';
+import { IRArgDynamicResolverType } from '../reg-allocator';
 
 import { X86Allocator } from '../X86Allocator';
 import {
@@ -43,12 +46,28 @@ export class X86StdcallFnCaller implements X86ConventionalFnCaller {
 
     // call function section
     for (let i = totalNonRVOArgs - 1; i >= 0; --i) {
-      const resolvedArg = allocator.regs.tryResolveIrArg({
-        arg: callerInstruction.args[i],
-        size: stack.size,
-      });
+      const arg = callerInstruction.args[i];
+      const baseType = getBaseTypeIfPtr(arg.type);
 
-      asm.push(...resolvedArg.asm, genInstruction('push', resolvedArg.value));
+      if (isStructLikeType(baseType)) {
+        if (!isIRVariable(arg)) {
+          throw new CBackendError(CBackendErrorCode.NON_CALLABLE_STRUCT_ARG);
+        }
+
+        asm.push(...compileStackMemcpy(allocator, baseType, arg));
+      } else {
+        // perform plain stack push
+        const resolvedArg = allocator.regs.tryResolveIrArg({
+          arg,
+          size: stack.size,
+        });
+
+        asm.push(...resolvedArg.asm, genInstruction('push', resolvedArg.value));
+
+        if (resolvedArg.type === IRArgDynamicResolverType.REG) {
+          allocator.regs.releaseRegs([resolvedArg.value]);
+        }
+      }
     }
 
     asm.push(genInstruction('call', address));
@@ -94,16 +113,22 @@ export class X86StdcallFnCaller implements X86ConventionalFnCaller {
 
     const stack = this.getContextStackInfo(allocator);
     const args = declInstruction.getArgsWithRVO();
+    let stackOffset = stack.size * 2;
 
-    for (let i = args.length - 1; i >= 0; --i) {
+    for (let i = 0; i < args.length; ++i) {
       const arg = args[i];
       const argAllocSize = getBaseTypeIfPtr(arg.type).getByteSize();
 
       const stackVar = stackFrame.allocRawStackVariable({
         name: arg.name,
         size: argAllocSize,
-        offset: (i + 2) * stack.size,
+        offset: stackOffset,
       });
+
+      stackOffset += Math.max(
+        stack.size,
+        Math.ceil(argAllocSize / stack.size) * stack.size,
+      );
 
       regs.ownership.setOwnership(arg.name, {
         stackVar,

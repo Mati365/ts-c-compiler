@@ -330,15 +330,56 @@ describe('Function call', () => {
       `);
     });
 
-    test.skip('call with struct as argument', () => {
+    test('call with struct as argument', () => {
       expect(/* cpp */ `
         struct Vec2 { int x, y; };
-        int sum_vec(struct Vec2 vec) { return vec.x + vec.y; }
+
+        int sum_vec(int k, struct Vec2 vec, int x) {
+          return k + vec.x * vec.y - x;
+        }
+
         int main() {
-          struct Vec2 vec = { .x = 1, .y = 3 };
-          sum_vec(vec);
+          struct Vec2 vec = { .x = 4, .y = 3 };
+          int k = sum_vec(2, vec, 5);
+          asm("xchg dx, dx");
         }
       `).toCompiledAsmBeEqual(`
+        cpu 386
+        ; def sum_vec(k{0}: int*2B, vec{0}: struct Vec2*2B, x{0}: int*2B): [ret: int2B]
+        @@_fn_sum_vec:
+        push bp
+        mov bp, sp
+        lea bx, [bp + 6]          ; %t{1}: struct Vec2**2B = lea vec{0}: struct Vec2*2B
+        mov ax, [bx]              ; %t{2}: int2B = load %t{1}: struct Vec2**2B
+        add bx, 2                 ; %t{4}: struct Vec2**2B = %t{1}: struct Vec2**2B plus %2: int2B
+        mov cx, [bx]              ; %t{5}: int2B = load %t{4}: struct Vec2**2B
+        imul ax, cx               ; %t{6}: int2B = %t{2}: int2B mul %t{5}: int2B
+        mov dx, [bp + 4]
+        add dx, ax                ; %t{7}: int2B = %t{0}: int2B plus %t{6}: int2B
+        sub dx, word [bp + 10]    ; %t{9}: int2B = %t{7}: int2B minus %t{8}: int2B
+        mov ax, dx
+        mov sp, bp
+        pop bp
+        ret 6
+
+        ; def main(): [ret: int2B]
+        @@_fn_main:
+        push bp
+        mov bp, sp
+        sub sp, 6
+        mov word [bp - 4], 4      ; *(vec{1}: struct Vec2*2B) = store %4: int2B
+        mov word [bp - 2], 3      ; *(vec{1}: struct Vec2*2B + %2) = store %3: int2B
+        push 5
+        ; Copy of struct - vec{1}: struct Vec2*2B
+        push word [bp - 4]
+        push word [bp - 2]
+        push 2
+        call @@_fn_sum_vec
+        mov word [bp - 6], ax     ; *(k{1}: int*2B) = store %t{11}: int2B
+        xchg dx, dx
+        mov sp, bp
+        pop bp
+        ret
       `);
     });
   });
