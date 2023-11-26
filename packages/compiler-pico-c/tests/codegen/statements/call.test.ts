@@ -503,4 +503,83 @@ describe('Function call', () => {
       ret
     `);
   });
+
+  test('proper preserve registers in recursive calls', () => {
+    expect(/* cpp */ `
+      int fibbonacci(int n) {
+        if (n == 1)
+          return 0;
+
+        if (n <= 3)
+          return 1;
+
+        return fibbonacci(n-1) + fibbonacci(n-2);
+      }
+
+      void main() {
+        int fib = fibbonacci(10) * 2 + fibbonacci(10);
+        asm("xchg dx, dx");
+      }
+    `).toCompiledAsmBeEqual(`
+      cpu 386
+      ; def fibbonacci(n{0}: int*2B): [ret: int2B]
+      @@_fn_fibbonacci:
+      push bp
+      mov bp, sp
+      cmp word [bp + 4], 1      ; %t{1}: i1:zf = icmp %t{0}: int2B equal %1: char1B
+      jnz @@_L1                 ; br %t{1}: i1:zf, false: L1
+      @@_L2:
+      mov ax, word 0
+      mov sp, bp
+      pop bp
+      ret 2
+      @@_L1:
+      cmp word [bp + 4], 3      ; %t{3}: i1:zf = icmp %t{2}: int2B less_eq_than %3: char1B
+      jg @@_L3                  ; br %t{3}: i1:zf, false: L3
+      @@_L4:
+      mov ax, word 1
+      mov sp, bp
+      pop bp
+      ret 2
+      @@_L3:
+      mov ax, [bp + 4]
+      mov bx, ax                ; swap
+      sub ax, 1                 ; %t{6}: int2B = %t{5}: int2B minus %1: char1B
+      push bx                   ; preserve: %t{5}
+      push ax
+      call @@_fn_fibbonacci
+      pop bx                    ; restore: %t{5}
+      sub bx, 2                 ; %t{10}: int2B = %t{5}: int2B minus %2: char1B
+      xchg ax, cx
+      push cx                   ; preserve: %t{7}
+      push bx
+      call @@_fn_fibbonacci
+      pop cx                    ; restore: %t{7}
+      add cx, ax                ; %t{12}: int2B = %t{7}: int2B plus %t{11}: int2B
+      mov ax, cx
+      mov sp, bp
+      pop bp
+      ret 2
+
+      ; def main():
+      @@_fn_main:
+      push bp
+      mov bp, sp
+      sub sp, 2
+      push 10
+      call @@_fn_fibbonacci
+      shl ax, 1                 ; %t{15}: int2B = %t{14}: int2B mul %2: char1B
+      xchg ax, bx
+      push bx                   ; preserve: %t{15}
+      push 10
+      call @@_fn_fibbonacci
+      pop bx                    ; restore: %t{15}
+      add bx, ax                ; %t{18}: int2B = %t{15}: int2B plus %t{17}: int2B
+      mov word [bp - 2], bx     ; *(fib{0}: int*2B) = store %t{18}: int2B
+      xchg dx, dx
+      mov sp, bp
+      pop bp
+      ret
+    `);
+  });
 });

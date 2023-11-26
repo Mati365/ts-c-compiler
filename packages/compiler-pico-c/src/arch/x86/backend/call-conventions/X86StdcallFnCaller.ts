@@ -44,6 +44,20 @@ export class X86StdcallFnCaller implements X86ConventionalFnCaller {
     const totalNonRVOArgs = callerInstruction.args.length;
     const asm: string[] = [];
 
+    // preserve already allocated regs on stack
+    regs.ownership.releaseNotUsedLaterRegs(
+      true,
+      callerInstruction.args.flatMap(item =>
+        isIRVariable(item) ? [item.name] : [],
+      ),
+    );
+
+    // do not reorder! it must be called before `getReturnReg` setOwnership!
+    const preservedRegs = this.preserveConventionRegsAsm({
+      context,
+      declInstruction,
+    });
+
     // call function section
     for (let i = totalNonRVOArgs - 1; i >= 0; --i) {
       const arg = callerInstruction.args[i];
@@ -71,12 +85,6 @@ export class X86StdcallFnCaller implements X86ConventionalFnCaller {
     }
 
     asm.push(genInstruction('call', address));
-
-    // do not reorder! it must be called before `getReturnReg` setOwnership!
-    const preservedRegs = this.preserveConventionRegsAsm({
-      context,
-      declInstruction,
-    });
 
     // restore result from register (AX is already loaded in `compileIRFnRet`)
     if (
@@ -189,6 +197,7 @@ export class X86StdcallFnCaller implements X86ConventionalFnCaller {
           });
 
           asm.push(...retResolvedArg.asm);
+          allocator.regs.releaseRegs([retResolvedArg.value]);
         }
       }
     }
@@ -230,7 +239,7 @@ export class X86StdcallFnCaller implements X86ConventionalFnCaller {
     declInstruction,
   }: X86FnBasicCompilerAttrs) {
     const {
-      allocator: { regs },
+      allocator: { regs, iterator },
     } = context;
 
     const { ownership } = regs;
@@ -240,9 +249,6 @@ export class X86StdcallFnCaller implements X86ConventionalFnCaller {
       restore: [],
     };
 
-    // preserve already allocated regs on stack
-    ownership.releaseNotUsedLaterRegs(true);
-
     const returnReg = this.getReturnReg({
       context,
       declInstruction,
@@ -250,7 +256,12 @@ export class X86StdcallFnCaller implements X86ConventionalFnCaller {
 
     if (returnReg) {
       // check if somebody booked `AX` register and swap it if unavailable
-      const cachedOwnership = ownership.getOwnershipByReg(returnReg);
+      const cachedOwnership = ownership
+        .getOwnershipByReg(returnReg)
+        .filter(varName =>
+          ownership.lifetime.isVariableLaterUsed(iterator.offset, varName),
+        );
+
       if (cachedOwnership?.length) {
         const newReg = regs.requestReg({
           size: getX86RegByteSize(returnReg),
@@ -271,7 +282,10 @@ export class X86StdcallFnCaller implements X86ConventionalFnCaller {
 
     Object.entries(ownership.getAllOwnerships()).forEach(
       ([varName, varOwnership]) => {
-        if (!isRegOwnership(varOwnership)) {
+        if (
+          !isRegOwnership(varOwnership) ||
+          !ownership.lifetime.isVariableLaterUsed(iterator.offset, varName)
+        ) {
           return;
         }
 
@@ -282,7 +296,7 @@ export class X86StdcallFnCaller implements X86ConventionalFnCaller {
           ),
         );
 
-        asm.restore.push(
+        asm.restore.unshift(
           withInlineComment(
             genInstruction('pop', varOwnership.reg),
             `${chalk.greenBright('restore:')} ${chalk.blueBright(varName)}`,

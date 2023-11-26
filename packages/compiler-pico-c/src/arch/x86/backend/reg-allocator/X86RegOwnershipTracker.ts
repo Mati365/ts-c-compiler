@@ -129,14 +129,15 @@ export class X86RegOwnershipTracker {
     this.ownership[inputVar] = value;
   }
 
-  releaseNotUsedLaterRegs(exclusive: boolean = false) {
+  releaseNotUsedLaterRegs(exclusive: boolean = false, excludeVars?: string[]) {
     const { lifetime, ownership, allocator } = this;
     const { offset } = allocator.iterator;
 
     R.forEachObjIndexed((_, varName) => {
       if (
         isRegOwnership(ownership[varName]) &&
-        !lifetime.isVariableLaterUsed(offset, varName, exclusive)
+        !lifetime.isVariableLaterUsed(offset, varName, exclusive) &&
+        (!excludeVars || !excludeVars.includes(varName))
       ) {
         this.dropOwnership(varName);
       }
