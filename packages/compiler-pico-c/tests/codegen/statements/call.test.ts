@@ -371,8 +371,8 @@ describe('Function call', () => {
         mov word [bp - 2], 3      ; *(vec{1}: struct Vec2*2B + %2) = store %3: int2B
         push 5
         ; Copy of struct - vec{1}: struct Vec2*2B
-        push word [bp - 4]
         push word [bp - 2]
+        push word [bp - 4]
         push 2
         call @@_fn_sum_vec
         mov word [bp - 6], ax     ; *(k{1}: int*2B) = store %t{11}: int2B
@@ -382,5 +382,88 @@ describe('Function call', () => {
         ret
       `);
     });
+  });
+
+  test('call with struct as argument and RVO', () => {
+    expect(/* cpp */ `
+      struct Vec2 { int x, y; };
+
+      struct Vec2 sum_vec(int k, struct Vec2 vec, int x) {
+        struct Vec2 result = {
+          .x = k + vec.x * vec.y - x,
+          .y = vec.y * 3
+        };
+
+        return result;
+      }
+
+      int main() {
+        struct Vec2 vec = { .x = 4, .y = 3 };
+        struct Vec2 k = sum_vec(2, vec, 5);
+
+        int d = k.x + k.y;
+        asm("xchg dx, dx");
+      }
+    `).toCompiledAsmBeEqual(`
+      cpu 386
+      ; def sum_vec(k{0}: int*2B, vec{0}: struct Vec2*2B, x{0}: int*2B, rvo: %out{0}: struct Vec2*2B):
+      @@_fn_sum_vec:
+      push bp
+      mov bp, sp
+      sub sp, 4
+      lea bx, [bp + 6]          ; %t{1}: struct Vec2**2B = lea vec{0}: struct Vec2*2B
+      mov ax, [bx]              ; %t{2}: int2B = load %t{1}: struct Vec2**2B
+      mov cx, bx                ; swap
+      add bx, 2                 ; %t{4}: struct Vec2**2B = %t{1}: struct Vec2**2B plus %2: int2B
+      mov dx, [bx]              ; %t{5}: int2B = load %t{4}: struct Vec2**2B
+      imul ax, dx               ; %t{6}: int2B = %t{2}: int2B mul %t{5}: int2B
+      mov di, [bp + 4]
+      add di, ax                ; %t{7}: int2B = %t{0}: int2B plus %t{6}: int2B
+      sub di, word [bp + 10]    ; %t{9}: int2B = %t{7}: int2B minus %t{8}: int2B
+      mov word [bp - 4], di     ; *(result{0}: struct Vec2*2B) = store %t{9}: int2B
+      add cx, 2                 ; %t{11}: struct Vec2**2B = %t{1}: struct Vec2**2B plus %2: int2B
+      mov bx, cx
+      mov ax, [bx]              ; %t{12}: int2B = load %t{11}: struct Vec2**2B
+      imul ax, 3                ; %t{13}: int2B = %t{12}: int2B mul %3: char1B
+      mov word [bp - 2], ax     ; *(result{0}: struct Vec2*2B + %2) = store %t{13}: int2B
+      ; memcpy result{0}: struct Vec2*2B -> %out{0}: struct Vec2*2B
+      lea di, [bp - 4]
+      mov si, [bp + 12]
+      ; offset = 0B
+      mov cx, word [di]
+      mov word [si], cx
+      ; offset = 2B
+      mov cx, word [di + 2]
+      mov word [si + 2], cx
+      mov sp, bp
+      pop bp
+      ret 8
+
+      ; def main(): [ret: int2B]
+      @@_fn_main:
+      push bp
+      mov bp, sp
+      sub sp, 10
+      mov word [bp - 4], 4      ; *(vec{1}: struct Vec2*2B) = store %4: int2B
+      mov word [bp - 2], 3      ; *(vec{1}: struct Vec2*2B + %2) = store %3: int2B
+      lea bx, [bp - 8]          ; %t{15}: struct Vec2**2B = lea k{1}: struct Vec2*2B
+      push bx
+      push 5
+      ; Copy of struct - vec{1}: struct Vec2*2B
+      push word [bp - 2]
+      push word [bp - 4]
+      push 2
+      call @@_fn_sum_vec
+      lea bx, [bp - 8]          ; %t{16}: struct Vec2**2B = lea k{1}: struct Vec2*2B
+      mov ax, [bx]              ; %t{17}: int2B = load %t{16}: struct Vec2**2B
+      add bx, 2                 ; %t{19}: struct Vec2**2B = %t{16}: struct Vec2**2B plus %2: int2B
+      mov cx, [bx]              ; %t{20}: int2B = load %t{19}: struct Vec2**2B
+      add ax, cx                ; %t{21}: int2B = %t{17}: int2B plus %t{20}: int2B
+      mov word [bp - 10], ax    ; *(d{0}: int*2B) = store %t{21}: int2B
+      xchg dx, dx
+      mov sp, bp
+      pop bp
+      ret
+    `);
   });
 });

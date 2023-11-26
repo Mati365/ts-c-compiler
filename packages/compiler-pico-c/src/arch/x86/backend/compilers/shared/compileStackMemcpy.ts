@@ -20,7 +20,13 @@ export function compileStackMemcpy(
 
   asm.push(genComment(`Copy of struct - ${arg.getDisplayName()}`));
 
-  for (let offset = 0; offset < type.getByteSize(); offset += stackPtrSize) {
+  for (
+    let offset =
+      Math.ceil(type.getByteSize() / stackPtrSize) * stackPtrSize -
+      stackPtrSize;
+    offset >= 0;
+    offset -= stackPtrSize
+  ) {
     const addr = allocator.stackFrame.getLocalVarStackRelAddress(
       arg.name,
       offset,
