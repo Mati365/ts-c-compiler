@@ -97,10 +97,15 @@ npx ts-c ./main.c -ps
 #define max(a,b) ((a)>(b)?(a):(b))
 #define sum(a,b) (min(a, b) + max(a, b))
 
+enum {
+  TEN = 10,
+  FIVE = 5
+};
+
 #ifdef PRINT_SUM
   #if A + B == 12 || A - B == 0
     int main() {
-      int k = esum(10, 6);
+      int k = esum(TEN, FIVE + 1);
     }
   #endif
 #elifdef ABC
