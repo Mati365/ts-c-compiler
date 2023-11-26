@@ -100,7 +100,7 @@ npx ts-c ./main.c -ps
 #ifdef PRINT_SUM
   #if A + B == 12 || A - B == 0
     int main() {
-      int k = sum(10, 6);
+      int k = esum(10, 6);
     }
   #endif
 #elifdef ABC

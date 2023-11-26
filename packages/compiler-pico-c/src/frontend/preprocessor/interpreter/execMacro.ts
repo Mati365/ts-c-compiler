@@ -42,6 +42,7 @@ export const execMacro =
             }
           }
 
+          --callArgIndex;
           expression = [
             ...expression.slice(0, exprTokenIndex),
             ...vaArgs,
@@ -50,11 +51,13 @@ export const execMacro =
         } else {
           expression = [
             ...expression.slice(0, exprTokenIndex),
-            ...callArgs[callArgIndex++],
+            ...callArgs[callArgIndex],
             ...expression.slice(exprTokenIndex + 1),
           ];
         }
       }
+
+      callArgIndex++;
     }
 
     return expression;
