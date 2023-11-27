@@ -68,7 +68,14 @@ export class X86StdcallFnCaller implements X86ConventionalFnCaller {
           throw new CBackendError(CBackendErrorCode.NON_CALLABLE_STRUCT_ARG);
         }
 
-        asm.push(...compileStackMemcpy(allocator, baseType, arg));
+        asm.push(
+          ...compileStackMemcpy({
+            allocator,
+            arg,
+            ownership: regs.ownership,
+            type: baseType,
+          }),
+        );
       } else {
         // perform plain stack push
         const resolvedArg = allocator.regs.tryResolveIrArg({

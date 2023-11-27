@@ -478,4 +478,36 @@ describe('Global variables declaration', () => {
       @@_c_1_@str$0_1: db "World", 0x0
     `);
   });
+
+  test('copy global structures', () => {
+    expect(/* cpp */ `
+      struct Vec2 { int x, y; };
+      struct Vec2 vec = { .x = 4, .y = 3 };
+      int main() {
+        struct Vec2 vec2 = vec;
+      }
+    `).toCompiledAsmBeEqual(`
+      cpu 386
+      ; def main(): [ret: int2B]
+      @@_fn_main:
+      push bp
+      mov bp, sp
+      sub sp, 4
+      ; memcpy %t{0}: struct Vec2*2B -> vec2{0}: struct Vec2*2B
+      mov bx, @@_c_0_
+      lea di, [bp - 4]
+      ; offset = 0B
+      mov ax, word [bx]
+      mov word [di], ax
+      ; offset = 2B
+      mov ax, word [bx + 2]
+      mov word [di + 2], ax
+      mov sp, bp
+      pop bp
+      ret
+
+      @@_c_0_:
+      dw 4, 3
+    `);
+  });
 });

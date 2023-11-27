@@ -34,7 +34,7 @@ const optimizeFlow = compose(
 
 export function optimizeInstructionsList(
   instructions: IRInstruction[],
-  { maxIterations = 4 }: OptimizerConfig = {},
+  { maxIterations = 9 }: OptimizerConfig = {},
 ) {
   let newInstructions: IRInstruction[] = instructions;
 

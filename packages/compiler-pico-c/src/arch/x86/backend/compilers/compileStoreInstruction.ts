@@ -10,6 +10,7 @@ import { getTypeOffsetByteSize } from 'frontend/ir/utils';
 import { compileMemcpy } from './shared';
 
 import { X86CompilerInstructionFnAttrs } from '../../constants/types';
+import { isLabelOwnership } from '../reg-allocator/utils';
 import {
   genInstruction,
   genMemAddress,
@@ -89,7 +90,8 @@ export function compileStoreInstruction({
     if (
       getBaseTypeIfPtr(value.type).isStruct() &&
       getBaseTypeIfPtr(outputVar.type).isStruct() &&
-      !value.isTemporary()
+      (!value.isTemporary() ||
+        isLabelOwnership(regs.ownership.getVarOwnership(value.name)))
     ) {
       // copy structure A to B
       asm.push(

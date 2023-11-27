@@ -582,4 +582,51 @@ describe('Function call', () => {
       ret
     `);
   });
+
+  test('call with global struct as parameter', () => {
+    expect(/* cpp */ `
+      struct Vec2 { int x, y; };
+
+      int sum_vec(struct Vec2 vec) {
+        return vec.x + vec.y;
+      }
+
+      struct Vec2 vec = { .x = 4, .y = 3 };
+
+      int main() {
+        int d = sum_vec(vec);
+      }
+    `).toCompiledAsmBeEqual(`
+      cpu 386
+      ; def sum_vec(vec{0}: struct Vec2*2B): [ret: int2B]
+      @@_fn_sum_vec:
+      push bp
+      mov bp, sp
+      mov ax, [@@_c_0_]         ; %t{1}: int2B = load %t{0}: int*2B
+      mov bx, @@_c_0_
+      add bx, 2                 ; %t{3}: int*2B = %t{0}: struct Vec2*2B plus %2: int2B
+      mov cx, [bx]              ; %t{4}: int2B = load %t{3}: int*2B
+      add ax, cx                ; %t{5}: int2B = %t{1}: int2B plus %t{4}: int2B
+      mov sp, bp
+      pop bp
+      ret 2
+
+      ; def main(): [ret: int2B]
+      @@_fn_main:
+      push bp
+      mov bp, sp
+      sub sp, 2
+      ; Copy of struct - %t{7}: struct Vec2*2B
+      push word [@@_c_0_ + 2]
+      push word [@@_c_0_]
+      call @@_fn_sum_vec
+      mov word [bp - 2], ax     ; *(d{0}: int*2B) = store %t{8}: int2B
+      mov sp, bp
+      pop bp
+      ret
+
+      @@_c_0_:
+      dw 4, 3
+    `);
+  });
 });

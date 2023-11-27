@@ -315,7 +315,10 @@ export function emitExpressionIR({
               ),
             );
 
-            if (!srcGlobalVar.virtualArrayPtr) {
+            if (
+              !srcGlobalVar.virtualArrayPtr &&
+              !getBaseTypeIfPtr(srcGlobalVar.type).isStruct()
+            ) {
               const tmpDestVar = allocNextVariable(
                 getBaseTypeIfPtr(srcGlobalVar.type),
               );

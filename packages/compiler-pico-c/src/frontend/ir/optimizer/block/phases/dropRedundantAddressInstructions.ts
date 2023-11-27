@@ -4,6 +4,7 @@ import { dropConstantInstructionArgs } from '../utils/dropConstantInstructionArg
 import { IRVariable } from '../../../variables';
 import {
   IRInstruction,
+  isIRCallInstruction,
   isIRLabelOffsetInstruction,
   isIRLeaInstruction,
 } from '../../../instructions';
@@ -21,6 +22,12 @@ export function dropRedundantAddressInstructions(
     const instruction = newInstructions[i];
 
     if (isIRBranchInstruction(instruction)) {
+      if (isIRCallInstruction(instruction)) {
+        newInstructions[i] =
+          dropConstantInstructionArgs(replacedOutputs, instruction) ??
+          newInstructions[i];
+      }
+
       replacedOutputs = {};
       cachedInputs = {};
       hasCache = false;
