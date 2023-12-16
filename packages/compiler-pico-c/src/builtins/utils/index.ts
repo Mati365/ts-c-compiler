@@ -1,1 +1,1 @@
-export * from './builtin-prefix';
+export * from './builtinPrefix';

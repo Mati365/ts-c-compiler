@@ -1,5 +1,3 @@
-import * as R from 'ramda';
-
 import { findByName, dumpCompilerAttrs } from '@ts-c-compiler/core';
 
 import { CFunctionCallConvention } from '#constants';
@@ -31,6 +29,7 @@ export type CFunctionDescriptor = CTypeDescriptor & {
   callConvention: CFunctionCallConvention;
   storage: CStorageClassMonad;
   definition?: ASTCBlockItemsList;
+  vaList?: boolean;
 };
 
 /**
@@ -68,18 +67,13 @@ export class CFunctionDeclType extends CType<CFunctionDescriptor> {
   override isFunction() {
     return true;
   }
+
   hasDefinition() {
     return !!this.definition;
   }
 
-  /**
-   * Handle case when function looks like this:
-   *  int main() { ... }
-   *
-   * User can pass any amount of args
-   */
-  hasUknownArgsList(): boolean {
-    return R.isEmpty(this.args);
+  hasVaListArgs() {
+    return !!this.value.vaList;
   }
 
   /**
@@ -130,12 +124,16 @@ export class CFunctionDeclType extends CType<CFunctionDescriptor> {
   override getDisplayName(): string {
     const { returnType, args, name, storage, specifier, callConvention } = this;
 
-    const serializedArgs = args.map(arg => arg.getDisplayName()).join(', ');
+    const serializedArgs = args.map(arg => arg.getDisplayName());
     const attrs = dumpCompilerAttrs({
       callConvention,
       argsSizeof: this.getArgsByteSize(),
       returnSizeof: this.returnType?.getByteSize() ?? 0,
     });
+
+    if (this.hasVaListArgs()) {
+      serializedArgs.push('...');
+    }
 
     return [
       attrs,
@@ -143,7 +141,7 @@ export class CFunctionDeclType extends CType<CFunctionDescriptor> {
       storage.getDisplayName(),
       returnType.getShortestDisplayName(),
       name || '<anonymous>',
-      `(${serializedArgs}) { ... }`,
+      `(${serializedArgs.join(', ')}) { ... }`,
     ]
       .filter(Boolean)
       .join(' ');

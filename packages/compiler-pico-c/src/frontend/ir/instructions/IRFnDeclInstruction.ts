@@ -40,6 +40,10 @@ export class IRFnDeclInstruction
     return !!this.rvoOutputVar;
   }
 
+  hasVaListArgs() {
+    return this.type.hasVaListArgs();
+  }
+
   getRVOOutputVar() {
     return this.rvoOutputVar;
   }
@@ -67,6 +71,10 @@ export class IRFnDeclInstruction
     const retStr = returnType
       ? `: [ret${getIRTypeDisplayName(returnType)}]`
       : ':';
+
+    if (this.hasVaListArgs()) {
+      serializedArgs.push('...');
+    }
 
     if (rvoOutputVar) {
       serializedArgs.push(`rvo: ${rvoOutputVar.getDisplayName()}`);

@@ -1,3 +1,3 @@
-export * from './create-builtin-analyze-scope';
+export * from './createBuiltinAnalyzeScope';
 export * from './utils';
 export * from './va';
