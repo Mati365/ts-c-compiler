@@ -1,5 +1,7 @@
 import * as E from 'fp-ts/Either';
 
+import { createBuiltinAnalyzeScope } from 'builtins';
+
 import { CTypeCheckError, CTypeCheckErrorCode } from './errors/CTypeCheckError';
 import { CTypeCheckConfig } from './constants';
 import { ASTCTreeNode } from '../parser/ast';
@@ -18,7 +20,12 @@ export const safeBuildTypedTree =
   (config: CTypeCheckConfig) =>
   (tree: ASTCTreeNode): E.Either<CTypeCheckError[], ScopeTreeBuilderResult> => {
     try {
-      const { scope } = new CTypeAnalyzeVisitor(config).visit(tree);
+      const analyzer = new CTypeAnalyzeVisitor({
+        ...config,
+        scope: createBuiltinAnalyzeScope(config.arch),
+      });
+
+      const { scope } = analyzer.visit(tree);
 
       return E.right({
         scope,

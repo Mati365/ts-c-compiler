@@ -13,8 +13,8 @@ import {
   CTypeCheckError,
   CTypeCheckErrorCode,
 } from '../../errors/CTypeCheckError';
-import { CStructTypeDescriptor, CStructEntry } from './constants/types';
 
+import { CStructTypeDescriptor, CStructEntry } from './constants/types';
 import { isArrayLikeType } from '../CArrayType';
 
 export function isStructLikeType(type: CType): type is CStructType {

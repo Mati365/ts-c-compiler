@@ -181,6 +181,14 @@ export class CScopeTree<C extends ASTCCompilerNode = ASTCCompilerNode>
     );
   }
 
+  defineTypes(types: CAbstractNamedType[]): E.Either<CTypeCheckError, CType[]> {
+    return pipe(
+      types,
+      A.map(type => this.defineType(type)),
+      A.sequence(E.Applicative),
+    );
+  }
+
   /**
    * Defines single type in scope
    *
