@@ -56,14 +56,22 @@ export class ASTCFunctionDefTypeCreator extends ASTCTypeCreator<ASTCFunctionDefi
       context,
     });
 
-    const args = fnExpression.argsNodes.map(argNode =>
-      CVariable.ofFunctionArg(
-        extractNamedEntryFromDeclaration({
-          declaration: argNode,
-          context,
-        }),
-      ),
-    );
+    let vaList = false;
+    const args = fnExpression.argsNodes.flatMap(argNode => {
+      if (argNode.vaList) {
+        vaList = true;
+        return [];
+      }
+
+      return [
+        CVariable.ofFunctionArg(
+          extractNamedEntryFromDeclaration({
+            declaration: argNode,
+            context,
+          }),
+        ),
+      ];
+    });
 
     const specifier = pipe(
       CFunctionSpecifierMonad.ofParserSource(
@@ -88,6 +96,7 @@ export class ASTCFunctionDefTypeCreator extends ASTCTypeCreator<ASTCFunctionDefi
       args,
       storage,
       specifier,
+      vaList,
     });
   }
 }

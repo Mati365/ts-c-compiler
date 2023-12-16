@@ -14,6 +14,8 @@ export const safeBuildIRCode =
   (config: IRGeneratorConfig) =>
   (scope: CScopeTree): E.Either<IRError[], IRCodeBuilderResult> => {
     try {
+      // console.info(CScopePrintVisitor.serializeToString(scope));
+
       const ir = new IRGeneratorGlobalVisitor(config).visit(scope).flush();
       const optimizedIr = optimizeIRResult(config.optimization, ir);
 

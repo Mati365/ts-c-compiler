@@ -1,2 +1,2 @@
-export * from './va-list.builtin';
-export * from './va-start-fn.builtin';
+export * from './VaList.builtin';
+export * from './VaStartFn.builtin';
