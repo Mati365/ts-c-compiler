@@ -36,6 +36,7 @@ describe('While stmt', () => {
         a{0}: int*2B = alloca int2B
         %t{0}: i1:zf = icmp %2: char1B greater_than %1: char1B
         br %t{0}: i1:zf, true: L1
+        L2:
         ret
         end-def
     `);
@@ -65,7 +66,7 @@ describe('While stmt', () => {
   test('while(1)', () => {
     expect(/* cpp */ `
       void main() {
-        while(0) {
+        while(1) {
           int a = 2;
         }
       }
@@ -85,9 +86,11 @@ describe('While stmt', () => {
 
   test('do while(1)', () => {
     expect(/* cpp */ `
-      do {
-        int a = 2;
-      } while(1);
+      void main() {
+        do {
+          int a = 2;
+        } while(1);
+      }
     `).toCompiledIRBeEqual(/* ruby */ `
       # --- Block main ---
       def main():
@@ -103,9 +106,11 @@ describe('While stmt', () => {
 
   test('do while(0)', () => {
     expect(/* cpp */ `
-      do {
-        int a = 2;
-      } while(0);
+      void main() {
+        do {
+          int a = 2;
+        } while(0);
+      }
     `).toCompiledIRBeEqual(/* ruby */ `
       # --- Block main ---
       def main():
