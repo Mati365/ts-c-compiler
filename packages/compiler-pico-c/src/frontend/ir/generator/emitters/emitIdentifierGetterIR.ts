@@ -144,6 +144,7 @@ export function emitIdentifierGetterIR({
           } else {
             const irVariable = allocator.getVariable(name);
             rootIRVar ??= irVariable;
+
             /**
              * detect this case:
              *  char array[10] = { 1, 2, 3, 4, 5, 6 };

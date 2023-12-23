@@ -7,7 +7,6 @@ import {
   IREmitterStmtResult,
 } from './types';
 
-import { emitDeclarationIR } from './emitDeclarationIR';
 import { LogicBinaryExpressionLabels } from './emit-expr';
 
 export type ForStmtIRAttrs = IREmitterContextAttrs & {
@@ -22,7 +21,7 @@ export function emitForStmtIR({
   const { emit, factory } = context;
 
   const result = createBlankStmtResult();
-  const declResult = emitDeclarationIR({
+  const declResult = emit.block({
     node: node.declaration,
     scope,
     context,
