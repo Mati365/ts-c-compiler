@@ -9,6 +9,7 @@ import { TableBinaryView, asm } from '@ts-c-compiler/x86-assembler';
 import {
   CCompilerArch,
   ccompiler,
+  getX86BootsectorPreloaderBinary,
   serializeTypedTreeToString,
   wrapWithX86BootsectorAsm,
 } from '@ts-c-compiler/compiler';
@@ -93,15 +94,18 @@ program
             console.info(TableBinaryView.serializeToString(E.right(asmResult)));
           }
 
+          let binary = asmResult.output.getBinary();
+
+          if (options.bootsector) {
+            binary = getX86BootsectorPreloaderBinary().concat(binary);
+          }
+
           if (options.binary) {
-            process.stdout.write(new Uint8Array(asmResult.output.getBinary()));
+            process.stdout.write(new Uint8Array(binary));
           }
 
           if (options.output) {
-            fs.writeFileSync(
-              options.output,
-              Buffer.from(asmResult.output.getBinary()),
-            );
+            fs.writeFileSync(options.output, Buffer.from(binary));
           }
         },
         error => {

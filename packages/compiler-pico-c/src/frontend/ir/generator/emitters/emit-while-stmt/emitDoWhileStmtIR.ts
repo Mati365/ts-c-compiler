@@ -16,19 +16,30 @@ export function emitDoWhileStmtIR({
     node: node.expression,
   });
 
-  const startLabel = factory.genTmpLabelInstruction();
+  const labels = {
+    start: factory.genTmpLabelInstruction(),
+    end: factory.genTmpLabelInstruction(),
+  };
+
   const contentResult = emit.block({
     node: node.statement,
     scope,
-    context,
+    context: {
+      ...context,
+      loopStmt: {
+        startLabel: labels.start,
+        finallyLabel: labels.end,
+      },
+    },
   });
 
   result.instructions.push(
-    startLabel,
+    labels.start,
     ...result.instructions,
     ...contentResult.instructions,
     ...logicResult.instructions,
-    new IRBrInstruction(logicResult.output, startLabel),
+    new IRBrInstruction(logicResult.output, labels.start),
+    labels.end,
   );
 
   return result;

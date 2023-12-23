@@ -1,4 +1,5 @@
 import * as R from 'ramda';
+import { replaceEscapeSequences } from '@ts-c-compiler/core';
 
 import {
   isComment,
@@ -208,7 +209,15 @@ export const lexer = (config: LexerConfig) =>
         tokenBuffer += code[offset];
       }
 
-      yield* appendToken(new Token(type, kind, tokenBuffer, location.clone()));
+      yield* appendToken(
+        new Token(
+          type,
+          kind,
+          replaceEscapeSequences(tokenBuffer),
+          location.clone(),
+        ),
+      );
+
       tokenBuffer = '';
     }
 

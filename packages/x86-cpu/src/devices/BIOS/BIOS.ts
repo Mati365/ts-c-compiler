@@ -395,10 +395,7 @@ export class BIOS extends X86UuidAbstractDevice<X86CPU> {
           for (let i = 0; i < regs.al; ++i) {
             const offset = i * sectorSize;
 
-            if (
-              src + offset + sectorSize > drive.buffer.byteLength ||
-              dest + offset + sectorSize > cpu.mem.byteLength
-            ) {
+            if (dest + offset + sectorSize > cpu.mem.byteLength) {
               error = true;
               break;
             }
@@ -407,8 +404,16 @@ export class BIOS extends X86UuidAbstractDevice<X86CPU> {
               Buffer.from(cpu.mem.buffer),
               dest + offset /** Dest address */,
               src + offset /** Source address start */,
-              src + offset + sectorSize /** Source address end */,
+              Math.min(
+                src + offset + sectorSize,
+                drive.buffer.byteLength,
+              ) /** Source address end */,
             );
+
+            if (src + offset + sectorSize > drive.buffer.byteLength) {
+              error = true;
+              break;
+            }
           }
 
           /** Always success, buffer is provided */

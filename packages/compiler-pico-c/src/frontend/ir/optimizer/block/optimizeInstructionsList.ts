@@ -2,6 +2,7 @@ import { compose } from 'ramda';
 import { IRInstruction } from '../../instructions';
 import {
   concatConstantStoreInstruction,
+  dropConstantBranchInstructions,
   dropConstantLabelOffsetsArgs,
   dropDeadStoreInstructions,
   dropInstructionsWithOrphanOutputs,
@@ -30,6 +31,7 @@ const optimizeFlow = compose(
   flipMathInstructionsOperands,
   dropConstantLabelOffsetsArgs,
   reassignPhiInstructions,
+  dropConstantBranchInstructions,
 );
 
 export function optimizeInstructionsList(

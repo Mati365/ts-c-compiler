@@ -33,7 +33,13 @@ export function emitWhileStmtIR({
   const contentResult = emit.block({
     node: node.statement,
     scope,
-    context,
+    context: {
+      ...context,
+      loopStmt: {
+        startLabel: labels.start,
+        finallyLabel: labels.end,
+      },
+    },
   });
 
   result.instructions.push(

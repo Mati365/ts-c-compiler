@@ -624,7 +624,6 @@ export class X86InstructionSet extends X86Unit {
             cpu.debugDumpRegisters();
 
             if (arg === 0xdb) {
-              // xchg bx, bx
               const loop = <VGARenderLoopDriver>cpu.devices.vgaRenderLoop;
               if (loop) {
                 loop.redraw();

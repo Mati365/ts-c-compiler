@@ -204,6 +204,7 @@ export function emitBlockItemIR({
         const fnReturnType = fnStmt.declaration.type.returnType;
 
         if (fnReturnType.isVoid()) {
+          result.instructions.push(new IRRetInstruction());
           return false;
         }
 

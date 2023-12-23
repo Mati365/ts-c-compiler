@@ -1118,7 +1118,7 @@ Printing BIOS charset:
       kernel_screen_cursor.x,
       kernel_screen_cursor.y,
       color,
-      str,
+      str
     );
 
     kernel_screen_newline();

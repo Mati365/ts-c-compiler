@@ -11,7 +11,8 @@ import type {
   CInterpreterSourcePath,
 } from '../frontend/preprocessor';
 
-import { STD_ARG_CONTENT_HEADER } from './stdarg.h';
+import { KERNEL_HEADERS_FILES } from './kernel';
+import { STD_HEADERS_FILES } from './std';
 
 export class CInternalCompilerFsResolver
   implements CInterpreterIncludeResolver
@@ -42,6 +43,7 @@ export class CInternalCompilerFsResolver
     };
 
   private static FILES = {
-    'stdarg.h': STD_ARG_CONTENT_HEADER,
+    ...KERNEL_HEADERS_FILES,
+    ...STD_HEADERS_FILES,
   };
 }

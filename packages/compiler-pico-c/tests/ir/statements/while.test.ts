@@ -40,4 +40,81 @@ describe('While stmt', () => {
         end-def
     `);
   });
+
+  test('while(0)', () => {
+    expect(/* cpp */ `
+      void main() {
+        while(0) {
+          int a = 2;
+        }
+      }
+    `).toCompiledIRBeEqual(/* ruby */ `
+      # --- Block main ---
+      def main():
+        L1:
+        jmp L2
+        a{0}: int*2B = alloca int2B
+        *(a{0}: int*2B) = store %2: int2B
+        jmp L1
+        L2:
+        ret
+        end-def
+    `);
+  });
+
+  test('while(1)', () => {
+    expect(/* cpp */ `
+      void main() {
+        while(0) {
+          int a = 2;
+        }
+      }
+    `).toCompiledIRBeEqual(/* ruby */ `
+      # --- Block main ---
+      def main():
+        L1:
+        a{0}: int*2B = alloca int2B
+        *(a{0}: int*2B) = store %2: int2B
+        jmp L1
+        L2:
+        ret
+        end-def
+
+    `);
+  });
+
+  test('do while(1)', () => {
+    expect(/* cpp */ `
+      do {
+        int a = 2;
+      } while(1);
+    `).toCompiledIRBeEqual(/* ruby */ `
+      # --- Block main ---
+      def main():
+        L1:
+        a{0}: int*2B = alloca int2B
+        *(a{0}: int*2B) = store %2: int2B
+        jmp L1
+        L2:
+        ret
+        end-def
+    `);
+  });
+
+  test('do while(0)', () => {
+    expect(/* cpp */ `
+      do {
+        int a = 2;
+      } while(0);
+    `).toCompiledIRBeEqual(/* ruby */ `
+      # --- Block main ---
+      def main():
+        L1:
+        a{0}: int*2B = alloca int2B
+        *(a{0}: int*2B) = store %2: int2B
+        L2:
+        ret
+        end-def
+    `);
+  });
 });
