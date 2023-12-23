@@ -3,6 +3,8 @@ import chalk from 'chalk';
 import { IsPrintable } from '@ts-c-compiler/core';
 import { Identity } from '@ts-c-compiler/core';
 
+import { hasBuiltinPrefix } from 'builtins';
+
 export function isIRLabel(obj: any): obj is IRLabel {
   return !!obj?.value?.name;
 }
@@ -23,6 +25,10 @@ export class IRLabel
 
   get name() {
     return this.value.name;
+  }
+
+  isBuiltin() {
+    return hasBuiltinPrefix(this.name);
   }
 
   getDisplayName(): string {

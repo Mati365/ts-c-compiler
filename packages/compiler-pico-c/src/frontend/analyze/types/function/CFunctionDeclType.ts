@@ -2,7 +2,9 @@ import { findByName, dumpCompilerAttrs } from '@ts-c-compiler/core';
 
 import { CFunctionCallConvention } from '#constants';
 import { Identity } from '@ts-c-compiler/core';
+
 import { ASTCBlockItemsList } from 'frontend';
+import { hasBuiltinPrefix } from 'builtins/utils/builtinPrefix';
 
 import { isPointerLikeType } from '../CPointerType';
 
@@ -30,6 +32,7 @@ export type CFunctionDescriptor = CTypeDescriptor & {
   storage: CStorageClassMonad;
   definition?: ASTCBlockItemsList;
   vaList?: boolean;
+  noIREmit?: boolean;
 };
 
 /**
@@ -74,6 +77,14 @@ export class CFunctionDeclType extends CType<CFunctionDescriptor> {
 
   hasVaListArgs() {
     return !!this.value.vaList;
+  }
+
+  isNoIREmit() {
+    return !!this.value.noIREmit;
+  }
+
+  isBuiltin() {
+    return hasBuiltinPrefix(this.name);
   }
 
   /**

@@ -10,6 +10,7 @@ import { charToInt, tryCastToPointer } from 'frontend/analyze/casts';
 
 import { TokenType } from '@ts-c-compiler/lexer';
 import { CMathOperator, CRelOperator, CUnaryCastOperator } from '#constants';
+import { hasBuiltinPrefix } from 'builtins/utils/builtinPrefix';
 
 import {
   CPointerType,
@@ -300,6 +301,17 @@ export function emitExpressionIR({
           );
         } else if (expression.isIdentifier()) {
           const { text: name } = expression.identifier;
+
+          if (hasBuiltinPrefix(name)) {
+            const srcType = scope.findType(name);
+            const tmpVar = allocNextVariable(CPointerType.ofType(srcType));
+
+            instructions.push(
+              new IRLabelOffsetInstruction(IRLabel.ofName(name), tmpVar),
+            );
+
+            return false;
+          }
 
           const srcFn = allocator.getFunction(name);
           const srcGlobalVar = globalVariables.getVariable(name);

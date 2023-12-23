@@ -1,8 +1,11 @@
+import { isBuiltinFnDeclType } from 'builtins/CBuiltinFnDeclType';
 import {
+  CArrayType,
   CPrimitiveType,
   isFuncDeclLikeType,
   isPointerLikeType,
 } from 'frontend/analyze';
+
 import { ASTCPostfixExpression } from 'frontend/parser';
 import { TokenType } from '@ts-c-compiler/lexer';
 
@@ -54,6 +57,11 @@ export function emitFnCallExpressionIR({
 
   const { baseType: fnType } = fnPtrOutput.type;
   const { returnType } = fnType;
+
+  if (fnType.isNoIREmit()) {
+    return result;
+  }
+
   const fnArgsExprResult = emitFnArgsLoadIR({
     node: node.fnExpression || node.primaryExpression,
     context,
@@ -65,7 +73,32 @@ export function emitFnCallExpressionIR({
 
   let output: IRVariable = null;
 
-  if (returnType.isVoid()) {
+  if (isBuiltinFnDeclType(fnType)) {
+    const outputSize = fnType.getAllocOutputVarSize(fnArgsExprResult.args);
+
+    if (outputSize) {
+      const bufferType = CArrayType.ofFlattenDescriptor({
+        type: CPrimitiveType.char(config.arch),
+        dimensions: [outputSize],
+      });
+
+      output = allocator.allocTmpPointer(bufferType);
+      const outputPtr = allocator.allocTmpPointer(bufferType);
+
+      result.instructions.push(
+        new IRAllocInstruction(bufferType, output),
+        new IRLeaInstruction(output, outputPtr),
+        new IRCallInstruction(fnPtrOutput, [
+          ...fnArgsExprResult.args,
+          outputPtr,
+        ]),
+      );
+    } else {
+      result.instructions.push(
+        new IRCallInstruction(fnPtrOutput, fnArgsExprResult.args),
+      );
+    }
+  } else if (returnType.isVoid()) {
     // do not emit output for void functions
     result.instructions.push(
       new IRCallInstruction(fnPtrOutput, fnArgsExprResult.args),

@@ -16,6 +16,8 @@ export enum CBackendErrorCode {
   CALL_ON_NON_CALLABLE_TYPE = 'CALL_ON_NON_CALLABLE_TYPE',
   NON_CALLABLE_STRUCT_ARG = 'NON_CALLABLE_STRUCT_ARG',
   UNKNOWN_MATH_OPERATOR = 'UNKNOWN_MATH_OPERATOR',
+  UNABLE_TO_COMPILE_MEMCPY = 'UNABLE_TO_COMPILE_MEMCPY',
+  UNKNOWN_BUILTIN_FUNCTION = 'UNKNOWN_BUILTIN_FUNCTION',
 }
 
 export const C_BACKEND_ERROR_TRANSLATIONS: Record<CBackendErrorCode, string> = {
@@ -48,6 +50,12 @@ export const C_BACKEND_ERROR_TRANSLATIONS: Record<CBackendErrorCode, string> = {
   [CBackendErrorCode.UNKNOWN_MATH_OPERATOR]: 'Unknown math operator!',
   [CBackendErrorCode.NON_CALLABLE_STRUCT_ARG]: fixme(
     'Called non-callable struct arg!',
+  ),
+  [CBackendErrorCode.UNABLE_TO_COMPILE_MEMCPY]: fixme(
+    'Unable to compile memcpy!',
+  ),
+  [CBackendErrorCode.UNKNOWN_BUILTIN_FUNCTION]: fixme(
+    'Unknown built-in function "%{name}"!',
   ),
 };
 

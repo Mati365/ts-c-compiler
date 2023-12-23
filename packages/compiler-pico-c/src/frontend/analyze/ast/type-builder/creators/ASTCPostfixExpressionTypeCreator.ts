@@ -177,7 +177,7 @@ export class ASTCPostfixExpressionTypeCreator extends ASTCTypeCreator<ASTCPostfi
         );
       }
     } else {
-      if (totalFnArgs) {
+      if (totalFnArgs && !fnType.hasVaListArgs()) {
         if (assignments.length > totalFnArgs) {
           throw new CTypeCheckError(
             CTypeCheckErrorCode.TOO_MANY_ARGS_PASSED_TO_FUNCTION,

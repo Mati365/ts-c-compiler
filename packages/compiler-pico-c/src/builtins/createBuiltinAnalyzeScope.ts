@@ -11,6 +11,8 @@ export const createBuiltinAnalyzeScope = (arch: CCompilerArch): CScopeTree => {
   tree.defineTypes([
     new VA.CVaListBuiltinStruct({ arch }),
     new VA.CVaStartBuiltinFn({ arch }),
+    new VA.CVaArgBuiltinFn({ arch }),
+    new VA.CVaEndBuiltinFn({ arch }),
   ]);
 
   return tree;

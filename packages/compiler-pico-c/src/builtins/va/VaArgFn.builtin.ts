@@ -1,23 +1,26 @@
 import { withBuiltinPrefix } from 'builtins/utils';
 
+import { isIRConstant } from 'frontend/ir/variables/IRConstant';
+import type { IRInstructionTypedArg } from 'frontend/ir/variables';
+
 import { CVariable } from 'frontend/analyze/scope/variables/CVariable';
 import {
   CPointerType,
+  CPrimitiveType,
   CTypeDescriptor,
-  CUnknownType,
 } from 'frontend/analyze/types';
 
 import { CVaListBuiltinStruct } from './VaList.builtin';
 import { CBuiltinFnDeclType } from 'builtins/CBuiltinFnDeclType';
 
 /**
- * void va_start( va_list ap, parmN );
+ * void va_arg( va_list ap, int size );
  */
-export class CVaStartBuiltinFn extends CBuiltinFnDeclType {
+export class CVaArgBuiltinFn extends CBuiltinFnDeclType {
   constructor(descriptor: CTypeDescriptor) {
     super({
       ...descriptor,
-      name: withBuiltinPrefix('va_start'),
+      name: withBuiltinPrefix('va_arg'),
       args: [
         new CVariable({
           name: 'ap',
@@ -29,16 +32,18 @@ export class CVaStartBuiltinFn extends CBuiltinFnDeclType {
         }),
 
         new CVariable({
-          name: 'precedingParam',
-          type: new CUnknownType({
-            arch: descriptor.arch,
-          }),
+          name: 'size',
+          type: CPrimitiveType.int(descriptor.arch),
         }),
       ],
     });
   }
 
-  getAllocOutputVarSize() {
-    return 0;
+  getAllocOutputVarSize([, sizeArg]: IRInstructionTypedArg[]) {
+    if (!isIRConstant(sizeArg)) {
+      return 0;
+    }
+
+    return sizeArg.constant;
   }
 }

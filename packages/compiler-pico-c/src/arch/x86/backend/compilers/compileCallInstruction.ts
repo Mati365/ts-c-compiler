@@ -12,33 +12,39 @@ import { isFuncDeclLikeType } from 'frontend/analyze';
 
 import { X86CompilerInstructionFnAttrs } from '../../constants/types';
 import { getX86FnCaller } from '../call-conventions';
+import { compileBuiltinCallFn } from './builtin';
 
 type CallInstructionCompilerAttrs =
   X86CompilerInstructionFnAttrs<IRCallInstruction>;
 
-export function compileCallInstruction({
-  instruction,
-  context,
-}: CallInstructionCompilerAttrs) {
+export function compileCallInstruction(attrs: CallInstructionCompilerAttrs) {
+  const { instruction, context } = attrs;
+
   const { labelsResolver, allocator } = context;
   const { fnPtr } = instruction;
 
   // handle normal call
   if (isIRLabel(fnPtr)) {
-    const labelResult = labelsResolver.getLabel(fnPtr.name);
+    if (fnPtr.isBuiltin()) {
+      return compileBuiltinCallFn(attrs);
+    } else {
+      const labelResult = labelsResolver.getLabel(fnPtr.name);
 
-    if (!isIRFnDeclInstruction(labelResult.instruction)) {
-      throw new CBackendError(CBackendErrorCode.CALL_ON_NON_CALLABLE_TYPE);
+      if (!isIRFnDeclInstruction(labelResult.instruction)) {
+        throw new CBackendError(CBackendErrorCode.CALL_ON_NON_CALLABLE_TYPE);
+      }
+
+      const caller = getX86FnCaller(
+        labelResult.instruction.type.callConvention,
+      );
+
+      return caller.compileIRFnCall({
+        callerInstruction: instruction,
+        declInstruction: labelResult.instruction,
+        address: labelResult.asmLabel,
+        context,
+      });
     }
-
-    const caller = getX86FnCaller(labelResult.instruction.type.callConvention);
-
-    return caller.compileIRFnCall({
-      callerInstruction: instruction,
-      declInstruction: labelResult.instruction,
-      address: labelResult.asmLabel,
-      context,
-    });
   }
 
   // handle pointer call
