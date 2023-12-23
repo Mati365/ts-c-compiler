@@ -1,23 +1,20 @@
 import { withBuiltinPrefix } from 'builtins/utils';
 
 import { CVariable } from 'frontend/analyze/scope/variables/CVariable';
-import {
-  CPointerType,
-  CTypeDescriptor,
-  CUnknownType,
-} from 'frontend/analyze/types';
+import { CPointerType, CTypeDescriptor } from 'frontend/analyze/types';
 
 import { CVaListBuiltinStruct } from './VaList.builtin';
 import { CBuiltinFnDeclType } from 'builtins/CBuiltinFnDeclType';
 
 /**
- * void va_start( va_list ap, parmN );
+ * void va_end( va_list ap );
  */
-export class CVaStartBuiltinFn extends CBuiltinFnDeclType {
+export class CVaEndBuiltinFn extends CBuiltinFnDeclType {
   constructor(descriptor: CTypeDescriptor) {
     super({
       ...descriptor,
-      name: withBuiltinPrefix('va_start'),
+      noIREmit: true,
+      name: withBuiltinPrefix('va_end'),
       args: [
         new CVariable({
           name: 'ap',
@@ -26,13 +23,6 @@ export class CVaStartBuiltinFn extends CBuiltinFnDeclType {
               arch: descriptor.arch,
             }),
           ),
-        }),
-
-        new CVariable({
-          name: 'precedingParam',
-          type: new CUnknownType({
-            arch: descriptor.arch,
-          }),
         }),
       ],
     });

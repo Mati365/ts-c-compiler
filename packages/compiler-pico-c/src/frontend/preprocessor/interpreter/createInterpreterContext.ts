@@ -49,23 +49,22 @@ export const createInterpreterContext = ({
       new ExpressionResultTreeVisitor(ctx).visit(expression).value,
 
     includeFile: path => {
-      if (!fsIncludeResolver) {
-        throw new CPreprocessorError(
-          CPreprocessorErrorCode.CANNOT_INCLUDE_FILE,
-          null,
-          { name: path.filename },
-        );
-      }
-
       pipe(
         E.Do,
         E.bind('resolverOutput', () =>
           pipe(
             new CInternalCompilerFsResolver().read()(path),
-            E.fold(
-              () => fsIncludeResolver.read(currentFilePath)(path),
-              E.right,
-            ),
+            E.fold(() => {
+              if (!fsIncludeResolver) {
+                throw new CPreprocessorError(
+                  CPreprocessorErrorCode.CANNOT_INCLUDE_FILE,
+                  null,
+                  { name: path.filename },
+                );
+              }
+
+              return fsIncludeResolver.read(currentFilePath)(path);
+            }, E.right),
           ),
         ),
         E.bindW('tokens', ({ resolverOutput }) =>

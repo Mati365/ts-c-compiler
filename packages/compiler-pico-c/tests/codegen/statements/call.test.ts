@@ -629,4 +629,50 @@ describe('Function call', () => {
       dw 4, 3
     `);
   });
+
+  test('operations on reg size struct', () => {
+    expect(/* cpp */ `
+      struct Vec2 { int x; };
+
+      struct Vec2 inc(struct Vec2 sum) {
+        sum.x++;
+        return sum;
+      }
+
+      void main(){
+        struct Vec2 vec = { .x = 5 };
+        struct Vec2 vec2 = inc(vec);
+        asm("xchg dx, dx");
+      }
+    `).toCompiledAsmBeEqual(`
+      cpu 386
+      ; def inc(sum{0}: struct Vec2*2B): [ret: struct Vec22B]
+      @@_fn_inc:
+      push bp
+      mov bp, sp
+      lea bx, [bp + 4]          ; %t{0}: struct Vec2**2B = lea sum{0}: struct Vec2*2B
+      mov ax, [bx]              ; %t{1}: int2B = load %t{0}: struct Vec2**2B
+      add ax, 1                 ; %t{2}: int2B = %t{1}: int2B plus %1: int2B
+      mov word [bp + 4], ax     ; *(sum{0}: struct Vec2*2B) = store %t{2}: int2B
+      mov ax, [bp + 4]
+      mov sp, bp
+      pop bp
+      ret 2
+
+      ; def main():
+      @@_fn_main:
+      push bp
+      mov bp, sp
+      sub sp, 4
+      mov word [bp - 2], 5      ; *(vec{0}: struct Vec2*2B) = store %5: int2B
+      ; Copy of struct - %t{5}: struct Vec22B
+      push word [bp - 2]
+      call @@_fn_inc
+      mov word [bp - 4], ax     ; *(vec2{0}: struct Vec2*2B) = store %t{6}: struct Vec22B
+      xchg dx, dx
+      mov sp, bp
+      pop bp
+      ret
+    `);
+  });
 });

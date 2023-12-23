@@ -26,4 +26,8 @@ export class CVaListBuiltinStruct extends CStructType {
       fields: new Map([[overflowEntry.name, overflowEntry]]),
     });
   }
+
+  override isEqual(type: CStructType) {
+    return type instanceof CVaListBuiltinStruct;
+  }
 }

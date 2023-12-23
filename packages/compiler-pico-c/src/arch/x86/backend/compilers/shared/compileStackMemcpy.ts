@@ -5,7 +5,11 @@ import type { CType } from 'frontend/analyze';
 import type { X86Allocator } from '../../X86Allocator';
 
 import { genComment, genInstruction, genMemAddress } from 'arch/x86/asm-utils';
-import { isLabelOwnership } from '../../reg-allocator/utils';
+import {
+  isLabelOwnership,
+  isRegOwnership,
+  isStackVarOwnership,
+} from '../../reg-allocator/utils';
 
 import { X86StackFrame } from '../../X86StackFrame';
 import { X86RegOwnershipTracker } from '../../reg-allocator';
@@ -40,23 +44,32 @@ export function compileStackMemcpy({
     offset >= 0;
     offset -= stackPtrSize
   ) {
-    let addr: string = null;
-
-    if (isLabelOwnership(argOwnership)) {
-      addr = genMemAddress({
-        expression: argOwnership.asmLabel,
-        offset,
-      });
+    if (isRegOwnership(argOwnership)) {
+      asm.push(genInstruction('push', argOwnership.reg));
     } else {
-      addr = stackFrame.getLocalVarStackRelAddress(arg.name, offset);
-    }
+      let addr: string = null;
 
-    asm.push(
-      genInstruction(
-        'push',
-        `${getByteSizeArgPrefixName(stackPtrSize)} ${addr}`,
-      ),
-    );
+      if (isLabelOwnership(argOwnership)) {
+        addr = genMemAddress({
+          expression: argOwnership.asmLabel,
+          offset,
+        });
+      } else if (stackFrame.isStackVar(arg.name)) {
+        addr = stackFrame.getLocalVarStackRelAddress(arg.name, offset);
+      } else if (isStackVarOwnership(argOwnership)) {
+        addr = stackFrame.getLocalVarStackRelAddress(
+          argOwnership.stackVar.name,
+          offset,
+        );
+      }
+
+      asm.push(
+        genInstruction(
+          'push',
+          `${getByteSizeArgPrefixName(stackPtrSize)} ${addr}`,
+        ),
+      );
+    }
   }
 
   return asm;

@@ -165,6 +165,134 @@ def main(): [ret: int2B]
 
 </details>
 
+### Simple VA lists with primitive types
+
+```c
+#include <stdarg.h>
+
+int sum_vector(int total_args, ...) {
+  va_list ap;
+  va_start(ap, total_args);
+
+  int sum = 0;
+
+  for (int i = 0; i < total_args; ++i) {
+    sum += va_arg(ap, int);
+  }
+
+  va_end(ap);
+  return sum;
+}
+
+void main() {
+  int result = sum_vector(3, 5, 8, 10);
+  asm("xchg dx, dx");
+}
+```
+
+</details>
+
+<details>
+  <summary><strong>IR Output</strong></summary>
+
+```ruby
+# --- Block sum_vector ---
+def sum_vector(total_args{0}: int*2B, ...): [ret: int2B]
+  ap{0}: struct __builtin_va_list*2B = alloca struct __builtin_va_list2B
+  %t{1}: struct __builtin_va_list**2B = lea ap{0}: struct __builtin_va_list*2B
+  %t{2}: int**2B = lea total_args{0}: int*2B
+  call label-offset __builtin_va_start :: (%t{1}: struct __builtin_va_list**2B, %t{2}: int**2B)
+  sum{0}: int*2B = alloca int2B
+  *(sum{0}: int*2B) = store %0: int2B
+  i{0}: int*2B = alloca int2B
+  *(i{0}: int*2B) = store %0: int2B
+  L1:
+  %t{3}: int2B = load i{0}: int*2B
+  %t{4}: int2B = load total_args{0}: int*2B
+  %t{5}: i1:zf = icmp %t{3}: int2B less_than %t{4}: int2B
+  br %t{5}: i1:zf, true: L2, false: L3
+  L2:
+  %t{9}: struct __builtin_va_list**2B = lea ap{0}: struct __builtin_va_list*2B
+  %t{10}: char[2]*2B = alloca char[2]2B
+  %t{11}: char[2]*2B = lea %t{10}: char[2]*2B
+  call label-offset __builtin_va_arg :: (%t{9}: struct __builtin_va_list**2B, %2: int2B, %t{11}: char[2]*2B)
+  %t{12}: int2B = load sum{0}: int*2B
+  %t{13}: int2B = %t{12}: int2B plus %t{10}: char[2]*2B
+  *(sum{0}: int*2B) = store %t{13}: int2B
+  %t{6}: int2B = load i{0}: int*2B
+  %t{7}: int2B = %t{6}: int2B plus %1: int2B
+  *(i{0}: int*2B) = store %t{7}: int2B
+  jmp L1
+  L3:
+  %t{15}: int2B = load sum{0}: int*2B
+  ret %t{15}: int2B
+  end-def
+
+
+# --- Block main ---
+def main():
+  result{0}: int*2B = alloca int2B
+  %t{17}: int2B = call label-offset sum_vector :: (%3: char1B, %5: char1B, %8: char1B, %10: char1B)
+  *(result{0}: int*2B) = store %t{17}: int2B
+  asm "xchg dx, dx"
+  ret
+  end-def
+```
+
+</details>
+
+<details open>
+  <summary><strong>Binary output</strong></summary>
+
+```asm
+0x000000  <──────╮            55                            push bp
+0x000001         │            89 e5                         mov bp, sp
+0x000003         │            83 ec 08                      sub sp, 0x8
+0x000006         │            8d 5e fe                      lea bx, word [bp-2]
+0x000009         │            8d 7e 04                      lea di, word [bp+4]
+0x00000c         │            89 3f                         mov word [bx], di
+0x00000e         │            c7 46 fc 00 00                mov word [bp-4], 0x0
+0x000013         │            c7 46 fa 00 00                mov word [bp-6], 0x0
+0x000018  <────╮ │            8b 46 04                      mov ax, word [bp+4]
+0x00001b       │ │            39 46 fa                      cmp word [bp-6], ax
+0x00001e  ─╮   │ │            7c 02                         jl 0x22
+0x000020  ─┼─╮ │ │            7d 25                         jge 0x47
+0x000022  <╯ │ │ │            8d 5e fe                      lea bx, word [bp-2]
+0x000025     │ │ │            8d 7e f8                      lea di, word [bp-8]
+0x000028     │ │ │            8b 37                         mov si, word [bx]
+0x00002a     │ │ │            83 c6 02                      add si, 0x2
+0x00002d     │ │ │            8b 04                         mov ax, word [si]
+0x00002f     │ │ │            89 05                         mov word [di], ax
+0x000031     │ │ │            89 37                         mov word [bx], si
+0x000033     │ │ │            8b 46 fc                      mov ax, word [bp-4]
+0x000036     │ │ │            03 46 f8                      add ax, word [bp-8]
+0x000039     │ │ │            89 46 fc                      mov word [bp-4], ax
+0x00003c     │ │ │            8b 5e fa                      mov bx, word [bp-6]
+0x00003f     │ │ │            83 c3 01                      add bx, 0x1
+0x000042     │ │ │            89 5e fa                      mov word [bp-6], bx
+0x000045  ───┼─╯ │            eb d1                         jmp 0x18
+0x000047  <──╯   │            8b 46 fc                      mov ax, word [bp-4]
+0x00004a         │            89 ec                         mov sp, bp
+0x00004c         │            5d                            pop bp
+0x00004d         │            c2 02 00                      ret 0x2
+0x000050         │            55                            push bp
+0x000051         │            89 e5                         mov bp, sp
+0x000053         │            83 ec 02                      sub sp, 0x2
+0x000056         │            6a 0a                         push 0xa
+0x000058         │            6a 08                         push 0x8
+0x00005a         │            6a 05                         push 0x5
+0x00005c         │            6a 03                         push 0x3
+0x00005e  ───────╯            e8 9f ff                      call 0x0
+0x000061                      83 c4 06                      add sp, 0x6
+0x000064                      89 46 fe                      mov word [bp-2], ax
+0x000067                      87 d2                         xchg dx, dx
+0x000069                      89 ec                         mov sp, bp
+0x00006b                      5d                            pop bp
+0x00006c                      c3                            ret
+```
+
+</details>
+
 ### Advanced structures with recursive calls
 
 ```c
