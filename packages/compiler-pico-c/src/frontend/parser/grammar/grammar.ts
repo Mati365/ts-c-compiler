@@ -16,6 +16,7 @@ import {
   statement,
   translationUnit,
   initializer,
+  compoundExpressionStatement,
 } from './matchers';
 
 import type { ASTCDeclaration, ASTCDirectDeclarator } from '../ast';
@@ -68,6 +69,7 @@ const compilerMatcher: GrammarInitializer<
     declarator: () => declarator(grammar),
     abstractDeclarator: () => abstractDeclarator(grammar),
     statement: () => statement(grammar),
+    compoundExpressionStatement: () => compoundExpressionStatement(grammar),
     unaryExpression: () => unaryExpression(grammar),
     assignmentExpression: () => assignmentExpression(grammar),
     qualifiersSpecifiers: () => qualifiersSpecifiers(grammar),

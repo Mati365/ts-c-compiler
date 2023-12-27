@@ -12,13 +12,14 @@ function matchAssignmentOperator({ g }: CGrammar): Token {
 /**
  * assignment_expression
  *  : conditional_expression
+ *  | compound_expression_statement
  *  | unary_expression assignment_operator assignment_expression
  *  ;
  */
 export function assignmentExpression(
   grammar: CGrammar,
 ): ASTCAssignmentExpression {
-  const { g } = grammar;
+  const { g, compoundExpressionStatement } = grammar;
 
   return <ASTCAssignmentExpression>g.or({
     unary() {
@@ -32,6 +33,11 @@ export function assignmentExpression(
         operator.text as CAssignOperator,
         assignmentExpression(grammar),
       );
+    },
+    compound() {
+      const stmt = compoundExpressionStatement();
+
+      return new ASTCAssignmentExpression(stmt.loc, stmt);
     },
     conditional() {
       const expression = conditionalExpression(grammar);
