@@ -652,6 +652,93 @@ def main(): [ret: int2B]
 
 </details>
 
+### Compound statements
+
+[GCC Docs](https://gcc.gnu.org/onlinedocs/gcc/Statement-Exprs.html)
+
+```c
+void main() {
+  int dupa = (({
+                int c = 3, k, d;
+
+                k = 16;
+                d = 20;
+                c + k + d * 4;
+              }) *
+              2 * ({
+                int k = 15;
+                k * 2;
+              })) *
+             ({ 5 + 2; });
+
+  asm("xchg dx, dx");
+}
+```
+
+<details>
+  <summary><strong>IR Output</strong></summary>
+
+```ruby
+# --- Block main ---
+def main():
+  dupa{0}: int*2B = alloca int2B
+  c{0}: int*2B = alloca int2B
+  *(c{0}: int*2B) = store %3: int2B
+  k{0}: int*2B = alloca int2B
+  d{0}: int*2B = alloca int2B
+  *(k{0}: int*2B) = store %16: char1B
+  *(d{0}: int*2B) = store %20: char1B
+  %t{0}: int2B = load c{0}: int*2B
+  %t{1}: int2B = load k{0}: int*2B
+  %t{3}: int2B = load d{0}: int*2B
+  %t{8}: int2B = %t{0}: int2B plus %t{1}: int2B
+  %t{10}: int2B = %t{3}: int2B mul %4: char1B
+  %t{11}: int2B = %t{8}: int2B plus %t{10}: int2B
+  %t{12}: int2B = %t{11}: int2B mul %2: char1B
+  k{1}: int*2B = alloca int2B
+  *(k{1}: int*2B) = store %15: int2B
+  %t{13}: int2B = load k{1}: int*2B
+  %t{16}: int2B = %t{13}: int2B mul %2: char1B
+  %t{17}: int2B = %t{12}: int2B mul %t{16}: int2B
+  %t{20}: int2B = %t{17}: int2B mul %7: char1B
+  *(dupa{0}: int*2B) = store %t{20}: int2B
+  asm "xchg dx, dx"
+  ret
+  end-def
+```
+
+</details>
+
+<details open>
+  <summary><strong>Binary output</strong></summary>
+
+```asm
+0x000000                      55                            push bp
+0x000001                      89 e5                         mov bp, sp
+0x000003                      83 ec 0a                      sub sp, 0xa
+0x000006                      c7 46 fc 03 00                mov word [bp-4], 0x3
+0x00000b                      c7 46 fa 10 00                mov word [bp-6], 0x10
+0x000010                      c7 46 f8 14 00                mov word [bp-8], 0x14
+0x000015                      8b 46 fc                      mov ax, word [bp-4]
+0x000018                      03 46 fa                      add ax, word [bp-6]
+0x00001b                      8b 5e f8                      mov bx, word [bp-8]
+0x00001e                      c1 e3 02                      shl bx, 0x2
+0x000021                      01 d8                         add ax, bx
+0x000023                      d1 e0                         shl ax, 0x1
+0x000025                      c7 46 f6 0f 00                mov word [bp-10], 0xf
+0x00002a                      8b 4e f6                      mov cx, word [bp-10]
+0x00002d                      d1 e1                         shl cx, 0x1
+0x00002f                      0f af c1                      imul ax, cx
+0x000032                      6b c0 07                      imul ax, ax, 0x7
+0x000035                      89 46 fe                      mov word [bp-2], ax
+0x000038                      87 d2                         xchg dx, dx
+0x00003a                      89 ec                         mov sp, bp
+0x00003c                      5d                            pop bp
+0x00003d                      c3                            ret
+```
+
+</details>
+
 ### Advanced array / pointers / ternary expressions
 
 ```c
