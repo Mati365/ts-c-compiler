@@ -336,9 +336,15 @@ export class Grammar<I, K = string> extends TokensIterator {
    * Catches multiple terminals in row
    */
   terminals(chars: string) {
+    let firstToken: Token = null;
+
     for (let i = 0; i < chars.length; ++i) {
-      this.terminal(chars[i]);
+      const terminal = this.terminal(chars[i]);
+
+      firstToken ||= terminal;
     }
+
+    return firstToken;
   }
 
   /**

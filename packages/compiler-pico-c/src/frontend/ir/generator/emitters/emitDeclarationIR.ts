@@ -25,6 +25,7 @@ export function emitDeclarationIR({
   const result = createBlankStmtResult();
 
   GroupTreeVisitor.ofIterator<ASTCCompilerNode>({
+    [ASTCCompilerKind.CompoundExpressionStmt]: false,
     [ASTCCompilerKind.TypeSpecifier]: false,
     [ASTCCompilerKind.DirectDeclaratorFnExpression]: false,
     [ASTCCompilerKind.DirectDeclarator]: {

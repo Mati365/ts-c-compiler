@@ -16,7 +16,7 @@ import { stringLiteral } from '../types';
  *  ;
  */
 export function primaryExpression(grammar: CGrammar): ASTCPrimaryExpression {
-  const { g } = grammar;
+  const { g, compoundExpressionStatement } = grammar;
 
   return <ASTCPrimaryExpression>g.or({
     identifier() {
@@ -68,6 +68,12 @@ export function primaryExpression(grammar: CGrammar): ASTCPrimaryExpression {
 
     stringLiteral() {
       return stringLiteral(grammar);
+    },
+
+    compound() {
+      const stmt = compoundExpressionStatement();
+
+      return new ASTCPrimaryExpression(stmt.loc, null, null, null, null, stmt);
     },
 
     expr() {

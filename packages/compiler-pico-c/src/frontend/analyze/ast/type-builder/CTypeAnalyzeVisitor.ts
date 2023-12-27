@@ -84,6 +84,7 @@ export class CTypeAnalyzeVisitor extends CInnerTypeTreeVisitor {
 
     (<IsNewScopeASTNode>node).scope = newScope;
     fn(visitor);
+    return newScope;
   }
 
   /**

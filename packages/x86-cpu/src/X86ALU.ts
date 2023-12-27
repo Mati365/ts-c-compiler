@@ -627,6 +627,7 @@ export class X86ALU extends X86Unit {
             source1 = getSignedNumber(registers[<any>reg], 0x2);
             source2 = getSignedNumber(
               registers[<string>X86_REGISTERS[0x2][modeReg]],
+              0x2,
             );
 
             result = toUnsignedNumber(source1 * source2, 0x2);

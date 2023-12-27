@@ -113,7 +113,7 @@ export class CCompilerGrammar extends Grammar<
 > {}
 
 export class ASTCCompilerNode<
-  C extends TreeNode<ASTCCompilerKind> = any,
+  C extends TreeNode<ASTCCompilerKind> = ASTCCompilerNode<any>,
 > extends TreeNode<ASTCCompilerKind, C> {
   type?: CType;
 }

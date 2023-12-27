@@ -18,6 +18,8 @@ import { ASTCDoWhileStmtTypeCreator } from './ASTCDoWhileStmtTypeCreator';
 import { ASTCConditionalExpressionTypeCreator } from './ASTCConditionalTypeCreator';
 import { ASTCTypeNameTypeCreator } from './ASTCTypeNameTypeCreator';
 import { ASTCSizeofUnaryExpressionTypeCreator } from './ASTCSizeofUnaryExpressionTypeCreator';
+import { ASTCCompoundExpressionTypeCreator } from './ASTCCompoundExpressionTypeCreator';
+import { ASTCExpressionStmtTypeCreator } from './ASTCExpressionStmtTypeCreator';
 
 export * from './ASTCTypeCreator';
 
@@ -41,4 +43,6 @@ export const ASTC_TYPE_CREATORS: NewableASTCTypeCreator[] = [
   ASTCConditionalExpressionTypeCreator,
   ASTCTypeNameTypeCreator,
   ASTCSizeofUnaryExpressionTypeCreator,
+  ASTCCompoundExpressionTypeCreator,
+  ASTCExpressionStmtTypeCreator,
 ];

@@ -7,6 +7,7 @@ import { CTypeCheckConfig } from './constants';
 import { ASTCTreeNode } from '../parser/ast';
 import { CTypeAnalyzeVisitor } from './ast';
 import { CScopeTree } from './scope';
+// import { serializeTypedTreeToString } from 'frontend/parser';
 
 export type ScopeTreeBuilderResult = {
   scope: CScopeTree;
@@ -26,6 +27,7 @@ export const safeBuildTypedTree =
       });
 
       const { scope } = analyzer.visit(tree);
+      // console.info(serializeTypedTreeToString(tree));
 
       return E.right({
         scope,
