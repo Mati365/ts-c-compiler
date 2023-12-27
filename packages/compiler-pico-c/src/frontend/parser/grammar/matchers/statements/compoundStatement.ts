@@ -14,7 +14,7 @@ function blockItem(grammar: CGrammar): ASTCCompilerNode {
   });
 }
 
-function blockItemList(grammar: CGrammar): ASTCBlockItemsList {
+export function blockItemList(grammar: CGrammar): ASTCBlockItemsList {
   const { g } = grammar;
   const items: ASTCCompilerNode[] = [];
 

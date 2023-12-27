@@ -4,7 +4,6 @@ import { walkOverFields } from '@ts-c-compiler/grammar';
 import { NodeLocation } from '@ts-c-compiler/grammar';
 import { Token } from '@ts-c-compiler/lexer';
 import { ASTCCompilerKind, ASTCCompilerNode } from './ASTCCompilerNode';
-import { ASTCExpression } from './ASTCExpression';
 
 @walkOverFields({
   fields: ['expression'],
@@ -16,7 +15,7 @@ export class ASTCPrimaryExpression extends ASTCCompilerNode {
     readonly constant?: Token, // number
     readonly stringLiteral?: string,
     readonly charLiteral?: string,
-    readonly expression?: ASTCExpression,
+    readonly expression?: ASTCCompilerNode,
   ) {
     super(ASTCCompilerKind.PrimaryExpression, loc);
   }

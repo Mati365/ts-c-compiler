@@ -19,7 +19,7 @@ function matchAssignmentOperator({ g }: CGrammar): Token {
 export function assignmentExpression(
   grammar: CGrammar,
 ): ASTCAssignmentExpression {
-  const { g, compoundExpressionStatement } = grammar;
+  const { g } = grammar;
 
   return <ASTCAssignmentExpression>g.or({
     unary() {
@@ -33,11 +33,6 @@ export function assignmentExpression(
         operator.text as CAssignOperator,
         assignmentExpression(grammar),
       );
-    },
-    compound() {
-      const stmt = compoundExpressionStatement();
-
-      return new ASTCAssignmentExpression(stmt.loc, stmt);
     },
     conditional() {
       const expression = conditionalExpression(grammar);

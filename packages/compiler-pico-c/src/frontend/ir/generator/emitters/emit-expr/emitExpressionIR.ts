@@ -31,6 +31,7 @@ import {
   ASTCPostfixExpression,
   ASTCPrimaryExpression,
   ASTCSizeofUnaryExpression,
+  ASTCCompoundExpressionStmt,
 } from 'frontend/parser';
 
 import { GroupTreeVisitor } from '@ts-c-compiler/grammar';
@@ -68,6 +69,7 @@ import { emitFnCallExpressionIR } from '../emit-fn-call-expression';
 import { emitLogicBinaryJmpExpressionIR } from './emitLogicBinaryJmpExpressionIR';
 import { emitStringLiteralPtrInitializerIR } from '../emit-initializer/literal';
 import { emitConditionalExpressionIR } from './emitConditionalExpressionIR';
+import { emitCompoundExpressionIR } from './emitCompoundExpressionStmtIR';
 
 export type ExpressionIREmitAttrs = IREmitterContextAttrs & {
   node: ASTCCompilerNode;
@@ -270,6 +272,20 @@ export function emitExpressionIR({
           emitExprResultToStack(exprResult);
           return false;
         }
+      },
+    },
+
+    [ASTCCompilerKind.CompoundExpressionStmt]: {
+      enter(compound: ASTCCompoundExpressionStmt) {
+        const blockStmt = emitCompoundExpressionIR({
+          node: compound,
+          initializerMeta,
+          scope,
+          context,
+        });
+
+        emitExprResultToStack(blockStmt);
+        return false;
       },
     },
 
