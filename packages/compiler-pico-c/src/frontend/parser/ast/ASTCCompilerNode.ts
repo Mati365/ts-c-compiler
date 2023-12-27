@@ -39,6 +39,7 @@ export enum ASTCCompilerKind {
   PostfixPtrExpression = 'PostfixPtrExpression',
 
   Stmt = 'Stmt',
+  CompoundExpressionStmt = 'CompoundExpressionStmt',
   IfStmt = 'IfStmt',
   SwitchStmt = 'SwitchStmt',
   LabelStmt = 'LabelStmt',

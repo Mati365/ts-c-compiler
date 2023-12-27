@@ -14,6 +14,7 @@ import type {
   ASTCDoWhileStatement,
   ASTCSwitchStatement,
   ASTCDeclaration,
+  ASTCCompoundExpressionStmt,
 } from '../../ast';
 
 export type CGrammarTypedefEntry = {
@@ -33,6 +34,7 @@ export type CGrammar = {
   declarator(): ASTCDeclarator;
   abstractDeclarator(): ASTCAbstractDeclarator;
   statement(): ASTCStmt;
+  compoundExpressionStatement(): ASTCCompoundExpressionStmt;
   unaryExpression(): ASTCUnaryExpression;
   assignmentExpression(): ASTCCompilerNode;
   qualifiersSpecifiers(): ASTCSpecifiersQualifiersList;
