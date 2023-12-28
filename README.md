@@ -818,6 +818,55 @@ def main():
 
 </details>
 
+### Dynamic alloca
+
+```c
+  #include <alloca.h>
+
+  int main() {
+    int k = 10;
+    char* buffer = alloca(k);
+    return 0;
+  }
+```
+
+<details>
+  <summary><strong>IR Output</strong></summary>
+
+```ruby
+# --- Block main ---
+def main(): [ret: int2B]
+  k{0}: int*2B = alloca int2B
+  *(k{0}: int*2B) = store %10: int2B
+  buffer{0}: char**2B = alloca char*2B
+  %t{1}: int2B = load k{0}: int*2B
+  %t{2}: char*2B = call label-offset __builtin_alloca :: (%t{1}: int2B)
+  *(buffer{0}: char**2B) = store %t{2}: char*2B
+  ret %0: char1B
+  end-def
+```
+
+</details>
+
+<details open>
+  <summary><strong>Binary output</strong></summary>
+
+```asm
+0x000000                      55                            push bp
+0x000001                      89 e5                         mov bp, sp
+0x000003                      83 ec 04                      sub sp, 0x4
+0x000006                      c7 46 fe 0a 00                mov word [bp-2], 0xa
+0x00000b                      2b 66 fe                      sub sp, word [bp-2]
+0x00000e                      89 e0                         mov ax, sp
+0x000010                      89 46 fc                      mov word [bp-4], ax
+0x000013                      b8 00 00                      mov ax, 0x0
+0x000016                      89 ec                         mov sp, bp
+0x000018                      5d                            pop bp
+0x000019                      c3                            ret
+```
+
+</details>
+
 ### Simple function calls with peephole optimization
 
 ```c
