@@ -34,6 +34,10 @@ export function checkLeftTypeOverlapping(
     return false;
   }
 
+  if (left.isUnknown() || right.isUnknown()) {
+    return true;
+  }
+
   if (left.isEqual(right)) {
     return true;
   }

@@ -5,6 +5,7 @@ import {
   CFunctionSpecifierMonad,
   CPrimitiveType,
   CStorageClassMonad,
+  CType,
 } from 'frontend/analyze/types';
 
 import type { IRInstructionTypedArg } from 'frontend/ir/variables';
@@ -12,10 +13,12 @@ import type { IRInstructionTypedArg } from 'frontend/ir/variables';
 type CBuiltinFnDescriptor = Pick<
   CFunctionDescriptor,
   'arch' | 'args' | 'name' | 'noIREmit'
->;
+> & {
+  returnType?: CType;
+};
 
 export const isBuiltinFnDeclType = (type: any): type is CBuiltinFnDeclType =>
-  'getAllocOutputVarSize' in type;
+  'getAllocOutputBufferSize' in type;
 
 export abstract class CBuiltinFnDeclType extends CFunctionDeclType {
   constructor(descriptor: CBuiltinFnDescriptor) {
@@ -28,5 +31,11 @@ export abstract class CBuiltinFnDeclType extends CFunctionDeclType {
     });
   }
 
-  abstract getAllocOutputVarSize(callArgs: IRInstructionTypedArg[]): number;
+  getAllocOutputBufferSize(_: IRInstructionTypedArg[]): number {
+    return 0;
+  }
+
+  getAllocOutputRegVarType(_: IRInstructionTypedArg[]): CType | null {
+    return null;
+  }
 }

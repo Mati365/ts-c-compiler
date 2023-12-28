@@ -8,6 +8,7 @@ import {
   CPointerType,
   CPrimitiveType,
   CTypeDescriptor,
+  CUnknownType,
 } from 'frontend/analyze/types';
 
 import { CVaListBuiltinStruct } from './VaList.builtin';
@@ -21,6 +22,9 @@ export class CVaArgBuiltinFn extends CBuiltinFnDeclType {
     super({
       ...descriptor,
       name: withBuiltinPrefix('va_arg'),
+      returnType: new CUnknownType({
+        arch: descriptor.arch,
+      }),
       args: [
         new CVariable({
           name: 'ap',
@@ -39,7 +43,7 @@ export class CVaArgBuiltinFn extends CBuiltinFnDeclType {
     });
   }
 
-  getAllocOutputVarSize([, sizeArg]: IRInstructionTypedArg[]) {
+  getAllocOutputBufferSize([, sizeArg]: IRInstructionTypedArg[]) {
     if (!isIRConstant(sizeArg)) {
       return 0;
     }

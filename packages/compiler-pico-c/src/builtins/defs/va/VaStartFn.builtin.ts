@@ -37,8 +37,4 @@ export class CVaStartBuiltinFn extends CBuiltinFnDeclType {
       ],
     });
   }
-
-  getAllocOutputVarSize() {
-    return 0;
-  }
 }

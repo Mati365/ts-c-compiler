@@ -5,6 +5,7 @@ import { IRCallInstruction } from 'frontend/ir/instructions';
 import { CBackendError, CBackendErrorCode } from 'backend/errors/CBackendError';
 
 import { compileBuiltinVaArg, compileBuiltinVaStart } from './va';
+import { compileBuiltinAlloca } from './compileBuiltinAlloca';
 
 type BuiltinFnCallAttrs = X86CompilerInstructionFnAttrs<IRCallInstruction>;
 
@@ -12,6 +13,9 @@ export const compileBuiltinCallFn = (attrs: BuiltinFnCallAttrs) => {
   const { fnPtr } = attrs.instruction;
 
   switch (fnPtr.name) {
+    case withBuiltinPrefix('alloca'):
+      return compileBuiltinAlloca(attrs);
+
     case withBuiltinPrefix('va_start'):
       return compileBuiltinVaStart(attrs);
 

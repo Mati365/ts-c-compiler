@@ -5,6 +5,10 @@ export class CUnknownType extends CType {
     return 'unknown';
   }
 
+  override isUnknown() {
+    return true;
+  }
+
   override isEqual() {
     return true;
   }

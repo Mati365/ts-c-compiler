@@ -1,7 +1,7 @@
 import type { CCompilerArch } from '#constants';
 
 import { CScopeTree } from 'frontend/analyze/scope';
-import * as VA from './va';
+import * as Defs from './defs';
 
 export const createBuiltinAnalyzeScope = (arch: CCompilerArch): CScopeTree => {
   const tree = new CScopeTree({
@@ -9,10 +9,11 @@ export const createBuiltinAnalyzeScope = (arch: CCompilerArch): CScopeTree => {
   });
 
   tree.defineTypes([
-    new VA.CVaListBuiltinStruct({ arch }),
-    new VA.CVaStartBuiltinFn({ arch }),
-    new VA.CVaArgBuiltinFn({ arch }),
-    new VA.CVaEndBuiltinFn({ arch }),
+    new Defs.VA.CVaListBuiltinStruct({ arch }),
+    new Defs.VA.CVaStartBuiltinFn({ arch }),
+    new Defs.VA.CVaArgBuiltinFn({ arch }),
+    new Defs.VA.CVaEndBuiltinFn({ arch }),
+    new Defs.CAllocaBuiltinFn({ arch }),
   ]);
 
   return tree;
