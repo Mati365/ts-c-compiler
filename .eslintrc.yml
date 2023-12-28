@@ -92,6 +92,15 @@ rules:
   react/no-did-mount-set-state: 0
   react/require-default-props: 0
   react/no-unused-prop-types: 0
+  '@typescript-eslint/no-unused-vars':
+    [
+      'error',
+      {
+        'argsIgnorePattern': '^_$',
+        'varsIgnorePattern': '^_$',
+        'caughtErrorsIgnorePattern': '^_$',
+      },
+    ]
   react/no-multi-comp: 0
   react/no-danger: 0
   react/prop-types: 0

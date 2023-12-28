@@ -136,6 +136,10 @@ export abstract class CType<T extends CTypeDescriptor = CTypeDescriptor>
     return false;
   }
 
+  isUnknown() {
+    return false;
+  }
+
   hasInnerTypeAttributes() {
     return this.isEnum() || this.isStruct();
   }

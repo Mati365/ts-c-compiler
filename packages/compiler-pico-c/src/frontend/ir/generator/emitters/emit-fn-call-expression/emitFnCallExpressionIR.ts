@@ -74,12 +74,12 @@ export function emitFnCallExpressionIR({
   let output: IRVariable = null;
 
   if (isBuiltinFnDeclType(fnType)) {
-    const outputSize = fnType.getAllocOutputVarSize(fnArgsExprResult.args);
+    const bufferSize = fnType.getAllocOutputBufferSize(fnArgsExprResult.args);
 
-    if (outputSize) {
+    if (bufferSize) {
       const bufferType = CArrayType.ofFlattenDescriptor({
         type: CPrimitiveType.char(config.arch),
-        dimensions: [outputSize],
+        dimensions: [bufferSize],
       });
 
       output = allocator.allocTmpPointer(bufferType);
@@ -92,6 +92,14 @@ export function emitFnCallExpressionIR({
           ...fnArgsExprResult.args,
           outputPtr,
         ]),
+      );
+    } else if (returnType.canBeStoredInReg()) {
+      result.instructions.push(
+        new IRCallInstruction(
+          fnPtrOutput,
+          fnArgsExprResult.args,
+          (output = allocator.allocTmpVariable(fnType.returnType)),
+        ),
       );
     } else {
       result.instructions.push(
