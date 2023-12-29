@@ -10,7 +10,7 @@ import {
   isIRVariable,
 } from 'frontend/ir/variables';
 
-import { isStructLikeType } from 'frontend/analyze';
+import { isStructLikeType, isUnionLikeType } from 'frontend/analyze';
 
 import { getByteSizeArgPrefixName } from '@ts-c-compiler/x86-assembler';
 import {
@@ -123,7 +123,9 @@ export class X86BasicRegAllocator {
 
     if (
       !castToPointerIfArray(arg.type).isScalar() &&
-      (!isStructLikeType(arg.type) || !arg.type.canBeStoredInReg())
+      (!isUnionLikeType(arg.type) ||
+        !isStructLikeType(arg.type) ||
+        !arg.type.canBeStoredInReg())
     ) {
       throw new CBackendError(CBackendErrorCode.REG_ALLOCATOR_ERROR);
     }

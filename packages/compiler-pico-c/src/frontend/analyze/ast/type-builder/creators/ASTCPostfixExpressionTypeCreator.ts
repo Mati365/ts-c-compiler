@@ -11,7 +11,9 @@ import {
   isArrayLikeType,
   isPointerLikeType,
   isStructLikeType,
+  isUnionLikeType,
 } from '../../../types';
+
 import { checkLeftTypeOverlapping } from '../../../checker';
 
 export class ASTCPostfixExpressionTypeCreator extends ASTCTypeCreator<ASTCPostfixExpression> {
@@ -94,7 +96,7 @@ export class ASTCPostfixExpressionTypeCreator extends ASTCTypeCreator<ASTCPostfi
       baseType = baseType.baseType;
     }
 
-    if (isStructLikeType(baseType)) {
+    if (isStructLikeType(baseType) || isUnionLikeType(baseType)) {
       if (!baseType.hasInnerTypeAttributes()) {
         throw new CTypeCheckError(
           CTypeCheckErrorCode.PROVIDED_TYPE_DOES_NOT_CONTAIN_PROPERTIES,
@@ -107,6 +109,7 @@ export class ASTCPostfixExpressionTypeCreator extends ASTCTypeCreator<ASTCPostfi
 
       const { text: fieldName } = (node.dotExpression || node.ptrExpression)
         .name;
+
       const field = baseType.getField(fieldName);
 
       if (!field) {

@@ -116,6 +116,10 @@ export abstract class CType<T extends CTypeDescriptor = CTypeDescriptor>
     return false;
   }
 
+  isStructOrUnion() {
+    return this.isUnion() || this.isStruct();
+  }
+
   isFunction() {
     return false;
   }
@@ -141,7 +145,7 @@ export abstract class CType<T extends CTypeDescriptor = CTypeDescriptor>
   }
 
   hasInnerTypeAttributes() {
-    return this.isEnum() || this.isStruct();
+    return this.isEnum() || this.isStruct() || this.isUnion();
   }
 
   isConst() {

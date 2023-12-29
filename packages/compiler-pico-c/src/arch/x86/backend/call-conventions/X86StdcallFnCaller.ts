@@ -3,7 +3,7 @@ import chalk from 'chalk';
 import { CFunctionCallConvention } from '#constants';
 import { IRVariable, isIRVariable } from 'frontend/ir/variables';
 import { CBackendError, CBackendErrorCode } from 'backend/errors/CBackendError';
-import { isStructLikeType } from 'frontend/analyze';
+import { isStructLikeType, isUnionLikeType } from 'frontend/analyze';
 
 import { getBaseTypeIfPtr } from 'frontend/analyze/types/utils';
 import { getTypeOffsetByteSize } from 'frontend/ir/utils';
@@ -63,7 +63,7 @@ export class X86StdcallFnCaller implements X86ConventionalFnCaller {
       const arg = callerInstruction.args[i];
       const baseType = getBaseTypeIfPtr(arg.type);
 
-      if (isStructLikeType(baseType)) {
+      if (isStructLikeType(baseType) || isUnionLikeType(baseType)) {
         if (!isIRVariable(arg)) {
           throw new CBackendError(CBackendErrorCode.NON_CALLABLE_STRUCT_ARG);
         }

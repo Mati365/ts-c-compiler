@@ -9,6 +9,7 @@ import {
   isArrayLikeType,
   isPointerLikeType,
   isStructLikeType,
+  isUnionLikeType,
 } from 'frontend/analyze';
 
 import { CUnaryCastOperator } from '#constants';
@@ -180,7 +181,8 @@ export function emitIdentifierGetterIR({
         const parentType = getParentType();
         if (
           !isPointerLikeType(parentType) ||
-          !isStructLikeType(parentType.baseType)
+          (!isStructLikeType(parentType.baseType) &&
+            !isUnionLikeType(parentType.baseType))
         ) {
           throw new IRError(IRErrorCode.ACCESS_STRUCT_ATTR_IN_NON_STRUCT);
         }
@@ -194,12 +196,24 @@ export function emitIdentifierGetterIR({
           ),
         );
 
-        const offsetConstant = IRConstant.ofConstant(
-          CPrimitiveType.int(config.arch),
-          parentType.baseType.getField(expr.name.text).offset,
-        );
+        if (isUnionLikeType(parentType.baseType)) {
+          lastIRVar = lastIRVar.ofType(
+            CPointerType.ofType(
+              parentType.baseType.getField(expr.name.text).type,
+            ),
+          );
 
-        if (offsetConstant.constant) {
+          return false;
+        }
+
+        const offset = parentType.baseType.getField(expr.name.text).offset;
+
+        if (offset) {
+          const offsetConstant = IRConstant.ofConstant(
+            CPrimitiveType.int(config.arch),
+            offset,
+          );
+
           instructions.push(
             new IRMathInstruction(
               TokenType.PLUS,
@@ -227,13 +241,14 @@ export function emitIdentifierGetterIR({
         }
 
         const parentType = getParentType();
-        if (!isStructLikeType(parentType)) {
+        if (!isStructLikeType(parentType) && !isUnionLikeType(parentType)) {
           throw new IRError(IRErrorCode.ACCESS_STRUCT_ATTR_IN_NON_STRUCT);
         }
 
         if (
           isPointerLikeType(lastIRVar.type) &&
-          isStructLikeType(lastIRVar.type.baseType) &&
+          (isStructLikeType(lastIRVar.type.baseType) ||
+            isUnionLikeType(lastIRVar.type.baseType)) &&
           !lastIRVar.isTemporary()
         ) {
           instructions.push(
@@ -244,12 +259,22 @@ export function emitIdentifierGetterIR({
           );
         }
 
-        const offsetConstant = IRConstant.ofConstant(
-          CPrimitiveType.int(config.arch),
-          parentType.getField(expr.name.text).offset,
-        );
+        if (isUnionLikeType(parentType)) {
+          lastIRVar = lastIRVar.ofType(
+            CPointerType.ofType(parentType.getField(expr.name.text).type),
+          );
 
-        if (offsetConstant.constant) {
+          return false;
+        }
+
+        const offset = parentType.getField(expr.name.text).offset;
+
+        if (offset) {
+          const offsetConstant = IRConstant.ofConstant(
+            CPrimitiveType.int(config.arch),
+            offset,
+          );
+
           instructions.push(
             new IRMathInstruction(
               TokenType.PLUS,

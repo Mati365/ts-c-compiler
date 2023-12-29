@@ -16,6 +16,7 @@ import {
   dropConstantInstructionArgs,
   tryEvalConstArgsBinaryInstruction,
 } from '../utils';
+import { getBaseTypeIfPtr } from 'frontend/analyze/types/utils';
 
 /**
  * Reduces:
@@ -59,7 +60,9 @@ export function foldAddressOffsetsInstructions(instructions: IRInstruction[]) {
       ) {
         newInstructions[i] = instruction.ofArgs({
           ...instruction.getArgs(),
-          output: prevInstruction.inputVar,
+          output: getBaseTypeIfPtr(prevInstruction.inputVar.type).isUnion()
+            ? prevInstruction.inputVar.ofType(instruction.outputVar.type)
+            : prevInstruction.inputVar,
         });
 
         break;
@@ -105,11 +108,17 @@ export function foldAddressOffsetsInstructions(instructions: IRInstruction[]) {
         break;
       }
 
+      // edge case for unions, it is impossible to deduce type of assigned
+      // value based on offset so force use last operator type
+      const isUnion = getBaseTypeIfPtr(leaInstruction.inputVar.type).isUnion();
+
       newInstructions[i] = instruction
         .ofOffset(instruction.offset + evalResult)
         .ofArgs({
           ...instruction.getArgs(),
-          output: leaInstruction.inputVar,
+          output: isUnion
+            ? leaInstruction.inputVar.ofType(mathInstruction.outputVar.type)
+            : leaInstruction.inputVar,
         });
 
       const replacedOutputs = {

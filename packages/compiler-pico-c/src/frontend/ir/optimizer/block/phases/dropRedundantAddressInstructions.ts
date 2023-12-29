@@ -68,7 +68,15 @@ export function dropRedundantAddressInstructions(
       );
 
       if (optimizedInstruction) {
-        newInstructions[i] = optimizedInstruction;
+        const optimizedArgs = optimizedInstruction.getArgs();
+
+        // force preserve output type due to issues with unions
+        newInstructions[i] = optimizedInstruction.ofArgs({
+          input: optimizedArgs.input,
+          output: optimizedArgs.output.ofType(
+            instruction.getArgs().output.type,
+          ),
+        });
       }
     }
 

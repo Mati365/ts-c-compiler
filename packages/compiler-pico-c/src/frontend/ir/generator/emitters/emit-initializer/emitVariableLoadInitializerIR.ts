@@ -2,6 +2,7 @@ import * as R from 'ramda';
 
 import { isCompilerTreeNode } from 'frontend/parser';
 import {
+  CPointerType,
   CVariableInitializerTree,
   isInitializerTreeValue,
 } from 'frontend/analyze';
@@ -25,6 +26,7 @@ import {
 } from './literal';
 
 import { shouldEmitStringPtrInitializer } from './literal/shouldEmitStringPtrInitializer';
+import { getBaseTypeIfPtr } from 'frontend/analyze/types/utils';
 
 type LoadInitializerIREmitAttrs = IREmitterContextAttrs & {
   initializerTree: CVariableInitializerTree;
@@ -41,6 +43,8 @@ export function emitVariableLoadInitializerIR({
   context,
 }: LoadInitializerIREmitAttrs): IREmitterStmtResult {
   const result = createBlankStmtResult();
+  const isDestUnion = getBaseTypeIfPtr(destVar.type).isUnion();
+
   let offset: number = 0;
 
   initializerTree.fields.forEach((initializer, index) => {
@@ -104,7 +108,9 @@ export function emitVariableLoadInitializerIR({
         result.instructions.push(
           new IRStoreInstruction(
             IRConstant.ofConstant(itemOffsetType, initializer),
-            destVar,
+            isDestUnion
+              ? destVar.ofType(CPointerType.ofType(itemOffsetType))
+              : destVar,
             offset,
           ),
         );
