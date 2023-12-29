@@ -16,6 +16,8 @@ import {
 import { CUnionTypeDescriptor, CUnionEntry } from './constants/types';
 import { isArrayLikeType } from '../CArrayType';
 
+import type { CStructType } from '../struct';
+
 export function isUnionLikeType(type: CType): type is CUnionType {
   return type?.isUnion();
 }
@@ -147,7 +149,7 @@ export class CUnionType extends CType<CUnionTypeDescriptor> {
       sizeof: this.getByteSize(),
     });
 
-    return `${UnionAttrs} Union ${name || '<anonymous>'} {${fields}}`;
+    return `${UnionAttrs} union ${name || '<anonymous>'} {${fields}}`;
   }
 
   getFieldsList(): [string, CUnionEntry][] {
@@ -165,6 +167,12 @@ export class CUnionType extends CType<CUnionTypeDescriptor> {
 
       if (isUnionLikeType(type)) {
         return type
+          .getFlattenFieldsTypes()
+          .map(([UnionName, value]) => [`${name}.${UnionName}`, value]);
+      }
+
+      if (type.isStruct()) {
+        return (type as CStructType)
           .getFlattenFieldsTypes()
           .map(([UnionName, value]) => [`${name}.${UnionName}`, value]);
       }

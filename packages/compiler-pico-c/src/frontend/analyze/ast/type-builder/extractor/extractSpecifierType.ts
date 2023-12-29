@@ -20,6 +20,7 @@ import {
 
 import { extractEnumTypeFromNode } from './extractEnumTypeFromNode';
 import { extractStructTypeFromNode } from './extractStructTypeFromNode';
+import { extractUnionTypeFromNode } from './extractUnionTypeFromNode';
 
 /**
  * Extract type from ParameterDeclarationSpecifier
@@ -41,19 +42,20 @@ export function extractSpecifierType({
   }
 
   const qualifiers: CTypeQualifier[] = typeQualifiers?.items;
-  const { primitives, structs, enums, typedefs } =
+  const { primitives, structs, unions, enums, typedefs } =
     typeSpecifiers.getGroupedSpecifiers();
 
-  const [hasPrimitives, hasStructs, hasEnums, hasTypedefs] = [
+  const [hasPrimitives, hasStructs, hasUnions, hasEnums, hasTypedefs] = [
     !R.isEmpty(primitives),
     !R.isEmpty(structs),
+    !R.isEmpty(unions),
     !R.isEmpty(enums),
     !R.isEmpty(typedefs),
   ];
 
   // unsigned <typedef> var = 2; is not supported in GCC
   if (hasTypedefs) {
-    if (+hasPrimitives + +hasStructs + +hasEnums > 0) {
+    if (+hasPrimitives + +hasStructs + +hasUnions + +hasEnums > 0) {
       throw new CTypeCheckError(CTypeCheckErrorCode.INCORRECT_TYPE_SPECIFIERS);
     }
 
@@ -61,8 +63,9 @@ export function extractSpecifierType({
   }
 
   if (
-    +hasPrimitives + +hasStructs + +hasEnums > 1 ||
+    +hasPrimitives + +hasStructs + +hasUnions + +hasEnums > 1 ||
     structs.length > 1 ||
+    unions.length > 1 ||
     enums.length > 1
   ) {
     throw new CTypeCheckError(CTypeCheckErrorCode.INCORRECT_TYPE_SPECIFIERS);
@@ -79,7 +82,7 @@ export function extractSpecifierType({
     );
   }
 
-  if (hasEnums || hasStructs) {
+  if (hasEnums || hasStructs || hasUnions) {
     let typeName: string = null;
     const extractors = {
       extractNamedEntryFromDeclaration,
@@ -87,8 +90,22 @@ export function extractSpecifierType({
       extractSpecifierType,
     };
 
-    if (hasStructs) {
-      const structSpecifier = structs[0].structOrUnionSpecifier;
+    if (hasUnions) {
+      const unionSpecifier = unions[0].unionSpecifier;
+
+      // declare + definition
+      if (unionSpecifier.hasDeclarationList()) {
+        return extractUnionTypeFromNode({
+          ...extractors,
+          unionSpecifier,
+          context,
+        });
+      }
+
+      // access by name
+      typeName = unionSpecifier.name.text;
+    } else if (hasStructs) {
+      const structSpecifier = structs[0].structSpecifier;
 
       // declare + definition
       if (structSpecifier.hasDeclarationList()) {

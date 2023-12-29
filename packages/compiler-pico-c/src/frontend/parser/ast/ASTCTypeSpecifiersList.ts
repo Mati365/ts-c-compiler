@@ -8,6 +8,14 @@ import { NodeLocation } from '@ts-c-compiler/grammar';
 import { ASTCCompilerKind, ASTCCompilerNode } from './ASTCCompilerNode';
 import { ASTCTypeSpecifier } from './ASTCTypeSpecifier';
 
+type GroupedSpecifiersResult = {
+  primitives: ASTCTypeSpecifier[];
+  structs: ASTCTypeSpecifier[];
+  unions: ASTCTypeSpecifier[];
+  enums: ASTCTypeSpecifier[];
+  typedefs: ASTCTypeSpecifier[];
+};
+
 @walkOverFields({
   fields: ['items'],
 })
@@ -20,19 +28,14 @@ export class ASTCTypeSpecifiersList
   }
 
   getGroupedSpecifiers() {
-    type Result = {
-      primitives: ASTCTypeSpecifier[];
-      structs: ASTCTypeSpecifier[];
-      enums: ASTCTypeSpecifier[];
-      typedefs: ASTCTypeSpecifier[];
-    };
-
-    return this.items.reduce<Result>(
+    return this.items.reduce<GroupedSpecifiersResult>(
       (acc, item) => {
         if (item.specifier) {
           acc.primitives.push(item);
-        } else if (item.structOrUnionSpecifier) {
+        } else if (item.structSpecifier) {
           acc.structs.push(item);
+        } else if (item.unionSpecifier) {
+          acc.unions.push(item);
         } else if (item.enumSpecifier) {
           acc.enums.push(item);
         } else if (item.typedefEntry) {
@@ -45,6 +48,7 @@ export class ASTCTypeSpecifiersList
         primitives: [],
         structs: [],
         enums: [],
+        unions: [],
         typedefs: [],
       },
     );

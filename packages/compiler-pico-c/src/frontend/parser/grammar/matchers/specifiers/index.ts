@@ -3,7 +3,7 @@ export * from './declarationSpecifiers';
 export * from './functionSpecifier';
 export * from './qualifiersSpecifiers';
 export * from './storageClassSpecifier';
-export * from './structOrUnionSpecifier';
+export * from './structSpecifier';
 export * from './typeQualifier';
 export * from './typeQualifiers';
 export * from './typeSpecifier';

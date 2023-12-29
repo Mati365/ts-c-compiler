@@ -2,12 +2,14 @@ import { CCOMPILER_TYPE_SPECIFIERS, CTypeSpecifier } from '#constants';
 
 import { Token, TokenType } from '@ts-c-compiler/lexer';
 import { NodeLocation } from '@ts-c-compiler/grammar';
+import { SyntaxError } from '@ts-c-compiler/grammar';
+
 import { ASTCTypeSpecifier } from 'frontend/parser/ast';
 import { CGrammar } from '../shared';
 
 import { enumDeclarator } from '../declarations/enumDeclator';
-import { structOrUnionSpecifier } from './structOrUnionSpecifier';
-import { SyntaxError } from '@ts-c-compiler/grammar';
+import { structSpecifier } from './structSpecifier';
+import { unionSpecifier } from './unionSpecifier';
 
 /**
  * type_specifier
@@ -39,16 +41,15 @@ export function typeSpecifier(grammar: CGrammar): ASTCTypeSpecifier {
         identifierToken.text as CTypeSpecifier,
       );
     },
-    struct() {
-      const structOrUnion = structOrUnionSpecifier(grammar);
+    union() {
+      const union = unionSpecifier(grammar);
 
-      return new ASTCTypeSpecifier(
-        structOrUnion.loc,
-        null,
-        null,
-        null,
-        structOrUnion,
-      );
+      return new ASTCTypeSpecifier(union.loc, null, null, null, null, union);
+    },
+    struct() {
+      const struct = structSpecifier(grammar);
+
+      return new ASTCTypeSpecifier(struct.loc, null, null, null, struct);
     },
     enum() {
       const enumSpecifier = enumDeclarator(grammar);
@@ -72,6 +73,7 @@ export function typeSpecifier(grammar: CGrammar): ASTCTypeSpecifier {
 
       return new ASTCTypeSpecifier(
         NodeLocation.fromTokenLoc(nameToken.loc),
+        null,
         null,
         null,
         null,
