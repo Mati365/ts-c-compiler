@@ -6,5 +6,6 @@ export * from './CArrayType';
 export * from './CFlagType';
 export * from './CUnknownType';
 export * from './struct';
+export * from './union';
 export * from './function';
 export * from './utils/typeofValueOrNode';

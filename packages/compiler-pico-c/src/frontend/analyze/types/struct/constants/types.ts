@@ -15,6 +15,7 @@ export class CStructEntry extends CNamedTypedEntry<CStructEntryDescriptor> {
   get offset() {
     return this.value.offset;
   }
+
   get index() {
     return this.value.index;
   }

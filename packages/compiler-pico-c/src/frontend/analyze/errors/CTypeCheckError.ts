@@ -14,6 +14,7 @@ export enum CTypeCheckErrorCode {
   REDEFINITION_OF_TYPE,
   REDEFINITION_OF_VARIABLE,
   REDEFINITION_OF_STRUCT_ENTRY,
+  REDEFINITION_OF_UNION_ENTRY,
   REDEFINITION_OF_ENUM_ENTRY,
   UNABLE_TO_EXTRACT_STRUCT_TYPE,
   UNKNOWN_DECLARATOR_ENTRY_IDENTIFIER,
@@ -76,6 +77,8 @@ export const C_TYPE_CHECK_ERROR_TRANSLATIONS: Record<
     'Redefinition of variable %{name}!',
   [CTypeCheckErrorCode.REDEFINITION_OF_STRUCT_ENTRY]:
     'Redefinition of struct entry %{name}!',
+  [CTypeCheckErrorCode.REDEFINITION_OF_UNION_ENTRY]:
+    'Redefinition of union entry %{name}!',
   [CTypeCheckErrorCode.REDEFINITION_OF_ENUM_ENTRY]:
     'Redefinition of enum entry %{name}!',
   [CTypeCheckErrorCode.INCORRECT_CONSTANT_EXPR]:
