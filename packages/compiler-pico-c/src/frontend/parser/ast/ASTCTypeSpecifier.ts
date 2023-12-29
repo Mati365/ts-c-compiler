@@ -7,10 +7,17 @@ import { CTypeSpecifier } from '../../../constants';
 import { ASTCCompilerKind, ASTCCompilerNode } from './ASTCCompilerNode';
 import { ASTCEnumSpecifier } from './ASTCEnumSpecifier';
 import { ASTCStructSpecifier } from './ASTCStructSpecifier';
+import { ASTCUnionSpecifier } from './ASTCUnionSpecifier';
 import { CGrammarTypedefEntry } from '../grammar/matchers';
 
 @walkOverFields({
-  fields: ['specifier', 'typeName', 'enumSpecifier', 'structOrUnionSpecifier'],
+  fields: [
+    'specifier',
+    'typeName',
+    'enumSpecifier',
+    'structSpecifier',
+    'unionSpecifier',
+  ],
 })
 export class ASTCTypeSpecifier extends ASTCCompilerNode {
   constructor(
@@ -18,7 +25,8 @@ export class ASTCTypeSpecifier extends ASTCCompilerNode {
     readonly specifier?: CTypeSpecifier,
     readonly typeName?: Token,
     readonly enumSpecifier?: ASTCEnumSpecifier,
-    readonly structOrUnionSpecifier?: ASTCStructSpecifier,
+    readonly structSpecifier?: ASTCStructSpecifier,
+    readonly unionSpecifier?: ASTCUnionSpecifier,
     readonly typedefEntry?: CGrammarTypedefEntry,
   ) {
     super(ASTCCompilerKind.TypeSpecifier, loc);

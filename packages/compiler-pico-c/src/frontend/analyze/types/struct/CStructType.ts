@@ -16,6 +16,7 @@ import {
 
 import { CStructTypeDescriptor, CStructEntry } from './constants/types';
 import { isArrayLikeType } from '../CArrayType';
+import { isUnionLikeType } from '../union';
 
 export function isStructLikeType(type: CType): type is CStructType {
   return type?.isStruct();
@@ -202,6 +203,12 @@ export class CStructType extends CType<CStructTypeDescriptor> {
             value,
             offset + nestedOffset,
           ]);
+      }
+
+      if (isUnionLikeType(type)) {
+        return type
+          .getFlattenFieldsTypes()
+          .map(([UnionName, value]) => [`${name}.${UnionName}`, value, offset]);
       }
 
       if (isArrayLikeType(type)) {
