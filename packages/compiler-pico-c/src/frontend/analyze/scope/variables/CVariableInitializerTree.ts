@@ -6,6 +6,7 @@ import {
   isArrayLikeType,
   isPointerLikeType,
   isStructLikeType,
+  isUnionLikeType,
 } from '../../types';
 
 import { ASTCCompilerNode } from '../../../parser/ast/ASTCCompilerNode';
@@ -190,7 +191,7 @@ export class CVariableInitializerTree<
   getIndexExpectedType(offset: number): CType {
     const { baseType } = this;
 
-    if (isStructLikeType(baseType)) {
+    if (isStructLikeType(baseType) || isUnionLikeType(baseType)) {
       return baseType.getFieldTypeByIndex(
         offset % baseType.getFlattenFieldsCount(),
       );
@@ -199,7 +200,7 @@ export class CVariableInitializerTree<
     if (isArrayLikeType(baseType)) {
       const baseArrayType = baseType.getSourceType();
 
-      if (isStructLikeType(baseArrayType)) {
+      if (isStructLikeType(baseArrayType) || isUnionLikeType(baseArrayType)) {
         return baseArrayType.getFieldTypeByIndex(
           offset % baseArrayType.getFlattenFieldsCount(),
         );

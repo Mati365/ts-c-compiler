@@ -18,7 +18,7 @@ export class IRLeaInstruction
   extends IRInstruction
   implements IsOutputInstruction
 {
-  constructor(readonly inputVar: IRVariable, readonly outputVar: IRVariable) {
+  constructor(public inputVar: IRVariable, public outputVar: IRVariable) {
     super(IROpcode.LEA);
   }
 

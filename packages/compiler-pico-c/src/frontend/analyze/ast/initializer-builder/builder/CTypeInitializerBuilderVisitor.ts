@@ -24,6 +24,7 @@ import {
   typeofValueOrNode,
   CPrimitiveType,
   isPrimitiveLikeType,
+  isUnionLikeType,
 } from '../../../types';
 
 import {
@@ -249,7 +250,7 @@ export class CTypeInitializerBuilderVisitor extends CInnerTypeTreeVisitor {
 
       // .x = 1
       if (identifier) {
-        if (!isStructLikeType(baseType)) {
+        if (!isStructLikeType(baseType) && !isUnionLikeType(baseType)) {
           throw new CTypeCheckError(
             CTypeCheckErrorCode.INCORRECT_NAMED_STRUCTURE_INITIALIZER_USAGE,
             designation.loc.start,
@@ -267,8 +268,11 @@ export class CTypeInitializerBuilderVisitor extends CInnerTypeTreeVisitor {
           );
         }
 
-        offset += field.index;
         baseType = field.type;
+
+        if ('index' in field) {
+          offset += field.index;
+        }
       }
 
       // [10] = x
@@ -429,7 +433,7 @@ export class CTypeInitializerBuilderVisitor extends CInnerTypeTreeVisitor {
       ? entryValue.type.scalarValuesCount
       : 1;
 
-    if (isStructLikeType(baseType)) {
+    if (isStructLikeType(baseType) || isUnionLikeType(baseType)) {
       // increments offets, determine which field is initialized in struct and sets value
       // used here: struct Vec2 vec = { 1, 2 };
       tree.setAndExpand(this.currentOffset, entryValue);

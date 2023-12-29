@@ -67,7 +67,7 @@ export function compileStoreInstruction({
   } else {
     // handle normal variable assign
     // *(a) = 5;
-    // todo: check if this .isStruct() is needed:
+    // todo: check if this .isStructOrUnion() is needed:
     //  char b = 'b';
     //  int k = b;
     //  struct Abc {
@@ -88,8 +88,8 @@ export function compileStoreInstruction({
   if (isIRVariable(value)) {
     // check if variable is struct or something bigger than that
     if (
-      getBaseTypeIfPtr(value.type).isStruct() &&
-      getBaseTypeIfPtr(outputVar.type).isStruct() &&
+      getBaseTypeIfPtr(value.type).isStructOrUnion() &&
+      getBaseTypeIfPtr(outputVar.type).isStructOrUnion() &&
       (!value.isTemporary() ||
         isLabelOwnership(regs.ownership.getVarOwnership(value.name)))
     ) {

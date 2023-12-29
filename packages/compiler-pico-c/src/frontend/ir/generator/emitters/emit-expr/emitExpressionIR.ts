@@ -19,6 +19,7 @@ import {
   isPointerArithmeticType,
   isPointerLikeType,
   isStructLikeType,
+  isUnionLikeType,
 } from 'frontend/analyze';
 
 import {
@@ -345,7 +346,7 @@ export function emitExpressionIR({
 
             if (
               !srcGlobalVar.virtualArrayPtr &&
-              !getBaseTypeIfPtr(srcGlobalVar.type).isStruct()
+              !getBaseTypeIfPtr(srcGlobalVar.type).isStructOrUnion()
             ) {
               const tmpDestVar = allocNextVariable(
                 getBaseTypeIfPtr(srcGlobalVar.type),
@@ -375,7 +376,8 @@ export function emitExpressionIR({
 
               instructions.push(new IRLeaInstruction(srcVar, tmpVar));
             } else if (
-              isStructLikeType(srcVar.type.baseType) &&
+              (isStructLikeType(srcVar.type.baseType) ||
+                isUnionLikeType(srcVar.type.baseType)) &&
               !srcVar.type.baseType.canBeStoredInReg()
             ) {
               // handle `a = vec` assign where `vec` is structure that

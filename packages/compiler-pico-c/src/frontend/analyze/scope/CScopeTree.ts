@@ -20,6 +20,7 @@ import { CTypedef } from './CTypedef';
 
 type TypeFindAttrs = {
   struct?: boolean;
+  union?: boolean;
   primitive?: boolean;
   enumerator?: boolean;
   function?: boolean;
@@ -235,6 +236,7 @@ export class CScopeTree<C extends ASTCCompilerNode = ASTCCompilerNode>
       function: fn,
       primitive,
       struct,
+      union,
       enumerator,
     } = attrs;
 
@@ -243,6 +245,7 @@ export class CScopeTree<C extends ASTCCompilerNode = ASTCCompilerNode>
       if (
         (primitive && !type.isPrimitive()) ||
         (struct && !type.isStruct()) ||
+        (union && !type.isUnion()) ||
         (enumerator && !type.isEnum()) ||
         (fn && !type.isFunction())
       ) {
