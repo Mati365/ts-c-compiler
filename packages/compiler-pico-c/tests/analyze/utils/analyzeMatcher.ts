@@ -13,7 +13,7 @@ declare global {
   namespace jest {
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     interface Matchers<R = void> {
-      toHaveCompilerError(errorCode?: number): MatcherResult;
+      toHaveCompilerError(errorCode?: number | string): MatcherResult;
     }
   }
 }

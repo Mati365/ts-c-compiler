@@ -14,19 +14,23 @@ describe('Variable access', () => {
 
   test('access nested array struct item to int', () => {
     expect(/* cpp */ `
-        struct Vec2 {
-          int x, y;
-          struct Rect { int z; } nested[2];
-        } abc = { .x = 5 };
+      struct Vec2 {
+        int x, y;
+        struct Rect { int z; } nested[2];
+      } abc = { .x = 5 };
 
+      void main() {
         int acc = abc.nested[0].z + 4;
+      }
     `).not.toHaveCompilerError();
   });
 
   test('array like access to array variables', () => {
     expect(/* cpp */ `
+      void main() {
         int numbers[] = { 1, 2, 3 };
         int item = numbers[1];
+      }
     `).not.toHaveCompilerError();
   });
 
@@ -53,10 +57,19 @@ describe('Variable access', () => {
     `).toHaveCompilerError(CTypeCheckErrorCode.WRONG_NON_STRUCT_FIELD_ACCESS);
   });
 
-  test('array like access to pointer variables', () => {
+  test('array like access to pointer local variables', () => {
     expect(/* cpp */ `
+      void main() {
         const char* str = "Hello world";
         char item = str[1];
+      }
     `).not.toHaveCompilerError();
+  });
+
+  test('array like access to pointer global variables', () => {
+    expect(/* cpp */ `
+      const char* str = "Hello world";
+      char item = str[1];
+    `).toHaveCompilerError();
   });
 });
