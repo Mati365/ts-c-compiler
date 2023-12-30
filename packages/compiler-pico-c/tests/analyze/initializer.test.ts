@@ -280,10 +280,12 @@ describe('Initializer typecheck', () => {
     `).not.toHaveCompilerError();
   });
 
-  test('dynamic variable initializer', () => {
+  test('dynamic variable initializer in local variables', () => {
     expect(/* cpp */ `
-      int d = 5;
-      int acc = d + 4;
+      void main() {
+        int d = 5;
+        int acc = d + 4;
+      }
     `).not.toHaveCompilerError();
   });
 
