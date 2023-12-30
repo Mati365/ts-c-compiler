@@ -23,6 +23,30 @@ Multipass portable C lang compiler toolkit with IR code generator including back
 5. Peephole optimization of IR code, precompute of constant expressions during compile time and optimizer phase
 6. Slow compile times - feel the vibe of old computing
 
+### What works? 🔥
+
+- Local / Global variables
+- Advanced types `struct` / `union` / `enum`
+- Loops and if conditions `while` / `if` / `do while` / `for`
+- Basic preprocessor with `#ifdef`, `#define`, `#include`
+- VA lists `va_arg`, `va_end`, `va_start`
+- In expression compound statements
+- Ternary operators `a > 1 ? 1 : 2`
+- Designated and C89 initializers
+- Dynamic stack alloc using `alloca`
+- Type aliasing `typedef`
+- Variable and function pointers
+- `RVO` optimization
+- Peephole IR optimization
+- Constant expressions eval
+- Recursion in functions calls
+- Real mode 16bit code compilation
+
+### What does not work? 🚧
+
+- `float` / `double` types
+- Bitfields
+
 ## Install
 
 ```bash
