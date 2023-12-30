@@ -120,7 +120,7 @@ describe('Unions', () => {
       push bp
       mov bp, sp
       sub sp, 4
-      mov word [bp - 4], 5      ; *(data{0}: int*2B) = store %5: int2B
+      mov byte [bp - 4], 5      ; *(data{0}: char*2B) = store %5: char1B
       mov sp, bp
       pop bp
       ret
@@ -234,7 +234,6 @@ describe('Unions', () => {
 
   test('c89 initializer for single char value', () => {
     expect(/* cpp */ `
-      // fixme: ZŁY WYNIK
       typedef union Data {
         char k;
         int a[4];

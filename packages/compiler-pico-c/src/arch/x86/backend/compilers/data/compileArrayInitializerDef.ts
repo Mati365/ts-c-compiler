@@ -35,14 +35,14 @@ export function compileArrayInitializerDefAsm({
 
   // [1, 2, "as", 3] -> [[1, 2], "as", [3]]
   const groupedDefs = initializer.fields.reduce(
-    ({ prevFieldType, groups }, { value: field }) => {
-      const currentFieldType = typeof field;
+    ({ prevFieldType, groups }, item) => {
+      const currentFieldType = typeof item?.value;
 
       if (currentFieldType !== prevFieldType) {
         groups.push([]);
       }
 
-      R.last(groups).push(field);
+      R.last(groups).push(item?.value);
 
       return {
         prevFieldType: currentFieldType,
