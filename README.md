@@ -57,11 +57,7 @@ Options:
 - Dynamic stack alloc using `alloca`
 - Type aliasing `typedef`
 - Variable and function pointers
-- `RVO` optimization
-- Peephole IR optimization
-- Constant expressions eval
-- Recursion in functions calls
-- Real mode 16bit code compilation
+- `RVO`, peephole, constant math expressions eval optimization
 
 ### What does not work? 🚧
 
