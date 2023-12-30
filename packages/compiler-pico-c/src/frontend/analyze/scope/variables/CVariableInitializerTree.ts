@@ -104,7 +104,7 @@ export class CVariableInitializerTree<
 
   hasOnlyConstantExpressions() {
     return this._fields.every(item =>
-      isConstantVariableInitializer(item.value),
+      isConstantVariableInitializer(item?.value),
     );
   }
 
@@ -166,9 +166,9 @@ export class CVariableInitializerTree<
 
     // parse to return non 1 number:
     // const char str[] = "asdasdasd";
-    return fields.reduce<number>((acc, field) => {
-      if (R.is(String, field)) {
-        return acc + field.length;
+    return fields.reduce<number>((acc, item) => {
+      if (R.is(String, item?.value)) {
+        return acc + item.value.length;
       }
 
       return acc + 1;
