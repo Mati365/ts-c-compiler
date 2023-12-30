@@ -26,8 +26,8 @@ Multipass portable C lang compiler toolkit with IR code generator including back
 ### What works? 🔥
 
 - Local / Global variables
-- Advanced types `struct` / `union` / `enum`
-- Loops and if conditions `while` / `if` / `do while` / `for`
+- Advanced types `struct`, `union`, `enum`
+- Loops and if conditions `while`, `if`, `do while`, `for`, `break`, `continue`
 - Basic preprocessor with `#ifdef`, `#define`, `#include`
 - VA lists `va_arg`, `va_end`, `va_start`
 - In expression compound statements
@@ -46,6 +46,7 @@ Multipass portable C lang compiler toolkit with IR code generator including back
 
 - `float` / `double` types
 - Bitfields
+- goto
 
 ## Install
 
