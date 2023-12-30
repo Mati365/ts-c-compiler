@@ -14,6 +14,27 @@ Multipass portable C lang compiler toolkit with IR code generator including back
 
 **🚧 Warn! The project is unstable so please do not use it on production!**
 
+## Install
+
+```bash
+yarn add @ts-c-compiler/cli @ts-c-compiler/x86-16-vm
+```
+
+```bash
+Usage: ts-c [options] <source>
+
+Arguments:
+  source                 Relative or absolute path to source file
+
+Options:
+  -b, --binary           Emits binary stdout
+  -o, --output <string>  Relative path to your output binary
+  -d, --debug            Print AST tree and assembly output
+  -ps, --print-assembly  Print assembly output
+  -bs, --bootsector      Generate 512B bootsector output. Remember to have main entrypoint.
+  -h, --help             display help for command
+```
+
 ## What does it offer? ⭐
 
 1. Reasonable assembly code quality in NASM syntax
@@ -48,27 +69,6 @@ Multipass portable C lang compiler toolkit with IR code generator including back
 - Bitfields
 - goto
 
-## Install
-
-```bash
-yarn add @ts-c-compiler/cli @ts-c-compiler/x86-16-vm
-```
-
-```bash
-Usage: ts-c [options] <source>
-
-Arguments:
-  source                 Relative or absolute path to source file
-
-Options:
-  -b, --binary           Emits binary stdout
-  -o, --output <string>  Relative path to your output binary
-  -d, --debug            Print AST tree and assembly output
-  -ps, --print-assembly  Print assembly output
-  -bs, --bootsector      Generate 512B bootsector output. Remember to have main entrypoint.
-  -h, --help             display help for command
-```
-
 ### Example
 
 Compile `main.c` and boot-it in 16bit VM available in web-browser:
@@ -97,14 +97,7 @@ npx ts-c ./main.c -ps
 0x00000e                      c3                            ret
 ```
 
-## What is not working? 🚧
-
-- [ ] Linker (ability to compile multiple source files at once)
-- [ ] Unions
-- [ ] Bitfields
-- [ ] ... and many other things
-
-## What can be currently compiled?
+## Examples
 
 ### Simple macros with constant expressions optimization
 
