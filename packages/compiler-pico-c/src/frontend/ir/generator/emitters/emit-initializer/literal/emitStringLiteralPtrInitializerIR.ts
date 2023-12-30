@@ -56,14 +56,13 @@ export function emitStringLiteralPtrInitializerIR({
 
   const constArrayVar = allocator.allocDataVariable(dataType);
   const dataLabel = IRLabel.ofName(constArrayVar.name);
+  const literalType = CArrayType.ofStringLiteral(config.arch, literal.length);
 
   result.data.push(
     new IRDefDataInstruction(
-      new CVariableInitializerTree(
-        CArrayType.ofStringLiteral(config.arch, literal.length),
-        null,
-        [literal],
-      ),
+      new CVariableInitializerTree(literalType, null, [
+        { type: literalType, value: literal },
+      ]),
       constArrayVar,
     ),
   );

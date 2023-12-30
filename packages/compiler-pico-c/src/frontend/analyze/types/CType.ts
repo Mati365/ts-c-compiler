@@ -39,7 +39,7 @@ export abstract class CType<T extends CTypeDescriptor = CTypeDescriptor>
     return this.value.qualifiers;
   }
 
-  get scalarValuesCount() {
+  get c89initializerFieldsCount() {
     return 1;
   }
 

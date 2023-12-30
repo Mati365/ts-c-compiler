@@ -1,10 +1,12 @@
+import { isNil } from 'ramda';
 import { isTreeNode } from '@ts-c-compiler/grammar';
 
 import { CVariableInitializerVisitor } from './CVariableInitializerVisitor';
 import {
-  CVariableInitializerTree,
+  CVariableInitializePair,
   CVariableInitializeValue,
-  isInitializerTreeValue,
+  CVariableInitializerTree,
+  isInitializerValuePair,
 } from '../../scope/variables/CVariableInitializerTree';
 
 /**
@@ -17,23 +19,36 @@ export class CVariableInitializerPrintVisitor extends CVariableInitializerVisito
     return this._reduced;
   }
 
-  override enter(value: CVariableInitializeValue) {
+  override enter(
+    maybePair: CVariableInitializePair | CVariableInitializerTree,
+  ) {
     if (this._reduced && this._reduced[this._reduced.length - 2] !== '{') {
       this._reduced += ', ';
     }
 
-    let serializedValue = value;
-    if (isInitializerTreeValue(value)) {
+    let serializedValue: CVariableInitializeValue = '';
+
+    if (isTreeNode(maybePair)) {
       serializedValue = '{ ';
-    } else if (isTreeNode(value)) {
-      serializedValue = '<expr>';
+    } else if (isInitializerValuePair(maybePair)) {
+      if (isTreeNode(maybePair.value)) {
+        serializedValue = '<expr>';
+      } else {
+        serializedValue = maybePair.value;
+      }
+    } else if (isNil(maybePair)) {
+      serializedValue = 'null';
     }
 
-    this._reduced += serializedValue;
+    if (serializedValue) {
+      this._reduced += serializedValue;
+    }
   }
 
-  override leave(value: CVariableInitializeValue) {
-    if (isInitializerTreeValue(value)) {
+  override leave(
+    maybePair: CVariableInitializePair | CVariableInitializerTree,
+  ) {
+    if (isTreeNode(maybePair)) {
       this._reduced += ' }';
     }
   }

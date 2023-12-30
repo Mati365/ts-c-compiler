@@ -47,12 +47,15 @@ export function emitVariableLoadInitializerIR({
 
   let offset: number = 0;
 
-  initializerTree.fields.forEach((initializer, index) => {
+  initializerTree.fields.forEach((pair, index) => {
+    const initializer = pair?.value;
+
     if (isInitializerTreeValue(initializer)) {
       throw new IRError(IRErrorCode.INCORRECT_INITIALIZER_BLOCK);
     }
 
-    const itemOffsetType = initializerTree.getIndexExpectedType(index);
+    const itemOffsetType =
+      pair?.type ?? initializerTree.getIndexExpectedType(index);
 
     if (R.is(String, initializer)) {
       const attrs: StringPtrInitializerLocalIREmitAttrs = {

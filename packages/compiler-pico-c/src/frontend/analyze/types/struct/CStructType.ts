@@ -51,7 +51,7 @@ export class CStructType extends CType<CStructTypeDescriptor> {
     return this.value.align;
   }
 
-  get scalarValuesCount() {
+  get c89initializerFieldsCount() {
     return this.getFlattenFieldsTypes().length;
   }
 
@@ -86,7 +86,7 @@ export class CStructType extends CType<CStructTypeDescriptor> {
         new CStructEntry({
           ...entry.unwrap(),
           index: prevEntry
-            ? prevEntry.index + prevEntry.type.scalarValuesCount
+            ? prevEntry.index + prevEntry.type.c89initializerFieldsCount
             : 0,
           offset: alignerFn(this, entry.type),
           bitset,
@@ -253,7 +253,7 @@ export class CStructType extends CType<CStructTypeDescriptor> {
     return null;
   }
 
-  getFieldTypeByIndex(index: number): CType {
+  getFieldTypeByC89InitializerIndex(index: number): CType {
     return this.getFlattenFieldsTypes()[index]?.[1];
   }
 }
