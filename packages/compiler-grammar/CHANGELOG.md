@@ -1,5 +1,17 @@
 # @ts-c-compiler/grammar
 
+## 1.3.0
+
+### Minor Changes
+
+- Add more new things
+
+### Patch Changes
+
+- Updated dependencies
+  - @ts-c-compiler/core@1.3.0
+  - @ts-c-compiler/lexer@1.3.0
+
 ## 1.2.0
 
 ### Minor Changes

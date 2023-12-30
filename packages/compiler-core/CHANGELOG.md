@@ -1,5 +1,11 @@
 # @ts-c-compiler/core
 
+## 1.3.0
+
+### Minor Changes
+
+- Add more new things
+
 ## 1.2.0
 
 ### Minor Changes

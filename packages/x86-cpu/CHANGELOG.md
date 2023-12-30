@@ -1,5 +1,16 @@
 # @ts-c-compiler/x86-cpu
 
+## 1.3.0
+
+### Minor Changes
+
+- Add more new things
+
+### Patch Changes
+
+- Updated dependencies
+  - @ts-c-compiler/x86-assembler@1.3.0
+
 ## 1.2.0
 
 ### Minor Changes
