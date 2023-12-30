@@ -24,6 +24,8 @@ export function isUnionLikeType(type: CType): type is CUnionType {
 
 /**
  * Defines C-like Union
+ *
+ * @see {@link https://www.ibm.com/docs/en/zos/2.2.0?topic=initializers-initialization-structures-unions}
  */
 export class CUnionType extends CType<CUnionTypeDescriptor> {
   static ofBlank(arch: CCompilerArch, name?: string) {
@@ -46,8 +48,13 @@ export class CUnionType extends CType<CUnionTypeDescriptor> {
     return this.value.fields;
   }
 
-  get scalarValuesCount() {
-    return this.getFlattenFieldsTypes().length;
+  /**
+   * According to standard only first field can be initialized using c89 initializer
+   */
+  get c89initializerFieldsCount() {
+    const [, { type }] = this.getFieldsList()[0];
+
+    return type.c89initializerFieldsCount;
   }
 
   /**
@@ -198,7 +205,17 @@ export class CUnionType extends CType<CUnionTypeDescriptor> {
     return this.getFlattenFieldsTypes().length;
   }
 
-  getFieldTypeByIndex(index: number): CType {
-    return this.getFlattenFieldsTypes()[index]?.[1];
+  getFieldTypeByC89InitializerIndex(index: number): CType {
+    const [, { type }] = this.getFieldsList()[0];
+
+    if (isUnionLikeType(type) || type.isStruct()) {
+      return (type as any).getFieldTypeByC89InitializerIndex(index);
+    }
+
+    if (isArrayLikeType(type)) {
+      return type.baseType;
+    }
+
+    return type;
   }
 }

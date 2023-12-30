@@ -18,7 +18,12 @@ export type CVariableInitializeValue =
   | CVariableInitializerTree
   | ASTCCompilerNode;
 
-export type CVariableInitializerFields = CVariableInitializeValue[];
+export type CVariableInitializePair = {
+  type: CType;
+  value: CVariableInitializeValue;
+};
+
+export type CVariableInitializerFields = CVariableInitializePair[];
 
 export function isConstantVariableInitializer(value: CVariableInitializeValue) {
   if (!value) {
@@ -34,6 +39,12 @@ export function isInitializerTreeValue(
   value: CVariableInitializeValue,
 ): value is CVariableInitializerTree {
   return R.is(Object, value) && R.has('_baseType', value);
+}
+
+export function isInitializerValuePair(
+  pair: any,
+): pair is CVariableInitializePair {
+  return !!pair && 'type' in pair && 'value' in pair;
 }
 
 type CVariableByteInitializerAttrs<C> = {
@@ -83,8 +94,8 @@ export class CVariableInitializerTree<
     return new CVariableInitializerTree(baseType, parentAST, fields);
   }
 
-  fill(value: CVariableInitializeValue) {
-    this._fields = new Array(this.scalarValuesCount).fill(value);
+  fill(value: CVariableInitializePair) {
+    this._fields = new Array(this.c89initializerFieldsCount).fill(value);
   }
 
   walk(visitor: AbstractTreeVisitor<any>): void {
@@ -92,7 +103,9 @@ export class CVariableInitializerTree<
   }
 
   hasOnlyConstantExpressions() {
-    return this._fields.every(isConstantVariableInitializer);
+    return this._fields.every(item =>
+      isConstantVariableInitializer(item.value),
+    );
   }
 
   getSingleItemByteSize() {
@@ -130,7 +143,7 @@ export class CVariableInitializerTree<
   /**
    * Sets values on given offset and if offset is bigger than array fills with null
    */
-  setAndExpand(offset: number, value: CVariableInitializeValue) {
+  setAndExpand(offset: number, value: CVariableInitializePair) {
     const { fields } = this;
 
     this.ensureSize(offset);
@@ -140,7 +153,7 @@ export class CVariableInitializerTree<
   /**
    * Used to return value for non-array type initializers
    */
-  getFirstValue(): CVariableInitializeValue {
+  getFirstValue(): CVariableInitializePair {
     return this._fields[0];
   }
 
@@ -177,7 +190,7 @@ export class CVariableInitializerTree<
       return baseType.ofSize(
         Math.ceil(
           this.getFlattenNonLiteralScalarFieldsCount() /
-            baseType.baseType.scalarValuesCount,
+            baseType.baseType.c89initializerFieldsCount,
         ),
       );
     }
@@ -192,7 +205,7 @@ export class CVariableInitializerTree<
     const { baseType } = this;
 
     if (isStructLikeType(baseType) || isUnionLikeType(baseType)) {
-      return baseType.getFieldTypeByIndex(
+      return baseType.getFieldTypeByC89InitializerIndex(
         offset % baseType.getFlattenFieldsCount(),
       );
     }
@@ -201,7 +214,7 @@ export class CVariableInitializerTree<
       const baseArrayType = baseType.getSourceType();
 
       if (isStructLikeType(baseArrayType) || isUnionLikeType(baseArrayType)) {
-        return baseArrayType.getFieldTypeByIndex(
+        return baseArrayType.getFieldTypeByC89InitializerIndex(
           offset % baseArrayType.getFlattenFieldsCount(),
         );
       }
@@ -235,7 +248,7 @@ export class CVariableInitializerTree<
    * @example
    *  int abc[3][4] => 12
    */
-  get scalarValuesCount(): number {
-    return this.baseType.scalarValuesCount;
+  get c89initializerFieldsCount(): number {
+    return this.baseType.c89initializerFieldsCount;
   }
 }

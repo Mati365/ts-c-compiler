@@ -83,17 +83,17 @@ export class CArrayType extends CType<CArrayTypeDescriptor> {
   }
 
   get itemScalarValuesCount() {
-    return this.baseType.scalarValuesCount;
+    return this.baseType.c89initializerFieldsCount;
   }
 
-  get scalarValuesCount() {
-    const { scalarValuesCount } = this.baseType;
+  get c89initializerFieldsCount() {
+    const { c89initializerFieldsCount } = this.baseType;
 
-    if (this.isUnknownSize() || R.isNil(scalarValuesCount)) {
+    if (this.isUnknownSize() || R.isNil(c89initializerFieldsCount)) {
       return null;
     }
 
-    return this.size * scalarValuesCount;
+    return this.size * c89initializerFieldsCount;
   }
 
   /**

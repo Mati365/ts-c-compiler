@@ -123,9 +123,9 @@ export class X86BasicRegAllocator {
 
     if (
       !castToPointerIfArray(arg.type).isScalar() &&
-      (!isUnionLikeType(arg.type) ||
-        !isStructLikeType(arg.type) ||
-        !arg.type.canBeStoredInReg())
+      !isUnionLikeType(arg.type) &&
+      !isStructLikeType(arg.type) &&
+      !arg.type.canBeStoredInReg()
     ) {
       throw new CBackendError(CBackendErrorCode.REG_ALLOCATOR_ERROR);
     }

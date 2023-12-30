@@ -230,15 +230,14 @@ export class X86StdcallFnCaller implements X86ConventionalFnCaller {
     };
   }
 
-  private getReturnReg({ context, declInstruction }: X86FnBasicCompilerAttrs) {
-    const regs = context.allocator.regs.ownership.getAvailableRegs();
+  private getReturnReg({ declInstruction }: X86FnBasicCompilerAttrs) {
     const { returnType } = declInstruction;
 
     if (!returnType || returnType.isVoid()) {
       return null;
     }
 
-    return regs.general.list[0];
+    return returnType.getByteSize() === 1 ? 'al' : 'ax';
   }
 
   private preserveConventionRegsAsm({

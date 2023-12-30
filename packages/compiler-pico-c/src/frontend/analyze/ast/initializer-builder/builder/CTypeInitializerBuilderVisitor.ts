@@ -29,7 +29,7 @@ import {
 
 import {
   CVariableInitializerTree,
-  CVariableInitializeValue,
+  CVariableInitializePair,
 } from '../../../scope/variables';
 
 import {
@@ -87,7 +87,7 @@ export class CTypeInitializerBuilderVisitor extends CInnerTypeTreeVisitor {
 
     if (!this.tree) {
       this.tree = new CVariableInitializerTree(baseType, node);
-      this.maxSize = this.tree.scalarValuesCount;
+      this.maxSize = this.tree.c89initializerFieldsCount;
     }
 
     const arrayType = isArrayLikeType(baseType);
@@ -223,15 +223,20 @@ export class CTypeInitializerBuilderVisitor extends CInnerTypeTreeVisitor {
         }
       }
 
-      this.appendNextOffsetValue(exprValue, noSizeCheck);
+      this.appendNextOffsetValue(
+        { type: expectedType, value: exprValue },
+        noSizeCheck,
+      );
     } else if (isCompilerTreeNode(exprValue)) {
-      this.appendNextOffsetValue(
-        this.parseTreeNodeExpressionValue(node, expectedType, exprValue),
-      );
+      this.appendNextOffsetValue({
+        type: expectedType,
+        value: this.parseTreeNodeExpressionValue(node, expectedType, exprValue),
+      });
     } else {
-      this.appendNextOffsetValue(
-        this.parseScalarValue(node, expectedType, exprValue),
-      );
+      this.appendNextOffsetValue({
+        type: expectedType,
+        value: this.parseScalarValue(node, expectedType, exprValue),
+      });
     }
   }
 
@@ -311,7 +316,7 @@ export class CTypeInitializerBuilderVisitor extends CInnerTypeTreeVisitor {
         offset +=
           +constExprResult.right *
           dimensions.reduce((acc, num, index) => (index ? acc * num : 1), 1) *
-          type.scalarValuesCount;
+          type.c89initializerFieldsCount;
       }
     }
 
@@ -424,13 +429,13 @@ export class CTypeInitializerBuilderVisitor extends CInnerTypeTreeVisitor {
    * Appends next value to tree and increments currentKey if number
    */
   private appendNextOffsetValue(
-    entryValue: CVariableInitializeValue,
+    entryValue: CVariableInitializePair,
     noSizeCheck?: boolean,
   ) {
     const { tree, maxSize, baseType } = this;
     // handle struct Vec2 vec[] = { of_vector(), of_vector() }; initializers
     const delta = isCompilerTreeNode(entryValue)
-      ? entryValue.type.scalarValuesCount
+      ? entryValue.type.c89initializerFieldsCount
       : 1;
 
     if (isStructLikeType(baseType) || isUnionLikeType(baseType)) {
