@@ -8,6 +8,7 @@ import { IRDefDataInstruction, type IRInstruction } from '../../instructions';
 import { checkIfVirtualGlobalArrayPtr } from '../../utils';
 
 import type { IREmitterContextAttrs } from './types';
+import { IRError, IRErrorCode } from 'frontend/ir/errors/IRError';
 
 type GlobalDeclarationIREmitAttrs = Omit<IREmitterContextAttrs, 'scope'> & {
   globalScope: CScopeTree;
@@ -31,6 +32,12 @@ export function emitGlobalDeclarationsIR({
         baseType: CPrimitiveType.char(arch),
         length: variable.type.getByteSize(),
       });
+
+    if (!initializer.hasOnlyConstantExpressions()) {
+      throw new IRError(
+        IRErrorCode.GLOBAL_INITIALIZER_MUST_HAVE_ONLY_CONSTANT_EXPRESSIONS,
+      );
+    }
 
     if (
       checkIfVirtualGlobalArrayPtr({
