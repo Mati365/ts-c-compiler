@@ -46,24 +46,24 @@ Options:
 
 ### What works? 🔥
 
-[x] Local / Global variables
-[x] Advanced types `struct`, `union`, `enum`
-[x] Loops and if conditions `while`, `if`, `do while`, `for`, `break`, `continue`
-[x] Basic preprocessor with `#ifdef`, `#define`, `#include`
-[x] VA lists `va_arg`, `va_end`, `va_start`
-[x] In expression compound statements
-[x] Ternary operators `a > 1 ? 1 : 2`
-[x] Designated and C89 initializers
-[x] Dynamic stack alloc using `alloca`
-[x] Type aliasing `typedef`
-[x] Variable and function pointers
-[x] `RVO`, peephole, constant math expressions eval optimization
+- [x] Local / Global variables
+- [x] Advanced types `struct`, `union`, `enum`
+- [x] Loops and if conditions `while`, `if`, `do while`, `for`, `break`, `continue`
+- [x] Basic preprocessor with `#ifdef`, `#define`, `#include`
+- [x] VA lists `va_arg`, `va_end`, `va_start`
+- [x] In expression compound statements
+- [x] Ternary operators `a > 1 ? 1 : 2`
+- [x] Designated and C89 initializers
+- [x] Dynamic stack alloc using `alloca`
+- [x] Type aliasing `typedef`
+- [x] Variable and function pointers
+- [x] `RVO`, peephole, constant math expressions eval optimization
 
 ### What does not work? 🚧
 
-[ ] `float` / `double` types
-[ ] Bitfields
-[ ] `goto`
+- [ ] `float` / `double` types
+- [ ] Bitfields
+- [ ] `goto`
 
 ### Example
 
