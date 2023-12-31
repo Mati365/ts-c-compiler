@@ -5,6 +5,7 @@ import { CCompilerArch } from '#constants';
 
 import { X86LabelsResolver } from '../../X86LabelsResolver';
 import { compileDefDataInstruction } from './compileDefDataInstruction';
+import { X86CompileInstructionOutput } from '../shared';
 
 type DataSegmentCompilerAttrs = {
   arch: CCompilerArch;
@@ -15,14 +16,14 @@ export function compileDataSegment({
   segment,
   arch,
 }: DataSegmentCompilerAttrs) {
-  const asm: string[] = [];
+  const output = new X86CompileInstructionOutput();
   const labelsResolver = new X86LabelsResolver();
 
   for (const instruction of segment.instructions) {
     switch (instruction.opcode) {
       case IROpcode.DEF_DATA:
-        asm.push(
-          ...compileDefDataInstruction({
+        output.appendGroup(
+          compileDefDataInstruction({
             instruction: instruction as IRDefDataInstruction,
             labelsResolver,
             arch,
@@ -33,7 +34,7 @@ export function compileDataSegment({
   }
 
   return {
-    asm,
+    output,
     labelsResolver,
   };
 }

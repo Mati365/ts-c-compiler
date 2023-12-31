@@ -24,7 +24,3 @@ export type X86CompilerInstructionFnAttrs<I extends IRInstruction> =
   X86CompilerFnAttrs & {
     instruction: I;
   };
-
-export type X86CompiledBlockOutput = {
-  asm: string[];
-};

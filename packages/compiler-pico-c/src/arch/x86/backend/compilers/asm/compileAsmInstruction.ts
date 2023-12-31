@@ -5,6 +5,7 @@ import { X86CompilerInstructionFnAttrs } from '../../../constants/types';
 import { compileAsmClobbers } from './compileAsmClobbers';
 import { compileAsmInputs } from './compileAsmInputs';
 import { compileAsmOutputs } from './compileAsmOutputs';
+import { X86CompileInstructionOutput } from '../shared';
 
 type AsmInstructionCompilerAttrs =
   X86CompilerInstructionFnAttrs<IRAsmInstruction>;
@@ -12,10 +13,9 @@ type AsmInstructionCompilerAttrs =
 export function compileAsmInstruction({
   context,
   instruction,
-}: AsmInstructionCompilerAttrs): string[] {
+}: AsmInstructionCompilerAttrs) {
   const { allocator } = context;
   const { inputOperands, outputOperands, clobberOperands } = instruction;
-  const asm: string[] = [];
 
   const inputResult = compileAsmInputs({
     interpolatedExpression: trimLines(instruction.expression),
@@ -34,19 +34,17 @@ export function compileAsmInstruction({
     clobberOperands,
   });
 
-  asm.push(
+  allocator.regs.releaseRegs([
+    ...inputResult.allocatedRegs,
+    ...outputResult.allocatedRegs,
+  ]);
+
+  return new X86CompileInstructionOutput([
     ...inputResult.asm,
     ...outputResult.asm.pre,
     ...clobbersResult.pre,
     outputResult.interpolatedExpression,
     ...clobbersResult.post,
     ...outputResult.asm.post,
-  );
-
-  allocator.regs.releaseRegs([
-    ...inputResult.allocatedRegs,
-    ...outputResult.allocatedRegs,
   ]);
-
-  return asm;
 }

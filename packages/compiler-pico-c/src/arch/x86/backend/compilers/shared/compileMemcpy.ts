@@ -6,6 +6,7 @@ import { getByteSizeArgPrefixName } from '@ts-c-compiler/x86-assembler';
 
 import { genComment, genInstruction, genMemAddress } from '../../../asm-utils';
 import { X86CompilerFnAttrs } from '../../../constants/types';
+import { X86CompileInstructionOutput } from './X86CompileInstructionOutput';
 
 type MemcpyConfig = X86CompilerFnAttrs & {
   inputVar: IRVariable;
@@ -101,5 +102,6 @@ export function compileMemcpy({ context, inputVar, outputVar }: MemcpyConfig) {
   }
 
   regs.releaseRegs([dataReg.value, destAddrReg.value, srcAddrReg.value]);
-  return asm;
+
+  return X86CompileInstructionOutput.ofInstructions(asm);
 }

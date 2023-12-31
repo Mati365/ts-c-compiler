@@ -1,5 +1,6 @@
 import { IRJmpInstruction } from 'frontend/ir/instructions';
 
+import { X86CompileInstructionOutput } from './shared';
 import { X86CompilerInstructionFnAttrs } from '../../constants/types';
 import {
   genInstruction,
@@ -12,11 +13,11 @@ type JmpInstructionCompilerAttrs =
 
 export function compileJmpInstruction({
   instruction,
-}: JmpInstructionCompilerAttrs): string[] {
-  return [
+}: JmpInstructionCompilerAttrs) {
+  return X86CompileInstructionOutput.ofInstructions([
     withInlineComment(
       genInstruction('jmp', genLabelName(instruction.label.name)),
       instruction.getDisplayName(),
     ),
-  ];
+  ]);
 }

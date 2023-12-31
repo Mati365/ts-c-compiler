@@ -5,6 +5,7 @@ import { isPointerLikeType } from 'frontend/analyze';
 import { castToPointerIfArray } from 'frontend/analyze/casts';
 import { isStackVarOwnership } from '../reg-allocator/utils';
 
+import { X86CompileInstructionOutput } from './shared';
 import { X86CompilerInstructionFnAttrs } from '../../constants/types';
 import { genInstruction, withInlineComment } from '../../asm-utils';
 import { IRArgDynamicResolverType } from '../reg-allocator';
@@ -15,7 +16,7 @@ type LoadInstructionCompilerAttrs =
 export function compileLoadInstruction({
   instruction,
   context,
-}: LoadInstructionCompilerAttrs): string[] {
+}: LoadInstructionCompilerAttrs) {
   const { inputVar, outputVar } = instruction;
   const {
     allocator: { regs, stackFrame },
@@ -109,5 +110,5 @@ export function compileLoadInstruction({
     }
   }
 
-  return asm;
+  return X86CompileInstructionOutput.ofInstructions(asm);
 }

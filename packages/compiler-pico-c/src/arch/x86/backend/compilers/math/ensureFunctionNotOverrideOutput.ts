@@ -4,6 +4,7 @@ import { genInstruction, withInlineComment } from '../../../asm-utils';
 
 import { X86BackendCompilerContext } from '../../../constants/types';
 import { IRRegReqResult } from '../../reg-allocator';
+import { X86CompileInstructionOutput } from '../shared';
 
 type OverrideCheckAttrs = {
   leftVar: IRInstructionTypedArg;
@@ -55,5 +56,5 @@ export const ensureFunctionNotOverridesOutput = ({
     });
   }
 
-  return asm;
+  return X86CompileInstructionOutput.ofInstructions(asm);
 };

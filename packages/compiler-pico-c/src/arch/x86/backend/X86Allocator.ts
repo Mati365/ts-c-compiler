@@ -6,8 +6,9 @@ import type { IRBlockIterator } from '../../../frontend/ir/iterator';
 import { X86StackFrame } from './X86StackFrame';
 import { X86BasicRegAllocator } from './reg-allocator';
 import { genInstruction } from '../asm-utils';
+import { X86CompileInstructionOutput } from './compilers';
 
-export type X86StackFrameContentFn = () => { asm: string[] };
+export type X86StackFrameContentFn = () => X86CompileInstructionOutput;
 
 export class X86Allocator {
   private _stackFrame: X86StackFrame;
@@ -35,7 +36,9 @@ export class X86Allocator {
   /**
    * Allocates whole function declaration IR code and injects code into it
    */
-  allocStackFrameInstructions(contentFn: X86StackFrameContentFn): string[] {
+  allocStackFrameInstructions(
+    contentFn: X86StackFrameContentFn,
+  ): X86CompileInstructionOutput {
     const { config } = this;
     const { arch } = config;
 
@@ -45,7 +48,10 @@ export class X86Allocator {
       case CCompilerArch.X86_16: {
         const content = contentFn();
 
-        return [...this.genFnTopStackFrame(), ...content.asm];
+        return X86CompileInstructionOutput.ofInstructions([
+          this.genFnTopStackFrame(),
+          content,
+        ]);
       }
 
       default:
@@ -65,10 +71,13 @@ export class X86Allocator {
       asm.push(genInstruction('sub', 'sp', allocBytes));
     }
 
-    return asm;
+    return X86CompileInstructionOutput.ofInstructions(asm);
   }
 
   genFnBottomStackFrame() {
-    return [genInstruction('mov', 'sp', 'bp'), genInstruction('pop', 'bp')];
+    return X86CompileInstructionOutput.ofInstructions([
+      genInstruction('mov', 'sp', 'bp'),
+      genInstruction('pop', 'bp'),
+    ]);
   }
 }

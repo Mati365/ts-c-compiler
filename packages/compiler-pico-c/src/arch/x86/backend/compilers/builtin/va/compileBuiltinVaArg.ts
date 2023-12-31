@@ -2,6 +2,7 @@ import { IRCallInstruction } from 'frontend/ir/instructions';
 import { X86CompilerInstructionFnAttrs } from 'arch/x86/constants/types';
 import { genComment, genInstruction, genMemAddress } from 'arch/x86/asm-utils';
 import { isIRConstant, isIRVariable } from 'frontend/ir/variables';
+import { X86CompileInstructionOutput } from '../../shared';
 
 type BuiltinVaArgCallAttrs = X86CompilerInstructionFnAttrs<IRCallInstruction>;
 
@@ -34,7 +35,7 @@ export const compileBuiltinVaArg = ({
   });
 
   if (!isIRConstant(sizeArg)) {
-    return [];
+    return X86CompileInstructionOutput.ofInstructions([]);
   }
 
   const loadedValReg = regs.requestReg({ size: sizeArg.constant });
@@ -49,7 +50,7 @@ export const compileBuiltinVaArg = ({
 
   regs.releaseRegs([vaPtrReg.value, loadedValReg.value]);
 
-  return [
+  return X86CompileInstructionOutput.ofInstructions([
     ...vaListPtr.asm,
     ...vaPtrReg.asm,
     ...loadedValReg.asm,
@@ -78,5 +79,5 @@ export const compileBuiltinVaArg = ({
       vaPtrReg.value,
     ),
     genComment('VA arg getter - end'),
-  ];
+  ]);
 };

@@ -6,10 +6,8 @@ import {
 } from 'frontend/ir/instructions';
 
 import { X86StackFrameContentFn } from '../X86Allocator';
-import {
-  X86CompiledBlockOutput,
-  X86CompilerFnAttrs,
-} from '../../constants/types';
+import { X86CompilerFnAttrs } from '../../constants/types';
+import { X86CompileInstructionOutput } from './shared';
 
 import { genComment, genLabel } from '../../asm-utils';
 import { getX86FnCaller } from '../call-conventions';
@@ -36,11 +34,11 @@ type FnDeclCompilerBlockFnAttrs = X86CompilerFnAttrs & {
 export function compileFnDeclInstructionsBlock({
   instruction: fnInstruction,
   context,
-}: FnDeclCompilerBlockFnAttrs): X86CompiledBlockOutput {
+}: FnDeclCompilerBlockFnAttrs) {
   const { allocator, iterator, labelsResolver } = context;
 
   const compileFnContent: X86StackFrameContentFn = () => {
-    const asm: string[] = [];
+    const fnOutput = new X86CompileInstructionOutput();
 
     getX86FnCaller(fnInstruction.type.callConvention).allocIRFnDefArgs({
       declInstruction: fnInstruction,
@@ -64,7 +62,7 @@ export function compileFnDeclInstructionsBlock({
           break;
 
         case IROpcode.ASSIGN:
-          asm.push(...compileAssignInstruction(arg));
+          fnOutput.appendGroup(compileAssignInstruction(arg));
           break;
 
         case IROpcode.PHI:
@@ -72,39 +70,39 @@ export function compileFnDeclInstructionsBlock({
           break;
 
         case IROpcode.LOAD:
-          asm.push(...compileLoadInstruction(arg));
+          fnOutput.appendGroup(compileLoadInstruction(arg));
           break;
 
         case IROpcode.LEA:
-          asm.push(...compileLeaInstruction(arg));
+          fnOutput.appendGroup(compileLeaInstruction(arg));
           break;
 
         case IROpcode.MATH_SINGLE:
-          asm.push(...compileMathSingleInstruction(arg));
+          fnOutput.appendGroup(compileMathSingleInstruction(arg));
           break;
 
         case IROpcode.MATH:
-          asm.push(...compileMathInstruction(arg));
+          fnOutput.appendGroup(compileMathInstruction(arg));
           break;
 
         case IROpcode.ASM:
-          asm.push(...compileAsmInstruction(arg));
+          fnOutput.appendGroup(compileAsmInstruction(arg));
           break;
 
         case IROpcode.STORE:
-          asm.push(...compileStoreInstruction(arg));
+          fnOutput.appendGroup(compileStoreInstruction(arg));
           break;
 
         case IROpcode.JMP:
-          asm.push(...compileJmpInstruction(arg));
+          fnOutput.appendGroup(compileJmpInstruction(arg));
           break;
 
         case IROpcode.CALL:
-          asm.push(...compileCallInstruction(arg));
+          fnOutput.appendGroup(compileCallInstruction(arg));
           break;
 
         case IROpcode.LABEL:
-          asm.push(...compileLabelInstruction(arg));
+          fnOutput.appendGroup(compileLabelInstruction(arg));
           break;
 
         case IROpcode.LABEL_OFFSET:
@@ -112,16 +110,18 @@ export function compileFnDeclInstructionsBlock({
           break;
 
         case IROpcode.ICMP:
-          asm.push(...compileICmpInstruction(arg));
+          fnOutput.appendGroup(compileICmpInstruction(arg));
           break;
 
         case IROpcode.COMMENT:
-          asm.push(genComment((<IRCommentInstruction>instruction).comment));
+          fnOutput.asm.push(
+            genComment((<IRCommentInstruction>instruction).comment),
+          );
           break;
 
         case IROpcode.RET:
-          asm.push(
-            ...compileRetInstruction({
+          fnOutput.appendGroup(
+            compileRetInstruction({
               ...arg,
               fnInstruction,
             }),
@@ -130,9 +130,7 @@ export function compileFnDeclInstructionsBlock({
       }
     });
 
-    return {
-      asm,
-    };
+    return fnOutput;
   };
 
   const { asmLabel } = labelsResolver.createAndPutLabel({
@@ -141,13 +139,9 @@ export function compileFnDeclInstructionsBlock({
     instruction: fnInstruction,
   });
 
-  const asm = [
+  return X86CompileInstructionOutput.ofInstructions([
     genComment(fnInstruction.getDisplayName()),
     genLabel(asmLabel, false),
-    ...allocator.allocStackFrameInstructions(compileFnContent),
-  ];
-
-  return {
-    asm,
-  };
+    allocator.allocStackFrameInstructions(compileFnContent),
+  ]);
 }

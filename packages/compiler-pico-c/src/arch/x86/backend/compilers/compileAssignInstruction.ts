@@ -1,5 +1,7 @@
 import { IRAssignInstruction } from 'frontend/ir/instructions';
 import { X86CompilerInstructionFnAttrs } from '../../constants/types';
+import { X86CompileInstructionOutput } from './shared';
+
 import { genInstruction, withInlineComment } from '../../asm-utils';
 import { isIRConstant } from 'frontend/ir/variables';
 
@@ -9,7 +11,7 @@ type AssignInstructionCompilerAttrs =
 export function compileAssignInstruction({
   instruction,
   context,
-}: AssignInstructionCompilerAttrs): string[] {
+}: AssignInstructionCompilerAttrs) {
   const { allocator } = context;
   const { inputVar, outputVar, meta } = instruction;
   const { regs } = allocator;
@@ -29,25 +31,25 @@ export function compileAssignInstruction({
 
   // replace mov ax, 0 with xor ax, ax
   if (isIRConstant(inputVar) && inputVar.constant === 0x0) {
-    return [
+    return X86CompileInstructionOutput.ofInstructions([
       ...outputReg.asm,
       withInlineComment(
         genInstruction('xor', outputReg.value, outputReg.value),
         instruction.getDisplayName(),
       ),
-    ];
+    ]);
   }
 
   const inputArg = regs.tryResolveIrArg({
     arg: inputVar,
   });
 
-  return [
+  return X86CompileInstructionOutput.ofInstructions([
     ...outputReg.asm,
     ...inputArg.asm,
     withInlineComment(
       genInstruction('mov', outputReg.value, inputArg.value),
       instruction.getDisplayName(),
     ),
-  ];
+  ]);
 }

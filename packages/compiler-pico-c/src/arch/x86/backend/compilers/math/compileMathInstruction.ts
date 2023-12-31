@@ -15,6 +15,7 @@ import { castToPointerIfArray } from 'frontend/analyze/casts';
 import { isNopMathInstruction } from './isNopMathInstruction';
 import { isIRConstant, isIRVariable } from 'frontend/ir/variables';
 import { isPrimitiveLikeType } from 'frontend/analyze';
+import { X86CompileInstructionOutput } from '../shared';
 
 const BinaryOperatorX86Opcode: Partial<Record<CMathOperator, string>> = {
   [TokenType.BIT_OR]: 'xor',
@@ -29,7 +30,7 @@ type MathInstructionCompilerAttrs =
 export function compileMathInstruction({
   instruction,
   context,
-}: MathInstructionCompilerAttrs): string[] {
+}: MathInstructionCompilerAttrs) {
   const { leftVar, rightVar, outputVar, operator } = instruction;
   const {
     allocator: { regs },
@@ -88,7 +89,7 @@ export function compileMathInstruction({
         );
       }
 
-      return asm;
+      return X86CompileInstructionOutput.ofInstructions(asm);
     }
 
     case TokenType.BIT_OR:
@@ -106,7 +107,7 @@ export function compileMathInstruction({
 
       if (isIRVariable(leftVar) && isNopMathInstruction(instruction)) {
         regs.ownership.aliasOwnership(leftVar.name, instruction.outputVar.name);
-        return [];
+        return X86CompileInstructionOutput.ofBlank();
       }
 
       const leftAllocResult = regs.tryResolveIRArgAsReg({
@@ -167,16 +168,16 @@ export function compileMathInstruction({
         throw new CBackendError(CBackendErrorCode.UNKNOWN_MATH_OPERATOR);
       }
 
-      return [
+      return X86CompileInstructionOutput.ofInstructions([
         ...leftAllocResult.asm,
         ...rightAllocResult.asm,
-        ...ensureFunctionNotOverridesOutput({
+        ensureFunctionNotOverridesOutput({
           leftVar,
           leftAllocResult,
           context,
         }),
         withInlineComment(operatorAsm, instruction.getDisplayName()),
-      ];
+      ]);
     }
 
     case TokenType.MOD:
@@ -198,9 +199,9 @@ export function compileMathInstruction({
           reg: leftAllocResult.value,
         });
 
-        return [
+        return X86CompileInstructionOutput.ofInstructions([
           ...leftAllocResult.asm,
-          ...ensureFunctionNotOverridesOutput({
+          ensureFunctionNotOverridesOutput({
             leftVar,
             leftAllocResult,
             context,
@@ -213,7 +214,7 @@ export function compileMathInstruction({
             ),
             instruction.getDisplayName(),
           ),
-        ];
+        ]);
       }
 
       const allocResult = {
@@ -235,7 +236,7 @@ export function compileMathInstruction({
         ...allocResult.remainder.asm,
         ...allocResult.quotient.asm,
         ...rightAllocResult.asm,
-        ...ensureFunctionNotOverridesOutput({
+        ensureFunctionNotOverridesOutput({
           leftVar,
           leftAllocResult: allocResult.quotient,
           context,
@@ -271,7 +272,7 @@ export function compileMathInstruction({
         regs.releaseRegs([allocResult.remainder.value]);
       }
 
-      return asm;
+      return X86CompileInstructionOutput.ofInstructions(asm);
     }
   }
 

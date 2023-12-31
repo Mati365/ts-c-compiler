@@ -11,7 +11,12 @@ import {
 import { X86Allocator } from './X86Allocator';
 import { X86BackendCompilerContext } from '../constants/types';
 
-import { compileDataSegment, compileInstructionsBlock } from './compilers';
+import {
+  X86CompileInstructionOutput,
+  compileDataSegment,
+  compileInstructionsBlock,
+} from './compilers';
+
 import { getCompilerArchDescriptor } from '../../../arch';
 import { X86LabelsResolver } from './X86LabelsResolver';
 
@@ -21,14 +26,20 @@ export class X86ArchBackend extends CAbstractArchBackend {
 
   compileIR({ segments }: IRScopeGeneratorResult): CBackendCompilerResult {
     const asm: string[] = [`cpu ${X86ArchBackend.cpu}`];
-    const { labelsResolver, asm: dataAsm } = compileDataSegment({
+    const dataOutput = compileDataSegment({
       arch: X86ArchBackend.arch,
       segment: segments.data,
     });
 
+    const functionsOutput = this.compileIRFunctions(
+      dataOutput.labelsResolver,
+      segments.code,
+    );
+
     asm.push(
-      ...this.compileIRFunctions(labelsResolver, segments.code),
-      ...dataAsm,
+      ...functionsOutput.asm,
+      ...functionsOutput.data,
+      ...dataOutput.output.asm,
     );
 
     return {
@@ -39,8 +50,8 @@ export class X86ArchBackend extends CAbstractArchBackend {
   private compileIRFunctions(
     labelsResolver: X86LabelsResolver,
     codeSegment: IRFlatCodeSegmentBuilderResult,
-  ): string[] {
-    const asm: string[] = [];
+  ) {
+    const output = new X86CompileInstructionOutput();
 
     for (const [, fn] of Object.entries(codeSegment.functions)) {
       const iterator = IRBlockIterator.of(fn.block.instructions);
@@ -55,9 +66,9 @@ export class X86ArchBackend extends CAbstractArchBackend {
         labelsResolver,
       };
 
-      asm.push(...compileInstructionsBlock({ context }));
+      output.appendGroup(compileInstructionsBlock({ context }));
     }
 
-    return asm;
+    return output;
   }
 }

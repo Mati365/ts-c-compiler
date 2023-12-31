@@ -6,6 +6,7 @@ import { CBackendError, CBackendErrorCode } from 'backend/errors/CBackendError';
 
 import { compileBuiltinVaArg, compileBuiltinVaStart } from './va';
 import { compileBuiltinAlloca } from './compileBuiltinAlloca';
+import { X86CompileInstructionOutput } from '../shared';
 
 type BuiltinFnCallAttrs = X86CompilerInstructionFnAttrs<IRCallInstruction>;
 
@@ -23,7 +24,7 @@ export const compileBuiltinCallFn = (attrs: BuiltinFnCallAttrs) => {
       return compileBuiltinVaArg(attrs);
 
     case withBuiltinPrefix('va_end'):
-      return [];
+      return X86CompileInstructionOutput.ofInstructions([]);
 
     default:
       throw new CBackendError(CBackendErrorCode.UNKNOWN_BUILTIN_FUNCTION, {

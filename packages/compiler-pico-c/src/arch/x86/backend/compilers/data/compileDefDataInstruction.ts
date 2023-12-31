@@ -14,7 +14,7 @@ export function compileDefDataInstruction({
   arch,
   instruction,
   labelsResolver,
-}: DefInstructionCompilerAttrs): string[] {
+}: DefInstructionCompilerAttrs) {
   const { initializer, outputVar } = instruction;
   const { asmLabel } = labelsResolver.createAndPutLabel({
     name: outputVar.name,

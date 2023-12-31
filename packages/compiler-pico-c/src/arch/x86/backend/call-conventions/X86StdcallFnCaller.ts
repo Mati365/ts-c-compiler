@@ -10,7 +10,11 @@ import { getTypeOffsetByteSize } from 'frontend/ir/utils';
 import { getX86RegByteSize } from '../../constants/regs';
 import { genInstruction, withInlineComment } from '../../asm-utils';
 
-import { compileMemcpy, compileStackMemcpy } from '../compilers/shared';
+import {
+  X86CompileInstructionOutput,
+  compileMemcpy,
+  compileStackMemcpy,
+} from '../compilers/shared';
 import { isRegOwnership } from '../reg-allocator/utils';
 import { IRArgDynamicResolverType } from '../reg-allocator';
 
@@ -36,13 +40,13 @@ export class X86StdcallFnCaller implements X86ConventionalFnCaller {
     declInstruction,
     context,
     callerInstruction,
-  }: X86FnCallerCompilerAttrs): string[] {
+  }: X86FnCallerCompilerAttrs) {
     const { allocator } = context;
     const { regs } = allocator;
 
     const stack = this.getContextStackInfo(allocator);
     const totalNonRVOArgs = callerInstruction.args.length;
-    const asm: string[] = [];
+    const output = new X86CompileInstructionOutput();
 
     // preserve already allocated regs on stack
     regs.ownership.releaseNotUsedLaterRegs(
@@ -68,8 +72,8 @@ export class X86StdcallFnCaller implements X86ConventionalFnCaller {
           throw new CBackendError(CBackendErrorCode.NON_CALLABLE_STRUCT_ARG);
         }
 
-        asm.push(
-          ...compileStackMemcpy({
+        output.appendGroup(
+          compileStackMemcpy({
             allocator,
             arg,
             ownership: regs.ownership,
@@ -83,7 +87,10 @@ export class X86StdcallFnCaller implements X86ConventionalFnCaller {
           size: stack.size,
         });
 
-        asm.push(...resolvedArg.asm, genInstruction('push', resolvedArg.value));
+        output.appendInstructions(
+          ...resolvedArg.asm,
+          genInstruction('push', resolvedArg.value),
+        );
 
         if (resolvedArg.type === IRArgDynamicResolverType.REG) {
           allocator.regs.releaseRegs([resolvedArg.value]);
@@ -91,7 +98,7 @@ export class X86StdcallFnCaller implements X86ConventionalFnCaller {
       }
     }
 
-    asm.push(genInstruction('call', address));
+    output.appendInstructions(genInstruction('call', address));
 
     // restore result from register (AX is already loaded in `compileIRFnRet`)
     if (
@@ -113,10 +120,15 @@ export class X86StdcallFnCaller implements X86ConventionalFnCaller {
       totalNonRVOArgs - declInstruction.getArgsWithRVO().length;
 
     if (argsCountDelta) {
-      asm.push(genInstruction('add', stack.reg, argsCountDelta * stack.size));
+      output.appendInstructions(
+        genInstruction('add', stack.reg, argsCountDelta * stack.size),
+      );
     }
 
-    return [...preservedRegs.preserve, ...asm, ...preservedRegs.restore];
+    return new X86CompileInstructionOutput(
+      [...preservedRegs.preserve, ...output.asm, ...preservedRegs.restore],
+      output.data,
+    );
   }
 
   /**
@@ -158,18 +170,18 @@ export class X86StdcallFnCaller implements X86ConventionalFnCaller {
     context,
     declInstruction,
     retInstruction,
-  }: X86FnRetCompilerAttrs): string[] {
+  }: X86FnRetCompilerAttrs) {
     const { allocator } = context;
 
     const stack = this.getContextStackInfo(allocator);
     const totalArgs = declInstruction.getArgsWithRVO().length;
-    const asm: string[] = [];
+    const output = new X86CompileInstructionOutput();
 
     if (!declInstruction.isVoid() && retInstruction.value) {
       if (declInstruction.hasRVO()) {
         // copy structure A to B
-        asm.push(
-          ...compileMemcpy({
+        output.appendGroup(
+          compileMemcpy({
             context,
             outputVar: declInstruction.getRVOOutputVar(),
             inputVar: retInstruction.value as IRVariable,
@@ -194,7 +206,9 @@ export class X86StdcallFnCaller implements X86ConventionalFnCaller {
             getX86RegByteSize(usedOwnership.reg) ===
             1
         ) {
-          asm.push(genInstruction('movzx', returnReg, usedOwnership.reg));
+          output.appendInstructions(
+            genInstruction('movzx', returnReg, usedOwnership.reg),
+          );
         } else {
           // handle case when we call `return 2`
           const retResolvedArg = allocator.regs.tryResolveIRArgAsReg({
@@ -203,21 +217,21 @@ export class X86StdcallFnCaller implements X86ConventionalFnCaller {
             allowedRegs: [returnReg],
           });
 
-          asm.push(...retResolvedArg.asm);
+          output.appendInstructions(...retResolvedArg.asm);
           allocator.regs.releaseRegs([retResolvedArg.value]);
         }
       }
     }
 
-    asm.push(...allocator.genFnBottomStackFrame());
+    output.appendGroup(allocator.genFnBottomStackFrame());
 
     if (totalArgs) {
-      asm.push(genInstruction('ret', totalArgs * stack.size));
+      output.appendInstructions(genInstruction('ret', totalArgs * stack.size));
     } else {
-      asm.push(genInstruction('ret'));
+      output.appendInstructions(genInstruction('ret'));
     }
 
-    return asm;
+    return output;
   }
 
   private getContextStackInfo(allocator: X86Allocator) {
