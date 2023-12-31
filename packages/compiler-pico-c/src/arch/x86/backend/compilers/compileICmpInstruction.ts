@@ -15,6 +15,7 @@ import {
 
 import { IRArgDynamicResolverType } from '../reg-allocator';
 import { X86CompilerInstructionFnAttrs } from '../../constants/types';
+import { X86CompileInstructionOutput } from './shared';
 
 const OPERATOR_JMP_INSTRUCTIONS: Record<
   CRelOperator,
@@ -52,7 +53,7 @@ type ICmpInstructionCompilerAttrs =
 export function compileICmpInstruction({
   instruction,
   context,
-}: ICmpInstructionCompilerAttrs): string[] {
+}: ICmpInstructionCompilerAttrs) {
   const {
     iterator,
     allocator: { regs },
@@ -128,5 +129,5 @@ export function compileICmpInstruction({
     throw new CBackendError(CBackendErrorCode.UNABLE_TO_COMPILE_INSTRUCTION);
   }
 
-  return asm;
+  return X86CompileInstructionOutput.ofInstructions(asm);
 }

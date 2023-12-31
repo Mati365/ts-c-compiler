@@ -3,6 +3,7 @@ import { IRCallInstruction } from 'frontend/ir/instructions';
 
 import { X86CompilerInstructionFnAttrs } from 'arch/x86/constants/types';
 import { isIRVariable } from 'frontend/ir/variables';
+import { X86CompileInstructionOutput } from '../../shared';
 
 type BuiltinVaStartCallAttrs = X86CompilerInstructionFnAttrs<IRCallInstruction>;
 
@@ -34,7 +35,7 @@ export const compileBuiltinVaStart = ({
     allocator.regs.ownership.dropOwnership(outputArg.name);
   }
 
-  return [
+  return X86CompileInstructionOutput.ofInstructions([
     ...vaListPtr.asm,
     ...lastArgPtr.asm,
     genInstruction(
@@ -42,5 +43,5 @@ export const compileBuiltinVaStart = ({
       genMemAddress({ expression: vaListPtr.value as string }),
       lastArgPtr.value,
     ),
-  ];
+  ]);
 };

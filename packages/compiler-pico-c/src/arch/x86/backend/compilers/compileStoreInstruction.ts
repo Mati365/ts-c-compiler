@@ -8,7 +8,7 @@ import { isIRConstant, isIRVariable } from 'frontend/ir/variables';
 import { isPrimitiveLikeType } from 'frontend/analyze';
 
 import { getTypeOffsetByteSize } from 'frontend/ir/utils';
-import { compileMemcpy } from './shared';
+import { X86CompileInstructionOutput, compileMemcpy } from './shared';
 
 import { X86CompilerInstructionFnAttrs } from '../../constants/types';
 import { isLabelOwnership } from '../reg-allocator/utils';
@@ -24,13 +24,13 @@ type StoreInstructionCompilerAttrs =
 export function compileStoreInstruction({
   instruction,
   context,
-}: StoreInstructionCompilerAttrs): string[] {
+}: StoreInstructionCompilerAttrs) {
   const { allocator } = context;
   const { outputVar, value, offset } = instruction;
   const { stackFrame, regs } = allocator;
 
   let destAddr: { value: string; size: number } = null;
-  const asm: string[] = [];
+  const output = new X86CompileInstructionOutput();
   const outputByteSize = getTypeOffsetByteSize(outputVar.type, offset);
 
   const baseOutputType = getBaseTypeIfPtr(outputVar.type);
@@ -51,7 +51,7 @@ export function compileStoreInstruction({
     if (memPtrAddr) {
       // handle case: %t{1}: const char**2B = alloca const char*2B
       // it can be reproduced in `printf("Hello");` call
-      asm.push(...memPtrAddr.asm);
+      output.appendInstructions(...memPtrAddr.asm);
       destAddr = memPtrAddr;
     } else {
       const ptrVarReg = regs.tryResolveIRArgAsReg({
@@ -59,7 +59,7 @@ export function compileStoreInstruction({
         allowedRegs: regs.ownership.getAvailableRegs().addressing,
       });
 
-      asm.push(...ptrVarReg.asm);
+      output.appendInstructions(...ptrVarReg.asm);
       destAddr = {
         size: outputByteSize,
         value: genMemAddress({
@@ -99,8 +99,8 @@ export function compileStoreInstruction({
         isLabelOwnership(regs.ownership.getVarOwnership(value.name)))
     ) {
       // copy structure A to B
-      asm.push(
-        ...compileMemcpy({
+      output.appendGroup(
+        compileMemcpy({
           context,
           outputVar: outputVar,
           inputVar: value,
@@ -147,7 +147,7 @@ export function compileStoreInstruction({
         };
       }
 
-      asm.push(
+      output.appendInstructions(
         ...inputReg.asm,
         withInlineComment(
           genInstruction('mov', destAddr.value, inputReg.value),
@@ -157,9 +157,9 @@ export function compileStoreInstruction({
     }
   } else if (isIRConstant(value)) {
     if (isFloating) {
-      asm.push('# TODO: ASM');
+      output.appendInstructions('# TODO: ASM');
     } else {
-      asm.push(
+      output.appendInstructions(
         withInlineComment(
           genInstruction('mov', destAddr.value, value.constant),
           instruction.getDisplayName(),
@@ -168,9 +168,9 @@ export function compileStoreInstruction({
     }
   }
 
-  if (!asm.length) {
+  if (output.isEmpty()) {
     throw new CBackendError(CBackendErrorCode.STORE_VAR_ERROR);
   }
 
-  return asm;
+  return output;
 }

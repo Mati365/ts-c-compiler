@@ -13,6 +13,7 @@ import {
 
 import { X86StackFrame } from '../../X86StackFrame';
 import { X86RegOwnershipTracker } from '../../reg-allocator';
+import { X86CompileInstructionOutput } from './X86CompileInstructionOutput';
 
 type StackMemcpyAttrs = {
   ownership: X86RegOwnershipTracker;
@@ -72,5 +73,5 @@ export function compileStackMemcpy({
     }
   }
 
-  return asm;
+  return X86CompileInstructionOutput.ofInstructions(asm);
 }

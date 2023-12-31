@@ -8,32 +8,32 @@ import { X86CompilerFnAttrs } from '../../constants/types';
 
 import { genComment } from '../../asm-utils';
 import { compileFnDeclInstructionsBlock } from './compileFnDeclInstructionsBlock';
+import { X86CompileInstructionOutput } from './shared';
 
 type InstructionBlockCompilerAttrs = X86CompilerFnAttrs;
 
 export function compileInstructionsBlock({
   context,
-}: InstructionBlockCompilerAttrs): string[] {
-  const asm: string[] = [];
+}: InstructionBlockCompilerAttrs) {
+  const output = new X86CompileInstructionOutput();
 
   context.iterator.walk(instruction => {
     switch (instruction.opcode) {
       case IROpcode.COMMENT:
-        asm.push(genComment((instruction as IRCommentInstruction).comment));
+        output.appendInstructions(
+          genComment((instruction as IRCommentInstruction).comment),
+        );
         break;
 
-      case IROpcode.FN_DECL: {
-        const result = compileFnDeclInstructionsBlock({
-          instruction: instruction as IRFnDeclInstruction,
-          context,
-        });
-
-        asm.push(...result.asm, '');
-      }
+      case IROpcode.FN_DECL:
+        output.appendGroup(
+          compileFnDeclInstructionsBlock({
+            instruction: instruction as IRFnDeclInstruction,
+            context,
+          }),
+        );
     }
   });
 
-  // console.info(asm.join('\n'));
-
-  return asm;
+  return output;
 }

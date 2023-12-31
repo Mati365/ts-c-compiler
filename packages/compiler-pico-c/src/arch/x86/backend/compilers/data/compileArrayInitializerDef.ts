@@ -7,11 +7,13 @@ import {
   CVariableInitializerTree,
 } from 'frontend/analyze';
 
+import { X86CompileInstructionOutput } from '../shared';
 import {
   genDefConst,
   genLabel,
   getDefConstSizeLabel,
 } from '../../../asm-utils';
+
 import {
   getBaseTypeIfArray,
   getBaseTypeIfPtr,
@@ -96,5 +98,9 @@ export function compileArrayInitializerDefAsm({
     },
   );
 
-  return [genLabel(asmLabel, false), ...asm.pre, ...asm.post];
+  return X86CompileInstructionOutput.ofInstructions([
+    genLabel(asmLabel, false),
+    ...asm.pre,
+    ...asm.post,
+  ]);
 }

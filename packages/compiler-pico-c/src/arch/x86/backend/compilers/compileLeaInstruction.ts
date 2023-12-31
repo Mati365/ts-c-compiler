@@ -9,6 +9,7 @@ import {
   genLabelName,
   withInlineComment,
 } from '../../asm-utils';
+import { X86CompileInstructionOutput } from './shared';
 
 type LeaInstructionCompilerAttrs =
   X86CompilerInstructionFnAttrs<IRLeaInstruction>;
@@ -16,7 +17,7 @@ type LeaInstructionCompilerAttrs =
 export function compileLeaInstruction({
   instruction,
   context,
-}: LeaInstructionCompilerAttrs): string[] {
+}: LeaInstructionCompilerAttrs) {
   const { inputVar, outputVar } = instruction;
   const {
     allocator: { regs, config, stackFrame },
@@ -34,25 +35,25 @@ export function compileLeaInstruction({
   // variable allocated in data segment
   // such like: const char* str = "Hello world!";
   if (inputVar.constInitialized) {
-    return [
+    return X86CompileInstructionOutput.ofInstructions([
       ...addressReg.asm,
       withInlineComment(
         genInstruction('mov', addressReg.value, genLabelName(inputVar.name)),
         instruction.getDisplayName(),
       ),
-    ];
+    ]);
   }
 
   // int* a = &k;
   const stackAddress = stackFrame.getLocalVarStackRelAddress(inputVar.name);
   if (stackAddress) {
-    return [
+    return X86CompileInstructionOutput.ofInstructions([
       ...addressReg.asm,
       withInlineComment(
         genInstruction('lea', addressReg.value, stackAddress),
         instruction.getDisplayName(),
       ),
-    ];
+    ]);
   }
 
   throw new CBackendError(CBackendErrorCode.UNABLE_TO_COMPILE_INSTRUCTION);

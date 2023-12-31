@@ -5,6 +5,7 @@ import type { X86CompilerInstructionFnAttrs } from '../../../constants/types';
 
 import { genInstruction, withInlineComment } from '../../../asm-utils';
 import { CBackendError, CBackendErrorCode } from 'backend/errors/CBackendError';
+import { X86CompileInstructionOutput } from '../shared';
 
 type MathSingleInstructionCompilerAttrs =
   X86CompilerInstructionFnAttrs<IRMathSingleArgInstruction>;
@@ -12,7 +13,7 @@ type MathSingleInstructionCompilerAttrs =
 export function compileMathSingleInstruction({
   instruction,
   context,
-}: MathSingleInstructionCompilerAttrs): string[] {
+}: MathSingleInstructionCompilerAttrs) {
   const {
     allocator: { regs },
   } = context;
@@ -39,8 +40,8 @@ export function compileMathSingleInstruction({
       throw new CBackendError(CBackendErrorCode.UNKNOWN_MATH_OPERATOR);
   }
 
-  return [
+  return X86CompileInstructionOutput.ofInstructions([
     ...leftAllocResult.asm,
     withInlineComment(instructionAsm, instruction.getDisplayName()),
-  ];
+  ]);
 }

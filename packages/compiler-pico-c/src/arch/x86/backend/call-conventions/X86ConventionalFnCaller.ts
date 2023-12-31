@@ -1,3 +1,5 @@
+import type { X86CompileInstructionOutput } from '../compilers';
+
 import {
   IRCallInstruction,
   IRFnDeclInstruction,
@@ -23,7 +25,7 @@ export type X86FnRetCompilerAttrs = X86FnBasicCompilerAttrs & {
 };
 
 export interface X86ConventionalFnCaller {
-  compileIRFnCall(attrs: X86FnCallerCompilerAttrs): string[];
-  compileIRFnRet(attrs: X86FnRetCompilerAttrs): string[];
+  compileIRFnCall(attrs: X86FnCallerCompilerAttrs): X86CompileInstructionOutput;
+  compileIRFnRet(attrs: X86FnRetCompilerAttrs): X86CompileInstructionOutput;
   allocIRFnDefArgs(attrs: X86FnBasicCompilerAttrs): void;
 }

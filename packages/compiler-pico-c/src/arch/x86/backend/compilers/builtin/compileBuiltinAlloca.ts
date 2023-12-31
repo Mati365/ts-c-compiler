@@ -2,6 +2,7 @@ import { IRCallInstruction } from 'frontend/ir/instructions';
 import { X86CompilerInstructionFnAttrs } from 'arch/x86/constants/types';
 import { genInstruction } from 'arch/x86/asm-utils';
 import { isIRVariable } from 'frontend/ir/variables';
+import { X86CompileInstructionOutput } from '../shared';
 
 type BuiltinAllocaCallAttrs = X86CompilerInstructionFnAttrs<IRCallInstruction>;
 
@@ -37,10 +38,10 @@ export const compileBuiltinAlloca = ({
     regs.ownership.dropOwnership(sizeArg.name);
   }
 
-  return [
+  return X86CompileInstructionOutput.ofInstructions([
     ...outputReg.asm,
     ...size.asm,
     genInstruction('sub', 'sp', size.value),
     genInstruction('mov', outputReg.value, 'sp'),
-  ];
+  ]);
 };
