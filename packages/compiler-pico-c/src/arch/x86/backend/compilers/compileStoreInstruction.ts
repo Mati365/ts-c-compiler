@@ -35,7 +35,7 @@ export function compileStoreInstruction({
 
   const baseOutputType = getBaseTypeIfPtr(outputVar.type);
   const isFloating =
-    isPrimitiveLikeType(baseOutputType) && baseOutputType.isFloating();
+    isPrimitiveLikeType(baseOutputType, true) && baseOutputType.isFloating();
 
   if (outputVar.isTemporary()) {
     // 1. handle pointers assign
