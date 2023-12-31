@@ -5,6 +5,7 @@ import { getBaseTypeIfPtr } from 'frontend/analyze/types/utils';
 import { IRStoreInstruction } from 'frontend/ir/instructions';
 
 import { isIRConstant, isIRVariable } from 'frontend/ir/variables';
+import { isPrimitiveLikeType } from 'frontend/analyze';
 
 import { getTypeOffsetByteSize } from 'frontend/ir/utils';
 import { compileMemcpy } from './shared';
@@ -31,6 +32,10 @@ export function compileStoreInstruction({
   let destAddr: { value: string; size: number } = null;
   const asm: string[] = [];
   const outputByteSize = getTypeOffsetByteSize(outputVar.type, offset);
+
+  const baseOutputType = getBaseTypeIfPtr(outputVar.type);
+  const isFloating =
+    isPrimitiveLikeType(baseOutputType) && baseOutputType.isFloating();
 
   if (outputVar.isTemporary()) {
     // 1. handle pointers assign
@@ -89,7 +94,7 @@ export function compileStoreInstruction({
     // check if variable is struct or something bigger than that
     if (
       getBaseTypeIfPtr(value.type).isStructOrUnion() &&
-      getBaseTypeIfPtr(outputVar.type).isStructOrUnion() &&
+      getBaseTypeIfPtr(baseOutputType).isStructOrUnion() &&
       (!value.isTemporary() ||
         isLabelOwnership(regs.ownership.getVarOwnership(value.name)))
     ) {
@@ -151,12 +156,16 @@ export function compileStoreInstruction({
       );
     }
   } else if (isIRConstant(value)) {
-    asm.push(
-      withInlineComment(
-        genInstruction('mov', destAddr.value, value.constant),
-        instruction.getDisplayName(),
-      ),
-    );
+    if (isFloating) {
+      asm.push('# TODO: ASM');
+    } else {
+      asm.push(
+        withInlineComment(
+          genInstruction('mov', destAddr.value, value.constant),
+          instruction.getDisplayName(),
+        ),
+      );
+    }
   }
 
   if (!asm.length) {

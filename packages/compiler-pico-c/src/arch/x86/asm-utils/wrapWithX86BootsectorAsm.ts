@@ -18,9 +18,9 @@ export const getX86BootsectorPreloaderBinary = () =>
     mov ch, 0
     mov cl, 2  ; sectors start from 1, or so they say ;)
     mov dh, 0
-
     int 13h
 
+    finit
     jmp word 0x2000:0x0000
     hlt
 
