@@ -18,6 +18,7 @@ type X86LabelCreator = Omit<X86LabelValue, 'asmLabel'> & {
 
 export class X86LabelsResolver {
   private readonly labels: X86Labels = {};
+  private labelGeneratorCounter = 0;
 
   createAndPutLabel({ name, type, ...attrs }: X86LabelCreator) {
     const asmLabel = genLabelName(
@@ -29,6 +30,10 @@ export class X86LabelsResolver {
     return {
       asmLabel,
     };
+  }
+
+  genUniqLabel() {
+    return genLabelName(`$LC_${this.labelGeneratorCounter++}`);
   }
 
   private putLabel(name: string, value: X86LabelValue) {

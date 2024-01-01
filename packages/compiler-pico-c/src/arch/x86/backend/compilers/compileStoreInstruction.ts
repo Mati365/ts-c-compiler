@@ -13,6 +13,7 @@ import { X86CompileInstructionOutput, compileMemcpy } from './shared';
 import { X86CompilerInstructionFnAttrs } from '../../constants/types';
 import { isLabelOwnership } from '../reg-allocator/utils';
 import {
+  genDefConst,
   genInstruction,
   genMemAddress,
   withInlineComment,
@@ -25,7 +26,7 @@ export function compileStoreInstruction({
   instruction,
   context,
 }: StoreInstructionCompilerAttrs) {
-  const { allocator } = context;
+  const { allocator, labelsResolver } = context;
   const { outputVar, value, offset } = instruction;
   const { stackFrame, regs } = allocator;
 
@@ -157,7 +158,17 @@ export function compileStoreInstruction({
     }
   } else if (isIRConstant(value)) {
     if (isFloating) {
-      output.appendInstructions('# TODO: ASM');
+      const constLabel = labelsResolver.genUniqLabel();
+      const size = value.type.getByteSize();
+
+      output.appendInstructions(
+        genInstruction('fld', genMemAddress({ size, expression: constLabel })),
+        genInstruction('fstp', destAddr.value),
+      );
+
+      output.appendData(
+        `${constLabel}: ${genDefConst(size, [value.constant])}`,
+      );
     } else {
       output.appendInstructions(
         withInlineComment(
