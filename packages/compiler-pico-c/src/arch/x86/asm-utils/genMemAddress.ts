@@ -1,10 +1,11 @@
 import {
   X86SegmentRegName,
   InstructionArgSizeName,
+  getByteSizeArgPrefixName,
 } from '@ts-c-compiler/x86-assembler';
 
 export type GenMemAddressConfig = {
-  size?: InstructionArgSizeName;
+  size?: InstructionArgSizeName | number;
   segment?: X86SegmentRegName;
   expression: string;
   offset?: number;
@@ -29,6 +30,10 @@ export function genMemAddress({
   output = `[${output}]`;
 
   if (size) {
+    if (typeof size !== 'string') {
+      size = getByteSizeArgPrefixName(size);
+    }
+
     output = `${size} ${output}`;
   }
 

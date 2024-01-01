@@ -14,6 +14,11 @@ export class X86CompileInstructionOutput {
     return this;
   }
 
+  appendData(...asm: string[]) {
+    this.data.push(...asm);
+    return this;
+  }
+
   isEmpty() {
     return !this.asm.length && !this.data.length;
   }
