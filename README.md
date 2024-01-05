@@ -35,6 +35,34 @@ Options:
   -h, --help             display help for command
 ```
 
+## Usage
+
+Compile `main.c` and boot-it in 16bit VM available in web-browser:
+
+```bash
+npx ts-c ./apps/cli/.mock/main.c --bootsector --binary | APP_PORT=3002 npx run-x86_16-vm
+```
+
+Compile `main.c` to x86-16 binary:
+
+```bash
+npx ts-c ./main.c -o ./output.bin
+```
+
+Print assembly output without generate binary file:
+
+```bash
+npx ts-c ./main.c -ps
+
+0x000000                      55                            push bp
+0x000001                      89 e5                         mov bp, sp
+0x000003                      83 ec 02                      sub sp, 0x2
+0x000006                      c7 46 fe 04 00                mov word [bp-2], 0x4
+0x00000b                      89 ec                         mov sp, bp
+0x00000d                      5d                            pop bp
+0x00000e                      c3                            ret
+```
+
 ## What does it offer? ⭐
 
 1. Reasonable assembly code quality in NASM syntax
@@ -64,34 +92,6 @@ Options:
 - [ ] `float` / `double` types
 - [ ] Bitfields
 - [ ] `goto`
-
-### Example
-
-Compile `main.c` and boot-it in 16bit VM available in web-browser:
-
-```bash
-npx ts-c ./apps/cli/.mock/main.c --bootsector --binary | APP_PORT=3002 npx run-x86_16-vm
-```
-
-Compile `main.c` to x86-16 binary:
-
-```bash
-npx ts-c ./main.c -o ./output.bin
-```
-
-Print assembly output without generate binary file:
-
-```bash
-npx ts-c ./main.c -ps
-
-0x000000                      55                            push bp
-0x000001                      89 e5                         mov bp, sp
-0x000003                      83 ec 02                      sub sp, 0x2
-0x000006                      c7 46 fe 04 00                mov word [bp-2], 0x4
-0x00000b                      89 ec                         mov sp, bp
-0x00000d                      5d                            pop bp
-0x00000e                      c3                            ret
-```
 
 ## Examples
 
