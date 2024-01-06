@@ -2,21 +2,22 @@ import * as R from 'ramda';
 
 import { X86RegName } from '@ts-c-compiler/x86-assembler';
 
-import { createX86RegsMap, RegsMap } from '../../constants/regs';
-import { restoreInX86IntRegsMap, setAvailabilityInRegsMap } from '../utils';
+import { createX86RegsMap, RegsMap } from '../../../constants/regs';
+import { restoreInX86IntRegsMap, setAvailabilityInRegsMap } from '../../utils';
 
-import { X86Allocator } from '../X86Allocator';
-import { IROwnershipMap, IROwnershipValue, isRegOwnership } from './utils';
-import { X86VarLifetimeGraph } from './X86VarLifetimeGraph';
+import { X86Allocator } from '../../X86Allocator';
+import { IROwnershipMap, IROwnershipValue, isRegOwnership } from '../utils';
+import { X86VarLifetimeGraph } from '../X86VarLifetimeGraph';
 
 export class X86RegOwnershipTracker {
-  protected ownership: IROwnershipMap = {};
   protected availableRegs: RegsMap;
-  readonly lifetime: X86VarLifetimeGraph;
+  protected ownership: IROwnershipMap = {};
 
-  constructor(private allocator: X86Allocator) {
+  constructor(
+    readonly lifetime: X86VarLifetimeGraph,
+    private allocator: X86Allocator,
+  ) {
     this.availableRegs = createX86RegsMap()[this.config.arch];
-    this.lifetime = new X86VarLifetimeGraph(allocator.instructions);
   }
 
   get config() {
