@@ -9,7 +9,7 @@ import { getX86RegByteSize } from '../../../constants/regs';
 
 import { X86CompilerFnAttrs } from '../../../constants/types';
 import { AsmOutputsWrapperAsm } from './compileAsmOutputs';
-import { isRegOwnership } from '../../reg-allocator/utils';
+import { isRegOwnership } from '../../reg-allocator';
 
 type AsmClobbersCompilerAttrs = X86CompilerFnAttrs & {
   clobberOperands: IRAsmClobberOperand[];

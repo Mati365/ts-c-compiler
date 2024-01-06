@@ -55,7 +55,7 @@ export class X86ArchBackend extends CAbstractArchBackend {
 
     for (const [, fn] of Object.entries(codeSegment.functions)) {
       const iterator = IRBlockIterator.of(fn.block.instructions);
-      const allocator = new X86Allocator(this.config, iterator);
+      const allocator = new X86Allocator(this.config, iterator, labelsResolver);
 
       const context: X86BackendCompilerContext = {
         arch: X86ArchBackend.arch,

@@ -1,8 +1,4 @@
-import type {
-  X86BitsMode,
-  X86IntBitsMode,
-  X86RegName,
-} from '@ts-c-compiler/x86-assembler';
+import type { X86IntBitsMode, X86RegName } from '@ts-c-compiler/x86-assembler';
 
 import { CCompilerArch } from '#constants';
 import { COMPILER_REGISTERS_SET } from '@ts-c-compiler/x86-assembler';
@@ -24,11 +20,6 @@ export type X86IntRegTree = {
   unavailable?: boolean;
 };
 
-export type X87FloatReg = {
-  name: X87StackRegName;
-  size: X86BitsMode;
-};
-
 export type RegsMap = {
   stack: X86RegName;
   addressing: Array<X86RegName>;
@@ -39,7 +30,10 @@ export type RegsMap = {
   };
   int: X86IntRegTree[];
   float: {
-    x87: Readonly<X87FloatReg[]>;
+    x87: {
+      size: number;
+      stack: X87StackRegName[];
+    };
   };
 };
 
@@ -140,10 +134,10 @@ export const createX86RegsMap = (): Record<CCompilerArch, RegsMap> => ({
       },
     ],
     float: {
-      x87: X87_STACK_REGISTERS.map(stackRegName => ({
+      x87: {
         size: 0xa,
-        name: stackRegName,
-      })),
+        stack: [...X87_STACK_REGISTERS],
+      },
     },
   },
 });
