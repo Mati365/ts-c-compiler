@@ -7,6 +7,7 @@ import { X86StackFrame } from './X86StackFrame';
 import { X86BasicRegAllocator } from './reg-allocator';
 import { genInstruction } from '../asm-utils';
 import { X86CompileInstructionOutput } from './compilers';
+import { X86VarLifetimeGraph } from './reg-allocator/X86VarLifetimeGraph';
 
 export type X86StackFrameContentFn = () => X86CompileInstructionOutput;
 
@@ -18,7 +19,9 @@ export class X86Allocator {
     readonly config: CCompilerConfig,
     readonly iterator: IRBlockIterator,
   ) {
-    this._regs = new X86BasicRegAllocator(this);
+    const lifetime = new X86VarLifetimeGraph(iterator.instructions);
+
+    this._regs = new X86BasicRegAllocator(lifetime, this);
   }
 
   get instructions() {

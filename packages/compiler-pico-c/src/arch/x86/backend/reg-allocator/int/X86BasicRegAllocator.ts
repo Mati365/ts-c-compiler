@@ -18,25 +18,27 @@ import {
   genMemAddress,
   GenMemAddressConfig,
   withInlineComment,
-} from '../../asm-utils';
+} from '../../../asm-utils';
 import {
   queryAndMarkX86RegsMap,
   queryX86RegsMap,
   X86RegsMapQueryAndSetResult,
   X86RegLookupQuery,
-} from '../utils';
+} from '../../utils';
 
 import { X86RegName } from '@ts-c-compiler/x86-assembler';
-import { X86Allocator } from '../X86Allocator';
+import { X86Allocator } from '../../X86Allocator';
 import { X86RegOwnershipTracker } from './X86RegOwnershipTracker';
 import {
   IRLabelVarOwnership,
   isLabelOwnership,
   isRegOwnership,
   isStackVarOwnership,
-} from './utils';
-import { getX86RegByteSize } from '../../constants/regs';
+} from '../utils';
+
+import { getX86RegByteSize } from '../../../constants/regs';
 import { castToPointerIfArray } from 'frontend/analyze/casts';
+import { X86VarLifetimeGraph } from '../X86VarLifetimeGraph';
 
 export type IRArgAllocatorResult<V extends string | number = string | number> =
   {
@@ -91,8 +93,8 @@ const ALLOW_ALL_ARG_RESOLVER_METHODS =
 export class X86BasicRegAllocator {
   readonly ownership: X86RegOwnershipTracker;
 
-  constructor(protected allocator: X86Allocator) {
-    this.ownership = new X86RegOwnershipTracker(allocator);
+  constructor(lifeTime: X86VarLifetimeGraph, private allocator: X86Allocator) {
+    this.ownership = new X86RegOwnershipTracker(lifeTime, allocator);
   }
 
   get config() {
