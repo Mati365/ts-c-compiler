@@ -96,6 +96,14 @@ export class X86StackFrame {
     }
   }
 
+  static getStackVarRelAddress(stackVar: X86StackVariable) {
+    return genMemAddress({
+      expression: 'bp',
+      size: stackVar.size,
+      offset: stackVar.offset,
+    });
+  }
+
   static getStackAllocVariableSize(variable: IRInstructionTypedArg) {
     const { type } = variable;
 

@@ -6,7 +6,7 @@ import { createX86RegsMap, RegsMap } from '../../../constants/regs';
 import { restoreInX86IntRegsMap, setAvailabilityInRegsMap } from '../../utils';
 
 import { X86Allocator } from '../../X86Allocator';
-import { IROwnershipMap, IROwnershipValue, isRegOwnership } from '../utils';
+import { IROwnershipMap, IROwnershipValue, isRegOwnership } from './ownership';
 import { X86VarLifetimeGraph } from '../X86VarLifetimeGraph';
 
 export class X86RegOwnershipTracker {

@@ -34,7 +34,7 @@ import {
   isLabelOwnership,
   isRegOwnership,
   isStackVarOwnership,
-} from '../utils';
+} from './ownership';
 
 import { getX86RegByteSize } from '../../../constants/regs';
 import { castToPointerIfArray } from 'frontend/analyze/casts';

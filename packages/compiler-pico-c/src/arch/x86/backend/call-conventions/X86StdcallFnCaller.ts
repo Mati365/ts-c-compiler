@@ -15,8 +15,8 @@ import {
   compileMemcpy,
   compileStackMemcpy,
 } from '../compilers/shared';
-import { isRegOwnership } from '../reg-allocator/utils';
-import { IRArgDynamicResolverType } from '../reg-allocator';
+
+import { IRArgDynamicResolverType, isRegOwnership } from '../reg-allocator';
 
 import { X86Allocator } from '../X86Allocator';
 import {

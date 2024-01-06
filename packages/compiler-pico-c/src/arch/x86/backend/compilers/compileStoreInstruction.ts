@@ -11,9 +11,8 @@ import { getTypeOffsetByteSize } from 'frontend/ir/utils';
 import { X86CompileInstructionOutput, compileMemcpy } from './shared';
 
 import { X86CompilerInstructionFnAttrs } from '../../constants/types';
-import { isLabelOwnership } from '../reg-allocator/utils';
+import { isLabelOwnership } from '../reg-allocator';
 import {
-  genDefConst,
   genInstruction,
   genMemAddress,
   withInlineComment,
@@ -26,9 +25,9 @@ export function compileStoreInstruction({
   instruction,
   context,
 }: StoreInstructionCompilerAttrs) {
-  const { allocator, labelsResolver } = context;
+  const { allocator } = context;
   const { outputVar, value, offset } = instruction;
-  const { stackFrame, regs } = allocator;
+  const { stackFrame, regs, x87regs } = allocator;
 
   let destAddr: { value: string; size: number } = null;
   const output = new X86CompileInstructionOutput();
@@ -158,17 +157,12 @@ export function compileStoreInstruction({
     }
   } else if (isIRConstant(value)) {
     if (isFloating) {
-      const constLabel = labelsResolver.genUniqLabel();
-      const size = value.type.getByteSize();
+      const result = x87regs.storeConstantAtAddress({
+        value,
+        address: destAddr.value,
+      });
 
-      output.appendInstructions(
-        genInstruction('fld', genMemAddress({ size, expression: constLabel })),
-        genInstruction('fstp', destAddr.value),
-      );
-
-      output.appendData(
-        `${constLabel}: ${genDefConst(size, [value.constant])}`,
-      );
+      output.appendGroup(result);
     } else {
       output.appendInstructions(
         withInlineComment(

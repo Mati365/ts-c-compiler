@@ -3,12 +3,14 @@ import { CBackendError, CBackendErrorCode } from 'backend/errors/CBackendError';
 
 import { isPointerLikeType } from 'frontend/analyze';
 import { castToPointerIfArray } from 'frontend/analyze/casts';
-import { isStackVarOwnership } from '../reg-allocator/utils';
 
 import { X86CompileInstructionOutput } from './shared';
 import { X86CompilerInstructionFnAttrs } from '../../constants/types';
 import { genInstruction, withInlineComment } from '../../asm-utils';
-import { IRArgDynamicResolverType } from '../reg-allocator';
+import {
+  IRArgDynamicResolverType,
+  isStackVarOwnership,
+} from '../reg-allocator';
 
 type LoadInstructionCompilerAttrs =
   X86CompilerInstructionFnAttrs<IRLoadInstruction>;

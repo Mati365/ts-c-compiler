@@ -5,14 +5,15 @@ import type { CType } from 'frontend/analyze';
 import type { X86Allocator } from '../../X86Allocator';
 
 import { genComment, genInstruction, genMemAddress } from 'arch/x86/asm-utils';
+
+import { X86StackFrame } from '../../X86StackFrame';
 import {
+  X86RegOwnershipTracker,
   isLabelOwnership,
   isRegOwnership,
   isStackVarOwnership,
-} from '../../reg-allocator/utils';
+} from '../../reg-allocator';
 
-import { X86StackFrame } from '../../X86StackFrame';
-import { X86RegOwnershipTracker } from '../../reg-allocator';
 import { X86CompileInstructionOutput } from './X86CompileInstructionOutput';
 
 type StackMemcpyAttrs = {

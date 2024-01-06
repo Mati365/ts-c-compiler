@@ -2,7 +2,7 @@ import { CBackendError, CBackendErrorCode } from 'backend/errors/CBackendError';
 import { IRPhiInstruction } from 'frontend/ir/instructions';
 
 import { X86CompilerInstructionFnAttrs } from '../../constants/types';
-import { IRRegOwnership, isRegOwnership } from '../reg-allocator/utils';
+import { IRRegOwnership, isRegOwnership } from '../reg-allocator';
 
 type PhiInstructionCompilerAttrs =
   X86CompilerInstructionFnAttrs<IRPhiInstruction>;
