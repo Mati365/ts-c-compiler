@@ -21,7 +21,7 @@ export function compileLoadInstruction({
 }: LoadInstructionCompilerAttrs) {
   const { inputVar, outputVar } = instruction;
   const {
-    allocator: { regs, stackFrame },
+    allocator: { regs, memOwnership, stackFrame },
   } = context;
 
   const asm: string[] = [];
@@ -100,13 +100,13 @@ export function compileLoadInstruction({
       });
     } else {
       // handle loading pointer to types, such as *k
-      const cachedOwnership = regs.ownership.getVarOwnership(inputVar.name);
+      const cachedOwnership = memOwnership.getVarOwnership(inputVar.name);
 
       if (!isStackVarOwnership(cachedOwnership)) {
         throw new CBackendError(CBackendErrorCode.UNKNOWN_BACKEND_ERROR);
       }
 
-      regs.ownership.setOwnership(outputVar.name, {
+      memOwnership.setOwnership(outputVar.name, {
         stackVar: cachedOwnership.stackVar,
       });
     }

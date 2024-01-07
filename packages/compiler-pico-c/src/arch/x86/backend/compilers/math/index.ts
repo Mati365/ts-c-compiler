@@ -1,2 +1,3 @@
 export * from './compileMathInstruction';
-export * from './compileMathSingleInstruction';
+export * from './int';
+export * from './isNopMathInstruction';

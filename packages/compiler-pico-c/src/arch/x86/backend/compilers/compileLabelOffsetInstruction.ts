@@ -8,12 +8,15 @@ export function compileLabelOffsetInstruction({
   instruction,
   context,
 }: LabelOffsetInstructionCompilerAttrs) {
-  const { labelsResolver, allocator } = context;
-  const { label, outputVar } = instruction;
+  const {
+    labelsResolver,
+    allocator: { memOwnership },
+  } = context;
 
+  const { label, outputVar } = instruction;
   const resolvedLabel = labelsResolver.getLabel(label.name);
 
-  allocator.regs.ownership.setOwnership(outputVar.name, {
+  memOwnership.setOwnership(outputVar.name, {
     asmLabel: resolvedLabel.asmLabel,
   });
 }

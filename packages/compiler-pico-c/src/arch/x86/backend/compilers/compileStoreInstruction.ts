@@ -27,7 +27,7 @@ export function compileStoreInstruction({
 }: StoreInstructionCompilerAttrs) {
   const { allocator } = context;
   const { outputVar, value, offset } = instruction;
-  const { stackFrame, regs, x87regs } = allocator;
+  const { stackFrame, regs, memOwnership, x87regs } = allocator;
 
   let destAddr: { value: string; size: number } = null;
   const output = new X86CompileInstructionOutput();
@@ -96,7 +96,7 @@ export function compileStoreInstruction({
       getBaseTypeIfPtr(value.type).isStructOrUnion() &&
       getBaseTypeIfPtr(baseOutputType).isStructOrUnion() &&
       (!value.isTemporary() ||
-        isLabelOwnership(regs.ownership.getVarOwnership(value.name)))
+        isLabelOwnership(memOwnership.getVarOwnership(value.name)))
     ) {
       // copy structure A to B
       output.appendGroup(

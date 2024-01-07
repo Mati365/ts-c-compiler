@@ -1,10 +1,10 @@
 import { IRInstructionTypedArg, isIRVariable } from 'frontend/ir/variables';
 
-import { genInstruction, withInlineComment } from '../../../asm-utils';
+import { genInstruction, withInlineComment } from '../../../../asm-utils';
 
-import { X86BackendCompilerContext } from '../../../constants/types';
-import { IRRegReqResult } from '../../reg-allocator';
-import { X86CompileInstructionOutput } from '../shared';
+import { X86BackendCompilerContext } from '../../../../constants/types';
+import { IRRegReqResult } from '../../../reg-allocator';
+import { X86CompileInstructionOutput } from '../../shared';
 
 type OverrideCheckAttrs = {
   leftVar: IRInstructionTypedArg;

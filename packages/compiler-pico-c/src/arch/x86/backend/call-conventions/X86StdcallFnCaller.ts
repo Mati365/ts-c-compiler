@@ -16,7 +16,7 @@ import {
   compileStackMemcpy,
 } from '../compilers/shared';
 
-import { IRArgDynamicResolverType, isRegOwnership } from '../reg-allocator';
+import { IRArgDynamicResolverType } from '../reg-allocator';
 
 import { X86Allocator } from '../X86Allocator';
 import {
@@ -76,7 +76,6 @@ export class X86StdcallFnCaller implements X86ConventionalFnCaller {
           compileStackMemcpy({
             allocator,
             arg,
-            ownership: regs.ownership,
             type: baseType,
           }),
         );
@@ -136,7 +135,7 @@ export class X86StdcallFnCaller implements X86ConventionalFnCaller {
    */
   allocIRFnDefArgs({ context, declInstruction }: X86FnBasicCompilerAttrs) {
     const { allocator } = context;
-    const { stackFrame, regs } = allocator;
+    const { stackFrame, memOwnership } = allocator;
 
     const stack = this.getContextStackInfo(allocator);
     const args = declInstruction.getArgsWithRVO();
@@ -157,7 +156,7 @@ export class X86StdcallFnCaller implements X86ConventionalFnCaller {
         Math.ceil(argAllocSize / stack.size) * stack.size,
       );
 
-      regs.ownership.setOwnership(arg.name, {
+      memOwnership.setOwnership(arg.name, {
         stackVar,
       });
     }
@@ -200,7 +199,6 @@ export class X86StdcallFnCaller implements X86ConventionalFnCaller {
           allocator.regs.ownership.getVarOwnership(retInstruction.value.name);
 
         if (
-          isRegOwnership(usedOwnership) &&
           usedOwnership.reg !== returnReg &&
           getX86RegByteSize(returnReg) -
             getX86RegByteSize(usedOwnership.reg) ===
@@ -301,24 +299,21 @@ export class X86StdcallFnCaller implements X86ConventionalFnCaller {
     }
 
     Object.entries(ownership.getAllOwnerships()).forEach(
-      ([varName, varOwnership]) => {
-        if (
-          !isRegOwnership(varOwnership) ||
-          !ownership.lifetime.isVariableLaterUsed(iterator.offset, varName)
-        ) {
+      ([varName, regOwnership]) => {
+        if (!ownership.lifetime.isVariableLaterUsed(iterator.offset, varName)) {
           return;
         }
 
         asm.preserve.push(
           withInlineComment(
-            genInstruction('push', varOwnership.reg),
+            genInstruction('push', regOwnership.reg),
             `${chalk.greenBright('preserve:')} ${chalk.blueBright(varName)}`,
           ),
         );
 
         asm.restore.unshift(
           withInlineComment(
-            genInstruction('pop', varOwnership.reg),
+            genInstruction('pop', regOwnership.reg),
             `${chalk.greenBright('restore:')} ${chalk.blueBright(varName)}`,
           ),
         );

@@ -9,7 +9,6 @@ import { getX86RegByteSize } from '../../../constants/regs';
 
 import { X86CompilerFnAttrs } from '../../../constants/types';
 import { AsmOutputsWrapperAsm } from './compileAsmOutputs';
-import { isRegOwnership } from '../../reg-allocator';
 
 type AsmClobbersCompilerAttrs = X86CompilerFnAttrs & {
   clobberOperands: IRAsmClobberOperand[];
@@ -46,10 +45,6 @@ export function compileAsmClobbers({
     const ownershipHasDifferentRegLength = regOwnership.some(varName => {
       const varOwnership = ownership.getVarOwnership(varName);
 
-      if (!isRegOwnership(varOwnership)) {
-        return false;
-      }
-
       return getX86RegByteSize(varOwnership.reg) !== clobberedSpecifiedRegSize;
     });
 
@@ -62,7 +57,7 @@ export function compileAsmClobbers({
         regOwnership.flatMap(varName => {
           const varOwnership = ownership.getVarOwnership(varName);
 
-          return isRegOwnership(varOwnership) ? [varOwnership.reg] : [];
+          return [varOwnership.reg];
         }),
       );
 
