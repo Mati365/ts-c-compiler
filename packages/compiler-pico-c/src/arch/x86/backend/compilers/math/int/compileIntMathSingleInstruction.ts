@@ -1,16 +1,16 @@
 import { TokenType } from '@ts-c-compiler/lexer';
 
 import type { IRMathSingleArgInstruction } from 'frontend/ir/instructions';
-import type { X86CompilerInstructionFnAttrs } from '../../../constants/types';
+import type { X86CompilerInstructionFnAttrs } from '../../../../constants/types';
 
-import { genInstruction, withInlineComment } from '../../../asm-utils';
+import { genInstruction, withInlineComment } from '../../../../asm-utils';
 import { CBackendError, CBackendErrorCode } from 'backend/errors/CBackendError';
-import { X86CompileInstructionOutput } from '../shared';
+import { X86CompileInstructionOutput } from '../../shared';
 
 type MathSingleInstructionCompilerAttrs =
   X86CompilerInstructionFnAttrs<IRMathSingleArgInstruction>;
 
-export function compileMathSingleInstruction({
+export function compileIntMathSingleInstruction({
   instruction,
   context,
 }: MathSingleInstructionCompilerAttrs) {

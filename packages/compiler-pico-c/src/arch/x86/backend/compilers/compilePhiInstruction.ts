@@ -2,7 +2,7 @@ import { CBackendError, CBackendErrorCode } from 'backend/errors/CBackendError';
 import { IRPhiInstruction } from 'frontend/ir/instructions';
 
 import { X86CompilerInstructionFnAttrs } from '../../constants/types';
-import { IRRegOwnership, isRegOwnership } from '../reg-allocator';
+import { IRRegOwnership } from '../reg-allocator';
 
 type PhiInstructionCompilerAttrs =
   X86CompilerInstructionFnAttrs<IRPhiInstruction>;
@@ -19,10 +19,7 @@ export function compilePhiInstruction({
   const inputOwnership = vars.reduce((acc, argVar) => {
     const argOwnership = regs.ownership.getVarOwnership(argVar.name);
 
-    if (
-      !isRegOwnership(argOwnership) ||
-      (acc && acc.reg !== argOwnership.reg)
-    ) {
+    if (acc && acc.reg !== argOwnership.reg) {
       throw new CBackendError(CBackendErrorCode.INCORRECT_PHI_NODE);
     }
 

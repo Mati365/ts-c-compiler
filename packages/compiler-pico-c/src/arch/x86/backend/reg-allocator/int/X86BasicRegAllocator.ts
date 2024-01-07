@@ -13,12 +13,7 @@ import {
 import { isStructLikeType, isUnionLikeType } from 'frontend/analyze';
 
 import { getByteSizeArgPrefixName } from '@ts-c-compiler/x86-assembler';
-import {
-  genInstruction,
-  genMemAddress,
-  GenMemAddressConfig,
-  withInlineComment,
-} from '../../../asm-utils';
+import { genInstruction, withInlineComment } from '../../../asm-utils';
 import {
   queryAndMarkX86RegsMap,
   queryX86RegsMap,
@@ -29,16 +24,12 @@ import {
 import { X86RegName } from '@ts-c-compiler/x86-assembler';
 import { X86Allocator } from '../../X86Allocator';
 import { X86RegOwnershipTracker } from './X86RegOwnershipTracker';
-import {
-  IRLabelVarOwnership,
-  isLabelOwnership,
-  isRegOwnership,
-  isStackVarOwnership,
-} from './ownership';
 
 import { getX86RegByteSize } from '../../../constants/regs';
 import { castToPointerIfArray } from 'frontend/analyze/casts';
 import { X86VarLifetimeGraph } from '../X86VarLifetimeGraph';
+import { X86MemOwnershipTracker } from '../mem';
+import { isLabelOwnership, isStackVarOwnership } from '../mem/ownership';
 
 export type IRArgAllocatorResult<V extends string | number = string | number> =
   {
@@ -97,6 +88,10 @@ export class X86BasicRegAllocator {
     this.ownership = new X86RegOwnershipTracker(lifeTime, allocator);
   }
 
+  get memOwnership() {
+    return this.allocator.memOwnership;
+  }
+
   get config() {
     return this.allocator.config;
   }
@@ -108,7 +103,7 @@ export class X86BasicRegAllocator {
   tryResolveIRArgAsReg(
     attrs: IRArgRegResolverAttrs,
   ): IRArgAllocatorResult<X86RegName> {
-    const { stackFrame, ownership } = this;
+    const { stackFrame, ownership, memOwnership } = this;
     const {
       arg,
       size = castToPointerIfArray(arg.type).getByteSize(),
@@ -182,9 +177,10 @@ export class X86BasicRegAllocator {
     }
 
     if (isIRVariable(arg)) {
-      const varOwnership = ownership.getVarOwnership(arg.name);
+      const memAddr = memOwnership.getVarOwnership(arg.name);
+      const regOwnership = ownership.getVarOwnership(arg.name);
 
-      if (isLabelOwnership(varOwnership)) {
+      if (isLabelOwnership(memAddr)) {
         const regResult = this.requestReg({
           prefer: preferRegs,
           size,
@@ -197,9 +193,12 @@ export class X86BasicRegAllocator {
           });
         }
 
-        const address = this.tryResolveLabelOwnershipAddr(varOwnership, {
-          forceMemPtr: forceLabelMemPtr,
-        });
+        const address = X86MemOwnershipTracker.tryResolveLabelOwnershipAddr(
+          memAddr,
+          {
+            forceMemPtr: forceLabelMemPtr,
+          },
+        );
 
         return {
           size,
@@ -208,8 +207,8 @@ export class X86BasicRegAllocator {
         };
       }
 
-      if (isRegOwnership(varOwnership)) {
-        const varOwnershipRegSize = getX86RegByteSize(varOwnership.reg);
+      if (regOwnership) {
+        const varOwnershipRegSize = getX86RegByteSize(regOwnership.reg);
 
         // 1. Case:
         //  handle case: int a = (int) b + 3; where `b: char` is being loaded into bigger reg
@@ -220,7 +219,7 @@ export class X86BasicRegAllocator {
         //  other example: abc[2]++;
 
         if (
-          (allowedRegs && !allowedRegs.includes(varOwnership.reg)) ||
+          (allowedRegs && !allowedRegs.includes(regOwnership.reg)) ||
           requestArgSizeDelta
         ) {
           const regResult = this.requestReg({
@@ -243,7 +242,7 @@ export class X86BasicRegAllocator {
             value: regResult.value,
             asm: [
               ...regResult.asm,
-              genInstruction(movOpcode, regResult.value, varOwnership.reg),
+              genInstruction(movOpcode, regResult.value, regOwnership.reg),
             ],
           };
         }
@@ -255,7 +254,7 @@ export class X86BasicRegAllocator {
         //  char b = letters[0];
 
         if (varOwnershipRegSize - size === 1) {
-          const regPart = regsParts[varOwnership.reg];
+          const regPart = regsParts[regOwnership.reg];
 
           // variable is placed in AX / BX / etc. type registers that
           // have smaller parts like AL / AH / etc.
@@ -280,7 +279,7 @@ export class X86BasicRegAllocator {
             value: regsParts[regResult.value].low,
             asm: [
               ...regResult.asm,
-              genInstruction('mov', regResult.value, varOwnership.reg),
+              genInstruction('mov', regResult.value, regOwnership.reg),
             ],
           };
         } else if (varOwnershipRegSize - size > 1) {
@@ -288,15 +287,15 @@ export class X86BasicRegAllocator {
         }
 
         return {
-          value: varOwnership.reg,
+          value: regOwnership.reg,
           size,
           asm: [],
         };
       }
 
-      if (isStackVarOwnership(varOwnership)) {
+      if (isStackVarOwnership(memAddr)) {
         const stackAddr = stackFrame.getLocalVarStackRelAddress(
-          varOwnership.stackVar.name,
+          memAddr.stackVar.name,
         );
 
         const regResult = this.requestReg({
@@ -347,19 +346,6 @@ export class X86BasicRegAllocator {
     return null;
   }
 
-  tryResolveLabelOwnershipAddr(
-    ownership: IRLabelVarOwnership,
-    addrConfig?: Omit<GenMemAddressConfig, 'expression'> & {
-      forceMemPtr?: boolean;
-    },
-  ) {
-    const { asmLabel } = ownership;
-
-    return !addrConfig?.forceMemPtr
-      ? asmLabel
-      : genMemAddress({ expression: asmLabel, ...addrConfig });
-  }
-
   tryResolveIRArgAsAddr(
     arg: IRVariable,
     {
@@ -372,12 +358,12 @@ export class X86BasicRegAllocator {
       withoutMemPtrSize?: boolean;
     } = {},
   ): IRArgAllocatorResult<string> {
-    const varOwnership = this.ownership.getVarOwnership(arg.name);
+    const memAddr = this.memOwnership.getVarOwnership(arg.name);
     const prefixSizeName = getByteSizeArgPrefixName(prefixSize);
 
-    if (isStackVarOwnership(varOwnership)) {
+    if (isStackVarOwnership(memAddr)) {
       const stackAddr = this.stackFrame.getLocalVarStackRelAddress(
-        varOwnership.stackVar.name,
+        memAddr.stackVar.name,
       );
 
       return {
@@ -387,11 +373,11 @@ export class X86BasicRegAllocator {
       };
     }
 
-    if (isLabelOwnership(varOwnership)) {
+    if (isLabelOwnership(memAddr)) {
       return {
         asm: [],
         size: prefixSize,
-        value: this.tryResolveLabelOwnershipAddr(varOwnership, {
+        value: X86MemOwnershipTracker.tryResolveLabelOwnershipAddr(memAddr, {
           forceMemPtr: forceLabelMemPtr,
           ...(!withoutMemPtrSize && {
             size: prefixSizeName,
@@ -536,7 +522,7 @@ export class X86BasicRegAllocator {
     prefer?: X86RegName[];
     recursiveCall?: boolean;
   }): IRRegReqResult {
-    const { ownership, stackFrame } = this;
+    const { ownership, memOwnership, stackFrame } = this;
     const { general: generalRegs } = ownership.getAvailableRegs();
     const defaultAllowedRegs =
       generalRegs.size === query.size ? generalRegs.list : null;
@@ -575,8 +561,8 @@ export class X86BasicRegAllocator {
         const ownerships = ownership.getOwnershipByReg(reg);
 
         ownerships.forEach(ownershipName => {
-          ownership.setOwnership(ownershipName, {
-            releasePrevAllocatedReg: true,
+          ownership.dropOwnership(ownershipName);
+          memOwnership.setOwnership(ownershipName, {
             stackVar: spillVar,
           });
         });

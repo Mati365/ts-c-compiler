@@ -6,12 +6,13 @@ import { createX86RegsMap, RegsMap } from '../../../constants/regs';
 import { restoreInX86IntRegsMap, setAvailabilityInRegsMap } from '../../utils';
 
 import { X86Allocator } from '../../X86Allocator';
-import { IROwnershipMap, IROwnershipValue, isRegOwnership } from './ownership';
 import { X86VarLifetimeGraph } from '../X86VarLifetimeGraph';
+
+import type { IRRegOwnership, IRRegOwnershipMap } from './ownership';
 
 export class X86RegOwnershipTracker {
   protected availableRegs: RegsMap;
-  protected ownership: IROwnershipMap = {};
+  protected ownership: IRRegOwnershipMap = {};
 
   constructor(
     readonly lifetime: X86VarLifetimeGraph,
@@ -50,16 +51,14 @@ export class X86RegOwnershipTracker {
       return;
     }
 
-    if (isRegOwnership(item)) {
-      const ownerships = this.getOwnershipByReg(item.reg);
+    const ownerships = this.getOwnershipByReg(item.reg);
 
-      if (item.noPrune) {
-        return;
-      }
+    if (item.noPrune) {
+      return;
+    }
 
-      if (ownerships.length === 1) {
-        this.releaseRegs([item.reg]);
-      }
+    if (ownerships.length === 1) {
+      this.releaseRegs([item.reg]);
     }
 
     delete this.ownership[varName];
@@ -87,43 +86,37 @@ export class X86RegOwnershipTracker {
     {
       releasePrevAllocatedReg = true,
       ...value
-    }: IROwnershipValue & { releasePrevAllocatedReg?: boolean },
+    }: IRRegOwnership & { releasePrevAllocatedReg?: boolean },
   ) {
-    if (isRegOwnership(value)) {
-      // edge case in phi functions:
-      // if both: value and varName is phi function
-      // do not drop ownership!
-      // example:
-      //    jmp L2
-      //    L1:
-      //    %t{0}: int2B = assign:φ %1: int2B
-      //    jmp L3
-      //    L2:
-      //    %t{1}: char1B = assign:φ %0: int2B
-      //
-      // %t{0} and t{1} can use the same register (ax for example)!
-      this.getOwnershipByReg(value.reg).forEach(varName => {
-        const varOwnership = this.ownership[varName];
+    // edge case in phi functions:
+    // if both: value and varName is phi function
+    // do not drop ownership!
+    // example:
+    //    jmp L2
+    //    L1:
+    //    %t{0}: int2B = assign:φ %1: int2B
+    //    jmp L3
+    //    L2:
+    //    %t{1}: char1B = assign:φ %0: int2B
+    //
+    // %t{0} and t{1} can use the same register (ax for example)!
+    this.getOwnershipByReg(value.reg).forEach(varName => {
+      const varOwnership = this.ownership[varName];
 
-        // skip if both variables are phi - reused register
-        if (
-          value.noPrune &&
-          isRegOwnership(varOwnership) &&
-          varOwnership.noPrune
-        ) {
-          return;
-        }
-
-        delete this.ownership[varName];
-      });
-
-      if (releasePrevAllocatedReg) {
-        this.availableRegs = setAvailabilityInRegsMap(
-          { allowedRegs: [value.reg] },
-          true,
-          this.availableRegs,
-        );
+      // skip if both variables are phi - reused register
+      if (value.noPrune && varOwnership.noPrune) {
+        return;
       }
+
+      delete this.ownership[varName];
+    });
+
+    if (releasePrevAllocatedReg) {
+      this.availableRegs = setAvailabilityInRegsMap(
+        { allowedRegs: [value.reg] },
+        true,
+        this.availableRegs,
+      );
     }
 
     this.dropOwnership(inputVar);
@@ -136,7 +129,6 @@ export class X86RegOwnershipTracker {
 
     R.forEachObjIndexed((_, varName) => {
       if (
-        isRegOwnership(ownership[varName]) &&
         !lifetime.isVariableLaterUsed(offset, varName, exclusive) &&
         (!excludeVars || !excludeVars.includes(varName))
       ) {
@@ -149,9 +141,7 @@ export class X86RegOwnershipTracker {
     const { ownership } = this;
 
     R.forEachObjIndexed((_, varName) => {
-      if (isRegOwnership(ownership[varName])) {
-        this.dropOwnership(varName);
-      }
+      this.dropOwnership(varName);
     }, ownership);
   }
 
@@ -167,10 +157,6 @@ export class X86RegOwnershipTracker {
     const regsParts = this.getAvailableRegs().general.parts;
 
     R.forEachObjIndexed((item, varName) => {
-      if (!isRegOwnership(item)) {
-        return;
-      }
-
       if (
         item.reg === reg ||
         (lookupInPartials &&

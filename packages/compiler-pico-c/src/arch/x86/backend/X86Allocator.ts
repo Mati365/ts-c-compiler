@@ -4,7 +4,12 @@ import { CCompilerArch, CCompilerConfig } from '../../../constants';
 import type { IRBlockIterator } from '../../../frontend/ir/iterator';
 
 import { X86StackFrame } from './X86StackFrame';
-import { X86BasicRegAllocator, X87BasicRegAllocator } from './reg-allocator';
+import {
+  X86BasicRegAllocator,
+  X86MemOwnershipTracker,
+  X87BasicRegAllocator,
+} from './reg-allocator';
+
 import { genInstruction } from '../asm-utils';
 import { X86CompileInstructionOutput } from './compilers';
 import { X86VarLifetimeGraph } from './reg-allocator/X86VarLifetimeGraph';
@@ -15,6 +20,7 @@ export type X86StackFrameContentFn = () => X86CompileInstructionOutput;
 export class X86Allocator {
   private _stackFrame: X86StackFrame;
   private _regs: X86BasicRegAllocator;
+  private _mem: X86MemOwnershipTracker;
   private _x87Regs: X87BasicRegAllocator;
 
   constructor(
@@ -24,6 +30,7 @@ export class X86Allocator {
   ) {
     const lifetime = new X86VarLifetimeGraph(iterator.instructions);
 
+    this._mem = new X86MemOwnershipTracker(this.stackFrame);
     this._regs = new X86BasicRegAllocator(lifetime, this);
     this._x87Regs = new X87BasicRegAllocator(this);
   }
@@ -34,6 +41,14 @@ export class X86Allocator {
 
   get stackFrame() {
     return this._stackFrame;
+  }
+
+  get regOwnership() {
+    return this._regs.ownership;
+  }
+
+  get memOwnership() {
+    return this._mem;
   }
 
   get regs() {

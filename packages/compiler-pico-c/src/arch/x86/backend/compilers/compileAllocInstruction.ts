@@ -11,14 +11,14 @@ export function compileAllocInstruction({
 }: AllocInstructionCompilerAttrs) {
   const { outputVar } = instruction;
   const {
-    allocator: { stackFrame, regs },
+    allocator: { stackFrame, memOwnership },
   } = context;
 
   const stackVar = stackFrame.allocLocalVariable(
     outputVar.ofType(getBaseTypeIfPtr(outputVar.type)),
   );
 
-  regs.ownership.setOwnership(outputVar.name, {
+  memOwnership.setOwnership(outputVar.name, {
     stackVar,
   });
 }

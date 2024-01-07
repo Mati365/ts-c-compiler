@@ -1,9 +1,15 @@
 import {
+  X87StackRegName,
   X87_STACK_REGS_COUNT,
-  type X87StackRegName,
 } from '@ts-c-compiler/x86-assembler';
 
-import { IRConstant } from 'frontend/ir/variables';
+import {
+  IRConstant,
+  IRInstructionTypedArg,
+  isIRConstant,
+  isIRVariable,
+} from 'frontend/ir/variables';
+
 import { X86CompileInstructionOutput } from '../../compilers/shared/X86CompileInstructionOutput';
 import { X86Allocator } from '../../X86Allocator';
 import {
@@ -15,14 +21,9 @@ import {
 
 import { createX86RegsMap } from 'arch/x86/constants/regs';
 import { X86StackFrame, X86StackVariable } from '../../X86StackFrame';
+import { CBackendError, CBackendErrorCode } from 'backend/errors/CBackendError';
 
-export type IRArgX87AllocatorResult = {
-  asm: X86CompileInstructionOutput;
-  size: number;
-  value: X87StackRegName;
-};
-
-type StoreConstantAttrs = {
+type X87StoreConstantAttrs = {
   value: IRConstant;
   address: string;
 };
@@ -35,6 +36,16 @@ type X87OwnershipStackEntry = {
 type X87SpilledOwnershipStackEntry = {
   entry: X87OwnershipStackEntry;
   stackVar: X86StackVariable;
+};
+
+type X87PushIrArgOnStackAttrs = {
+  arg: IRInstructionTypedArg;
+  onTopOfStack?: boolean;
+};
+
+type X87PushIRArgOnStackResult = {
+  asm: X86CompileInstructionOutput;
+  reg: X87StackRegName;
 };
 
 export class X87BasicRegAllocator {
@@ -59,8 +70,46 @@ export class X87BasicRegAllocator {
     return this.stackOwnership.length === X87_STACK_REGS_COUNT;
   }
 
-  storeConstantAtAddress({ value, address }: StoreConstantAttrs) {
-    const constLabel = this.allocator.labelsResolver.genUniqLabel();
+  pushIRArgOnStack({
+    arg,
+  }: X87PushIrArgOnStackAttrs): X87PushIRArgOnStackResult {
+    const { allocator } = this;
+
+    const asm = new X86CompileInstructionOutput();
+    const size = arg.type.getByteSize();
+
+    if (isIRConstant(arg)) {
+      const constLabel = allocator.labelsResolver.genUniqLabel();
+
+      this.pushVariableOnStack({
+        size: arg.type.getByteSize(),
+      });
+
+      asm.appendInstructions(
+        genInstruction('fld', genMemAddress({ size, expression: constLabel })),
+      );
+
+      asm.appendData(
+        genLabeledInstruction(constLabel, genDefConst(size, [arg.constant])),
+      );
+
+      return {
+        reg: 'st0',
+        asm,
+      };
+    }
+
+    if (isIRVariable(arg)) {
+      console.info(arg);
+    }
+
+    throw new CBackendError(CBackendErrorCode.UNABLE_PUSH_ARG_ON_X87_STACK);
+  }
+
+  storeConstantAtAddress({ value, address }: X87StoreConstantAttrs) {
+    const { allocator } = this;
+
+    const constLabel = allocator.labelsResolver.genUniqLabel();
     const size = value.type.getByteSize();
     const isExhausted = this.isStackFull();
     const asm = new X86CompileInstructionOutput();

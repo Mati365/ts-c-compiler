@@ -9,6 +9,14 @@ export class X86CompileInstructionOutput {
     return this;
   }
 
+  appendGroups(...groups: X86CompileInstructionOutput[]) {
+    for (const group of groups) {
+      this.appendGroup(group);
+    }
+
+    return this;
+  }
+
   appendInstructions(...asm: string[]) {
     this.asm.push(...asm);
     return this;
