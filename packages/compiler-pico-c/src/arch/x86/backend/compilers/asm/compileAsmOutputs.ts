@@ -36,7 +36,7 @@ export function compileAsmOutputs({
     }
 
     if (condFlag(flags.memory, IRArgDynamicResolverType.MEM)) {
-      const memResult = allocator.regs.tryResolveIRArgAsAddr(irVar);
+      const memResult = allocator.memOwnership.tryResolveIRArgAsAddr(irVar);
 
       if (memResult) {
         asm.pre.push(

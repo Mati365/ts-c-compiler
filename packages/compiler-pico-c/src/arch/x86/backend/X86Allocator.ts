@@ -30,7 +30,7 @@ export class X86Allocator {
   ) {
     const lifetime = new X86VarLifetimeGraph(iterator.instructions);
 
-    this._mem = new X86MemOwnershipTracker(this.stackFrame);
+    this._mem = new X86MemOwnershipTracker(this);
     this._regs = new X86BasicRegAllocator(lifetime, this);
     this._x87Regs = new X87BasicRegAllocator(this);
   }

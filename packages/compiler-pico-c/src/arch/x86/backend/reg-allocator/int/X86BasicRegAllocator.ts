@@ -5,7 +5,6 @@ import { CBackendError, CBackendErrorCode } from 'backend/errors/CBackendError';
 
 import {
   IRInstructionTypedArg,
-  IRVariable,
   isIRConstant,
   isIRVariable,
 } from 'frontend/ir/variables';
@@ -180,33 +179,6 @@ export class X86BasicRegAllocator {
       const memAddr = memOwnership.getVarOwnership(arg.name);
       const regOwnership = ownership.getVarOwnership(arg.name);
 
-      if (isLabelOwnership(memAddr)) {
-        const regResult = this.requestReg({
-          prefer: preferRegs,
-          size,
-          allowedRegs,
-        });
-
-        if (!noOwnership) {
-          ownership.setOwnership(arg.name, {
-            reg: regResult.value,
-          });
-        }
-
-        const address = X86MemOwnershipTracker.tryResolveLabelOwnershipAddr(
-          memAddr,
-          {
-            forceMemPtr: forceLabelMemPtr,
-          },
-        );
-
-        return {
-          size,
-          value: regResult.value,
-          asm: [genInstruction('mov', regResult.value, address)],
-        };
-      }
-
       if (regOwnership) {
         const varOwnershipRegSize = getX86RegByteSize(regOwnership.reg);
 
@@ -293,6 +265,33 @@ export class X86BasicRegAllocator {
         };
       }
 
+      if (isLabelOwnership(memAddr)) {
+        const regResult = this.requestReg({
+          prefer: preferRegs,
+          size,
+          allowedRegs,
+        });
+
+        if (!noOwnership) {
+          ownership.setOwnership(arg.name, {
+            reg: regResult.value,
+          });
+        }
+
+        const address = X86MemOwnershipTracker.tryResolveLabelOwnershipAddr(
+          memAddr,
+          {
+            forceMemPtr: forceLabelMemPtr,
+          },
+        );
+
+        return {
+          size,
+          value: regResult.value,
+          asm: [genInstruction('mov', regResult.value, address)],
+        };
+      }
+
       if (isStackVarOwnership(memAddr)) {
         const stackAddr = stackFrame.getLocalVarStackRelAddress(
           memAddr.stackVar.name,
@@ -346,49 +345,6 @@ export class X86BasicRegAllocator {
     return null;
   }
 
-  tryResolveIRArgAsAddr(
-    arg: IRVariable,
-    {
-      prefixSize = arg.type.getByteSize(),
-      forceLabelMemPtr,
-      withoutMemPtrSize,
-    }: {
-      prefixSize?: number;
-      forceLabelMemPtr?: boolean;
-      withoutMemPtrSize?: boolean;
-    } = {},
-  ): IRArgAllocatorResult<string> {
-    const memAddr = this.memOwnership.getVarOwnership(arg.name);
-    const prefixSizeName = getByteSizeArgPrefixName(prefixSize);
-
-    if (isStackVarOwnership(memAddr)) {
-      const stackAddr = this.stackFrame.getLocalVarStackRelAddress(
-        memAddr.stackVar.name,
-      );
-
-      return {
-        asm: [],
-        size: prefixSize,
-        value: withoutMemPtrSize ? stackAddr : `${prefixSizeName} ${stackAddr}`,
-      };
-    }
-
-    if (isLabelOwnership(memAddr)) {
-      return {
-        asm: [],
-        size: prefixSize,
-        value: X86MemOwnershipTracker.tryResolveLabelOwnershipAddr(memAddr, {
-          forceMemPtr: forceLabelMemPtr,
-          ...(!withoutMemPtrSize && {
-            size: prefixSizeName,
-          }),
-        }),
-      };
-    }
-
-    return null;
-  }
-
   tryResolveIrArg(
     attrs: IRArgDynamicResolverAttrs,
   ): IRDynamicArgAllocatorResult {
@@ -414,9 +370,10 @@ export class X86BasicRegAllocator {
     }
 
     if (isIRVariable(arg)) {
-      const { ownership } = this;
-
-      if (hasFlag(IRArgDynamicResolverType.REG, allow) && ownership[arg.name]) {
+      if (
+        hasFlag(IRArgDynamicResolverType.REG, allow) &&
+        this.ownership.getVarOwnership(arg.name)
+      ) {
         return {
           type: IRArgDynamicResolverType.REG,
           ...this.tryResolveIRArgAsReg({
@@ -430,7 +387,7 @@ export class X86BasicRegAllocator {
       }
 
       if (hasFlag(IRArgDynamicResolverType.MEM, allow)) {
-        const result = this.tryResolveIRArgAsAddr(arg, {
+        const result = this.memOwnership.tryResolveIRArgAsAddr(arg, {
           forceLabelMemPtr,
           withoutMemPtrSize,
           prefixSize: size,
@@ -449,7 +406,7 @@ export class X86BasicRegAllocator {
           hasFlag(IRArgDynamicResolverType.REG, allow) &&
           size > argSize
         ) {
-          const extendedResult = this.tryResolveIRArgAsAddr(arg, {
+          const extendedResult = this.memOwnership.tryResolveIRArgAsAddr(arg, {
             prefixSize: size,
             forceLabelMemPtr,
             withoutMemPtrSize,

@@ -1,6 +1,8 @@
 import { getByteSizeArgPrefixName } from '@ts-c-compiler/x86-assembler';
 
 import { GenMemAddressConfig, genMemAddress } from 'arch/x86/asm-utils';
+import { CBackendError, CBackendErrorCode } from 'backend/errors/CBackendError';
+
 import {
   isStackVarOwnership,
   isLabelOwnership,
@@ -10,7 +12,7 @@ import {
 } from './ownership';
 
 import type { IRVariable } from 'frontend/ir/variables';
-import type { X86StackFrame } from '../../X86StackFrame';
+import type { X86Allocator } from '../../X86Allocator';
 
 export type IRArgMemResult = {
   asm: string[];
@@ -21,7 +23,15 @@ export type IRArgMemResult = {
 export class X86MemOwnershipTracker {
   private readonly map: IRMemOwnershipMap = {};
 
-  constructor(private readonly stackFrame: X86StackFrame) {}
+  constructor(private readonly allocator: X86Allocator) {}
+
+  aliasOwnership(inputVar: string, outputVar: string) {
+    if (!this.map[inputVar]) {
+      throw new CBackendError(CBackendErrorCode.UNKNOWN_BACKEND_ERROR);
+    }
+
+    this.map[outputVar] = { ...this.map[inputVar] };
+  }
 
   setOwnership(varName: string, ownership: IRMemOwnershipValue) {
     this.map[varName] = ownership;
@@ -44,7 +54,7 @@ export class X86MemOwnershipTracker {
     const prefixSizeName = getByteSizeArgPrefixName(prefixSize);
 
     if (isStackVarOwnership(memAddr)) {
-      const stackAddr = this.stackFrame.getLocalVarStackRelAddress(
+      const stackAddr = this.allocator.stackFrame.getLocalVarStackRelAddress(
         memAddr.stackVar.name,
       );
 
