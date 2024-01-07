@@ -199,6 +199,7 @@ export class X86StdcallFnCaller implements X86ConventionalFnCaller {
           allocator.regs.ownership.getVarOwnership(retInstruction.value.name);
 
         if (
+          usedOwnership &&
           usedOwnership.reg !== returnReg &&
           getX86RegByteSize(returnReg) -
             getX86RegByteSize(usedOwnership.reg) ===

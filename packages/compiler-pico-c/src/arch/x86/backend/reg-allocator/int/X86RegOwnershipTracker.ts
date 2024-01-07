@@ -1,6 +1,7 @@
 import * as R from 'ramda';
 
 import { X86RegName } from '@ts-c-compiler/x86-assembler';
+import { CBackendError, CBackendErrorCode } from 'backend/errors/CBackendError';
 
 import { createX86RegsMap, RegsMap } from '../../../constants/regs';
 import { restoreInX86IntRegsMap, setAvailabilityInRegsMap } from '../../utils';
@@ -78,6 +79,10 @@ export class X86RegOwnershipTracker {
   }
 
   aliasOwnership(inputVar: string, outputVar: string) {
+    if (!this.ownership[inputVar]) {
+      throw new CBackendError(CBackendErrorCode.UNKNOWN_BACKEND_ERROR);
+    }
+
     this.ownership[outputVar] = { ...this.ownership[inputVar] };
   }
 

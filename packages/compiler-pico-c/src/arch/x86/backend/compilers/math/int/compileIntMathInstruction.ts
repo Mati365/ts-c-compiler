@@ -33,7 +33,7 @@ export function compileIntMathInstruction({
 }: MathInstructionCompilerAttrs) {
   const { leftVar, rightVar, outputVar, operator } = instruction;
   const {
-    allocator: { regs },
+    allocator: { regs, memOwnership },
   } = context;
 
   const isUnsigned =
@@ -106,7 +106,15 @@ export function compileIntMathInstruction({
       }
 
       if (isIRVariable(leftVar) && isNopMathInstruction(instruction)) {
-        regs.ownership.aliasOwnership(leftVar.name, instruction.outputVar.name);
+        if (regs.ownership.getVarOwnership(leftVar.name)) {
+          regs.ownership.aliasOwnership(
+            leftVar.name,
+            instruction.outputVar.name,
+          );
+        } else if (memOwnership.getVarOwnership(leftVar.name)) {
+          memOwnership.aliasOwnership(leftVar.name, instruction.outputVar.name);
+        }
+
         return X86CompileInstructionOutput.ofBlank();
       }
 

@@ -57,7 +57,7 @@ export function compileAsmClobbers({
         regOwnership.flatMap(varName => {
           const varOwnership = ownership.getVarOwnership(varName);
 
-          return [varOwnership.reg];
+          return varOwnership ? [varOwnership.reg] : [];
         }),
       );
 
