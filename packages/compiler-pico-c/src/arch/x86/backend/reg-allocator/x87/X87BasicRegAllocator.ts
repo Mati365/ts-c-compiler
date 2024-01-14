@@ -1,7 +1,7 @@
-import {
-  X87StackRegName,
-  X87_STACK_REGS_COUNT,
-} from '@ts-c-compiler/x86-assembler';
+import { X87StackRegName } from '@ts-c-compiler/x86-assembler';
+
+import type { CType } from 'frontend/analyze';
+import type { X86VarLifetimeGraph } from '../X86VarLifetimeGraph';
 
 import {
   IRConstant,
@@ -19,180 +19,165 @@ import {
   genMemAddress,
 } from 'arch/x86/asm-utils';
 
-import { createX86RegsMap } from 'arch/x86/constants/regs';
-import { X86StackFrame, X86StackVariable } from '../../X86StackFrame';
 import { CBackendError, CBackendErrorCode } from 'backend/errors/CBackendError';
+import {
+  X87OwnershipStackEntry,
+  X87RegOwnershipTracker,
+} from './X87RegOwnershipTracker';
 
 type X87StoreConstantAttrs = {
   value: IRConstant;
   address: string;
 };
 
-type X87OwnershipStackEntry = {
-  size: number;
-  varName?: string;
-};
-
-type X87SpilledOwnershipStackEntry = {
-  entry: X87OwnershipStackEntry;
-  stackVar: X86StackVariable;
+type X87StoreStackRegAttrs = {
+  reg: X87StackRegName;
+  address: string;
 };
 
 type X87PushIrArgOnStackAttrs = {
   arg: IRInstructionTypedArg;
-  onTopOfStack?: boolean;
+  castedType?: CType;
+  stackIndex?: number;
 };
 
-type X87PushIRArgOnStackResult = {
+type X87IRArgStackResult = {
   asm: X86CompileInstructionOutput;
-  reg: X87StackRegName;
+  entry: X87OwnershipStackEntry;
 };
 
 export class X87BasicRegAllocator {
-  private readonly stackOwnership: X87OwnershipStackEntry[] = [];
+  readonly tracker: X87RegOwnershipTracker;
 
-  private readonly spilledStackOwnership: X87SpilledOwnershipStackEntry[] = [];
-
-  private readonly stackRegsMap =
-    createX86RegsMap()[this.config.arch].float.x87;
-
-  constructor(private readonly allocator: X86Allocator) {}
-
-  private get config() {
-    return this.allocator.config;
+  constructor(
+    lifetime: X86VarLifetimeGraph,
+    private readonly allocator: X86Allocator,
+  ) {
+    this.tracker = new X87RegOwnershipTracker(lifetime, allocator);
   }
 
   private get stackFrame() {
     return this.allocator.stackFrame;
   }
 
-  private isStackFull() {
-    return this.stackOwnership.length === X87_STACK_REGS_COUNT;
-  }
-
   pushIRArgOnStack({
     arg,
-  }: X87PushIrArgOnStackAttrs): X87PushIRArgOnStackResult {
+    castedType = arg.type,
+  }: X87PushIrArgOnStackAttrs): X87IRArgStackResult {
     const { allocator } = this;
 
     const asm = new X86CompileInstructionOutput();
-    const size = arg.type.getByteSize();
+    const size = castedType.getByteSize();
 
     if (isIRConstant(arg)) {
       const constLabel = allocator.labelsResolver.genUniqLabel();
-
-      this.pushVariableOnStack({
-        size: arg.type.getByteSize(),
+      const pushResult = this.pushVariableOnStack({
+        size,
       });
 
+      asm.appendGroup(pushResult.asm);
       asm.appendInstructions(
         genInstruction('fld', genMemAddress({ size, expression: constLabel })),
       );
 
       asm.appendData(
-        genLabeledInstruction(constLabel, genDefConst(size, [arg.constant])),
+        genLabeledInstruction(
+          constLabel,
+          genDefConst({ size, values: [arg.constant], float: true }),
+        ),
       );
 
       return {
-        reg: 'st0',
+        entry: pushResult.entry,
         asm,
       };
     }
 
     if (isIRVariable(arg)) {
-      console.info(arg);
+      const pushResult = this.pushVariableOnStack({
+        varName: arg.name,
+        size: arg.type.getByteSize(),
+      });
+
+      if (!arg.isTemporary()) {
+        const stackAddress = this.stackFrame.getLocalVarStackRelAddress(
+          arg.name,
+          {
+            withSize: true,
+          },
+        );
+
+        asm.appendInstructions(genInstruction('fld', stackAddress));
+      }
+
+      asm.appendGroup(pushResult.asm);
+
+      return {
+        entry: pushResult.entry,
+        asm,
+      };
     }
 
     throw new CBackendError(CBackendErrorCode.UNABLE_PUSH_ARG_ON_X87_STACK);
   }
 
+  storeStackRegAtAddress({ reg, address }: X87StoreStackRegAttrs) {
+    const asm = new X86CompileInstructionOutput();
+
+    if (reg !== 'st0') {
+      asm.appendGroup(this.tracker.swapWithStackTop(reg));
+    }
+
+    asm.appendInstructions(genInstruction('fst', address));
+    this.tracker.markUnusedAsReadyToErase();
+
+    return {
+      asm,
+    };
+  }
+
   storeConstantAtAddress({ value, address }: X87StoreConstantAttrs) {
-    const { allocator } = this;
+    const { allocator, tracker } = this;
+    const asm = new X86CompileInstructionOutput();
 
     const constLabel = allocator.labelsResolver.genUniqLabel();
     const size = value.type.getByteSize();
-    const isExhausted = this.isStackFull();
-    const asm = new X86CompileInstructionOutput();
 
-    this.pushVariableOnStack({
+    const pushResult = this.pushVariableOnStack({
       size: value.type.getByteSize(),
     });
 
-    if (isExhausted) {
-      asm.appendGroup(this.spillLast());
-    }
-
+    asm.appendGroup(pushResult.asm);
     asm.appendInstructions(
       genInstruction('fld', genMemAddress({ size, expression: constLabel })),
       genInstruction('fstp', address),
     );
 
     asm.appendData(
-      genLabeledInstruction(constLabel, genDefConst(size, [value.constant])),
-    );
-
-    this.popVariableFromStack();
-
-    if (isExhausted) {
-      this.revertLastSpilled();
-    }
-
-    return asm;
-  }
-
-  private swapWithStackTop(index: number) {
-    const { stackRegsMap, stackOwnership } = this;
-
-    [stackOwnership[index], stackOwnership[0]] = [
-      stackOwnership[0],
-      stackOwnership[index],
-    ];
-
-    return {
-      asm: X86CompileInstructionOutput.ofInstructions([
-        genInstruction('fxchg', stackRegsMap.stack[index]),
-      ]),
-    };
-  }
-
-  private popVariableFromStack() {
-    return this.stackOwnership.shift();
-  }
-
-  private pushVariableOnStack(entry: X87OwnershipStackEntry) {
-    if (this.isStackFull()) {
-      this.spillLast();
-    }
-
-    this.stackOwnership.unshift(entry);
-  }
-
-  private spillLast() {
-    const lastOwnership = this.stackOwnership.pop();
-    const spilledStackVar = this.stackFrame.allocSpillVariable(
-      lastOwnership.size,
-    );
-    const asm = new X86CompileInstructionOutput();
-
-    this.swapWithStackTop(X87_STACK_REGS_COUNT - 1);
-    asm.appendInstructions(
-      genInstruction(
-        'fstp',
-        X86StackFrame.getStackVarRelAddress(spilledStackVar),
+      genLabeledInstruction(
+        constLabel,
+        genDefConst({ size, values: [value.constant], float: true }),
       ),
     );
 
-    this.spilledStackOwnership.push({
-      entry: this.stackOwnership.shift(),
-      stackVar: spilledStackVar,
-    });
-
+    tracker.markAsReadyToErase(pushResult.entry.reg);
     return asm;
   }
 
-  private revertLastSpilled() {
-    const lastSpilled = this.spilledStackOwnership.pop();
+  private pushVariableOnStack(entry: Omit<X87OwnershipStackEntry, 'reg'>) {
+    const { tracker } = this;
 
-    this.pushVariableOnStack(lastSpilled.entry);
+    const asm = new X86CompileInstructionOutput();
+    const pushedEntry: X87OwnershipStackEntry = {
+      ...entry,
+      reg: 'st0',
+    };
+
+    asm.appendGroup(tracker.push(pushedEntry));
+
+    return {
+      entry: pushedEntry,
+      asm,
+    };
   }
 }

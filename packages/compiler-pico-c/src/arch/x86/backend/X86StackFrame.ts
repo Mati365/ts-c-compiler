@@ -76,9 +76,12 @@ export class X86StackFrame {
     return stackVar;
   }
 
-  getLocalVarStackRelAddress(name: string, offset: number = 0) {
+  getLocalVarStackRelAddress(
+    name: string,
+    { offset = 0, withSize }: { offset?: number; withSize?: boolean } = {},
+  ) {
     const { arch } = this.config;
-    const stackOffset = this.getStackVarOffset(name);
+    const { offset: stackOffset, size } = this.getStackVar(name);
 
     if (offset < 0 && stackOffset + offset >= 0) {
       throw new CBackendError(CBackendErrorCode.OFFSET_OVERFLOW, { name });
@@ -87,6 +90,9 @@ export class X86StackFrame {
     switch (arch) {
       case CCompilerArch.X86_16:
         return genMemAddress({
+          ...(withSize && {
+            size,
+          }),
           expression: 'bp',
           offset: stackOffset + offset,
         });

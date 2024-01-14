@@ -74,6 +74,12 @@ export const X87_STACK_REGS_COUNT = X87_STACK_REGISTERS.length;
 
 export type X87StackRegName = (typeof X87_STACK_REGISTERS)[number];
 
+export const getX87StackRegIndex = (name: X87StackRegName) =>
+  +name.replace('st', '');
+
+export const createX87StackRegByIndex = (index: number) =>
+  `st${index}` as X87StackRegName;
+
 /**
  * 32bit regs
  */

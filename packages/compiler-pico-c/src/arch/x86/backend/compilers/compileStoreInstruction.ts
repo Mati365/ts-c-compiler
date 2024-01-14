@@ -38,36 +38,40 @@ export function compileStoreInstruction({
     isPrimitiveLikeType(baseOutputType, true) && baseOutputType.isFloating();
 
   if (outputVar.isTemporary()) {
-    // 1. handle pointers assign
-    //  *(%t{0}) = 4;
-    // 2. handle case when we have:
-    //  *(%t{4}: struct Vec2*2B) = store %5: char1B
-    //  in this case size should be loaded from left side and it should
-    //  respect offset size of struct entry (for example `x` might have 1B size)
-    const memPtrAddr = memOwnership.tryResolveIRArgAsAddr(outputVar, {
-      forceLabelMemPtr: true,
-    });
-
-    if (memPtrAddr) {
-      // handle case: %t{1}: const char**2B = alloca const char*2B
-      // it can be reproduced in `printf("Hello");` call
-      output.appendInstructions(...memPtrAddr.asm);
-      destAddr = memPtrAddr;
+    if (isFloating) {
+      // TODO
     } else {
-      const ptrVarReg = regs.tryResolveIRArgAsReg({
-        arg: outputVar,
-        allowedRegs: regs.ownership.getAvailableRegs().addressing,
+      // 1. handle pointers assign
+      //  *(%t{0}) = 4;
+      // 2. handle case when we have:
+      //  *(%t{4}: struct Vec2*2B) = store %5: char1B
+      //  in this case size should be loaded from left side and it should
+      //  respect offset size of struct entry (for example `x` might have 1B size)
+      const memPtrAddr = memOwnership.tryResolveIRArgAsAddr(outputVar, {
+        forceLabelMemPtr: true,
       });
 
-      output.appendInstructions(...ptrVarReg.asm);
-      destAddr = {
-        size: outputByteSize,
-        value: genMemAddress({
-          size: getByteSizeArgPrefixName(outputByteSize),
-          expression: ptrVarReg.value,
-          offset,
-        }),
-      };
+      if (memPtrAddr) {
+        // handle case: %t{1}: const char**2B = alloca const char*2B
+        // it can be reproduced in `printf("Hello");` call
+        output.appendInstructions(...memPtrAddr.asm);
+        destAddr = memPtrAddr;
+      } else {
+        const ptrVarReg = regs.tryResolveIRArgAsReg({
+          arg: outputVar,
+          allowedRegs: regs.ownership.getAvailableRegs().addressing,
+        });
+
+        output.appendInstructions(...ptrVarReg.asm);
+        destAddr = {
+          size: outputByteSize,
+          value: genMemAddress({
+            size: getByteSizeArgPrefixName(outputByteSize),
+            expression: ptrVarReg.value,
+            offset,
+          }),
+        };
+      }
     }
   } else {
     // handle normal variable assign
@@ -85,7 +89,7 @@ export function compileStoreInstruction({
       size: outputByteSize,
       value: [
         prefix.toLocaleLowerCase(),
-        stackFrame.getLocalVarStackRelAddress(outputVar.name, offset),
+        stackFrame.getLocalVarStackRelAddress(outputVar.name, { offset }),
       ].join(' '),
     };
   }
@@ -107,53 +111,65 @@ export function compileStoreInstruction({
         }),
       );
     } else {
-      // simple variables that can be stored inside regs
-      let inputReg = regs.tryResolveIRArgAsReg({
-        arg: value,
-        forceLabelMemPtr: false,
-      });
-
-      if (inputReg.size - destAddr.size === 1) {
-        // case: *(%t{1}: char*2B) = store %t{2}: int2B
-        // bigger value is loaded in smaller address
-        const part =
-          regs.ownership.getAvailableRegs().general.parts[inputReg.value];
-
-        inputReg = {
-          ...inputReg,
-          size: part.size,
-          value: part.low,
-        };
-      } else if (inputReg.size - destAddr.size === -1) {
-        // case: *(k{0}: int*2B) = store %t{0}: char1B
-        // smaller value is loaded in bigger address
-        const extendedReg = regs.requestReg({
-          size: destAddr.size,
+      if (isFloating) {
+        // store floating point number
+        // *(b{0}: float*2B) = store %t{1}: float4B
+        const stackRegResult = x87regs.tracker.getStackVar(value.name);
+        const storeResult = x87regs.storeStackRegAtAddress({
+          reg: stackRegResult.reg,
+          address: destAddr.value,
         });
 
-        regs.ownership.setOwnership(value.name, {
-          reg: extendedReg.value,
+        output.appendGroups(storeResult.asm);
+      } else {
+        // simple variables that can be stored inside regs
+        let inputReg = regs.tryResolveIRArgAsReg({
+          arg: value,
+          forceLabelMemPtr: false,
         });
 
-        // extend value before move
-        inputReg = {
-          asm: [
-            ...inputReg.asm,
-            ...extendedReg.asm,
-            genInstruction('movzx', extendedReg.value, inputReg.value),
-          ],
-          size: extendedReg.size,
-          value: extendedReg.value,
-        };
+        if (inputReg.size - destAddr.size === 1) {
+          // case: *(%t{1}: char*2B) = store %t{2}: int2B
+          // bigger value is loaded in smaller address
+          const part =
+            regs.ownership.getAvailableRegs().general.parts[inputReg.value];
+
+          inputReg = {
+            ...inputReg,
+            size: part.size,
+            value: part.low,
+          };
+        } else if (inputReg.size - destAddr.size === -1) {
+          // case: *(k{0}: int*2B) = store %t{0}: char1B
+          // smaller value is loaded in bigger address
+          const extendedReg = regs.requestReg({
+            size: destAddr.size,
+          });
+
+          regs.ownership.setOwnership(value.name, {
+            reg: extendedReg.value,
+          });
+
+          // extend value before move
+          inputReg = {
+            asm: [
+              ...inputReg.asm,
+              ...extendedReg.asm,
+              genInstruction('movzx', extendedReg.value, inputReg.value),
+            ],
+            size: extendedReg.size,
+            value: extendedReg.value,
+          };
+        }
+
+        output.appendInstructions(
+          ...inputReg.asm,
+          withInlineComment(
+            genInstruction('mov', destAddr.value, inputReg.value),
+            instruction.getDisplayName(),
+          ),
+        );
       }
-
-      output.appendInstructions(
-        ...inputReg.asm,
-        withInlineComment(
-          genInstruction('mov', destAddr.value, inputReg.value),
-          instruction.getDisplayName(),
-        ),
-      );
     }
   } else if (isIRConstant(value)) {
     if (isFloating) {

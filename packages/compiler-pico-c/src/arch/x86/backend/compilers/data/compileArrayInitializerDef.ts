@@ -78,16 +78,22 @@ export function compileArrayInitializerDefAsm({
 
             acc.pre.push(genPtrLiteralLabel(strStringLabel));
             acc.post.push(
-              `${genLabel(strStringLabel, false)} ${genDefConst(1, [
-                group[i],
-              ])}`,
+              `${genLabel(strStringLabel, false)} ${genDefConst({
+                size: 1,
+                values: [group[i]],
+              })}`,
             );
           } else {
-            acc.post.push(genDefConst(1, [group[i]]));
+            acc.post.push(genDefConst({ size: 1, values: [group[i]] }));
           }
         }
       } else {
-        acc.pre.push(genDefConst(initializer.getSingleItemByteSize(), group));
+        acc.pre.push(
+          genDefConst({
+            size: initializer.getSingleItemByteSize(),
+            values: group,
+          }),
+        );
       }
 
       return acc;

@@ -50,7 +50,6 @@ export class X86MemOwnershipTracker {
     } = {},
   ): IRArgMemResult {
     const memAddr = this.getVarOwnership(arg.name);
-
     const prefixSizeName = getByteSizeArgPrefixName(prefixSize);
 
     if (isStackVarOwnership(memAddr)) {
