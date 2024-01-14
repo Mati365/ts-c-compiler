@@ -32,7 +32,7 @@ export class X86Allocator {
 
     this._mem = new X86MemOwnershipTracker(this);
     this._regs = new X86BasicRegAllocator(lifetime, this);
-    this._x87Regs = new X87BasicRegAllocator(this);
+    this._x87Regs = new X87BasicRegAllocator(lifetime, this);
   }
 
   get instructions() {

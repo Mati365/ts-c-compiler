@@ -342,6 +342,7 @@ export class X87RegsStore {
   safePop(): number {
     const { stack } = this;
     const prevTag = this.getNthTag(this.stackPointer);
+    const oldVal = stack[this.stackPointer];
 
     this.setNthTag(this.stackPointer, X87Tag.EMPTY);
     this.setStackPointer(this.stackPointer + 1);
@@ -356,7 +357,7 @@ export class X87RegsStore {
       }
     }
 
-    return stack[this.stackPointer];
+    return oldVal;
   }
 
   /**

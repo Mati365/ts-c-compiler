@@ -19,6 +19,7 @@ export enum CBackendErrorCode {
   UNABLE_TO_COMPILE_MEMCPY = 'UNABLE_TO_COMPILE_MEMCPY',
   UNKNOWN_BUILTIN_FUNCTION = 'UNKNOWN_BUILTIN_FUNCTION',
   UNABLE_PUSH_ARG_ON_X87_STACK = 'UNABLE_PUSH_ARG_ON_X87_STACK',
+  CANNOT_OVERRIDE_X87_STACK = 'CANNOT_OVERRIDE_X87_STACK',
 }
 
 export const C_BACKEND_ERROR_TRANSLATIONS: Record<CBackendErrorCode, string> = {
@@ -60,6 +61,9 @@ export const C_BACKEND_ERROR_TRANSLATIONS: Record<CBackendErrorCode, string> = {
   ),
   [CBackendErrorCode.UNABLE_PUSH_ARG_ON_X87_STACK]: fixme(
     'Unable to push arg to x87 stack!',
+  ),
+  [CBackendErrorCode.CANNOT_OVERRIDE_X87_STACK]: fixme(
+    'Cannot override x87 stack!',
   ),
 };
 

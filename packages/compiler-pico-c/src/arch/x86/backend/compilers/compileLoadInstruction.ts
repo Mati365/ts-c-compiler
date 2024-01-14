@@ -1,7 +1,7 @@
 import { IRLoadInstruction } from 'frontend/ir/instructions';
 import { CBackendError, CBackendErrorCode } from 'backend/errors/CBackendError';
 
-import { isPointerLikeType } from 'frontend/analyze';
+import { isPointerLikeType, isPrimitiveLikeType } from 'frontend/analyze';
 import { castToPointerIfArray } from 'frontend/analyze/casts';
 
 import { X86CompileInstructionOutput } from './shared';
@@ -21,10 +21,10 @@ export function compileLoadInstruction({
 }: LoadInstructionCompilerAttrs) {
   const { inputVar, outputVar } = instruction;
   const {
-    allocator: { regs, memOwnership, stackFrame },
+    allocator: { regs, x87regs, memOwnership, stackFrame },
   } = context;
 
-  const asm: string[] = [];
+  const output = new X86CompileInstructionOutput();
 
   if (inputVar.isTemporary()) {
     if (!isPointerLikeType(inputVar.type)) {
@@ -39,7 +39,7 @@ export function compileLoadInstruction({
       inputVar.type.baseType.getByteSize(),
     );
 
-    const output = regs.requestReg({
+    const outputReg = regs.requestReg({
       size: regSize,
     });
 
@@ -57,14 +57,14 @@ export function compileLoadInstruction({
     // letter[0] must be truncated to 1 byte (compiler used to emit `mov ax, [bx]` like instruction)
     const zeroExtend = regSize - outputRegSize === 1;
 
-    regs.ownership.setOwnership(outputVar.name, { reg: output.value });
-    asm.push(
+    regs.ownership.setOwnership(outputVar.name, { reg: outputReg.value });
+    output.appendInstructions(
       ...output.asm,
       ...input.asm,
       withInlineComment(
         genInstruction(
           zeroExtend ? 'movzx' : 'mov',
-          output.value,
+          outputReg.value,
           input.type === IRArgDynamicResolverType.REG
             ? `[${input.value}]`
             : input.value,
@@ -83,7 +83,7 @@ export function compileLoadInstruction({
         allowedRegs: regs.ownership.getAvailableRegs().addressing,
       });
 
-      asm.push(
+      output.appendInstructions(
         ...reg.asm,
         withInlineComment(
           genInstruction(
@@ -98,8 +98,21 @@ export function compileLoadInstruction({
       regs.ownership.setOwnership(outputVar.name, {
         reg: reg.value,
       });
+    } else if (
+      isPointerLikeType(inputVar.type) &&
+      isPrimitiveLikeType(inputVar.type.baseType, true) &&
+      inputVar.type.baseType.isFloating()
+    ) {
+      // %t{0}: float4B = load a{0}: float*2B
+      const pushResult = x87regs.pushIRArgOnStack({
+        arg: inputVar,
+        castedType: inputVar.type.baseType,
+      });
+
+      output.appendGroup(pushResult.asm);
     } else {
       // handle loading pointer to types, such as *k
+      // %t{0} = load a{0}: int* 2B
       const cachedOwnership = memOwnership.getVarOwnership(inputVar.name);
 
       if (!isStackVarOwnership(cachedOwnership)) {
@@ -112,5 +125,5 @@ export function compileLoadInstruction({
     }
   }
 
-  return X86CompileInstructionOutput.ofInstructions(asm);
+  return output;
 }

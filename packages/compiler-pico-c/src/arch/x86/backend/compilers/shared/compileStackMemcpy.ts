@@ -49,11 +49,11 @@ export function compileStackMemcpy({ allocator, type, arg }: StackMemcpyAttrs) {
           offset,
         });
       } else if (stackFrame.isStackVar(arg.name)) {
-        addr = stackFrame.getLocalVarStackRelAddress(arg.name, offset);
+        addr = stackFrame.getLocalVarStackRelAddress(arg.name, { offset });
       } else if (isStackVarOwnership(memOwnership)) {
         addr = stackFrame.getLocalVarStackRelAddress(
           memOwnership.stackVar.name,
-          offset,
+          { offset },
         );
       }
 
