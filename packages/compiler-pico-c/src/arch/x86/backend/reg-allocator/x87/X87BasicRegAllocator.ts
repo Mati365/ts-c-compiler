@@ -74,13 +74,17 @@ export class X87BasicRegAllocator {
   }
 
   tryResolveIrArgAsRegOrMem(attrs: X87ResolveIrArgOnStackAttrs) {
-    const memResult = this.tryResolveIrArgAsMem(attrs);
+    const { arg } = attrs;
 
-    if (memResult) {
-      return {
-        ...memResult,
-        value: memResult.address,
-      };
+    if (!isIRConstant(arg) || (arg.constant !== 0 && arg.constant !== 1)) {
+      const memResult = this.tryResolveIrArgAsMem(attrs);
+
+      if (memResult) {
+        return {
+          ...memResult,
+          value: memResult.address,
+        };
+      }
     }
 
     const regResult = this.tryResolveIRArgAsReg(attrs);
@@ -187,22 +191,39 @@ export class X87BasicRegAllocator {
     const size = castedType.getByteSize();
 
     if (isIRConstant(arg)) {
-      const constLabel = allocator.labelsResolver.genUniqLabel();
       const pushResult = this.pushVariableOnStack({
         size,
       });
 
-      asm.appendGroup(pushResult.asm);
-      asm.appendInstructions(
-        genInstruction('fld', genMemAddress({ size, expression: constLabel })),
-      );
+      // use smarter fld1 if value == 1
+      switch (arg.constant) {
+        case 0x1:
+          asm.appendInstructions(genInstruction('fld1'));
+          break;
 
-      asm.appendData(
-        genLabeledInstruction(
-          constLabel,
-          genDefConst({ size, values: [arg.constant], float: true }),
-        ),
-      );
+        case 0x0:
+          asm.appendInstructions(genInstruction('fldz'));
+          break;
+
+        default: {
+          const constLabel = allocator.labelsResolver.genUniqLabel();
+
+          asm.appendGroup(pushResult.asm);
+          asm.appendInstructions(
+            genInstruction(
+              'fld',
+              genMemAddress({ size, expression: constLabel }),
+            ),
+          );
+
+          asm.appendData(
+            genLabeledInstruction(
+              constLabel,
+              genDefConst({ size, values: [arg.constant], float: true }),
+            ),
+          );
+        }
+      }
 
       return {
         entry: pushResult.entry,
