@@ -26,7 +26,6 @@ import { X86RegOwnershipTracker } from './X86RegOwnershipTracker';
 
 import { getX86RegByteSize } from '../../../constants/regs';
 import { castToPointerIfArray } from 'frontend/analyze/casts';
-import { X86VarLifetimeGraph } from '../X86VarLifetimeGraph';
 import { X86MemOwnershipTracker } from '../mem';
 import { isLabelOwnership, isStackVarOwnership } from '../mem/ownership';
 
@@ -83,8 +82,8 @@ const ALLOW_ALL_ARG_RESOLVER_METHODS =
 export class X86BasicRegAllocator {
   readonly ownership: X86RegOwnershipTracker;
 
-  constructor(lifeTime: X86VarLifetimeGraph, private allocator: X86Allocator) {
-    this.ownership = new X86RegOwnershipTracker(lifeTime, allocator);
+  constructor(private allocator: X86Allocator) {
+    this.ownership = new X86RegOwnershipTracker(allocator);
   }
 
   get memOwnership() {

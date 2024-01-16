@@ -198,7 +198,7 @@ export class X87RegsStore {
 
       if (
         tag === X87Tag.VALID ||
-        (tag === X87Tag.EMPTY && Number.isFinite(value))
+        (tag === X87Tag.EMPTY && (Number.isFinite(value) || value === 0x0))
       ) {
         parsedValue = value.toString();
       } else if (tag === X87Tag.EMPTY) {

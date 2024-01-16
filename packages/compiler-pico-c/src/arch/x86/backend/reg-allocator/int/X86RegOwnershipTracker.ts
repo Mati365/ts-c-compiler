@@ -7,7 +7,6 @@ import { createX86RegsMap, RegsMap } from '../../../constants/regs';
 import { restoreInX86IntRegsMap, setAvailabilityInRegsMap } from '../../utils';
 
 import { X86Allocator } from '../../X86Allocator';
-import { X86VarLifetimeGraph } from '../X86VarLifetimeGraph';
 
 import type { IRRegOwnership, IRRegOwnershipMap } from './ownership';
 
@@ -15,11 +14,12 @@ export class X86RegOwnershipTracker {
   protected availableRegs: RegsMap;
   protected ownership: IRRegOwnershipMap = {};
 
-  constructor(
-    readonly lifetime: X86VarLifetimeGraph,
-    private allocator: X86Allocator,
-  ) {
+  constructor(private allocator: X86Allocator) {
     this.availableRegs = createX86RegsMap()[this.config.arch];
+  }
+
+  get lifetime() {
+    return this.allocator.lifetime;
   }
 
   get config() {

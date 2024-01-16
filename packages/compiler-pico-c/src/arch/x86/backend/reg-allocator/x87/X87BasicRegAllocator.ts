@@ -1,7 +1,6 @@
 import { X87StackRegName } from '@ts-c-compiler/x86-assembler';
 
 import type { CType } from 'frontend/analyze';
-import type { X86VarLifetimeGraph } from '../X86VarLifetimeGraph';
 
 import {
   IRConstant,
@@ -41,23 +40,141 @@ type X87PushIrArgOnStackAttrs = {
   stackIndex?: number;
 };
 
+type X87PushIrArgAsMemAttrs = {
+  arg: IRInstructionTypedArg;
+  castedType?: CType;
+};
+
+type X87ResolveIrArgOnStackAttrs = X87PushIrArgOnStackAttrs & {
+  stackTop?: boolean;
+};
+
 type X87IRArgStackResult = {
   asm: X86CompileInstructionOutput;
   entry: X87OwnershipStackEntry;
 };
 
+type X87IRArgMemResult = {
+  asm: X86CompileInstructionOutput;
+  address: string;
+};
+
+export const isX87IRArgMemResult = (result: any): result is X87IRArgMemResult =>
+  !!result && 'address' in result;
+
 export class X87BasicRegAllocator {
   readonly tracker: X87RegOwnershipTracker;
 
-  constructor(
-    lifetime: X86VarLifetimeGraph,
-    private readonly allocator: X86Allocator,
-  ) {
-    this.tracker = new X87RegOwnershipTracker(lifetime, allocator);
+  constructor(private readonly allocator: X86Allocator) {
+    this.tracker = new X87RegOwnershipTracker(allocator);
   }
 
   private get stackFrame() {
     return this.allocator.stackFrame;
+  }
+
+  tryResolveIrArgAsRegOrMem(attrs: X87ResolveIrArgOnStackAttrs) {
+    const memResult = this.tryResolveIrArgAsMem(attrs);
+
+    if (memResult) {
+      return {
+        ...memResult,
+        value: memResult.address,
+      };
+    }
+
+    const regResult = this.tryResolveIRArgAsReg(attrs);
+    if (regResult) {
+      return {
+        ...regResult,
+        get value() {
+          return regResult.entry.reg;
+        },
+      };
+    }
+
+    throw new CBackendError(CBackendErrorCode.UNABLE_TO_RESOLVE_X87_ARG);
+  }
+
+  tryResolveIrArgAsMem({
+    arg,
+    castedType = arg.type,
+  }: X87PushIrArgAsMemAttrs): X87IRArgMemResult {
+    const { allocator } = this;
+
+    const size = castedType.getByteSize();
+
+    if (isIRConstant(arg)) {
+      const constLabel = allocator.labelsResolver.genUniqLabel();
+      const asm = new X86CompileInstructionOutput();
+
+      asm.appendData(
+        genLabeledInstruction(
+          constLabel,
+          genDefConst({ size, values: [arg.constant], float: true }),
+        ),
+      );
+
+      return {
+        asm,
+        address: genMemAddress({ size, expression: constLabel }),
+      };
+    }
+
+    if (isIRVariable(arg) && !arg.isTemporary()) {
+      const stackAddress = this.stackFrame.getLocalVarStackRelAddress(
+        arg.name,
+        {
+          withSize: true,
+        },
+      );
+
+      return {
+        asm: X86CompileInstructionOutput.ofInstructions([]),
+        address: stackAddress,
+      };
+    }
+
+    return null;
+  }
+
+  tryResolveIRArgAsReg({
+    stackTop,
+    ...attrs
+  }: X87ResolveIrArgOnStackAttrs): X87IRArgStackResult {
+    const { tracker } = this;
+    const { arg } = attrs;
+
+    const result = (() => {
+      if (isIRConstant(arg)) {
+        return this.pushIRArgOnStack(attrs);
+      }
+
+      if (isIRVariable(arg)) {
+        const stackVar = tracker.getStackVar(arg.name);
+
+        if (!stackVar) {
+          return this.pushIRArgOnStack(attrs);
+        }
+
+        return {
+          asm: X86CompileInstructionOutput.ofInstructions([]),
+          entry: stackVar,
+        } as X87IRArgStackResult;
+      }
+
+      return null;
+    })();
+
+    if (!result) {
+      return null;
+    }
+
+    if (stackTop && result.entry.reg !== 'st0') {
+      result.asm.appendGroup(this.tracker.swapWithStackTop(result.entry.reg));
+    }
+
+    return result;
   }
 
   pushIRArgOnStack({
@@ -160,7 +277,7 @@ export class X87BasicRegAllocator {
       ),
     );
 
-    tracker.markAsReadyToErase(pushResult.entry.reg);
+    tracker.markRegAsReadyToErase(pushResult.entry.reg);
     return asm;
   }
 
