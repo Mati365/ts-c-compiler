@@ -110,6 +110,10 @@ export function compileLoadInstruction({
       });
 
       output.appendGroup(pushResult.asm);
+      x87regs.tracker.setOwnership({
+        ...pushResult.entry,
+        varName: outputVar.name,
+      });
     } else {
       // handle loading pointer to types, such as *k
       // %t{0} = load a{0}: int* 2B

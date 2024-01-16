@@ -33,3 +33,4 @@ export * from './stripNonPrintableCharacters';
 export * from './tagFunction';
 export * from './trimLines';
 export * from './truncateText';
+export * from './wrapAround';

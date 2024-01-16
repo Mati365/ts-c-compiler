@@ -22,17 +22,21 @@ export class X86Allocator {
   private _regs: X86BasicRegAllocator;
   private _mem: X86MemOwnershipTracker;
   private _x87Regs: X87BasicRegAllocator;
+  private _lifetime: X86VarLifetimeGraph;
 
   constructor(
     readonly config: CCompilerConfig,
     readonly iterator: IRBlockIterator,
     readonly labelsResolver: X86LabelsResolver,
   ) {
-    const lifetime = new X86VarLifetimeGraph(iterator.instructions);
-
+    this._lifetime = new X86VarLifetimeGraph(iterator.instructions);
     this._mem = new X86MemOwnershipTracker(this);
-    this._regs = new X86BasicRegAllocator(lifetime, this);
-    this._x87Regs = new X87BasicRegAllocator(lifetime, this);
+    this._regs = new X86BasicRegAllocator(this);
+    this._x87Regs = new X87BasicRegAllocator(this);
+  }
+
+  get lifetime() {
+    return this._lifetime;
   }
 
   get instructions() {
