@@ -877,7 +877,11 @@ export class X87 extends X86Unit {
 
           /* FFREE st(i) DD C0+i */
           if (byte >= 0xc0 && byte <= 0xc7) {
-            regs.setNthTag(byte - 0xc0, X87Tag.EMPTY);
+            regs.setNthTag(
+              regs.stackPointerIndexToRegIndex(byte - 0xc0),
+              X87Tag.EMPTY,
+            );
+
             return 1;
           }
 

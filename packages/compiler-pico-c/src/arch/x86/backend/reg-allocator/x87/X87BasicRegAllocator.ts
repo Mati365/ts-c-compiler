@@ -194,6 +194,8 @@ export class X87BasicRegAllocator {
         size,
       });
 
+      asm.appendGroup(pushResult.asm);
+
       // use smarter fld1 if value == 1
       switch (arg.constant) {
         case 0x1:
@@ -207,7 +209,6 @@ export class X87BasicRegAllocator {
         default: {
           const constLabel = allocator.labelsResolver.genUniqLabel();
 
-          asm.appendGroup(pushResult.asm);
           asm.appendInstructions(
             genInstruction(
               'fld',
@@ -236,6 +237,8 @@ export class X87BasicRegAllocator {
         size: arg.type.getByteSize(),
       });
 
+      asm.appendGroup(pushResult.asm);
+
       if (!arg.isTemporary()) {
         const stackAddress = this.stackFrame.getLocalVarStackRelAddress(
           arg.name,
@@ -246,8 +249,6 @@ export class X87BasicRegAllocator {
 
         asm.appendInstructions(genInstruction('fld', stackAddress));
       }
-
-      asm.appendGroup(pushResult.asm);
 
       return {
         entry: pushResult.entry,
@@ -273,7 +274,7 @@ export class X87BasicRegAllocator {
   }
 
   storeConstantAtAddress({ value, address }: X87StoreConstantAttrs) {
-    const { allocator, tracker } = this;
+    const { allocator } = this;
     const asm = new X86CompileInstructionOutput();
 
     const constLabel = allocator.labelsResolver.genUniqLabel();
@@ -296,7 +297,7 @@ export class X87BasicRegAllocator {
       ),
     );
 
-    tracker.markRegAsReadyToErase(pushResult.entry.reg);
+    this.tracker.pop();
     return asm;
   }
 

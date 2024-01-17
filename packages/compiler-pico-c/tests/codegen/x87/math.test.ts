@@ -7,7 +7,7 @@ describe('X87 Math', () => {
         float a = 2;
         float b = 63;
         float d = 666;
-        float c = a - b * a + b + (b - a);
+        float c = a - b * a + b + (b - a * 2);
 
         asm("xchg bx, bx");
       }
@@ -36,7 +36,7 @@ describe('X87 Math', () => {
       fadd st0, st1
       fld dword [bp - 8]
       fld dword [bp - 4]
-      ffree st7
+      fmul dword [@@_$LC_3]
       fxch st1
       fsub st0, st1
       fxch st2
@@ -49,6 +49,7 @@ describe('X87 Math', () => {
       @@_$LC_0: dd 2.0
       @@_$LC_1: dd 63.0
       @@_$LC_2: dd 666.0
+      @@_$LC_3: dd 2.0
     `);
   });
 

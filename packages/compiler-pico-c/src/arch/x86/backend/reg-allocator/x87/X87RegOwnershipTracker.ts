@@ -1,16 +1,18 @@
+import * as R from 'ramda';
+
 import { wrapAround } from '@ts-c-compiler/core';
 import {
   createX87StackRegByIndex,
   getX87StackRegIndex,
+  X87_STACK_REGISTERS,
   X87_STACK_REGS_COUNT,
   type X87StackRegName,
 } from '@ts-c-compiler/x86-assembler';
 
-import { CBackendError, CBackendErrorCode } from 'backend/errors/CBackendError';
-
 import { X86CompileInstructionOutput } from '../../compilers/shared/X86CompileInstructionOutput';
 import { genInstruction } from 'arch/x86/asm-utils';
 import { X86Allocator } from '../../X86Allocator';
+import { CBackendError, CBackendErrorCode } from 'backend/errors/CBackendError';
 
 export type X87OwnershipStackEntry = {
   reg: X87StackRegName;
@@ -20,7 +22,7 @@ export type X87OwnershipStackEntry = {
 };
 
 export class X87RegOwnershipTracker {
-  private readonly stackOwnership: X87OwnershipStackEntry[] = [];
+  private stackOwnership: X87OwnershipStackEntry[] = [];
 
   private stackPointer: number = 0;
 
@@ -34,15 +36,43 @@ export class X87RegOwnershipTracker {
     return createX87StackRegByIndex(this.stackPointer);
   }
 
+  get topStackEntry() {
+    return this.stackOwnership[this.stackPointer];
+  }
+
+  toString() {
+    return X87_STACK_REGISTERS.map(
+      (_, index) =>
+        `fp${index}:${
+          index === this.stackPointer ? '<--' : ''
+        } ${JSON.stringify(this.stackOwnership[index] ?? '<blank>')}`,
+    ).join('\n');
+  }
+
   getStack() {
     return this.stackOwnership;
+  }
+
+  getRegByStackIndex(index: number) {
+    if (this.stackPointer > index) {
+      return createX87StackRegByIndex(
+        X87_STACK_REGS_COUNT - this.stackPointer + index,
+      );
+    }
+
+    return createX87StackRegByIndex(index - this.stackPointer);
   }
 
   getOwnershipIndexFromStackReg(reg: X87StackRegName) {
     return wrapAround(
       X87_STACK_REGS_COUNT,
-      this.stackPointer - getX87StackRegIndex(reg),
+      this.stackPointer + getX87StackRegIndex(reg),
     );
+  }
+
+  removeStackEntry(entry: X87OwnershipStackEntry) {
+    this.stackOwnership = R.without([entry], this.stackOwnership);
+    this.adjustOwnershipRegsNames();
   }
 
   getStackVar(name: string) {
@@ -73,27 +103,44 @@ export class X87RegOwnershipTracker {
     }
   }
 
+  pop() {
+    this.stackOwnership[this.stackPointer] = null;
+    this.stackPointer = wrapAround(X87_STACK_REGS_COUNT, this.stackPointer + 1);
+
+    this.adjustOwnershipRegsNames();
+  }
+
   push(entry: X87OwnershipStackEntry) {
     const { stackOwnership } = this;
+
+    const newStackPointer = wrapAround(
+      X87_STACK_REGS_COUNT,
+      this.stackPointer - 1,
+    );
+    const prevEntry = stackOwnership[newStackPointer];
     const asm = new X86CompileInstructionOutput();
 
-    this.stackPointer = (this.stackPointer + 1) % X87_STACK_REGS_COUNT;
-
-    const prevValue = stackOwnership[this.stackPointer];
-
-    if (prevValue) {
+    if (prevEntry) {
       this.markUnusedAsReadyToErase();
 
-      if (prevValue.canBeErased) {
-        asm.appendInstructions(genInstruction('ffree', prevValue.reg));
+      if (prevEntry.canBeErased) {
+        asm.appendInstructions(genInstruction('ffree', 'st7'));
       } else {
-        throw new CBackendError(CBackendErrorCode.CANNOT_OVERRIDE_X87_STACK);
+        const realignResult = this.tryRealignLastToFirstEmpty();
+
+        if (!realignResult) {
+          throw new CBackendError(CBackendErrorCode.CANNOT_OVERRIDE_X87_STACK);
+        }
+
+        asm.appendGroup(realignResult);
+        asm.appendInstructions(genInstruction('ffree', 'st7'));
       }
     }
 
+    this.stackPointer = newStackPointer;
     stackOwnership[this.stackPointer] = entry;
-    this.adjustOwnershipRegsNames();
 
+    this.adjustOwnershipRegsNames();
     return asm;
   }
 
@@ -111,6 +158,39 @@ export class X87RegOwnershipTracker {
     return X86CompileInstructionOutput.ofInstructions([
       genInstruction('fxch', reg),
     ]);
+  }
+
+  private tryRealignLastToFirstEmpty() {
+    const asm = new X86CompileInstructionOutput();
+    const freeStackIndex = this.findFirstEmptyStackIndex();
+
+    if (freeStackIndex !== null) {
+      const freeReg = this.getRegByStackIndex(freeStackIndex);
+
+      asm.appendGroups(
+        this.swapWithStackTop('st7'),
+        this.swapWithStackTop(freeReg),
+        this.swapWithStackTop('st7'),
+      );
+
+      return asm;
+    }
+
+    return null;
+  }
+
+  private findFirstEmptyStackIndex() {
+    const { stackOwnership } = this;
+
+    for (let i = 0; i < stackOwnership.length; ++i) {
+      const ownership = stackOwnership[i];
+
+      if (!ownership || ownership.canBeErased) {
+        return i;
+      }
+    }
+
+    return null;
   }
 
   private markUnusedAsReadyToErase() {
@@ -133,17 +213,21 @@ export class X87RegOwnershipTracker {
     }
   }
 
-  private adjustOwnershipRegsNames() {
-    for (let i = 0; i < X87_STACK_REGS_COUNT; ++i) {
-      const ownership = this.stackOwnership[i];
+  adjustOwnershipRegsNames() {
+    for (
+      let i = 0, offset = this.stackPointer;
+      i < X87_STACK_REGS_COUNT;
+      ++i, ++offset
+    ) {
+      const roundedOffset = wrapAround(X87_STACK_REGS_COUNT, offset);
+      const ownership = this.stackOwnership[roundedOffset];
 
       if (!ownership) {
         continue;
       }
 
-      const distance = i - this.stackPointer;
       ownership.reg = createX87StackRegByIndex(
-        distance <= 0 ? -distance : X87_STACK_REGS_COUNT - distance,
+        wrapAround(X87_STACK_REGS_COUNT, offset - this.stackPointer),
       );
     }
   }

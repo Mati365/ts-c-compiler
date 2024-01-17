@@ -198,6 +198,7 @@ export class X87RegsStore {
 
       if (
         tag === X87Tag.VALID ||
+        tag === X87Tag.ZERO ||
         (tag === X87Tag.EMPTY && (Number.isFinite(value) || value === 0x0))
       ) {
         parsedValue = value.toString();
@@ -256,17 +257,21 @@ export class X87RegsStore {
     return X87Tag.VALID;
   }
 
+  stackPointerIndexToRegIndex(nth: number) {
+    return (this.stackPointer + nth) % X87_STACK_REGS_COUNT;
+  }
+
   /**
    * Access nth from TOP of stack
    */
   nth(nth: number, withoutFlagCheck?: boolean): number {
-    const reg = (this.stackPointer + nth) % X87_STACK_REGS_COUNT;
+    const reg = this.stackPointerIndexToRegIndex(nth);
 
     if (!withoutFlagCheck && this.getNthTag(reg) === X87Tag.EMPTY) {
       this.stackFault = true;
     }
 
-    return this.stack[(this.stackPointer + nth) % X87_STACK_REGS_COUNT];
+    return this.stack[reg];
   }
 
   /**
@@ -278,7 +283,7 @@ export class X87RegsStore {
    */
   setNthValue(nth: number, value: number, withoutTagUpdate?: boolean): void {
     const { stack } = this;
-    const registerIndex = (this.stackPointer + nth) % X87_STACK_REGS_COUNT;
+    const registerIndex = this.stackPointerIndexToRegIndex(nth);
 
     stack[registerIndex] = value;
 
