@@ -10,6 +10,8 @@ import { isPrimitiveLikeType } from 'frontend/analyze';
 import { getTypeOffsetByteSize } from 'frontend/ir/utils';
 import { X86CompileInstructionOutput, compileMemcpy } from './shared';
 
+import type { X87OwnershipStackEntry } from '../reg-allocator/x87/X87RegOwnershipTracker';
+
 import { X86CompilerInstructionFnAttrs } from '../../constants/types';
 import { isLabelOwnership } from '../reg-allocator';
 import {
@@ -27,7 +29,7 @@ export function compileStoreInstruction({
 }: StoreInstructionCompilerAttrs) {
   const { allocator } = context;
   const { outputVar, value, offset } = instruction;
-  const { stackFrame, regs, memOwnership, x87regs } = allocator;
+  const { stackFrame, regs, memOwnership, x87regs, lifetime } = allocator;
 
   let destAddr: { value: string; size: number } = null;
   const output = new X86CompileInstructionOutput();
@@ -40,6 +42,7 @@ export function compileStoreInstruction({
   if (outputVar.isTemporary()) {
     if (isFloating) {
       // TODO
+      throw new Error('TODO');
     } else {
       // 1. handle pointers assign
       //  *(%t{0}) = 4;
@@ -112,12 +115,31 @@ export function compileStoreInstruction({
       );
     } else {
       if (isFloating) {
-        // store floating point number
-        // *(b{0}: float*2B) = store %t{1}: float4B
-        const stackRegResult = x87regs.tracker.getStackVar(value.name);
+        let stackRegResult: X87OwnershipStackEntry = null;
+
+        if (isPrimitiveLikeType(value.type, true) && value.type.isIntegral()) {
+          // store implicit casted integral type
+          // *(b{0}: float*2B) = store %t{1}: int2B
+          const pushResult = x87regs.tryResolveIRArgAsReg({
+            arg: value,
+            castedType: baseOutputType,
+          });
+
+          output.appendGroup(pushResult.asm);
+          stackRegResult = pushResult.entry;
+        } else {
+          // store floating point number
+          // *(b{0}: float*2B) = store %t{1}: float4B
+          stackRegResult = x87regs.tracker.getStackVar(value.name);
+        }
+
         const storeResult = x87regs.storeStackRegAtAddress({
           reg: stackRegResult.reg,
           address: destAddr.value,
+          pop: !lifetime.isVariableLaterUsed(
+            allocator.iterator.offset,
+            value.name,
+          ),
         });
 
         output.appendGroups(storeResult.asm);

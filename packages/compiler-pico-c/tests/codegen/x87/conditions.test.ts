@@ -254,6 +254,7 @@ describe('X87 Conditions', () => {
       fld dword [bp - 8]
       fxch st1
       fadd st0, st1
+      ffree st1
       fld dword [@@_$LC_2]
       fxch st1
       fucom st1
@@ -266,6 +267,8 @@ describe('X87 Conditions', () => {
       fld dword [bp - 8]
       fxch st1
       fmul st0, st1
+      ffree st1
+      ffree st2
       fsub dword [@@_$LC_3]
       fld dword [@@_$LC_4]
       fxch st1
@@ -301,87 +304,92 @@ describe('X87 Conditions', () => {
         }
       }
     `).toCompiledAsmBeEqual(`
-      cpu 386
-      ; def main():
-      @@_fn_main:
-      push bp
-      mov bp, sp
-      sub sp, 12
-      fld dword [@@_$LC_0]
-      fstp dword [bp - 4]
-      fld dword [@@_$LC_1]
-      fstp dword [bp - 8]
-      fld dword [@@_$LC_2]
-      fstp dword [bp - 12]
-      fld dword [bp - 4]
-      fadd dword [@@_$LC_3]
-      fld dword [@@_$LC_4]
-      fxch st1
-      fucom st1
-      fnstsw ax
-      test ah, 5
-      jne @@_L1                 ; br %t{2}: i1:zf, false: L1
-      @@_L3:
-      fld dword [bp - 4]
-      fld dword [bp - 8]
-      fld dword [bp - 12]
-      fdiv dword [@@_$LC_5]
-      fxch st1
-      fadd st0, st1
-      fucom st2
-      fnstsw ax
-      test ah, 69
-      jne @@_L1                 ; br %t{8}: i1:zf, false: L1
-      @@_L4:
-      fld dword [bp - 4]
-      fld dword [bp - 8]
-      fxch st1
-      fadd st0, st1
-      fld dword [@@_$LC_6]
-      fxch st1
-      fucom st1
-      fnstsw ax
-      and ah, 69
-      xor ah, 64
-      je @@_L2                  ; br %t{12}: i1:zf, true: L2
-      @@_L5:
-      fxch st7
-      fxch st0
-      fxch st7
-      ffree st7
-      fld dword [bp - 4]
-      ffree st7
-      fld dword [bp - 8]
-      fxch st1
-      fmul st0, st1
-      ffree st7
-      fld dword [bp - 12]
-      ffree st7
-      fld dword [@@_$LC_7]
-      fsub st0, st1
-      fxch st2
-      fucom st2
-      fnstsw ax
-      and ah, 69
-      xor ah, 64
-      je @@_L2                  ; br %t{18}: i1:zf, true: L2
-      jmp @@_L1                 ; jmp L1
-      jmp @@_L1                 ; jmp L1
-      jmp @@_L1                 ; jmp L1
-      @@_L2:
-      xchg bx, bx
-      @@_L1:
-      mov sp, bp
-      pop bp
-      ret
-      @@_$LC_0: dd 7.0
-      @@_$LC_1: dd 10.0
-      @@_$LC_2: dd 11.0
-      @@_$LC_3: dd 4.0
-      @@_$LC_4: dd 8.0
-      @@_$LC_5: dd 4.0
-      @@_$LC_6: dd 117.0
-      @@_$LC_7: dd 81.0
+    cpu 386
+    ; def main():
+    @@_fn_main:
+    push bp
+    mov bp, sp
+    sub sp, 12
+    fld dword [@@_$LC_0]
+    fstp dword [bp - 4]
+    fld dword [@@_$LC_1]
+    fstp dword [bp - 8]
+    fld dword [@@_$LC_2]
+    fstp dword [bp - 12]
+    fld dword [bp - 4]
+    fadd dword [@@_$LC_3]
+    fld dword [@@_$LC_4]
+    fxch st1
+    fucom st1
+    fnstsw ax
+    test ah, 5
+    jne @@_L1                 ; br %t{2}: i1:zf, false: L1
+    @@_L3:
+    fld dword [bp - 4]
+    fld dword [bp - 8]
+    fld dword [bp - 12]
+    fdiv dword [@@_$LC_5]
+    ffree st3
+    fxch st1
+    fadd st0, st1
+    ffree st1
+    fucom st2
+    fnstsw ax
+    test ah, 69
+    jne @@_L1                 ; br %t{8}: i1:zf, false: L1
+    @@_L4:
+    fld dword [bp - 4]
+    fld dword [bp - 8]
+    fxch st1
+    fadd st0, st1
+    ffree st1
+    ffree st2
+    ffree st4
+    fld dword [@@_$LC_6]
+    fxch st1
+    fucom st1
+    fnstsw ax
+    and ah, 69
+    xor ah, 64
+    je @@_L2                  ; br %t{12}: i1:zf, true: L2
+    @@_L5:
+    fxch st7
+    fxch st0
+    fxch st7
+    ffree st7
+    fld dword [bp - 4]
+    fld dword [bp - 8]
+    fxch st1
+    fmul st0, st1
+    ffree st2
+    ffree st1
+    fld dword [bp - 12]
+    fld dword [@@_$LC_7]
+    fsub st0, st1
+    ffree st1
+    fxch st2
+    fucom st2
+    fnstsw ax
+    and ah, 69
+    xor ah, 64
+    je @@_L2                  ; br %t{18}: i1:zf, true: L2
+    jmp @@_L1                 ; jmp L1
+    jmp @@_L1                 ; jmp L1
+    jmp @@_L1                 ; jmp L1
+    @@_L2:
+    xchg bx, bx
+    @@_L1:
+    mov sp, bp
+    pop bp
+    ret
+    @@_$LC_0: dd 7.0
+    @@_$LC_1: dd 10.0
+    @@_$LC_2: dd 11.0
+    @@_$LC_3: dd 4.0
+    @@_$LC_4: dd 8.0
+    @@_$LC_5: dd 4.0
+    @@_$LC_6: dd 117.0
+    @@_$LC_7: dd 81.0
     `);
   });
 });

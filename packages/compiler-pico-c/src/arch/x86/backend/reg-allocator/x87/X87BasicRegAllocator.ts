@@ -1,6 +1,6 @@
 import { X87StackRegName } from '@ts-c-compiler/x86-assembler';
 
-import type { CType } from 'frontend/analyze';
+import { isPrimitiveLikeType, type CType } from 'frontend/analyze';
 
 import {
   IRConstant,
@@ -32,6 +32,7 @@ type X87StoreConstantAttrs = {
 type X87StoreStackRegAttrs = {
   reg: X87StackRegName;
   address: string;
+  pop?: boolean;
 };
 
 type X87PushIrArgOnStackAttrs = {
@@ -66,6 +67,14 @@ export class X87BasicRegAllocator {
 
   constructor(private readonly allocator: X86Allocator) {
     this.tracker = new X87RegOwnershipTracker(allocator);
+  }
+
+  private get x86Regs() {
+    return this.allocator.regs;
+  }
+
+  private get memOwnership() {
+    return this.allocator.memOwnership;
   }
 
   private get stackFrame() {
@@ -154,6 +163,10 @@ export class X87BasicRegAllocator {
       }
 
       if (isIRVariable(arg)) {
+        if (isPrimitiveLikeType(arg.type, true) && arg.type.isIntegral()) {
+          return this.tryResolveIRIntArgAsReg(attrs);
+        }
+
         const stackVar = tracker.getStackVar(arg.name);
 
         if (!stackVar) {
@@ -178,6 +191,48 @@ export class X87BasicRegAllocator {
     }
 
     return result;
+  }
+
+  private tryResolveIRIntArgAsReg({
+    arg,
+    castedType = arg.type,
+  }: X87ResolveIrArgOnStackAttrs): X87IRArgStackResult {
+    const { memOwnership, stackFrame, x86Regs } = this;
+    const size = castedType.getByteSize();
+    const asm = new X86CompileInstructionOutput();
+
+    if (!isIRVariable(arg)) {
+      throw new CBackendError(CBackendErrorCode.CANNOT_CAST_X87_ARG);
+    }
+
+    let memAddr = memOwnership.tryResolveIRArgAsAddr(arg)?.value;
+    if (!memAddr) {
+      const spillVar = stackFrame.allocSpillVariable(arg.type.getByteSize());
+      const regOwnership = x86Regs.tryResolveIRArgAsReg({
+        arg,
+      });
+
+      memAddr = stackFrame.getLocalVarStackRelAddress(spillVar.name, {
+        withSize: true,
+      });
+
+      asm.appendInstructions(
+        genInstruction('mov', memAddr, regOwnership.value),
+      );
+    }
+
+    const pushResult = this.pushVariableOnStack({
+      size,
+      canBeErased: true,
+    });
+
+    asm.appendGroup(pushResult.asm);
+    asm.appendInstructions(genInstruction('fild', memAddr));
+
+    return {
+      asm,
+      entry: pushResult.entry,
+    };
   }
 
   pushIRArgOnStack({
@@ -259,14 +314,14 @@ export class X87BasicRegAllocator {
     throw new CBackendError(CBackendErrorCode.UNABLE_PUSH_ARG_ON_X87_STACK);
   }
 
-  storeStackRegAtAddress({ reg, address }: X87StoreStackRegAttrs) {
+  storeStackRegAtAddress({ reg, address, pop }: X87StoreStackRegAttrs) {
     const asm = new X86CompileInstructionOutput();
 
     if (reg !== 'st0') {
       asm.appendGroup(this.tracker.swapWithStackTop(reg));
     }
 
-    asm.appendInstructions(genInstruction('fst', address));
+    asm.appendInstructions(genInstruction(pop ? 'fstp' : 'fst', address));
 
     return {
       asm,

@@ -160,6 +160,25 @@ export class X87RegOwnershipTracker {
     ]);
   }
 
+  vacuumNotUsed() {
+    const asm = new X86CompileInstructionOutput();
+    const newStackOwnership: X87OwnershipStackEntry[] = [];
+
+    this.markUnusedAsReadyToErase();
+
+    for (const entry of this.stackOwnership) {
+      if (entry?.canBeErased) {
+        asm.appendInstructions(genInstruction('ffree', entry.reg));
+        newStackOwnership.push(null);
+      } else {
+        newStackOwnership.push(entry);
+      }
+    }
+
+    this.stackOwnership = newStackOwnership;
+    return asm;
+  }
+
   private tryRealignLastToFirstEmpty() {
     const asm = new X86CompileInstructionOutput();
     const freeStackIndex = this.findFirstEmptyStackIndex();
@@ -213,7 +232,7 @@ export class X87RegOwnershipTracker {
     }
   }
 
-  adjustOwnershipRegsNames() {
+  private adjustOwnershipRegsNames() {
     for (
       let i = 0, offset = this.stackPointer;
       i < X87_STACK_REGS_COUNT;

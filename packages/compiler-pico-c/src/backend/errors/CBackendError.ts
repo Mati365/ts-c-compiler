@@ -22,6 +22,7 @@ export enum CBackendErrorCode {
   UNABLE_TO_RESOLVE_X87_ARG = 'UNABLE_TO_RESOLVE_X87_ARG',
   CANNOT_OVERRIDE_X87_STACK = 'CANNOT_OVERRIDE_X87_STACK',
   UNKNOWN_X87_OPERATOR = 'UNKNOWN_X87_OPERATOR',
+  CANNOT_CAST_X87_ARG = 'CANNOT_CAST_X87_ARG',
 }
 
 export const C_BACKEND_ERROR_TRANSLATIONS: Record<CBackendErrorCode, string> = {
@@ -73,6 +74,7 @@ export const C_BACKEND_ERROR_TRANSLATIONS: Record<CBackendErrorCode, string> = {
   [CBackendErrorCode.UNKNOWN_X87_OPERATOR]: fixme(
     'Unknown x87 operator %{operator}!',
   ),
+  [CBackendErrorCode.CANNOT_CAST_X87_ARG]: fixme('Cannot cast x87 arg!'),
 };
 
 /**

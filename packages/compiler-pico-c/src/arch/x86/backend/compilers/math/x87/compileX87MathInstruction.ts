@@ -67,5 +67,6 @@ export function compileX87MathInstruction({
     });
   }
 
+  output.appendGroup(x87regs.tracker.vacuumNotUsed());
   return output;
 }
