@@ -37,7 +37,6 @@ type X87StoreStackRegAttrs = {
 type X87PushIrArgOnStackAttrs = {
   arg: IRInstructionTypedArg;
   castedType?: CType;
-  stackIndex?: number;
 };
 
 type X87PushIrArgAsMemAttrs = {
@@ -267,7 +266,6 @@ export class X87BasicRegAllocator {
     }
 
     asm.appendInstructions(genInstruction('fst', address));
-    this.tracker.markUnusedAsReadyToErase();
 
     return {
       asm,

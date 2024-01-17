@@ -18,31 +18,26 @@ cpu 386
 @@_fn_main:
 push bp
 mov bp, sp
-sub sp, 12
+sub sp, 4
 fld dword [@@_$LC_0]
 fstp dword [bp - 4]
 fld dword [bp - 4]
 fld dword [@@_$LC_1]
-fadd st1, st0
 fxch st1
-fst dword [bp - 8]
-fld dword [bp - 8]
-ffree st7
-fld dword [bp - 4]
-fmul st1, st0
-ffree st1
-ffree st7
-fld dword [@@_$LC_2]
+fucomp st1
+fnstsw ax
 xchg bx, bx
-fsub st1, st0
-fxch st1
-fst dword [bp - 12]
+test ah, 19
+jz @@_L1                  ; br %t{1}: i1:zf, false: L1
+@@_L2:
+xchg bx, bx
+@@_L1:
 mov sp, bp
 pop bp
 ret
-@@_$LC_0: dd 2.0
-@@_$LC_1: dd 63.0
-@@_$LC_2: dd 3.0
+@@_$LC_0: dd 7.0
+@@_$LC_1: dd 15.0
+
 
 
   ; BOOTSET

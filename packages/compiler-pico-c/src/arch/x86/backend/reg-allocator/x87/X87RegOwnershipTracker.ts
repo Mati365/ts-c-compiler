@@ -67,6 +67,12 @@ export class X87RegOwnershipTracker {
     this.stackOwnership[offset].canBeErased = true;
   }
 
+  markRegsAsReadyToErase(regs: X87StackRegName[]) {
+    for (const reg of regs) {
+      this.markRegAsReadyToErase(reg);
+    }
+  }
+
   push(entry: X87OwnershipStackEntry) {
     const { stackOwnership } = this;
     const asm = new X86CompileInstructionOutput();
@@ -107,7 +113,7 @@ export class X87RegOwnershipTracker {
     ]);
   }
 
-  markUnusedAsReadyToErase() {
+  private markUnusedAsReadyToErase() {
     const { stackOwnership, lifetime, allocator } = this;
 
     for (const ownership of stackOwnership) {
@@ -127,7 +133,7 @@ export class X87RegOwnershipTracker {
     }
   }
 
-  adjustOwnershipRegsNames() {
+  private adjustOwnershipRegsNames() {
     for (let i = 0; i < X87_STACK_REGS_COUNT; ++i) {
       const ownership = this.stackOwnership[i];
 

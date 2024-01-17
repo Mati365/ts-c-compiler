@@ -102,8 +102,8 @@ export class X87 extends X86Unit {
     if (
       Number.isNaN(a) ||
       Number.isNaN(b) ||
-      !Number.isFinite(a) ||
-      !Number.isFinite(b)
+      (a !== 0 && !Number.isFinite(a)) ||
+      (b !== 0 && !Number.isFinite(b))
     ) {
       registers.invalidOperation = true;
 
@@ -165,6 +165,9 @@ export class X87 extends X86Unit {
    */
   fcom(a: number, b: number): void {
     const { registers: regs } = this;
+
+    regs.c1 = false;
+
     if (!this.checkOperandFlags(a, b)) {
       regs.c3 = true;
       regs.c2 = true;
@@ -686,7 +689,7 @@ export class X87 extends X86Unit {
       }),
 
       0xda: X86InstructionSet.switchRMOpcodeInstruction(cpu, null, {
-        nonRMMatch(byte) {
+        nonRMMatch: byte => {
           /* FUCOMPP */ if (byte === 0xe9) {
             this.fucom(regs.st0, regs.st1);
             regs.safePop(); // pops twice

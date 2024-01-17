@@ -1,6 +1,6 @@
 import '../utils';
 
-describe('Float math', () => {
+describe('X87 Math', () => {
   test('basic math', () => {
     expect(/* cpp */ `
       void main() {
