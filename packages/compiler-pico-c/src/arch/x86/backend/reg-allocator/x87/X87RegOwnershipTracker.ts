@@ -103,7 +103,7 @@ export class X87RegOwnershipTracker {
     }
   }
 
-  pop() {
+  afterPop() {
     this.stackOwnership[this.stackPointer] = null;
     this.stackPointer = wrapAround(X87_STACK_REGS_COUNT, this.stackPointer + 1);
 
@@ -117,6 +117,7 @@ export class X87RegOwnershipTracker {
       X87_STACK_REGS_COUNT,
       this.stackPointer - 1,
     );
+
     const prevEntry = stackOwnership[newStackPointer];
     const asm = new X86CompileInstructionOutput();
 
@@ -158,6 +159,22 @@ export class X87RegOwnershipTracker {
     return X86CompileInstructionOutput.ofInstructions([
       genInstruction('fxch', reg),
     ]);
+  }
+
+  vacuumAll(except?: X87StackRegName[]) {
+    const asm = new X86CompileInstructionOutput();
+    const newStackOwnership: X87OwnershipStackEntry[] = [];
+
+    for (const entry of this.stackOwnership) {
+      if (entry && (!except || !except.includes(entry.reg))) {
+        asm.appendInstructions(genInstruction('ffree', entry.reg));
+      }
+
+      newStackOwnership.push(null);
+    }
+
+    this.stackOwnership = newStackOwnership;
+    return asm;
   }
 
   vacuumNotUsed() {

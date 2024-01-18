@@ -7,6 +7,8 @@ import { IRMathInstruction } from 'frontend/ir/instructions';
 import { X86CompileInstructionOutput } from '../../shared';
 import { CMathOperator } from '#constants';
 import { isX87IRArgMemResult } from 'arch/x86/backend/reg-allocator';
+import { isIRVariable } from 'frontend/ir/variables';
+import { isPrimitiveLikeType } from 'frontend/analyze';
 
 const BinaryOperatorX87Opcode: Partial<Record<CMathOperator, string>> = {
   [TokenType.PLUS]: 'fadd',
@@ -65,6 +67,15 @@ export function compileX87MathInstruction({
       ...leftAllocResult.entry,
       varName: outputVar.name,
     });
+  }
+
+  if (
+    !isX87IRArgMemResult(rightAllocResult) &&
+    isIRVariable(rightVar) &&
+    isPrimitiveLikeType(rightVar.type) &&
+    rightVar.type.isIntegral()
+  ) {
+    x87regs.tracker.markEntryAsReadyToErase(rightAllocResult.entry);
   }
 
   output.appendGroup(x87regs.tracker.vacuumNotUsed());

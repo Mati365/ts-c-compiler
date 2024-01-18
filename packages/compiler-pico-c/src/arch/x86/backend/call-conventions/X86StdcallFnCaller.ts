@@ -3,12 +3,20 @@ import chalk from 'chalk';
 import { CFunctionCallConvention } from '#constants';
 import { IRVariable, isIRVariable } from 'frontend/ir/variables';
 import { CBackendError, CBackendErrorCode } from 'backend/errors/CBackendError';
-import { isStructLikeType, isUnionLikeType } from 'frontend/analyze';
+import {
+  isPrimitiveLikeType,
+  isStructLikeType,
+  isUnionLikeType,
+} from 'frontend/analyze';
 
 import { getBaseTypeIfPtr } from 'frontend/analyze/types/utils';
 import { getTypeOffsetByteSize } from 'frontend/ir/utils';
 import { getX86RegByteSize } from '../../constants/regs';
-import { genInstruction, withInlineComment } from '../../asm-utils';
+import {
+  genInstruction,
+  genMemAddress,
+  withInlineComment,
+} from '../../asm-utils';
 
 import {
   X86CompileInstructionOutput,
@@ -25,6 +33,12 @@ import {
   X86FnCallerCompilerAttrs,
   X86FnRetCompilerAttrs,
 } from './X86ConventionalFnCaller';
+
+import {
+  X86RegName,
+  X87StackRegName,
+  isX87RegName,
+} from '@ts-c-compiler/x86-assembler';
 
 export class X86StdcallFnCaller implements X86ConventionalFnCaller {
   protected readonly convention = CFunctionCallConvention.STDCALL;
@@ -49,7 +63,6 @@ export class X86StdcallFnCaller implements X86ConventionalFnCaller {
     const output = new X86CompileInstructionOutput();
 
     // preserve already allocated regs on stack
-    x87regs.tracker.vacuumNotUsed();
     regs.ownership.releaseNotUsedLaterRegs(
       true,
       callerInstruction.args.flatMap(item =>
@@ -66,7 +79,12 @@ export class X86StdcallFnCaller implements X86ConventionalFnCaller {
     // call function section
     for (let i = totalNonRVOArgs - 1; i >= 0; --i) {
       const arg = callerInstruction.args[i];
+      const declArg = declInstruction.args[i];
       const baseType = getBaseTypeIfPtr(arg.type);
+
+      const declBaseType = getBaseTypeIfPtr(declArg?.type);
+      const isDeclArgFloat =
+        isPrimitiveLikeType(declBaseType, true) && declBaseType.isFloating();
 
       if (isStructLikeType(baseType) || isUnionLikeType(baseType)) {
         if (!isIRVariable(arg)) {
@@ -80,9 +98,40 @@ export class X86StdcallFnCaller implements X86ConventionalFnCaller {
             type: baseType,
           }),
         );
+      } else if (isDeclArgFloat) {
+        // store float point arg on stack
+        const declArgSize = declBaseType.getByteSize();
+        const addressReg = regs.requestReg({
+          allowedRegs: regs.ownership.getAvailableRegs().addressing,
+        });
+
+        const stackRegResult = x87regs.tryResolveIRArgAsReg({
+          stackTop: true,
+          castedType: declBaseType,
+          arg,
+        });
+
+        output.appendGroup(stackRegResult.asm);
+        output.appendInstructions(
+          genInstruction('sub', 'sp', declArgSize),
+          genInstruction('mov', addressReg.value, 'sp'),
+        );
+
+        output.appendGroup(
+          x87regs.storeStackRegAtAddress({
+            reg: stackRegResult.entry.reg,
+            address: genMemAddress({
+              expression: addressReg.value,
+              size: declArgSize,
+            }),
+            pop: true,
+          }).asm,
+        );
+
+        regs.releaseRegs([addressReg.value]);
       } else {
         // perform plain stack push
-        const resolvedArg = allocator.regs.tryResolveIrArg({
+        const resolvedArg = regs.tryResolveIrArg({
           arg,
           size: stack.size,
         });
@@ -93,11 +142,12 @@ export class X86StdcallFnCaller implements X86ConventionalFnCaller {
         );
 
         if (resolvedArg.type === IRArgDynamicResolverType.REG) {
-          allocator.regs.releaseRegs([resolvedArg.value]);
+          regs.releaseRegs([resolvedArg.value]);
         }
       }
     }
 
+    output.appendGroup(x87regs.tracker.vacuumAll());
     output.appendInstructions(genInstruction('call', address));
 
     // restore result from register (AX is already loaded in `compileIRFnRet`)
@@ -106,12 +156,22 @@ export class X86StdcallFnCaller implements X86ConventionalFnCaller {
       !declInstruction.isVoid() &&
       declInstruction.hasReturnValue()
     ) {
-      regs.ownership.setOwnership(callerInstruction.outputVar.name, {
-        reg: this.getReturnReg({
-          context,
-          declInstruction,
-        }),
+      const reg = this.getReturnReg({
+        context,
+        declInstruction,
       });
+
+      if (isX87RegName(reg)) {
+        x87regs.tracker.setOwnership({
+          reg,
+          size: callerInstruction.outputVar.type.getByteSize(),
+          varName: callerInstruction.outputVar.name,
+        });
+      } else {
+        regs.ownership.setOwnership(callerInstruction.outputVar.name, {
+          reg,
+        });
+      }
     }
 
     // handle case when we call `sum(void)` with `sum(1, 2, 3)`.
@@ -172,6 +232,7 @@ export class X86StdcallFnCaller implements X86ConventionalFnCaller {
     retInstruction,
   }: X86FnRetCompilerAttrs) {
     const { allocator } = context;
+    const { regs, x87regs } = allocator;
 
     const stack = this.getContextStackInfo(allocator);
     const totalArgs = declInstruction.getArgsWithRVO().length;
@@ -193,32 +254,44 @@ export class X86StdcallFnCaller implements X86ConventionalFnCaller {
           declInstruction,
         });
 
-        // handle case when `ax` is already used by `retInstruction.value`
-        // but with slightly different size (1 byte but we want to return 2 bytes)
-        const usedOwnership =
-          isIRVariable(retInstruction.value) &&
-          allocator.regs.ownership.getVarOwnership(retInstruction.value.name);
-
-        if (
-          usedOwnership &&
-          usedOwnership.reg !== returnReg &&
-          getX86RegByteSize(returnReg) -
-            getX86RegByteSize(usedOwnership.reg) ===
-            1
-        ) {
-          output.appendInstructions(
-            genInstruction('movzx', returnReg, usedOwnership.reg),
-          );
-        } else {
-          // handle case when we call `return 2`
-          const retResolvedArg = allocator.regs.tryResolveIRArgAsReg({
-            size: getTypeOffsetByteSize(declInstruction.returnType, 0),
+        if (isX87RegName(returnReg)) {
+          const stackOutput = x87regs.tryResolveIRArgAsReg({
             arg: retInstruction.value,
-            allowedRegs: [returnReg],
+            stackTop: true,
           });
 
-          output.appendInstructions(...retResolvedArg.asm);
-          allocator.regs.releaseRegs([retResolvedArg.value]);
+          output.appendGroups(
+            stackOutput.asm,
+            x87regs.tracker.vacuumAll(['st0']),
+          );
+        } else {
+          // handle case when `ax` is already used by `retInstruction.value`
+          // but with slightly different size (1 byte but we want to return 2 bytes)
+          const usedOwnership =
+            isIRVariable(retInstruction.value) &&
+            regs.ownership.getVarOwnership(retInstruction.value.name);
+
+          if (
+            usedOwnership &&
+            usedOwnership.reg !== returnReg &&
+            getX86RegByteSize(returnReg) -
+              getX86RegByteSize(usedOwnership.reg) ===
+              1
+          ) {
+            output.appendInstructions(
+              genInstruction('movzx', returnReg, usedOwnership.reg),
+            );
+          } else {
+            // handle case when we call `return 2`
+            const retResolvedArg = regs.tryResolveIRArgAsReg({
+              size: getTypeOffsetByteSize(declInstruction.returnType, 0),
+              arg: retInstruction.value,
+              allowedRegs: [returnReg],
+            });
+
+            output.appendInstructions(...retResolvedArg.asm);
+            regs.releaseRegs([retResolvedArg.value]);
+          }
         }
       }
     }
@@ -244,11 +317,17 @@ export class X86StdcallFnCaller implements X86ConventionalFnCaller {
     };
   }
 
-  private getReturnReg({ declInstruction }: X86FnBasicCompilerAttrs) {
+  private getReturnReg({
+    declInstruction,
+  }: X86FnBasicCompilerAttrs): X86RegName | X87StackRegName {
     const { returnType } = declInstruction;
 
     if (!returnType || returnType.isVoid()) {
       return null;
+    }
+
+    if (isPrimitiveLikeType(returnType, true) && returnType.isFloating()) {
+      return 'st0';
     }
 
     return returnType.getByteSize() === 1 ? 'al' : 'ax';
@@ -274,7 +353,7 @@ export class X86StdcallFnCaller implements X86ConventionalFnCaller {
       declInstruction,
     });
 
-    if (returnReg) {
+    if (!isX87RegName(returnReg) && returnReg) {
       // check if somebody booked `AX` register and swap it if unavailable
       const cachedOwnership = ownership
         .getOwnershipByReg(returnReg)

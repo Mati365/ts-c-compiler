@@ -104,6 +104,7 @@ export function compileLoadInstruction({
       inputVar.type.baseType.isFloating()
     ) {
       // %t{0}: float4B = load a{0}: float*2B
+      const cachedMemOwnership = memOwnership.getVarOwnership(inputVar.name);
       const pushResult = x87regs.pushIRArgOnStack({
         arg: inputVar,
         castedType: inputVar.type.baseType,
@@ -114,6 +115,13 @@ export function compileLoadInstruction({
         ...pushResult.entry,
         varName: outputVar.name,
       });
+
+      // fallback if stack is overriden
+      if (isStackVarOwnership(cachedMemOwnership)) {
+        memOwnership.setOwnership(outputVar.name, {
+          stackVar: cachedMemOwnership.stackVar,
+        });
+      }
     } else {
       // handle loading pointer to types, such as *k
       // %t{0} = load a{0}: int* 2B

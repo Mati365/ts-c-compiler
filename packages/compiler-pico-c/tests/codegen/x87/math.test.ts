@@ -26,26 +26,21 @@ describe('X87 Math', () => {
       fstp dword [bp - 12]
       fld dword [bp - 4]
       fld dword [bp - 8]
-      fld dword [bp - 4]
-      fxch st1
       fmul st0, st1
-      ffree st1
-      fxch st2
-      fsub st0, st2
-      ffree st2
-      fld dword [bp - 8]
-      fxch st1
-      fadd st0, st1
-      ffree st1
-      fld dword [bp - 8]
-      fld dword [bp - 4]
-      fmul dword [@@_$LC_3]
       fxch st1
       fsub st0, st1
       ffree st1
+      fld dword [bp - 8]
+      fxch st1
+      fadd st0, st1
+      fld dword [bp - 4]
+      fmul dword [@@_$LC_3]
       fxch st2
-      fadd st0, st2
+      fsub st0, st2
       ffree st2
+      fxch st1
+      fadd st0, st1
+      ffree st1
       fstp dword [bp - 16]
       xchg bx, bx
       mov sp, bp
@@ -162,6 +157,7 @@ describe('X87 Math', () => {
       fild word [bp - 14]
       fld1
       fdiv st0, st1
+      ffree st1
       fstp dword [bp - 12]
       mov ax, bx
       mov bx, word 2
@@ -172,7 +168,6 @@ describe('X87 Math', () => {
       @@_L5:
       fld dword [bp - 12]
       fmul dword [@@_$LC_1]
-      ffree st1
       fstp dword [bp - 12]
       @@_L4:
       fld dword [bp - 6]
@@ -180,12 +175,10 @@ describe('X87 Math', () => {
       fxch st1
       fadd st0, st1
       ffree st1
-      ffree st2
       fstp dword [bp - 6]
       mov ax, [bp - 8]
       add ax, 1                 ; %t{4}: int2B = %t{3}: int2B plus %1: int2B
       mov word [bp - 8], ax     ; *(n{0}: int*2B) = store %t{4}: int2B
-      ffree st0
       jmp @@_L1                 ; jmp L1
       @@_L3:
       fld dword [bp - 6]
@@ -226,7 +219,6 @@ describe('X87 Math', () => {
       fild word [bp - 6]
       fmul st0, st1
       ffree st1
-      ffree st2
       fistp word [bp - 8]
       mov ax, [bp - 8]
       shl ax, 1                 ; %t{6}: int2B = %t{5}: int2B mul %2: char1B
