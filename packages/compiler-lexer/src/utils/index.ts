@@ -1,5 +1,6 @@
 export * from './extractNestableTokensList';
 export * from './isEOFToken';
+export * from './isFloatMathOpToken';
 export * from './isLineTerminatorToken';
 export * from './isLogicOpToken';
 export * from './isMathOpToken';

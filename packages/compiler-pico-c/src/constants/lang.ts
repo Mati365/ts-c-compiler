@@ -86,7 +86,7 @@ export enum CAssignOperator {
   RIGHT_ASSIGN = '>>=',
   AND_ASSIGN = '&=',
   XOR_ASSIGN = '^=',
-  OR_ASSIGN = '||=',
+  OR_ASSIGN = '|=',
 }
 
 export type CMathOperator =

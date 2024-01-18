@@ -57,6 +57,7 @@ export enum CTypeCheckErrorCode {
   INCORRECT_POINTER_SIDES_TYPES,
   PROVIDED_TYPE_MUST_BE_POINTER,
   UNABLE_EVAL_CONST_EXPRESSION,
+  MATH_EXPRESSION_MUST_BE_INTEGRAL_TYPE,
 }
 
 export const C_TYPE_CHECK_ERROR_TRANSLATIONS: Record<
@@ -144,6 +145,9 @@ export const C_TYPE_CHECK_ERROR_TRANSLATIONS: Record<
     'Assignment to read-only type "%{left}"!',
   [CTypeCheckErrorCode.OPERATOR_SIDES_TYPES_MISMATCH]:
     'Operator types mismatch! Left side type "%{left}" mismatch with right side "%{right}"!',
+  [CTypeCheckErrorCode.MATH_EXPRESSION_MUST_BE_INTEGRAL_TYPE]:
+    // eslint-disable-next-line max-len
+    'Expression must be integral type! Left side type "%{left}" mismatch with right side "%{right}"! Try casting variable.',
   [CTypeCheckErrorCode.REDEFINITION_OF_COMPILE_CONSTANT]:
     'Redefinition of compile type constant "%{name}"!',
   [CTypeCheckErrorCode.UNKNOWN_INITIALIZER_VALUE_TYPE]:
