@@ -114,7 +114,7 @@ export class CPrimitiveType extends CType<CPrimitiveTypeDescriptor> {
   }
 
   override canBeStoredInFloatReg() {
-    return this.isFloating() && super.canBeStoredInFloatReg();
+    return this.isFloating();
   }
 
   /**

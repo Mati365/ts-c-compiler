@@ -48,6 +48,7 @@ type X87PushIrArgAsMemAttrs = {
 
 type X87ResolveIrArgOnStackAttrs = X87PushIrArgOnStackAttrs & {
   stackTop?: boolean;
+  ignoreCache?: boolean;
 };
 
 type X87IRArgStackResult = {
@@ -153,6 +154,7 @@ export class X87BasicRegAllocator {
 
   tryResolveIRArgAsReg({
     stackTop,
+    ignoreCache,
     ...attrs
   }: X87ResolveIrArgOnStackAttrs): X87IRArgStackResult {
     const { tracker } = this;
@@ -168,7 +170,7 @@ export class X87BasicRegAllocator {
           return this.tryResolveIRIntArgAsReg(attrs);
         }
 
-        const stackVar = tracker.getStackVar(arg.name);
+        const stackVar = ignoreCache ? null : tracker.getStackVar(arg.name);
 
         if (!stackVar) {
           return this.pushIRArgOnStack(attrs);
@@ -294,7 +296,16 @@ export class X87BasicRegAllocator {
 
       asm.appendGroup(pushResult.asm);
 
-      if (!arg.isTemporary()) {
+      if (arg.isTemporary()) {
+        const memAddr = this.memOwnership.tryResolveIRArgAsAddr(arg);
+        if (!memAddr) {
+          throw new CBackendError(
+            CBackendErrorCode.UNABLE_PUSH_ARG_ON_X87_STACK,
+          );
+        }
+
+        asm.appendInstructions(genInstruction('fld', memAddr.value));
+      } else {
         const stackAddress = this.stackFrame.getLocalVarStackRelAddress(
           arg.name,
           {
@@ -336,6 +347,10 @@ export class X87BasicRegAllocator {
 
     asm.appendInstructions(genInstruction(instruction, address));
 
+    if (pop) {
+      this.tracker.afterPop();
+    }
+
     return {
       asm,
     };
@@ -365,7 +380,7 @@ export class X87BasicRegAllocator {
       ),
     );
 
-    this.tracker.pop();
+    this.tracker.afterPop();
     return asm;
   }
 
