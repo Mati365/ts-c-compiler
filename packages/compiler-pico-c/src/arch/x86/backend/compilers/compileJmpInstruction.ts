@@ -13,11 +13,18 @@ type JmpInstructionCompilerAttrs =
 
 export function compileJmpInstruction({
   instruction,
+  context: { allocator },
 }: JmpInstructionCompilerAttrs) {
-  return X86CompileInstructionOutput.ofInstructions([
+  const { x87regs } = allocator;
+  const output = new X86CompileInstructionOutput();
+
+  output.appendGroup(x87regs.tracker.vacuumNotUsed());
+  output.appendInstructions(
     withInlineComment(
       genInstruction('jmp', genLabelName(instruction.label.name)),
       instruction.getDisplayName(),
     ),
-  ]);
+  );
+
+  return output;
 }

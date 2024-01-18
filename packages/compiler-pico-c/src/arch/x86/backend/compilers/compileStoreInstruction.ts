@@ -36,11 +36,14 @@ export function compileStoreInstruction({
   const outputByteSize = getTypeOffsetByteSize(outputVar.type, offset);
 
   const baseOutputType = getBaseTypeIfPtr(outputVar.type);
-  const isFloating =
+  const isFloatingOutput =
     isPrimitiveLikeType(baseOutputType, true) && baseOutputType.isFloating();
 
+  const isFloatingInput =
+    isPrimitiveLikeType(value.type, true) && value.type.isFloating();
+
   if (outputVar.isTemporary()) {
-    if (isFloating) {
+    if (isFloatingOutput) {
       // TODO
       throw new Error('TODO');
     } else {
@@ -114,10 +117,14 @@ export function compileStoreInstruction({
         }),
       );
     } else {
-      if (isFloating) {
+      if (isFloatingOutput) {
         let stackRegResult: X87OwnershipStackEntry = null;
 
-        if (isPrimitiveLikeType(value.type, true) && value.type.isIntegral()) {
+        if (isFloatingInput) {
+          // store floating point number
+          // *(b{0}: float*2B) = store %t{1}: float4B
+          stackRegResult = x87regs.tracker.getStackVar(value.name);
+        } else {
           // store implicit casted integral type
           // *(b{0}: float*2B) = store %t{1}: int2B
           const pushResult = x87regs.tryResolveIRArgAsReg({
@@ -127,10 +134,6 @@ export function compileStoreInstruction({
 
           output.appendGroup(pushResult.asm);
           stackRegResult = pushResult.entry;
-        } else {
-          // store floating point number
-          // *(b{0}: float*2B) = store %t{1}: float4B
-          stackRegResult = x87regs.tracker.getStackVar(value.name);
         }
 
         const storeResult = x87regs.storeStackRegAtAddress({
@@ -144,57 +147,83 @@ export function compileStoreInstruction({
 
         output.appendGroups(storeResult.asm);
       } else {
-        // simple variables that can be stored inside regs
-        let inputReg = regs.tryResolveIRArgAsReg({
-          arg: value,
-          forceLabelMemPtr: false,
-        });
+        if (isFloatingInput) {
+          // store float in integer variable
+          // *(a{0}: int*2B) = store %t{1}: float4B
 
-        if (inputReg.size - destAddr.size === 1) {
-          // case: *(%t{1}: char*2B) = store %t{2}: int2B
-          // bigger value is loaded in smaller address
-          const part =
-            regs.ownership.getAvailableRegs().general.parts[inputReg.value];
+          const stackRegResult = x87regs.tracker.getStackVar(value.name);
 
-          inputReg = {
-            ...inputReg,
-            size: part.size,
-            value: part.low,
-          };
-        } else if (inputReg.size - destAddr.size === -1) {
-          // case: *(k{0}: int*2B) = store %t{0}: char1B
-          // smaller value is loaded in bigger address
-          const extendedReg = regs.requestReg({
-            size: destAddr.size,
+          if (stackRegResult) {
+            const storeResult = x87regs.storeStackRegAtAddress({
+              integral: true,
+              reg: stackRegResult.reg,
+              address: destAddr.value,
+              pop: !lifetime.isVariableLaterUsed(
+                allocator.iterator.offset,
+                value.name,
+              ),
+            });
+
+            output.appendGroups(storeResult.asm);
+          } else {
+            output.appendInstructions('; MISSING SHIT');
+          }
+        } else {
+          // store int in integer variable
+          // *(a{0}: int*2B) = store %t{1}: int2B
+
+          // simple variables that can be stored inside regs
+          let inputReg = regs.tryResolveIRArgAsReg({
+            arg: value,
+            forceLabelMemPtr: false,
           });
 
-          regs.ownership.setOwnership(value.name, {
-            reg: extendedReg.value,
-          });
+          if (inputReg.size - destAddr.size === 1) {
+            // case: *(%t{1}: char*2B) = store %t{2}: int2B
+            // bigger value is loaded in smaller address
+            const part =
+              regs.ownership.getAvailableRegs().general.parts[inputReg.value];
 
-          // extend value before move
-          inputReg = {
-            asm: [
-              ...inputReg.asm,
-              ...extendedReg.asm,
-              genInstruction('movzx', extendedReg.value, inputReg.value),
-            ],
-            size: extendedReg.size,
-            value: extendedReg.value,
-          };
+            inputReg = {
+              ...inputReg,
+              size: part.size,
+              value: part.low,
+            };
+          } else if (inputReg.size - destAddr.size === -1) {
+            // case: *(k{0}: int*2B) = store %t{0}: char1B
+            // smaller value is loaded in bigger address
+            const extendedReg = regs.requestReg({
+              size: destAddr.size,
+            });
+
+            regs.ownership.setOwnership(value.name, {
+              reg: extendedReg.value,
+            });
+
+            // extend value before move
+            inputReg = {
+              asm: [
+                ...inputReg.asm,
+                ...extendedReg.asm,
+                genInstruction('movzx', extendedReg.value, inputReg.value),
+              ],
+              size: extendedReg.size,
+              value: extendedReg.value,
+            };
+          }
+
+          output.appendInstructions(
+            ...inputReg.asm,
+            withInlineComment(
+              genInstruction('mov', destAddr.value, inputReg.value),
+              instruction.getDisplayName(),
+            ),
+          );
         }
-
-        output.appendInstructions(
-          ...inputReg.asm,
-          withInlineComment(
-            genInstruction('mov', destAddr.value, inputReg.value),
-            instruction.getDisplayName(),
-          ),
-        );
       }
     }
   } else if (isIRConstant(value)) {
-    if (isFloating) {
+    if (isFloatingOutput) {
       const result = x87regs.storeConstantAtAddress({
         value,
         address: destAddr.value,

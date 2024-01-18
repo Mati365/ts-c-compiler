@@ -42,13 +42,14 @@ export class X86StdcallFnCaller implements X86ConventionalFnCaller {
     callerInstruction,
   }: X86FnCallerCompilerAttrs) {
     const { allocator } = context;
-    const { regs } = allocator;
+    const { regs, x87regs } = allocator;
 
     const stack = this.getContextStackInfo(allocator);
     const totalNonRVOArgs = callerInstruction.args.length;
     const output = new X86CompileInstructionOutput();
 
     // preserve already allocated regs on stack
+    x87regs.tracker.vacuumNotUsed();
     regs.ownership.releaseNotUsedLaterRegs(
       true,
       callerInstruction.args.flatMap(item =>

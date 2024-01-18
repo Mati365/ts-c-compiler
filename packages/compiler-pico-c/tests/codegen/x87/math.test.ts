@@ -162,7 +162,6 @@ describe('X87 Math', () => {
       fild word [bp - 14]
       fld1
       fdiv st0, st1
-      ffree st1
       fstp dword [bp - 12]
       mov ax, bx
       mov bx, word 2
@@ -186,11 +185,11 @@ describe('X87 Math', () => {
       mov ax, [bp - 8]
       add ax, 1                 ; %t{4}: int2B = %t{3}: int2B plus %1: int2B
       mov word [bp - 8], ax     ; *(n{0}: int*2B) = store %t{4}: int2B
+      ffree st0
       jmp @@_L1                 ; jmp L1
       @@_L3:
       fld dword [bp - 6]
       fmul dword [@@_$LC_2]
-      ffree st1
       fstp dword [bp - 18]
       xchg bx, bx
       mov sp, bp
@@ -199,6 +198,45 @@ describe('X87 Math', () => {
       @@_$LC_0: dd 0.0
       @@_$LC_1: dd -1.0
       @@_$LC_2: dd 4.0
+    `);
+  });
+
+  test('assign float to int', () => {
+    expect(/* cpp */ `
+      int main() {
+        float b = 4;
+        int a = b + 3;
+        int d = a * b;
+        int k = d * 2;
+        asm("xchg bx, bx");
+      }
+    `).toCompiledAsmBeEqual(`
+      cpu 386
+      ; def main(): [ret: int2B]
+      @@_fn_main:
+      push bp
+      mov bp, sp
+      sub sp, 10
+      fld dword [@@_$LC_0]
+      fstp dword [bp - 4]
+      fld dword [bp - 4]
+      fadd dword [@@_$LC_1]
+      fistp word [bp - 6]
+      fld dword [bp - 4]
+      fild word [bp - 6]
+      fmul st0, st1
+      ffree st1
+      ffree st2
+      fistp word [bp - 8]
+      mov ax, [bp - 8]
+      shl ax, 1                 ; %t{6}: int2B = %t{5}: int2B mul %2: char1B
+      mov word [bp - 10], ax    ; *(k{0}: int*2B) = store %t{6}: int2B
+      xchg bx, bx
+      mov sp, bp
+      pop bp
+      ret
+      @@_$LC_0: dd 4.0
+      @@_$LC_1: dd 3.0
     `);
   });
 });

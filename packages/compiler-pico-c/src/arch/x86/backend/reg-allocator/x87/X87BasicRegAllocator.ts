@@ -33,6 +33,7 @@ type X87StoreStackRegAttrs = {
   reg: X87StackRegName;
   address: string;
   pop?: boolean;
+  integral?: boolean;
 };
 
 type X87PushIrArgOnStackAttrs = {
@@ -223,7 +224,6 @@ export class X87BasicRegAllocator {
 
     const pushResult = this.pushVariableOnStack({
       size,
-      canBeErased: true,
     });
 
     asm.appendGroup(pushResult.asm);
@@ -314,14 +314,27 @@ export class X87BasicRegAllocator {
     throw new CBackendError(CBackendErrorCode.UNABLE_PUSH_ARG_ON_X87_STACK);
   }
 
-  storeStackRegAtAddress({ reg, address, pop }: X87StoreStackRegAttrs) {
+  storeStackRegAtAddress({
+    reg,
+    address,
+    pop,
+    integral,
+  }: X87StoreStackRegAttrs) {
     const asm = new X86CompileInstructionOutput();
 
     if (reg !== 'st0') {
       asm.appendGroup(this.tracker.swapWithStackTop(reg));
     }
 
-    asm.appendInstructions(genInstruction(pop ? 'fstp' : 'fst', address));
+    const instruction = (() => {
+      if (integral) {
+        return pop ? 'fistp' : 'fist';
+      }
+
+      return pop ? 'fstp' : 'fst';
+    })();
+
+    asm.appendInstructions(genInstruction(instruction, address));
 
     return {
       asm,

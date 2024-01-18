@@ -18,78 +18,57 @@ cpu 386
 @@_fn_main:
 push bp
 mov bp, sp
-sub sp, 8
+sub sp, 18
+mov word [bp - 2], 4      ; *(nbofterms{0}: int*2B) = store %4: int2B
 fld dword [@@_$LC_0]
-fstp dword [bp - 4]
-fld dword [@@_$LC_1]
-fstp dword [bp - 8]
-fld dword [bp - 4]
-fadd dword [@@_$LC_2]
-fld dword [@@_$LC_3]
-nop
-fxch st1                  ; # Swap with stack top
-fucom st1
-fnstsw ax
-test ah, 5
-jne @@_L1                 ; br %t{2}: i1:zf, false: L1
-@@_L3:
-fld dword [bp - 4]
-fld dword [@@_$LC_4]
-fucom st1
-fnstsw ax
-test ah, 69
-jne @@_L1                 ; br %t{4}: i1:zf, false: L1
-@@_L4:
-fld dword [bp - 4]
-fld dword [bp - 8]
-fxch st1                  ; # Swap with stack top
-fadd st0, st1
-fld dword [@@_$LC_5]
-nop
-fxch st1                  ; # Swap with stack top
-fucom st1
-fnstsw ax
-and ah, 69
-xor ah, 64
-je @@_L2                  ; br %t{8}: i1:zf, true: L2
-@@_L5:
-fld dword [bp - 4]
-fxch st7                  ; # Swap with stack top
-fxch st1                  ; # Swap with stack top
-fxch st7                  ; # Swap with stack top
-ffree st7
-fld dword [bp - 8]
-fxch st1                  ; # Swap with stack top
-fmul st0, st1
-ffree st7
-fld dword [@@_$LC_6]
-xchg bx, bx
-ffree st7
-fld dword [@@_$LC_6]
-xchg bx, bx
-fxch st1                  ; # Swap with stack top
-xchg bx, bx
-fucom st1
-fnstsw ax
-and ah, 69
-xor ah, 64
-je @@_L2                  ; br %t{12}: i1:zf, true: L2
-jmp @@_L1                 ; jmp L1
-jmp @@_L1                 ; jmp L1
-jmp @@_L1                 ; jmp L1
-@@_L2:
-xchg bx, bx
+fstp dword [bp - 6]
+mov word [bp - 8], 0      ; *(n{0}: int*2B) = store %0: int2B
 @@_L1:
+mov ax, [bp - 2]
+cmp word [bp - 8], ax     ; %t{2}: i1:zf = icmp %t{0}: int2B less_than %t{1}: int2B
+jl @@_L2                  ; br %t{2}: i1:zf, true: L2, false: L3
+jge @@_L3                 ; br %t{2}: i1:zf, true: L2, false: L3
+@@_L2:
+mov ax, [bp - 8]
+mov bx, ax                ; swap
+shl ax, 1                 ; %t{6}: int2B = %t{5}: int2B mul %2: char1B
+add ax, 1                 ; %t{7}: int2B = %t{6}: int2B plus %1: char1B
+mov word [bp - 14], ax
+fild word [bp - 14]
+fld1
+fdiv st0, st1
+fst dword [bp - 12]
+mov ax, bx
+mov bx, word 2
+cdq
+idiv bx                   ; %t{10}: int2B = %t{5}: int2B mod %2: char1B
+cmp dx, 1                 ; %t{11}: i1:zf = icmp %t{10}: int2B equal %1: char1B
+jnz @@_L4                 ; br %t{11}: i1:zf, false: L4
+@@_L5:
+fld dword [bp - 12]
+fmul dword [@@_$LC_1]
+fst dword [bp - 12]
+@@_L4:
+fld dword [bp - 6]
+fld dword [bp - 12]
+fxch st1
+fadd st0, st1
+fst dword [bp - 6]
+mov ax, [bp - 8]
+add ax, 1                 ; %t{4}: int2B = %t{3}: int2B plus %1: int2B
+mov word [bp - 8], ax     ; *(n{0}: int*2B) = store %t{4}: int2B
+jmp @@_L1                 ; jmp L1
+@@_L3:
+fld dword [bp - 6]
+fmul dword [@@_$LC_2]
+fst dword [bp - 18]
+xchg bx, bx
 mov sp, bp
 pop bp
 ret
-@@_$LC_0: dd 7.0
-@@_$LC_1: dd 10.0
+@@_$LC_0: dd 0.0
+@@_$LC_1: dd -1.0
 @@_$LC_2: dd 4.0
-@@_$LC_3: dd 8.0
-@@_$LC_4: dd 30.0
-@@_$LC_5: dd 117.0
-@@_$LC_6: dd 66.0
 
 
 
