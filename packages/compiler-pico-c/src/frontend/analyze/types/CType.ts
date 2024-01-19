@@ -10,8 +10,8 @@ import {
   CTypeCheckError,
   CTypeCheckErrorCode,
 } from '../errors/CTypeCheckError';
-import { CQualBitmap } from '../constants';
 
+import { CQualBitmap } from '../constants';
 import { bitsetToKeywords, parseKeywordsToBitset, isNamedType } from '../utils';
 
 export type CTypeDescriptor = {

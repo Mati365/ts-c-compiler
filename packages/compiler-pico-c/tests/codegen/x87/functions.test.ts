@@ -231,4 +231,39 @@ describe('X87 Functions', () => {
       @@_$LC_13: dd 500.0
     `);
   });
+
+  test('call `int sum(int x, int y)` with rounded constants', () => {
+    expect(/* cpp */ `
+      int sum(int x, int y) {
+        return x + y;
+      }
+
+      void main() {
+        int a = sum(2.35, 3.75);
+      }
+    `).toCompiledAsmBeEqual(`
+      cpu 386
+      ; def sum(x{0}: int*2B, y{0}: int*2B): [ret: int2B]
+      @@_fn_sum:
+      push bp
+      mov bp, sp
+      mov ax, [bp + 4]
+      add ax, word [bp + 6]     ; %t{2}: int2B = %t{0}: int2B plus %t{1}: int2B
+      mov sp, bp
+      pop bp
+      ret 4
+      ; def main():
+      @@_fn_main:
+      push bp
+      mov bp, sp
+      sub sp, 2
+      push 3
+      push 2
+      call @@_fn_sum
+      mov word [bp - 2], ax     ; *(a{0}: int*2B) = store %t{4}: int2B
+      mov sp, bp
+      pop bp
+      ret
+    `);
+  });
 });

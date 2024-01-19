@@ -18,7 +18,7 @@ describe('Alloca', () => {
       sub sp, 2
       sub sp, 20
       mov ax, sp
-      mov word [bp - 2], ax     ; *(buffer{0}: char**2B) = store %t{2}: char*2B
+      mov word [bp - 2], ax     ; *(buffer{0}: char**2B) = store %t{3}: char*2B
       mov ax, word 0
       mov sp, bp
       pop bp

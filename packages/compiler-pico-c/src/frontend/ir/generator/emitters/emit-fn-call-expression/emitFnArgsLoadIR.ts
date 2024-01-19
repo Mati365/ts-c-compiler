@@ -1,5 +1,6 @@
 import { GroupTreeVisitor } from '@ts-c-compiler/grammar';
 
+import { CFunctionDeclType } from 'frontend/analyze';
 import {
   ASTCAssignmentExpression,
   ASTCCompilerKind,
@@ -7,6 +8,7 @@ import {
 } from 'frontend/parser';
 
 import { IRInstructionTypedArg } from '../../../variables';
+import { emitCastIR } from '../emitCastIR';
 import {
   appendStmtResults,
   createBlankStmtResult,
@@ -15,20 +17,25 @@ import {
 
 type FnArgsLoadIREmitAttrs = IREmitterContextAttrs & {
   node: ASTCCompilerNode;
+  fnType: CFunctionDeclType;
 };
 
 export function emitFnArgsLoadIR({
   node,
   context,
   scope,
+  fnType,
 }: FnArgsLoadIREmitAttrs) {
   const { emit } = context;
   const result = createBlankStmtResult();
   const args: IRInstructionTypedArg[] = [];
 
+  let argIndex = 0;
+
   GroupTreeVisitor.ofIterator<ASTCCompilerNode>({
     [ASTCCompilerKind.AssignmentExpression]: {
       enter(exprNode: ASTCAssignmentExpression) {
+        const declArgType = fnType.args[argIndex]?.type;
         const exprResult = emit.expression({
           node: exprNode,
           context,
@@ -36,6 +43,18 @@ export function emitFnArgsLoadIR({
         });
 
         appendStmtResults(exprResult, result);
+
+        if (declArgType) {
+          const castResult = emitCastIR({
+            context,
+            expectedType: declArgType,
+            inputVar: exprResult.output,
+          });
+
+          appendStmtResults(castResult, result);
+          exprResult.output = castResult.output;
+        }
+
         args.push(exprResult.output);
         return false;
       },
