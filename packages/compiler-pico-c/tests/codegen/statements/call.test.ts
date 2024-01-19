@@ -488,7 +488,6 @@ describe('Function call', () => {
       mov sp, bp
       pop bp
       ret 4
-
       ; def main(): [ret: int2B]
       @@_fn_main:
       push bp
@@ -497,7 +496,7 @@ describe('Function call', () => {
       push 2
       push 1
       call @@_fn_sum_char
-      mov word [bp - 2], ax     ; *(sum{0}: int*2B) = store %t{4}: int2B
+      mov word [bp - 2], ax     ; *(sum{0}: int*2B) = store %t{5}: int2B
       mov sp, bp
       pop bp
       ret

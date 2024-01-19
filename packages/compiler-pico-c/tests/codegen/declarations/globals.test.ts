@@ -212,11 +212,11 @@ describe('Global variables declaration', () => {
       mov bp, sp
       sub sp, 4
       mov ax, @@_c_0_
-      mov word [bp - 2], ax     ; *(str{1}: const char**2B) = store %t{1}: const char**2B
-      mov bx, [bp - 2]          ; %t{3}: const char*2B = load str{1}: const char**2B
+      mov word [bp - 2], ax     ; *(str{1}: const char**2B) = store %t{2}: const char**2B
+      mov bx, [bp - 2]          ; %t{4}: const char*2B = load str{1}: const char**2B
       push bx
       call @@_fn_strlen
-      mov word [bp - 4], ax     ; *(k{0}: int*2B) = store %t{4}: int2B
+      mov word [bp - 4], ax     ; *(k{0}: int*2B) = store %t{5}: int2B
       mov sp, bp
       pop bp
       ret
@@ -334,10 +334,10 @@ describe('Global variables declaration', () => {
       sub sp, 4
       push @@_c_0_
       call @@_fn_strlen
-      mov word [bp - 2], ax     ; *(length{0}: int*2B) = store %t{3}: int2B
+      mov word [bp - 2], ax     ; *(length{0}: int*2B) = store %t{4}: int2B
       push @@_c_1_
       call @@_fn_strlen
-      mov word [bp - 4], ax     ; *(length2{0}: int*2B) = store %t{6}: int2B
+      mov word [bp - 4], ax     ; *(length2{0}: int*2B) = store %t{7}: int2B
       mov sp, bp
       pop bp
       ret

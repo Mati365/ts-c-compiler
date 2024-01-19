@@ -127,9 +127,9 @@ describe('If statement', () => {
         @@_L3:
         mov al, [bp - 1]
         add al, 4                 ; %t{5}: char1B = %t{4}: char1B plus %4: char1B
-        movzx bx, al
-        mov cx, [bp - 3]
-        cmp bx, cx                ; %t{8}: i1:zf = icmp %t{7}: int2B greater_than %t{6}: int2B
+        movzx ax, al
+        mov bx, [bp - 3]
+        cmp ax, bx                ; %t{8}: i1:zf = icmp %t{7}: int2B greater_than %t{6}: int2B
         jg @@_L2                  ; br %t{8}: i1:zf, true: L2
         jmp @@_L1                 ; jmp L1
         @@_L2:
