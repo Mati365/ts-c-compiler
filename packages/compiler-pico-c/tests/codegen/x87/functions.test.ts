@@ -266,4 +266,53 @@ describe('X87 Functions', () => {
       ret
     `);
   });
+
+  test('return int from float function', () => {
+    expect(/* cpp */ `
+      int sum(float x, float y) {
+        return x + y;
+      }
+
+      void main() {
+        int a = sum(12.35, 3.75);
+      }
+    `).toCompiledAsmBeEqual(`
+      cpu 386
+      ; def sum(x{0}: float*2B, y{0}: float*2B): [ret: int2B]
+      @@_fn_sum:
+      push bp
+      mov bp, sp
+      sub sp, 2
+      fld dword [bp + 4]
+      fld dword [bp + 8]
+      fxch st1
+      fadd st0, st1
+      ffree st1
+      fistp word [bp - 2]
+      mov ax, word [bp - 2]
+      mov sp, bp
+      pop bp
+      ret 4
+      ; def main():
+      @@_fn_main:
+      push bp
+      mov bp, sp
+      sub sp, 2
+      fld dword [@@_$LC_0]
+      sub sp, 4
+      mov bx, sp
+      fstp dword [bx]
+      fld dword [@@_$LC_1]
+      sub sp, 4
+      mov bx, sp
+      fstp dword [bx]
+      call @@_fn_sum
+      mov word [bp - 2], ax     ; *(a{0}: int*2B) = store %t{5}: int2B
+      mov sp, bp
+      pop bp
+      ret
+      @@_$LC_0: dd 3.75
+      @@_$LC_1: dd 12.35
+    `);
+  });
 });

@@ -36,6 +36,7 @@ import { emitWhileStmtIR, emitDoWhileStmtIR } from '../emit-while-stmt';
 import { emitForStmtIR } from '../emitForStmtIR';
 import { emitAsmStatementIR } from '../emitAsmStatementIR';
 import { emitSwitchStmtIR } from '../emitSwitchStmtIR';
+import { emitCastIR } from '../emitCastIR';
 
 type BlockItemIREmitAttrs = IREmitterContextAttrs & {
   node: ASTCCompilerNode;
@@ -214,8 +215,18 @@ export function emitBlockItemIR({
           context,
         });
 
+        const castedAssignResult = emitCastIR({
+          expectedType: fnReturnType,
+          inputVar: assignResult.output,
+          context,
+        });
+
         appendStmtResults(assignResult, result);
-        result.instructions.push(new IRRetInstruction(assignResult.output));
+        appendStmtResults(castedAssignResult, result);
+
+        result.instructions.push(
+          new IRRetInstruction(castedAssignResult.output),
+        );
 
         return false;
       },

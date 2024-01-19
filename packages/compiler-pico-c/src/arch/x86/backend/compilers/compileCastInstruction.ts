@@ -6,6 +6,7 @@ import { isPrimitiveLikeType } from 'frontend/analyze';
 
 import { X86CompilerInstructionFnAttrs } from '../../constants/types';
 import { X86CompileInstructionOutput } from './shared';
+import { IRArgDynamicResolverType } from '../reg-allocator';
 
 type CastInstructionCompilerAttrs =
   X86CompilerInstructionFnAttrs<IRCastInstruction>;
@@ -16,7 +17,7 @@ export function compileCastInstruction({
 }: CastInstructionCompilerAttrs) {
   const { allocator } = context;
   const { inputVar, outputVar } = instruction;
-  const { regs, x87regs, stackFrame, lifetime } = allocator;
+  const { regs, x87regs, stackFrame, lifetime, iterator } = allocator;
 
   const output = new X86CompileInstructionOutput();
 
@@ -81,17 +82,24 @@ export function compileCastInstruction({
       reg: reg.value,
     });
   } else if (outputVar.type.getByteSize() - inputVar.type.getByteSize() === 1) {
-    const extendedReg = regs.requestReg({
-      size: outputVar.type.getByteSize(),
-    });
-
     const rValue = regs.tryResolveIrArg({
       arg: inputVar,
     });
 
+    if (
+      rValue.type === IRArgDynamicResolverType.REG &&
+      !lifetime.isVariableLaterUsed(iterator.offset, inputVar.name)
+    ) {
+      regs.ownership.dropOwnership(inputVar.name);
+    }
+
+    const extendedReg = regs.requestReg({
+      size: outputVar.type.getByteSize(),
+    });
+
     output.appendInstructions(
-      ...extendedReg.asm,
       ...rValue.asm,
+      ...extendedReg.asm,
       genInstruction('movzx', extendedReg.value, rValue.value),
     );
 
