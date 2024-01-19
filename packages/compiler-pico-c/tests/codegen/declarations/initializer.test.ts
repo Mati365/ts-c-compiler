@@ -109,7 +109,7 @@ describe('Variables initialization', () => {
         mov al, [bx]              ; %t{2}: char1B = load %t{1}: char[3]*2B
         add al, 2                 ; %t{3}: char1B = %t{2}: char1B plus %2: char1B
         movzx cx, al
-        mov word [bp - 5], cx     ; *(a{0}: int*2B) = store %t{3}: char1B
+        mov word [bp - 5], cx     ; *(a{0}: int*2B) = store %t{4}: int2B
         mov sp, bp
         pop bp
         ret
@@ -137,7 +137,7 @@ describe('Variables initialization', () => {
         add al, 3                 ; %t{1}: char1B = %t{0}: char1B plus %3: char1B
         add al, ah                ; %t{3}: char1B = %t{1}: char1B plus %t{0}: char1B
         movzx bx, al
-        mov word [bp - 3], bx     ; *(a{0}: int*2B) = store %t{3}: char1B
+        mov word [bp - 3], bx     ; *(a{0}: int*2B) = store %t{4}: int2B
         mov sp, bp
         pop bp
         ret
@@ -165,8 +165,8 @@ describe('Variables initialization', () => {
           add al, 3                 ; %t{1}: char1B = %t{0}: char1B plus %3: char1B
           add al, ah                ; %t{3}: char1B = %t{1}: char1B plus %t{0}: char1B
           movzx bx, al
-          add bx, word [bp - 3]     ; %t{5}: int2B = %t{3}: char1B plus %t{4}: int2B
-          mov word [bp - 5], bx     ; *(a{0}: int*2B) = store %t{5}: int2B
+          add bx, word [bp - 3]     ; %t{6}: int2B = %t{5}: int2B plus %t{4}: int2B
+          mov word [bp - 5], bx     ; *(a{0}: int*2B) = store %t{6}: int2B
           mov sp, bp
           pop bp
           ret

@@ -40,7 +40,7 @@ export class TreeNode<K = string, C extends TreeNode<K, C> = any>
     const { children } = this;
 
     if (children) {
-      R.forEach(child => {
+      R.forEach((child: any) => {
         visitor.visit(child);
       }, children);
     }
@@ -64,7 +64,11 @@ export class TreeNode<K = string, C extends TreeNode<K, C> = any>
  * Node withs ingle value
  */
 export class ValueNode<T, K = string> extends TreeNode<K> {
-  constructor(kind: K, loc: NodeLocation, readonly value: T) {
+  constructor(
+    kind: K,
+    loc: NodeLocation,
+    readonly value: T,
+  ) {
     super(kind, loc, null);
   }
 
@@ -85,7 +89,11 @@ export class BinaryNode<
   K = string,
   T extends TreeNode<K> = TreeNode<K>,
 > extends TreeNode<K> {
-  constructor(kind: K, public left: T, public right: T) {
+  constructor(
+    kind: K,
+    public left: T,
+    public right: T,
+  ) {
     super(kind, left?.loc);
   }
 
@@ -144,7 +152,12 @@ export class BinaryOpNode<
   K = string,
   T extends TreeNode<K> = TreeNode<K>,
 > extends BinaryNode<K, T> {
-  constructor(kind: K, public op: TokenType, left: T, right: T) {
+  constructor(
+    kind: K,
+    public op: TokenType,
+    left: T,
+    right: T,
+  ) {
     super(kind, left, right);
   }
 

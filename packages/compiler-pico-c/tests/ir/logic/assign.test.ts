@@ -216,7 +216,8 @@ describe('Logic assign', () => {
         %t{1}: int2B = assign:φ %0: char1B
         L3:
         %t{2}: char1B = φ(%t{0}: char1B, %t{1}: int2B)
-        *(b{0}: int*2B) = store %t{2}: char1B
+        %t{5}: int2B = cast %t{2}: char1B
+        *(b{0}: int*2B) = store %t{5}: int2B
         ret
         end-def
     `);

@@ -19,6 +19,7 @@ import { IRStoreInstruction } from '../../../instructions';
 import { IRConstant, IRVariable, isIRVariable } from '../../../variables';
 
 import { emitExpressionIR } from '../emit-expr';
+import { emitCastIR } from '../emitCastIR';
 import {
   emitStringLiteralBlobLocalInitializerIR,
   emitStringLiteralPtrInitializerIR,
@@ -101,21 +102,33 @@ export function emitVariableLoadInitializerIR({
           !isIRVariable(exprResult.output) ||
           !destVar.isShallowEqual(exprResult.output)
         ) {
+          const castResult = emitCastIR({
+            context,
+            expectedType: getBaseTypeIfPtr(destVar.type),
+            inputVar: exprResult.output,
+          });
+
+          appendStmtResults(castResult, result);
           result.instructions.push(
-            new IRStoreInstruction(exprResult.output, destVar, offset),
+            new IRStoreInstruction(castResult.output, destVar, offset),
           );
         }
       } else if (!R.isNil(initializer)) {
         // int abc[3] = { 1, 2, 3}
         // constant literals are of type 1
+        const initializerDest = isDestUnion
+          ? destVar.ofType(CPointerType.ofType(itemOffsetType))
+          : destVar;
+
+        const castResult = emitCastIR({
+          context,
+          expectedType: getBaseTypeIfPtr(initializerDest.type),
+          inputVar: IRConstant.ofConstant(itemOffsetType, initializer),
+        });
+
+        appendStmtResults(castResult, result);
         result.instructions.push(
-          new IRStoreInstruction(
-            IRConstant.ofConstant(itemOffsetType, initializer),
-            isDestUnion
-              ? destVar.ofType(CPointerType.ofType(itemOffsetType))
-              : destVar,
-            offset,
-          ),
+          new IRStoreInstruction(castResult.output, initializerDest, offset),
         );
       }
 

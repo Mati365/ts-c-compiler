@@ -162,9 +162,9 @@ describe('X87 Math', () => {
       mov ax, bx
       mov bx, word 2
       cdq
-      idiv bx                   ; %t{10}: int2B = %t{5}: int2B mod %2: char1B
-      cmp dx, 1                 ; %t{11}: i1:zf = icmp %t{10}: int2B equal %1: char1B
-      jnz @@_L4                 ; br %t{11}: i1:zf, false: L4
+      idiv bx                   ; %t{11}: int2B = %t{5}: int2B mod %2: char1B
+      cmp dx, 1                 ; %t{12}: i1:zf = icmp %t{11}: int2B equal %1: char1B
+      jnz @@_L4                 ; br %t{12}: i1:zf, false: L4
       @@_L5:
       fld dword [bp - 12]
       fmul dword [@@_$LC_1]
@@ -209,20 +209,25 @@ describe('X87 Math', () => {
       @@_fn_main:
       push bp
       mov bp, sp
-      sub sp, 10
+      sub sp, 14
       fld dword [@@_$LC_0]
       fstp dword [bp - 4]
       fld dword [bp - 4]
       fadd dword [@@_$LC_1]
-      fistp word [bp - 6]
-      fld dword [bp - 4]
+      fistp word [bp - 8]
+      mov ax, word [bp - 8]
+      mov word [bp - 6], ax     ; *(a{0}: int*2B) = store %t{2}: int2B
       fild word [bp - 6]
+      fld dword [bp - 4]
+      fxch st1
       fmul st0, st1
       ffree st1
-      fistp word [bp - 8]
-      mov ax, [bp - 8]
-      shl ax, 1                 ; %t{6}: int2B = %t{5}: int2B mul %2: char1B
-      mov word [bp - 10], ax    ; *(k{0}: int*2B) = store %t{6}: int2B
+      fistp word [bp - 12]
+      mov bx, word [bp - 12]
+      mov word [bp - 10], bx    ; *(d{0}: int*2B) = store %t{7}: int2B
+      mov cx, [bp - 10]
+      shl cx, 1                 ; %t{9}: int2B = %t{8}: int2B mul %2: char1B
+      mov word [bp - 14], cx    ; *(k{0}: int*2B) = store %t{9}: int2B
       xchg bx, bx
       mov sp, bp
       pop bp

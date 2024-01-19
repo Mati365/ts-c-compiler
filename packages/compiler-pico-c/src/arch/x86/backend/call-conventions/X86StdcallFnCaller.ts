@@ -106,6 +106,7 @@ export class X86StdcallFnCaller implements X86ConventionalFnCaller {
         });
 
         const stackRegResult = x87regs.tryResolveIRArgAsReg({
+          allowCast: true,
           stackTop: true,
           castedType: declBaseType,
           arg,

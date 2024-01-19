@@ -14,15 +14,15 @@ cpu 386
   ; BOOOTSEC
 
 cpu 386
-; def sum(a{0}: float*2B, b{0}: float*2B): [ret: float4B]
+; def sum(a{0}: int*2B, b{0}: char*2B): [ret: int2B]
 @@_fn_sum:
 push bp
 mov bp, sp
-fld dword [bp + 4]
-fld dword [bp + 8]
-fxch st1
-fadd st0, st1
-ffree st1
+movzx ax, byte [bp + 6]
+xchg bx, bx
+mov bx, [bp + 4]
+add bx, ax                ; %t{3}: int2B = %t{0}: int2B plus %t{2}: int2B
+mov ax, bx
 mov sp, bp
 pop bp
 ret 4
@@ -30,37 +30,15 @@ ret 4
 @@_fn_main:
 push bp
 mov bp, sp
-sub sp, 12
-fld dword [@@_$LC_0]
-sub sp, 4
-mov bx, sp
-fstp dword [bx]
-ffree st7
-fld1
-sub sp, 4
-mov bx, sp
-fstp dword [bx]
-ffree st7
+sub sp, 2
+push 97
+push 3
 call @@_fn_sum
-fst dword [bp - 8]
-sub sp, 4
-mov bx, sp
-fstp dword [bx]
-ffree st7
-fld1
-sub sp, 4
-mov bx, sp
-fstp dword [bx]
-ffree st7
-call @@_fn_sum
-fst dword [bp - 12]
-fstp dword [bp - 4]
-ffree st7
+mov word [bp - 2], ax     ; *(k{0}: int*2B) = store %t{5}: int2B
 xchg bx, bx
 mov sp, bp
 pop bp
 ret
-@@_$LC_0: dd 2.0
 
 
 

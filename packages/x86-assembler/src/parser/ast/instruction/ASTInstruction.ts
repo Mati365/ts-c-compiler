@@ -256,12 +256,12 @@ export class ASTInstruction extends KindASTAsmNode(ASTNodeKind.INSTRUCTION) {
       }
 
       if (prefixes) {
-        R.forEach(prefix => {
+        for (const prefix of prefixes) {
           const prefixName = InstructionPrefix[prefix];
           if (prefixName) {
             mnemonic = `${prefixName} ${mnemonic}`;
           }
-        }, prefixes);
+        }
       }
 
       return toStringArgsList(mnemonic, args);

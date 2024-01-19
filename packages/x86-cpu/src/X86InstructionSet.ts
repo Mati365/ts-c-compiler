@@ -767,23 +767,25 @@ export class X86InstructionSet extends X86Unit {
       /** MOVZX r16,r/m8 */ [0x0fb6]: (bits: X86BitsMode = 0x2) => {
         cpu.parseRmByte(
           (reg, modeReg) => {
-            registers[<string>X86_REGISTERS[bits][modeReg]] = registers[reg];
+            registers[<string>X86_REGISTERS[bits][modeReg]] =
+              registers[reg] & 0xff;
           },
           (address, reg: string) => {
             registers[reg] = memIO.read[bits - 0x1](address);
           },
-          (bits - 1) as X86BitsMode,
+          bits,
         );
       },
 
       /** MOVSX r16,r/m8 */ [0x0fbe]: (bits: X86BitsMode = 0x2) => {
         cpu.parseRmByte(
           (reg, modeReg) => {
-            registers[<string>X86_REGISTERS[bits][modeReg]] = signExtend(
-              registers[reg] as number,
-              (bits - 1) as X86BitsMode,
-              bits,
-            );
+            registers[<string>X86_REGISTERS[bits][modeReg]] =
+              signExtend(
+                registers[reg] as number,
+                (bits - 1) as X86BitsMode,
+                bits,
+              ) & 0xff;
           },
           (address, reg: string) => {
             registers[reg] = signExtend(
@@ -792,7 +794,7 @@ export class X86InstructionSet extends X86Unit {
               bits,
             );
           },
-          (bits - 1) as X86BitsMode,
+          bits,
         );
       },
     });

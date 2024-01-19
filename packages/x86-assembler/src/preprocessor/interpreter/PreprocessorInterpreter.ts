@@ -141,7 +141,7 @@ export class PreprocessorInterpreter {
     // second phase
     if (this.secondExecPassNodes.length) {
       this.secondPassExec = true;
-      R.forEach(node => {
+      R.forEach((node: any) => {
         node.exec(this);
       }, this.secondExecPassNodes);
       this.secondExecPassNodes = [];

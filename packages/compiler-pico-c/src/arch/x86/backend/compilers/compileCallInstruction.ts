@@ -93,6 +93,7 @@ export function compileCallInstruction(attrs: CallInstructionCompilerAttrs) {
     const stackVar = stackFrame.allocSpillVariable(
       outputVar.type.getByteSize(),
     );
+
     const memAddr = stackFrame.getLocalVarStackRelAddress(stackVar.name, {
       withSize: true,
     });

@@ -37,7 +37,7 @@ export class ASTPreprocessorStmt extends ASTPreprocessorNode {
     const { children } = this;
 
     if (children) {
-      R.forEach(child => {
+      R.forEach((child: any) => {
         child.exec(interpreter);
       }, children);
     }

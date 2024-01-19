@@ -3,6 +3,7 @@ export * from './IRAsmInstruction';
 export * from './IRAssignInstruction';
 export * from './IRBrInstruction';
 export * from './IRCallInstruction';
+export * from './IRCastInstruction';
 export * from './IRCommentInstruction';
 export * from './IRDefDataInstruction';
 export * from './IRFnDeclInstruction';

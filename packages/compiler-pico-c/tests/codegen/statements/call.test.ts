@@ -146,10 +146,10 @@ describe('Function call', () => {
         @@_fn_sum:
         push bp
         mov bp, sp
-        mov ax, [bp + 4]
-        mov bx, word [bp + 6]
-        and bx, 0xff
-        add ax, bx                ; %t{2}: int2B = %t{0}: int2B plus %t{1}: char1B
+        movzx ax, byte [bp + 6]
+        mov bx, [bp + 4]
+        add bx, ax                ; %t{3}: int2B = %t{0}: int2B plus %t{2}: int2B
+        mov ax, bx
         mov sp, bp
         pop bp
         ret 4
@@ -161,7 +161,7 @@ describe('Function call', () => {
         push 97
         push 3
         call @@_fn_sum
-        mov word [bp - 2], ax     ; *(k{0}: int*2B) = store %t{4}: int2B
+        mov word [bp - 2], ax     ; *(k{0}: int*2B) = store %t{5}: int2B
         mov sp, bp
         pop bp
         ret

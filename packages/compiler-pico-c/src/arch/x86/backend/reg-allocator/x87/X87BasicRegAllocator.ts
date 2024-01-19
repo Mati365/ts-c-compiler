@@ -1,7 +1,6 @@
 import { X87StackRegName } from '@ts-c-compiler/x86-assembler';
 
 import { isPrimitiveLikeType, type CType } from 'frontend/analyze';
-
 import {
   IRConstant,
   IRInstructionTypedArg,
@@ -49,6 +48,7 @@ type X87PushIrArgAsMemAttrs = {
 type X87ResolveIrArgOnStackAttrs = X87PushIrArgOnStackAttrs & {
   stackTop?: boolean;
   ignoreCache?: boolean;
+  allowCast?: boolean;
 };
 
 type X87IRArgStackResult = {
@@ -115,7 +115,6 @@ export class X87BasicRegAllocator {
     castedType = arg.type,
   }: X87PushIrArgAsMemAttrs): X87IRArgMemResult {
     const { allocator } = this;
-
     const size = castedType.getByteSize();
 
     if (isIRConstant(arg)) {
@@ -155,6 +154,7 @@ export class X87BasicRegAllocator {
   tryResolveIRArgAsReg({
     stackTop,
     ignoreCache,
+    allowCast,
     ...attrs
   }: X87ResolveIrArgOnStackAttrs): X87IRArgStackResult {
     const { tracker } = this;
@@ -167,6 +167,10 @@ export class X87BasicRegAllocator {
 
       if (isIRVariable(arg)) {
         if (isPrimitiveLikeType(arg.type, true) && arg.type.isIntegral()) {
+          if (!allowCast) {
+            throw new CBackendError(CBackendErrorCode.VARIABLE_MUST_BE_FLOAT);
+          }
+
           return this.tryResolveIRIntArgAsReg(attrs);
         }
 
