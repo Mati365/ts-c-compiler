@@ -7,7 +7,7 @@ import type {
   IRLabelInstruction,
 } from '../../instructions';
 
-import type { IRConstant, IRVariable } from '../../variables';
+import type { IRInstructionTypedArg, IRVariable } from '../../variables';
 import type { IRVariableAllocator } from '../IRVariableAllocator';
 
 import type {
@@ -90,7 +90,7 @@ export type IREmitterExpressionVarResult = IREmitterStmtResult & {
 };
 
 export type IREmitterExpressionResult = IREmitterStmtResult & {
-  output: IRVariable | IRConstant;
+  output: IRInstructionTypedArg;
 };
 
 export type IRScopeGeneratorResult = {
@@ -112,7 +112,7 @@ export function createBlankStmtResult(
 
 export function createBlankExprResult(
   instructions?: IRInstruction[],
-  output: IRVariable = null,
+  output: IRInstructionTypedArg = null,
 ): IREmitterExpressionResult {
   return {
     ...createBlankStmtResult(instructions),

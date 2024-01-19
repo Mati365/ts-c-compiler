@@ -151,8 +151,8 @@ describe('Variable assign', () => {
         mov di, ax
         mov dx, [di]              ; %t{6}: int2B = load %t{5}: int*2B
         movzx ax, cl
-        add ax, dx                ; %t{7}: int2B = %t{3}: char1B plus %t{6}: int2B
-        mov word [bp - 12], ax    ; *(sum{0}: int*2B) = store %t{7}: int2B
+        add ax, dx                ; %t{8}: int2B = %t{7}: int2B plus %t{6}: int2B
+        mov word [bp - 12], ax    ; *(sum{0}: int*2B) = store %t{8}: int2B
         mov sp, bp
         pop bp
         ret
@@ -177,8 +177,8 @@ describe('Variable assign', () => {
         mov di, [bp - 2]          ; %t{1}: const int*2B = load array{0}: const int**2B
         add di, 6                 ; %t{2}: const int*2B = %t{1}: const int*2B plus %6: int2B
         mov ax, [di]              ; %t{3}: const int2B = load %t{2}: const int*2B
-        add ax, 12                ; %t{5}: const int2B = %t{3}: const int2B plus %12: char1B
-        mov word [bp - 4], ax     ; *(sum{0}: int*2B) = store %t{5}: const int2B
+        add ax, 12                ; %t{6}: const int2B = %t{3}: const int2B plus %12: char1B
+        mov word [bp - 4], ax     ; *(sum{0}: int*2B) = store %t{6}: const int2B
         mov sp, bp
         pop bp
         ret

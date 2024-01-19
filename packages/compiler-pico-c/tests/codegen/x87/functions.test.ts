@@ -34,7 +34,7 @@ describe('X87 Functions', () => {
       @@_fn_main:
       push bp
       mov bp, sp
-      sub sp, 20
+      sub sp, 22
       fld dword [@@_$LC_0]
       fstp dword [bp - 4]
       fld dword [@@_$LC_1]
@@ -52,10 +52,12 @@ describe('X87 Functions', () => {
       fmul dword [@@_$LC_2]
       fstp dword [bp - 12]
       fld dword [bp - 12]
-      fistp word [bp - 18]
-      mov ax, [bp - 18]
-      shl ax, 1                 ; %t{10}: int2B = %t{9}: int2B mul %2: char1B
-      mov word [bp - 20], ax    ; *(de{0}: int*2B) = store %t{10}: int2B
+      fistp word [bp - 20]
+      mov ax, word [bp - 20]
+      mov word [bp - 18], ax    ; *(k{0}: int*2B) = store %t{9}: int2B
+      mov bx, [bp - 18]
+      shl bx, 1                 ; %t{11}: int2B = %t{10}: int2B mul %2: char1B
+      mov word [bp - 22], bx    ; *(de{0}: int*2B) = store %t{11}: int2B
       xchg bx, bx
       mov sp, bp
       pop bp

@@ -39,8 +39,8 @@ describe('Hanging compound', () => {
       mov cx, [bp - 10]
       shl cx, 1                 ; %t{16}: int2B = %t{13}: int2B mul %2: char1B
       imul ax, cx               ; %t{17}: int2B = %t{12}: int2B mul %t{16}: int2B
-      imul ax, 7                ; %t{20}: int2B = %t{17}: int2B mul %7: char1B
-      mov word [bp - 2], ax     ; *(dupa{0}: int*2B) = store %t{20}: int2B
+      imul ax, 7                ; %t{21}: int2B = %t{17}: int2B mul %7: char1B
+      mov word [bp - 2], ax     ; *(dupa{0}: int*2B) = store %t{21}: int2B
       xchg dx, dx
       mov sp, bp
       pop bp

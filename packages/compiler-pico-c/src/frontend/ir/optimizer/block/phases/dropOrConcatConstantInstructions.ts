@@ -5,6 +5,7 @@ import {
   IRInstruction,
   IRStoreInstruction,
   isIRAssignInstruction,
+  isIRCastInstruction,
   isIRMathInstruction,
   isIRStoreInstruction,
 } from '../../../instructions';
@@ -39,7 +40,17 @@ export function dropOrConcatConstantInstructions(
       );
 
       if (optimizedInstruction) {
-        newInstructions[i] = optimizedInstruction;
+        if (
+          isIRCastInstruction(optimizedInstruction) &&
+          isIRConstant(optimizedInstruction.inputVar)
+        ) {
+          constantArgs[optimizedInstruction.outputVar.name] =
+            optimizedInstruction.inputVar;
+          newInstructions.splice(i, 1);
+          --i;
+        } else {
+          newInstructions[i] = optimizedInstruction;
+        }
         continue;
       }
     }

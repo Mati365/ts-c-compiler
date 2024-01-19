@@ -24,6 +24,7 @@ import { compilePhiInstruction } from './compilePhiInstruction';
 import { compileRetInstruction } from './compileRetInstruction';
 import { compileLabelOffsetInstruction } from './compileLabelOffsetInstruction';
 import { compileCallInstruction } from './compileCallInstruction';
+import { compileCastInstruction } from './compileCastInstruction';
 import { compileAsmInstruction } from './asm';
 import {
   compileIntMathSingleInstruction,
@@ -114,6 +115,10 @@ export function compileFnDeclInstructionsBlock({
 
         case IROpcode.ICMP:
           fnOutput.appendGroup(compileICmpInstruction(arg));
+          break;
+
+        case IROpcode.CAST:
+          fnOutput.appendGroup(compileCastInstruction(arg));
           break;
 
         case IROpcode.COMMENT:

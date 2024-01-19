@@ -11,7 +11,7 @@ export class Identity<T> implements IsEqual<Identity<T>> {
     this.value = Object.freeze(value);
   }
 
-  isEqual(value: Identity<T>): boolean {
+  isEqual(value: any): boolean {
     if (!value) {
       return false;
     }

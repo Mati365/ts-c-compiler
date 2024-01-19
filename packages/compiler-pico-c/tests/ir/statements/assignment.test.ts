@@ -180,8 +180,8 @@ describe('Assignment IR', () => {
           %t{0}: int[2]*2B = lea array{0}: int[2]*2B
           %t{1}: int[2]*2B = %t{0}: int[2]*2B plus %2: int2B
           %t{2}: int2B = load %t{1}: int[2]*2B
-          %t{4}: int2B = %t{2}: int2B plus %12: char1B
-          *(sum{0}: int*2B) = store %t{4}: int2B
+          %t{5}: int2B = %t{2}: int2B plus %12: char1B
+          *(sum{0}: int*2B) = store %t{5}: int2B
           ret
           end-def
       `);
@@ -195,7 +195,7 @@ describe('Assignment IR', () => {
         }
       `).toCompiledIRBeEqual(/* ruby */ `
         # --- Block main ---
-        def main():
+          def main():
           array{0}: const int**2B = alloca const int*2B
           %t{0}: const int*2B = lea c{0}: const int[5]*2B
           *(array{0}: const int**2B) = store %t{0}: const int*2B
@@ -203,8 +203,8 @@ describe('Assignment IR', () => {
           %t{1}: const int*2B = load array{0}: const int**2B
           %t{2}: const int*2B = %t{1}: const int*2B plus %2: int2B
           %t{3}: const int2B = load %t{2}: const int*2B
-          %t{5}: const int2B = %t{3}: const int2B minus %12: char1B
-          *(sum{0}: int*2B) = store %t{5}: const int2B
+          %t{6}: const int2B = %t{3}: const int2B minus %12: char1B
+          *(sum{0}: int*2B) = store %t{6}: const int2B
           ret
           end-def
           # --- Block Data ---
@@ -228,8 +228,8 @@ describe('Assignment IR', () => {
           %t{1}: const int*2B = load array{0}: const int**2B
           %t{2}: const int*2B = %t{1}: const int*2B plus %6: int2B
           %t{3}: const int2B = load %t{2}: const int*2B
-          %t{5}: const int2B = %t{3}: const int2B plus %12: char1B
-          *(sum{0}: int*2B) = store %t{5}: const int2B
+          %t{6}: const int2B = %t{3}: const int2B plus %12: char1B
+          *(sum{0}: int*2B) = store %t{6}: const int2B
           ret
           end-def
           # --- Block Data ---
@@ -253,8 +253,8 @@ describe('Assignment IR', () => {
           %t{1}: const int*2B = load array{0}: const int**2B
           %t{3}: const int*2B = %t{1}: const int*2B plus %6: int2B
           %t{4}: const int2B = load %t{3}: const int*2B
-          %t{6}: const int2B = %t{4}: const int2B plus %12: char1B
-          *(sum{0}: int*2B) = store %t{6}: const int2B
+          %t{7}: const int2B = %t{4}: const int2B plus %12: char1B
+          *(sum{0}: int*2B) = store %t{7}: const int2B
           ret
           end-def
           # --- Block Data ---

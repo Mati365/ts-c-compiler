@@ -19,6 +19,7 @@ import {
 
 import { emitIdentifierGetterIR } from './emitIdentifierGetterIR';
 import { emitExpressionIR } from './emit-expr';
+import { emitCastIR } from './emitCastIR';
 
 export type AssignmentIREmitAttrs = IREmitterContextAttrs & {
   node: ASTCAssignmentExpression;
@@ -81,6 +82,13 @@ export function emitAssignmentIR({
     !isIRVariable(result.output) ||
     !result.output.isShallowEqual(lvalue.output)
   ) {
+    const castResult = emitCastIR({
+      context,
+      expectedType: getBaseTypeIfPtr(lvalue.output.type),
+      inputVar: result.output,
+    });
+
+    appendStmtResults(castResult, result);
     result.instructions.push(
       new IRStoreInstruction(result.output, lvalue.output),
     );

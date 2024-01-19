@@ -130,6 +130,7 @@ export function compileStoreInstruction({
           const pushResult = x87regs.tryResolveIRArgAsReg({
             arg: value,
             castedType: baseOutputType,
+            allowCast: true,
           });
 
           output.appendGroup(pushResult.asm);
@@ -166,7 +167,7 @@ export function compileStoreInstruction({
 
             output.appendGroups(storeResult.asm);
           } else {
-            output.appendInstructions('; MISSING SHIT');
+            throw new Error('TODO');
           }
         } else {
           // store int in integer variable

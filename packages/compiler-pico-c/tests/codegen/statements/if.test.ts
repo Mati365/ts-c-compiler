@@ -70,8 +70,9 @@ describe('If statement', () => {
           char a = 'a';
           int b = 4;
 
-          if (a > b) {
+          if (a > b && a < 98) {
             int k = 0;
+            asm("xchg bx, bx");
           }
         }
       `).toCompiledAsmBeEqual(`
@@ -83,13 +84,17 @@ describe('If statement', () => {
         sub sp, 5
         mov byte [bp - 1], 97     ; *(a{0}: char*2B) = store %97: char1B
         mov word [bp - 3], 4      ; *(b{0}: int*2B) = store %4: int2B
-        mov ax, word [bp - 1]
-        and ax, 0xff
+        movzx ax, byte [bp - 1]
         mov bx, [bp - 3]
-        cmp ax, bx                ; %t{2}: i1:zf = icmp %t{0}: char1B greater_than %t{1}: int2B
-        jng @@_L1                 ; br %t{2}: i1:zf, false: L1
+        cmp ax, bx                ; %t{3}: i1:zf = icmp %t{2}: int2B greater_than %t{1}: int2B
+        jng @@_L1                 ; br %t{3}: i1:zf, false: L1
+        @@_L3:
+        cmp byte [bp - 1], 98     ; %t{5}: i1:zf = icmp %t{4}: char1B less_than %98: char1B
+        jl @@_L2                  ; br %t{5}: i1:zf, true: L2
+        jmp @@_L1                 ; jmp L1
         @@_L2:
         mov word [bp - 5], 0      ; *(k{0}: int*2B) = store %0: int2B
+        xchg bx, bx
         @@_L1:
         mov sp, bp
         pop bp
@@ -115,18 +120,17 @@ describe('If statement', () => {
         sub sp, 5
         mov byte [bp - 1], 97     ; *(a{0}: char*2B) = store %97: char1B
         mov word [bp - 3], 4      ; *(b{0}: int*2B) = store %4: int2B
-        mov ax, word [bp - 1]
-        and ax, 0xff
+        movzx ax, byte [bp - 1]
         mov bx, [bp - 3]
-        cmp ax, bx                ; %t{2}: i1:zf = icmp %t{0}: char1B greater_than %t{1}: int2B
-        jng @@_L1                 ; br %t{2}: i1:zf, false: L1
+        cmp ax, bx                ; %t{3}: i1:zf = icmp %t{2}: int2B greater_than %t{1}: int2B
+        jng @@_L1                 ; br %t{3}: i1:zf, false: L1
         @@_L3:
-        mov bl, [bp - 1]
-        add bl, 4                 ; %t{4}: char1B = %t{3}: char1B plus %4: char1B
-        movzx cx, bl
-        mov bx, [bp - 3]
-        cmp cx, bx                ; %t{6}: i1:zf = icmp %t{4}: char1B greater_than %t{5}: int2B
-        jg @@_L2                  ; br %t{6}: i1:zf, true: L2
+        mov al, [bp - 1]
+        add al, 4                 ; %t{5}: char1B = %t{4}: char1B plus %4: char1B
+        movzx bx, al
+        mov cx, [bp - 3]
+        cmp bx, cx                ; %t{8}: i1:zf = icmp %t{7}: int2B greater_than %t{6}: int2B
+        jg @@_L2                  ; br %t{8}: i1:zf, true: L2
         jmp @@_L1                 ; jmp L1
         @@_L2:
         mov word [bp - 5], 0      ; *(k{0}: int*2B) = store %0: int2B

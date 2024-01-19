@@ -30,7 +30,8 @@ describe('Ternary assign', () => {
         %t{5}: char1B = assign:φ %2: char1B
         L1:
         %t{0}: char1B = φ(%t{4}: char1B, %t{5}: char1B)
-        *(a{0}: int*2B) = store %t{0}: char1B
+        %t{6}: int2B = cast %t{0}: char1B
+        *(a{0}: int*2B) = store %t{6}: int2B
         asm "xchg bx, bx"
         ret
         end-def
@@ -118,7 +119,8 @@ describe('Ternary assign', () => {
         %t{4}: char1B = assign:φ %2: char1B
         L1:
         %t{0}: char1B = φ(%t{3}: char1B, %t{4}: char1B)
-        *(s{0}: int*2B) = store %t{0}: char1B
+        %t{6}: int2B = cast %t{0}: char1B
+        *(s{0}: int*2B) = store %t{6}: int2B
         asm "xchg dx, dx"
         ret
         end-def

@@ -11,7 +11,7 @@ import {
  * if not found - return null
  */
 export function findMatchingSregPrefix(sreg: RegisterSchema): number {
-  return R.defaultTo(null, InstructionPrefix[R.toUpper(sreg.mnemonic)]);
+  return InstructionPrefix[R.toUpper(sreg.mnemonic)] ?? null;
 }
 
 /**

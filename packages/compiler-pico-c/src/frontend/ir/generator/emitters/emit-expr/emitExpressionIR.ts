@@ -18,6 +18,7 @@ import {
   CType,
   isPointerArithmeticType,
   isPointerLikeType,
+  isPrimitiveLikeType,
   isStructLikeType,
   isUnionLikeType,
 } from 'frontend/analyze';
@@ -54,6 +55,7 @@ import {
   IRPhiInstruction,
   IRAssignInstruction,
   IRMathSingleArgInstruction,
+  IRCastInstruction,
 } from '../../../instructions';
 
 import { IRError, IRErrorCode } from '../../../errors/IRError';
@@ -62,6 +64,7 @@ import {
   IRInstructionTypedArg,
   IRLabel,
   IRVariable,
+  isIRConstant,
 } from '../../../variables';
 
 import { emitIdentifierGetterIR } from '../emitIdentifierGetterIR';
@@ -553,6 +556,25 @@ export function emitExpressionIR({
             output = allocNextVariable(tryCastToPointer(b.type));
           } else {
             defaultOutputType = b.type;
+          }
+        }
+
+        if (
+          isPrimitiveLikeType(a.type, true) &&
+          isPrimitiveLikeType(b.type, true) &&
+          !b.isEqual(a.type as any) &&
+          a.type.getByteSize() !== b.type.getByteSize()
+        ) {
+          if (a.type.getByteSize() < b.type.getByteSize()) {
+            if (!isIRConstant(a)) {
+              const castedA = allocNextVariable(b.type);
+              instructions.push(new IRCastInstruction(a, castedA));
+              a = castedA;
+            }
+          } else if (!isIRConstant(b)) {
+            const castedB = allocNextVariable(a.type);
+            instructions.push(new IRCastInstruction(b, castedB));
+            b = castedB;
           }
         }
 

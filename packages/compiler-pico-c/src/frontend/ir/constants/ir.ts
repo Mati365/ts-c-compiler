@@ -19,4 +19,5 @@ export enum IROpcode {
   LEA = 'LEA',
   DEF_DATA = 'DEF_DATA',
   COMMENT = 'COMMENT',
+  CAST = 'CAST',
 }
