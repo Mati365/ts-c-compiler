@@ -64,6 +64,7 @@ export function emitFnCallExpressionIR({
 
   const fnArgsExprResult = emitFnArgsLoadIR({
     node: node.fnExpression || node.primaryExpression,
+    fnType,
     context,
     scope,
   });

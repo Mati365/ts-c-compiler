@@ -5,7 +5,7 @@ import { getIRTypeDisplayName } from '../dump/getIRTypeDisplayName';
 
 import { IsPrintable } from '@ts-c-compiler/core';
 import { Identity } from '@ts-c-compiler/core';
-import { CType } from '../../analyze';
+import { CType, isPrimitiveLikeType } from '../../analyze/types';
 
 export function isIRConstant(obj: any): obj is IRConstant {
   return R.is(Object, obj) && 'constant' in obj;
@@ -24,6 +24,10 @@ export class IRConstant
   implements IsPrintable
 {
   static ofConstant(type: CType, constant: number) {
+    if (isPrimitiveLikeType(type, true) && !type.isFloating()) {
+      constant = Math.trunc(constant);
+    }
+
     return new IRConstant({
       type,
       constant,
@@ -42,9 +46,15 @@ export class IRConstant
   }
 
   mapConstant(fn: (constant: number) => number) {
+    let constant = fn(this.constant);
+
+    if (isPrimitiveLikeType(this.type, true) && !this.type.isFloating()) {
+      constant = Math.trunc(constant);
+    }
+
     return new IRConstant({
       type: this.type,
-      constant: fn(this.constant),
+      constant,
     });
   }
 

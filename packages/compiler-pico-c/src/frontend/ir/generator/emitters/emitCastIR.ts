@@ -1,6 +1,8 @@
 import { isPrimitiveLikeType, type CType } from 'frontend/analyze';
 import {
+  IRConstant,
   isIRVariable,
+  isIRConstant,
   type IRInstructionTypedArg,
 } from 'frontend/ir/variables';
 
@@ -27,15 +29,22 @@ export const emitCastIR = ({
   const result = createBlankExprResult([], inputVar);
 
   if (
-    isIRVariable(inputVar) &&
     isPrimitiveLikeType(expectedType, true) &&
     isPrimitiveLikeType(inputVar.type, true) &&
     !inputVar.type.ofQualifiers(0).isEqual(expectedType.ofQualifiers(0))
   ) {
-    const castedInputVar = allocator.allocTmpVariable(expectedType);
+    if (isIRVariable(inputVar)) {
+      const castedInputVar = allocator.allocTmpVariable(expectedType);
 
-    result.output = castedInputVar;
-    result.instructions.push(new IRCastInstruction(inputVar, castedInputVar));
+      result.output = castedInputVar;
+      result.instructions.push(new IRCastInstruction(inputVar, castedInputVar));
+    } else if (
+      isIRConstant(inputVar) &&
+      inputVar.type.isFloating() &&
+      expectedType.isIntegral()
+    ) {
+      result.output = IRConstant.ofConstant(expectedType, inputVar.constant);
+    }
   }
 
   return result;
