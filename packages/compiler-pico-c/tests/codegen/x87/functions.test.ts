@@ -315,4 +315,57 @@ describe('X87 Functions', () => {
       @@_$LC_1: dd 12.35
     `);
   });
+
+  test('call float arg with int variable', () => {
+    expect(/* cpp */ `
+      int sum(int x, float y) {
+        return x + y;
+      }
+
+      void main() {
+        float ac = 12.35;
+        int a = sum(ac, 3.75);
+        asm("xchg bx, bx");
+      }
+    `).toCompiledAsmBeEqual(`
+      cpu 386
+      ; def sum(x{0}: int*2B, y{0}: float*2B): [ret: int2B]
+      @@_fn_sum:
+      push bp
+      mov bp, sp
+      sub sp, 2
+      fld dword [bp + 6]
+      fild word [bp + 4]
+      fadd st0, st1
+      ffree st1
+      fistp word [bp - 2]
+      mov ax, word [bp - 2]
+      mov sp, bp
+      pop bp
+      ret 4
+      ; def main():
+      @@_fn_main:
+      push bp
+      mov bp, sp
+      sub sp, 8
+      fld dword [@@_$LC_0]
+      fstp dword [bp - 4]
+      fld dword [bp - 4]
+      fistp word [bp - 8]
+      mov ax, word [bp - 8]
+      fld dword [@@_$LC_1]
+      sub sp, 4
+      mov bx, sp
+      fstp dword [bx]
+      push ax
+      call @@_fn_sum
+      mov word [bp - 6], ax     ; *(a{0}: int*2B) = store %t{8}: int2B
+      xchg bx, bx
+      mov sp, bp
+      pop bp
+      ret
+      @@_$LC_0: dd 12.35
+      @@_$LC_1: dd 3.0
+    `);
+  });
 });
