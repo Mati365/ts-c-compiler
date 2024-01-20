@@ -1,3 +1,5 @@
+import { getByteSizeArgPrefixName } from '@ts-c-compiler/x86-assembler';
+
 import { IRLoadInstruction } from 'frontend/ir/instructions';
 import { CBackendError, CBackendErrorCode } from 'backend/errors/CBackendError';
 
@@ -33,45 +35,70 @@ export function compileLoadInstruction({
       });
     }
 
-    const outputRegSize = castToPointerIfArray(outputVar.type).getByteSize();
-    const regSize = Math.min(
-      outputRegSize,
-      inputVar.type.baseType.getByteSize(),
-    );
-
-    const outputReg = regs.requestReg({
-      size: regSize,
-    });
-
     // handle loading pointer to types, such as %t{0} = load %t{1}: int*
-    const input = regs.tryResolveIrArg({
+    const addressOffsetReg = regs.tryResolveIrArg({
       arg: inputVar,
       allowedRegs: regs.ownership.getAvailableRegs().addressing,
       forceLabelMemPtr: true,
       withoutMemPtrSize: true,
     });
 
-    // truncate variable size, it happens when:
-    //  char[] letters = "Hello world";
-    //  int b = letters[0] + 2;
-    // letter[0] must be truncated to 1 byte (compiler used to emit `mov ax, [bx]` like instruction)
-    const zeroExtend = regSize - outputRegSize === 1;
+    const outputRegSize = castToPointerIfArray(outputVar.type).getByteSize();
+    const srcPtrAddr =
+      addressOffsetReg.type === IRArgDynamicResolverType.REG
+        ? `[${addressOffsetReg.value}]`
+        : addressOffsetReg.value;
 
-    regs.ownership.setOwnership(outputVar.name, { reg: outputReg.value });
-    output.appendInstructions(
-      ...output.asm,
-      ...input.asm,
-      withInlineComment(
-        genInstruction(
-          zeroExtend ? 'movzx' : 'mov',
-          outputReg.value,
-          input.type === IRArgDynamicResolverType.REG
-            ? `[${input.value}]`
-            : input.value,
+    output.appendInstructions(...addressOffsetReg.asm);
+
+    // address pointer / offset is dynamic
+    if (
+      isPrimitiveLikeType(outputVar.type, true) &&
+      outputVar.type.isFloating()
+    ) {
+      // handle load %t{6}: float4B = load %t{5}: struct Vec2**2B
+      // %t{0}: float4B = load a{0}: float*2B
+      output.appendGroup(
+        x87regs.pushVariableOnStack({
+          size: outputRegSize,
+          varName: outputVar.name,
+        }).asm,
+      );
+
+      const prefix = getByteSizeArgPrefixName(outputRegSize);
+
+      output.appendInstructions(
+        genInstruction('fld', `${prefix} ${srcPtrAddr}`),
+      );
+    } else {
+      // handle load %t{6}: char2B = load %t{5}: struct Vec2**2B
+      const regSize = Math.min(
+        outputRegSize,
+        inputVar.type.baseType.getByteSize(),
+      );
+
+      const outputReg = regs.requestReg({
+        size: regSize,
+      });
+
+      // truncate variable size, it happens when:
+      //  char[] letters = "Hello world";
+      //  int b = letters[0] + 2;
+      // letter[0] must be truncated to 1 byte (compiler used to emit `mov ax, [bx]` like instruction)
+      const zeroExtend = regSize - outputRegSize === 1;
+
+      regs.ownership.setOwnership(outputVar.name, { reg: outputReg.value });
+      output.appendInstructions(
+        withInlineComment(
+          genInstruction(
+            zeroExtend ? 'movzx' : 'mov',
+            outputReg.value,
+            srcPtrAddr,
+          ),
+          instruction.getDisplayName(),
         ),
-        instruction.getDisplayName(),
-      ),
-    );
+      );
+    }
   } else {
     if (
       isPointerLikeType(inputVar.type) &&

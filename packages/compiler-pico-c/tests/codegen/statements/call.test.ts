@@ -422,23 +422,22 @@ describe('Function call', () => {
       sub di, word [bp + 10]    ; %t{9}: int2B = %t{7}: int2B minus %t{8}: int2B
       mov word [bp - 4], di     ; *(result{0}: struct Vec2*2B) = store %t{9}: int2B
       add cx, 2                 ; %t{11}: struct Vec2**2B = %t{1}: struct Vec2**2B plus %2: int2B
-      mov bx, cx
-      mov ax, [bx]              ; %t{12}: int2B = load %t{11}: struct Vec2**2B
-      imul ax, 3                ; %t{13}: int2B = %t{12}: int2B mul %3: char1B
-      mov word [bp - 2], ax     ; *(result{0}: struct Vec2*2B + %2) = store %t{13}: int2B
+      mov si, cx
+      mov cx, [si]              ; %t{12}: int2B = load %t{11}: struct Vec2**2B
+      imul cx, 3                ; %t{13}: int2B = %t{12}: int2B mul %3: char1B
+      mov word [bp - 2], cx     ; *(result{0}: struct Vec2*2B + %2) = store %t{13}: int2B
       ; memcpy result{0}: struct Vec2*2B -> %out{0}: struct Vec2*2B
-      lea di, [bp - 4]
-      mov si, [bp + 12]
+      lea bx, [bp - 4]
+      mov di, [bp + 12]
       ; offset = 0B
-      mov cx, word [di]
-      mov word [si], cx
+      mov ax, word [bx]
+      mov word [di], ax
       ; offset = 2B
-      mov cx, word [di + 2]
-      mov word [si + 2], cx
+      mov ax, word [bx + 2]
+      mov word [di + 2], ax
       mov sp, bp
       pop bp
       ret 8
-
       ; def main(): [ret: int2B]
       @@_fn_main:
       push bp
