@@ -75,6 +75,7 @@ npx ts-c ./main.c -ps
 ### What works? 🔥
 
 - [x] Local / Global variables
+- [x] `float` / `double` operations using X87 stack-based registers
 - [x] Advanced types `struct`, `union`, `enum`
 - [x] Loops and if conditions `while`, `if`, `do while`, `for`, `break`, `continue`
 - [x] Basic preprocessor with `#ifdef`, `#define`, `#include`
@@ -89,7 +90,6 @@ npx ts-c ./main.c -ps
 
 ### What does not work? 🚧
 
-- [ ] `float` / `double` types
 - [ ] Bitfields
 - [ ] `goto`
 
@@ -178,6 +178,165 @@ def main(): [ret: int2B]
 ```
 
 </details>
+
+### Floating point operations
+
+```c
+float calculate_pi(int nbofterms) {
+  float x = 0.0;
+
+  for (int n = 0; n < nbofterms; n++) {
+    float z = 1.0 / (2 * n + 1);
+
+    if (n % 2 == 1) {
+      z *= -1;
+    }
+
+    x = (x + z);
+  }
+
+  return 4 * x;
+}
+
+int main() {
+  float pi = calculate_pi(500);
+  int trunc_pi = pi;
+  asm("xchg bx, bx");
+  return 0;
+}
+```
+
+<details>
+  <summary><strong>IR Output</strong></summary>
+
+```ruby
+# --- Block calculate_pi ---
+def calculate_pi(nbofterms{0}: int*2B): [ret: float4B]
+  x{0}: float*2B = alloca float4B
+  *(x{0}: float*2B) = store %0: float4B
+  n{0}: int*2B = alloca int2B
+  *(n{0}: int*2B) = store %0: int2B
+  L1:
+  %t{0}: int2B = load n{0}: int*2B
+  %t{1}: int2B = load nbofterms{0}: int*2B
+  %t{2}: i1:zf = icmp %t{0}: int2B less_than %t{1}: int2B
+  br %t{2}: i1:zf, true: L2, false: L3
+  L2:
+  z{0}: float*2B = alloca float4B
+  %t{5}: int2B = load n{0}: int*2B
+  %t{6}: int2B = %t{5}: int2B mul %2: char1B
+  %t{7}: int2B = %t{6}: int2B plus %1: char1B
+  %t{8}: float4B = cast %t{7}: int2B
+  %t{9}: float4B = %1: float4B div %t{8}: float4B
+  *(z{0}: float*2B) = store %t{9}: float4B
+  %t{11}: int2B = %t{5}: int2B mod %2: char1B
+  %t{12}: i1:zf = icmp %t{11}: int2B equal %1: char1B
+  br %t{12}: i1:zf, false: L4
+  L5:
+  %t{14}: float4B = load z{0}: float*2B
+  %t{15}: float4B = %t{14}: float4B mul %-1: char1B
+  *(z{0}: float*2B) = store %t{15}: float4B
+  L4:
+  %t{16}: float4B = load x{0}: float*2B
+  %t{17}: float4B = load z{0}: float*2B
+  %t{18}: float4B = %t{16}: float4B plus %t{17}: float4B
+  *(x{0}: float*2B) = store %t{18}: float4B
+  %t{3}: int2B = load n{0}: int*2B
+  %t{4}: int2B = %t{3}: int2B plus %1: int2B
+  *(n{0}: int*2B) = store %t{4}: int2B
+  jmp L1
+  L3:
+  %t{19}: float4B = load x{0}: float*2B
+  %t{20}: float4B = %t{19}: float4B mul %4: char1B
+  ret %t{20}: float4B
+  end-def
+
+
+# --- Block main ---
+def main(): [ret: int2B]
+  pi{0}: float*2B = alloca float4B
+  %t{22}: float4B = call label-offset calculate_pi :: (%500: int2B)
+  *(pi{0}: float*2B) = store %t{22}: float4B
+  trunc_pi{0}: int*2B = alloca int2B
+  %t{23}: float4B = load pi{0}: float*2B
+  %t{24}: int2B = cast %t{23}: float4B
+  *(trunc_pi{0}: int*2B) = store %t{24}: int2B
+  asm "xchg bx, bx"
+  ret %0: char1B
+  end-def
+
+```
+
+</details>
+
+<details open>
+  <summary><strong>Binary output</strong></summary>
+
+```asm
+0x000000  <──────╮            55                            push bp
+0x000001         │            89 e5                         mov bp, sp
+0x000003         │            83 ec 0c                      sub sp, 0xc
+0x000006         │            d9 06 9b 00                   fld dword [@@_$lc_0]
+0x00000a         │            d9 5e fc                      fstp dword [bp-4]
+0x00000d         │            c7 46 fa 00 00                mov word [bp-6], 0x0
+0x000012  <────╮ │            8b 46 04                      mov ax, word [bp+4]
+0x000015       │ │            39 46 fa                      cmp word [bp-6], ax
+0x000018  ─╮   │ │            7c 02                         jl 0x1c
+0x00001a  ─┼─╮ │ │            7d 4b                         jge 0x67
+0x00001c  <╯ │ │ │            8b 46 fa                      mov ax, word [bp-6]
+0x00001f     │ │ │            89 c3                         mov bx, ax
+0x000021     │ │ │            d1 e0                         shl ax, 0x1
+0x000023     │ │ │            05 01 00                      add ax, 0x1
+0x000026     │ │ │            89 46 f4                      mov word [bp-12], ax
+0x000029     │ │ │            df 46 f4                      fild word [bp-12]
+0x00002c     │ │ │            d9 e8                         fld1
+0x00002e     │ │ │            d8 f1                         fdiv st0, st1
+0x000030     │ │ │            dd c1                         ffree st1
+0x000032     │ │ │            d9 5e f6                      fstp dword [bp-10]
+0x000035     │ │ │            89 d8                         mov ax, bx
+0x000037     │ │ │            bb 02 00                      mov bx, 0x2
+0x00003a     │ │ │            66 99                         cdq
+0x00003c     │ │ │            f7 fb                         idiv bx
+0x00003e     │ │ │            83 fa 01                      cmp dx, 0x1
+0x000041  ─╮ │ │ │            75 0a                         jnz 0x4d
+0x000043   │ │ │ │            d9 46 f6                      fld dword [bp-10]
+0x000046   │ │ │ │            d8 0e 9f 00                   fmul dword [@@_$lc_1]
+0x00004a   │ │ │ │            d9 5e f6                      fstp dword [bp-10]
+0x00004d  <╯ │ │ │            d9 46 fc                      fld dword [bp-4]
+0x000050     │ │ │            d9 46 f6                      fld dword [bp-10]
+0x000053     │ │ │            d9 c9                         fxch st1
+0x000055     │ │ │            d8 c1                         fadd st0, st1
+0x000057     │ │ │            dd c1                         ffree st1
+0x000059     │ │ │            d9 5e fc                      fstp dword [bp-4]
+0x00005c     │ │ │            8b 46 fa                      mov ax, word [bp-6]
+0x00005f     │ │ │            05 01 00                      add ax, 0x1
+0x000062     │ │ │            89 46 fa                      mov word [bp-6], ax
+0x000065  ───┼─╯ │            eb ab                         jmp 0x12
+0x000067  <──╯   │            d9 46 fc                      fld dword [bp-4]
+0x00006a         │            d8 0e a3 00                   fmul dword [@@_$lc_2]
+0x00006e         │            89 ec                         mov sp, bp
+0x000070         │            5d                            pop bp
+0x000071         │            c2 02 00                      ret 0x2
+0x000074         │            55                            push bp
+0x000075         │            89 e5                         mov bp, sp
+0x000077         │            83 ec 0c                      sub sp, 0xc
+0x00007a         │            68 f4 01                      push 0x1f4
+0x00007d  ───────╯            e8 80 ff                      call 0x0
+0x000080                      d9 56 f8                      fst dword [bp-8]
+0x000083                      d9 5e fc                      fstp dword [bp-4]
+0x000086                      d9 46 fc                      fld dword [bp-4]
+0x000089                      df 5e f4                      fistp word [bp-12]
+0x00008c                      8b 46 f4                      mov ax, word [bp-12]
+0x00008f                      89 46 f6                      mov word [bp-10], ax
+0x000092                      87 db                         xchg bx, bx
+0x000094                      b8 00 00                      mov ax, 0x0
+0x000097                      89 ec                         mov sp, bp
+0x000099                      5d                            pop bp
+0x00009a                      c3                            ret
+0x00009b                      00 00 00 00                   dd 0.0
+0x00009f                      00 00 80 bf                   dd -1.0
+0x0000a3                      00 00 80 40                   dd 4.0
+```
 
 ### Simple VA lists with primitive types
 
