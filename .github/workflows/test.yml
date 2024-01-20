@@ -7,6 +7,10 @@ on:
       - master
       - feature/*
 
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}-commit-check
+  cancel-in-progress: true
+
 jobs:
   build:
     timeout-minutes: 15
@@ -17,20 +21,18 @@ jobs:
       - uses: actions/setup-node@v2
         with:
           node-version: '20.x'
+          cache: 'yarn'
 
-      - uses: actions/cache@v2
-        id: yarn-cache
+      - name: Install dependencies
+        run: yarn install --frozen-lockfile --prefer-offline --production=false
+
+      - name: Turbo Cache
+        uses: actions/cache@v3
         with:
-          path: |
-            **/node_modules
-            **/.eslintcache
-            ${{ steps.yarn-cache-dir-path.outputs.dir }}
-          key: ${{ runner.os }}-yarn-${{ hashFiles('**/yarn.lock') }}
+          path: .turbo
+          key: turbo-${{ github.job }}-${{ github.ref_name }}-${{ github.sha }}
           restore-keys: |
-            ${{ runner.os }}-yarn-
-
-      - name: Install modules
-        run: yarn install --frozen-lockfile
+            turbo-${{ github.job }}-${{ github.ref_name }}
 
       - name: Build
         run: yarn build
