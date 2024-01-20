@@ -7,7 +7,7 @@ import { IRStoreInstruction } from 'frontend/ir/instructions';
 import { isIRConstant, isIRVariable } from 'frontend/ir/variables';
 import { isPrimitiveLikeType } from 'frontend/analyze';
 
-import { getTypeOffsetByteSize } from 'frontend/ir/utils';
+import { getTypeAtOffset } from 'frontend/ir/utils';
 import { X86CompileInstructionOutput, compileMemcpy } from './shared';
 
 import type { X87OwnershipStackEntry } from '../reg-allocator/x87/X87RegOwnershipTracker';
@@ -33,11 +33,14 @@ export function compileStoreInstruction({
 
   let destAddr: { value: string; size: number } = null;
   const output = new X86CompileInstructionOutput();
-  const outputByteSize = getTypeOffsetByteSize(outputVar.type, offset);
 
   const baseOutputType = getBaseTypeIfPtr(outputVar.type);
+  const offsetOutputType = getTypeAtOffset(outputVar.type, offset);
+  const offsetOutputByteSize = offsetOutputType.getByteSize();
+
   const isFloatingOutput =
-    isPrimitiveLikeType(baseOutputType, true) && baseOutputType.isFloating();
+    isPrimitiveLikeType(offsetOutputType, true) &&
+    offsetOutputType.isFloating();
 
   const isFloatingInput =
     isPrimitiveLikeType(value.type, true) && value.type.isFloating();
@@ -70,9 +73,9 @@ export function compileStoreInstruction({
 
         output.appendInstructions(...ptrVarReg.asm);
         destAddr = {
-          size: outputByteSize,
+          size: offsetOutputByteSize,
           value: genMemAddress({
-            size: getByteSizeArgPrefixName(outputByteSize),
+            size: getByteSizeArgPrefixName(offsetOutputByteSize),
             expression: ptrVarReg.value,
             offset,
           }),
@@ -89,10 +92,10 @@ export function compileStoreInstruction({
     //    int x, y;
     //  } vec = { .y = 5 };
     //
-    const prefix = getByteSizeArgPrefixName(outputByteSize);
+    const prefix = getByteSizeArgPrefixName(offsetOutputByteSize);
 
     destAddr = {
-      size: outputByteSize,
+      size: offsetOutputByteSize,
       value: [
         prefix.toLocaleLowerCase(),
         stackFrame.getLocalVarStackRelAddress(outputVar.name, { offset }),
@@ -129,7 +132,7 @@ export function compileStoreInstruction({
           // *(b{0}: float*2B) = store %t{1}: int2B
           const pushResult = x87regs.tryResolveIRArgAsReg({
             arg: value,
-            castedType: baseOutputType,
+            castedType: offsetOutputType,
             allowCast: true,
           });
 

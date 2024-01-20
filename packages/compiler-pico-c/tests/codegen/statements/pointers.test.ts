@@ -85,7 +85,6 @@ describe('Pointers', () => {
       mov sp, bp
       pop bp
       ret 2
-
       ; def main():
       @@_fn_main:
       push bp
@@ -103,8 +102,8 @@ describe('Pointers', () => {
       mov cl, [bx]              ; %t{10}: char1B = load %t{9}: char*2B
       add ax, 1                 ; %t{13}: char*2B = %t{7}: struct Vec2[2]*2B plus %1: int2B
       mov di, ax
-      mov ch, [di]              ; %t{14}: char1B = load %t{13}: char*2B
-      add cl, ch                ; %t{15}: char1B = %t{10}: char1B plus %t{14}: char1B
+      mov al, [di]              ; %t{14}: char1B = load %t{13}: char*2B
+      add cl, al                ; %t{15}: char1B = %t{10}: char1B plus %t{14}: char1B
       mov byte [bp - 5], cl     ; *(k{0}: char*2B) = store %t{15}: char1B
       xchg dx, dx
       mov sp, bp
@@ -145,7 +144,6 @@ describe('Pointers', () => {
       mov sp, bp
       pop bp
       ret 2
-
       ; def main():
       @@_fn_main:
       push bp
@@ -163,8 +161,8 @@ describe('Pointers', () => {
       mov cl, [bx]              ; %t{10}: char1B = load %t{9}: char*2B
       add ax, 1                 ; %t{13}: char*2B = %t{7}: struct Vec2[2]*2B plus %1: int2B
       mov di, ax
-      mov ch, [di]              ; %t{14}: char1B = load %t{13}: char*2B
-      add cl, ch                ; %t{15}: char1B = %t{10}: char1B plus %t{14}: char1B
+      mov al, [di]              ; %t{14}: char1B = load %t{13}: char*2B
+      add cl, al                ; %t{15}: char1B = %t{10}: char1B plus %t{14}: char1B
       mov byte [bp - 5], cl     ; *(k{0}: char*2B) = store %t{15}: char1B
       xchg dx, dx
       mov sp, bp

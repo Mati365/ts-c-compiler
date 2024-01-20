@@ -388,7 +388,7 @@ export class X87BasicRegAllocator {
     return asm;
   }
 
-  private pushVariableOnStack(entry: Omit<X87OwnershipStackEntry, 'reg'>) {
+  pushVariableOnStack(entry: Omit<X87OwnershipStackEntry, 'reg'>) {
     const { tracker } = this;
 
     const asm = new X86CompileInstructionOutput();
