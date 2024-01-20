@@ -14,7 +14,7 @@ import { constantExpression } from '../expressions/constantExpression';
 
 /**
  * labeled_statement
- *  : IDENTIFIER ':' statement
+ *  : IDENTIFIER ':'
  *  | CASE constant_expression ':' statement
  *  | DEFAULT ':' statement
  *  ;
@@ -27,11 +27,7 @@ export function labeledStatement(grammar: CGrammar): ASTCCompilerNode {
       const name = g.nonIdentifierKeyword();
       g.terminalType(TokenType.COLON);
 
-      return new ASTCLabelStatement(
-        NodeLocation.fromTokenLoc(name.loc),
-        name,
-        statement(),
-      );
+      return new ASTCLabelStatement(NodeLocation.fromTokenLoc(name.loc), name);
     },
 
     case() {
