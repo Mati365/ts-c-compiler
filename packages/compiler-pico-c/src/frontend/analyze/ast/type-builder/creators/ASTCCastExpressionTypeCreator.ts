@@ -38,7 +38,7 @@ export class ASTCCastExpressionTypeCreator extends ASTCTypeCreator<ASTCCastExpre
       );
     }
 
-    if (!expression.type?.isScalar()) {
+    if (!expression.type?.isScalar() && !expression.type?.isUnknown()) {
       throw new CTypeCheckError(
         CTypeCheckErrorCode.UNABLE_CAST_TO_SCALAR_TYPE,
         typeName.loc.start,

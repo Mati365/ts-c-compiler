@@ -77,8 +77,6 @@ export function emitConditionalExpressionIR({
     }
   }
 
-  instructions.push(labels.ifTrueLabel);
-
   const outputs = {
     true: allocator.allocTmpVariable(node.type),
     false: allocator.allocTmpVariable(node.type),
@@ -99,19 +97,21 @@ export function emitConditionalExpressionIR({
 
   const phi = new IRPhiInstruction([outputs.true, outputs.false], outputVar);
 
+  instructions.push(labels.ifTrueLabel.ofPhi(phi));
+
   appendStmtResults(exprResults.true, result);
 
   instructions.push(
     new IRAssignInstruction(exprResults.true.output, outputs.true, { phi }),
-    new IRJmpInstruction(finallyLabel),
-    labels.ifFalseLabel,
+    new IRJmpInstruction(finallyLabel.ofPhi(phi)),
+    labels.ifFalseLabel.ofPhi(phi),
   );
 
   appendStmtResults(exprResults.false, result);
 
   instructions.push(
     new IRAssignInstruction(exprResults.false.output, outputs.false, { phi }),
-    finallyLabel,
+    finallyLabel.ofPhi(phi),
     phi,
   );
 

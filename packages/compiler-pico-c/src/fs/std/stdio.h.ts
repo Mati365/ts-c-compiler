@@ -48,7 +48,7 @@ export const STD_IO_CONTENT_HEADER = /* c */ `
         switch (nextChar) {
           case 'd':
             print_unsigned_number(va_arg(ap, int));
-          break;
+            break;
         }
 
         offset++;

@@ -56,7 +56,10 @@ export function compileFnDeclInstructionsBlock({
         iterator,
       };
 
-      if (isIRLabelInstruction(instruction)) {
+      // force load again all variables if it is label
+      // fixes issue when code jumps from end of loop to start
+      // but causes issue with ternary operators which use phi operator
+      if (isIRLabelInstruction(instruction) && !instruction.hasPhi()) {
         allocator.regs.ownership.releaseAllRegs();
       }
 

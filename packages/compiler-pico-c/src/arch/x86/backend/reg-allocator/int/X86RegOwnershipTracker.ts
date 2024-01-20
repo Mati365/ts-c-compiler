@@ -142,11 +142,13 @@ export class X86RegOwnershipTracker {
     }, ownership);
   }
 
-  releaseAllRegs() {
+  releaseAllRegs({ exceptVars }: { exceptVars?: string[] } = {}) {
     const { ownership } = this;
 
     R.forEachObjIndexed((_, varName) => {
-      this.dropOwnership(varName);
+      if (!exceptVars || !exceptVars.includes(varName)) {
+        this.dropOwnership(varName);
+      }
     }, ownership);
   }
 

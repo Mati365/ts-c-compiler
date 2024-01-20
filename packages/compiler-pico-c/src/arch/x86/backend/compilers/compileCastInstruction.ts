@@ -17,7 +17,8 @@ export function compileCastInstruction({
 }: CastInstructionCompilerAttrs) {
   const { allocator } = context;
   const { inputVar, outputVar } = instruction;
-  const { regs, x87regs, stackFrame, lifetime, iterator } = allocator;
+  const { memOwnership, regs, x87regs, stackFrame, lifetime, iterator } =
+    allocator;
 
   const output = new X86CompileInstructionOutput();
 
@@ -107,7 +108,13 @@ export function compileCastInstruction({
       reg: extendedReg.value,
     });
   } else {
-    regs.ownership.aliasOwnership(inputVar.name, outputVar.name);
+    const inputMemOwnership = memOwnership.getVarOwnership(inputVar.name);
+
+    if (inputMemOwnership) {
+      memOwnership.aliasOwnership(inputVar.name, outputVar.name);
+    } else {
+      regs.ownership.aliasOwnership(inputVar.name, outputVar.name);
+    }
   }
 
   return output;

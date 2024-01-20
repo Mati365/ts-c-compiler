@@ -8,4 +8,5 @@ export const replaceEscapeSequences = (str: string) =>
     .replaceAll('\\\\', '\\')
     // eslint-disable-next-line quotes
     .replaceAll("\\'", "'")
-    .replaceAll('\\"', '"');
+    .replaceAll('\\"', '"')
+    .replaceAll('\\0', String.fromCharCode(0));

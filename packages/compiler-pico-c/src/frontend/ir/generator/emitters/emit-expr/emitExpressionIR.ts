@@ -455,16 +455,21 @@ export function emitExpressionIR({
           emitExprResultToStack(exprResult);
           return false;
         } else {
-          const labels = {
-            ifTrueLabel: context.factory.genTmpLabelInstruction(),
-            ifFalseLabel: context.factory.genTmpLabelInstruction(),
-            finallyLabel: context.factory.genTmpLabelInstruction(),
-          };
-
           const outputs = {
             left: allocNextVariable(binary.left.type),
             right: allocNextVariable(binary.right.type),
             all: allocNextVariable(binary.left.type),
+          };
+
+          const phi = new IRPhiInstruction(
+            [outputs.left, outputs.right],
+            outputs.all,
+          );
+
+          const labels = {
+            ifTrueLabel: context.factory.genTmpLabelInstruction().ofPhi(phi),
+            ifFalseLabel: context.factory.genTmpLabelInstruction().ofPhi(phi),
+            finallyLabel: context.factory.genTmpLabelInstruction().ofPhi(phi),
           };
 
           const exprResult = emitLogicBinaryJmpExpressionIR({
@@ -477,11 +482,6 @@ export function emitExpressionIR({
             },
             scope,
           });
-
-          const phi = new IRPhiInstruction(
-            [outputs.left, outputs.right],
-            outputs.all,
-          );
 
           emitExprResultToStack(exprResult);
 

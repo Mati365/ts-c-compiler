@@ -2,6 +2,28 @@ import '../utils';
 
 describe('Variable assign', () => {
   describe('Assign to plain variable', () => {
+    test('assign unsigned int to int', () => {
+      expect(/* cpp */ `
+        void main() {
+          int a = -5;
+          unsigned int b = a;
+        }
+      `).toCompiledAsmBeEqual(`
+        cpu 386
+        ; def main():
+        @@_fn_main:
+        push bp
+        mov bp, sp
+        sub sp, 4
+        mov word [bp - 2], -5     ; *(a{0}: int*2B) = store %-5: int2B
+        mov ax, [bp - 2]
+        mov word [bp - 4], ax     ; *(b{0}: unsigned int*2B) = store %t{1}: unsigned int2B
+        mov sp, bp
+        pop bp
+        ret
+      `);
+    });
+
     test('b += letters[0] * 2', () => {
       expect(/* cpp */ `
         void main() {

@@ -53,9 +53,9 @@ export function selectionStatement(grammar: CGrammar): ASTCCompilerNode {
         null,
       );
 
-      parentNode.switchStmt = switchStmt;
+      (parentNode.switchStmt ??= []).push(switchStmt);
       switchStmt.statement = statement();
-      parentNode.switchStmt = null;
+      parentNode.switchStmt.pop();
 
       return switchStmt;
     },

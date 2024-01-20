@@ -1,3 +1,5 @@
+import { replaceEscapeSequences } from '@ts-c-compiler/core';
+
 import { NodeLocation } from '@ts-c-compiler/grammar';
 import { TokenKind, TokenType } from '@ts-c-compiler/lexer';
 import { ASTCPrimaryExpression } from 'frontend/parser/ast';
@@ -46,8 +48,10 @@ export function primaryExpression(grammar: CGrammar): ASTCPrimaryExpression {
         kind: TokenKind.SINGLE_QUOTE,
       });
 
+      const escapedContent = replaceEscapeSequences(literal.text);
+
       // handle 'a'
-      if (literal.text.length !== 1) {
+      if (escapedContent.length !== 1) {
         throw new CGrammarError(
           CGrammarErrorCode.INCORRECT_CHAR_LITERAL_LENGTH,
           literal.loc,
@@ -62,7 +66,7 @@ export function primaryExpression(grammar: CGrammar): ASTCPrimaryExpression {
         null,
         null,
         null,
-        literal.text,
+        escapedContent,
       );
     },
 

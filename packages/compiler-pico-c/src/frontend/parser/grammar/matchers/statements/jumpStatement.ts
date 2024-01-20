@@ -38,7 +38,7 @@ export function jumpStatement(grammar: CGrammar): ASTCCompilerNode {
     continue() {
       const node = g.identifier(CCompilerKeyword.CONTINUE);
 
-      if (!parentNode.loopStmt) {
+      if (!parentNode.loopStmt?.length) {
         throw new CGrammarError(
           CGrammarErrorCode.CONTINUE_STMT_NOT_WITHIN_LOOP,
         );
@@ -50,7 +50,7 @@ export function jumpStatement(grammar: CGrammar): ASTCCompilerNode {
     break() {
       const node = g.identifier(CCompilerKeyword.BREAK);
 
-      if (!parentNode.loopStmt && !parentNode.switchStmt) {
+      if (!parentNode.loopStmt && !parentNode.switchStmt?.length) {
         throw new CGrammarError(
           CGrammarErrorCode.BREAK_STMT_NOT_WITHIN_LOOP_OR_SWITCH,
         );

@@ -40,9 +40,9 @@ export function iterationStatement(grammar: CGrammar): ASTCCompilerNode {
         null,
       );
 
-      parentNode.loopStmt = whileStmt;
+      (parentNode.loopStmt ??= []).push(whileStmt);
       whileStmt.statement = statement();
-      parentNode.loopStmt = null;
+      parentNode.loopStmt.pop();
 
       return whileStmt;
     },
@@ -55,9 +55,9 @@ export function iterationStatement(grammar: CGrammar): ASTCCompilerNode {
         null,
       );
 
-      parentNode.loopStmt = doWhileStmt;
+      (parentNode.loopStmt ??= []).push(doWhileStmt);
       const statementNode = statement();
-      parentNode.loopStmt = null;
+      parentNode.loopStmt.pop();
 
       g.identifier(CCompilerKeyword.WHILE);
       g.terminal('(');
@@ -108,9 +108,9 @@ export function iterationStatement(grammar: CGrammar): ASTCCompilerNode {
         expressionNode,
       );
 
-      parentNode.loopStmt = forStmt;
+      (parentNode.loopStmt ??= []).push(forStmt);
       forStmt.statement = statement();
-      parentNode.loopStmt = null;
+      parentNode.loopStmt.pop();
 
       return forStmt;
     },
