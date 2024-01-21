@@ -1,3 +1,4 @@
+import { $enum } from 'ts-enum-util';
 import { RegisterSchema } from './constants';
 
 /**
@@ -11,6 +12,9 @@ export enum X86TargetCPU {
   I_486 = 4,
   I_32BIT = 5,
 }
+
+export const genX87TargetCPUKey = (target: X86TargetCPU) =>
+  $enum(X86TargetCPU).getKeyOrThrow(target);
 
 export enum InstructionArgType {
   MEMORY,

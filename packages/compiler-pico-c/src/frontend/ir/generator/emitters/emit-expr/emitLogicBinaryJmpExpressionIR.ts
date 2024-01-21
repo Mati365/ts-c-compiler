@@ -43,7 +43,7 @@ export function emitLogicBinaryJmpExpressionIR({
   const { instructions } = result;
 
   const localLabels = {
-    rightArgLabel: factory.genTmpLabelInstruction(),
+    rightArgLabel: factory.labels.genTmpLabelInstruction(),
   };
 
   // if false in OR expr - just jump to next operand (arg1 || arg2 -> jmp from arg1 to arg2)

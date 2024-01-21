@@ -1,6 +1,6 @@
 import { IRLabelInstruction } from '../instructions';
 
-export class IRInstructionFactory {
+export class IRLabelsFactory {
   readonly counters = {
     labels: 0,
   };

@@ -37,10 +37,10 @@ export function emitConditionalExpressionIR({
 
   instructions.push(new IRAllocInstruction(node.type, outputVar));
 
-  const finallyLabel = factory.genTmpLabelInstruction();
+  const finallyLabel = factory.labels.genTmpLabelInstruction();
   const labels: LogicBinaryExpressionLabels = {
-    ifTrueLabel: factory.genTmpLabelInstruction(),
-    ifFalseLabel: factory.genTmpLabelInstruction(),
+    ifTrueLabel: factory.labels.genTmpLabelInstruction(),
+    ifFalseLabel: factory.labels.genTmpLabelInstruction(),
   };
 
   const logicResult = emit.expression({

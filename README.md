@@ -79,6 +79,7 @@ npx ts-c ./main.c -ps
 - [x] Advanced types `struct`, `union`, `enum`
 - [x] Loops and if conditions `while`, `if`, `do while`, `for`, `break`, `continue`
 - [x] Basic preprocessor with `#ifdef`, `#define`, `#include`
+- [x] `goto` jumps
 - [x] VA lists `va_arg`, `va_end`, `va_start`
 - [x] In expression compound statements
 - [x] Ternary operators `a > 1 ? 1 : 2`
@@ -91,7 +92,8 @@ npx ts-c ./main.c -ps
 ### What does not work? 🚧
 
 - [ ] Bitfields
-- [ ] `goto`
+- [ ] Multiple files support
+- [ ] Linker
 
 ## Examples
 

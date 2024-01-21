@@ -37,8 +37,8 @@ export function emitSwitchStmtIR({
   const { instructions } = result;
 
   const labels = {
-    finally: factory.genTmpLabelInstruction(),
-    default: factory.genTmpLabelInstruction(),
+    finally: factory.labels.genTmpLabelInstruction(),
+    default: factory.labels.genTmpLabelInstruction(),
   };
 
   const valueExprResult = emit.expression({
@@ -67,7 +67,7 @@ export function emitSwitchStmtIR({
         });
 
         const outputFlagVar = allocator.allocFlagResult();
-        const ifFalseLabel = factory.genTmpLabelInstruction();
+        const ifFalseLabel = factory.labels.genTmpLabelInstruction();
 
         instructions.push(
           new IRCommentInstruction(`Case #${++caseNumber}`),

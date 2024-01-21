@@ -17,8 +17,8 @@ export function emitDoWhileStmtIR({
   });
 
   const labels = {
-    start: factory.genTmpLabelInstruction(),
-    end: factory.genTmpLabelInstruction(),
+    start: factory.labels.genTmpLabelInstruction(),
+    end: factory.labels.genTmpLabelInstruction(),
   };
 
   const contentResult = emit.block({

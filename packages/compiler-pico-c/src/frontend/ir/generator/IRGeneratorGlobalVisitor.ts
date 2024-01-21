@@ -20,9 +20,10 @@ import {
 
 import { IRGeneratorConfig } from '../constants';
 import { IRVariableAllocator } from './IRVariableAllocator';
-import { IRInstructionFactory } from './IRInstructionFactory';
+import { IRLabelsFactory } from './IRLabelsFactory';
 import { IRFlatCodeSegmentBuilder, IRDataSegmentBuilder } from './segments';
 import { IRGlobalVariablesMap } from './IRGlobalVariablesMap';
+import { IRGotoLabelsFactory } from './IRGotoLabelsFactory';
 
 /**
  * Root IR generator visitor
@@ -45,7 +46,10 @@ export class IRGeneratorGlobalVisitor extends CScopeVisitor {
       segments: this.segments,
       allocator: this.allocator,
       globalVariables: new IRGlobalVariablesMap(),
-      factory: new IRInstructionFactory(),
+      factory: {
+        labels: new IRLabelsFactory(),
+        goto: new IRGotoLabelsFactory(),
+      },
       emit: {
         expression: emitExpressionIR,
         logicExpression: emitLogicExpressionIR,

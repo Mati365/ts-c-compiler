@@ -27,10 +27,10 @@ export function emitForStmtIR({
     context,
   });
 
-  const startLabel = factory.genTmpLabelInstruction();
+  const startLabel = factory.labels.genTmpLabelInstruction();
   const labels: LogicBinaryExpressionLabels = {
-    ifTrueLabel: factory.genTmpLabelInstruction(),
-    ifFalseLabel: factory.genTmpLabelInstruction(),
+    ifTrueLabel: factory.labels.genTmpLabelInstruction(),
+    ifFalseLabel: factory.labels.genTmpLabelInstruction(),
   };
 
   const logicResult = emit.logicExpression({

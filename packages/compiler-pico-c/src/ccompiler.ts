@@ -1,6 +1,8 @@
 import * as E from 'fp-ts/Either';
 import { pipe } from 'fp-ts/function';
 
+import { X86TargetCPU } from '@ts-c-compiler/x86-assembler';
+
 import { createCCompilerTimings } from './frontend/utils/createCCompilerTimings';
 import { CCompilerConfig, CCompilerArch } from './constants/config';
 
@@ -19,6 +21,7 @@ export const ccompiler =
   (
     ccompilerConfig: CCompilerConfig = {
       arch: CCompilerArch.X86_16,
+      target: X86TargetCPU.I_386,
       optimization: {
         enabled: true,
       },
