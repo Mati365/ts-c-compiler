@@ -18,6 +18,7 @@ import {
   ASTCCastUnaryExpression,
   ASTCCompilerKind,
   ASTCCompilerNode,
+  ASTCConditionalExpression,
   ASTCPostfixArrayExpression,
   ASTCPostfixDotExpression,
   ASTCPostfixExpression,
@@ -26,6 +27,7 @@ import {
 } from 'frontend/parser';
 
 import {
+  IRAssignInstruction,
   IRLabelOffsetInstruction,
   IRLeaInstruction,
   IRLoadInstruction,
@@ -41,13 +43,16 @@ import {
 } from '../../variables';
 
 import {
+  appendStmtResults,
   createBlankExprResult,
   IREmitterContextAttrs,
+  IREmitterExpressionResult,
   IREmitterExpressionVarResult,
 } from './types';
 
 import { IRError, IRErrorCode } from '../../errors/IRError';
 import { getTypeAtOffset } from '../../utils';
+import { emitConditionalExpressionIR } from './emit-expr/emitConditionalExpressionIR';
 
 type LvalueExpressionIREmitAttrs = IREmitterContextAttrs & {
   node: ASTCCompilerNode;
@@ -65,15 +70,43 @@ export function emitIdentifierGetterIR({
   node,
 }: LvalueExpressionIREmitAttrs): LvalueExpressionIREmitResult {
   const { allocator, config, emit, globalVariables } = context;
-  const { instructions, data } = createBlankExprResult();
+  const result = createBlankExprResult();
+  const { instructions, data } = result;
 
   let rootIRVar: IRVariable;
   let lastIRVar: IRVariable = null;
   let parentNodes: ASTCPostfixExpression[] = [];
 
   const getParentType = () => R.last(parentNodes).postfixExpression?.type;
+  const emitExprResultToStack = (exprResult: IREmitterExpressionResult) => {
+    appendStmtResults(exprResult, result);
+
+    if (exprResult.output) {
+      if (!isIRVariable(exprResult.output)) {
+        const tmpVar = allocator.allocTmpVariable(exprResult.output.type);
+        instructions.push(new IRAssignInstruction(exprResult.output, tmpVar));
+        exprResult.output = tmpVar;
+      }
+
+      lastIRVar = exprResult.output;
+    }
+  };
 
   GroupTreeVisitor.ofIterator<ASTCCompilerNode>({
+    [ASTCCompilerKind.ConditionalExpression]: {
+      enter: (conditionalExpr: ASTCConditionalExpression) => {
+        const exprResult = emitConditionalExpressionIR({
+          asIdentifierGetter: true,
+          node: conditionalExpr,
+          scope,
+          context,
+        });
+
+        emitExprResultToStack(exprResult);
+        return false;
+      },
+    },
+
     [ASTCCompilerKind.PostfixExpression]: {
       enter(expr: ASTCPostfixExpression) {
         parentNodes.push(expr);

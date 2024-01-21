@@ -12,6 +12,7 @@ import {
   IRBrInstruction,
   IRICmpInstruction,
   IRJmpInstruction,
+  IRLeaInstruction,
   IRPhiInstruction,
 } from '../../../instructions';
 import { LogicBinaryExpressionLabels } from './emitLogicBinaryJmpExpressionIR';
@@ -21,12 +22,14 @@ import { CPrimitiveType } from 'frontend/analyze';
 
 type LogicExpressionIREmitAttrs = IREmitterContextAttrs & {
   node: ASTCConditionalExpression;
+  asIdentifierGetter?: boolean;
 };
 
 export function emitConditionalExpressionIR({
   context,
   node,
   scope,
+  asIdentifierGetter,
 }: LogicExpressionIREmitAttrs): IREmitterExpressionResult {
   const { allocator, emit, factory, config } = context;
   const { arch } = config;
@@ -82,38 +85,88 @@ export function emitConditionalExpressionIR({
     false: allocator.allocTmpVariable(node.type),
   };
 
-  const exprResults = {
-    true: emit.expression({
-      node: node.trueExpression,
-      scope,
-      context,
-    }),
-    false: emit.expression({
-      node: node.falseExpression,
-      scope,
-      context,
-    }),
-  };
+  if (asIdentifierGetter) {
+    const exprResults = {
+      true: emit.identifierGetter({
+        emitValueAtAddress: false,
+        node: node.trueExpression,
+        scope,
+        context,
+      }),
+      false: emit.identifierGetter({
+        emitValueAtAddress: false,
+        node: node.falseExpression,
+        scope,
+        context,
+      }),
+    };
 
-  const phi = new IRPhiInstruction([outputs.true, outputs.false], outputVar);
+    const phi = new IRPhiInstruction(
+      [outputs.true.ofPointerType(), outputs.false.ofPointerType()],
+      outputVar,
+    );
 
-  instructions.push(labels.ifTrueLabel.ofPhi(phi));
+    instructions.push(labels.ifTrueLabel.ofPhi(phi));
 
-  appendStmtResults(exprResults.true, result);
+    appendStmtResults(exprResults.true, result);
 
-  instructions.push(
-    new IRAssignInstruction(exprResults.true.output, outputs.true, { phi }),
-    new IRJmpInstruction(finallyLabel.ofPhi(phi)),
-    labels.ifFalseLabel.ofPhi(phi),
-  );
+    instructions.push(
+      new IRLeaInstruction(
+        exprResults.true.output,
+        outputs.true.ofPointerType(),
+        { phi },
+      ),
+      new IRJmpInstruction(finallyLabel.ofPhi(phi)),
+      labels.ifFalseLabel.ofPhi(phi),
+    );
 
-  appendStmtResults(exprResults.false, result);
+    appendStmtResults(exprResults.false, result);
 
-  instructions.push(
-    new IRAssignInstruction(exprResults.false.output, outputs.false, { phi }),
-    finallyLabel.ofPhi(phi),
-    phi,
-  );
+    instructions.push(
+      new IRLeaInstruction(
+        exprResults.false.output,
+        outputs.false.ofPointerType(),
+        { phi },
+      ),
+      finallyLabel.ofPhi(phi),
+      phi,
+    );
 
-  return result;
+    return result;
+  } else {
+    const exprResults = {
+      true: emit.expression({
+        node: node.trueExpression,
+        scope,
+        context,
+      }),
+      false: emit.expression({
+        node: node.falseExpression,
+        scope,
+        context,
+      }),
+    };
+
+    const phi = new IRPhiInstruction([outputs.true, outputs.false], outputVar);
+
+    instructions.push(labels.ifTrueLabel.ofPhi(phi));
+
+    appendStmtResults(exprResults.true, result);
+
+    instructions.push(
+      new IRAssignInstruction(exprResults.true.output, outputs.true, { phi }),
+      new IRJmpInstruction(finallyLabel.ofPhi(phi)),
+      labels.ifFalseLabel.ofPhi(phi),
+    );
+
+    appendStmtResults(exprResults.false, result);
+
+    instructions.push(
+      new IRAssignInstruction(exprResults.false.output, outputs.false, { phi }),
+      finallyLabel.ofPhi(phi),
+      phi,
+    );
+
+    return result;
+  }
 }

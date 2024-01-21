@@ -9,6 +9,7 @@ import {
   genLabelName,
   withInlineComment,
 } from '../../asm-utils';
+
 import { X86CompileInstructionOutput } from './shared';
 
 type LeaInstructionCompilerAttrs =
@@ -18,18 +19,25 @@ export function compileLeaInstruction({
   instruction,
   context,
 }: LeaInstructionCompilerAttrs) {
-  const { inputVar, outputVar } = instruction;
+  const { inputVar, outputVar, meta } = instruction;
   const {
     allocator: { regs, config, stackFrame },
   } = context;
 
-  const addressReg = regs.requestReg({
-    size: CPrimitiveType.address(config.arch).getByteSize(),
-    prefer: regs.ownership.getAvailableRegs().addressing,
-  });
+  const addressReg = meta.phi
+    ? regs.tryResolveIRArgAsReg({
+        arg: meta.phi?.vars[0] || outputVar,
+        allocIfNotFound: true,
+        preferRegs: regs.ownership.getAvailableRegs().addressing,
+      })
+    : regs.requestReg({
+        size: CPrimitiveType.address(config.arch).getByteSize(),
+        prefer: regs.ownership.getAvailableRegs().addressing,
+      });
 
   regs.ownership.setOwnership(outputVar.name, {
     reg: addressReg.value,
+    noPrune: !!meta.phi,
   });
 
   // variable allocated in data segment

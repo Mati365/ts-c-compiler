@@ -4,6 +4,11 @@ import { IsOutputInstruction } from '../interfaces';
 import { IROpcode } from '../constants';
 import { IRInstruction, IRInstructionArgs } from './IRInstruction';
 import { IRVariable } from '../variables';
+import { IRPhiInstruction } from './IRPhiInstruction';
+
+export type IRLeaMeta = {
+  phi?: IRPhiInstruction;
+};
 
 export function isIRLeaInstruction(
   instruction: IRInstruction,
@@ -18,7 +23,11 @@ export class IRLeaInstruction
   extends IRInstruction
   implements IsOutputInstruction
 {
-  constructor(public inputVar: IRVariable, public outputVar: IRVariable) {
+  constructor(
+    public inputVar: IRVariable,
+    public outputVar: IRVariable,
+    readonly meta: IRLeaMeta = {},
+  ) {
     super(IROpcode.LEA);
   }
 
@@ -39,10 +48,15 @@ export class IRLeaInstruction
   }
 
   override getDisplayName(): string {
-    const { outputVar, inputVar } = this;
+    const { outputVar, inputVar, meta } = this;
+    let suffix = '';
+
+    if (meta?.phi) {
+      suffix = chalk.whiteBright(':φ');
+    }
 
     return `${outputVar.getDisplayName()} = ${chalk.yellowBright(
       'lea',
-    )} ${inputVar.getDisplayName()}`;
+    )}${suffix} ${inputVar.getDisplayName()}`;
   }
 }

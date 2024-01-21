@@ -243,6 +243,18 @@ describe('Variable assign', () => {
         ret
       `);
     });
+
+    test.skip('lvalue variable member assign', () => {
+      expect(/* cpp */ `
+        void main() {
+          int x = 4;
+          int y = 10;
+          int s = (x=y);
+          asm("xchg bx, bx");
+        }
+      `).toCompiledAsmBeEqual(`
+      `);
+    });
   });
 
   describe('Assign to array item', () => {
@@ -441,6 +453,85 @@ describe('Variable assign', () => {
         mov sp, bp
         pop bp
         ret
+      `);
+    });
+
+    test('lvalue struct member true ternary', () => {
+      expect(/* cpp */ `
+        void main() {
+          struct {int a;} x={1}, y={2};
+          int s = (1?x:y).a;
+          asm("xchg bx, bx");
+        }
+      `).toCompiledAsmBeEqual(`
+        cpu 386
+        ; def main():
+        @@_fn_main:
+        push bp
+        mov bp, sp
+        sub sp, 8
+        mov word [bp - 2], 1      ; *(x{0}: struct <anonymous>*2B) = store %1: int2B
+        mov word [bp - 4], 2      ; *(y{0}: struct <anonymous>*2B) = store %2: int2B
+        mov ax, word 1
+        cmp ax, 0                 ; %t{1}: i1:zf = icmp %1: char1B differs %0: int2B
+        jz @@_L3                  ; br %t{1}: i1:zf, false: L3
+        @@_L2:
+        lea bx, [bp - 2]          ; %t{2}: struct <anonymous>*2B = lea:φ x{0}: struct <anonymous>*2B
+        jmp @@_L1                 ; jmp L1
+        @@_L3:
+        lea bx, [bp - 4]          ; %t{3}: struct <anonymous>*2B = lea:φ y{0}: struct <anonymous>*2B
+        @@_L1:
+        mov cx, [bx]              ; %t{4}: int2B = load %t{0}: int*2B
+        mov word [bp - 6], cx     ; *(s{0}: int*2B) = store %t{4}: int2B
+        xchg bx, bx
+        mov sp, bp
+        pop bp
+        ret
+      `);
+    });
+
+    test('lvalue struct member false ternary', () => {
+      expect(/* cpp */ `
+        void main() {
+          struct {int a;} x={1}, y={2};
+          int s = (0?x:y).a;
+          asm("xchg bx, bx");
+        }
+      `).toCompiledAsmBeEqual(`
+        cpu 386
+        ; def main():
+        @@_fn_main:
+        push bp
+        mov bp, sp
+        sub sp, 8
+        mov word [bp - 2], 1      ; *(x{0}: struct <anonymous>*2B) = store %1: int2B
+        mov word [bp - 4], 2      ; *(y{0}: struct <anonymous>*2B) = store %2: int2B
+        mov ax, word 0
+        cmp ax, 0                 ; %t{1}: i1:zf = icmp %0: char1B differs %0: int2B
+        jz @@_L3                  ; br %t{1}: i1:zf, false: L3
+        @@_L2:
+        lea bx, [bp - 2]          ; %t{2}: struct <anonymous>*2B = lea:φ x{0}: struct <anonymous>*2B
+        jmp @@_L1                 ; jmp L1
+        @@_L3:
+        lea bx, [bp - 4]          ; %t{3}: struct <anonymous>*2B = lea:φ y{0}: struct <anonymous>*2B
+        @@_L1:
+        mov cx, [bx]              ; %t{4}: int2B = load %t{0}: int*2B
+        mov word [bp - 6], cx     ; *(s{0}: int*2B) = store %t{4}: int2B
+        xchg bx, bx
+        mov sp, bp
+        pop bp
+        ret
+      `);
+    });
+
+    test.skip('lvalue struct member assign', () => {
+      expect(/* cpp */ `
+        void main() {
+          struct {int a;} x={1}, y={2};
+          int s = (x=y).a;
+          asm("xchg bx, bx");
+        }
+      `).toCompiledAsmBeEqual(`
       `);
     });
   });
