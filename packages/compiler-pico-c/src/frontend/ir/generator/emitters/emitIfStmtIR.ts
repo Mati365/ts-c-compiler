@@ -32,11 +32,11 @@ export function emitIfStmtIR({
   const result = createBlankStmtResult();
   const { instructions } = result;
 
-  const finallyLabel = factory.genTmpLabelInstruction();
+  const finallyLabel = factory.labels.genTmpLabelInstruction();
   const labels: LogicBinaryExpressionLabels = {
-    ifTrueLabel: factory.genTmpLabelInstruction(),
+    ifTrueLabel: factory.labels.genTmpLabelInstruction(),
     ifFalseLabel: node.falseExpression
-      ? factory.genTmpLabelInstruction()
+      ? factory.labels.genTmpLabelInstruction()
       : finallyLabel,
   };
 

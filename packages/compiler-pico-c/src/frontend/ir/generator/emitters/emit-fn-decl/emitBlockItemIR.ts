@@ -13,6 +13,7 @@ import {
   ASTCIfStatement,
   ASTCSwitchStatement,
   ASTCGotoStatement,
+  ASTCLabelStatement,
 } from 'frontend/parser';
 
 import {
@@ -38,7 +39,8 @@ import { emitForStmtIR } from '../emitForStmtIR';
 import { emitAsmStatementIR } from '../emitAsmStatementIR';
 import { emitSwitchStmtIR } from '../emitSwitchStmtIR';
 import { emitCastIR } from '../emitCastIR';
-import { emitGotoStatementIR } from '../emitGotoStatementIR';
+import { emitGotoStmtIR } from '../emitGotoStmtIR';
+import { emitLabeledStmtIR } from '../emitLabeledStmtIR';
 
 type BlockItemIREmitAttrs = IREmitterContextAttrs & {
   node: ASTCCompilerNode;
@@ -52,10 +54,25 @@ export function emitBlockItemIR({
   let result = createBlankStmtResult();
 
   GroupTreeVisitor.ofIterator<ASTCCompilerNode>({
+    [ASTCCompilerKind.LabelStmt]: {
+      enter(gotoStmtNode: ASTCLabelStatement) {
+        appendStmtResults(
+          emitLabeledStmtIR({
+            node: gotoStmtNode,
+            scope,
+            context,
+          }),
+          result,
+        );
+
+        return false;
+      },
+    },
+
     [ASTCCompilerKind.GotoStmt]: {
       enter(gotoStmtNode: ASTCGotoStatement) {
         appendStmtResults(
-          emitGotoStatementIR({
+          emitGotoStmtIR({
             node: gotoStmtNode,
             scope,
             context,

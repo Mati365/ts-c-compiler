@@ -29,11 +29,12 @@ import type {
 import type { emitIdentifierGetterIR } from './emitIdentifierGetterIR';
 import type { emitPointerAddressExpression } from './emitPointerAddressExpression';
 import type { emitUnaryLoadPtrValueIR } from './emitUnaryLoadPointerValueIR';
-import type { IRInstructionFactory } from '../IRInstructionFactory';
+import type { IRLabelsFactory } from '../IRLabelsFactory';
 import type { emitLogicExpressionIR } from './emit-expr/emitLogicExpressionIR';
 import type { emitBlockItemIR } from './emit-fn-decl';
 import type { emitVariableInitializerIR } from './emit-initializer';
 import type { IRGlobalVariablesMap } from '../IRGlobalVariablesMap';
+import type { IRGotoLabelsFactory } from '../IRGotoLabelsFactory';
 
 export type IRGeneratorSegments = {
   code: IRFlatCodeSegmentBuilder;
@@ -45,7 +46,10 @@ export type IREmitterContext = {
   segments: IRGeneratorSegments;
   config: IRGeneratorConfig;
   allocator: IRVariableAllocator;
-  factory: IRInstructionFactory;
+  factory: {
+    labels: IRLabelsFactory;
+    goto: IRGotoLabelsFactory;
+  };
   emit: {
     assignment: typeof emitAssignmentIR;
     expression: typeof emitExpressionIR;

@@ -467,9 +467,15 @@ export function emitExpressionIR({
           );
 
           const labels = {
-            ifTrueLabel: context.factory.genTmpLabelInstruction().ofPhi(phi),
-            ifFalseLabel: context.factory.genTmpLabelInstruction().ofPhi(phi),
-            finallyLabel: context.factory.genTmpLabelInstruction().ofPhi(phi),
+            ifTrueLabel: context.factory.labels
+              .genTmpLabelInstruction()
+              .ofPhi(phi),
+            ifFalseLabel: context.factory.labels
+              .genTmpLabelInstruction()
+              .ofPhi(phi),
+            finallyLabel: context.factory.labels
+              .genTmpLabelInstruction()
+              .ofPhi(phi),
           };
 
           const exprResult = emitLogicBinaryJmpExpressionIR({

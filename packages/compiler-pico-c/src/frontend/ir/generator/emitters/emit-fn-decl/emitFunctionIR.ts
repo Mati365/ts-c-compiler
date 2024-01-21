@@ -25,11 +25,13 @@ export function emitFunctionIR({
   scope,
   node,
 }: FunctionIREmitAttrs): IREmitterStmtResult {
-  const { allocator } = context;
+  const { allocator, factory } = context;
 
   const fnType = <CFunctionDeclType>node.type;
   const declaration = allocator.allocFunctionType(fnType);
   const result = createBlankStmtResult([declaration]);
+
+  factory.goto.enterFunction();
 
   const blockStmt = emitBlockItemIR({
     scope,
