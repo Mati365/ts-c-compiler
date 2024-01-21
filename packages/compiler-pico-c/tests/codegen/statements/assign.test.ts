@@ -244,15 +244,30 @@ describe('Variable assign', () => {
       `);
     });
 
-    test.skip('lvalue variable member assign', () => {
+    test('lvalue variable member assign', () => {
       expect(/* cpp */ `
         void main() {
           int x = 4;
           int y = 10;
-          int s = (x=y);
+          int s = (x=y) * 2;
           asm("xchg bx, bx");
         }
       `).toCompiledAsmBeEqual(`
+        cpu 386
+        ; def main():
+        @@_fn_main:
+        push bp
+        mov bp, sp
+        sub sp, 6
+        mov word [bp - 4], 10     ; *(y{0}: int*2B) = store %10: int2B
+        mov ax, [bp - 4]
+        mov word [bp - 2], ax     ; *(x{0}: int*2B) = store %t{0}: int2B
+        shl ax, 1                 ; %t{1}: int2B = %t{0}: int2B mul %2: char1B
+        mov word [bp - 6], ax     ; *(s{0}: int*2B) = store %t{1}: int2B
+        xchg bx, bx
+        mov sp, bp
+        pop bp
+        ret
       `);
     });
   });
@@ -524,14 +539,73 @@ describe('Variable assign', () => {
       `);
     });
 
-    test.skip('lvalue struct member assign', () => {
+    test('lvalue struct member assign', () => {
       expect(/* cpp */ `
         void main() {
-          struct {int a;} x={1}, y={2};
+          struct {int a;} x={1}, y={3};
           int s = (x=y).a;
           asm("xchg bx, bx");
         }
       `).toCompiledAsmBeEqual(`
+        cpu 386
+        ; def main():
+        @@_fn_main:
+        push bp
+        mov bp, sp
+        sub sp, 6
+        mov word [bp - 4], 3      ; *(y{0}: struct <anonymous>*2B) = store %3: int2B
+        mov ax, [bp - 4]
+        mov word [bp - 2], ax     ; *(x{0}: struct <anonymous>*2B) = store %t{0}: struct <anonymous>2B
+        lea bx, [bp - 2]          ; %t{1}: struct <anonymous>**2B = lea x{0}: struct <anonymous>*2B
+        mov cx, [bx]              ; %t{2}: int2B = load %t{1}: struct <anonymous>**2B
+        mov word [bp - 6], cx     ; *(s{0}: int*2B) = store %t{2}: int2B
+        xchg bx, bx
+        mov sp, bp
+        pop bp
+        ret
+      `);
+    });
+
+    test('lvalue struct memcpy member assign', () => {
+      expect(/* cpp */ `
+        void main() {
+          struct {int a, x, z;} x={1, 4, 6}, y={2, 66, 99};
+          int s = (x=y).z;
+          asm("xchg bx, bx");
+        }
+      `).toCompiledAsmBeEqual(`
+        cpu 386
+        ; def main():
+        @@_fn_main:
+        push bp
+        mov bp, sp
+        sub sp, 14
+        mov word [bp - 6], 1      ; *(x{0}: struct <anonymous>*2B) = store %1: int2B
+        mov word [bp - 4], 4      ; *(x{0}: struct <anonymous>*2B + %2) = store %4: int2B
+        mov word [bp - 2], 6      ; *(x{0}: struct <anonymous>*2B + %4) = store %6: int2B
+        mov word [bp - 12], 2     ; *(y{0}: struct <anonymous>*2B) = store %2: int2B
+        mov word [bp - 10], 66    ; *(y{0}: struct <anonymous>*2B + %2) = store %66: int2B
+        mov word [bp - 8], 99     ; *(y{0}: struct <anonymous>*2B + %4) = store %99: int2B
+        ; memcpy y{0}: struct <anonymous>*2B -> x{0}: struct <anonymous>*2B
+        lea bx, [bp - 12]
+        lea di, [bp - 6]
+        ; offset = 0B
+        mov ax, word [bx]
+        mov word [di], ax
+        ; offset = 2B
+        mov ax, word [bx + 2]
+        mov word [di + 2], ax
+        ; offset = 4B
+        mov ax, word [bx + 4]
+        mov word [di + 4], ax
+        lea bx, [bp - 6]          ; %t{0}: struct <anonymous>**2B = lea x{0}: struct <anonymous>*2B
+        add bx, 4                 ; %t{1}: struct <anonymous>**2B = %t{0}: struct <anonymous>**2B plus %4: int2B
+        mov ax, [bx]              ; %t{2}: int2B = load %t{1}: struct <anonymous>**2B
+        mov word [bp - 14], ax    ; *(s{0}: int*2B) = store %t{2}: int2B
+        xchg bx, bx
+        mov sp, bp
+        pop bp
+        ret
       `);
     });
   });

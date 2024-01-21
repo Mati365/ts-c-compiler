@@ -15,6 +15,7 @@ import {
 import { CUnaryCastOperator } from '#constants';
 import { GroupTreeVisitor } from '@ts-c-compiler/grammar';
 import {
+  ASTCAssignmentExpression,
   ASTCCastUnaryExpression,
   ASTCCompilerKind,
   ASTCCompilerNode,
@@ -93,6 +94,29 @@ export function emitIdentifierGetterIR({
   };
 
   GroupTreeVisitor.ofIterator<ASTCCompilerNode>({
+    [ASTCCompilerKind.AssignmentExpression]: {
+      enter(expression: ASTCAssignmentExpression) {
+        if (!expression.isOperatorExpression()) {
+          return;
+        }
+
+        // a = xyz
+        const assignResult = emit.assignment({
+          asIdentifierGetter: true,
+          node: expression,
+          context,
+          scope,
+        });
+
+        if (!assignResult.output) {
+          throw new IRError(IRErrorCode.UNRESOLVED_ASSIGN_EXPRESSION);
+        }
+
+        emitExprResultToStack(assignResult);
+        return false;
+      },
+    },
+
     [ASTCCompilerKind.ConditionalExpression]: {
       enter: (conditionalExpr: ASTCConditionalExpression) => {
         const exprResult = emitConditionalExpressionIR({

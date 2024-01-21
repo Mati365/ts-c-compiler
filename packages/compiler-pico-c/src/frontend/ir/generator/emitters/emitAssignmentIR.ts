@@ -23,12 +23,14 @@ import { emitCastIR } from './emitCastIR';
 
 export type AssignmentIREmitAttrs = IREmitterContextAttrs & {
   node: ASTCAssignmentExpression;
+  asIdentifierGetter?: boolean;
 };
 
 export function emitAssignmentIR({
   scope,
   context,
   node,
+  asIdentifierGetter,
 }: AssignmentIREmitAttrs): IREmitterExpressionResult {
   const { allocator } = context;
   const { operator } = node;
@@ -92,6 +94,10 @@ export function emitAssignmentIR({
     result.instructions.push(
       new IRStoreInstruction(result.output, lvalue.output),
     );
+  }
+
+  if (asIdentifierGetter) {
+    result.output = lvalue.output;
   }
 
   return result;
