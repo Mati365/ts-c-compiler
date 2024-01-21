@@ -512,7 +512,10 @@ export class X86BasicRegAllocator {
 
     if (!result) {
       if (query.size) {
-        const [reg] = query.allowedRegs ?? ['ax'];
+        const [reg] = query.allowedRegs?.filter(
+          allowedReg => getX86RegByteSize(allowedReg) === query.size,
+        ) ?? ['ax'];
+
         const spillVar = stackFrame.allocSpillVariable(query.size);
         const ownerships = ownership.getOwnershipByReg(reg);
 

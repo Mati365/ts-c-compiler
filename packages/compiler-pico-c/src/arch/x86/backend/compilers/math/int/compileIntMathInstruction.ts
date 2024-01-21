@@ -48,6 +48,13 @@ export function compileIntMathInstruction({
   switch (operator) {
     case TokenType.BIT_SHIFT_RIGHT:
     case TokenType.BIT_SHIFT_LEFT: {
+      const rightAllocResult = regs.tryResolveIrArg({
+        size: biggestArgSize,
+        arg: rightVar,
+        allowedRegs: ['cl', 'cx'],
+        allow: IRArgDynamicResolverType.REG | IRArgDynamicResolverType.NUMBER,
+      });
+
       const leftAllocResult = regs.tryResolveIRArgAsReg({
         size: biggestArgSize,
         arg: leftVar,
@@ -59,15 +66,8 @@ export function compileIntMathInstruction({
         });
       }
 
-      const rightAllocResult = regs.tryResolveIrArg({
-        size: biggestArgSize,
-        arg: rightVar,
-        allowedRegs: ['cl', 'cx'],
-        allow: IRArgDynamicResolverType.REG | IRArgDynamicResolverType.NUMBER,
-      });
-
       const opcode = operator === TokenType.BIT_SHIFT_RIGHT ? 'sar' : 'sal';
-      const asm: string[] = [...leftAllocResult.asm, ...rightAllocResult.asm];
+      const asm: string[] = [...rightAllocResult.asm, ...leftAllocResult.asm];
 
       if (rightAllocResult.value === 'cx') {
         asm.push(

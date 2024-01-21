@@ -19,14 +19,51 @@ describe('Math', () => {
       sub sp, 4
       mov word [bp - 2], 14     ; *(a{0}: int*2B) = store %14: int2B
       mov word [bp - 4], 4      ; *(c{0}: int*2B) = store %4: int2B
-      mov ax, [bp - 2]
       mov cx, [bp - 4]
+      mov ax, [bp - 2]
       sal ax, cl                ; %t{2}: int2B = %t{1}: int2B bit_shift_left %t{0}: int2B
       sar ax, 2                 ; %t{4}: int2B = %t{2}: int2B bit_shift_right %2: char1B
       mov word [bp - 2], ax     ; *(a{0}: int*2B) = store %t{4}: int2B
       mov sp, bp
       pop bp
       ret
+    `);
+  });
+
+  test('bit shift with exhausted regs', () => {
+    expect(/* cpp */ `
+      int main() {
+        const char *ptr = "Hello world!";
+        int bs = sizeof(int)*8;
+        int mi;
+        mi = (1 << (bs-1)) + 1;
+        asm("xchg bx, bx");
+        return 0;
+      }
+    `).toCompiledAsmBeEqual(`
+      cpu 386
+      ; def main(): [ret: int2B]
+      @@_fn_main:
+      push bp
+      mov bp, sp
+      sub sp, 6
+      mov bx, @@_c_0_           ; %t{0}: const char*2B = lea c{0}: const char[13]*2B
+      mov word [bp - 2], bx     ; *(ptr{0}: const char**2B) = store %t{0}: const char*2B
+      mov word [bp - 4], 16     ; *(bs{0}: int*2B) = store %16: int2B
+      mov ax, [bp - 4]
+      sub ax, 1                 ; %t{2}: int2B = %t{1}: int2B minus %1: char1B
+      mov cx, ax
+      mov ax, word 1
+      sal ax, cl                ; %t{3}: int2B = %1: char1B bit_shift_left %t{2}: int2B
+      add ax, 1                 ; %t{4}: int2B = %t{3}: int2B plus %1: char1B
+      mov word [bp - 6], ax     ; *(mi{0}: int*2B) = store %t{4}: int2B
+      xchg bx, bx
+      mov ax, word 0
+      mov sp, bp
+      pop bp
+      ret
+      @@_c_0_:
+      db "Hello world!", 0x0
     `);
   });
 
