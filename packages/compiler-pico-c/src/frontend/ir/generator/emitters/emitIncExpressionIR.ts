@@ -37,7 +37,9 @@ export function emitIncExpressionIR({
   const irSrcVar = allocator.allocTmpVariable(node.type);
   const irTmpVar = allocator.allocTmpVariable(node.type);
 
-  const incValue = isPointerLikeType(node.type) ? node.type.getByteSize() : 1;
+  const incValue = isPointerLikeType(node.type)
+    ? node.type.baseType.getByteSize()
+    : 1;
 
   const instructions: IRInstruction[] = [
     new IRLoadInstruction(rootIRVar, irSrcVar),

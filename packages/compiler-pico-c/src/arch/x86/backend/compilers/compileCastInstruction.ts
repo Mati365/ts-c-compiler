@@ -1,5 +1,4 @@
 import { IRCastInstruction } from 'frontend/ir/instructions';
-import { CBackendError, CBackendErrorCode } from 'backend/errors/CBackendError';
 
 import { genInstruction } from 'arch/x86/asm-utils';
 import { isPrimitiveLikeType } from 'frontend/analyze';
@@ -23,10 +22,18 @@ export function compileCastInstruction({
   const output = new X86CompileInstructionOutput();
 
   if (
-    !isPrimitiveLikeType(inputVar.type) ||
-    !isPrimitiveLikeType(outputVar.type)
+    !isPrimitiveLikeType(inputVar.type, true) ||
+    !isPrimitiveLikeType(outputVar.type, true)
   ) {
-    throw new CBackendError(CBackendErrorCode.CANNOT_CAST_VARIABLES);
+    const inputMemOwnership = memOwnership.getVarOwnership(inputVar.name);
+
+    if (inputMemOwnership) {
+      memOwnership.aliasOwnership(inputVar.name, outputVar.name);
+    } else {
+      regs.ownership.aliasOwnership(inputVar.name, outputVar.name);
+    }
+
+    return output;
   }
 
   if (inputVar.type.isIntegral() && outputVar.type.isFloating()) {

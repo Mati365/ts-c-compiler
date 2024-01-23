@@ -92,7 +92,7 @@ export function emitAssignmentIR({
 
     appendStmtResults(castResult, result);
     result.instructions.push(
-      new IRStoreInstruction(result.output, lvalue.output),
+      new IRStoreInstruction(castResult.output, lvalue.output),
     );
   }
 

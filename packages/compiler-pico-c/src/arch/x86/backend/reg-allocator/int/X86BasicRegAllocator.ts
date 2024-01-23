@@ -108,8 +108,8 @@ export class X86BasicRegAllocator {
       forceLabelMemPtr,
       preferRegs,
       allowedRegs,
-      allocIfNotFound,
       noOwnership,
+      allocIfNotFound = !noOwnership,
     } = attrs;
 
     const regsParts = ownership.getAvailableRegs().general.parts;

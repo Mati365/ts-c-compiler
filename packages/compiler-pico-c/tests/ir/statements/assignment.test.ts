@@ -191,23 +191,25 @@ describe('Assignment IR', () => {
       expect(/* cpp */ `
         void main() {
           const int array[] = { 1, 2, 3, 4, 5 };
-          int sum = array[1] - 3 * 4;
+          int sum = array[1] + 3 * 4;
+          asm("xchg bx, bx");
         }
       `).toCompiledIRBeEqual(/* ruby */ `
         # --- Block main ---
-          def main():
+        def main():
           array{0}: const int**2B = alloca const int*2B
           %t{0}: const int*2B = lea c{0}: const int[5]*2B
           *(array{0}: const int**2B) = store %t{0}: const int*2B
           sum{0}: int*2B = alloca int2B
-          %t{1}: const int*2B = load array{0}: const int**2B
-          %t{2}: const int*2B = %t{1}: const int*2B plus %2: int2B
-          %t{3}: const int2B = load %t{2}: const int*2B
-          %t{6}: const int2B = %t{3}: const int2B minus %12: char1B
-          *(sum{0}: int*2B) = store %t{6}: const int2B
+          %t{1}: const int**2B = array{0}: const int**2B plus %2: int2B
+          %t{2}: const int2B = load %t{1}: const int**2B
+          %t{5}: const int2B = %t{2}: const int2B plus %12: char1B
+          *(sum{0}: int*2B) = store %t{5}: const int2B
+          asm "xchg bx, bx"
           ret
           end-def
-          # --- Block Data ---
+
+        # --- Block Data ---
           c{0}: const int[5]*2B = const { 1, 2, 3, 4, 5 }
       `);
     });
@@ -220,20 +222,19 @@ describe('Assignment IR', () => {
         }
       `).toCompiledIRBeEqual(/* ruby */ `
         # --- Block main ---
-        def main():
+          def main():
           array{0}: const int**2B = alloca const int*2B
           %t{0}: const int*2B = lea c{0}: const int[12]*2B
           *(array{0}: const int**2B) = store %t{0}: const int*2B
           sum{0}: int*2B = alloca int2B
-          %t{1}: const int*2B = load array{0}: const int**2B
-          %t{2}: const int*2B = %t{1}: const int*2B plus %6: int2B
-          %t{3}: const int2B = load %t{2}: const int*2B
-          %t{6}: const int2B = %t{3}: const int2B plus %12: char1B
-          *(sum{0}: int*2B) = store %t{6}: const int2B
+          %t{1}: const int**2B = array{0}: const int**2B plus %6: int2B
+          %t{2}: const int*2B = cast %t{1}: const int**2B
+          %t{5}: const int*2B = %t{2}: const int*2B plus %24: char1B
+          *(sum{0}: int*2B) = store %t{5}: const int*2B
           ret
           end-def
-          # --- Block Data ---
-          c{0}: const int[12]*2B = const { 1, 2, 3, 4, 5, null, null, null, null, null, null, null }
+        # --- Block Data ---
+        c{0}: const int[12]*2B = const { 1, 2, 3, 4, 5, null, null, null, null, null, null, null }
       `);
     });
 
@@ -241,23 +242,25 @@ describe('Assignment IR', () => {
       expect(/* cpp */ `
         void main() {
           const int array[4][3] = { 1, 2, 3, 4, 5 };
-          int sum = array[1][0] + 3 * 4;
+          int sum = array[1][1] + 3 * 4;
+          asm("xchg bx, bx");
         }
       `).toCompiledIRBeEqual(/* ruby */ `
         # --- Block main ---
-          def main():
+        def main():
           array{0}: const int**2B = alloca const int*2B
           %t{0}: const int*2B = lea c{0}: const int[12]*2B
           *(array{0}: const int**2B) = store %t{0}: const int*2B
           sum{0}: int*2B = alloca int2B
-          %t{1}: const int*2B = load array{0}: const int**2B
-          %t{3}: const int*2B = %t{1}: const int*2B plus %6: int2B
-          %t{4}: const int2B = load %t{3}: const int*2B
-          %t{7}: const int2B = %t{4}: const int2B plus %12: char1B
-          *(sum{0}: int*2B) = store %t{7}: const int2B
+          %t{2}: const int**2B = array{0}: const int**2B plus %8: int2B
+          %t{3}: const int2B = load %t{2}: const int**2B
+          %t{6}: const int2B = %t{3}: const int2B plus %12: char1B
+          *(sum{0}: int*2B) = store %t{6}: const int2B
+          asm "xchg bx, bx"
           ret
           end-def
-          # --- Block Data ---
+
+        # --- Block Data ---
           c{0}: const int[12]*2B = const { 1, 2, 3, 4, 5, null, null, null, null, null, null, null }
       `);
     });

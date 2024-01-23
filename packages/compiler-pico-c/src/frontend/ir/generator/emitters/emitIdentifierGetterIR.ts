@@ -6,6 +6,7 @@ import { TokenType } from '@ts-c-compiler/lexer';
 import {
   CPointerType,
   CPrimitiveType,
+  CType,
   isArrayLikeType,
   isPointerLikeType,
   isStructLikeType,
@@ -29,6 +30,7 @@ import {
 
 import {
   IRAssignInstruction,
+  IRCastInstruction,
   IRLabelOffsetInstruction,
   IRLeaInstruction,
   IRLoadInstruction,
@@ -76,7 +78,9 @@ export function emitIdentifierGetterIR({
 
   let rootIRVar: IRVariable;
   let lastIRVar: IRVariable = null;
+
   let parentNodes: ASTCPostfixExpression[] = [];
+  const accessorTypes: CType[] = [];
 
   const getParentType = () => R.last(parentNodes).postfixExpression?.type;
   const emitExprResultToStack = (exprResult: IREmitterExpressionResult) => {
@@ -203,18 +207,7 @@ export function emitIdentifierGetterIR({
             const irVariable = allocator.getVariable(name);
             rootIRVar ??= irVariable;
 
-            /**
-             * detect this case:
-             *  char array[10] = { 1, 2, 3, 4, 5, 6 };
-             *  array[1] = 2;
-             *
-             * which is transformed into pointer that is pointing
-             * not into te stack but somewhere else
-             */
-            if (irVariable.virtualArrayPtr) {
-              lastIRVar = allocator.allocPlainAddressVariable(irVariable.type);
-              instructions.push(new IRLoadInstruction(irVariable, lastIRVar));
-            } else if (
+            if (
               isPointerLikeType(irVariable.type) &&
               isArrayLikeType(irVariable.type.baseType)
             ) {
@@ -287,6 +280,7 @@ export function emitIdentifierGetterIR({
           );
         }
 
+        accessorTypes.push(parentType);
         return false;
       },
     },
@@ -348,6 +342,7 @@ export function emitIdentifierGetterIR({
           );
         }
 
+        accessorTypes.push(parentType);
         return false;
       },
     },
@@ -363,7 +358,12 @@ export function emitIdentifierGetterIR({
         // handle case for:
         //  const char* str2[]
         //  str2[0][0], str2[0] is pointer
-        if (isPointerLikeType(lastIRVar.type) && !isArrayLikeType(parentType)) {
+        if (
+          isPointerLikeType(lastIRVar.type) &&
+          !isArrayLikeType(parentType) &&
+          (lastIRVar.type.baseType.isPointer() ||
+            lastIRVar.type.baseType.isArray())
+        ) {
           const newLastIRVar = allocator.allocTmpVariable(
             lastIRVar.type.baseType,
           );
@@ -386,8 +386,10 @@ export function emitIdentifierGetterIR({
 
         if (isArrayLikeType(parentType)) {
           entryByteSize = parentType.ofTailDimensions().getByteSize();
+          accessorTypes.push(parentType.ofTailDimensions());
         } else if (isPointerLikeType(parentType)) {
           entryByteSize = parentType.baseType.getByteSize();
+          accessorTypes.push(parentType.baseType);
         } else {
           throw new IRError(IRErrorCode.ACCESS_ARRAY_INDEX_TO_NON_ARRAY);
         }
@@ -441,22 +443,44 @@ export function emitIdentifierGetterIR({
     },
   })(node);
 
+  const lastAccessorType = R.last(accessorTypes);
+
   if (emitValueAtAddress && lastIRVar && isPointerLikeType(lastIRVar.type)) {
-    // handle loading data into identifier IR
-    // example: int k = vec.x;
-    // last variable is `x` from `vec` but `IR` returned `Vec2*`
-    // it has to be auto-casted to `int`
-    const outputVar = allocator.allocTmpVariable(
-      isArrayLikeType(node.type) ? node.type.getSourceType() : node.type,
-    );
+    if (
+      isArrayLikeType(lastAccessorType) &&
+      lastAccessorType.getFlattenInfo().dimensions.length === 1
+    ) {
+      // handle case when user writes something like this: *array[1]
+      // where array is int[4][4] type
+      const outputVar = allocator.allocTmpVariable(
+        CPointerType.ofType(node.type.getSourceType()),
+      );
 
-    instructions.push(new IRLoadInstruction(lastIRVar, outputVar));
+      instructions.push(new IRCastInstruction(lastIRVar, outputVar));
 
-    return {
-      output: outputVar,
-      rootIRVar,
-      instructions,
-    };
+      return {
+        output: outputVar,
+        rootIRVar,
+        instructions,
+      };
+    } else {
+      // handle case `int sum = array[1] + 3 * 4;`, array[1] is still pointer
+      // handle loading data into identifier IR
+      // example: int k = vec.x;
+      // last variable is `x` from `vec` but `IR` returned `Vec2*`
+      // it has to be auto-casted to `int`
+      const outputVar = allocator.allocTmpVariable(
+        isArrayLikeType(node.type) ? node.type.getSourceType() : node.type,
+      );
+
+      instructions.push(new IRLoadInstruction(lastIRVar, outputVar));
+
+      return {
+        output: outputVar,
+        rootIRVar,
+        instructions,
+      };
+    }
   }
 
   return {

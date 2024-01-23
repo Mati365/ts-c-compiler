@@ -1,6 +1,85 @@
 import '../utils';
 
 describe('Pointers', () => {
+  test('*array[1] access', () => {
+    expect(/* cpp */ `
+      void main() {
+        int array[4][3] = { 1, 2, 3, 4, 5 };
+        int sum = *array[1];
+        asm("xchg bx, bx");
+      }
+    `).toCompiledAsmBeEqual(`
+      cpu 386
+      ; def main():
+      @@_fn_main:
+      push bp
+      mov bp, sp
+      sub sp, 26
+      mov word [bp - 24], 1     ; *(array{0}: int[4][3]*2B) = store %1: int2B
+      mov word [bp - 22], 2     ; *(array{0}: int[4][3]*2B + %2) = store %2: int2B
+      mov word [bp - 20], 3     ; *(array{0}: int[4][3]*2B + %4) = store %3: int2B
+      mov word [bp - 18], 4     ; *(array{0}: int[4][3]*2B + %6) = store %4: int2B
+      mov word [bp - 16], 5     ; *(array{0}: int[4][3]*2B + %8) = store %5: int2B
+      lea bx, [bp - 24]         ; %t{0}: int[4][3]*2B = lea array{0}: int[4][3]*2B
+      add bx, 6                 ; %t{1}: int[4][3]*2B = %t{0}: int[4][3]*2B plus %6: int2B
+      mov ax, [bx]              ; %t{3}: int2B = load %t{2}: int*2B
+      mov word [bp - 26], ax    ; *(sum{0}: int*2B) = store %t{3}: int2B
+      xchg bx, bx
+      mov sp, bp
+      pop bp
+      ret
+    `);
+  });
+
+  test('increment char pointer to literal', () => {
+    expect(/* cpp */ `
+      void main() {
+        char* ptr = "Hello world";
+        ptr++;
+      }
+    `).toCompiledAsmBeEqual(`
+      cpu 386
+      ; def main():
+      @@_fn_main:
+      push bp
+      mov bp, sp
+      sub sp, 2
+      mov bx, @@_c_0_           ; %t{0}: char*2B = lea c{0}: char[12]*2B
+      mov word [bp - 2], bx     ; *(ptr{0}: char**2B) = store %t{0}: char*2B
+      mov di, [bp - 2]          ; %t{1}: char*2B = load ptr{0}: char**2B
+      add di, 1                 ; %t{2}: char*2B = %t{1}: char*2B plus %1: int2B
+      mov word [bp - 2], di     ; *(ptr{0}: char**2B) = store %t{2}: char*2B
+      mov sp, bp
+      pop bp
+      ret
+      @@_c_0_:
+      db "Hello world", 0x0
+    `);
+  });
+
+  test('increment char pointer and read', () => {
+    expect(/* cpp */ `
+      void main() { char* a; char k = *a++; }
+    `).toCompiledAsmBeEqual(`
+      cpu 386
+      ; def main():
+      @@_fn_main:
+      push bp
+      mov bp, sp
+      sub sp, 3
+      mov bx, [bp - 2]          ; %t{0}: char*2B = load a{0}: char**2B
+      mov ax, bx                ; swap
+      add bx, 1                 ; %t{1}: char*2B = %t{0}: char*2B plus %1: int2B
+      mov word [bp - 2], bx     ; *(a{0}: char**2B) = store %t{1}: char*2B
+      mov di, ax
+      mov al, [di]              ; %t{2}: char1B = load %t{0}: char*2B
+      mov byte [bp - 3], al     ; *(k{0}: char*2B) = store %t{2}: char1B
+      mov sp, bp
+      pop bp
+      ret
+    `);
+  });
+
   test('increment Vec2 pointer', () => {
     expect(/* cpp */ `
       struct Vec2 {

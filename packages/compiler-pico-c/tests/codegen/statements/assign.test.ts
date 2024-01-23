@@ -196,17 +196,50 @@ describe('Variable assign', () => {
         sub sp, 4
         mov bx, @@_c_0_           ; %t{0}: const int*2B = lea c{0}: const int[12]*2B
         mov word [bp - 2], bx     ; *(array{0}: const int**2B) = store %t{0}: const int*2B
-        mov di, [bp - 2]          ; %t{1}: const int*2B = load array{0}: const int**2B
-        add di, 6                 ; %t{2}: const int*2B = %t{1}: const int*2B plus %6: int2B
-        mov ax, [di]              ; %t{3}: const int2B = load %t{2}: const int*2B
-        add ax, 12                ; %t{6}: const int2B = %t{3}: const int2B plus %12: char1B
-        mov word [bp - 4], ax     ; *(sum{0}: int*2B) = store %t{6}: const int2B
+        mov ax, [bp - 2]
+        add ax, 6                 ; %t{1}: const int**2B = array{0}: const int**2B plus %6: int2B
+        add ax, 24                ; %t{5}: const int*2B = %t{2}: const int*2B plus %24: char1B
+        mov word [bp - 4], ax     ; *(sum{0}: int*2B) = store %t{5}: const int*2B
         mov sp, bp
         pop bp
         ret
         @@_c_0_:
         dw 1, 2, 3, 4, 5
         dw 0, 0, 0, 0, 0, 0, 0
+      `);
+    });
+
+    test('assign to 2D array with only single index access and ptr', () => {
+      expect(/* cpp */ `
+        void main() {
+          const int array[4][3] = { 1, 2, 3, 4, 5 };
+          int sum = *array[1] + 3;
+
+          asm("xchg bx, bx");
+        }
+      `).toCompiledAsmBeEqual(`
+        cpu 386
+        ; def main():
+        @@_fn_main:
+        push bp
+        mov bp, sp
+        sub sp, 4
+        mov bx, @@_c_0_           ; %t{0}: const int*2B = lea c{0}: const int[12]*2B
+        mov word [bp - 2], bx     ; *(array{0}: const int**2B) = store %t{0}: const int*2B
+        mov ax, [bp - 2]
+        add ax, 6                 ; %t{1}: const int**2B = array{0}: const int**2B plus %6: int2B
+        mov di, ax
+        mov cx, [di]              ; %t{3}: const int2B = load %t{2}: const int*2B
+        add cx, 3                 ; %t{4}: const int2B = %t{3}: const int2B plus %3: char1B
+        mov word [bp - 4], cx     ; *(sum{0}: int*2B) = store %t{4}: const int2B
+        xchg bx, bx
+        mov sp, bp
+        pop bp
+        ret
+        @@_c_0_:
+        dw 1, 2, 3, 4, 5
+        dw 0, 0, 0, 0, 0, 0, 0
+
       `);
     });
 
@@ -265,6 +298,102 @@ describe('Variable assign', () => {
         shl ax, 1                 ; %t{1}: int2B = %t{0}: int2B mul %2: char1B
         mov word [bp - 6], ax     ; *(s{0}: int*2B) = store %t{1}: int2B
         xchg bx, bx
+        mov sp, bp
+        pop bp
+        ret
+      `);
+    });
+  });
+
+  describe('Assign to pointer item', () => {
+    test('mixed literal and char* ptr assign', () => {
+      expect(/* cpp */ `
+        void main() {
+          char* ptr = "Hello world";
+          ptr++;
+          ptr = ptr + 1;
+          ptr = ptr + 1;
+
+          int a = 2;
+          (*ptr) = a;
+        }
+      `).toCompiledAsmBeEqual(`
+        cpu 386
+        ; def main():
+        @@_fn_main:
+        push bp
+        mov bp, sp
+        sub sp, 4
+        mov bx, @@_c_0_           ; %t{0}: char*2B = lea c{0}: char[12]*2B
+        mov word [bp - 2], bx     ; *(ptr{0}: char**2B) = store %t{0}: char*2B
+        mov di, [bp - 2]          ; %t{1}: char*2B = load ptr{0}: char**2B
+        add di, 3                 ; %t{6}: char*2B = %t{1}: char*2B plus %3: int2B
+        mov word [bp - 2], di     ; *(ptr{0}: char**2B) = store %t{6}: char*2B
+        mov word [bp - 4], 2      ; *(a{0}: int*2B) = store %2: int2B
+        mov al, [bp - 4]
+        mov byte [di], al         ; *(%t{6}: char*2B) = store %t{9}: char1B
+        mov sp, bp
+        pop bp
+        ret
+        @@_c_0_:
+        db "Hello world", 0x0
+      `);
+    });
+
+    test('assign int to char pointer literal', () => {
+      expect(/* cpp */ `
+        void main() {
+          char* ptr = "Hello world";
+          int a = 2;
+          ptr[2] = a;
+        }
+      `).toCompiledAsmBeEqual(`
+        cpu 386
+        ; def main():
+        @@_fn_main:
+        push bp
+        mov bp, sp
+        sub sp, 4
+        mov bx, @@_c_0_           ; %t{0}: char*2B = lea c{0}: char[12]*2B
+        mov word [bp - 2], bx     ; *(ptr{0}: char**2B) = store %t{0}: char*2B
+        mov word [bp - 4], 2      ; *(a{0}: int*2B) = store %2: int2B
+        mov di, [bp - 2]          ; %t{1}: char*2B = load ptr{0}: char**2B
+        add di, 2                 ; %t{2}: char*2B = %t{1}: char*2B plus %2: int2B
+        mov al, [bp - 4]
+        mov byte [di], al         ; *(%t{2}: char*2B) = store %t{4}: char1B
+        mov sp, bp
+        pop bp
+        ret
+        @@_c_0_:
+        db "Hello world", 0x0
+      `);
+    });
+
+    test('assign to int array pointer', () => {
+      expect(/* cpp */ `
+        void main() {
+          int arr[] = {1, 2, 3, 4, 5, 6};
+          int *ptr = arr;
+          ptr[2] = 2 * 4;
+        }
+      `).toCompiledAsmBeEqual(`
+        cpu 386
+        ; def main():
+        @@_fn_main:
+        push bp
+        mov bp, sp
+        sub sp, 14
+        mov word [bp - 12], 1     ; *(arr{0}: int[6]*2B) = store %1: int2B
+        mov word [bp - 10], 2     ; *(arr{0}: int[6]*2B + %2) = store %2: int2B
+        mov word [bp - 8], 3      ; *(arr{0}: int[6]*2B + %4) = store %3: int2B
+        mov word [bp - 6], 4      ; *(arr{0}: int[6]*2B + %6) = store %4: int2B
+        mov word [bp - 4], 5      ; *(arr{0}: int[6]*2B + %8) = store %5: int2B
+        mov word [bp - 2], 6      ; *(arr{0}: int[6]*2B + %10) = store %6: int2B
+        lea bx, [bp - 12]         ; %t{0}: int[6]*2B = lea arr{0}: int[6]*2B
+        mov word [bp - 14], bx    ; *(ptr{0}: int**2B) = store %t{0}: int[6]*2B
+        mov di, [bp - 14]         ; %t{1}: int*2B = load ptr{0}: int**2B
+        add di, 4                 ; %t{2}: int*2B = %t{1}: int*2B plus %4: int2B
+        mov word [di], 8          ; *(%t{2}: int*2B) = store %8: char1B
         mov sp, bp
         pop bp
         ret
