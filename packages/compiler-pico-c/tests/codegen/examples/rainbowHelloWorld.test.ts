@@ -117,8 +117,7 @@ test('Rainbow Hello World', () => {
     @@_L6:
     mov ax, [bp - 2]
     cmp word [bp - 6], ax     ; %t{20}: i1:zf = icmp %t{18}: int2B less_than %t{19}: int2B
-    jl @@_L7                  ; br %t{20}: i1:zf, true: L7, false: L8
-    jge @@_L8                 ; br %t{20}: i1:zf, true: L7, false: L8
+    jge @@_L8                 ; br %t{20}: i1:zf, false: L8
     @@_L7:
     mov bx, [bp + 10]         ; %t{23}: const char*2B = load str{1}: const char**2B
     add bx, word [bp - 6]     ; %t{26}: const char*2B = %t{23}: const char*2B plus %t{25}: const char*2B
@@ -154,8 +153,7 @@ test('Rainbow Hello World', () => {
     mov word [bp - 2], 0      ; *(i{0}: int*2B) = store %0: int2B
     @@_L9:
     cmp word [bp - 2], 15     ; %t{37}: i1:zf = icmp %t{36}: int2B less_than %15: char1B
-    jl @@_L10                 ; br %t{37}: i1:zf, true: L10, false: L11
-    jge @@_L11                ; br %t{37}: i1:zf, true: L10, false: L11
+    jge @@_L11                ; br %t{37}: i1:zf, false: L11
     @@_L10:
     mov ax, [bp - 2]
     mov bx, ax                ; swap

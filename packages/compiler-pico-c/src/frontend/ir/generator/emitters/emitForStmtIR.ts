@@ -1,5 +1,5 @@
 import { ASTCForStatement } from 'frontend/parser';
-import { IRBrInstruction, IRJmpInstruction } from '../../instructions';
+import { IRJmpInstruction } from '../../instructions';
 
 import {
   createBlankStmtResult,
@@ -36,6 +36,9 @@ export function emitForStmtIR({
   const logicResult = emit.logicExpression({
     scope,
     node: node.condition,
+    jmpToLabelIf: {
+      zero: labels.ifFalseLabel,
+    },
     context: {
       ...context,
       conditionStmt: {
@@ -67,15 +70,6 @@ export function emitForStmtIR({
     startLabel,
     ...result.instructions,
     ...logicResult.instructions,
-    ...(logicResult.output
-      ? [
-          new IRBrInstruction(
-            logicResult.output,
-            labels.ifTrueLabel,
-            labels.ifFalseLabel,
-          ),
-        ]
-      : []),
     labels.ifTrueLabel,
     ...contentResult.instructions,
     ...exprResult.instructions,

@@ -1,4 +1,3 @@
-import { IRBrInstruction } from '../../../instructions';
 import { WhileStmtIRAttrs } from './emitWhileStmtIR';
 import { createBlankStmtResult, IREmitterStmtResult } from '../types';
 
@@ -10,12 +9,6 @@ export function emitDoWhileStmtIR({
   const { emit, factory } = context;
 
   const result = createBlankStmtResult();
-  const logicResult = emit.logicExpression({
-    scope,
-    context,
-    node: node.expression,
-  });
-
   const labels = {
     start: factory.labels.genTmpLabelInstruction(),
     end: factory.labels.genTmpLabelInstruction(),
@@ -33,12 +26,20 @@ export function emitDoWhileStmtIR({
     },
   });
 
+  const logicResult = emit.logicExpression({
+    scope,
+    context,
+    node: node.expression,
+    jmpToLabelIf: {
+      nonZero: labels.start,
+    },
+  });
+
   result.instructions.push(
     labels.start,
     ...result.instructions,
     ...contentResult.instructions,
     ...logicResult.instructions,
-    new IRBrInstruction(logicResult.output, labels.start),
     labels.end,
   );
 

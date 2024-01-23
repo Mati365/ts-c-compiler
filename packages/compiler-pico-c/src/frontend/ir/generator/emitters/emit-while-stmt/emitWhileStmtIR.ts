@@ -1,5 +1,5 @@
 import { ASTCWhileStatement } from 'frontend/parser';
-import { IRBrInstruction, IRJmpInstruction } from '../../../instructions';
+import { IRJmpInstruction } from '../../../instructions';
 
 import {
   createBlankStmtResult,
@@ -19,16 +19,19 @@ export function emitWhileStmtIR({
   const { emit, factory } = context;
 
   const result = createBlankStmtResult();
-  const logicResult = emit.logicExpression({
-    scope,
-    context,
-    node: node.expression,
-  });
-
   const labels = {
     start: factory.labels.genTmpLabelInstruction(),
     end: factory.labels.genTmpLabelInstruction(),
   };
+
+  const logicResult = emit.logicExpression({
+    scope,
+    context,
+    node: node.expression,
+    jmpToLabelIf: {
+      zero: labels.end,
+    },
+  });
 
   const contentResult = emit.block({
     node: node.statement,
@@ -46,7 +49,6 @@ export function emitWhileStmtIR({
     labels.start,
     ...result.instructions,
     ...logicResult.instructions,
-    new IRBrInstruction(logicResult.output, null, labels.end),
     ...contentResult.instructions,
     new IRJmpInstruction(labels.start),
     labels.end,

@@ -16,6 +16,7 @@ import {
 import { IRArgDynamicResolverType } from '../reg-allocator';
 import { X86CompilerInstructionFnAttrs } from '../../constants/types';
 import { X86CompileInstructionOutput } from './shared';
+import { isIRConstant } from 'frontend/ir/variables';
 
 const INT_OPERATOR_JMP_INSTRUCTIONS: Record<
   CRelOperator,
@@ -212,6 +213,20 @@ export function compileICmpInstruction({
         instruction.getDisplayName(),
       ),
     );
+
+    if (
+      leftAllocResult.type === IRArgDynamicResolverType.REG &&
+      isIRConstant(leftVar)
+    ) {
+      regs.releaseRegs([leftAllocResult.value]);
+    }
+
+    if (
+      rightAllocResult.type === IRArgDynamicResolverType.REG &&
+      isIRConstant(rightVar)
+    ) {
+      regs.releaseRegs([rightAllocResult.value]);
+    }
 
     const isUnsigned =
       isPrimitiveLikeType(leftVar.type, true) && leftVar.type.isUnsigned();

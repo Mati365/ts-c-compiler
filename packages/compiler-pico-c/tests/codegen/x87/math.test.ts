@@ -146,8 +146,7 @@ describe('X87 Math', () => {
       @@_L1:
       mov ax, [bp - 2]
       cmp word [bp - 8], ax     ; %t{2}: i1:zf = icmp %t{0}: int2B less_than %t{1}: int2B
-      jl @@_L2                  ; br %t{2}: i1:zf, true: L2, false: L3
-      jge @@_L3                 ; br %t{2}: i1:zf, true: L2, false: L3
+      jge @@_L3                 ; br %t{2}: i1:zf, false: L3
       @@_L2:
       mov ax, [bp - 8]
       mov bx, ax                ; swap

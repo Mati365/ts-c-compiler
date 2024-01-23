@@ -38,8 +38,7 @@ describe('VA Lists', () => {
       @@_L1:
       mov ax, [bp + 4]
       cmp word [bp - 6], ax     ; %t{5}: i1:zf = icmp %t{3}: int2B less_than %t{4}: int2B
-      jl @@_L2                  ; br %t{5}: i1:zf, true: L2, false: L3
-      jge @@_L3                 ; br %t{5}: i1:zf, true: L2, false: L3
+      jge @@_L3                 ; br %t{5}: i1:zf, false: L3
       @@_L2:
       lea bx, [bp - 2]          ; %t{9}: struct __builtin_va_list**2B = lea ap{0}: struct __builtin_va_list*2B
       lea di, [bp - 8]          ; %t{11}: char[2]*2B = lea %t{10}: char[2]*2B
@@ -62,7 +61,6 @@ describe('VA Lists', () => {
       mov sp, bp
       pop bp
       ret 2
-
       ; def main():
       @@_fn_main:
       push bp

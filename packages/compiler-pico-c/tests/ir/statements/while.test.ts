@@ -51,9 +51,10 @@ describe('While stmt', () => {
       }
     `).toCompiledIRBeEqual(/* ruby */ `
       # --- Block main ---
-      def main():
+        def main():
         L1:
-        jmp L2
+        %t{0}: i1:zf = icmp %0: char1B differs %0: int2B
+        br %t{0}: i1:zf, false: L2
         a{0}: int*2B = alloca int2B
         *(a{0}: int*2B) = store %2: int2B
         jmp L1
@@ -73,14 +74,15 @@ describe('While stmt', () => {
     `).toCompiledIRBeEqual(/* ruby */ `
       # --- Block main ---
       def main():
-        L1:
-        a{0}: int*2B = alloca int2B
-        *(a{0}: int*2B) = store %2: int2B
-        jmp L1
-        L2:
-        ret
-        end-def
-
+      L1:
+      %t{0}: i1:zf = icmp %1: char1B differs %0: int2B
+      br %t{0}: i1:zf, false: L2
+      a{0}: int*2B = alloca int2B
+      *(a{0}: int*2B) = store %2: int2B
+      jmp L1
+      L2:
+      ret
+      end-def
     `);
   });
 
@@ -93,11 +95,12 @@ describe('While stmt', () => {
       }
     `).toCompiledIRBeEqual(/* ruby */ `
       # --- Block main ---
-      def main():
+        def main():
         L1:
         a{0}: int*2B = alloca int2B
         *(a{0}: int*2B) = store %2: int2B
-        jmp L1
+        %t{0}: i1:zf = icmp %1: char1B differs %0: int2B
+        br %t{0}: i1:zf, true: L1
         L2:
         ret
         end-def
@@ -113,10 +116,12 @@ describe('While stmt', () => {
       }
     `).toCompiledIRBeEqual(/* ruby */ `
       # --- Block main ---
-      def main():
+        def main():
         L1:
         a{0}: int*2B = alloca int2B
         *(a{0}: int*2B) = store %2: int2B
+        %t{0}: i1:zf = icmp %0: char1B differs %0: int2B
+        br %t{0}: i1:zf, true: L1
         L2:
         ret
         end-def

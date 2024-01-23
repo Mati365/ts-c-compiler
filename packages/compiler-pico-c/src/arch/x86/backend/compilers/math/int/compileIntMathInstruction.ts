@@ -89,6 +89,13 @@ export function compileIntMathInstruction({
         );
       }
 
+      if (
+        rightAllocResult.type === IRArgDynamicResolverType.REG &&
+        isIRConstant(rightVar)
+      ) {
+        regs.releaseRegs([rightAllocResult.value]);
+      }
+
       return X86CompileInstructionOutput.ofInstructions(asm);
     }
 
@@ -255,6 +262,13 @@ export function compileIntMathInstruction({
           instruction.getDisplayName(),
         ),
       ];
+
+      if (
+        rightAllocResult.type === IRArgDynamicResolverType.REG &&
+        isIRConstant(rightVar)
+      ) {
+        regs.releaseRegs([rightAllocResult.value]);
+      }
 
       if (operator === TokenType.MOD) {
         // we want remainder in variable

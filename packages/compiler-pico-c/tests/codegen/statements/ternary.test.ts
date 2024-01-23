@@ -79,13 +79,13 @@ describe('Ternary', () => {
       cmp ax, 0                 ; %t{17}: i1:zf = icmp %4: char1B differs %0: int2B
       jz @@_L8                  ; br %t{17}: i1:zf, false: L8
       @@_L7:
-      mov cl, 2                 ; %t{18}: char1B = assign:φ %2: char1B
+      mov al, 2                 ; %t{18}: char1B = assign:φ %2: char1B
       jmp @@_L6                 ; jmp L6
       @@_L8:
-      mov cl, 1                 ; %t{19}: char1B = assign:φ %1: char1B
+      mov al, 1                 ; %t{19}: char1B = assign:φ %1: char1B
       @@_L6:
-      movzx dx, cl
-      push dx
+      movzx cx, al
+      push cx
       push bx
       call @@_fn_prints
       mov sp, bp

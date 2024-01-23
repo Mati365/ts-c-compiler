@@ -625,8 +625,8 @@ describe('Variable assign', () => {
         @@_L3:
         lea bx, [bp - 4]          ; %t{3}: struct <anonymous>*2B = lea:φ y{0}: struct <anonymous>*2B
         @@_L1:
-        mov cx, [bx]              ; %t{4}: int2B = load %t{0}: int*2B
-        mov word [bp - 6], cx     ; *(s{0}: int*2B) = store %t{4}: int2B
+        mov ax, [bx]              ; %t{4}: int2B = load %t{0}: int*2B
+        mov word [bp - 6], ax     ; *(s{0}: int*2B) = store %t{4}: int2B
         xchg bx, bx
         mov sp, bp
         pop bp
@@ -659,8 +659,8 @@ describe('Variable assign', () => {
         @@_L3:
         lea bx, [bp - 4]          ; %t{3}: struct <anonymous>*2B = lea:φ y{0}: struct <anonymous>*2B
         @@_L1:
-        mov cx, [bx]              ; %t{4}: int2B = load %t{0}: int*2B
-        mov word [bp - 6], cx     ; *(s{0}: int*2B) = store %t{4}: int2B
+        mov ax, [bx]              ; %t{4}: int2B = load %t{0}: int*2B
+        mov word [bp - 6], ax     ; *(s{0}: int*2B) = store %t{4}: int2B
         xchg bx, bx
         mov sp, bp
         pop bp

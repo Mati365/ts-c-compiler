@@ -79,10 +79,12 @@ describe('Continue IR', () => {
         %t{0}: i1:zf = icmp %3: char1B greater_than %1: char1B
         br %t{0}: i1:zf, false: L8
         L5:
+        %t{1}: i1:zf = icmp %1: char1B differs %0: int2B
+        br %t{1}: i1:zf, false: L7
         jmp L5
         L7:
-        %t{1}: i1:zf = icmp %1: char1B differs %0: int2B
-        br %t{1}: i1:zf, false: L8
+        %t{2}: i1:zf = icmp %1: char1B differs %0: int2B
+        br %t{2}: i1:zf, false: L8
         L9:
         a{0}: int*2B = alloca int2B
         # continue
