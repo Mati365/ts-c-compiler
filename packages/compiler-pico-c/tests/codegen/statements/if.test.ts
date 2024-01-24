@@ -2,6 +2,39 @@ import '../utils';
 
 describe('If statement', () => {
   describe('Basic if statements', () => {
+    test('if (!(pad & PAD_RIGHT))', () => {
+      expect(/* cpp */ `
+        #define PAD_RIGHT 2
+
+        void main() {
+          int pad = 0;
+
+          if (!(pad & PAD_RIGHT)) {
+            asm("xchg bx, bx");
+          }
+        }
+      `).toCompiledAsmBeEqual(`
+        cpu 386
+        ; def main():
+        @@_fn_main:
+        push bp
+        mov bp, sp
+        sub sp, 2
+        mov word [bp - 2], 0      ; *(pad{0}: int*2B) = store %0: int2B
+        mov ax, [bp - 2]
+        and ax, 2                 ; %t{1}: int2B = %t{0}: int2B bit_and %2: char1B
+        xor ax, 1                 ; %t{2}: int2B = not %t{1}: int2B
+        cmp ax, 0                 ; %t{3}: i1:zf = icmp %t{2}: int2B differs %0: int2B
+        jz @@_L1                  ; br %t{3}: i1:zf, false: L1
+        @@_L2:
+        xchg bx, bx
+        @@_L1:
+        mov sp, bp
+        pop bp
+        ret
+      `);
+    });
+
     test('if (a: char > 4)', () => {
       expect(/* cpp */ `
         void main() {

@@ -32,6 +32,10 @@ export function compileIntMathSingleInstruction({
   let instructionAsm: string = null;
 
   switch (instruction.operator) {
+    case TokenType.NOT:
+      instructionAsm = genInstruction('xor', leftAllocResult.value, 1);
+      break;
+
     case TokenType.BIT_NOT:
       instructionAsm = genInstruction('xor', leftAllocResult.value, -1);
       break;

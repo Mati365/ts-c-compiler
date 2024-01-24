@@ -1,6 +1,7 @@
 import 'source-map-support/register';
 
 import fs from 'node:fs';
+import stripAnsi from 'strip-ansi';
 import * as E from 'fp-ts/Either';
 import { pipe } from 'fp-ts/function';
 import { Option, program } from '@commander-js/extra-typings';
@@ -36,6 +37,12 @@ program
       'binary',
       'debug',
     ]),
+  )
+  .addOption(
+    new Option(
+      '-pjs, --print-jump-assembly',
+      'Print assembly output with jmps',
+    ).conflicts(['binary', 'debug', 'print-jump-assembly']),
   )
   .option(
     '-bs, --bootsector',
@@ -74,24 +81,31 @@ program
     pipe(
       E.Do,
       E.bind('cResult', () => cCompile),
-      E.bind('asmResult', ({ cResult }) => {
+      E.bind('asmRaw', ({ cResult }) => {
         let asmRaw = cResult.codegen.asm;
 
         if (options.bootsector) {
           asmRaw = wrapWithX86BootsectorAsm(asmRaw);
         }
 
-        return pipe(
+        return E.of(asmRaw);
+      }),
+      E.bind('asmResult', ({ asmRaw }) =>
+        pipe(
           asmRaw,
           asm({
             preprocessor: true,
           }),
-        );
-      }),
+        ),
+      ),
       tapEither(
-        ({ asmResult }) => {
-          if (options.printAssembly) {
+        ({ asmResult, asmRaw }) => {
+          if (options.printJumpAssembly) {
             console.info(TableBinaryView.serializeToString(E.right(asmResult)));
+          }
+
+          if (options.printAssembly) {
+            console.info(stripAnsi(asmRaw.trim()));
           }
 
           let binary = asmResult.output.getBinary();

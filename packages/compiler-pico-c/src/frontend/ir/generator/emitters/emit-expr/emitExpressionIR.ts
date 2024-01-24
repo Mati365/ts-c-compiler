@@ -125,6 +125,27 @@ export function emitExpressionIR({
     [ASTCCompilerKind.CastUnaryExpression]: {
       enter(expr: ASTCCastUnaryExpression) {
         switch (expr.operator) {
+          // !a
+          case CUnaryCastOperator.LOGICAL_NOT: {
+            emitExprResultToStack(
+              emit.expression({
+                node: expr.castExpression,
+                scope,
+                context,
+              }),
+            );
+
+            instructions.push(
+              new IRMathSingleArgInstruction(
+                TokenType.NOT,
+                argsVarsStack.pop(),
+                allocNextVariable(expr.type),
+              ),
+            );
+
+            return false;
+          }
+
           // ~a
           case CUnaryCastOperator.BITWISE_NOT: {
             emitExprResultToStack(

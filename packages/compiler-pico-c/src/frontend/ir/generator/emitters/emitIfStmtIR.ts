@@ -1,13 +1,6 @@
-import { TokenType } from '@ts-c-compiler/lexer';
-import { CPrimitiveType } from 'frontend/analyze';
 import { ASTCIfStatement } from 'frontend/parser';
 
-import {
-  IRBrInstruction,
-  IRICmpInstruction,
-  IRJmpInstruction,
-} from '../../instructions';
-import { IRConstant } from '../../variables';
+import { IRJmpInstruction } from '../../instructions';
 import { LogicBinaryExpressionLabels } from './emit-expr';
 
 import {
@@ -26,8 +19,7 @@ export function emitIfStmtIR({
   context,
   node,
 }: IfStmtIRAttrs): IREmitterStmtResult {
-  const { emit, factory, allocator, config } = context;
-  const { arch } = config;
+  const { emit, factory } = context;
 
   const result = createBlankStmtResult();
   const { instructions } = result;
@@ -41,9 +33,12 @@ export function emitIfStmtIR({
   };
 
   // compile if (a > 1 && b > 2) { ... }
-  const logicResult = emit.expression({
+  const logicResult = emit.logicExpression({
     scope,
     node: node.logicalExpression,
+    jmpToLabelIf: {
+      zero: labels.ifFalseLabel,
+    },
     context: {
       ...context,
       conditionStmt: {
@@ -52,28 +47,7 @@ export function emitIfStmtIR({
     },
   });
 
-  const { output } = logicResult;
   appendStmtResults(logicResult, result);
-
-  if (output) {
-    // if (a > 2)
-    if (output?.type.isFlag()) {
-      instructions.push(new IRBrInstruction(output, null, labels.ifFalseLabel));
-    } else {
-      // if (a)
-      const tmpFlagResult = allocator.allocFlagResult();
-
-      instructions.push(
-        new IRICmpInstruction(
-          TokenType.DIFFERS,
-          output,
-          IRConstant.ofConstant(CPrimitiveType.int(arch), 0x0),
-          tmpFlagResult,
-        ),
-        new IRBrInstruction(tmpFlagResult, null, labels.ifFalseLabel),
-      );
-    }
-  }
 
   instructions.push(labels.ifTrueLabel);
   appendStmtResults(

@@ -100,7 +100,8 @@ export type CMathOperator =
   | TokenType.BIT_OR
   | TokenType.BIT_SHIFT_RIGHT
   | TokenType.BIT_SHIFT_LEFT
-  | TokenType.BIT_NOT;
+  | TokenType.BIT_NOT
+  | TokenType.NOT;
 
 export type CLogicOperator = TokenType.AND | TokenType.OR;
 
