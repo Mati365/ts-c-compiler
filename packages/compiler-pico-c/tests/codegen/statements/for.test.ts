@@ -20,6 +20,7 @@ describe('For statement', () => {
       jz @@_L3                  ; br %t{1}: i1:zf, false: L3
       @@_L2:
       xchg bx, bx
+      @@_L4:
       jmp @@_L1                 ; jmp L1
       @@_L3:
       mov sp, bp
@@ -47,6 +48,7 @@ describe('For statement', () => {
       jz @@_L3                  ; br %t{1}: i1:zf, false: L3
       @@_L2:
       xchg bx, bx
+      @@_L4:
       jmp @@_L1                 ; jmp L1
       @@_L3:
       mov sp, bp
@@ -81,6 +83,7 @@ describe('For statement', () => {
       jz @@_L3                  ; br %t{4}: i1:zf, false: L3
       @@_L2:
       xchg bx, bx
+      @@_L4:
       mov bx, [bp - 2]          ; %t{5}: char*2B = load ptr{0}: char**2B
       add bx, 1                 ; %t{6}: char*2B = %t{5}: char*2B plus %1: int2B
       mov word [bp - 2], bx     ; *(ptr{0}: char**2B) = store %t{6}: char*2B

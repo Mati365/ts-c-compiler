@@ -211,8 +211,7 @@ export function emitBlockItemIR({
         const { loopStmt } = context;
 
         result.instructions.push(
-          new IRCommentInstruction('continue'),
-          new IRJmpInstruction(loopStmt.startLabel),
+          new IRJmpInstruction(loopStmt.continueLabel ?? loopStmt.startLabel),
         );
 
         return false;

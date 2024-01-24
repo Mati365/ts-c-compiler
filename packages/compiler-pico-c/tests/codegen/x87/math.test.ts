@@ -163,18 +163,19 @@ describe('X87 Math', () => {
       cdq
       idiv bx                   ; %t{11}: int2B = %t{5}: int2B mod %2: char1B
       cmp dx, 1                 ; %t{12}: i1:zf = icmp %t{11}: int2B equal %1: char1B
-      jnz @@_L4                 ; br %t{12}: i1:zf, false: L4
-      @@_L5:
+      jnz @@_L5                 ; br %t{12}: i1:zf, false: L5
+      @@_L6:
       fld dword [bp - 12]
       fmul dword [@@_$LC_1]
       fstp dword [bp - 12]
-      @@_L4:
+      @@_L5:
       fld dword [bp - 6]
       fld dword [bp - 12]
       fxch st1
       fadd st0, st1
       ffree st1
       fstp dword [bp - 6]
+      @@_L4:
       mov ax, [bp - 8]
       add ax, 1                 ; %t{4}: int2B = %t{3}: int2B plus %1: int2B
       mov word [bp - 8], ax     ; *(n{0}: int*2B) = store %t{4}: int2B

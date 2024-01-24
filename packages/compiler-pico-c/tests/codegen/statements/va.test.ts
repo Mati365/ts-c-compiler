@@ -52,9 +52,10 @@ describe('VA Lists', () => {
       mov ax, [bp - 4]
       add ax, word [bp - 8]     ; %t{13}: int2B = %t{12}: int2B plus %t{10}: char[2]*2B
       mov word [bp - 4], ax     ; *(sum{0}: int*2B) = store %t{13}: int2B
-      mov bx, [bp - 6]
-      add bx, 1                 ; %t{7}: int2B = %t{6}: int2B plus %1: int2B
-      mov word [bp - 6], bx     ; *(i{0}: int*2B) = store %t{7}: int2B
+      @@_L4:
+      mov ax, [bp - 6]
+      add ax, 1                 ; %t{7}: int2B = %t{6}: int2B plus %1: int2B
+      mov word [bp - 6], ax     ; *(i{0}: int*2B) = store %t{7}: int2B
       jmp @@_L1                 ; jmp L1
       @@_L3:
       mov ax, [bp - 4]

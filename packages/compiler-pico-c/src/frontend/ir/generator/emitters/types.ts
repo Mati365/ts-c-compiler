@@ -68,6 +68,7 @@ export type IREmitterContext = {
   };
   loopStmt?: {
     startLabel: IRLabelInstruction;
+    continueLabel?: IRLabelInstruction;
     finallyLabel: IRLabelInstruction;
   };
 };

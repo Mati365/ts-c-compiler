@@ -12,14 +12,11 @@ describe('Continue IR', () => {
       }
     `).toCompiledIRBeEqual(/* ruby */ `
       # --- Block main ---
-      def main():
+        def main():
         L1:
         %t{0}: i1:zf = icmp %1: char1B differs %0: int2B
-        br %t{0}: i1:zf, false: L4
-        L5:
-        # continue
-        jmp L1
-        L4:
+        br %t{0}: i1:zf, false: L6
+        L6:
         jmp L1
         L3:
         ret
@@ -40,17 +37,14 @@ describe('Continue IR', () => {
       }
     `).toCompiledIRBeEqual(/* ruby */ `
       # --- Block main ---
-      def main():
+        def main():
         L1:
         %t{0}: i1:zf = icmp %1: char1B differs %0: int2B
-        br %t{0}: i1:zf, false: L6
-        L5:
-        %t{1}: i1:zf = icmp %2: char1B differs %0: int2B
-        br %t{1}: i1:zf, false: L6
-        L7:
-        # continue
-        jmp L1
+        br %t{0}: i1:zf, false: L8
         L6:
+        %t{1}: i1:zf = icmp %2: char1B differs %0: int2B
+        br %t{1}: i1:zf, false: L8
+        L8:
         jmp L1
         L3:
         ret
@@ -77,19 +71,17 @@ describe('Continue IR', () => {
       def main():
         L1:
         %t{0}: i1:zf = icmp %3: char1B greater_than %1: char1B
-        br %t{0}: i1:zf, false: L8
-        L5:
+        br %t{0}: i1:zf, false: L9
+        L6:
         %t{1}: i1:zf = icmp %1: char1B differs %0: int2B
-        br %t{1}: i1:zf, false: L7
-        jmp L5
-        L7:
-        %t{2}: i1:zf = icmp %1: char1B differs %0: int2B
-        br %t{2}: i1:zf, false: L8
-        L9:
-        a{0}: int*2B = alloca int2B
-        # continue
-        jmp L1
+        br %t{1}: i1:zf, false: L8
+        jmp L6
         L8:
+        %t{2}: i1:zf = icmp %1: char1B differs %0: int2B
+        br %t{2}: i1:zf, false: L9
+        L10:
+        a{0}: int*2B = alloca int2B
+        L9:
         jmp L1
         L3:
         ret

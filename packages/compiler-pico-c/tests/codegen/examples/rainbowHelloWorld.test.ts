@@ -68,13 +68,13 @@ test('Rainbow Hello World', () => {
     add bx, word [bp - 2]     ; %t{4}: const char*2B = %t{2}: const char*2B plus %t{3}: int2B
     mov al, [bx]              ; %t{5}: const char1B = load %t{4}: const char*2B
     cmp al, 0                 ; %t{6}: i1:zf = icmp %t{5}: const char1B equal %0: char1B
-    jnz @@_L4                 ; br %t{6}: i1:zf, false: L4
-    @@_L5:
+    jnz @@_L5                 ; br %t{6}: i1:zf, false: L5
+    @@_L6:
     mov ax, [bp - 2]
     mov sp, bp
     pop bp
     ret 2
-    @@_L4:
+    @@_L5:
     mov ax, [bp - 2]
     add ax, 1                 ; %t{1}: int2B = %t{0}: int2B plus %1: int2B
     mov word [bp - 2], ax     ; *(i{0}: int*2B) = store %t{1}: int2B
@@ -114,33 +114,32 @@ test('Rainbow Hello World', () => {
     mov ax, 0xB800
     mov gs, ax
     mov word [bp - 6], 0      ; *(i{0}: int*2B) = store %0: int2B
-    @@_L6:
+    @@_L7:
     mov ax, [bp - 2]
     cmp word [bp - 6], ax     ; %t{20}: i1:zf = icmp %t{18}: int2B less_than %t{19}: int2B
-    jge @@_L8                 ; br %t{20}: i1:zf, false: L8
-    @@_L7:
+    jge @@_L9                 ; br %t{20}: i1:zf, false: L9
+    @@_L8:
     mov bx, [bp + 10]         ; %t{23}: const char*2B = load str{1}: const char**2B
     add bx, word [bp - 6]     ; %t{26}: const char*2B = %t{23}: const char*2B plus %t{25}: const char*2B
     mov al, [bx]              ; %t{27}: const char1B = load %t{26}: const char*2B
     mov byte [bp - 7], al     ; *(c{0}: const char*2B) = store %t{27}: const char1B
     mov cx, [bp - 6]
-    mov dx, cx                ; swap
     shl cx, 1                 ; %t{30}: int2B = %t{24}: int2B mul %2: char1B
-    mov di, [bp - 4]
-    add di, cx                ; %t{31}: int2B = %t{28}: int2B plus %t{30}: int2B
-    mov word [bp - 9], di     ; *(offset{0}: const int*2B) = store %t{31}: int2B
+    mov dx, [bp - 4]
+    add dx, cx                ; %t{31}: int2B = %t{28}: int2B plus %t{30}: int2B
+    mov word [bp - 9], dx     ; *(offset{0}: const int*2B) = store %t{31}: int2B
     mov ah, [bp - 7]          ; asm input - c
-    mov si, [bp - 9]          ; asm input - offset
-    push dx                   ; clobber - dl
+    mov di, [bp - 9]          ; asm input - offset
     mov dl, byte [bp + 8]
-    mov bx, si
+    mov bx, di
     mov byte [gs:bx + 1], dl
     mov byte [gs:bx], ah
-    pop dx                    ; clobber - dl
-    add dx, 1                 ; %t{22}: int2B = %t{24}: int2B plus %1: int2B
-    mov word [bp - 6], dx     ; *(i{0}: int*2B) = store %t{22}: int2B
-    jmp @@_L6                 ; jmp L6
-    @@_L8:
+    @@_L10:
+    mov ax, [bp - 6]
+    add ax, 1                 ; %t{22}: int2B = %t{21}: int2B plus %1: int2B
+    mov word [bp - 6], ax     ; *(i{0}: int*2B) = store %t{22}: int2B
+    jmp @@_L7                 ; jmp L7
+    @@_L9:
     mov sp, bp
     pop bp
     ret 8
@@ -151,25 +150,25 @@ test('Rainbow Hello World', () => {
     sub sp, 2
     call @@_fn_clear_screen
     mov word [bp - 2], 0      ; *(i{0}: int*2B) = store %0: int2B
-    @@_L9:
+    @@_L11:
     cmp word [bp - 2], 15     ; %t{37}: i1:zf = icmp %t{36}: int2B less_than %15: char1B
-    jge @@_L11                ; br %t{37}: i1:zf, false: L11
-    @@_L10:
+    jge @@_L13                ; br %t{37}: i1:zf, false: L13
+    @@_L12:
     mov ax, [bp - 2]
     mov bx, ax                ; swap
     add ax, 1                 ; %t{43}: int2B = %t{41}: int2B plus %1: char1B
     mov cx, [@@_c_0_]         ; %t{45}: const char*2B = load %t{44}: const char**2B
-    push bx                   ; preserve: %t{41}
     push cx
     push ax
     push bx
     push 0
     call @@_fn_printf
-    pop bx                    ; restore: %t{41}
-    add bx, 1                 ; %t{39}: int2B = %t{41}: int2B plus %1: int2B
-    mov word [bp - 2], bx     ; *(i{0}: int*2B) = store %t{39}: int2B
-    jmp @@_L9                 ; jmp L9
-    @@_L11:
+    @@_L14:
+    mov ax, [bp - 2]
+    add ax, 1                 ; %t{39}: int2B = %t{38}: int2B plus %1: int2B
+    mov word [bp - 2], ax     ; *(i{0}: int*2B) = store %t{39}: int2B
+    jmp @@_L11                ; jmp L11
+    @@_L13:
     mov sp, bp
     pop bp
     ret

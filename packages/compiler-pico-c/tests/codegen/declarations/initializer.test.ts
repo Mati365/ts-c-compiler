@@ -368,13 +368,13 @@ describe('Variables initialization', () => {
         add bx, word [bp - 2]     ; %t{4}: const char*2B = %t{2}: const char*2B plus %t{3}: int2B
         mov al, [bx]              ; %t{5}: const char1B = load %t{4}: const char*2B
         cmp al, 0                 ; %t{6}: i1:zf = icmp %t{5}: const char1B equal %0: char1B
-        jnz @@_L4                 ; br %t{6}: i1:zf, false: L4
-        @@_L5:
+        jnz @@_L5                 ; br %t{6}: i1:zf, false: L5
+        @@_L6:
         mov ax, [bp - 2]
         mov sp, bp
         pop bp
         ret 2
-        @@_L4:
+        @@_L5:
         mov ax, [bp - 2]
         add ax, 1                 ; %t{1}: int2B = %t{0}: int2B plus %1: int2B
         mov word [bp - 2], ax     ; *(i{0}: int*2B) = store %t{1}: int2B
@@ -498,13 +498,13 @@ describe('Variables initialization', () => {
         mov al, [bx]              ; %t{6}: const char1B = load %t{5}: const char*2B
         mov byte [bp - 3], al     ; *(s{0}: char*2B) = store %t{6}: const char1B
         cmp byte [bp - 3], 0      ; %t{8}: i1:zf = icmp %t{7}: char1B equal %0: char1B
-        jnz @@_L4                 ; br %t{8}: i1:zf, false: L4
-        @@_L5:
+        jnz @@_L5                 ; br %t{8}: i1:zf, false: L5
+        @@_L6:
         mov ax, [bp - 2]
         mov sp, bp
         pop bp
         ret 2
-        @@_L4:
+        @@_L5:
         mov ax, [bp - 2]
         add ax, 1                 ; %t{1}: int2B = %t{0}: int2B plus %1: int2B
         mov word [bp - 2], ax     ; *(i{0}: int*2B) = store %t{1}: int2B

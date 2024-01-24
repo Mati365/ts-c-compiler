@@ -20,6 +20,7 @@ describe('For stmt', () => {
         L2:
         a{0}: int*2B = alloca int2B
         *(a{0}: int*2B) = store %3: int2B
+        L4:
         %t{2}: int2B = load i{0}: int*2B
         %t{3}: int2B = %t{2}: int2B plus %1: int2B
         *(i{0}: int*2B) = store %t{3}: int2B

@@ -7,8 +7,6 @@ import {
   IREmitterStmtResult,
 } from './types';
 
-import { LogicBinaryExpressionLabels } from './emit-expr';
-
 export type ForStmtIRAttrs = IREmitterContextAttrs & {
   node: ASTCForStatement;
 };
@@ -28,9 +26,10 @@ export function emitForStmtIR({
   });
 
   const startLabel = factory.labels.genTmpLabelInstruction();
-  const labels: LogicBinaryExpressionLabels = {
+  const labels = {
     ifTrueLabel: factory.labels.genTmpLabelInstruction(),
     ifFalseLabel: factory.labels.genTmpLabelInstruction(),
+    continueLabel: factory.labels.genTmpLabelInstruction(),
   };
 
   const logicResult = emit.logicExpression({
@@ -60,6 +59,7 @@ export function emitForStmtIR({
       ...context,
       loopStmt: {
         startLabel: labels.ifTrueLabel,
+        continueLabel: labels.continueLabel,
         finallyLabel: labels.ifFalseLabel,
       },
     },
@@ -72,6 +72,7 @@ export function emitForStmtIR({
     ...logicResult.instructions,
     labels.ifTrueLabel,
     ...contentResult.instructions,
+    labels.continueLabel,
     ...exprResult.instructions,
     new IRJmpInstruction(startLabel),
     ...(logicResult.output ? [labels.ifFalseLabel] : []),

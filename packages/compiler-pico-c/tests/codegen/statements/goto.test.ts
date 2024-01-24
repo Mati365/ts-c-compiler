@@ -50,10 +50,10 @@ describe('goto', () => {
       add ax, 1                 ; %t{1}: int2B = %t{0}: int2B plus %1: int2B
       mov word [bp - 2], ax     ; *(a{1}: int*2B) = store %t{1}: int2B
       cmp ax, 10                ; %t{3}: i1:zf = %t{1}: int2B greater_than %10: char1B
-      jng @@_L4                 ; br %t{3}: i1:zf, false: L4
-      @@_L5:
+      jng @@_L5                 ; br %t{3}: i1:zf, false: L5
+      @@_L6:
       jmp @@_L3                 ; jmp L3
-      @@_L4:
+      @@_L5:
       jmp @@_L1                 ; jmp L1
       @@_L3:
       xchg bx, bx

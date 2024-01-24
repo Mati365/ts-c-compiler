@@ -42,13 +42,13 @@ describe('Ternary', () => {
       add bx, word [bp - 2]     ; %t{4}: const char*2B = %t{2}: const char*2B plus %t{3}: int2B
       mov al, [bx]              ; %t{5}: const char1B = load %t{4}: const char*2B
       cmp al, 0                 ; %t{6}: i1:zf = icmp %t{5}: const char1B equal %0: char1B
-      jnz @@_L4                 ; br %t{6}: i1:zf, false: L4
-      @@_L5:
+      jnz @@_L5                 ; br %t{6}: i1:zf, false: L5
+      @@_L6:
       mov ax, [bp - 2]
       mov sp, bp
       pop bp
       ret 2
-      @@_L4:
+      @@_L5:
       mov ax, [bp - 2]
       add ax, 1                 ; %t{1}: int2B = %t{0}: int2B plus %1: int2B
       mov word [bp - 2], ax     ; *(i{0}: int*2B) = store %t{1}: int2B
@@ -77,13 +77,13 @@ describe('Ternary', () => {
       mov bx, [bp + 4]          ; %t{15}: const char*2B = load str{1}: const char**2B
       mov ax, word 4
       cmp ax, 0                 ; %t{17}: i1:zf = icmp %4: char1B differs %0: int2B
-      jz @@_L8                  ; br %t{17}: i1:zf, false: L8
-      @@_L7:
-      mov al, 2                 ; %t{18}: char1B = assign:φ %2: char1B
-      jmp @@_L6                 ; jmp L6
+      jz @@_L9                  ; br %t{17}: i1:zf, false: L9
       @@_L8:
+      mov al, 2                 ; %t{18}: char1B = assign:φ %2: char1B
+      jmp @@_L7                 ; jmp L7
+      @@_L9:
       mov al, 1                 ; %t{19}: char1B = assign:φ %1: char1B
-      @@_L6:
+      @@_L7:
       movzx cx, al
       push cx
       push bx
