@@ -2,6 +2,86 @@ import '../utils';
 
 describe('If statement', () => {
   describe('Basic if statements', () => {
+    test('if (<fn arg = 0> && <fn arg = 0> == 0', () => {
+      expect(/* cpp */ `
+        void exec(int a) {
+          if (a && a == 0) {
+            asm("xchg bx, bx");
+          }
+        }
+
+        void main() {
+          exec(0);
+        }
+      `).toCompiledAsmBeEqual(`
+        cpu 386
+        ; def exec(a{0}: int*2B):
+        @@_fn_exec:
+        push bp
+        mov bp, sp
+        cmp word [bp + 4], 0      ; %t{1}: i1:zf = icmp %t{0}: int2B differs %0: int2B
+        jz @@_L1                  ; br %t{1}: i1:zf, false: L1
+        @@_L3:
+        cmp word [bp + 4], 0      ; %t{3}: i1:zf = icmp %t{2}: int2B equal %0: char1B
+        jnz @@_L1                 ; br %t{3}: i1:zf, false: L1
+        @@_L2:
+        xchg bx, bx
+        @@_L1:
+        mov sp, bp
+        pop bp
+        ret 2
+        ; def main():
+        @@_fn_main:
+        push bp
+        mov bp, sp
+        push word 0
+        call @@_fn_exec
+        mov sp, bp
+        pop bp
+        ret
+      `);
+    });
+
+    test('if (<fn arg = 0> || <fn arg = 0> == 0', () => {
+      expect(/* cpp */ `
+        void exec(int a) {
+          if (a || a == 0) {
+            asm("xchg bx, bx");
+          }
+        }
+
+        void main() {
+          exec(0);
+        }
+      `).toCompiledAsmBeEqual(`
+        cpu 386
+        ; def exec(a{0}: int*2B):
+        @@_fn_exec:
+        push bp
+        mov bp, sp
+        cmp word [bp + 4], 0      ; %t{1}: i1:zf = icmp %t{0}: int2B differs %0: int2B
+        jnz @@_L2                 ; br %t{1}: i1:zf, true: L2
+        @@_L3:
+        cmp word [bp + 4], 0      ; %t{3}: i1:zf = icmp %t{2}: int2B equal %0: char1B
+        jnz @@_L1                 ; br %t{3}: i1:zf, false: L1
+        @@_L2:
+        xchg bx, bx
+        @@_L1:
+        mov sp, bp
+        pop bp
+        ret 2
+        ; def main():
+        @@_fn_main:
+        push bp
+        mov bp, sp
+        push word 0
+        call @@_fn_exec
+        mov sp, bp
+        pop bp
+        ret
+      `);
+    });
+
     test('if (<fn arg> < 0)', () => {
       expect(/* cpp */ `
         void sum(int x) {
@@ -123,8 +203,7 @@ describe('If statement', () => {
         jng @@_L1                 ; br %t{1}: i1:zf, false: L1
         @@_L3:
         cmp word [bp - 3], 4      ; %t{3}: i1:zf = icmp %t{2}: int2B equal %4: char1B
-        jz @@_L2                  ; br %t{3}: i1:zf, true: L2
-        jmp @@_L1                 ; jmp L1
+        jnz @@_L1                 ; br %t{3}: i1:zf, false: L1
         @@_L2:
         mov word [bp - 5], 0      ; *(k{0}: int*2B) = store %0: int2B
         @@_L1:
@@ -160,8 +239,7 @@ describe('If statement', () => {
         jng @@_L1                 ; br %t{3}: i1:zf, false: L1
         @@_L3:
         cmp byte [bp - 1], 98     ; %t{5}: i1:zf = icmp %t{4}: char1B less_than %98: char1B
-        jl @@_L2                  ; br %t{5}: i1:zf, true: L2
-        jmp @@_L1                 ; jmp L1
+        jge @@_L1                 ; br %t{5}: i1:zf, false: L1
         @@_L2:
         mov word [bp - 5], 0      ; *(k{0}: int*2B) = store %0: int2B
         xchg bx, bx
@@ -200,8 +278,7 @@ describe('If statement', () => {
         movzx ax, al
         mov bx, [bp - 3]
         cmp ax, bx                ; %t{8}: i1:zf = icmp %t{7}: int2B greater_than %t{6}: int2B
-        jg @@_L2                  ; br %t{8}: i1:zf, true: L2
-        jmp @@_L1                 ; jmp L1
+        jng @@_L1                 ; br %t{8}: i1:zf, false: L1
         @@_L2:
         mov word [bp - 5], 0      ; *(k{0}: int*2B) = store %0: int2B
         @@_L1:

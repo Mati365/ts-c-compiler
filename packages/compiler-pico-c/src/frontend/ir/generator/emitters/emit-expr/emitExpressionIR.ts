@@ -491,9 +491,11 @@ export function emitExpressionIR({
             ifTrueLabel: context.factory.labels
               .genTmpLabelInstruction()
               .ofPhi(phi),
+
             ifFalseLabel: context.factory.labels
               .genTmpLabelInstruction()
               .ofPhi(phi),
+
             finallyLabel: context.factory.labels
               .genTmpLabelInstruction()
               .ofPhi(phi),

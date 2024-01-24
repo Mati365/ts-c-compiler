@@ -205,10 +205,7 @@ describe('X87 Functions', () => {
       fucom st1
       fnstsw ax
       test ah, 69
-      je @@_L2                  ; br %t{24}: i1:zf, true: L2
-      ffree st0
-      jmp @@_L1                 ; jmp L1
-      jmp @@_L1                 ; jmp L1
+      jne @@_L1                 ; br %t{24}: i1:zf, false: L1
       @@_L2:
       xchg bx, bx
       @@_L1:

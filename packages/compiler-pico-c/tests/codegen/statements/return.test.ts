@@ -27,9 +27,7 @@ describe('Return statement', () => {
       @@_L4:
       xchg bx, bx
       @@_L3:
-      mov ax, word 2
-      cmp ax, 0                 ; %t{2}: i1:zf = icmp %2: char1B differs %0: int2B
-      jnz @@_L1                 ; br %t{2}: i1:zf, true: L1
+      jmp @@_L1                 ; jmp L1
       @@_L2:
       mov ax, word 0
       mov sp, bp

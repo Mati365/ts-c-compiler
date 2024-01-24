@@ -10,6 +10,7 @@ import {
   dropRedundantAddressInstructions,
   dropRedundantLabelInstructions,
   dropRedundantLoadInstructions,
+  dropUselessBranchInstructions,
   flipMathInstructionsOperands,
   foldAddressOffsetsInstructions,
   reassignPhiInstructions,
@@ -20,6 +21,7 @@ type OptimizerConfig = {
 };
 
 const optimizeFlow = compose(
+  dropUselessBranchInstructions,
   dropInstructionsWithOrphanOutputs,
   dropRedundantLoadInstructions,
   concatConstantStoreInstruction,

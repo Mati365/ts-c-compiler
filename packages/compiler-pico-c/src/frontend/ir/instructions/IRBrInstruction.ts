@@ -26,8 +26,8 @@ export class IRBrInstruction
 {
   constructor(
     readonly variable: IRInstructionTypedArg,
-    readonly ifTrue: IRLabelInstruction,
-    readonly ifFalse?: IRLabelInstruction,
+    public ifTrue: IRLabelInstruction,
+    public ifFalse?: IRLabelInstruction,
   ) {
     super(IROpcode.BR);
   }

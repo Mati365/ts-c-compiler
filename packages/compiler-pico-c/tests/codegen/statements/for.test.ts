@@ -15,9 +15,7 @@ describe('For statement', () => {
       push bp
       mov bp, sp
       @@_L1:
-      mov ax, word 0
-      cmp ax, 0                 ; %t{1}: i1:zf = icmp %0: char1B differs %0: int2B
-      jz @@_L3                  ; br %t{1}: i1:zf, false: L3
+      jmp @@_L3                 ; jmp L3
       @@_L2:
       xchg bx, bx
       @@_L4:
@@ -43,10 +41,6 @@ describe('For statement', () => {
       push bp
       mov bp, sp
       @@_L1:
-      mov ax, word 1
-      cmp ax, 0                 ; %t{1}: i1:zf = icmp %1: char1B differs %0: int2B
-      jz @@_L3                  ; br %t{1}: i1:zf, false: L3
-      @@_L2:
       xchg bx, bx
       @@_L4:
       jmp @@_L1                 ; jmp L1

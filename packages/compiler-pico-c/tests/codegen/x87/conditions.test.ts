@@ -276,9 +276,7 @@ describe('X87 Conditions', () => {
       fnstsw ax
       and ah, 69
       xor ah, 64
-      je @@_L2                  ; br %t{8}: i1:zf, true: L2
-      ffree st0
-      jmp @@_L1                 ; jmp L1
+      jne @@_L1                 ; br %t{8}: i1:zf, false: L1
       @@_L2:
       xchg bx, bx
       @@_L1:
@@ -373,12 +371,7 @@ describe('X87 Conditions', () => {
       fnstsw ax
       and ah, 69
       xor ah, 64
-      je @@_L2                  ; br %t{18}: i1:zf, true: L2
-      ffree st0
-      ffree st2
-      jmp @@_L1                 ; jmp L1
-      jmp @@_L1                 ; jmp L1
-      jmp @@_L1                 ; jmp L1
+      jne @@_L1                 ; br %t{18}: i1:zf, false: L1
       @@_L2:
       xchg bx, bx
       @@_L1:

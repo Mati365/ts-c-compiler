@@ -2,10 +2,11 @@ import { ASTCCompilerNode } from 'frontend/parser';
 
 import { IREmitterContextAttrs } from '../types';
 import { BinaryExpressionCondInstructions } from './emitLogicBinaryJmpExpressionIR';
-import { IRConstant } from 'frontend/ir/variables';
+import { IRConstant, isIRConstant } from 'frontend/ir/variables';
 import {
   IRBrInstruction,
   IRICmpInstruction,
+  IRJmpInstruction,
   IRLabelInstruction,
 } from 'frontend/ir/instructions';
 
@@ -35,11 +36,27 @@ export function emitLogicExpressionIR({
 
   const { output } = logicResult;
 
-  if (output && jmpToLabelIf) {
-    // if (a > 2)
-    if (output?.type.isFlag()) {
+  if (output && (jmpToLabelIf || context.conditionStmt?.labels)) {
+    const labels = {
+      zero: jmpToLabelIf?.zero ?? context.conditionStmt?.labels.ifFalseLabel,
+      nonZero:
+        jmpToLabelIf?.nonZero ?? context.conditionStmt?.labels.ifTrueLabel,
+    };
+
+    if (isIRConstant(output)) {
+      // if (1)
+      if (output.constant && labels.nonZero) {
+        logicResult.instructions.push(new IRJmpInstruction(labels.nonZero));
+      }
+
+      // if (0)
+      if (!output.constant && labels.zero) {
+        logicResult.instructions.push(new IRJmpInstruction(labels.zero));
+      }
+    } else if (output?.type.isFlag()) {
+      // if (a > 2)
       logicResult.instructions.push(
-        new IRBrInstruction(output, jmpToLabelIf.nonZero, jmpToLabelIf.zero),
+        new IRBrInstruction(output, labels.nonZero, labels.zero),
       );
     } else {
       // if (a)
@@ -52,11 +69,7 @@ export function emitLogicExpressionIR({
           IRConstant.ofConstant(CPrimitiveType.int(context.config.arch), 0x0),
           tmpFlagResult,
         ),
-        new IRBrInstruction(
-          tmpFlagResult,
-          jmpToLabelIf.nonZero,
-          jmpToLabelIf.zero,
-        ),
+        new IRBrInstruction(tmpFlagResult, labels.nonZero, labels.zero),
       );
     }
   }

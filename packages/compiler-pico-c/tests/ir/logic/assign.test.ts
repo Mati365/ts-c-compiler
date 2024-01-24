@@ -20,8 +20,7 @@ describe('Logic assign', () => {
         %t{5}: int2B = load a{0}: int*2B
         %t{6}: int2B = %t{5}: int2B mul %2: char1B
         %t{7}: i1:zf = icmp %t{6}: int2B greater_than %0: char1B
-        br %t{7}: i1:zf, true: L1
-        jmp L2
+        br %t{7}: i1:zf, false: L2
         L1:
         %t{0}: int2B = assign:φ %1: int2B
         jmp L3
@@ -54,8 +53,7 @@ describe('Logic assign', () => {
         %t{5}: int2B = load a{0}: int*2B
         %t{6}: int2B = %t{5}: int2B mul %2: char1B
         %t{7}: i1:zf = icmp %t{6}: int2B greater_than %0: char1B
-        br %t{7}: i1:zf, true: L1
-        jmp L2
+        br %t{7}: i1:zf, false: L2
         L1:
         %t{0}: int2B = assign:φ %1: int2B
         jmp L3
@@ -107,7 +105,7 @@ describe('Logic assign', () => {
       }
     `).toCompiledIRBeEqual(/* ruby */ `
       # --- Block main ---
-      def main():
+        def main():
         a{0}: int*2B = alloca int2B
         *(a{0}: int*2B) = store %14: int2B
         b{0}: int*2B = alloca int2B
@@ -115,9 +113,6 @@ describe('Logic assign', () => {
         %t{4}: i1:zf = icmp %t{3}: int2B greater_than %3: char1B
         br %t{4}: i1:zf, false: L2
         L4:
-        jmp L1
-        jmp L2
-        L1:
         %t{0}: int2B = assign:φ %1: int2B
         jmp L3
         L2:
@@ -174,11 +169,8 @@ describe('Logic assign', () => {
         b{0}: int*2B = alloca int2B
         %t{3}: int2B = load a{0}: int*2B
         %t{4}: i1:zf = icmp %t{3}: int2B less_than %3: char1B
-        br %t{4}: i1:zf, true: L1
+        br %t{4}: i1:zf, true: L4
         L4:
-        jmp L1
-        jmp L2
-        L1:
         %t{0}: int2B = assign:φ %1: int2B
         jmp L3
         L2:
@@ -199,7 +191,7 @@ describe('Logic assign', () => {
       }
     `).toCompiledIRBeEqual(/* ruby */ `
       # --- Block main ---
-      def main():
+        def main():
         a{0}: int*2B = alloca int2B
         *(a{0}: int*2B) = store %14: int2B
         b{0}: int*2B = alloca int2B
@@ -207,8 +199,7 @@ describe('Logic assign', () => {
         L4:
         %t{3}: int2B = load a{0}: int*2B
         %t{4}: i1:zf = icmp %t{3}: int2B greater_than %2: char1B
-        br %t{4}: i1:zf, true: L1
-        jmp L2
+        br %t{4}: i1:zf, false: L2
         L1:
         %t{0}: char1B = assign:φ %1: char1B
         jmp L3
@@ -231,7 +222,7 @@ describe('Logic assign', () => {
       }
     `).toCompiledIRBeEqual(/* ruby */ `
       # --- Block main ---
-      def main():
+        def main():
         a{0}: int*2B = alloca int2B
         *(a{0}: int*2B) = store %2: int2B
         b{0}: int*2B = alloca int2B
@@ -245,9 +236,7 @@ describe('Logic assign', () => {
         L5:
         %t{7}: int2B = load a{0}: int*2B
         %t{8}: i1:zf = icmp %t{7}: int2B greater_than %4: char1B
-        br %t{8}: i1:zf, true: L1
-        jmp L2
-        jmp L2
+        br %t{8}: i1:zf, false: L2
         L1:
         %t{0}: int2B = assign:φ %1: int2B
         jmp L3

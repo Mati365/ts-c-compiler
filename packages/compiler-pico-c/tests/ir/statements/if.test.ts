@@ -11,8 +11,6 @@ describe('If stmt', () => {
     `).toCompiledIRBeEqual(/* ruby */ `
       # --- Block main ---
       def main():
-        %t{0}: i1:zf = icmp %2: char1B differs %0: int2B
-        br %t{0}: i1:zf, false: L1
         L2:
         a{0}: int*2B = alloca int2B
         L1:
@@ -48,8 +46,7 @@ describe('If stmt', () => {
         L3:
         %t{5}: int2B = load b{0}: int*2B
         %t{6}: i1:zf = icmp %t{5}: int2B greater_than %1: char1B
-        br %t{6}: i1:zf, true: L2
-        jmp L1
+        br %t{6}: i1:zf, false: L1
         L2:
         %1_a{0}: int*2B = alloca int2B
         L1:
