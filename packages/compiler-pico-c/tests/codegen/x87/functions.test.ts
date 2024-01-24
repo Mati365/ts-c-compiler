@@ -257,8 +257,8 @@ describe('X87 Functions', () => {
       push bp
       mov bp, sp
       sub sp, 2
-      push 3
-      push 2
+      push word 3
+      push word 2
       call @@_fn_sum
       mov word [bp - 2], ax     ; *(a{0}: int*2B) = store %t{4}: int2B
       mov sp, bp

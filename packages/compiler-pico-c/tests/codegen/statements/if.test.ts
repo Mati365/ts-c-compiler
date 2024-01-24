@@ -2,6 +2,43 @@ import '../utils';
 
 describe('If statement', () => {
   describe('Basic if statements', () => {
+    test('if (<fn arg> < 0)', () => {
+      expect(/* cpp */ `
+        void sum(int x) {
+          if (x < 0) {
+            asm("xchg bx, bx");
+          }
+        }
+
+        void main() {
+          sum(-10);
+        }
+      `).toCompiledAsmBeEqual(`
+        cpu 386
+        ; def sum(x{0}: int*2B):
+        @@_fn_sum:
+        push bp
+        mov bp, sp
+        cmp word [bp + 4], 0      ; %t{1}: i1:zf = icmp %t{0}: int2B less_than %0: char1B
+        jge @@_L1                 ; br %t{1}: i1:zf, false: L1
+        @@_L2:
+        xchg bx, bx
+        @@_L1:
+        mov sp, bp
+        pop bp
+        ret 2
+        ; def main():
+        @@_fn_main:
+        push bp
+        mov bp, sp
+        push word -10
+        call @@_fn_sum
+        mov sp, bp
+        pop bp
+        ret
+      `);
+    });
+
     test('if (!(pad & PAD_RIGHT))', () => {
       expect(/* cpp */ `
         #define PAD_RIGHT 2

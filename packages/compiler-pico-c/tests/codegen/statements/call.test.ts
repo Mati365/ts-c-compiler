@@ -64,9 +64,9 @@ describe('Function call', () => {
         @@_fn_main:
         push bp
         mov bp, sp
-        push 5
-        push 4
-        push 3
+        push word 5
+        push word 4
+        push word 3
         call @@_fn_test
         add sp, 6
         mov sp, bp
@@ -125,8 +125,8 @@ describe('Function call', () => {
         push bp
         mov bp, sp
         sub sp, 2
-        push 2
-        push 1
+        push word 2
+        push word 1
         call @@_fn_sum
         add ax, 4                 ; %t{5}: int2B = %t{4}: int2B plus %4: char1B
         mov word [bp - 2], ax     ; *(acc{0}: int*2B) = store %t{5}: int2B
@@ -158,8 +158,8 @@ describe('Function call', () => {
         push bp
         mov bp, sp
         sub sp, 2
-        push 97
-        push 3
+        push word 97
+        push word 3
         call @@_fn_sum
         mov word [bp - 2], ax     ; *(k{0}: int*2B) = store %t{5}: int2B
         mov sp, bp
@@ -319,8 +319,8 @@ describe('Function call', () => {
         sub sp, 4
         lea bx, [bp - 4]          ; %t{3}: struct Vec2**2B = lea out{0}: struct Vec2*2B
         push bx
-        push 3
-        push 2
+        push word 3
+        push word 2
         call @@_fn_of_vec
         mov word [bp - 4], 1      ; *(out{0}: struct Vec2*2B) = store %1: char1B
         mov word [bp - 2], 7      ; *(out{0}: struct Vec2*2B + %2) = store %7: char1B
@@ -369,11 +369,11 @@ describe('Function call', () => {
         sub sp, 6
         mov word [bp - 4], 4      ; *(vec{1}: struct Vec2*2B) = store %4: int2B
         mov word [bp - 2], 3      ; *(vec{1}: struct Vec2*2B + %2) = store %3: int2B
-        push 5
+        push word 5
         ; Copy of struct - vec{1}: struct Vec2*2B
         push word [bp - 2]
         push word [bp - 4]
-        push 2
+        push word 2
         call @@_fn_sum_vec
         mov word [bp - 6], ax     ; *(k{1}: int*2B) = store %t{11}: int2B
         xchg dx, dx
@@ -447,11 +447,11 @@ describe('Function call', () => {
       mov word [bp - 2], 3      ; *(vec{1}: struct Vec2*2B + %2) = store %3: int2B
       lea bx, [bp - 8]          ; %t{15}: struct Vec2**2B = lea k{1}: struct Vec2*2B
       push bx
-      push 5
+      push word 5
       ; Copy of struct - vec{1}: struct Vec2*2B
       push word [bp - 2]
       push word [bp - 4]
-      push 2
+      push word 2
       call @@_fn_sum_vec
       lea bx, [bp - 8]          ; %t{16}: struct Vec2**2B = lea k{1}: struct Vec2*2B
       mov ax, [bx]              ; %t{17}: int2B = load %t{16}: struct Vec2**2B
@@ -492,8 +492,8 @@ describe('Function call', () => {
       push bp
       mov bp, sp
       sub sp, 2
-      push 2
-      push 1
+      push word 2
+      push word 1
       call @@_fn_sum_char
       mov word [bp - 2], ax     ; *(sum{0}: int*2B) = store %t{5}: int2B
       mov sp, bp
@@ -564,12 +564,12 @@ describe('Function call', () => {
       push bp
       mov bp, sp
       sub sp, 2
-      push 10
+      push word 10
       call @@_fn_fibbonacci
       shl ax, 1                 ; %t{15}: int2B = %t{14}: int2B mul %2: char1B
       xchg ax, bx
       push bx                   ; preserve: %t{15}
-      push 10
+      push word 10
       call @@_fn_fibbonacci
       pop bx                    ; restore: %t{15}
       add bx, ax                ; %t{18}: int2B = %t{15}: int2B plus %t{17}: int2B

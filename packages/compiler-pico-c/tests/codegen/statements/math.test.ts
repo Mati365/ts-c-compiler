@@ -165,7 +165,7 @@ describe('Math', () => {
       @@_fn_main:
       push bp
       mov bp, sp
-      push 3
+      push word 3
       call @@_fn_sum
       mov sp, bp
       pop bp

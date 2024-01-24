@@ -37,6 +37,7 @@ import {
 import {
   X86RegName,
   X87StackRegName,
+  getByteSizeArgPrefixName,
   isX87RegName,
 } from '@ts-c-compiler/x86-assembler';
 
@@ -139,7 +140,12 @@ export class X86StdcallFnCaller implements X86ConventionalFnCaller {
 
         output.appendInstructions(
           ...resolvedArg.asm,
-          genInstruction('push', resolvedArg.value),
+          genInstruction(
+            'push',
+            resolvedArg.type === IRArgDynamicResolverType.NUMBER
+              ? `${getByteSizeArgPrefixName(resolvedArg.size)} ${resolvedArg.value}`
+              : resolvedArg.value,
+          ),
         );
 
         if (resolvedArg.type === IRArgDynamicResolverType.REG) {

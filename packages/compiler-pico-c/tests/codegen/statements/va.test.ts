@@ -67,10 +67,10 @@ describe('VA Lists', () => {
       push bp
       mov bp, sp
       sub sp, 2
-      push 10
-      push 8
-      push 5
-      push 3
+      push word 10
+      push word 8
+      push word 5
+      push word 3
       call @@_fn_sum_vector
       add sp, 6
       mov word [bp - 2], ax     ; *(result{0}: int*2B) = store %t{17}: int2B

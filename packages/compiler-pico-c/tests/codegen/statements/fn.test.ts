@@ -28,8 +28,8 @@ describe('Fn statement', () => {
       @@_fn_main:
       push bp
       mov bp, sp
-      push 2
-      push 1
+      push word 2
+      push word 1
       call @@_fn_test
       mov sp, bp
       pop bp

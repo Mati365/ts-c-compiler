@@ -161,7 +161,7 @@ test('Rainbow Hello World', () => {
     push cx
     push ax
     push bx
-    push 0
+    push word 0
     call @@_fn_printf
     @@_L14:
     mov ax, [bp - 2]
