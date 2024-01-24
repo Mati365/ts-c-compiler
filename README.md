@@ -25,15 +25,17 @@ yarn add @ts-c-compiler/cli @ts-c-compiler/x86-16-vm
 Usage: ts-c [options] <source>
 
 Arguments:
-  source                 Relative or absolute path to source file
+  source                       Relative or absolute path to source file
 
 Options:
-  -b, --binary           Emits binary stdout
-  -o, --output <string>  Relative path to your output binary
-  -d, --debug            Print AST tree and assembly output
-  -ps, --print-assembly  Print assembly output
-  -bs, --bootsector      Generate 512B bootsector output. Remember to have main entrypoint.
-  -h, --help             display help for command
+  -b, --binary                 Emits binary stdout
+  -o, --output <string>        Relative path to your output binary
+  -d, --debug                  Print AST tree and assembly output
+  -ps, --print-assembly        Print assembly output
+  -pjs, --print-jump-assembly  Print assembly output with jmps
+  -bs, --bootsector            Generate 512B bootsector output. Remember to
+                               have main entrypoint.
+  -h, --help                   display help for command
 ```
 
 ## Usage
