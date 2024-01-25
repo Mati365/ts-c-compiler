@@ -7,6 +7,7 @@ import {
   toIEEE754Single,
   toIEEE754Double,
   toIEEE754Extended,
+  replaceEscapeSequences,
 } from '@ts-c-compiler/core';
 
 import {
@@ -68,7 +69,8 @@ export function encodeDefineToken(byteSize: number, token: Token): number[] {
 
     case TokenType.QUOTE:
       {
-        const binText = extractBytesFromText(1, token.text);
+        const escapedText = replaceEscapeSequences(token.text);
+        const binText = extractBytesFromText(1, escapedText);
         const rounedByfferOutputSize =
           Math.ceil(binText.length / byteSize) * byteSize;
 

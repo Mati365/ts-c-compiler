@@ -198,6 +198,13 @@ export const lexer = (config: LexerConfig) =>
       tokenBuffer = '';
 
       for (; ; ++offset) {
+        if (code[offset] === '\\') {
+          const nextCharacter = code[offset + 1];
+          tokenBuffer += `${code[offset]}${nextCharacter}`;
+          ++offset;
+          continue;
+        }
+
         if (fetchUntil(code[offset])) {
           break;
         }

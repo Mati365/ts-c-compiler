@@ -1,4 +1,5 @@
 import * as R from 'ramda';
+import { revertEscapeSequences } from '@ts-c-compiler/core';
 
 import { TokenType, TokenKind } from '../shared';
 import { TokenLocation } from '../shared/TokenLocation';
@@ -63,7 +64,7 @@ export class Token<V = any, O = any> {
       case TokenType.QUOTE: {
         const quote = toStringQuoteToken(kind);
 
-        return `${quote}${text}${quote}`;
+        return `${quote}${revertEscapeSequences(text)}${quote}`;
       }
 
       case TokenType.BRACKET: {
