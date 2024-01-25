@@ -86,11 +86,18 @@ npx ts-c ./main.c -ps
 - [x] VA lists `va_arg`, `va_end`, `va_start`
 - [x] In expression compound statements
 - [x] Ternary operators `a > 1 ? 1 : 2`
+- [x] Arithmetic operations `a + b`, `a * b`, `a / b`, etc.
+- [x] Binary operations `a | b`, `a & b` etc.
+- [x] Logic operations that are casted to numbers `a && 2 || 2 > 1`
+- [x] Assign operators `a += 1`, `a <<= b`, etc.
 - [x] Designated and C89 initializers
 - [x] Dynamic stack alloc using `alloca`
 - [x] Type aliasing `typedef`
 - [x] Variable and function pointers
-- [x] `RVO`, peephole, constant math expressions eval optimization
+- [x] `RVO` optimization of larger structs
+- [x] Peephole optimization of expensive instruction like `a *= 2` => `a <<= 1`
+- [x] Constant expressions eval optimizations `a = 2 * 4` -> `a = 8`
+- [x] Constant branch optimization for loops and ifs `for (;;) {}` -> `L1: jmp L1`
 
 ### What does not work? 🚧
 
