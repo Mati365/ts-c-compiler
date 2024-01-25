@@ -95,7 +95,7 @@ npx ts-c ./main.c -ps
 - [x] Type aliasing `typedef`
 - [x] Variable and function pointers
 - [x] `RVO` optimization of larger structs
-- [x] Peephole optimization of expensive instruction like `a *= 2` => `a <<= 1`
+- [x] Peephole optimization of expensive instruction like `a *= 2` -> `a <<= 1`
 - [x] Constant expressions eval optimizations `a = 2 * 4` -> `a = 8`
 - [x] Constant branch optimization for loops and ifs `for (;;) {}` -> `L1: jmp L1`
 
