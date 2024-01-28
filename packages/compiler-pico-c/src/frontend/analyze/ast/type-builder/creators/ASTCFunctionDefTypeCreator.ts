@@ -1,7 +1,12 @@
 import { pipe } from 'fp-ts/function';
 import { unwrapEitherOrThrow } from '@ts-c-compiler/core';
 
-import { ASTCFunctionDefinition, ASTCCompilerKind } from 'frontend/parser/ast';
+import {
+  ASTCFunctionDefinition,
+  ASTCCompilerKind,
+  ASTCBlockItemsList,
+} from 'frontend/parser/ast';
+
 import { CFunctionCallConvention } from '#constants';
 import { ASTCTypeCreator } from './ASTCTypeCreator';
 
@@ -25,6 +30,7 @@ export class ASTCFunctionDefTypeCreator extends ASTCTypeCreator<ASTCFunctionDefi
     } = this;
 
     const fnType = this.extractFuncTypeFromNode(node);
+
     if (fnType) {
       const newScope = new CFunctionScope(fnType, config, node);
 
@@ -88,7 +94,8 @@ export class ASTCFunctionDefTypeCreator extends ASTCTypeCreator<ASTCFunctionDefi
     );
 
     return new CFunctionDeclType({
-      definition: fnDefinition.content,
+      definition:
+        fnDefinition.content ?? new ASTCBlockItemsList(fnDefinition.loc, []),
       callConvention: CFunctionCallConvention.STDCALL,
       name: returnTypeEntry.name,
       returnType: returnTypeEntry.type,

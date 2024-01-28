@@ -97,7 +97,10 @@ export class IRGeneratorGlobalVisitor extends CScopeVisitor {
       );
     }
 
-    if (isFuncDeclLikeType(parentAST?.type)) {
+    const parentType = parentAST?.type;
+
+    if (isFuncDeclLikeType(parentType)) {
+      // function declaration with definition
       const { instructions, data } = emitFunctionIR({
         node: <ASTCFunctionDefinition>parentAST,
         context,

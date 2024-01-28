@@ -40,6 +40,8 @@ export function compileFnDeclInstructionsBlock({
   context,
 }: FnDeclCompilerBlockFnAttrs) {
   const { allocator, iterator, labelsResolver } = context;
+  const output = X86CompileInstructionOutput.ofInstructions([]);
+  const hasDefinition = fnInstruction.type.hasDefinition();
 
   const compileFnContent: X86StackFrameContentFn = () => {
     const fnOutput = new X86CompileInstructionOutput();
@@ -148,11 +150,15 @@ export function compileFnDeclInstructionsBlock({
     name: fnInstruction.name,
     type: fnInstruction.type,
     instruction: fnInstruction,
+    linkerExternalSymbol: !hasDefinition,
   });
 
-  return X86CompileInstructionOutput.ofInstructions([
-    genComment(fnInstruction.getDisplayName()),
-    genLabel(asmLabel, false),
-    allocator.allocStackFrameInstructions(compileFnContent),
-  ]);
+  output.appendInstructions(genComment(fnInstruction.getDisplayName()));
+
+  if (hasDefinition) {
+    output.appendInstructions(genLabel(asmLabel, false));
+    output.appendGroup(allocator.allocStackFrameInstructions(compileFnContent));
+  }
+
+  return output;
 }

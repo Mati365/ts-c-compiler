@@ -1,6 +1,6 @@
 export * from './emit-expr';
 export * from './emit-fn-call-expression';
-export * from './emit-fn-decl';
+export * from './emit-fn';
 export * from './emit-initializer';
 export * from './emit-while-stmt';
 export * from './emitAsmStatementIR';

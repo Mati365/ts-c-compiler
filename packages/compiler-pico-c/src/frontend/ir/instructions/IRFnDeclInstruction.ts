@@ -11,7 +11,7 @@ import { IsLabeledInstruction } from '../interfaces/IsLabeledInstruction';
 export function isIRFnDeclInstruction(
   instruction: IRInstruction,
 ): instruction is IRFnDeclInstruction {
-  return instruction.opcode === IROpcode.FN_DECL;
+  return !!instruction && instruction.opcode === IROpcode.FN_DECL;
 }
 
 /**
