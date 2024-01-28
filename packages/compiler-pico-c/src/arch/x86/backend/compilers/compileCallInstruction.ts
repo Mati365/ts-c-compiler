@@ -32,6 +32,7 @@ export function compileCallInstruction(attrs: CallInstructionCompilerAttrs) {
     if (fnPtr.isBuiltin()) {
       output.appendGroup(compileBuiltinCallFn(attrs));
     } else {
+      // compile local function with definition
       const labelResult = labelsResolver.getLabel(fnPtr.name);
 
       if (!isIRFnDeclInstruction(labelResult.instruction)) {

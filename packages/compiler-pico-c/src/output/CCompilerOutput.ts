@@ -1,13 +1,10 @@
-import { asm } from '@ts-c-compiler/x86-assembler';
-
+import { asm, TableBinaryView } from '@ts-c-compiler/x86-assembler';
 import { timingsToString } from '@ts-c-compiler/core';
-import { TableBinaryView } from '@ts-c-compiler/x86-assembler';
 
 import type { CCompilerTimings } from '../frontend/utils/createCCompilerTimings';
 import type { ASTCCompilerNode } from '../frontend/parser/ast';
 
 import { IRResultView, type IRCodeBuilderResult } from '../frontend/ir';
-
 import { CScopePrintVisitor, type CScopeTree } from '../frontend/analyze';
 import { serializeTypedTreeToString } from '../frontend/parser';
 
@@ -48,7 +45,13 @@ export class CCompilerOutput {
         '\nAssembly:',
         '',
         TableBinaryView.serializeToString(
-          asm({ preprocessor: true })(codegen.asm),
+          asm({
+            preprocessor: true,
+            compilerConfig: {
+              maxPasses: 7,
+              externalLinkerAddrGenerator: () => 0xff_ff,
+            },
+          })(codegen.asm),
         ),
         '',
       ].join('\n'),

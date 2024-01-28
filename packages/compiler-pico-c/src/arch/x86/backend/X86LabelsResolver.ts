@@ -1,3 +1,5 @@
+import { markLabelAsLinkerExternalSymbol } from '@ts-c-compiler/x86-assembler';
+
 import { CType } from 'frontend/analyze';
 import { IRInstruction } from 'frontend/ir/instructions';
 import { genLabelName } from '../asm-utils';
@@ -14,16 +16,26 @@ type X86Labels = {
 
 type X86LabelCreator = Omit<X86LabelValue, 'asmLabel'> & {
   name: string;
+  linkerExternalSymbol?: boolean;
 };
 
 export class X86LabelsResolver {
   private readonly labels: X86Labels = {};
   private labelGeneratorCounter = 0;
 
-  createAndPutLabel({ name, type, ...attrs }: X86LabelCreator) {
-    const asmLabel = genLabelName(
+  createAndPutLabel({
+    name,
+    type,
+    linkerExternalSymbol,
+    ...attrs
+  }: X86LabelCreator) {
+    let asmLabel = genLabelName(
       X86LabelsResolver.prefixLabelForSpecificType(type, name),
     );
+
+    if (linkerExternalSymbol) {
+      asmLabel = markLabelAsLinkerExternalSymbol(asmLabel);
+    }
 
     this.putLabel(name, { asmLabel, type, ...attrs });
 

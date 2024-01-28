@@ -20,6 +20,11 @@ type FunctionIREmitAttrs = IREmitterContextAttrs & {
   node: ASTCFunctionDefinition;
 };
 
+/**
+ * Emits function with definition like:
+ *
+ *  int sum(int x, int y) { return x + y; }
+ */
 export function emitFunctionIR({
   context,
   scope,
@@ -31,23 +36,25 @@ export function emitFunctionIR({
   const declaration = allocator.allocFunctionType(fnType);
   const result = createBlankStmtResult([declaration]);
 
-  factory.goto.enterFunction();
+  if (fnType.hasDefinition()) {
+    factory.goto.enterFunction();
 
-  const blockStmt = emitBlockItemIR({
-    scope,
-    node: node.content,
-    context: {
-      ...context,
-      fnStmt: {
-        declaration,
+    const blockStmt = emitBlockItemIR({
+      scope,
+      node: node.content,
+      context: {
+        ...context,
+        fnStmt: {
+          declaration,
+        },
       },
-    },
-  });
+    });
 
-  appendStmtResults(blockStmt, result);
+    appendStmtResults(blockStmt, result);
 
-  if (!isIRRetInstruction(R.last(result.instructions))) {
-    result.instructions.push(new IRRetInstruction());
+    if (!isIRRetInstruction(R.last(result.instructions))) {
+      result.instructions.push(new IRRetInstruction());
+    }
   }
 
   result.instructions.push(new IRFnEndDeclInstruction());

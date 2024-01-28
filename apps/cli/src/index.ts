@@ -95,6 +95,10 @@ program
           asmRaw,
           asm({
             preprocessor: true,
+            compilerConfig: {
+              maxPasses: 7,
+              externalLinkerAddrGenerator: () => 0xff_ff,
+            },
           }),
         ),
       ),

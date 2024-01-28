@@ -7,10 +7,16 @@ import { formatDate, formatTime } from '@ts-c-compiler/core';
 import { createAssemblerTimings } from './utils/createAssemblerTimings';
 import { safeResultPreprocessor, PreprocessorResult } from './preprocessor';
 import { PreprocessorInterpreterConfig } from './preprocessor/interpreter/PreprocessorInterpreter';
-import { compile, ast, safeResultAsmLexer } from './parser';
+import {
+  compile,
+  ast,
+  safeResultAsmLexer,
+  X86AsmCompilerConfig,
+} from './parser';
 
 export type AssemblerConfig = {
   preprocessor?: boolean;
+  compilerConfig?: X86AsmCompilerConfig;
 };
 
 /**
@@ -39,7 +45,7 @@ export function genPreExecPreprocessorCode() {
  * Compile ASM file
  */
 export const asm =
-  ({ preprocessor = true }: AssemblerConfig = {}) =>
+  ({ compilerConfig, preprocessor = true }: AssemblerConfig = {}) =>
   (code: string) => {
     const timings = createAssemblerTimings();
 
@@ -75,7 +81,9 @@ export const asm =
         ),
       ),
       E.chainW(timings.chainIO('ast', ast)),
-      E.chainW(timings.chainIO('compiler', compile)),
+      E.chainW(
+        timings.chainIO('compiler', tree => compile(tree, compilerConfig)),
+      ),
       E.map(result => ({
         ...result,
         timings: timings.unwrap(),

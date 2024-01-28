@@ -10,6 +10,7 @@ import {
 } from '../../constants';
 
 import { isReservedKeyword } from '../utils/isReservedKeyword';
+import { isExternalLinkerSymbol } from '../utils/externalLinkerLabel';
 import { rpnTokens } from './utils/rpnTokens';
 
 import { ParserError, ParserErrorCode } from '../../shared/ParserError';
@@ -52,6 +53,16 @@ export const MAGIC_LABELS = {
   SECTION_START: '$$',
 };
 
+export type X86ExternalLinkerLabelAddrGenerator = (attr: {
+  name: string;
+  instructionOffset: number;
+}) => number;
+
+export type X86AsmCompilerConfig = {
+  maxPasses: number;
+  externalLinkerAddrGenerator?: X86ExternalLinkerLabelAddrGenerator;
+};
+
 /**
  * Transforms AST tree into binary set of data
  *
@@ -64,7 +75,10 @@ export class X86Compiler {
   private _origin: number = 0x0;
   private _target: X86TargetCPU = X86TargetCPU.I_486;
 
-  constructor(readonly tree: ASTAsmTree, readonly maxPasses: number = 7) {}
+  constructor(
+    readonly tree: ASTAsmTree,
+    readonly config: X86AsmCompilerConfig = { maxPasses: 7 },
+  ) {}
 
   get origin() {
     return this._origin;
@@ -364,7 +378,7 @@ export class X86Compiler {
    * Find unresolved instructions, try resolve them and emit binaries
    */
   private secondPass(firstPassResult: FirstPassResult): SecondPassResult {
-    const { target } = this;
+    const { target, config } = this;
     const { tree } = firstPassResult;
     const { labels, nodesOffsets, equ } = firstPassResult;
 
@@ -410,6 +424,16 @@ export class X86Compiler {
             name,
             R.indexOf(astNode, tree.astNodes),
           );
+        }
+
+        if (
+          config.externalLinkerAddrGenerator &&
+          isExternalLinkerSymbol(name)
+        ) {
+          return config.externalLinkerAddrGenerator({
+            name,
+            instructionOffset,
+          });
         }
 
         return labels.get(name);
@@ -481,7 +505,7 @@ export class X86Compiler {
     }
 
     // proper resolve labels
-    for (let pass = 0; pass < this.maxPasses; ++pass) {
+    for (let pass = 0; pass < this.config.maxPasses; ++pass) {
       let needPass = false;
 
       // eslint-disable-next-line prefer-const

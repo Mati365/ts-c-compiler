@@ -31,7 +31,7 @@ import type { emitPointerAddressExpression } from './emitPointerAddressExpressio
 import type { emitUnaryLoadPtrValueIR } from './emitUnaryLoadPointerValueIR';
 import type { IRLabelsFactory } from '../IRLabelsFactory';
 import type { emitLogicExpressionIR } from './emit-expr/emitLogicExpressionIR';
-import type { emitBlockItemIR } from './emit-fn-decl';
+import type { emitBlockItemIR } from './emit-fn';
 import type { emitVariableInitializerIR } from './emit-initializer';
 import type { IRGlobalVariablesMap } from '../IRGlobalVariablesMap';
 import type { IRGotoLabelsFactory } from '../IRGotoLabelsFactory';

@@ -5,4 +5,5 @@ export * from './isJumpInstruction';
 export * from './isPossibleLabelToken';
 export * from './isReservedKeyword';
 export * from './isX87Instruction';
+export * from './externalLinkerLabel';
 export * from './toStringArgsList';

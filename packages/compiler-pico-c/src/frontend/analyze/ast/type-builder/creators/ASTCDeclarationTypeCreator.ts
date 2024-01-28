@@ -2,6 +2,7 @@ import { unwrapEitherOrThrow } from '@ts-c-compiler/core';
 
 import { isFuncDeclLikeType } from 'frontend/analyze/types/function/CFunctionDeclType';
 import { ASTCDeclaration, ASTCCompilerKind } from 'frontend/parser/ast';
+import { CFunctionScope } from 'frontend/analyze/scope/CFunctionScope';
 import { ASTCTypeCreator } from './ASTCTypeCreator';
 import {
   CTypeCheckError,
@@ -63,12 +64,20 @@ export class ASTCDeclarationTypeCreator extends ASTCTypeCreator<ASTCDeclaration>
         scope.defineTypedefs(typedefs);
       } else {
         for (const variable of variables) {
-          if (isFuncDeclLikeType(variable.type)) {
+          if (scope.isGlobal() && isFuncDeclLikeType(variable.type)) {
             // handle int sum(int, int) without definition as function declaration
             // on the other hand treat int (*sum2)(int x, int y); as normal variable
             const fnType = variable.type.ofName(variable.name);
+            const newScope = new CFunctionScope(
+              fnType,
+              context.config,
+              declaration,
+            );
 
             scope.defineType(fnType);
+            analyzeVisitor.ofScopeVisitor(scope.appendScope(newScope));
+
+            declaration.type = fnType;
           } else {
             // define normal variables such as int x, y;
             unwrapEitherOrThrow(scope.defineVariable(variable));
