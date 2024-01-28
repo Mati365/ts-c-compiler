@@ -71,7 +71,7 @@ export class ASTCDeclarationTypeCreator extends ASTCTypeCreator<ASTCDeclaration>
             scope.defineType(fnType);
           } else {
             // define normal variables such as int x, y;
-            unwrapEitherOrThrow(scope.defineVariables(variables));
+            unwrapEitherOrThrow(scope.defineVariable(variable));
           }
         }
       }
