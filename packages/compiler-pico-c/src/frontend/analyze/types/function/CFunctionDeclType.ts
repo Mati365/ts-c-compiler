@@ -87,6 +87,13 @@ export class CFunctionDeclType extends CType<CFunctionDescriptor> {
     return hasBuiltinPrefix(this.name);
   }
 
+  ofName(name: string) {
+    return this.map(value => ({
+      ...value,
+      name,
+    }));
+  }
+
   /**
    * Handle case when function looks like this:
    *  int main(void) {}
@@ -152,7 +159,8 @@ export class CFunctionDeclType extends CType<CFunctionDescriptor> {
       storage.getDisplayName(),
       returnType.getShortestDisplayName(),
       name || '<anonymous>',
-      `(${serializedArgs.join(', ')}) { ... }`,
+      `(${serializedArgs.join(', ')})`,
+      this.hasDefinition() ? '{ ... }' : ' { <external> }',
     ]
       .filter(Boolean)
       .join(' ');
