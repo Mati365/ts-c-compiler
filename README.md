@@ -13,6 +13,10 @@
 
 Multipass portable C lang compiler toolkit with IR code generator including backend, frontend, and optimizer phases. Designed to simple prototyping 16bit toy operating systems and games.
 
+Currently supported architectures:
+
+1. X86 16bit real mode code emitter with floating point X87 coprocessor support
+    
 **🚧 Warn! The project is unstable so please do not use it on production!**
 
 ## Install
