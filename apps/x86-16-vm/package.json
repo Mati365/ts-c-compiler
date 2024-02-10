@@ -9,7 +9,7 @@
     "dev": "NODE_OPTIONS=\"--enable-source-maps --stack-trace-limit=1000\" NODE_ENV=development yarn run build",
     "build:production": "NODE_ENV=production yarn run build",
     "test": "NODE_OPTIONS=--experimental-vm-modules npx jest --passWithNoTests --c ./jest.config.mjs",
-    "lint": "npx eslint src/ -c ./.eslintrc.yml",
+    "lint": "npx eslint src/",
     "publish": "yarn build:production && npx changeset && npx changeset version && npx changeset publish"
   },
   "devDependencies": {

@@ -1,0 +1,25 @@
+---
+import { Counter } from '../components/Counter';
+---
+
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <meta name="viewport" content="width=device-width" />
+    <meta name="generator" content={Astro.generator} />
+
+    <title>Typescript C Compiler</title>
+  </head>
+
+  <body>
+    <div class="flex flex-col items-center justify-center h-screen">
+      <h1 class="mb-2 text-2xl text-yellow-700">
+        Install ReactJS in Astro with Tailwind CSS
+      </h1>
+
+      <Counter client:load />
+    </div>
+  </body>
+</html>

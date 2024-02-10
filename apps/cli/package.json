@@ -10,6 +10,7 @@
     "build:production": "NODE_ENV=production yarn run build",
     "test": "NODE_OPTIONS=--experimental-vm-modules npx jest --passWithNoTests --c ./jest.config.mjs",
     "lint": "npx eslint src/ -c ./.eslintrc.yml",
+    "check:types": "npx tsc --noEmit",
     "publish": "yarn build:production && npx changeset && npx changeset version && npx changeset publish"
   },
   "devDependencies": {
