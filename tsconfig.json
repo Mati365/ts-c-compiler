@@ -10,7 +10,8 @@
     "experimentalDecorators": true,
     "downlevelIteration": true,
     "skipLibCheck": true,
-    "baseUrl": "./packages",
+    "baseUrl": "./",
   },
+  "include": ["**/*.ts", "**/*.tsx"],
   "exclude": ["node_modules/**/*"],
 }
