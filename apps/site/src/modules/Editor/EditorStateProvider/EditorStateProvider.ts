@@ -1,9 +1,15 @@
 import { useControlStrict } from '@under-control/forms';
+import { useState } from 'react';
+
 import constate from 'constate';
 
-import type { EditorStateValue } from './types';
+import type { EditorEmulationValue, EditorStateValue } from './types';
 
 const useEditorStateValue = () => {
+  const [emulation, setEmulation] = useState<EditorEmulationValue>({
+    state: 'stop',
+  });
+
   const control = useControlStrict<EditorStateValue>({
     defaultValue: {
       lang: 'c',
@@ -11,8 +17,37 @@ const useEditorStateValue = () => {
     },
   });
 
+  const run = () => {
+    setEmulation({
+      state: 'running',
+      result: 1,
+    });
+  };
+
+  const pause = () => {
+    setEmulation(oldState => {
+      if (oldState.state === 'running') {
+        return { state: 'pause', result: oldState.result };
+      }
+
+      return { state: 'stop' };
+    });
+  };
+
+  const stop = () => {
+    setEmulation({
+      state: 'stop',
+    });
+  };
+
   return {
     control,
+    emulation: {
+      state: emulation.state,
+      stop,
+      pause,
+      run,
+    },
   };
 };
 
