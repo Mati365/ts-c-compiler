@@ -1,7 +1,17 @@
-import { useControlStrict } from '@under-control/forms';
+import { Buffer } from 'buffer';
+import { pipe } from 'fp-ts/function';
+import { either as E } from 'fp-ts';
 import { useState } from 'react';
-
+import { useControlStrict } from '@under-control/forms';
 import constate from 'constate';
+
+import { asm } from '@ts-c-compiler/x86-assembler';
+import {
+  CCompilerArch,
+  ccompiler,
+  getX86BootsectorPreloaderBinary,
+  wrapWithX86BootsectorAsm,
+} from '@ts-c-compiler/compiler';
 
 import type { EditorEmulationValue, EditorStateValue } from './types';
 
@@ -13,14 +23,67 @@ const useEditorStateValue = () => {
   const control = useControlStrict<EditorStateValue>({
     defaultValue: {
       lang: 'c',
-      code: 'int main() { return 0; }',
+      code: '#include <stdio.h>\n\nint main() { printf("Hello World!"); return 0; }',
     },
   });
 
+  const {
+    value: { lang, code },
+  } = control;
+
   const run = () => {
+    const result = (() => {
+      switch (lang) {
+        case 'nasm':
+          return pipe(
+            code,
+            asm(),
+            E.map(({ output }) => ({
+              blob: Buffer.from(output.getBinary()),
+            })),
+          );
+
+        case 'c':
+          return pipe(
+            code,
+            ccompiler({
+              arch: CCompilerArch.X86_16,
+              optimization: {
+                enabled: true,
+              },
+            }),
+            E.map(compilerResult => wrapWithX86BootsectorAsm(compilerResult.codegen.asm)),
+            E.chainW(asmRaw =>
+              pipe(
+                asmRaw,
+                asm({
+                  preprocessor: true,
+                  compilerConfig: {
+                    maxPasses: 7,
+                    externalLinkerAddrGenerator: () => 0xff_ff,
+                  },
+                }),
+              ),
+            ),
+            E.map(({ output }) => ({
+              blob: Buffer.from(
+                getX86BootsectorPreloaderBinary().concat(output.getBinary()),
+              ),
+            })),
+          );
+
+        default:
+          throw new Error('Unknown compile lang!');
+      }
+    })();
+
+    if (E.isLeft(result)) {
+      console.error(result.left);
+    }
+
     setEmulation({
       state: 'running',
-      result: 1,
+      result,
     });
   };
 
@@ -43,7 +106,7 @@ const useEditorStateValue = () => {
   return {
     control,
     emulation: {
-      state: emulation.state,
+      info: emulation,
       stop,
       pause,
       run,

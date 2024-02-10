@@ -1,3 +1,5 @@
+import type { either as E } from 'fp-ts';
+
 export type EditorCompileLang = 'nasm' | 'c';
 
 export type EditorStateValue = {
@@ -9,7 +11,12 @@ type AbstractEmulationState<S extends string, P = {}> = P & {
   state: S;
 };
 
-type EditorCompileResult = any;
+type EditorCompileResult = E.Either<
+  unknown,
+  {
+    blob: Buffer;
+  }
+>;
 
 export type EditorEmulationValue =
   | AbstractEmulationState<'stop'>

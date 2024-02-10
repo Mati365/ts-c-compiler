@@ -12,7 +12,7 @@ export const EditorLinksToolbar = () => {
           target="_blank"
           rel="noreferrer noopener"
           title={t.links.github}
-          className="text-gray-500"
+          className="text-gray-400"
         >
           <BiLogoGithub size={38} />
         </a>

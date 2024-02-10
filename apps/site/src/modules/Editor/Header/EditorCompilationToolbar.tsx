@@ -8,7 +8,7 @@ export const EditorCompilationToolbar = () => {
     <div className="flex justify-center">
       <EditorCompileLangDropdown
         {...control.bind.path('lang')}
-        disabled={emulation.state !== 'stop'}
+        disabled={emulation.info.state !== 'stop'}
       />
     </div>
   );

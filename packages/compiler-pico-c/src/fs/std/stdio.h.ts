@@ -31,7 +31,7 @@ export const STD_IO_CONTENT_HEADER = /* c */ `
     }
   }
 
-  int _printf(const char* str, ...) {
+  int printf(const char* str, ...) {
     va_list ap;
     va_start(ap, str);
 

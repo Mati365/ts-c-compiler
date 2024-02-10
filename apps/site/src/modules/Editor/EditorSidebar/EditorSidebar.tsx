@@ -1,3 +1,9 @@
+import { EditorScreen } from '../EditorScreen';
+
 export const EditorSidebar = () => {
-  return <div className="p-4" />;
+  return (
+    <div className="grid grid-rows-2 p-4">
+      <EditorScreen />
+    </div>
+  );
 };

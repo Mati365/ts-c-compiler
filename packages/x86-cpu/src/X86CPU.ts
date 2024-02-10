@@ -664,6 +664,10 @@ export class X86CPU extends X86AbstractCPU {
     return num;
   }
 
+  freeze() {
+    this.pause = true;
+  }
+
   /**
    * Shut down emulator, if dump is enabled show all registers into console
    */
