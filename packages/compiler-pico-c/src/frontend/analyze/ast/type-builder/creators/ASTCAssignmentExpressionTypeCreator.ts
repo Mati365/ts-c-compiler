@@ -1,14 +1,8 @@
 import { isFloatMathOpToken, isMathOpToken } from '@ts-c-compiler/lexer';
-import {
-  ASTCCompilerKind,
-  ASTCAssignmentExpression,
-} from 'frontend/parser/ast';
+import { ASTCCompilerKind, ASTCAssignmentExpression } from 'frontend/parser/ast';
 
 import { checkLeftTypeOverlapping } from '../../../checker';
-import {
-  CTypeCheckError,
-  CTypeCheckErrorCode,
-} from '../../../errors/CTypeCheckError';
+import { CTypeCheckError, CTypeCheckErrorCode } from '../../../errors/CTypeCheckError';
 
 import { ASTCTypeCreator } from './ASTCTypeCreator';
 import { isPrimitiveLikeType } from 'frontend/analyze/types';
@@ -31,9 +25,7 @@ export class ASTCAssignmentExpressionTypeCreator extends ASTCTypeCreator<ASTCAss
           CTypeCheckErrorCode.ASSIGNMENT_TO_CONST,
           node.loc.start,
           {
-            left:
-              left?.type?.getShortestDisplayName() ??
-              '<unknown-left-expr-type>',
+            left: left?.type?.getShortestDisplayName() ?? '<unknown-left-expr-type>',
           },
         );
       }
@@ -50,12 +42,8 @@ export class ASTCAssignmentExpressionTypeCreator extends ASTCTypeCreator<ASTCAss
           CTypeCheckErrorCode.MATH_EXPRESSION_MUST_BE_INTEGRAL_TYPE,
           node.loc.start,
           {
-            left:
-              left?.type?.getShortestDisplayName() ??
-              '<unknown-left-expr-type>',
-            right:
-              right?.type?.getShortestDisplayName() ??
-              '<unknown-right-expr-type>',
+            left: left?.type?.getShortestDisplayName() ?? '<unknown-left-expr-type>',
+            right: right?.type?.getShortestDisplayName() ?? '<unknown-right-expr-type>',
           },
         );
       }
@@ -65,12 +53,8 @@ export class ASTCAssignmentExpressionTypeCreator extends ASTCTypeCreator<ASTCAss
           CTypeCheckErrorCode.ASSIGNMENT_EXPRESSION_TYPES_MISMATCH,
           node.loc.start,
           {
-            left:
-              left?.type?.getShortestDisplayName() ??
-              '<unknown-left-expr-type>',
-            right:
-              right?.type?.getShortestDisplayName() ??
-              '<unknown-right-expr-type>',
+            left: left?.type?.getShortestDisplayName() ?? '<unknown-left-expr-type>',
+            right: right?.type?.getShortestDisplayName() ?? '<unknown-right-expr-type>',
           },
         );
       }

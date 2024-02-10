@@ -15,8 +15,7 @@ const BinaryOperatorX87Opcode: Partial<Record<CMathOperator, string>> = {
   [TokenType.DIV]: 'fdiv',
 };
 
-type MathInstructionCompilerAttrs =
-  X86CompilerInstructionFnAttrs<IRMathInstruction>;
+type MathInstructionCompilerAttrs = X86CompilerInstructionFnAttrs<IRMathInstruction>;
 
 export function compileX87MathInstruction({
   instruction,
@@ -54,11 +53,7 @@ export function compileX87MathInstruction({
     });
   } else {
     output.appendInstructions(
-      genInstruction(
-        BinaryOperatorX87Opcode[operator],
-        'st0',
-        rightAllocResult.value,
-      ),
+      genInstruction(BinaryOperatorX87Opcode[operator], 'st0', rightAllocResult.value),
     );
 
     x87regs.tracker.setOwnership({

@@ -8,10 +8,7 @@ import { genComment, genInstruction, genMemAddress } from 'arch/x86/asm-utils';
 
 import { X86StackFrame } from '../../X86StackFrame';
 import { X86CompileInstructionOutput } from './X86CompileInstructionOutput';
-import {
-  isLabelOwnership,
-  isStackVarOwnership,
-} from '../../reg-allocator/mem/ownership';
+import { isLabelOwnership, isStackVarOwnership } from '../../reg-allocator/mem/ownership';
 
 type StackMemcpyAttrs = {
   allocator: X86Allocator;
@@ -33,8 +30,7 @@ export function compileStackMemcpy({ allocator, type, arg }: StackMemcpyAttrs) {
 
   for (
     let offset =
-      Math.ceil(type.getByteSize() / stackPtrSize) * stackPtrSize -
-      stackPtrSize;
+      Math.ceil(type.getByteSize() / stackPtrSize) * stackPtrSize - stackPtrSize;
     offset >= 0;
     offset -= stackPtrSize
   ) {
@@ -51,17 +47,13 @@ export function compileStackMemcpy({ allocator, type, arg }: StackMemcpyAttrs) {
       } else if (stackFrame.isStackVar(arg.name)) {
         addr = stackFrame.getLocalVarStackRelAddress(arg.name, { offset });
       } else if (isStackVarOwnership(memOwnership)) {
-        addr = stackFrame.getLocalVarStackRelAddress(
-          memOwnership.stackVar.name,
-          { offset },
-        );
+        addr = stackFrame.getLocalVarStackRelAddress(memOwnership.stackVar.name, {
+          offset,
+        });
       }
 
       asm.push(
-        genInstruction(
-          'push',
-          `${getByteSizeArgPrefixName(stackPtrSize)} ${addr}`,
-        ),
+        genInstruction('push', `${getByteSizeArgPrefixName(stackPtrSize)} ${addr}`),
       );
     }
   }

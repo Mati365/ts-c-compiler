@@ -56,9 +56,7 @@ describe('Function typecheck', () => {
     expect(/* cpp */ `
       void sum(int x, int y) {}
       void main() { sum(); }
-    `).toHaveCompilerError(
-      CTypeCheckErrorCode.WRONG_ARGS_COUNT_PASSED_TO_FUNCTION,
-    );
+    `).toHaveCompilerError(CTypeCheckErrorCode.WRONG_ARGS_COUNT_PASSED_TO_FUNCTION);
   });
 
   test('calling function with too many args raises error', () => {
@@ -67,9 +65,7 @@ describe('Function typecheck', () => {
       void main() {
         sum(2, 3, 4);
       }
-    `).toHaveCompilerError(
-      CTypeCheckErrorCode.TOO_MANY_ARGS_PASSED_TO_FUNCTION,
-    );
+    `).toHaveCompilerError(CTypeCheckErrorCode.TOO_MANY_ARGS_PASSED_TO_FUNCTION);
   });
 
   test('calling function with corrects args count does not raise error', () => {
@@ -88,9 +84,7 @@ describe('Function typecheck', () => {
   });
 
   test('returning pointer expression in function does not raise error', () => {
-    expect(
-      /* cpp */ `int* ptr() { int a = 2; return &a; }`,
-    ).not.toHaveCompilerError();
+    expect(/* cpp */ `int* ptr() { int a = 2; return &a; }`).not.toHaveCompilerError();
   });
 
   test('returning struct type', () => {
@@ -107,9 +101,7 @@ describe('Function typecheck', () => {
   });
 
   test('double const specifier raises error', () => {
-    expect(
-      /* cpp */ `const const int sum() { return 2; }`,
-    ).toHaveCompilerError();
+    expect(/* cpp */ `const const int sum() { return 2; }`).toHaveCompilerError();
   });
 
   test('const specifier does not raise error', () => {
@@ -136,9 +128,7 @@ describe('Function typecheck', () => {
     expect(/* cpp */ `
       int sum(void) {};
       int main() { sum(1, 2, 3); }
-    `).toHaveCompilerError(
-      CTypeCheckErrorCode.TOO_MANY_ARGS_PASSED_TO_FUNCTION,
-    );
+    `).toHaveCompilerError(CTypeCheckErrorCode.TOO_MANY_ARGS_PASSED_TO_FUNCTION);
   });
 
   test('can return value from void and does not crash', () => {

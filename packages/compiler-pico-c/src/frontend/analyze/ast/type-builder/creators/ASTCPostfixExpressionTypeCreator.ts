@@ -1,9 +1,6 @@
 import { ASTCCompilerKind, ASTCPostfixExpression } from 'frontend/parser/ast';
 import { CFunctionDeclType, isFuncDeclLikeType } from '../../../types/function';
-import {
-  CTypeCheckError,
-  CTypeCheckErrorCode,
-} from '../../../errors/CTypeCheckError';
+import { CTypeCheckError, CTypeCheckErrorCode } from '../../../errors/CTypeCheckError';
 import { ASTCTypeCreator } from './ASTCTypeCreator';
 
 import {
@@ -107,8 +104,7 @@ export class ASTCPostfixExpressionTypeCreator extends ASTCTypeCreator<ASTCPostfi
         );
       }
 
-      const { text: fieldName } = (node.dotExpression || node.ptrExpression)
-        .name;
+      const { text: fieldName } = (node.dotExpression || node.ptrExpression).name;
 
       const field = baseType.getField(fieldName);
 

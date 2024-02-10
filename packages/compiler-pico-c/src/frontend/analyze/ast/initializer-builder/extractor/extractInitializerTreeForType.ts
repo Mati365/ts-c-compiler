@@ -3,10 +3,7 @@ import { CType } from '../../../types/CType';
 import { ASTCInitializer } from '../../../../parser/ast/ASTCInitializer';
 import { CVariableInitializerTree } from '../../../scope/variables';
 import { CTypeInitializerBuilderVisitor } from '../builder/CTypeInitializerBuilderVisitor';
-import {
-  CTypeCheckError,
-  CTypeCheckErrorCode,
-} from '../../../errors/CTypeCheckError';
+import { CTypeCheckError, CTypeCheckErrorCode } from '../../../errors/CTypeCheckError';
 
 type InitializerExtractorAttrs = {
   context: CTypeAnalyzeContext;

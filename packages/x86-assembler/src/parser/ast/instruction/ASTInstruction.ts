@@ -67,10 +67,7 @@ export class ASTInstruction extends KindASTAsmNode(ASTNodeKind.INSTRUCTION) {
   public originalArgsTokens: Token<any>[];
   public unresolvedArgs: boolean;
   public typedArgs: {
-    [type in InstructionArgType]: (
-      | ASTInstructionArg
-      | ASTInstructionMemPtrArg
-    )[];
+    [type in InstructionArgType]: (ASTInstructionArg | ASTInstructionMemPtrArg)[];
   };
 
   // matched for args
@@ -93,13 +90,8 @@ export class ASTInstruction extends KindASTAsmNode(ASTNodeKind.INSTRUCTION) {
     // optimized clone()
     if (argsTokens) {
       // decode FAR/NEAR JMP addressing type prefixes
-      if (
-        argsTokens.length &&
-        argsTokens[0].kind === TokenKind.BRANCH_ADDRESSING_TYPE
-      ) {
-        this.branchAddressingType = (<BranchAddressingTypeToken>(
-          argsTokens[0]
-        )).value;
+      if (argsTokens.length && argsTokens[0].kind === TokenKind.BRANCH_ADDRESSING_TYPE) {
+        this.branchAddressingType = (<BranchAddressingTypeToken>argsTokens[0]).value;
         this.originalArgsTokens = R.tail(argsTokens);
       } else {
         this.originalArgsTokens = argsTokens;
@@ -112,29 +104,21 @@ export class ASTInstruction extends KindASTAsmNode(ASTNodeKind.INSTRUCTION) {
       // it is false for mov ax, [b] due to [b] is resolved later
       // inside tryResolveSchema, labeledInstruction will be overriden
       // inside labelResolver() anyway during first pass
-      this.originalArgsTokens = assignLabelsToTokens(
-        null,
-        this.originalArgsTokens,
-        {
-          preserveIfError: true,
-          preserveOriginalText: true,
-        },
-      );
+      this.originalArgsTokens = assignLabelsToTokens(null, this.originalArgsTokens, {
+        preserveIfError: true,
+        preserveOriginalText: true,
+      });
 
       this.labeledInstruction = isAnyLabelInTokensList(this.originalArgsTokens);
     }
   }
 
   get memArgs() {
-    return this.typedArgs[
-      InstructionArgType.MEMORY
-    ] as ASTInstructionMemPtrArg[];
+    return this.typedArgs[InstructionArgType.MEMORY] as ASTInstructionMemPtrArg[];
   }
 
   get numArgs() {
-    return this.typedArgs[
-      InstructionArgType.NUMBER
-    ] as ASTInstructionNumberArg[];
+    return this.typedArgs[InstructionArgType.NUMBER] as ASTInstructionNumberArg[];
   }
 
   get segMemArgs() {
@@ -144,9 +128,7 @@ export class ASTInstruction extends KindASTAsmNode(ASTNodeKind.INSTRUCTION) {
   }
 
   get regArgs() {
-    return <ASTInstructionRegisterArg[]>(
-      this.typedArgs[InstructionArgType.REGISTER]
-    );
+    return this.typedArgs[InstructionArgType.REGISTER] as ASTInstructionRegisterArg[];
   }
 
   get labelArgs() {
@@ -317,23 +299,18 @@ export class ASTInstruction extends KindASTAsmNode(ASTNodeKind.INSTRUCTION) {
     absoluteAddress?: number,
     targetCPU?: X86TargetCPU,
   ): ASTInstruction {
-    this.argsTokens = assignLabelsToTokens(
-      labelResolver,
-      this.originalArgsTokens,
-    );
+    this.argsTokens = assignLabelsToTokens(labelResolver, this.originalArgsTokens);
 
     // regenerate schema args
     const { branchAddressingType, jumpInstruction, argsTokens } = this;
-    const [overridenBranchAddressingType, newArgs] =
-      this.parseInstructionArgsTokens(
-        branchAddressingType,
-        argsTokens,
-        jumpInstruction ? InstructionArgSize.WORD : null,
-      );
+    const [overridenBranchAddressingType, newArgs] = this.parseInstructionArgsTokens(
+      branchAddressingType,
+      argsTokens,
+      jumpInstruction ? InstructionArgSize.WORD : null,
+    );
 
     // assign labels resolver into not fully resolved args
-    this.branchAddressingType =
-      overridenBranchAddressingType ?? branchAddressingType;
+    this.branchAddressingType = overridenBranchAddressingType ?? branchAddressingType;
 
     this.tryResolveArgs(labelResolver, newArgs);
 
@@ -384,15 +361,11 @@ export class ASTInstruction extends KindASTAsmNode(ASTNodeKind.INSTRUCTION) {
     ): ASTInstructionNumberArg => {
       // if no - number
       if (!R.isNil(byteSizeOverride) && byteSizeOverride < byteSize) {
-        throw new ParserError(
-          ParserErrorCode.EXCEEDING_CASTED_NUMBER_SIZE,
-          token.loc,
-          {
-            value: token.text,
-            size: byteSize,
-            maxSize: byteSizeOverride,
-          },
-        );
+        throw new ParserError(ParserErrorCode.EXCEEDING_CASTED_NUMBER_SIZE, token.loc, {
+          value: token.text,
+          size: byteSize,
+          maxSize: byteSizeOverride,
+        });
       }
 
       // detect if number token was really just replaced number
@@ -434,8 +407,7 @@ export class ASTInstruction extends KindASTAsmNode(ASTNodeKind.INSTRUCTION) {
         // for example jmp 0x7C00:0x123, force detect addressing type
         if (R.isNil(branchAddressingType)) {
           branchAddressingType = BranchAddressingType.FAR;
-          branchSizeOverride =
-            BRANCH_ADDRESSING_SIZE_MAPPING[branchAddressingType] * 2;
+          branchSizeOverride = BRANCH_ADDRESSING_SIZE_MAPPING[branchAddressingType] * 2;
         }
 
         // eat colon
@@ -482,10 +454,7 @@ export class ASTInstruction extends KindASTAsmNode(ASTNodeKind.INSTRUCTION) {
             // is as twice as big as override so multiply by 2
             if (branchSizeOverride) {
               if (newByteSize * 2 < branchSizeOverride) {
-                throw new ParserError(
-                  ParserErrorCode.OPERAND_SIZES_MISMATCH,
-                  token.loc,
-                );
+                throw new ParserError(ParserErrorCode.OPERAND_SIZES_MISMATCH, token.loc);
               } else {
                 newByteSize *= 2;
               }
@@ -513,8 +482,7 @@ export class ASTInstruction extends KindASTAsmNode(ASTNodeKind.INSTRUCTION) {
         // Mem address ptr
         case TokenType.BRACKET:
           if (token.kind === TokenKind.SQUARE_BRACKET) {
-            let memSize =
-              byteSizeOverride ?? branchSizeOverride ?? defaultMemArgByteSize;
+            let memSize = byteSizeOverride ?? branchSizeOverride ?? defaultMemArgByteSize;
 
             // when read from memory size must be known
             // try to deduce from previous args size of
@@ -567,13 +535,9 @@ export class ASTInstruction extends KindASTAsmNode(ASTNodeKind.INSTRUCTION) {
       }
 
       // force throw error if not known format
-      throw new ParserError(
-        ParserErrorCode.INVALID_INSTRUCTION_OPERAND,
-        token.loc,
-        {
-          operand: token.text,
-        },
-      );
+      throw new ParserError(ParserErrorCode.INVALID_INSTRUCTION_OPERAND, token.loc, {
+        operand: token.text,
+      });
     };
 
     // a bit faster than transduce
@@ -621,14 +585,8 @@ export class ASTInstruction extends KindASTAsmNode(ASTNodeKind.INSTRUCTION) {
         // second argument has byteSize equal to 1, but ax is 2
         // try to cast
         const prevByteSize = prevArg.byteSize;
-        if (
-          result.type === InstructionArgType.NUMBER &&
-          result.byteSize > prevByteSize
-        ) {
-          throw new ParserError(
-            ParserErrorCode.OPERAND_SIZES_MISMATCH,
-            token.loc,
-          );
+        if (result.type === InstructionArgType.NUMBER && result.byteSize > prevByteSize) {
+          throw new ParserError(ParserErrorCode.OPERAND_SIZES_MISMATCH, token.loc);
         }
       }
 
@@ -638,10 +596,7 @@ export class ASTInstruction extends KindASTAsmNode(ASTNodeKind.INSTRUCTION) {
     // handle case:
     // add di,dword 16
     if (maxArgSize && byteSizeOverride && byteSizeOverride > maxArgSize) {
-      throw new ParserError(
-        ParserErrorCode.OPERAND_SIZES_MISMATCH,
-        tokens[0].loc,
-      );
+      throw new ParserError(ParserErrorCode.OPERAND_SIZES_MISMATCH, tokens[0].loc);
     }
 
     // extending memory size in movsx, movzx should not be performed
@@ -660,10 +615,7 @@ export class ASTInstruction extends KindASTAsmNode(ASTNodeKind.INSTRUCTION) {
         // handle mov ax, byte [ds:0xe620]
         // size must be equal for mem param
         if (maxArgSize && byteSizeOverride && byteSizeOverride !== maxArgSize) {
-          throw new ParserError(
-            ParserErrorCode.OPERAND_SIZES_MISMATCH,
-            tokens[0].loc,
-          );
+          throw new ParserError(ParserErrorCode.OPERAND_SIZES_MISMATCH, tokens[0].loc);
         }
 
         if (byteSizeOverride) {

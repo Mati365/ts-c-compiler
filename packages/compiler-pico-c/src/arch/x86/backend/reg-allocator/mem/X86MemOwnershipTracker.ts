@@ -30,7 +30,9 @@ export class X86MemOwnershipTracker {
       throw new CBackendError(CBackendErrorCode.UNKNOWN_BACKEND_ERROR);
     }
 
-    this.map[outputVar] = { ...this.map[inputVar] };
+    this.map[outputVar] = {
+      ...this.map[inputVar],
+    };
   }
 
   setOwnership(varName: string, ownership: IRMemOwnershipValue) {
@@ -90,7 +92,10 @@ export class X86MemOwnershipTracker {
 
     return !addrConfig?.forceMemPtr
       ? asmLabel
-      : genMemAddress({ expression: asmLabel, ...addrConfig });
+      : genMemAddress({
+          expression: asmLabel,
+          ...addrConfig,
+        });
   }
 
   dropOwnership(varName: string) {

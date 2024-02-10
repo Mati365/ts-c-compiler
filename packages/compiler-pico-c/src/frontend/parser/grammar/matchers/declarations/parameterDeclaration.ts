@@ -10,19 +10,13 @@ import { declarationSpecifiers } from '../specifiers/declarationSpecifiers';
  *  | declaration_specifiers
  *  ;
  */
-export function parameterDeclaration(
-  grammar: CGrammar,
-): ASTCParameterDeclaration {
+export function parameterDeclaration(grammar: CGrammar): ASTCParameterDeclaration {
   const { g, declarator, abstractDeclarator } = grammar;
   const specifiers = declarationSpecifiers(grammar);
 
   return <ASTCParameterDeclaration>g.or({
     declarator() {
-      return new ASTCParameterDeclaration(
-        specifiers.loc,
-        specifiers,
-        declarator(),
-      );
+      return new ASTCParameterDeclaration(specifiers.loc, specifiers, declarator());
     },
     abstractDeclarator() {
       return new ASTCParameterDeclaration(

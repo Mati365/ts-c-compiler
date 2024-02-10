@@ -1,8 +1,5 @@
 import { CPrimitiveType } from 'frontend/analyze/types';
-import {
-  ASTCCompilerKind,
-  ASTCSizeofUnaryExpression,
-} from 'frontend/parser/ast';
+import { ASTCCompilerKind, ASTCSizeofUnaryExpression } from 'frontend/parser/ast';
 
 import { ASTCTypeCreator } from './ASTCTypeCreator';
 

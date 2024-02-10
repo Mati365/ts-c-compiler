@@ -7,8 +7,7 @@ import { compileAsmInputs } from './compileAsmInputs';
 import { compileAsmOutputs } from './compileAsmOutputs';
 import { X86CompileInstructionOutput } from '../shared';
 
-type AsmInstructionCompilerAttrs =
-  X86CompilerInstructionFnAttrs<IRAsmInstruction>;
+type AsmInstructionCompilerAttrs = X86CompilerInstructionFnAttrs<IRAsmInstruction>;
 
 export function compileAsmInstruction({
   context,

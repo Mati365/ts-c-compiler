@@ -7,9 +7,6 @@ export const arrayToHex = R.map((num: number) =>
 /**
  * Converts array of number to hex string
  */
-export function arrayToHexString(
-  numbers: number[],
-  delimeter: string = ' ',
-): string {
+export function arrayToHexString(numbers: number[], delimeter: string = ' '): string {
   return R.join(delimeter, arrayToHex(numbers));
 }

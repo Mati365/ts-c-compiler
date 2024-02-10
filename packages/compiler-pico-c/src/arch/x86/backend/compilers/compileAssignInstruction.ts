@@ -5,8 +5,7 @@ import { X86CompileInstructionOutput } from './shared';
 import { genInstruction, withInlineComment } from '../../asm-utils';
 import { isIRConstant } from 'frontend/ir/variables';
 
-type AssignInstructionCompilerAttrs =
-  X86CompilerInstructionFnAttrs<IRAssignInstruction>;
+type AssignInstructionCompilerAttrs = X86CompilerInstructionFnAttrs<IRAssignInstruction>;
 
 export function compileAssignInstruction({
   instruction,

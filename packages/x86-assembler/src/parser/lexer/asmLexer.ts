@@ -9,11 +9,7 @@ import {
   FloatNumberToken,
 } from '@ts-c-compiler/lexer';
 
-import {
-  SizeOverrideToken,
-  BranchAddressingTypeToken,
-  RegisterToken,
-} from './tokens';
+import { SizeOverrideToken, BranchAddressingTypeToken, RegisterToken } from './tokens';
 
 /**
  * Set of all ASM related parsers

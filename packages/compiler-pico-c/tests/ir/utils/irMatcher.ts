@@ -26,19 +26,14 @@ function normalizeIRCode(str: string): string {
   return stripAnsi(trimLines(str));
 }
 
-function toCompiledIRBeEqual(
-  source: string,
-  expectedIR: string,
-): MatcherResult {
+function toCompiledIRBeEqual(source: string, expectedIR: string): MatcherResult {
   const result = cIRCompiler()(source);
 
   if (E.isLeft(result)) {
     return {
       pass: false,
       message: () =>
-        `Compilation failed with ${
-          result.left?.[0]?.code || '<unknown>'
-        } error code!`,
+        `Compilation failed with ${result.left?.[0]?.code || '<unknown>'} error code!`,
     };
   }
 

@@ -3,8 +3,7 @@ import '../utils';
 describe('Arrays declarations IR', () => {
   describe('Uninitialized', () => {
     test('should generate alloc for single dimension array', () => {
-      expect(/* cpp */ `void main() { int a[5]; }`)
-        .toCompiledIRBeEqual(/* ruby */ `
+      expect(/* cpp */ `void main() { int a[5]; }`).toCompiledIRBeEqual(/* ruby */ `
         # --- Block main ---
         def main():
           a{0}: int[5]*2B = alloca int[5]10B
@@ -14,8 +13,7 @@ describe('Arrays declarations IR', () => {
     });
 
     test('should generate alloc for single 2-dimension array', () => {
-      expect(/* cpp */ `void main() { int a[5][2]; }`)
-        .toCompiledIRBeEqual(/* ruby */ `
+      expect(/* cpp */ `void main() { int a[5][2]; }`).toCompiledIRBeEqual(/* ruby */ `
         # --- Block main ---
         def main():
           a{0}: int[5][2]*2B = alloca int[5][2]20B
@@ -25,8 +23,7 @@ describe('Arrays declarations IR', () => {
     });
 
     test('should generate alloc for single 3-dimension array', () => {
-      expect(/* cpp */ `void main() { int a[5][4][2]; }`)
-        .toCompiledIRBeEqual(/* ruby */ `
+      expect(/* cpp */ `void main() { int a[5][4][2]; }`).toCompiledIRBeEqual(/* ruby */ `
         # --- Block main ---
         def main():
           a{0}: int[5][4][2]*2B = alloca int[5][4][2]80B

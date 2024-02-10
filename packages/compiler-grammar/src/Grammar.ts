@@ -135,11 +135,7 @@ export class Grammar<I, K = string> extends TokensIterator {
     try {
       // this.tokenIndex = 0;
       // this._matchCallNesting = 0;
-      this.tree = new TreeNode<K>(
-        <any>'Root',
-        null,
-        safeArray(this.rootProduction()),
-      );
+      this.tree = new TreeNode<K>(<any>'Root', null, safeArray(this.rootProduction()));
     } catch (e) {
       e.loc = this.currentToken.loc;
       throw e;
@@ -275,8 +271,7 @@ export class Grammar<I, K = string> extends TokensIterator {
       (!types && terminal === null && token.type !== type) ||
       (kind !== undefined && token.kind !== kind) ||
       (types && types.indexOf(token.type) === -1) ||
-      (terminal !== null &&
-        (ignoreCase ? token.lowerText : token.text) !== terminal)
+      (terminal !== null && (ignoreCase ? token.lowerText : token.text) !== terminal)
     ) {
       if (optional) {
         return null;
@@ -350,11 +345,7 @@ export class Grammar<I, K = string> extends TokensIterator {
   /**
    * Matches token defined in identifiers list
    */
-  identifier(
-    identifier?: I | I[],
-    optional?: boolean,
-    consume: boolean = true,
-  ): Token {
+  identifier(identifier?: I | I[], optional?: boolean, consume: boolean = true): Token {
     this.matchCallNesting++;
 
     const token: Token = this.fetchRelativeToken(0, false);

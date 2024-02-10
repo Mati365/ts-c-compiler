@@ -10,11 +10,7 @@ import {
   NumberFormat,
 } from '@ts-c-compiler/lexer';
 
-import {
-  Grammar,
-  GrammarInitializer,
-  SyntaxError,
-} from '@ts-c-compiler/grammar';
+import { Grammar, GrammarInitializer, SyntaxError } from '@ts-c-compiler/grammar';
 import { NodeLocation } from '@ts-c-compiler/grammar';
 import { IdentifiersMap } from '@ts-c-compiler/lexer';
 
@@ -257,12 +253,7 @@ const preprocessorMatcher: GrammarInitializer<
     let expression = fetchTokensUntilEOL(g);
     if (!expression.length) {
       expression = [
-        new NumberToken(
-          nameToken.text,
-          -Infinity,
-          NumberFormat.DEC,
-          nameToken.loc,
-        ),
+        new NumberToken(nameToken.text, -Infinity, NumberFormat.DEC, nameToken.loc),
       ];
     }
 
@@ -312,10 +303,7 @@ const preprocessorMatcher: GrammarInitializer<
       }
     } while (true);
 
-    return new ASTPreprocessorSyntaxLine(
-      NodeLocation.fromTokenLoc(loc),
-      tokens,
-    );
+    return new ASTPreprocessorSyntaxLine(NodeLocation.fromTokenLoc(loc), tokens);
   }
 
   /**
@@ -413,27 +401,24 @@ export type PreprocessorGrammarConfig = {
 export function createPreprocessorGrammar({
   prefixChar = '%',
 }: PreprocessorGrammarConfig = {}) {
-  const identifiers = mapObjectKeys<IdentifiersMap>(
-    key => `${prefixChar}${key}`,
-    {
-      if: PreprocessorIdentifier.IF,
-      ifn: PreprocessorIdentifier.IFN,
-      ifdef: PreprocessorIdentifier.IFDEF,
-      ifndef: PreprocessorIdentifier.IFNDEF,
-      endif: PreprocessorIdentifier.ENDIF,
-      else: PreprocessorIdentifier.ELSE,
-      elif: PreprocessorIdentifier.ELIF,
-      elifn: PreprocessorIdentifier.ELIFN,
-      elifdef: PreprocessorIdentifier.ELIFDEF,
-      elifndef: PreprocessorIdentifier.ELIFNDEF,
-      define: PreprocessorIdentifier.DEFINE,
-      idefine: PreprocessorIdentifier.IDEFINE,
-      undef: PreprocessorIdentifier.UNDEF,
-      macro: PreprocessorIdentifier.MACRO,
-      imacro: PreprocessorIdentifier.IMACRO,
-      endmacro: PreprocessorIdentifier.ENDMACRO,
-    },
-  );
+  const identifiers = mapObjectKeys<IdentifiersMap>(key => `${prefixChar}${key}`, {
+    if: PreprocessorIdentifier.IF,
+    ifn: PreprocessorIdentifier.IFN,
+    ifdef: PreprocessorIdentifier.IFDEF,
+    ifndef: PreprocessorIdentifier.IFNDEF,
+    endif: PreprocessorIdentifier.ENDIF,
+    else: PreprocessorIdentifier.ELSE,
+    elif: PreprocessorIdentifier.ELIF,
+    elifn: PreprocessorIdentifier.ELIFN,
+    elifdef: PreprocessorIdentifier.ELIFDEF,
+    elifndef: PreprocessorIdentifier.ELIFNDEF,
+    define: PreprocessorIdentifier.DEFINE,
+    idefine: PreprocessorIdentifier.IDEFINE,
+    undef: PreprocessorIdentifier.UNDEF,
+    macro: PreprocessorIdentifier.MACRO,
+    imacro: PreprocessorIdentifier.IMACRO,
+    endmacro: PreprocessorIdentifier.ENDMACRO,
+  });
 
   return Grammar.build(
     {

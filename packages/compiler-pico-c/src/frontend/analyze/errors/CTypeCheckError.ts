@@ -60,10 +60,7 @@ export enum CTypeCheckErrorCode {
   MATH_EXPRESSION_MUST_BE_INTEGRAL_TYPE,
 }
 
-export const C_TYPE_CHECK_ERROR_TRANSLATIONS: Record<
-  CTypeCheckErrorCode,
-  string
-> = {
+export const C_TYPE_CHECK_ERROR_TRANSLATIONS: Record<CTypeCheckErrorCode, string> = {
   [CTypeCheckErrorCode.TYPECHECK_ERROR]: 'Typecheck error!',
   [CTypeCheckErrorCode.EXPECTED_RECEIVE_TYPE]:
     'Expected to receive type %{expected} but received %{received}!',
@@ -71,19 +68,15 @@ export const C_TYPE_CHECK_ERROR_TRANSLATIONS: Record<
   [CTypeCheckErrorCode.UNKNOWN_SPECIFIERS_KEYWORD]: 'Unknown specifier!',
   [CTypeCheckErrorCode.UNKNOWN_QUALIFIERS_KEYWORD]: 'Unknown qualifier!',
   [CTypeCheckErrorCode.INCORRECT_TYPE_SPECIFIERS]: 'Incorrect type specifiers!',
-  [CTypeCheckErrorCode.INCORRECT_VOID_SPECIFIERS]:
-    'Wrong specifiers used with void!',
+  [CTypeCheckErrorCode.INCORRECT_VOID_SPECIFIERS]: 'Wrong specifiers used with void!',
   [CTypeCheckErrorCode.REDEFINITION_OF_TYPE]: 'Redefinition of type %{name}!',
-  [CTypeCheckErrorCode.REDEFINITION_OF_VARIABLE]:
-    'Redefinition of variable %{name}!',
+  [CTypeCheckErrorCode.REDEFINITION_OF_VARIABLE]: 'Redefinition of variable %{name}!',
   [CTypeCheckErrorCode.REDEFINITION_OF_STRUCT_ENTRY]:
     'Redefinition of struct entry %{name}!',
   [CTypeCheckErrorCode.REDEFINITION_OF_UNION_ENTRY]:
     'Redefinition of union entry %{name}!',
-  [CTypeCheckErrorCode.REDEFINITION_OF_ENUM_ENTRY]:
-    'Redefinition of enum entry %{name}!',
-  [CTypeCheckErrorCode.INCORRECT_CONSTANT_EXPR]:
-    'Incorrect constant expression!',
+  [CTypeCheckErrorCode.REDEFINITION_OF_ENUM_ENTRY]: 'Redefinition of enum entry %{name}!',
+  [CTypeCheckErrorCode.INCORRECT_CONSTANT_EXPR]: 'Incorrect constant expression!',
   [CTypeCheckErrorCode.INCORRECT_CONSTANT_EXPR_IDENTIFIER]:
     'Incorrect constant expression identifier!',
   [CTypeCheckErrorCode.UNABLE_TO_EXTRACT_STRUCT_TYPE]: fixme(
@@ -102,8 +95,7 @@ export const C_TYPE_CHECK_ERROR_TRANSLATIONS: Record<
     'Unknown constant expression operand!',
   ),
   [CTypeCheckErrorCode.UNKNOWN_TYPE]: 'Unknown type named "%{typeName}"!',
-  [CTypeCheckErrorCode.UNKNOWN_CONSTANT_TYPE]:
-    'Unknown type of "%{text}" constant!',
+  [CTypeCheckErrorCode.UNKNOWN_CONSTANT_TYPE]: 'Unknown type of "%{text}" constant!',
   [CTypeCheckErrorCode.UNKNOWN_LEFT_DOT_EXPRESSION_TYPE]:
     'Unknown left side dot expression type!',
   [CTypeCheckErrorCode.UNKNOWN_STRUCT_LIKE_MEMBER]:
@@ -113,8 +105,7 @@ export const C_TYPE_CHECK_ERROR_TRANSLATIONS: Record<
   [CTypeCheckErrorCode.UNKNOWN_IDENTIFIER]: 'Unknown identifier "%{name}"!',
   [CTypeCheckErrorCode.INCORRECT_INITIALIZED_VARIABLE_TYPE]:
     'Unable assign "%{sourceType}" initializer value to "%{destinationType}"!',
-  [CTypeCheckErrorCode.INCOMPLETE_ARRAY_SIZE]:
-    'Incomplete array size "%{typeName}"!',
+  [CTypeCheckErrorCode.INCOMPLETE_ARRAY_SIZE]: 'Incomplete array size "%{typeName}"!',
   [CTypeCheckErrorCode.EXCESS_ELEMENTS_IN_SCALAR_INITIALIZER]:
     'Excess elements in scalar initializer!',
   [CTypeCheckErrorCode.EXCESS_ELEMENTS_IN_ARRAY_INITIALIZER]:
@@ -141,8 +132,7 @@ export const C_TYPE_CHECK_ERROR_TRANSLATIONS: Record<
     'Provided %{typeName} does not contain members!',
   [CTypeCheckErrorCode.ASSIGNMENT_EXPRESSION_TYPES_MISMATCH]:
     'Assignment expression types mismatch! Unable assign "%{right}" to "%{left}"!',
-  [CTypeCheckErrorCode.ASSIGNMENT_TO_CONST]:
-    'Assignment to read-only type "%{left}"!',
+  [CTypeCheckErrorCode.ASSIGNMENT_TO_CONST]: 'Assignment to read-only type "%{left}"!',
   [CTypeCheckErrorCode.OPERATOR_SIDES_TYPES_MISMATCH]:
     'Operator types mismatch! Left side type "%{left}" mismatch with right side "%{right}"!',
   [CTypeCheckErrorCode.MATH_EXPRESSION_MUST_BE_INTEGRAL_TYPE]:
@@ -150,8 +140,7 @@ export const C_TYPE_CHECK_ERROR_TRANSLATIONS: Record<
     'Expression must be integral type! Left side type "%{left}" mismatch with right side "%{right}"! Try casting variable.',
   [CTypeCheckErrorCode.REDEFINITION_OF_COMPILE_CONSTANT]:
     'Redefinition of compile type constant "%{name}"!',
-  [CTypeCheckErrorCode.UNKNOWN_INITIALIZER_VALUE_TYPE]:
-    'Unknown initializer value type!',
+  [CTypeCheckErrorCode.UNKNOWN_INITIALIZER_VALUE_TYPE]: 'Unknown initializer value type!',
   [CTypeCheckErrorCode.INCORRECT_NAMED_STRUCTURE_INITIALIZER_USAGE]:
     'Incorrect named structure initializer usage!',
   [CTypeCheckErrorCode.INCORRECT_INDEX_INITIALIZER_USAGE]:
@@ -170,17 +159,13 @@ export const C_TYPE_CHECK_ERROR_TRANSLATIONS: Record<
     'Incorrect pointer operator types! Cannot perform "%{operator}" operation between "%{left}" and "%{right}"!',
   [CTypeCheckErrorCode.PROVIDED_TYPE_MUST_BE_POINTER]:
     'Provided type must be pointer "%{typeName}"!',
-  [CTypeCheckErrorCode.UNABLE_EVAL_CONST_EXPRESSION]:
-    'Unable eval constant expression!',
+  [CTypeCheckErrorCode.UNABLE_EVAL_CONST_EXPRESSION]: 'Unable eval constant expression!',
 };
 
 /**
  * Error thrown during AST generation phase
  */
-export class CTypeCheckError extends CompilerError<
-  CTypeCheckErrorCode,
-  TokenLocation
-> {
+export class CTypeCheckError extends CompilerError<CTypeCheckErrorCode, TokenLocation> {
   constructor(code: CTypeCheckErrorCode, loc?: TokenLocation, meta?: object) {
     super(C_TYPE_CHECK_ERROR_TRANSLATIONS, code, loc, meta);
   }

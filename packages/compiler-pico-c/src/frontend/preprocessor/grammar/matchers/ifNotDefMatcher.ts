@@ -6,9 +6,7 @@ import type { CPreprocessorGrammar } from '../CPreprocessorGrammar';
 import { CPreprocessorIdentifier } from '../CPreprocessorIdentifiers';
 import { ASTCIfNotDefNode } from 'frontend/preprocessor/ast';
 
-export const ifNotDefMatcher = (
-  ctx: CPreprocessorGrammar,
-): ASTCIfNotDefNode => {
+export const ifNotDefMatcher = (ctx: CPreprocessorGrammar): ASTCIfNotDefNode => {
   const { g, stmt, falseIfStmt } = ctx;
 
   const identifier = g.identifier(CPreprocessorIdentifier.IF_NOT_DEF);

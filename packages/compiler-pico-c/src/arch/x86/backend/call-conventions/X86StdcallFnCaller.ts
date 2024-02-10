@@ -3,20 +3,12 @@ import chalk from 'chalk';
 import { CFunctionCallConvention } from '#constants';
 import { IRVariable, isIRVariable } from 'frontend/ir/variables';
 import { CBackendError, CBackendErrorCode } from 'backend/errors/CBackendError';
-import {
-  isPrimitiveLikeType,
-  isStructLikeType,
-  isUnionLikeType,
-} from 'frontend/analyze';
+import { isPrimitiveLikeType, isStructLikeType, isUnionLikeType } from 'frontend/analyze';
 
 import { getBaseTypeIfPtr } from 'frontend/analyze/types/utils';
 import { getTypeOffsetByteSize } from 'frontend/ir/utils';
 import { getX86RegByteSize } from '../../constants/regs';
-import {
-  genInstruction,
-  genMemAddress,
-  withInlineComment,
-} from '../../asm-utils';
+import { genInstruction, genMemAddress, withInlineComment } from '../../asm-utils';
 
 import {
   X86CompileInstructionOutput,
@@ -66,9 +58,7 @@ export class X86StdcallFnCaller implements X86ConventionalFnCaller {
     // preserve already allocated regs on stack
     regs.ownership.releaseNotUsedLaterRegs(
       true,
-      callerInstruction.args.flatMap(item =>
-        isIRVariable(item) ? [item.name] : [],
-      ),
+      callerInstruction.args.flatMap(item => (isIRVariable(item) ? [item.name] : [])),
     );
 
     // do not reorder! it must be called before `getReturnReg` setOwnership!
@@ -183,8 +173,7 @@ export class X86StdcallFnCaller implements X86ConventionalFnCaller {
 
     // handle case when we call `sum(void)` with `sum(1, 2, 3)`.
     // Cleanup `1`, .. args stack because `ret` function does not do that
-    const argsCountDelta =
-      totalNonRVOArgs - declInstruction.getArgsWithRVO().length;
+    const argsCountDelta = totalNonRVOArgs - declInstruction.getArgsWithRVO().length;
 
     if (argsCountDelta) {
       output.appendInstructions(
@@ -233,11 +222,7 @@ export class X86StdcallFnCaller implements X86ConventionalFnCaller {
   /**
    * Returns `ret` instruction opcode and assigns ownership on reg
    */
-  compileIRFnRet({
-    context,
-    declInstruction,
-    retInstruction,
-  }: X86FnRetCompilerAttrs) {
+  compileIRFnRet({ context, declInstruction, retInstruction }: X86FnRetCompilerAttrs) {
     const { allocator } = context;
     const { regs, x87regs } = allocator;
 
@@ -267,10 +252,7 @@ export class X86StdcallFnCaller implements X86ConventionalFnCaller {
             stackTop: true,
           });
 
-          output.appendGroups(
-            stackOutput.asm,
-            x87regs.tracker.vacuumAll(['st0']),
-          );
+          output.appendGroups(stackOutput.asm, x87regs.tracker.vacuumAll(['st0']));
         } else {
           // handle case when `ax` is already used by `retInstruction.value`
           // but with slightly different size (1 byte but we want to return 2 bytes)
@@ -281,9 +263,7 @@ export class X86StdcallFnCaller implements X86ConventionalFnCaller {
           if (
             usedOwnership &&
             usedOwnership.reg !== returnReg &&
-            getX86RegByteSize(returnReg) -
-              getX86RegByteSize(usedOwnership.reg) ===
-              1
+            getX86RegByteSize(returnReg) - getX86RegByteSize(usedOwnership.reg) === 1
           ) {
             output.appendInstructions(
               genInstruction('movzx', returnReg, usedOwnership.reg),
@@ -373,10 +353,7 @@ export class X86StdcallFnCaller implements X86ConventionalFnCaller {
           size: getX86RegByteSize(returnReg),
         });
 
-        asm.preserve.push(
-          ...newReg.asm,
-          genInstruction('xchg', returnReg, newReg.value),
-        );
+        asm.preserve.push(...newReg.asm, genInstruction('xchg', returnReg, newReg.value));
 
         cachedOwnership.forEach(varName => {
           ownership.setOwnership(varName, {
@@ -386,27 +363,25 @@ export class X86StdcallFnCaller implements X86ConventionalFnCaller {
       }
     }
 
-    Object.entries(ownership.getAllOwnerships()).forEach(
-      ([varName, regOwnership]) => {
-        if (!ownership.lifetime.isVariableLaterUsed(iterator.offset, varName)) {
-          return;
-        }
+    Object.entries(ownership.getAllOwnerships()).forEach(([varName, regOwnership]) => {
+      if (!ownership.lifetime.isVariableLaterUsed(iterator.offset, varName)) {
+        return;
+      }
 
-        asm.preserve.push(
-          withInlineComment(
-            genInstruction('push', regOwnership.reg),
-            `${chalk.greenBright('preserve:')} ${chalk.blueBright(varName)}`,
-          ),
-        );
+      asm.preserve.push(
+        withInlineComment(
+          genInstruction('push', regOwnership.reg),
+          `${chalk.greenBright('preserve:')} ${chalk.blueBright(varName)}`,
+        ),
+      );
 
-        asm.restore.unshift(
-          withInlineComment(
-            genInstruction('pop', regOwnership.reg),
-            `${chalk.greenBright('restore:')} ${chalk.blueBright(varName)}`,
-          ),
-        );
-      },
-    );
+      asm.restore.unshift(
+        withInlineComment(
+          genInstruction('pop', regOwnership.reg),
+          `${chalk.greenBright('restore:')} ${chalk.blueBright(varName)}`,
+        ),
+      );
+    });
 
     // push all regs
     return asm;

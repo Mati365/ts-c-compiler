@@ -23,21 +23,18 @@ export class X86LabelsResolver {
   private readonly labels: X86Labels = {};
   private labelGeneratorCounter = 0;
 
-  createAndPutLabel({
-    name,
-    type,
-    linkerExternalSymbol,
-    ...attrs
-  }: X86LabelCreator) {
-    let asmLabel = genLabelName(
-      X86LabelsResolver.prefixLabelForSpecificType(type, name),
-    );
+  createAndPutLabel({ name, type, linkerExternalSymbol, ...attrs }: X86LabelCreator) {
+    let asmLabel = genLabelName(X86LabelsResolver.prefixLabelForSpecificType(type, name));
 
     if (linkerExternalSymbol) {
       asmLabel = markLabelAsLinkerExternalSymbol(asmLabel);
     }
 
-    this.putLabel(name, { asmLabel, type, ...attrs });
+    this.putLabel(name, {
+      asmLabel,
+      type,
+      ...attrs,
+    });
 
     return {
       asmLabel,

@@ -6,9 +6,7 @@
  *  Some opcodes such as DEC are broken!
  */
 (() => {
-  const opcodesTables = document.querySelectorAll(
-    'table[border="1"]:not([cellspacing])',
-  );
+  const opcodesTables = document.querySelectorAll('table[border="1"]:not([cellspacing])');
   const mappedInstructions = [...opcodesTables].map(table => {
     const rows = table.querySelectorAll('tr:not(:first-child)');
 
@@ -74,19 +72,13 @@
   //fix some bugs in table
   groupedInstructions.int.shift();
   groupedInstructions.int3 = [['', 'CC', '']];
-  groupedInstructions.mov = groupedInstructions.mov.map(
-    ([args, binary, ...params]) => {
-      if (binary[0] === 'A') {
-        return [
-          args.replace('rmb', 'moffs').replace('rmw', 'moffs'),
-          binary,
-          ...params,
-        ];
-      }
+  groupedInstructions.mov = groupedInstructions.mov.map(([args, binary, ...params]) => {
+    if (binary[0] === 'A') {
+      return [args.replace('rmb', 'moffs').replace('rmw', 'moffs'), binary, ...params];
+    }
 
-      return [args, binary, ...params];
-    },
-  );
+    return [args, binary, ...params];
+  });
 
   const prettyPrintArray = json => {
     if (typeof json === 'string') {

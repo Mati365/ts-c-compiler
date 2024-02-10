@@ -35,10 +35,7 @@ export class IRResultView {
       }),
     );
 
-    return [
-      ...IRResultView.serializeCodeSegment(code),
-      dataStr && `\n${dataStr}`,
-    ]
+    return [...IRResultView.serializeCodeSegment(code), dataStr && `\n${dataStr}`]
       .filter(Boolean)
       .join('\n');
   }

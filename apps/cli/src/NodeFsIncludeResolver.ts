@@ -20,17 +20,15 @@ export class NodeFsIncludeResolver implements CInterpreterIncludeResolver {
 
       return E.tryCatch(
         () => ({
-          content: readFileSync(absolutePath, { encoding: 'utf8' }),
+          content: readFileSync(absolutePath, {
+            encoding: 'utf8',
+          }),
           absolutePath,
         }),
         () =>
-          new CPreprocessorError(
-            CPreprocessorErrorCode.CANNOT_INCLUDE_FILE,
-            null,
-            {
-              name: absolutePath,
-            },
-          ),
+          new CPreprocessorError(CPreprocessorErrorCode.CANNOT_INCLUDE_FILE, null, {
+            name: absolutePath,
+          }),
       );
     };
 }

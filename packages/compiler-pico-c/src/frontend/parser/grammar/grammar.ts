@@ -25,10 +25,9 @@ import type { ASTCDeclaration, ASTCDirectDeclarator } from '../ast';
  * @see {@link https://www.lysator.liu.se/c/ANSI-C-grammar-y.html}
  * @see {@link https://cs.wmich.edu/~gupta/teaching/cs4850/sumII06/The%20syntax%20of%20C%20in%20Backus-Naur%20form.htm}
  */
-const compilerMatcher: GrammarInitializer<
-  CCompilerIdentifier,
-  ASTCCompilerKind
-> = ({ g }) => {
+const compilerMatcher: GrammarInitializer<CCompilerIdentifier, ASTCCompilerKind> = ({
+  g,
+}) => {
   const typedefNodes: Record<string, CGrammarTypedefEntry> = {};
 
   const registerDeclaration = (node: ASTCDeclaration) => {

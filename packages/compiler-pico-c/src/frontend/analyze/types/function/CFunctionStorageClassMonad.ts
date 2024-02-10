@@ -6,10 +6,7 @@ import { Identity } from '@ts-c-compiler/core';
 import { IsPrintable } from '@ts-c-compiler/core';
 
 import { CStorageClassSpecifier } from '#constants';
-import {
-  CTypeCheckError,
-  CTypeCheckErrorCode,
-} from '../../errors/CTypeCheckError';
+import { CTypeCheckError, CTypeCheckErrorCode } from '../../errors/CTypeCheckError';
 import { CStorageSpecBitmap } from '../../constants/bitmaps';
 import { bitsetToKeywords, parseKeywordsToBitset } from '../../utils';
 

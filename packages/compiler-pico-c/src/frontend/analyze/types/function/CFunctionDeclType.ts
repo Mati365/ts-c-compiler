@@ -171,13 +171,9 @@ export class CFunctionDeclType extends CType<CFunctionDescriptor> {
    */
   override getShortestDisplayName(): string {
     const { name, args, returnType } = this;
-    const argsStr = args
-      .map(arg => arg.type.getShortestDisplayName())
-      .join(', ');
+    const argsStr = args.map(arg => arg.type.getShortestDisplayName()).join(', ');
 
-    return `${returnType.getShortestDisplayName()}${
-      name ? ` ${name}` : ''
-    }(${argsStr})`;
+    return `${returnType.getShortestDisplayName()}${name ? ` ${name}` : ''}(${argsStr})`;
   }
 
   /**

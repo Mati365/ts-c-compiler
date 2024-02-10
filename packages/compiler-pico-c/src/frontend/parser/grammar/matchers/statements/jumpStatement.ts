@@ -39,9 +39,7 @@ export function jumpStatement(grammar: CGrammar): ASTCCompilerNode {
       const node = g.identifier(CCompilerKeyword.CONTINUE);
 
       if (!parentNode.loopStmt?.length) {
-        throw new CGrammarError(
-          CGrammarErrorCode.CONTINUE_STMT_NOT_WITHIN_LOOP,
-        );
+        throw new CGrammarError(CGrammarErrorCode.CONTINUE_STMT_NOT_WITHIN_LOOP);
       }
 
       return new ASTCContinueStatement(NodeLocation.fromTokenLoc(node.loc));
@@ -51,9 +49,7 @@ export function jumpStatement(grammar: CGrammar): ASTCCompilerNode {
       const node = g.identifier(CCompilerKeyword.BREAK);
 
       if (!parentNode.loopStmt && !parentNode.switchStmt?.length) {
-        throw new CGrammarError(
-          CGrammarErrorCode.BREAK_STMT_NOT_WITHIN_LOOP_OR_SWITCH,
-        );
+        throw new CGrammarError(CGrammarErrorCode.BREAK_STMT_NOT_WITHIN_LOOP_OR_SWITCH);
       }
 
       return new ASTCBreakStatement(NodeLocation.fromTokenLoc(node.loc));

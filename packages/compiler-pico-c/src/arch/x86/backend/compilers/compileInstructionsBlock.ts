@@ -1,8 +1,5 @@
 import { IROpcode } from 'frontend/ir/constants';
-import {
-  IRCommentInstruction,
-  IRFnDeclInstruction,
-} from 'frontend/ir/instructions';
+import { IRCommentInstruction, IRFnDeclInstruction } from 'frontend/ir/instructions';
 
 import { X86CompilerFnAttrs } from '../../constants/types';
 
@@ -12,9 +9,7 @@ import { X86CompileInstructionOutput } from './shared';
 
 type InstructionBlockCompilerAttrs = X86CompilerFnAttrs;
 
-export function compileInstructionsBlock({
-  context,
-}: InstructionBlockCompilerAttrs) {
+export function compileInstructionsBlock({ context }: InstructionBlockCompilerAttrs) {
   const output = new X86CompileInstructionOutput();
 
   context.iterator.walk(instruction => {

@@ -4,10 +4,7 @@ import { removeNullValues } from '../removeNullValues';
 /**
  * Serializes attributes to GET similar format
  */
-export function dumpAttributesToString(
-  kind: string,
-  attrs: Record<string, any>,
-): string {
+export function dumpAttributesToString(kind: string, attrs: Record<string, any>): string {
   const serializedAttrs = R.pipe(
     removeNullValues,
     R.mapObjIndexed(R.when(R.is(Boolean), val => +val)),

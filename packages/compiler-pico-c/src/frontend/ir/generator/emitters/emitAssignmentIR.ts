@@ -80,10 +80,7 @@ export function emitAssignmentIR({
   }
 
   // prevent assign like a = a
-  if (
-    !isIRVariable(result.output) ||
-    !result.output.isShallowEqual(lvalue.output)
-  ) {
+  if (!isIRVariable(result.output) || !result.output.isShallowEqual(lvalue.output)) {
     const castResult = emitCastIR({
       context,
       expectedType: getBaseTypeIfPtr(lvalue.output.type),
@@ -91,9 +88,7 @@ export function emitAssignmentIR({
     });
 
     appendStmtResults(castResult, result);
-    result.instructions.push(
-      new IRStoreInstruction(castResult.output, lvalue.output),
-    );
+    result.instructions.push(new IRStoreInstruction(castResult.output, lvalue.output));
   }
 
   if (asIdentifierGetter) {

@@ -10,7 +10,6 @@ export function indirectFarSegPointer(
 
   return (
     arg.type === InstructionArgType.MEMORY &&
-    (branchAddressingType === BranchAddressingType.FAR ||
-      branchAddressingType === null)
+    (branchAddressingType === BranchAddressingType.FAR || branchAddressingType === null)
   );
 }

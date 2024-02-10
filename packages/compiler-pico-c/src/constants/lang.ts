@@ -131,10 +131,7 @@ export type CCompilerTypeIdentifier =
 
 export type CCompilerIdentifier = CCompilerKeyword | CCompilerTypeIdentifier;
 
-export const CCOMPILER_ASSIGN_MATH_OPERATORS: Record<
-  CAssignOperator,
-  CMathOperator
-> = {
+export const CCOMPILER_ASSIGN_MATH_OPERATORS: Record<CAssignOperator, CMathOperator> = {
   [CAssignOperator.ASSIGN]: null,
   [CAssignOperator.MUL_ASSIGN]: TokenType.MUL,
   [CAssignOperator.DIV_ASSIGN]: TokenType.DIV,
@@ -163,18 +160,14 @@ export const CCOMPILER_FLOATING_SPECIFIERS: CTypeSpecifier[] = [
   CTypeSpecifier.DOUBLE,
 ];
 
-export const CCOMPILER_STRUCT_LIKE_SPECIFIERS = $enum(
-  CStructLikeSpecifiers,
-).getValues();
+export const CCOMPILER_STRUCT_LIKE_SPECIFIERS = $enum(CStructLikeSpecifiers).getValues();
 
-export const CCOMPILER_FUNCTION_SPECIFIERS =
-  $enum(CFunctionSpecifier).getValues();
+export const CCOMPILER_FUNCTION_SPECIFIERS = $enum(CFunctionSpecifier).getValues();
 
 export const CCOMPILER_TYPE_SPECIFIERS = $enum(CTypeSpecifier).getValues();
 export const CCOMPILER_TYPE_QUALIFIERS = $enum(CTypeQualifier).getValues();
-export const CCOMPILER_STORAGE_CLASS_SPECIFIERS = $enum(
-  CStorageClassSpecifier,
-).getValues();
+export const CCOMPILER_STORAGE_CLASS_SPECIFIERS =
+  $enum(CStorageClassSpecifier).getValues();
 
 export const CCOMPILER_UNARY_OPERATORS = $enum(CUnaryCastOperator).getValues();
 export const CCOMPILER_ASSIGN_OPERATORS = $enum(CAssignOperator).getValues();

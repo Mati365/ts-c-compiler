@@ -1,10 +1,7 @@
 import * as R from 'ramda';
 
 import { isLogicOpToken, isRelationOpToken } from '@ts-c-compiler/lexer';
-import {
-  getBaseTypeIfPtr,
-  isImplicitPtrType,
-} from 'frontend/analyze/types/utils';
+import { getBaseTypeIfPtr, isImplicitPtrType } from 'frontend/analyze/types/utils';
 
 import { charToInt, tryCastToPointer } from 'frontend/analyze/casts';
 
@@ -240,19 +237,14 @@ export function emitExpressionIR({
 
     [ASTCCompilerKind.PostfixExpression]: {
       enter(expression: ASTCPostfixExpression) {
-        if (
-          expression.isPostIncExpression() ||
-          expression.isPreIncExpression()
-        ) {
+        if (expression.isPostIncExpression() || expression.isPreIncExpression()) {
           const isPreInc = expression.isPreIncExpression();
 
           // handle i++ / ++i
           const sign = expression.getIncSign();
           const irSrcVarExprResult = emitIdentifierGetterIR({
             emitValueAtAddress: false,
-            node: isPreInc
-              ? expression.primaryExpression
-              : expression.postfixExpression,
+            node: isPreInc ? expression.primaryExpression : expression.postfixExpression,
             context,
             scope,
           });
@@ -268,10 +260,7 @@ export function emitExpressionIR({
           instructions.push(...irSrcVarExprResult.instructions);
           emitExprResultToStack(exprResult);
           return false;
-        } else if (
-          expression.isFnExpression() ||
-          expression.isFnPtrCallExpression()
-        ) {
+        } else if (expression.isFnExpression() || expression.isFnPtrCallExpression()) {
           // handle a(1, 2)
           const exprResult = emitFnCallExpressionIR({
             node: expression,
@@ -327,18 +316,12 @@ export function emitExpressionIR({
         } else if (expression.isCharLiteral()) {
           // handle 'a'
           argsVarsStack.push(
-            IRConstant.ofConstant(
-              expression.type,
-              charToInt(expression.charLiteral),
-            ),
+            IRConstant.ofConstant(expression.type, charToInt(expression.charLiteral)),
           );
         } else if (expression.isConstant()) {
           // handle 2
           argsVarsStack.push(
-            IRConstant.ofConstant(
-              expression.type,
-              expression.constant.value.number,
-            ),
+            IRConstant.ofConstant(expression.type, expression.constant.value.number),
           );
         } else if (expression.isIdentifier()) {
           const { text: name } = expression.identifier;
@@ -347,9 +330,7 @@ export function emitExpressionIR({
             const srcType = scope.findType(name);
             const tmpVar = allocNextVariable(CPointerType.ofType(srcType));
 
-            instructions.push(
-              new IRLabelOffsetInstruction(IRLabel.ofName(name), tmpVar),
-            );
+            instructions.push(new IRLabelOffsetInstruction(IRLabel.ofName(name), tmpVar));
 
             return false;
           }
@@ -372,13 +353,9 @@ export function emitExpressionIR({
               !srcGlobalVar.virtualArrayPtr &&
               !getBaseTypeIfPtr(srcGlobalVar.type).isStructOrUnion()
             ) {
-              const tmpDestVar = allocNextVariable(
-                getBaseTypeIfPtr(srcGlobalVar.type),
-              );
+              const tmpDestVar = allocNextVariable(getBaseTypeIfPtr(srcGlobalVar.type));
 
-              instructions.push(
-                new IRLoadInstruction(tmpAddressVar, tmpDestVar),
-              );
+              instructions.push(new IRLoadInstruction(tmpAddressVar, tmpDestVar));
             }
           } else if (srcFn) {
             const tmpVar = allocNextVariable(CPointerType.ofType(srcFn.type));
@@ -421,10 +398,7 @@ export function emitExpressionIR({
             }
 
             argsVarsStack.push(
-              IRConstant.ofConstant(
-                scope.findCompileTimeConstantType(name),
-                constant,
-              ),
+              IRConstant.ofConstant(scope.findCompileTimeConstantType(name), constant),
             );
           }
         } else if (expression.isExpression()) {
@@ -482,23 +456,14 @@ export function emitExpressionIR({
             all: allocNextVariable(binary.left.type),
           };
 
-          const phi = new IRPhiInstruction(
-            [outputs.left, outputs.right],
-            outputs.all,
-          );
+          const phi = new IRPhiInstruction([outputs.left, outputs.right], outputs.all);
 
           const labels = {
-            ifTrueLabel: context.factory.labels
-              .genTmpLabelInstruction()
-              .ofPhi(phi),
+            ifTrueLabel: context.factory.labels.genTmpLabelInstruction().ofPhi(phi),
 
-            ifFalseLabel: context.factory.labels
-              .genTmpLabelInstruction()
-              .ofPhi(phi),
+            ifFalseLabel: context.factory.labels.genTmpLabelInstruction().ofPhi(phi),
 
-            finallyLabel: context.factory.labels
-              .genTmpLabelInstruction()
-              .ofPhi(phi),
+            finallyLabel: context.factory.labels.genTmpLabelInstruction().ofPhi(phi),
           };
 
           const exprResult = emitLogicBinaryJmpExpressionIR({
@@ -546,10 +511,7 @@ export function emitExpressionIR({
         let output: IRVariable = null;
         let defaultOutputType = getBiggerIRArg(a, b).type;
 
-        if (
-          !isPointerArithmeticType(b.type) &&
-          isPointerArithmeticType(a.type)
-        ) {
+        if (!isPointerArithmeticType(b.type) && isPointerArithmeticType(a.type)) {
           const mulBy = a.type.getSourceType().getByteSize();
 
           if (mulBy > 1) {
@@ -567,10 +529,7 @@ export function emitExpressionIR({
           }
         }
 
-        if (
-          isPointerArithmeticType(b.type) &&
-          !isPointerArithmeticType(a.type)
-        ) {
+        if (isPointerArithmeticType(b.type) && !isPointerArithmeticType(a.type)) {
           const mulBy = b.type.getSourceType().getByteSize();
 
           if (mulBy > 1) {
@@ -609,9 +568,7 @@ export function emitExpressionIR({
 
         if (isRelationOpToken(binary.op)) {
           output ||= pushNextVariable(allocator.allocFlagResult());
-          instructions.push(
-            new IRICmpInstruction(<CRelOperator>binary.op, b, a, output),
-          );
+          instructions.push(new IRICmpInstruction(<CRelOperator>binary.op, b, a, output));
         } else {
           output ||= allocNextVariable(defaultOutputType);
           instructions.push(

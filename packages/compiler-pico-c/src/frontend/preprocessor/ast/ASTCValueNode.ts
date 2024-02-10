@@ -4,15 +4,9 @@ import { rpn } from '@ts-c-compiler/rpn';
 import { Token, joinTokensWithSpaces } from '@ts-c-compiler/lexer';
 import { ValueNode, type NodeLocation } from '@ts-c-compiler/grammar';
 
-import type {
-  CInterpreterContext,
-  CPreprocessorInterpretable,
-} from '../interpreter';
+import type { CInterpreterContext, CPreprocessorInterpretable } from '../interpreter';
 
-import {
-  ASTCPreprocessorKind,
-  type ASTCExecResult,
-} from './ASTCPreprocessorTreeNode';
+import { ASTCPreprocessorKind, type ASTCExecResult } from './ASTCPreprocessorTreeNode';
 
 import {
   CPreprocessorError,
@@ -26,7 +20,10 @@ export class ASTCValueNode<T extends Token[] = any>
   extends ValueNode<T, ASTCPreprocessorKind>
   implements CPreprocessorInterpretable
 {
-  constructor(loc: NodeLocation, readonly value: T) {
+  constructor(
+    loc: NodeLocation,
+    readonly value: T,
+  ) {
     super(ASTCPreprocessorKind.Value, loc, null);
   }
 

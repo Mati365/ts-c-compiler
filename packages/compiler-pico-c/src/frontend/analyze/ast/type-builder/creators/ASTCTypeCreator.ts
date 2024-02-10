@@ -3,9 +3,8 @@ import { InlineTreeVisitor } from '@ts-c-compiler/grammar';
 
 import type { CTypeAnalyzeVisitor } from '../CTypeAnalyzeVisitor';
 
-export abstract class ASTCTypeCreator<
-  T extends ASTCCompilerNode = ASTCCompilerNode,
-> implements InlineTreeVisitor<T>
+export abstract class ASTCTypeCreator<T extends ASTCCompilerNode = ASTCCompilerNode>
+  implements InlineTreeVisitor<T>
 {
   constructor(protected analyzeVisitor: CTypeAnalyzeVisitor) {}
 

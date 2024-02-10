@@ -1,10 +1,7 @@
 import chalk from 'chalk';
 import * as R from 'ramda';
 
-import {
-  ASTCAsmStmtInputConstraint,
-  ASTCAsmStmtOutputConstraint,
-} from '../../parser';
+import { ASTCAsmStmtInputConstraint, ASTCAsmStmtOutputConstraint } from '../../parser';
 
 import { IROpcode } from '../constants';
 import { IRInstructionArg } from '../variables';
@@ -68,8 +65,6 @@ export class IRAsmInstruction extends IRInstruction {
   }
 
   override getDisplayName(): string {
-    return `${chalk.bold.magentaBright('asm')} ${chalk.blueBright(
-      `"${this.expression}"`,
-    )}`;
+    return `${chalk.bold.magentaBright('asm')} ${chalk.blueBright(`"${this.expression}"`)}`;
   }
 }

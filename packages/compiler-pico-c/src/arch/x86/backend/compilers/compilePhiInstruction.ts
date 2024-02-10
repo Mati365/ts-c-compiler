@@ -4,8 +4,7 @@ import { IRPhiInstruction } from 'frontend/ir/instructions';
 import { X86CompilerInstructionFnAttrs } from '../../constants/types';
 import { IRRegOwnership } from '../reg-allocator';
 
-type PhiInstructionCompilerAttrs =
-  X86CompilerInstructionFnAttrs<IRPhiInstruction>;
+type PhiInstructionCompilerAttrs = X86CompilerInstructionFnAttrs<IRPhiInstruction>;
 
 export function compilePhiInstruction({
   instruction,
@@ -26,5 +25,7 @@ export function compilePhiInstruction({
     return argOwnership;
   }, null as IRRegOwnership);
 
-  regs.ownership.setOwnership(outputVar.name, { reg: inputOwnership.reg });
+  regs.ownership.setOwnership(outputVar.name, {
+    reg: inputOwnership.reg,
+  });
 }

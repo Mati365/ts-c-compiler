@@ -1,9 +1,6 @@
 import { NodeLocation } from '@ts-c-compiler/grammar';
 import { TokenType } from '@ts-c-compiler/lexer';
-import {
-  AsmInputConstraintFlags,
-  ASTCAsmStmtInputConstraint,
-} from 'frontend/parser/ast';
+import { AsmInputConstraintFlags, ASTCAsmStmtInputConstraint } from 'frontend/parser/ast';
 
 import { CGrammar } from '../../shared';
 
@@ -32,9 +29,7 @@ function parseConstraint(constraint: string) {
   return flags;
 }
 
-export function asmInputConstraint(
-  grammar: CGrammar,
-): ASTCAsmStmtInputConstraint {
+export function asmInputConstraint(grammar: CGrammar): ASTCAsmStmtInputConstraint {
   const { g } = grammar;
   const constraint = g.match({
     type: TokenType.QUOTE,

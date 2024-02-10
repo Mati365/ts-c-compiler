@@ -1,25 +1,25 @@
 <html>
-<head>
-<title>ANSI C grammar (Yacc)</title>
-<link rel="made" rev="made" href="mailto:jutta@pobox.com">
-</head><body>
+  <head>
+    <title>ANSI C grammar (Yacc)</title>
+    <link rel="made" rev="made" href="mailto:jutta@pobox.com" />
+  </head>
+  <body>
+    <h1>ANSI C Yacc grammar</h1>
 
-<h1>ANSI C Yacc grammar</h1>
+    In 1985, Jeff Lee published his Yacc grammar (which is accompanied by a matching
+    <a href="ANSI-C-grammar-l.html">Lex specification</a>) for the April 30, 1985 draft
+    version of the ANSI C standard.&#160;<tt> </tt>Tom Stockfisch reposted it to
+    net.sources in 1987; that original, as mentioned in the answer to
+    <a href="c-faq/c-17.html#17-25">question 17.25</a>
+    of the comp.lang.c FAQ, can be ftp'ed from ftp.uu.net, file
+    <a href="ftp://ftp.uu.net/usenet/net.sources/ansi.c.grammar.Z"
+      >usenet/net.sources/ansi.c.grammar.Z</a
+    >.
+    <p><a href="mailto:jutta@pobox.com">Jutta Degener</a>, 1995</p>
 
-In 1985, Jeff Lee published his Yacc grammar (which is
-accompanied by a matching <a href="ANSI-C-grammar-l.html">Lex specification</a>)
-for the April 30, 1985 draft version of the
-ANSI C standard.&#160;<tt> </tt>Tom Stockfisch reposted
-it to net.sources in 1987; that original, as mentioned in 
-the answer to <a href="c-faq/c-17.html#17-25">question 17.25</a>
-of the comp.lang.c FAQ, can be ftp'ed from ftp.uu.net, file
-<a href="ftp://ftp.uu.net/usenet/net.sources/ansi.c.grammar.Z"
-	>usenet/net.sources/ansi.c.grammar.Z</a>.
-<p>
-<a href="mailto:jutta@pobox.com">Jutta Degener</a>, 1995
-<p>
-<hr>
-<pre>
+    <p></p>
+    <hr />
+    <pre>
 %token <a href="ANSI-C-grammar-l.html#check-type">IDENTIFIER</a> <a href="ANSI-C-grammar-l.html#CONSTANT">CONSTANT</a> <a href="ANSI-C-grammar-l.html#STRING-LITERAL">STRING_LITERAL</a> <a href="ANSI-C-grammar-l.html#SIZEOF">SIZEOF</a>
 %token <a href="ANSI-C-grammar-l.html#PTR-OP">PTR_OP</a> <a href="ANSI-C-grammar-l.html#INC-OP">INC_OP</a> <a href="ANSI-C-grammar-l.html#DEC-OP">DEC_OP</a> <a href="ANSI-C-grammar-l.html#LEFT-OP">LEFT_OP</a> <a href="ANSI-C-grammar-l.html#RIGHT-OP">RIGHT_OP</a> <a href="ANSI-C-grammar-l.html#LE-OP">LE_OP</a> <a href="ANSI-C-grammar-l.html#GE-OP">GE_OP</a> <a href="ANSI-C-grammar-l.html#EQ-OP">EQ_OP</a> <a href="ANSI-C-grammar-l.html#NE-OP">NE_OP</a>
 %token <a href="ANSI-C-grammar-l.html#AND-OP">AND_OP</a> <a href="ANSI-C-grammar-l.html#OR-OP">OR_OP</a> <a href="ANSI-C-grammar-l.html#MUL-ASSIGN">MUL_ASSIGN</a> <a href="ANSI-C-grammar-l.html#DIV-ASSIGN">DIV_ASSIGN</a> <a href="ANSI-C-grammar-l.html#MOD-ASSIGN">MOD_ASSIGN</a> <a href="ANSI-C-grammar-l.html#ADD-ASSIGN">ADD_ASSIGN</a>
@@ -449,5 +449,5 @@ char *s;
 	printf(&quot;\n%*s\n%*s\n&quot;, column, &quot;^&quot;, column, s);
 }
 </pre>
-</body>
+  </body>
 </html>

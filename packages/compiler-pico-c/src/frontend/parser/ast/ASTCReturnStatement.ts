@@ -7,7 +7,10 @@ import { ASTCCompilerKind, ASTCCompilerNode } from './ASTCCompilerNode';
   fields: ['expression'],
 })
 export class ASTCReturnStatement extends ASTCCompilerNode {
-  constructor(loc: NodeLocation, readonly expression?: ASTCCompilerNode) {
+  constructor(
+    loc: NodeLocation,
+    readonly expression?: ASTCCompilerNode,
+  ) {
     super(ASTCCompilerKind.ReturnStmt, loc);
   }
 

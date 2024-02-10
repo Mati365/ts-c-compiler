@@ -24,8 +24,7 @@ const BinaryOperatorX86Opcode: Partial<Record<CMathOperator, string>> = {
   [TokenType.MINUS]: 'sub',
 };
 
-type MathInstructionCompilerAttrs =
-  X86CompilerInstructionFnAttrs<IRMathInstruction>;
+type MathInstructionCompilerAttrs = X86CompilerInstructionFnAttrs<IRMathInstruction>;
 
 export function compileIntMathInstruction({
   instruction,
@@ -79,11 +78,7 @@ export function compileIntMathInstruction({
       } else {
         asm.push(
           withInlineComment(
-            genInstruction(
-              opcode,
-              leftAllocResult.value,
-              rightAllocResult.value,
-            ),
+            genInstruction(opcode, leftAllocResult.value, rightAllocResult.value),
             instruction.getDisplayName(),
           ),
         );
@@ -114,10 +109,7 @@ export function compileIntMathInstruction({
 
       if (isIRVariable(leftVar) && isNopMathInstruction(instruction)) {
         if (regs.ownership.getVarOwnership(leftVar.name)) {
-          regs.ownership.aliasOwnership(
-            leftVar.name,
-            instruction.outputVar.name,
-          );
+          regs.ownership.aliasOwnership(leftVar.name, instruction.outputVar.name);
         } else if (memOwnership.getVarOwnership(leftVar.name)) {
           memOwnership.aliasOwnership(leftVar.name, instruction.outputVar.name);
         }
@@ -222,18 +214,16 @@ export function compileIntMathInstruction({
             context,
           }),
           withInlineComment(
-            genInstruction(
-              'shr',
-              leftAllocResult.value,
-              Math.log2(rightVar.constant),
-            ),
+            genInstruction('shr', leftAllocResult.value, Math.log2(rightVar.constant)),
             instruction.getDisplayName(),
           ),
         ]);
       }
 
       const allocResult = {
-        remainder: regs.requestReg({ allowedRegs: ['dx'] }),
+        remainder: regs.requestReg({
+          allowedRegs: ['dx'],
+        }),
         quotient: regs.tryResolveIRArgAsReg({
           allowedRegs: ['ax'],
           arg: leftVar,

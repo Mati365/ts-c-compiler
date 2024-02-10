@@ -107,10 +107,7 @@ export enum ASTCCompilerKind {
 
 export type ASTCTreeNode = TreeNode<ASTCCompilerKind>;
 
-export class CCompilerGrammar extends Grammar<
-  CCompilerIdentifier,
-  ASTCCompilerKind
-> {}
+export class CCompilerGrammar extends Grammar<CCompilerIdentifier, ASTCCompilerKind> {}
 
 export class ASTCCompilerNode<
   C extends TreeNode<ASTCCompilerKind> = ASTCCompilerNode<any>,

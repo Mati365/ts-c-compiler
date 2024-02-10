@@ -68,10 +68,7 @@ class VGA256State {
  * @see {@link https://github.com/copy/v86/blob/master/src/vga.js}
  * @see {@link https://github.com/asmblah/jemul8/blob/feature/acceptance/js/core/classes/iodev/vga.js}
  */
-export class VGA
-  extends X86UuidAbstractDevice<X86CPU>
-  implements ByteMemRegionAccessor
-{
+export class VGA extends X86UuidAbstractDevice<X86CPU> implements ByteMemRegionAccessor {
   static readonly uuid = 'vga';
 
   /* DOM */
@@ -478,9 +475,7 @@ export class VGA
       textModeState,
     } = this;
 
-    this.writeFontPack(
-      textModeState.charSize.h === 16 ? VGA_8X16_FONT : VGA_8X8_FONT,
-    );
+    this.writeFontPack(textModeState.charSize.h === 16 ? VGA_8X16_FONT : VGA_8X8_FONT);
 
     // set default foreground color
     for (let i = 0; i < size.w * size.h; ++i) {
@@ -503,8 +498,7 @@ export class VGA
 
     for (let charIndex = 0; charIndex < VGA_CHARSET_SIZE; ++charIndex) {
       for (let row = 0; row < charH; ++row) {
-        const charDestOffset =
-          fontOffset + VGA_CHAR_BYTE_SIZE * charIndex + row;
+        const charDestOffset = fontOffset + VGA_CHAR_BYTE_SIZE * charIndex + row;
         const charTemplateOffset = charH * charIndex + row;
 
         plane[charDestOffset] = reverseByte(data[charTemplateOffset]);
@@ -742,8 +736,7 @@ export class VGA
       (planes[3][offset] << 24);
 
     const { memModeReg } = this.sequencerRegs;
-    const { readMapSelectReg, graphicsModeReg, colorDontCareReg } =
-      this.graphicsRegs;
+    const { readMapSelectReg, graphicsModeReg, colorDontCareReg } = this.graphicsRegs;
 
     // read mode 1
     if (graphicsModeReg.readMode) {

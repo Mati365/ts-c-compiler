@@ -14,10 +14,7 @@ import {
 /**
  * Abstract operator instruction
  */
-export class IROpInstruction<O>
-  extends IRInstruction
-  implements IsOutputInstruction
-{
+export class IROpInstruction<O> extends IRInstruction implements IsOutputInstruction {
   constructor(
     opcode: IROpcode,
     readonly operator: O,

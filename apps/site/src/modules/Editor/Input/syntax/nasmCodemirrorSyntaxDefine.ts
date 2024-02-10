@@ -114,19 +114,12 @@ export function nasmSyntaxDefine(): CodeMirror.Mode<any> {
       }
 
       if (cur) {
-        if (
-          Object.prototype.propertyIsEnumerable.call(
-            conventionalInstructions,
-            cur,
-          )
-        ) {
+        if (Object.prototype.propertyIsEnumerable.call(conventionalInstructions, cur)) {
           stream.eatWhile(/\w/);
           return 'keyword';
         }
 
-        if (
-          Object.prototype.propertyIsEnumerable.call(specialInstructions, cur)
-        ) {
+        if (Object.prototype.propertyIsEnumerable.call(specialInstructions, cur)) {
           stream.eatWhile(/\w/);
           return 'tag';
         }

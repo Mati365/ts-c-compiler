@@ -26,10 +26,7 @@ declare global {
 /**
  * Tests if second pass compilation results matches binary
  */
-function toOutputsBinary(
-  received: string,
-  binary: BinaryOutputObject,
-): MatcherResult {
+function toOutputsBinary(received: string, binary: BinaryOutputObject): MatcherResult {
   const result = asm()(received);
 
   if (E.isLeft(result)) {
@@ -82,9 +79,7 @@ function toHaveCompilerError(
     return {
       pass: false,
       message: () =>
-        `expected err code to be equal ${this.utils.printExpected(
-          code,
-        )} but result is ok!`,
+        `expected err code to be equal ${this.utils.printExpected(code)} but result is ok!`,
     };
   }
 

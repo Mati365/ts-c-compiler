@@ -64,10 +64,7 @@ export class ASTTimes extends KindASTAsmNode(ASTNodeKind.TIMES) {
 
     // handle errors
     if (!timesExpression.length) {
-      throw new ParserError(
-        ParserErrorCode.INCORRECT_TIMES_ARGS_COUNT,
-        token.loc,
-      );
+      throw new ParserError(ParserErrorCode.INCORRECT_TIMES_ARGS_COUNT, token.loc);
     }
 
     if (!repeatedNodeTokens?.length) {
@@ -88,10 +85,7 @@ export class ASTTimes extends KindASTAsmNode(ASTNodeKind.TIMES) {
           ParserErrorCode.UNABLE_PARSE_REPEATED_INSTRUCTION,
           token.loc,
           {
-            expression: R.compose(
-              R.join(' '),
-              R.pluck('text'),
-            )(repeatedNodeTokens),
+            expression: R.compose(R.join(' '), R.pluck('text'))(repeatedNodeTokens),
           },
         );
       }

@@ -1,17 +1,9 @@
 import { TokenType } from '@ts-c-compiler/lexer';
 import { ASTCCompilerKind, ASTCPrimaryExpression } from 'frontend/parser/ast';
 
-import {
-  CTypeCheckError,
-  CTypeCheckErrorCode,
-} from '../../../errors/CTypeCheckError';
+import { CTypeCheckError, CTypeCheckErrorCode } from '../../../errors/CTypeCheckError';
 
-import {
-  CType,
-  CPrimitiveType,
-  CPointerType,
-  typeofValueOrNode,
-} from '../../../types';
+import { CType, CPrimitiveType, CPointerType, typeofValueOrNode } from '../../../types';
 
 import { ASTCTypeCreator } from './ASTCTypeCreator';
 

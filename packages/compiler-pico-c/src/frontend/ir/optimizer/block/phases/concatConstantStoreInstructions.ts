@@ -62,10 +62,7 @@ export function concatConstantStoreInstruction(instructions: IRInstruction[]) {
       );
 
       newInstructions[i] = new IRStoreInstruction(
-        IRConstant.ofConstant(
-          CPrimitiveType.int(instruction.value.type.arch),
-          wordValue,
-        ),
+        IRConstant.ofConstant(CPrimitiveType.int(instruction.value.type.arch), wordValue),
         instruction.outputVar.ofType(extendedPtrType),
         instruction.offset,
       );

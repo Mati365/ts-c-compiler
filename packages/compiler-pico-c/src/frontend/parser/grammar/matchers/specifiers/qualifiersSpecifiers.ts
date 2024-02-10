@@ -20,9 +20,7 @@ import { typeSpecifier } from './typeSpecifier';
  *  | type_qualifier
  *  ;
  */
-export function qualifiersSpecifiers(
-  grammar: CGrammar,
-): ASTCSpecifiersQualifiersList {
+export function qualifiersSpecifiers(grammar: CGrammar): ASTCSpecifiersQualifiersList {
   const { g } = grammar;
 
   let loc: NodeLocation = null;

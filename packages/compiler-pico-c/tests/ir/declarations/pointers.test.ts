@@ -3,8 +3,7 @@ import '../utils';
 describe('Pointer declarations IR', () => {
   describe('Uninitialized', () => {
     test('should generate alloc for int* type', () => {
-      expect(/* cpp */ `void main() { int* a; }`)
-        .toCompiledIRBeEqual(/* ruby */ `
+      expect(/* cpp */ `void main() { int* a; }`).toCompiledIRBeEqual(/* ruby */ `
         # --- Block main ---
         def main():
           a{0}: int**2B = alloca int*2B
@@ -14,8 +13,7 @@ describe('Pointer declarations IR', () => {
     });
 
     test('should generate alloc for int* var[5] type', () => {
-      expect(/* cpp */ `void main() { int* var[5]; }`)
-        .toCompiledIRBeEqual(/* ruby */ `
+      expect(/* cpp */ `void main() { int* var[5]; }`).toCompiledIRBeEqual(/* ruby */ `
         # --- Block main ---
         def main():
           var{0}: int*[5]*2B = alloca int*[5]10B
@@ -25,8 +23,7 @@ describe('Pointer declarations IR', () => {
     });
 
     test('should generate alloc for int (*var)[5] type', () => {
-      expect(/* cpp */ `void main() { int (*var)[5]; }`)
-        .toCompiledIRBeEqual(/* ruby */ `
+      expect(/* cpp */ `void main() { int (*var)[5]; }`).toCompiledIRBeEqual(/* ruby */ `
         # --- Block main ---
         def main():
           var{0}: int[5]**2B = alloca int[5]*2B

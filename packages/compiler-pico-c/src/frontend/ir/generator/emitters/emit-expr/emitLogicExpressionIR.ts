@@ -39,8 +39,7 @@ export function emitLogicExpressionIR({
   if (output && (jmpToLabelIf || context.conditionStmt?.labels)) {
     const labels = {
       zero: jmpToLabelIf?.zero ?? context.conditionStmt?.labels.ifFalseLabel,
-      nonZero:
-        jmpToLabelIf?.nonZero ?? context.conditionStmt?.labels.ifTrueLabel,
+      nonZero: jmpToLabelIf?.nonZero ?? context.conditionStmt?.labels.ifTrueLabel,
     };
 
     if (isIRConstant(output)) {

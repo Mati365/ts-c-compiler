@@ -92,10 +92,7 @@ export class IRVariableAllocator {
 
     // it happens if we merge together two scopes
     // with the same variable name
-    if (
-      this.isAllocated(mappedVariable.prefix) &&
-      !mappedVariable.isTemporary()
-    ) {
+    if (this.isAllocated(mappedVariable.prefix) && !mappedVariable.isTemporary()) {
       mappedVariable = mappedVariable.ofIncrementedSuffix();
     }
 
@@ -222,10 +219,7 @@ export class IRVariableAllocator {
         name,
         irDefArgs,
         null,
-        this.allocTmpVariable(
-          CPointerType.ofType(returnType),
-          TMP_FN_RETURN_VAR_PREFIX,
-        ),
+        this.allocTmpVariable(CPointerType.ofType(returnType), TMP_FN_RETURN_VAR_PREFIX),
       );
     })();
 

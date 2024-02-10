@@ -8,11 +8,11 @@ import { NodeLocation } from '@ts-c-compiler/grammar';
 import { CStorageClassSpecifier } from '#constants';
 import { ASTCCompilerKind, ASTCCompilerNode } from './ASTCCompilerNode';
 
-export class ASTCStorageClassSpecifiersList
-  extends ASTCCompilerNode
-  implements IsEmpty
-{
-  constructor(loc: NodeLocation, readonly items: CStorageClassSpecifier[]) {
+export class ASTCStorageClassSpecifiersList extends ASTCCompilerNode implements IsEmpty {
+  constructor(
+    loc: NodeLocation,
+    readonly items: CStorageClassSpecifier[],
+  ) {
     super(ASTCCompilerKind.StorageClassSpecifiersList, loc);
   }
 

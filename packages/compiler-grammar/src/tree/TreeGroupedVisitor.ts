@@ -13,9 +13,7 @@ export type TreeVisitorsMap<T extends TreeNode<any>> = {
   [kind: string]: Newable<GroupTreeVisitor<T>> | InlineTreeVisitor<T> | false;
 };
 
-export function isInlineTreeVisitor(
-  visitor: any,
-): visitor is InlineTreeVisitor<any> {
+export function isInlineTreeVisitor(visitor: any): visitor is InlineTreeVisitor<any> {
   return R.is(Object, visitor) && (visitor.enter || visitor.leave);
 }
 
@@ -74,10 +72,7 @@ export class GroupTreeVisitor<
     visitor.leave?.(node);
   }
 
-  initializeAndEnter<D extends GroupTreeVisitor<T>>(
-    Visitor: Newable<D>,
-    node: T,
-  ): D {
+  initializeAndEnter<D extends GroupTreeVisitor<T>>(Visitor: Newable<D>, node: T): D {
     return new Visitor()
       .setParentVisitor(this)
       .setContext(this._context)

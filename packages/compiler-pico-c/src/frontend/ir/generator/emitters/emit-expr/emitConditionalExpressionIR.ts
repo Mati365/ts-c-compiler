@@ -111,11 +111,9 @@ export function emitConditionalExpressionIR({
     appendStmtResults(exprResults.true, result);
 
     instructions.push(
-      new IRLeaInstruction(
-        exprResults.true.output,
-        outputs.true.ofPointerType(),
-        { phi },
-      ),
+      new IRLeaInstruction(exprResults.true.output, outputs.true.ofPointerType(), {
+        phi,
+      }),
       new IRJmpInstruction(finallyLabel.ofPhi(phi)),
       labels.ifFalseLabel.ofPhi(phi),
     );
@@ -123,11 +121,9 @@ export function emitConditionalExpressionIR({
     appendStmtResults(exprResults.false, result);
 
     instructions.push(
-      new IRLeaInstruction(
-        exprResults.false.output,
-        outputs.false.ofPointerType(),
-        { phi },
-      ),
+      new IRLeaInstruction(exprResults.false.output, outputs.false.ofPointerType(), {
+        phi,
+      }),
       finallyLabel.ofPhi(phi),
       phi,
     );

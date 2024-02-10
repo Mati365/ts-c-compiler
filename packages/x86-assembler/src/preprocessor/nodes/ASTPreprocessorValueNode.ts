@@ -35,10 +35,7 @@ export class ASTPreprocessorValueNode<T extends Token[] = any>
     const { loc } = resultTokens[0];
 
     if (resultTokens.length !== 1) {
-      throw new PreprocessorError(
-        PreprocessorErrorCode.INCORRECT_VALUE_EXPRESSION,
-        loc,
-      );
+      throw new PreprocessorError(PreprocessorErrorCode.INCORRECT_VALUE_EXPRESSION, loc);
     }
 
     const [token] = resultTokens;
@@ -49,10 +46,7 @@ export class ASTPreprocessorValueNode<T extends Token[] = any>
     // handle string, keyword tokens usually emited from macros
     const parsed = rpn(token.text);
     if (Number.isNaN(parsed)) {
-      throw new PreprocessorError(
-        PreprocessorErrorCode.INCORRECT_VALUE_EXPRESSION,
-        loc,
-      );
+      throw new PreprocessorError(PreprocessorErrorCode.INCORRECT_VALUE_EXPRESSION, loc);
     }
 
     return +parsed;

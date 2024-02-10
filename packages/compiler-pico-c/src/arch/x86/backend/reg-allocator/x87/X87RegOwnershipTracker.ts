@@ -55,19 +55,14 @@ export class X87RegOwnershipTracker {
 
   getRegByStackIndex(index: number) {
     if (this.stackPointer > index) {
-      return createX87StackRegByIndex(
-        X87_STACK_REGS_COUNT - this.stackPointer + index,
-      );
+      return createX87StackRegByIndex(X87_STACK_REGS_COUNT - this.stackPointer + index);
     }
 
     return createX87StackRegByIndex(index - this.stackPointer);
   }
 
   getOwnershipIndexFromStackReg(reg: X87StackRegName) {
-    return wrapAround(
-      X87_STACK_REGS_COUNT,
-      this.stackPointer + getX87StackRegIndex(reg),
-    );
+    return wrapAround(X87_STACK_REGS_COUNT, this.stackPointer + getX87StackRegIndex(reg));
   }
 
   removeStackEntry(entry: X87OwnershipStackEntry) {
@@ -113,10 +108,7 @@ export class X87RegOwnershipTracker {
   push(entry: X87OwnershipStackEntry) {
     const { stackOwnership } = this;
 
-    const newStackPointer = wrapAround(
-      X87_STACK_REGS_COUNT,
-      this.stackPointer - 1,
-    );
+    const newStackPointer = wrapAround(X87_STACK_REGS_COUNT, this.stackPointer - 1);
 
     const prevEntry = stackOwnership[newStackPointer];
     const asm = new X86CompileInstructionOutput();
@@ -156,9 +148,7 @@ export class X87RegOwnershipTracker {
 
     this.adjustOwnershipRegsNames();
 
-    return X86CompileInstructionOutput.ofInstructions([
-      genInstruction('fxch', reg),
-    ]);
+    return X86CompileInstructionOutput.ofInstructions([genInstruction('fxch', reg)]);
   }
 
   vacuumAll(except?: X87StackRegName[]) {
@@ -239,10 +229,7 @@ export class X87RegOwnershipTracker {
 
       if (
         !ownership.canBeErased &&
-        !lifetime.isVariableLaterUsed(
-          allocator.iterator.offset,
-          ownership.varName,
-        )
+        !lifetime.isVariableLaterUsed(allocator.iterator.offset, ownership.varName)
       ) {
         ownership.canBeErased = true;
       }
@@ -250,11 +237,7 @@ export class X87RegOwnershipTracker {
   }
 
   private adjustOwnershipRegsNames() {
-    for (
-      let i = 0, offset = this.stackPointer;
-      i < X87_STACK_REGS_COUNT;
-      ++i, ++offset
-    ) {
+    for (let i = 0, offset = this.stackPointer; i < X87_STACK_REGS_COUNT; ++i, ++offset) {
       const roundedOffset = wrapAround(X87_STACK_REGS_COUNT, offset);
       const ownership = this.stackOwnership[roundedOffset];
 

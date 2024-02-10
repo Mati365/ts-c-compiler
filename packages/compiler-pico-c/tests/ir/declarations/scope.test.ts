@@ -6,9 +6,7 @@ describe('Declaration scope', () => {
     expect(/* cpp */ `
       int d = 5;
       int acc = d + 4;
-    `).toHaveIRError(
-      IRErrorCode.GLOBAL_INITIALIZER_MUST_HAVE_ONLY_CONSTANT_EXPRESSIONS,
-    );
+    `).toHaveIRError(IRErrorCode.GLOBAL_INITIALIZER_MUST_HAVE_ONLY_CONSTANT_EXPRESSIONS);
   });
 
   test('should be possible to shadow variable name', () => {

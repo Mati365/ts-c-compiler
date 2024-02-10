@@ -26,28 +26,26 @@ const opcode = (
  * @see {@link http://www.mathemainzel.info/files/x86asmref.html}
  * @see {@link https://www.polstronki.pl/AsmPrawa.php?F=B16&S=INVLPG}
  */
-export const COMPILER_INSTRUCTIONS_SET: ASTOpcodeMatchers = <any>(
-  R.mapObjIndexed(
-    (instructions, mneomonic) =>
-      R.ifElse(
-        R.is(String),
-        binarySchema => [opcode(mneomonic, '', binarySchema)],
-        binarySchemas => {
-          if (R.is(String, binarySchemas[0])) {
-            binarySchemas = [binarySchemas];
-          }
+export const COMPILER_INSTRUCTIONS_SET: ASTOpcodeMatchers = <any>R.mapObjIndexed(
+  (instructions, mneomonic) =>
+    R.ifElse(
+      R.is(String),
+      binarySchema => [opcode(mneomonic, '', binarySchema)],
+      binarySchemas => {
+        if (R.is(String, binarySchemas[0])) {
+          binarySchemas = [binarySchemas];
+        }
 
-          return R.map(
-            ([argsSchema, binarySchema, target]) =>
-              opcode(mneomonic, argsSchema, binarySchema, target),
-            R.sort(
-              (schemaA, schemaB) => schemaA[1].length - schemaB[1].length,
-              binarySchemas,
-            ),
-          );
-        },
-      )(instructions),
+        return R.map(
+          ([argsSchema, binarySchema, target]) =>
+            opcode(mneomonic, argsSchema, binarySchema, target),
+          R.sort(
+            (schemaA, schemaB) => schemaA[1].length - schemaB[1].length,
+            binarySchemas,
+          ),
+        );
+      },
+    )(instructions),
 
-    <any>BINARY_INSTRUCTION_DEFS,
-  )
+  <any>BINARY_INSTRUCTION_DEFS,
 );

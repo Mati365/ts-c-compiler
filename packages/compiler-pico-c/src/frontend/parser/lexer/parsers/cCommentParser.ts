@@ -3,11 +3,7 @@ import { isNewline } from '@ts-c-compiler/lexer';
 /**
  * Parses C style comments like // or \/* *\/
  */
-export function cComentParser(
-  code: string,
-  offset: number,
-  character: string,
-): number {
+export function cComentParser(code: string, offset: number, character: string): number {
   // detect inline C commnet
   if (character === '/' && code[offset + 1] === '/') {
     for (offset += 1; offset < code.length; ++offset) {

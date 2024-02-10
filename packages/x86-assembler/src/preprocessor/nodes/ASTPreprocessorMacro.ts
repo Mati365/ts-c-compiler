@@ -54,9 +54,7 @@ export class ASTPreprocessorMacro
     ]);
 
     // produces inner macro content
-    return interpreter.enterScope(variables, () =>
-      interpreter.execTree(this.content),
-    );
+    return interpreter.enterScope(variables, () => interpreter.execTree(this.content));
   }
 
   /**

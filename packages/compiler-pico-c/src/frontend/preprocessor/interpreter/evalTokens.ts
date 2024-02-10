@@ -47,7 +47,9 @@ export const evalTokens =
             throw new CPreprocessorError(
               CPreprocessorErrorCode.ARG_PARSER_ERROR,
               token.loc,
-              { macro: token.text },
+              {
+                macro: token.text,
+              },
             );
           }
 

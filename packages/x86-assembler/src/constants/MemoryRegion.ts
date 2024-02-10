@@ -14,7 +14,10 @@ export interface ByteMemRegionAccessor {
 export class MemoryRegionRange {
   readonly size: number;
 
-  constructor(public low: number, public high: number) {
+  constructor(
+    public low: number,
+    public high: number,
+  ) {
     if (low > high) {
       [this.low, this.high] = [high, low];
     }

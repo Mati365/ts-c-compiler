@@ -19,10 +19,7 @@ export function isIRDefDataInstruction(
 /**
  * Label instruction
  */
-export class IRDefDataInstruction
-  extends IRInstruction
-  implements IsOutputInstruction
-{
+export class IRDefDataInstruction extends IRInstruction implements IsOutputInstruction {
   constructor(
     readonly initializer: CVariableInitializerTree,
     readonly outputVar: IRVariable,
@@ -45,8 +42,6 @@ export class IRDefDataInstruction
   override getDisplayName(): string {
     const { outputVar, initializer } = this;
 
-    return `${outputVar.getDisplayName()} = const ${CVariableInitializerPrintVisitor.serializeToString(
-      initializer,
-    )}`;
+    return `${outputVar.getDisplayName()} = const ${CVariableInitializerPrintVisitor.serializeToString(initializer)}`;
   }
 }

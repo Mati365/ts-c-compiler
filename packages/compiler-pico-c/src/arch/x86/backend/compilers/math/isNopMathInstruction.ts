@@ -4,10 +4,7 @@ import { IRMathInstruction } from 'frontend/ir/instructions';
 export function isNopMathInstruction(instruction: IRMathInstruction): boolean {
   switch (instruction.operator) {
     case TokenType.MUL:
-      if (
-        instruction.hasAnyConstantArg() &&
-        !instruction.hasBothConstantArgs()
-      ) {
+      if (instruction.hasAnyConstantArg() && !instruction.hasBothConstantArgs()) {
         const constantArg = instruction.getFirstConstantArg();
 
         if (constantArg.constant === 0x1) {
@@ -17,10 +14,7 @@ export function isNopMathInstruction(instruction: IRMathInstruction): boolean {
       break;
 
     case TokenType.PLUS:
-      if (
-        instruction.hasAnyConstantArg() &&
-        !instruction.hasBothConstantArgs()
-      ) {
+      if (instruction.hasAnyConstantArg() && !instruction.hasBothConstantArgs()) {
         const constantArg = instruction.getFirstConstantArg();
 
         if (constantArg.constant === 0x0) {

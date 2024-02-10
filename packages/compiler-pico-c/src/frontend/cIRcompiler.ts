@@ -2,10 +2,7 @@ import * as E from 'fp-ts/Either';
 import { pipe } from 'fp-ts/function';
 
 import { CCompilerConfig, CCompilerArch } from '../constants/config';
-import {
-  CCompilerTimer,
-  createCCompilerTimings,
-} from './utils/createCCompilerTimings';
+import { CCompilerTimer, createCCompilerTimings } from './utils/createCCompilerTimings';
 
 import { safePreprocess } from './preprocessor';
 import { safeGenerateTree, clexer } from './parser';
@@ -18,10 +15,7 @@ type IRCompilerConfig = CCompilerConfig & {
 
 export const cIRCompiler =
   (
-    {
-      timings = createCCompilerTimings(),
-      ...ccompilerConfig
-    }: IRCompilerConfig = {
+    { timings = createCCompilerTimings(), ...ccompilerConfig }: IRCompilerConfig = {
       arch: CCompilerArch.X86_16,
       optimization: {
         enabled: true,
@@ -33,10 +27,7 @@ export const cIRCompiler =
       code,
       timings.chainIO('lexer', clexer(ccompilerConfig.lexer)),
       E.chain(
-        timings.chainIO(
-          'preprocessor',
-          safePreprocess(ccompilerConfig.preprocessor),
-        ),
+        timings.chainIO('preprocessor', safePreprocess(ccompilerConfig.preprocessor)),
       ),
       E.chainW(timings.chainIO('ast', safeGenerateTree)),
       E.chainW(timings.chainIO('analyze', safeBuildTypedTree(ccompilerConfig))),

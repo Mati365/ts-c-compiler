@@ -31,11 +31,7 @@ export function createLeftRecursiveOperatorMatcher({
     return <ASTCTreeNode>g.or({
       value() {
         if (operator instanceof Array && operator.length > 1) {
-          const root = new ASTCBinaryOpNode(
-            null,
-            parentExpression(grammar),
-            null,
-          );
+          const root = new ASTCBinaryOpNode(null, parentExpression(grammar), null);
 
           return eatLeftRecursiveOperators(
             g,

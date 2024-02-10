@@ -19,10 +19,7 @@ export function isIRLeaInstruction(
 /**
  * Instruction that loads mem address of variable
  */
-export class IRLeaInstruction
-  extends IRInstruction
-  implements IsOutputInstruction
-{
+export class IRLeaInstruction extends IRInstruction implements IsOutputInstruction {
   constructor(
     public inputVar: IRVariable,
     public outputVar: IRVariable,
@@ -55,8 +52,6 @@ export class IRLeaInstruction
       suffix = chalk.whiteBright(':φ');
     }
 
-    return `${outputVar.getDisplayName()} = ${chalk.yellowBright(
-      'lea',
-    )}${suffix} ${inputVar.getDisplayName()}`;
+    return `${outputVar.getDisplayName()} = ${chalk.yellowBright('lea')}${suffix} ${inputVar.getDisplayName()}`;
   }
 }

@@ -16,9 +16,7 @@ function matchAssignmentOperator({ g }: CGrammar): Token {
  *  | unary_expression assignment_operator assignment_expression
  *  ;
  */
-export function assignmentExpression(
-  grammar: CGrammar,
-): ASTCAssignmentExpression {
+export function assignmentExpression(grammar: CGrammar): ASTCAssignmentExpression {
   const { g } = grammar;
 
   return <ASTCAssignmentExpression>g.or({

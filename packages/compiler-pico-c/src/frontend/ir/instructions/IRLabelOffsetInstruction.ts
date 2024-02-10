@@ -18,7 +18,10 @@ export class IRLabelOffsetInstruction
   extends IRInstruction
   implements IsOutputInstruction
 {
-  constructor(readonly label: IRLabel, readonly outputVar: IRVariable) {
+  constructor(
+    readonly label: IRLabel,
+    readonly outputVar: IRVariable,
+  ) {
     super(IROpcode.LABEL_OFFSET);
   }
 

@@ -23,26 +23,11 @@ export class MathOperator {
     args => args[0] >> args[1],
   );
 
-  static readonly BIT_OR = new MathOperator(
-    1,
-    '|',
-    2,
-    args => args[0] | args[1],
-  );
-  static readonly BIT_AND = new MathOperator(
-    1,
-    '&',
-    2,
-    args => args[0] & args[1],
-  );
+  static readonly BIT_OR = new MathOperator(1, '|', 2, args => args[0] | args[1]);
+  static readonly BIT_AND = new MathOperator(1, '&', 2, args => args[0] & args[1]);
 
   static readonly PLUS = new MathOperator(2, '+', 2, args => args[0] + args[1]);
-  static readonly MINUS = new MathOperator(
-    2,
-    '-',
-    2,
-    args => args[0] - args[1],
-  );
+  static readonly MINUS = new MathOperator(2, '-', 2, args => args[0] - args[1]);
   static readonly MUL = new MathOperator(3, '*', 2, args => args[0] * args[1]);
   static readonly DIV = new MathOperator(3, '/', 2, args => {
     if (args[1] === 0) {
@@ -80,11 +65,7 @@ export class MathOperator {
   );
 
   static MATCH_OPERATOR_REGEX = new RegExp(
-    `([${R.reduce(
-      (acc, op) => `${acc}\\${op.char}`,
-      '',
-      MathOperator.OPERATORS,
-    )}])`,
+    `([${R.reduce((acc, op) => `${acc}\\${op.char}`, '', MathOperator.OPERATORS)}])`,
   );
 
   constructor(

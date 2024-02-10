@@ -2,11 +2,7 @@
  * Wraps class method with decorator function
  */
 export function wrapMethod<T>(decorator: (fn: T) => any) {
-  return (
-    target: any,
-    propertyKey: string,
-    descriptor: PropertyDescriptor,
-  ) => ({
+  return (target: any, propertyKey: string, descriptor: PropertyDescriptor) => ({
     configurable: true,
     get() {
       const method = decorator(descriptor.value.bind(this));

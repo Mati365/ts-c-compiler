@@ -14,11 +14,7 @@ export const execMacro =
     for (let defArgIndex = 0; defArgIndex < macro.args.length; ++defArgIndex) {
       const argDef = macro.args[defArgIndex];
 
-      for (
-        let exprTokenIndex = 0;
-        exprTokenIndex < expression.length;
-        ++exprTokenIndex
-      ) {
+      for (let exprTokenIndex = 0; exprTokenIndex < expression.length; ++exprTokenIndex) {
         if (expression[exprTokenIndex]?.text !== argDef.name) {
           continue;
         }
@@ -32,12 +28,7 @@ export const execMacro =
 
             if (callArgIndex + 1 < callArgs.length) {
               vaArgs.push(
-                new Token(
-                  TokenType.COMMA,
-                  null,
-                  null,
-                  callArgs[callArgIndex][0].loc,
-                ),
+                new Token(TokenType.COMMA, null, null, callArgs[callArgIndex][0].loc),
               );
             }
           }

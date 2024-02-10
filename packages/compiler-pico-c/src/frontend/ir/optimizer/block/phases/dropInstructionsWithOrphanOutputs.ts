@@ -31,9 +31,7 @@ type InstructionOutputUsageInfo = {
  * *(%t{0}: int*2B + %2) = store %3: int2B
  * *(%t{0}: int*2B + %4) = store %4: int2B
  */
-export function dropInstructionsWithOrphanOutputs(
-  instructions: IRInstruction[],
-) {
+export function dropInstructionsWithOrphanOutputs(instructions: IRInstruction[]) {
   const newInstructions = [...instructions];
   const counters: Record<string, InstructionOutputUsageInfo> = {};
 

@@ -67,15 +67,11 @@ export class ASTPreprocessorDefine
   runtimeCall(interpreter: PreprocessorInterpreter, args: string[]): string {
     const { name, argsSchema, expression } = this;
     if (args.length !== argsSchema.length) {
-      throw new PreprocessorError(
-        PreprocessorErrorCode.MACRO_ARGS_LIST_MISMATCH,
-        null,
-        {
-          expected: argsSchema.length,
-          provided: args.length,
-          name,
-        },
-      );
+      throw new PreprocessorError(PreprocessorErrorCode.MACRO_ARGS_LIST_MISMATCH, null, {
+        expected: argsSchema.length,
+        provided: args.length,
+        name,
+      });
     }
 
     const mappedTokens: Token[] = [...expression];
@@ -85,21 +81,13 @@ export class ASTPreprocessorDefine
         continue;
       }
 
-      const schemaIndex = R.findIndex(
-        schema => token.text === schema.name,
-        argsSchema,
-      );
+      const schemaIndex = R.findIndex(schema => token.text === schema.name, argsSchema);
 
       if (schemaIndex === -1) {
         continue;
       }
 
-      const newToken = new Token(
-        TokenType.KEYWORD,
-        null,
-        args[schemaIndex],
-        token.loc,
-      );
+      const newToken = new Token(TokenType.KEYWORD, null, args[schemaIndex], token.loc);
       const resize = mappedTokens[i].text.length - newToken.text.length;
 
       // prevent something like it:

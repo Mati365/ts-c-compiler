@@ -2,10 +2,7 @@ import type { X86IntBitsMode, X86RegName } from '@ts-c-compiler/x86-assembler';
 
 import { CCompilerArch } from '#constants';
 import { COMPILER_REGISTERS_SET } from '@ts-c-compiler/x86-assembler';
-import {
-  X87_STACK_REGISTERS,
-  type X87StackRegName,
-} from '@ts-c-compiler/x86-assembler';
+import { X87_STACK_REGISTERS, type X87StackRegName } from '@ts-c-compiler/x86-assembler';
 
 export type X86RegsParts = {
   size: number;

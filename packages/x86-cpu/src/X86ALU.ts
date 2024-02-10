@@ -99,8 +99,7 @@ export class X86ALU extends X86Unit {
       signed = (((signed + (signed >> 4)) & 0x0f0f0f0f) * 0x01010101) >> 24;
       return !(signed % 2);
     },
-    /** Zero flag */ zf: (signed, bits) =>
-      (signed & X86_BINARY_MASKS[bits]) === 0x0,
+    /** Zero flag */ zf: (signed, bits) => (signed & X86_BINARY_MASKS[bits]) === 0x0,
     /** Sign flag */ sf: (signed, bits) => getMSbit(signed, bits) === 0x1,
   };
 
@@ -265,12 +264,7 @@ export class X86ALU extends X86Unit {
       (reg: string, _, byte) => {
         if (byte.reg === 0 || byte.reg === 1) {
           /** TEST r imm8 */
-          this.exec(
-            operators[0b100],
-            registers[reg],
-            cpu.fetchOpcode(bits),
-            bits,
-          );
+          this.exec(operators[0b100], registers[reg], cpu.fetchOpcode(bits), bits);
         } else if (byte.reg === 0x2) {
           /** NOT */
           registers[reg] = ~registers[reg] & BINARY_MASKS[bits];
@@ -292,10 +286,7 @@ export class X86ALU extends X86Unit {
           memIO.write[bits](~val & BINARY_MASKS[bits], address);
         } else if (byte.reg === 0x3) {
           /** NEG */
-          memIO.write[bits](
-            this.exec(this.operators[0b101], 0, val, bits),
-            address,
-          );
+          memIO.write[bits](this.exec(this.operators[0b101], 0, val, bits), address);
         } else {
           mul(val, byte);
         }
@@ -319,9 +310,7 @@ export class X86ALU extends X86Unit {
       (op => {
         const { offset } = op;
         const codes = {
-          /** OPERATOR r/m8, r8 */ [0x0 + offset]: (
-            bits: X86BitsMode = 0x1,
-          ) => {
+          /** OPERATOR r/m8, r8 */ [0x0 + offset]: (bits: X86BitsMode = 0x1) => {
             cpu.parseRmByte(
               (reg: string, modeReg) => {
                 const result = this.exec(
@@ -350,18 +339,11 @@ export class X86ALU extends X86Unit {
               bits,
             );
           },
-          /** OPERATOR m8, r/m8 */ [0x2 + offset]: (
-            bits: X86BitsMode = 0x1,
-          ) => {
+          /** OPERATOR m8, r/m8 */ [0x2 + offset]: (bits: X86BitsMode = 0x1) => {
             cpu.parseRmByte(
               (reg: string, modeReg) => {
                 const dest: string = X86_REGISTERS[bits][modeReg];
-                const result = this.exec(
-                  op,
-                  registers[reg],
-                  registers[dest],
-                  bits,
-                );
+                const result = this.exec(op, registers[reg], registers[dest], bits);
 
                 if (result !== null) {
                   registers[dest] = result;
@@ -382,9 +364,7 @@ export class X86ALU extends X86Unit {
               bits,
             );
           },
-          /** OPERATOR AL, imm8 */ [0x4 + offset]: (
-            bits: X86BitsMode = 0x1,
-          ) => {
+          /** OPERATOR AL, imm8 */ [0x4 + offset]: (bits: X86BitsMode = 0x1) => {
             const result = this.exec(
               op,
               registers[<string>X86_REGISTERS[bits][0]],
@@ -397,12 +377,9 @@ export class X86ALU extends X86Unit {
             }
           },
 
-          /** OPERATOR AX, imm16  */ [0x5 + offset]: () =>
-            cpu.opcodes[0x4 + offset](0x2),
-          /** OPERATOR r/m16, r16 */ [0x1 + offset]: () =>
-            cpu.opcodes[0x0 + offset](0x2),
-          /** OPERATOR r/m16, r16 */ [0x3 + offset]: () =>
-            cpu.opcodes[0x2 + offset](0x2),
+          /** OPERATOR AX, imm16  */ [0x5 + offset]: () => cpu.opcodes[0x4 + offset](0x2),
+          /** OPERATOR r/m16, r16 */ [0x1 + offset]: () => cpu.opcodes[0x0 + offset](0x2),
+          /** OPERATOR r/m16, r16 */ [0x3 + offset]: () => cpu.opcodes[0x2 + offset](0x2),
         };
         Object.assign(cpu.opcodes, codes);
       })(this.operators[key]);
@@ -520,8 +497,7 @@ export class X86ALU extends X86Unit {
             } else {
               /** DIV */
               registers.ax =
-                parseInt(<any>(registers.ax / val), 10) |
-                (registers.ax % val << 8);
+                parseInt(<any>(registers.ax / val), 10) | (registers.ax % val << 8);
             }
           } else {
             /** MUL / IMUL */
@@ -550,15 +526,9 @@ export class X86ALU extends X86Unit {
             /** DIV / IDIV */
             if (byte.reg === 0x7) {
               /** IDIV */
-              const num = getSignedNumber(
-                (registers.dx << 16) | registers.ax,
-                0x4,
-              );
+              const num = getSignedNumber((registers.dx << 16) | registers.ax, 0x4);
 
-              registers.ax = toUnsignedNumber(
-                parseInt(<any>(num / val), 10),
-                0x2,
-              );
+              registers.ax = toUnsignedNumber(parseInt(<any>(num / val), 10), 0x2);
               registers.dx = toUnsignedNumber(num % val, 0x2);
             } else {
               /** DIV */
@@ -608,10 +578,7 @@ export class X86ALU extends X86Unit {
           0x2,
         );
 
-        const overflow = +(
-          source1 * source2 !==
-          signExtend(source1 * source2, 0x2, 0x4)
-        );
+        const overflow = +(source1 * source2 !== signExtend(source1 * source2, 0x2, 0x4));
 
         registers.status.cf = overflow;
         registers.status.of = overflow;
@@ -643,10 +610,7 @@ export class X86ALU extends X86Unit {
           0x2,
         );
 
-        const overflow = +(
-          source1 * source2 !==
-          signExtend(source1 * source2, 0x2, 0x4)
-        );
+        const overflow = +(source1 * source2 !== signExtend(source1 * source2, 0x2, 0x4));
 
         registers.status.cf = overflow;
         registers.status.of = overflow;

@@ -25,10 +25,7 @@ export abstract class VGACanvasRenderer {
     const screenSize = vga.getPixelScreenSize();
     const upscaleWidth = vga.getPixelUpscaleWidth();
 
-    if (
-      !canvas ||
-      (screenSize.w === canvas.width && screenSize.h === canvas.height)
-    ) {
+    if (!canvas || (screenSize.w === canvas.width && screenSize.h === canvas.height)) {
       return false;
     }
 

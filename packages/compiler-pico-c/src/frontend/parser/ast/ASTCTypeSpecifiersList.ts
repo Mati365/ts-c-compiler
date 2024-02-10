@@ -19,11 +19,11 @@ type GroupedSpecifiersResult = {
 @walkOverFields({
   fields: ['items'],
 })
-export class ASTCTypeSpecifiersList
-  extends ASTCCompilerNode
-  implements IsEmpty
-{
-  constructor(loc: NodeLocation, readonly items: ASTCTypeSpecifier[]) {
+export class ASTCTypeSpecifiersList extends ASTCCompilerNode implements IsEmpty {
+  constructor(
+    loc: NodeLocation,
+    readonly items: ASTCTypeSpecifier[],
+  ) {
     super(ASTCCompilerKind.TypeSpecifiersList, loc);
   }
 

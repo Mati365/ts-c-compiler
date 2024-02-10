@@ -71,8 +71,7 @@ export function dropRedundantLoadInstructions(instructions: IRInstruction[]) {
       if (state.srcLoads[inputVar.name]) {
         newInstructions.splice(newInstructions.indexOf(instruction), 1);
         state.deadLoadsVarMap[outputVar.name] =
-          state.lastStore[inputVar.name] ??
-          state.srcLoads[inputVar.name].outputVar;
+          state.lastStore[inputVar.name] ?? state.srcLoads[inputVar.name].outputVar;
 
         --i;
         continue;
@@ -92,10 +91,7 @@ export function dropRedundantLoadInstructions(instructions: IRInstruction[]) {
         instruction,
       );
 
-      if (
-        isIRStoreInstruction(instruction) &&
-        isIRVariable(instruction.value)
-      ) {
+      if (isIRStoreInstruction(instruction) && isIRVariable(instruction.value)) {
         state.lastStore[instruction.outputVar.name] = instruction.value;
       }
 

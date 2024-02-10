@@ -1,8 +1,5 @@
 import { CVariableInitializerTree } from './CVariableInitializerTree';
-import {
-  CNamedTypedEntry,
-  CNamedTypedEntryDescriptor,
-} from './CNamedTypedEntry';
+import { CNamedTypedEntry, CNamedTypedEntryDescriptor } from './CNamedTypedEntry';
 import { CVariableInitializerPrintVisitor } from '../../ast/initializer-builder/CVariableInitializerPrintVisitor';
 import { CType } from '../../types';
 
@@ -94,9 +91,7 @@ export class CVariable extends CNamedTypedEntry<CVariableDescriptor> {
     let str = super.getDisplayName();
 
     if (this.isInitialized()) {
-      str += ` = ${CVariableInitializerPrintVisitor.serializeToString(
-        this.initializer,
-      )}`;
+      str += ` = ${CVariableInitializerPrintVisitor.serializeToString(this.initializer)}`;
     }
 
     return str;

@@ -10,11 +10,11 @@ import { ASTCAlignmentSpecifier } from './ASTCAlignmentSpecifier';
 @walkOverFields({
   fields: ['items'],
 })
-export class ASTCAlignmentSpecifiersList
-  extends ASTCCompilerNode
-  implements IsEmpty
-{
-  constructor(loc: NodeLocation, readonly items: ASTCAlignmentSpecifier[]) {
+export class ASTCAlignmentSpecifiersList extends ASTCCompilerNode implements IsEmpty {
+  constructor(
+    loc: NodeLocation,
+    readonly items: ASTCAlignmentSpecifier[],
+  ) {
     super(ASTCCompilerKind.AlignmentSpecifiersList, loc);
   }
 

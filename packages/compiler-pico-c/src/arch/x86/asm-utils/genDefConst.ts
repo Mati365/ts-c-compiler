@@ -22,9 +22,7 @@ export function genDefConst({ size, values, float }: DefConstAttrs): string {
   return `${getDefConstSizeLabel(size)} ${values
     .map(val => {
       if (typeof val === 'string') {
-        const strWithoutTerminator = val.endsWith('\0')
-          ? val.slice(0, -1)
-          : val;
+        const strWithoutTerminator = val.endsWith('\0') ? val.slice(0, -1) : val;
 
         return `"${revertEscapeSequences(strWithoutTerminator)}", 0x0`;
       }

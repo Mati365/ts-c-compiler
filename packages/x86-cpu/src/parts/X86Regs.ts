@@ -177,9 +177,7 @@ export class X86RegsStore extends X86ByteRegsStore {
     }
 
     return {
-      regs: X86RegsStore.toRegistersTable(
-        R.pick(X86_REGISTER_NAMES, this) as any,
-      ),
+      regs: X86RegsStore.toRegistersTable(R.pick(X86_REGISTER_NAMES, this) as any),
       flags,
     };
   }

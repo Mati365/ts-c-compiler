@@ -83,7 +83,9 @@ export class X86RegOwnershipTracker {
       throw new CBackendError(CBackendErrorCode.UNKNOWN_BACKEND_ERROR);
     }
 
-    this.ownership[outputVar] = { ...this.ownership[inputVar] };
+    this.ownership[outputVar] = {
+      ...this.ownership[inputVar],
+    };
   }
 
   setOwnership(
@@ -91,7 +93,9 @@ export class X86RegOwnershipTracker {
     {
       releasePrevAllocatedReg = true,
       ...value
-    }: IRRegOwnership & { releasePrevAllocatedReg?: boolean },
+    }: IRRegOwnership & {
+      releasePrevAllocatedReg?: boolean;
+    },
   ) {
     // edge case in phi functions:
     // if both: value and varName is phi function
@@ -167,8 +171,7 @@ export class X86RegOwnershipTracker {
       if (
         item.reg === reg ||
         (lookupInPartials &&
-          (regsParts[item.reg]?.low === reg ||
-            regsParts[item.reg]?.high === reg))
+          (regsParts[item.reg]?.low === reg || regsParts[item.reg]?.high === reg))
       ) {
         varNames.push(varName);
       }

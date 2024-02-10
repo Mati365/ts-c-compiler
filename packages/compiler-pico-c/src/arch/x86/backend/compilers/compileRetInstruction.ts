@@ -1,15 +1,11 @@
-import {
-  IRFnDeclInstruction,
-  IRRetInstruction,
-} from 'frontend/ir/instructions';
+import { IRFnDeclInstruction, IRRetInstruction } from 'frontend/ir/instructions';
 
 import { X86CompilerInstructionFnAttrs } from '../../constants/types';
 import { getX86FnCaller } from '../call-conventions';
 
-type RetInstructionCompilerAttrs =
-  X86CompilerInstructionFnAttrs<IRRetInstruction> & {
-    fnInstruction: IRFnDeclInstruction;
-  };
+type RetInstructionCompilerAttrs = X86CompilerInstructionFnAttrs<IRRetInstruction> & {
+  fnInstruction: IRFnDeclInstruction;
+};
 
 export function compileRetInstruction({
   context,

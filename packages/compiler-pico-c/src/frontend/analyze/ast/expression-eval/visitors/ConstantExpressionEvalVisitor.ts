@@ -22,10 +22,7 @@ import {
 } from 'frontend/parser/ast';
 
 import { CInnerTypeTreeVisitor } from '../../type-builder/CInnerTypeTreeVisitor';
-import {
-  CTypeCheckError,
-  CTypeCheckErrorCode,
-} from '../../../errors/CTypeCheckError';
+import { CTypeCheckError, CTypeCheckErrorCode } from '../../../errors/CTypeCheckError';
 
 import { charToInt } from '../../../casts';
 
@@ -147,9 +144,7 @@ export class ConstantExpressionEvalVisitor extends CInnerTypeTreeVisitor {
       expressionArgs.push(charToInt(node.charLiteral));
     } else if (!node.isConstant() || !isNumericToken(node.constant.type)) {
       if (node.isIdentifier()) {
-        const compileTimeConst = scope.findCompileTimeConstant(
-          node.identifier.text,
-        );
+        const compileTimeConst = scope.findCompileTimeConstant(node.identifier.text);
 
         if (!R.isNil(compileTimeConst)) {
           expressionArgs.push(compileTimeConst);
@@ -157,9 +152,7 @@ export class ConstantExpressionEvalVisitor extends CInnerTypeTreeVisitor {
         }
       }
 
-      throw new CTypeCheckError(
-        CTypeCheckErrorCode.INCORRECT_CONSTANT_EXPR_IDENTIFIER,
-      );
+      throw new CTypeCheckError(CTypeCheckErrorCode.INCORRECT_CONSTANT_EXPR_IDENTIFIER);
     } else {
       const { value } = <NumberToken>node.constant;
       expressionArgs.push(value.number);
@@ -174,9 +167,7 @@ export class ConstantExpressionEvalVisitor extends CInnerTypeTreeVisitor {
     const { op } = node;
 
     if (R.isNil(op)) {
-      throw new CTypeCheckError(
-        CTypeCheckErrorCode.UNKNOWN_CONSTANT_EXPR_EVAL_OPERAND,
-      );
+      throw new CTypeCheckError(CTypeCheckErrorCode.UNKNOWN_CONSTANT_EXPR_EVAL_OPERAND);
     }
 
     const [left, right] = [expressionArgs.pop(), expressionArgs.pop()];

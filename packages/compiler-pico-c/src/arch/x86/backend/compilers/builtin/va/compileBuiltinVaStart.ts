@@ -40,7 +40,9 @@ export const compileBuiltinVaStart = ({
     ...lastArgPtr.asm,
     genInstruction(
       'mov',
-      genMemAddress({ expression: vaListPtr.value as string }),
+      genMemAddress({
+        expression: vaListPtr.value as string,
+      }),
       lastArgPtr.value,
     ),
   ]);

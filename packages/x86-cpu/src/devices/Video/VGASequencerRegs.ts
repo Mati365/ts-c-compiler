@@ -71,8 +71,7 @@ export class VGASequencerRegs extends VGAIndexedReg {
    * Returns two fonts charsets
    */
   getCharsetMemRegions(): [MemoryRegionRange, MemoryRegionRange] {
-    const { charSetBSelect, csbs2, charSetASelect, csas2 } =
-      this.charMapSelectReg;
+    const { charSetBSelect, csbs2, charSetASelect, csas2 } = this.charMapSelectReg;
 
     return [
       CHARSET_MEMORY_MAPS[(csas2 << 2) | charSetASelect],

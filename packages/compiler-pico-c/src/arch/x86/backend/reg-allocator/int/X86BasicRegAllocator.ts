@@ -3,11 +3,7 @@ import { BINARY_MASKS } from '@ts-c-compiler/core';
 import { hasFlag } from '@ts-c-compiler/core';
 import { CBackendError, CBackendErrorCode } from 'backend/errors/CBackendError';
 
-import {
-  IRInstructionTypedArg,
-  isIRConstant,
-  isIRVariable,
-} from 'frontend/ir/variables';
+import { IRInstructionTypedArg, isIRConstant, isIRVariable } from 'frontend/ir/variables';
 
 import { isStructLikeType, isUnionLikeType } from 'frontend/analyze';
 
@@ -29,12 +25,11 @@ import { castToPointerIfArray } from 'frontend/analyze/casts';
 import { X86MemOwnershipTracker } from '../mem';
 import { isLabelOwnership, isStackVarOwnership } from '../mem/ownership';
 
-export type IRArgAllocatorResult<V extends string | number = string | number> =
-  {
-    asm: string[];
-    size: number;
-    value: V;
-  };
+export type IRArgAllocatorResult<V extends string | number = string | number> = {
+  asm: string[];
+  size: number;
+  value: V;
+};
 
 export type IRRegReqResult = IRArgAllocatorResult<X86RegName>;
 
@@ -98,9 +93,7 @@ export class X86BasicRegAllocator {
     return this.allocator.stackFrame;
   }
 
-  tryResolveIRArgAsReg(
-    attrs: IRArgRegResolverAttrs,
-  ): IRArgAllocatorResult<X86RegName> {
+  tryResolveIRArgAsReg(attrs: IRArgRegResolverAttrs): IRArgAllocatorResult<X86RegName> {
     const { stackFrame, ownership, memOwnership } = this;
     const {
       arg,
@@ -113,8 +106,7 @@ export class X86BasicRegAllocator {
     } = attrs;
 
     const regsParts = ownership.getAvailableRegs().general.parts;
-    const requestArgSizeDelta =
-      size - castToPointerIfArray(arg.type).getByteSize();
+    const requestArgSizeDelta = size - castToPointerIfArray(arg.type).getByteSize();
 
     if (
       !castToPointerIfArray(arg.type).isScalar() &&
@@ -165,10 +157,7 @@ export class X86BasicRegAllocator {
       }
 
       return {
-        asm: [
-          ...asm,
-          genInstruction(allocIfNotFound ? 'mov' : 'lea', value, stackAddr),
-        ],
+        asm: [...asm, genInstruction(allocIfNotFound ? 'mov' : 'lea', value, stackAddr)],
         value,
         size,
       };
@@ -205,8 +194,7 @@ export class X86BasicRegAllocator {
             });
           }
 
-          const movOpcode =
-            regResult.size - varOwnershipRegSize === 1 ? 'movzx' : 'mov';
+          const movOpcode = regResult.size - varOwnershipRegSize === 1 ? 'movzx' : 'mov';
 
           return {
             size,
@@ -277,12 +265,9 @@ export class X86BasicRegAllocator {
           });
         }
 
-        const address = X86MemOwnershipTracker.tryResolveLabelOwnershipAddr(
-          memAddr,
-          {
-            forceMemPtr: forceLabelMemPtr,
-          },
-        );
+        const address = X86MemOwnershipTracker.tryResolveLabelOwnershipAddr(memAddr, {
+          forceMemPtr: forceLabelMemPtr,
+        });
 
         return {
           size,
@@ -292,9 +277,7 @@ export class X86BasicRegAllocator {
       }
 
       if (isStackVarOwnership(memAddr)) {
-        const stackAddr = stackFrame.getLocalVarStackRelAddress(
-          memAddr.stackVar.name,
-        );
+        const stackAddr = stackFrame.getLocalVarStackRelAddress(memAddr.stackVar.name);
 
         const regResult = this.requestReg({
           prefer: preferRegs,
@@ -307,10 +290,7 @@ export class X86BasicRegAllocator {
         const result = {
           size,
           value: regResult.value,
-          asm: [
-            ...regResult.asm,
-            genInstruction(movOpcode, regResult.value, stackAddr),
-          ],
+          asm: [...regResult.asm, genInstruction(movOpcode, regResult.value, stackAddr)],
         };
 
         // it will not cause an issue due to IR specification
@@ -344,9 +324,7 @@ export class X86BasicRegAllocator {
     return null;
   }
 
-  tryResolveIrArg(
-    attrs: IRArgDynamicResolverAttrs,
-  ): IRDynamicArgAllocatorResult {
+  tryResolveIrArg(attrs: IRArgDynamicResolverAttrs): IRDynamicArgAllocatorResult {
     const {
       arg,
       allowedRegs,
@@ -400,11 +378,7 @@ export class X86BasicRegAllocator {
         //    int k = 0;
         //  }
 
-        if (
-          result &&
-          hasFlag(IRArgDynamicResolverType.REG, allow) &&
-          size > argSize
-        ) {
+        if (result && hasFlag(IRArgDynamicResolverType.REG, allow) && size > argSize) {
           const extendedResult = this.memOwnership.tryResolveIRArgAsAddr(arg, {
             prefixSize: size,
             forceLabelMemPtr,
@@ -480,8 +454,7 @@ export class X86BasicRegAllocator {
   }): IRRegReqResult {
     const { ownership, memOwnership, stackFrame } = this;
     const { general: generalRegs } = ownership.getAvailableRegs();
-    const defaultAllowedRegs =
-      generalRegs.size === query.size ? generalRegs.list : null;
+    const defaultAllowedRegs = generalRegs.size === query.size ? generalRegs.list : null;
 
     let result: X86RegsMapQueryAndSetResult = null;
 
@@ -494,14 +467,20 @@ export class X86BasicRegAllocator {
 
     // if there is no preferred regs just pick any free
     result ||= queryAndMarkX86RegsMap(
-      { allowedRegs: defaultAllowedRegs, ...query },
+      {
+        allowedRegs: defaultAllowedRegs,
+        ...query,
+      },
       ownership.getAvailableRegs(),
     );
 
     if (!result) {
       ownership.releaseNotUsedLaterRegs();
       result = queryAndMarkX86RegsMap(
-        { allowedRegs: defaultAllowedRegs, ...query },
+        {
+          allowedRegs: defaultAllowedRegs,
+          ...query,
+        },
         ownership.getAvailableRegs(),
       );
     }

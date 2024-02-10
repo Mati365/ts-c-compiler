@@ -8,10 +8,7 @@ import { Identity } from '@ts-c-compiler/core';
 import { CCompilerArch } from '#constants';
 import { CType } from '../CType';
 import { CNamedTypedEntry } from '../../scope/variables/CNamedTypedEntry';
-import {
-  CTypeCheckError,
-  CTypeCheckErrorCode,
-} from '../../errors/CTypeCheckError';
+import { CTypeCheckError, CTypeCheckErrorCode } from '../../errors/CTypeCheckError';
 
 import { CUnionTypeDescriptor, CUnionEntry } from './constants/types';
 import { isArrayLikeType } from '../CArrayType';
@@ -60,29 +57,20 @@ export class CUnionType extends CType<CUnionTypeDescriptor> {
   /**
    * Appends new Union field
    */
-  ofAppendedField(
-    entry: CNamedTypedEntry,
-  ): E.Either<CTypeCheckError, CUnionType> {
+  ofAppendedField(entry: CNamedTypedEntry): E.Either<CTypeCheckError, CUnionType> {
     return this.bind(value => {
       const { name } = entry;
 
       if (this.getField(name)) {
         return E.left(
-          new CTypeCheckError(
-            CTypeCheckErrorCode.REDEFINITION_OF_UNION_ENTRY,
-            null,
-            {
-              name,
-            },
-          ),
+          new CTypeCheckError(CTypeCheckErrorCode.REDEFINITION_OF_UNION_ENTRY, null, {
+            name,
+          }),
         );
       }
 
       const fieldsList = this.getFieldsList();
-      const newEntry: [string, CUnionEntry] = [
-        name,
-        new CUnionEntry(entry.unwrap()),
-      ];
+      const newEntry: [string, CUnionEntry] = [name, new CUnionEntry(entry.unwrap())];
 
       return E.right(
         new CUnionType({

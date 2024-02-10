@@ -20,12 +20,7 @@ export type NumberTokenValue = {
  * Token which contains numeric value
  */
 export class NumberToken<O = any> extends Token<NumberTokenValue, O> {
-  constructor(
-    text: string,
-    number: number,
-    format: NumberFormat,
-    loc: TokenLocation,
-  ) {
+  constructor(text: string, number: number, format: NumberFormat, loc: TokenLocation) {
     super(TokenType.NUMBER, null, text, loc, {
       // do not use signedNumberByteSize
       // do not resize number even if overflows
@@ -39,12 +34,7 @@ export class NumberToken<O = any> extends Token<NumberTokenValue, O> {
     const numberInfo = parseNumberToken(token);
 
     if (numberInfo !== null) {
-      return new NumberToken(
-        token,
-        numberInfo[1],
-        <any>numberInfo[0],
-        loc.clone(),
-      );
+      return new NumberToken(token, numberInfo[1], <any>numberInfo[0], loc.clone());
     }
 
     return null;

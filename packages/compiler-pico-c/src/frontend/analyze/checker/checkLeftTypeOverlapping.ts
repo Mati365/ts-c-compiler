@@ -1,11 +1,7 @@
 import { CType } from '../types/CType';
 
 import { isImplicitPtrType } from '../types/utils';
-import {
-  isPointerLikeType,
-  isArrayLikeType,
-  isPrimitiveLikeType,
-} from '../types';
+import { isPointerLikeType, isArrayLikeType, isPrimitiveLikeType } from '../types';
 
 type CastOverlapCheck = {
   ignoreConstChecks?: boolean;
@@ -68,11 +64,7 @@ export function checkLeftTypeOverlapping(
   // [left ]char[4] = [right] char*
   if (isArrayLikeType(left)) {
     if (isArrayLikeType(right)) {
-      if (
-        !attrs.ignoreArrayLength &&
-        !left.isUnknownSize() &&
-        left.size !== right.size
-      ) {
+      if (!attrs.ignoreArrayLength && !left.isUnknownSize() && left.size !== right.size) {
         return false;
       }
 
@@ -89,12 +81,7 @@ export function checkLeftTypeOverlapping(
     const rightPrimitive = isPrimitiveLikeType(right);
 
     // primitive types in C can be implict casted
-    if (
-      leftPrimitive &&
-      rightPrimitive &&
-      !left.isPointer() &&
-      !right.isPointer()
-    ) {
+    if (leftPrimitive && rightPrimitive && !left.isPointer() && !right.isPointer()) {
       return true;
     }
 

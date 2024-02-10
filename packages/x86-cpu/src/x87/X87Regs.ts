@@ -1,10 +1,7 @@
 import * as R from 'ramda';
 
 import { getBit, setBit } from '@ts-c-compiler/core';
-import {
-  X87_STACK_REGS_COUNT,
-  toUnsignedNumber,
-} from '@ts-c-compiler/x86-assembler';
+import { X87_STACK_REGS_COUNT, toUnsignedNumber } from '@ts-c-compiler/x86-assembler';
 
 import { RegistersDebugDump, X86RegsStore } from '../parts';
 import { X87Error, X87ErrorCode } from './X87Error';
@@ -185,31 +182,34 @@ export class X87RegsStore {
       fcs,
     };
 
-    R.forEach((index: number) => {
-      let stIndex = (index - this.stackPointer) % X87_STACK_REGS_COUNT;
-      if (stIndex < 0) {
-        stIndex += X87_STACK_REGS_COUNT;
-      }
+    R.forEach(
+      (index: number) => {
+        let stIndex = (index - this.stackPointer) % X87_STACK_REGS_COUNT;
+        if (stIndex < 0) {
+          stIndex += X87_STACK_REGS_COUNT;
+        }
 
-      const tag = this.getNthTag(index);
-      const name = `fp${index} st${stIndex}(${X87Tag[tag]})`;
-      const value = stack[index];
-      let parsedValue: string = null;
+        const tag = this.getNthTag(index);
+        const name = `fp${index} st${stIndex}(${X87Tag[tag]})`;
+        const value = stack[index];
+        let parsedValue: string = null;
 
-      if (
-        tag === X87Tag.VALID ||
-        tag === X87Tag.ZERO ||
-        (tag === X87Tag.EMPTY && (Number.isFinite(value) || value === 0x0))
-      ) {
-        parsedValue = value.toString();
-      } else if (tag === X87Tag.EMPTY) {
-        parsedValue = '0';
-      } else {
-        parsedValue = '-INF';
-      }
+        if (
+          tag === X87Tag.VALID ||
+          tag === X87Tag.ZERO ||
+          (tag === X87Tag.EMPTY && (Number.isFinite(value) || value === 0x0))
+        ) {
+          parsedValue = value.toString();
+        } else if (tag === X87Tag.EMPTY) {
+          parsedValue = '0';
+        } else {
+          parsedValue = '-INF';
+        }
 
-      regs[`${name}${stIndex === 0 ? ' <--' : ''}`] = parsedValue;
-    }, R.times(R.identity, 8));
+        regs[`${name}${stIndex === 0 ? ' <--' : ''}`] = parsedValue;
+      },
+      R.times(R.identity, 8),
+    );
 
     return {
       regs: X86RegsStore.toRegistersTable(regs),
@@ -326,8 +326,7 @@ export class X87RegsStore {
   setNthTag(nth: number, tag: X87Tag) {
     const offset = nth * 2;
 
-    this.tags =
-      (this.tags & ((0b11 << offset) ^ 0xffff)) | ((tag << offset) & 0xffff);
+    this.tags = (this.tags & ((0b11 << offset) ^ 0xffff)) | ((tag << offset) & 0xffff);
   }
 
   /**
@@ -337,8 +336,7 @@ export class X87RegsStore {
     const newValue = num & (X87_STACK_REGS_COUNT - 1);
 
     this.stackPointer = newValue;
-    this.status =
-      (this.status & ((0b111 << 11) ^ 0xffff)) | ((newValue << 11) & 0xffff);
+    this.status = (this.status & ((0b111 << 11) ^ 0xffff)) | ((newValue << 11) & 0xffff);
   }
 
   /**
@@ -386,10 +384,7 @@ export class X87RegsStore {
     } else {
       this.c1 = false;
 
-      this.setNthTag(
-        this.stackPointer,
-        X87RegsStore.checkFloatingNumberTag(num),
-      );
+      this.setNthTag(this.stackPointer, X87RegsStore.checkFloatingNumberTag(num));
       stack[this.stackPointer] = num;
     }
   }

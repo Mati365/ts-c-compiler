@@ -19,10 +19,7 @@ export function isIRStoreInstruction(
  *
  * It does not perform loading memory that can be specified by reg.
  */
-export class IRStoreInstruction
-  extends IRInstruction
-  implements IsOutputInstruction
-{
+export class IRStoreInstruction extends IRInstruction implements IsOutputInstruction {
   constructor(
     readonly value: IRInstructionTypedArg,
     readonly outputVar: IRVariable,
@@ -41,10 +38,7 @@ export class IRStoreInstruction
     return new IRStoreInstruction(value, outputVar, newOffset);
   }
 
-  override ofArgs({
-    input = [this.value],
-    output = this.outputVar,
-  }: IRInstructionArgs) {
+  override ofArgs({ input = [this.value], output = this.outputVar }: IRInstructionArgs) {
     return new IRStoreInstruction(<IRVariable>input[0], output, this.offset);
   }
 

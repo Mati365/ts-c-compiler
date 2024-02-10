@@ -52,15 +52,12 @@ export class X86Interrupt {
       new X86Interrupt(0x2, X86InterruptType.INTERRUPT, null, null, false),
     breakpoint: () => new X86Interrupt(0x3, X86InterruptType.TRAP, '#BP'),
     overflow: () => new X86Interrupt(0x4, X86InterruptType.TRAP, '#OF'),
-    boundRangeExceeded: () =>
-      new X86Interrupt(0x5, X86InterruptType.FAULT, '#BR'),
+    boundRangeExceeded: () => new X86Interrupt(0x5, X86InterruptType.FAULT, '#BR'),
     invalidOpcode: () => new X86Interrupt(0x6, X86InterruptType.FAULT, '#UD'),
-    deviceNotAvailable: () =>
-      new X86Interrupt(0x7, X86InterruptType.FAULT, '#NM'),
+    deviceNotAvailable: () => new X86Interrupt(0x7, X86InterruptType.FAULT, '#NM'),
     doubleFault: (errorCode: number = 0) =>
       new X86Interrupt(0x8, X86InterruptType.ABORT, '#DF', errorCode),
-    coprocessorSegmentOverrun: () =>
-      new X86Interrupt(0x9, X86InterruptType.FAULT, null),
+    coprocessorSegmentOverrun: () => new X86Interrupt(0x9, X86InterruptType.FAULT, null),
     invalidTSS: (errorCode: number) =>
       new X86Interrupt(0xa, X86InterruptType.FAULT, '#TS', errorCode),
     segmentNotPresent: (errorCode: number) =>
@@ -78,8 +75,7 @@ export class X86Interrupt {
     machineCheck: () => new X86Interrupt(0x12, X86InterruptType.ABORT, '#MC'),
     SIMDFloatingPointException: () =>
       new X86Interrupt(0x13, X86InterruptType.FAULT, '#XM/#XF'),
-    virtualizationException: () =>
-      new X86Interrupt(0x14, X86InterruptType.FAULT, '#VE'),
+    virtualizationException: () => new X86Interrupt(0x14, X86InterruptType.FAULT, '#VE'),
     securityException: (errorCode: number) =>
       new X86Interrupt(0x1e, null, '#SX', errorCode),
     tripleFault: () => new X86Interrupt(null, null, null),

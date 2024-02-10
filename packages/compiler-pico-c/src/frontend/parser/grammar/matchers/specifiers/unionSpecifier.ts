@@ -30,9 +30,5 @@ export function unionSpecifier(grammar: CGrammar): ASTCStructSpecifier {
     g.terminal('}');
   }
 
-  return new ASTCUnionSpecifier(
-    NodeLocation.fromTokenLoc(startToken.loc),
-    list,
-    name,
-  );
+  return new ASTCUnionSpecifier(NodeLocation.fromTokenLoc(startToken.loc), list, name);
 }

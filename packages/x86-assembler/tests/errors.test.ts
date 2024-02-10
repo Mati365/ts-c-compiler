@@ -6,15 +6,11 @@ import './utils/asmMatcher';
 
 describe('equ', () => {
   it('handle unknown labels', () => {
-    expect('test3 equ test_label + 3').toHaveCompilerError(
-      MathErrorCode.UNKNOWN_KEYWORD,
-    );
+    expect('test3 equ test_label + 3').toHaveCompilerError(MathErrorCode.UNKNOWN_KEYWORD);
   });
 
   it('provided empty args list', () => {
-    expect('test3 equ').toHaveCompilerError(
-      ParserErrorCode.INCORRECT_EQU_ARGS_COUNT,
-    );
+    expect('test3 equ').toHaveCompilerError(ParserErrorCode.INCORRECT_EQU_ARGS_COUNT);
   });
 
   it('name already defined', () => {
@@ -51,9 +47,7 @@ describe('times', () => {
   });
 
   it('handle negative value', () => {
-    expect('times (1-10) nop').toHaveCompilerError(
-      ParserErrorCode.INCORRECT_TIMES_VALUE,
-    );
+    expect('times (1-10) nop').toHaveCompilerError(ParserErrorCode.INCORRECT_TIMES_VALUE);
   });
 
   it('handle unknown keyword value', () => {
@@ -114,9 +108,7 @@ describe('instruction', () => {
     expect('add word di, 16').not.toHaveCompilerError(
       ParserErrorCode.OPERAND_SIZES_MISMATCH,
     );
-    expect('add di, 16').not.toHaveCompilerError(
-      ParserErrorCode.OPERAND_SIZES_MISMATCH,
-    );
+    expect('add di, 16').not.toHaveCompilerError(ParserErrorCode.OPERAND_SIZES_MISMATCH);
   });
 
   it('handle unknown operation', () => {

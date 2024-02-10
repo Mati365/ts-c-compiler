@@ -37,9 +37,7 @@ export function dropConstantLabelOffsetsArgs(instructions: IRInstruction[]) {
       isIRVariable(instruction.fnPtr) &&
       constantOffsets[instruction.fnPtr.name]
     ) {
-      newInstructions[i] = instruction.ofFnPtr(
-        constantOffsets[instruction.fnPtr.name],
-      );
+      newInstructions[i] = instruction.ofFnPtr(constantOffsets[instruction.fnPtr.name]);
       continue;
     }
   }

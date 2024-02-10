@@ -3,10 +3,7 @@ import { isLineTerminatorToken } from '@ts-c-compiler/lexer';
 import { Token, TokenType } from '@ts-c-compiler/lexer';
 import { TokensIterator } from '@ts-c-compiler/grammar';
 
-import {
-  PreprocessorError,
-  PreprocessorErrorCode,
-} from '../../PreprocessorError';
+import { PreprocessorError, PreprocessorErrorCode } from '../../PreprocessorError';
 
 /**
  * Extracts args from expressions such as:

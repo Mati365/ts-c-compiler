@@ -59,10 +59,7 @@ export type X86MemRMCallback = (
 export class X86CPU extends X86AbstractCPU {
   private config: X86CPUConfig;
 
-  public instructionStartAddress: SegmentedAddress = new SegmentedAddress(
-    null,
-    null,
-  );
+  public instructionStartAddress: SegmentedAddress = new SegmentedAddress(null, null);
 
   public stack: X86Stack;
   public alu: X86ALU;
@@ -168,11 +165,7 @@ export class X86CPU extends X86AbstractCPU {
   /**
    * Loads buffer into RAM at specified address
    */
-  loadBuffer(
-    buffer: Buffer,
-    address: number,
-    size: number = buffer.length,
-  ): Uint8Array {
+  loadBuffer(buffer: Buffer, address: number, size: number = buffer.length): Uint8Array {
     buffer.copy(Buffer.from(this.mem.buffer), address, 0, size);
     return this.mem;
   }
@@ -200,9 +193,7 @@ export class X86CPU extends X86AbstractCPU {
 
       // repeat instruction if fault
       if (type === X86InterruptType.FAULT) {
-        stack
-          .push(instructionStartAddress.segment)
-          .push(instructionStartAddress.offset);
+        stack.push(instructionStartAddress.segment).push(instructionStartAddress.offset);
       } else {
         stack.push(registers.cs).push(registers.ip);
       }
@@ -318,9 +309,7 @@ export class X86CPU extends X86AbstractCPU {
       const operand = this.opcodes[opcode];
       if (!operand) {
         this.logger.error(
-          `Unknown opcode 0x${opcode
-            .toString(16)
-            .toUpperCase()}! Excuting fault!`,
+          `Unknown opcode 0x${opcode.toString(16).toUpperCase()}! Excuting fault!`,
         );
         this.interrupt(X86Interrupt.raise.invalidOpcode());
         return;
@@ -697,9 +686,7 @@ export class X86CPU extends X86AbstractCPU {
       }
 
       /** Next instruction */
-      this.logger.info(
-        `Halt! Next instruction ${this.fetchOpcode(0x2).toString(16)}`,
-      );
+      this.logger.info(`Halt! Next instruction ${this.fetchOpcode(0x2).toString(16)}`);
     }
   }
 }

@@ -11,9 +11,7 @@ import { stringLiteral } from '../types/stringLiteral';
  *  : STATIC_ASSERT '(' constant_expression ',' STRING_LITERAL ')' ';'
  *  ;
  */
-export function staticAssertDeclaration(
-  grammar: CGrammar,
-): ASTCStaticAssertDeclaration {
+export function staticAssertDeclaration(grammar: CGrammar): ASTCStaticAssertDeclaration {
   const { g } = grammar;
 
   g.identifier(CCompilerKeyword.STATIC_ASSERT);

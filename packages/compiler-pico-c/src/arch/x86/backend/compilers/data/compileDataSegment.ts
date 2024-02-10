@@ -12,10 +12,7 @@ type DataSegmentCompilerAttrs = {
   segment: IRDataSegmentBuilderResult;
 };
 
-export function compileDataSegment({
-  segment,
-  arch,
-}: DataSegmentCompilerAttrs) {
+export function compileDataSegment({ segment, arch }: DataSegmentCompilerAttrs) {
   const output = new X86CompileInstructionOutput();
   const labelsResolver = new X86LabelsResolver();
 

@@ -1,10 +1,7 @@
 import { RegsMap } from '../../constants/regs';
 
 import { recursiveSetAvailabilityInX86RegMap } from './recursiveSetAvailabilityInX86RegMap';
-import {
-  recursiveX86RegMapLookup,
-  X86RegLookupQuery,
-} from './recursiveX86RegMapLookup';
+import { recursiveX86RegMapLookup, X86RegLookupQuery } from './recursiveX86RegMapLookup';
 
 type RegsUpdaterQuery = Omit<X86RegLookupQuery, 'withUnavailable'>;
 

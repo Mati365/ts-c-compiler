@@ -8,7 +8,10 @@ import {
 } from './ASTCPreprocessorTreeNode';
 
 export class ASTCIncludeNode extends ASTCPreprocessorTreeNode {
-  constructor(loc: NodeLocation, readonly path: CInterpreterSourcePath) {
+  constructor(
+    loc: NodeLocation,
+    readonly path: CInterpreterSourcePath,
+  ) {
     super(ASTCPreprocessorKind.Include, loc);
   }
 

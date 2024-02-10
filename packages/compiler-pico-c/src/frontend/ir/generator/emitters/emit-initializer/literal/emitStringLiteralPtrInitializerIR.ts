@@ -1,8 +1,4 @@
-import {
-  CArrayType,
-  CPointerType,
-  CVariableInitializerTree,
-} from 'frontend/analyze';
+import { CArrayType, CPointerType, CVariableInitializerTree } from 'frontend/analyze';
 
 import { IRLabel, IRVariable } from 'frontend/ir/variables';
 

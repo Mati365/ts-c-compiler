@@ -21,9 +21,7 @@ export function createLeftRecursiveOperatorMatcher({
   parentExpression,
 }: {
   operator: CanBeArray<TokenType>;
-  parentExpression: (
-    grammar: CPreprocessorGrammarDef,
-  ) => ASTCPreprocessorTreeNode;
+  parentExpression: (grammar: CPreprocessorGrammarDef) => ASTCPreprocessorTreeNode;
 }) {
   /**
    * @see
@@ -35,11 +33,7 @@ export function createLeftRecursiveOperatorMatcher({
     return <ASTCPreprocessorTreeNode>g.or({
       value() {
         if (operator instanceof Array && operator.length > 1) {
-          const root = new ASTPreprocessorBinaryOpNode(
-            null,
-            parentExpression(g),
-            null,
-          );
+          const root = new ASTPreprocessorBinaryOpNode(null, parentExpression(g), null);
 
           return eatLeftRecursiveOperators(
             g,

@@ -4,16 +4,11 @@ import { CPrimitiveType } from 'frontend/analyze';
 import { IRLeaInstruction } from 'frontend/ir/instructions';
 
 import { X86CompilerInstructionFnAttrs } from '../../constants/types';
-import {
-  genInstruction,
-  genLabelName,
-  withInlineComment,
-} from '../../asm-utils';
+import { genInstruction, genLabelName, withInlineComment } from '../../asm-utils';
 
 import { X86CompileInstructionOutput } from './shared';
 
-type LeaInstructionCompilerAttrs =
-  X86CompilerInstructionFnAttrs<IRLeaInstruction>;
+type LeaInstructionCompilerAttrs = X86CompilerInstructionFnAttrs<IRLeaInstruction>;
 
 export function compileLeaInstruction({
   instruction,

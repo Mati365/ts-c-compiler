@@ -10,12 +10,7 @@ import {
   replaceEscapeSequences,
 } from '@ts-c-compiler/core';
 
-import {
-  Token,
-  TokenType,
-  NumberToken,
-  FloatNumberToken,
-} from '@ts-c-compiler/lexer';
+import { Token, TokenType, NumberToken, FloatNumberToken } from '@ts-c-compiler/lexer';
 
 import { safeKeywordResultRPN } from '../utils';
 
@@ -41,29 +36,20 @@ export function encodeDefineToken(byteSize: number, token: Token): number[] {
       {
         const encoder = FLOAT_DEFINE_ENCODERS[byteSize];
         if (!encoder) {
-          throw new ParserError(
-            ParserErrorCode.INCORRECT_FLOAT_SIZE,
-            token.loc,
-            {
-              number: token.text,
-            },
-          );
+          throw new ParserError(ParserErrorCode.INCORRECT_FLOAT_SIZE, token.loc, {
+            number: token.text,
+          });
         }
 
         buffer.push(
-          ...(R.reverse(
-            encoder((<FloatNumberToken>token).value.number),
-          ) as any),
+          ...(R.reverse(encoder((<FloatNumberToken>token).value.number)) as any),
         );
       }
       break;
 
     case TokenType.NUMBER:
       buffer.push(
-        ...extractMultipleNumberBytes(
-          byteSize,
-          (<NumberToken>token).value.number,
-        ),
+        ...extractMultipleNumberBytes(byteSize, (<NumberToken>token).value.number),
       );
       break;
 
@@ -71,8 +57,7 @@ export function encodeDefineToken(byteSize: number, token: Token): number[] {
       {
         const escapedText = replaceEscapeSequences(token.text);
         const binText = extractBytesFromText(1, escapedText);
-        const rounedByfferOutputSize =
-          Math.ceil(binText.length / byteSize) * byteSize;
+        const rounedByfferOutputSize = Math.ceil(binText.length / byteSize) * byteSize;
 
         buffer.push(
           ...binText,
@@ -88,13 +73,9 @@ export function encodeDefineToken(byteSize: number, token: Token): number[] {
       break;
 
     default:
-      throw new ParserError(
-        ParserErrorCode.UNSUPPORTED_DEFINE_TOKEN,
-        token.loc,
-        {
-          token: token.text,
-        },
-      );
+      throw new ParserError(ParserErrorCode.UNSUPPORTED_DEFINE_TOKEN, token.loc, {
+        token: token.text,
+      });
   }
 
   return buffer;

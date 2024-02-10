@@ -1,5 +1,8 @@
 export class X86CompileInstructionOutput {
-  constructor(readonly asm: string[] = [], readonly data: string[] = []) {}
+  constructor(
+    readonly asm: string[] = [],
+    readonly data: string[] = [],
+  ) {}
 
   appendGroup(output: X86CompileInstructionOutput) {
     const { asm, data } = this;

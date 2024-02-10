@@ -54,10 +54,7 @@ export class ColorSelectReg extends UnionStruct {
 export class VGAAttrRegs extends VGAIndexedReg {
   next3c0IsIndex = false; /* check 0x3DA port behaviour */
   attrAddressReg = new AttributeAddressReg();
-  paletteRegs: number[] = R.repeat(
-    0,
-    16,
-  ); /* Palette Registers (Index 00-0Fh) */
+  paletteRegs: number[] = R.repeat(0, 16); /* Palette Registers (Index 00-0Fh) */
   attrModeControlReg = new AttributeModeControlReg();
   overscanColorReg = 0;
   colorPlaneEnableReg = new ColorPlaneEnableReg();

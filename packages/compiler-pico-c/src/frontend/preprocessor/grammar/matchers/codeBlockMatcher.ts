@@ -2,20 +2,14 @@ import { pipe } from 'fp-ts/function';
 import * as A from 'fp-ts/Array';
 
 import { Token, TokenType } from '@ts-c-compiler/lexer';
-import {
-  NodeLocation,
-  SyntaxError,
-  fetchTokensUntil,
-} from '@ts-c-compiler/grammar';
+import { NodeLocation, SyntaxError, fetchTokensUntil } from '@ts-c-compiler/grammar';
 
 import { ASTCCodeBlockNode } from 'frontend/preprocessor/ast/ASTCCodeBlockNode';
 import { isPreprocessorIdentifierLikeToken } from 'frontend/preprocessor/utils';
 
 import type { CPreprocessorGrammar } from '../CPreprocessorGrammar';
 
-export const codeBlockMatcher = ({
-  g,
-}: CPreprocessorGrammar): ASTCCodeBlockNode => {
+export const codeBlockMatcher = ({ g }: CPreprocessorGrammar): ASTCCodeBlockNode => {
   const tokensWithEOLs: Token[] = fetchTokensUntil(
     isPreprocessorIdentifierLikeToken,
     g,
@@ -32,10 +26,7 @@ export const codeBlockMatcher = ({
   );
 
   if (!filteredTokens.length) {
-    return new ASTCCodeBlockNode(
-      NodeLocation.fromTokenLoc(tokensWithEOLs[0].loc),
-      [],
-    );
+    return new ASTCCodeBlockNode(NodeLocation.fromTokenLoc(tokensWithEOLs[0].loc), []);
   }
 
   return new ASTCCodeBlockNode(

@@ -4,10 +4,7 @@ import * as E from 'fp-ts/Either';
 import { CompilerError } from '@ts-c-compiler/core';
 import { NumberToken, Token } from '@ts-c-compiler/lexer';
 
-import {
-  MIN_COMPILER_REG_LENGTH,
-  MAX_COMPILER_REG_LENGTH,
-} from '../../constants';
+import { MIN_COMPILER_REG_LENGTH, MAX_COMPILER_REG_LENGTH } from '../../constants';
 
 import { isReservedKeyword } from '../utils/isReservedKeyword';
 import { isExternalLinkerSymbol } from '../utils/externalLinkerLabel';
@@ -17,10 +14,7 @@ import { ParserError, ParserErrorCode } from '../../shared/ParserError';
 import { InstructionArgSize, X86TargetCPU } from '../../types';
 
 import { ASTAsmNode } from '../ast/ASTAsmNode';
-import {
-  ASTCompilerOption,
-  CompilerOptions,
-} from '../ast/def/ASTCompilerOption';
+import { ASTCompilerOption, CompilerOptions } from '../ast/def/ASTCompilerOption';
 
 import { ASTLabelAddrResolver } from '../ast/instruction/ASTResolvableArg';
 import { ASTAsmTree } from '../ast/ASTAsmParser';
@@ -42,11 +36,7 @@ import { BinaryRepeatedNode } from './types/BinaryRepeatedNode';
 import { BinaryEqu } from './types/BinaryEqu';
 import { BinaryBlob } from './BinaryBlob';
 
-import {
-  FirstPassResult,
-  SecondPassResult,
-  BinaryBlobsMap,
-} from './BinaryPassResults';
+import { FirstPassResult, SecondPassResult, BinaryBlobsMap } from './BinaryPassResults';
 
 export const MAGIC_LABELS = {
   CURRENT_LINE: '$',
@@ -228,10 +218,7 @@ export class X86Compiler {
             // origin set
             if (compilerOption.option === CompilerOptions.ORG) {
               if (originDefined) {
-                throw new ParserError(
-                  ParserErrorCode.ORIGIN_REDEFINED,
-                  node.loc.start,
-                );
+                throw new ParserError(ParserErrorCode.ORIGIN_REDEFINED, node.loc.start);
               }
 
               this.setOrigin(criticalMathTokensEvaluate(compilerOption.args));
@@ -261,11 +248,7 @@ export class X86Compiler {
         case ASTNodeKind.INSTRUCTION:
           {
             const astInstruction = <ASTInstruction>node;
-            const resolved = astInstruction.tryResolveSchema(
-              null,
-              null,
-              target,
-            );
+            const resolved = astInstruction.tryResolveSchema(null, null, target);
 
             if (!resolved) {
               throw new ParserError(
@@ -278,10 +261,7 @@ export class X86Compiler {
             }
 
             emitBlob(
-              new BinaryInstruction(astInstruction).compile(
-                this,
-                absoluteAddress,
-              ),
+              new BinaryInstruction(astInstruction).compile(this, absoluteAddress),
             );
           }
           break;
@@ -298,23 +278,15 @@ export class X86Compiler {
             const blob = new BinaryEqu(equNode);
 
             if (isReservedKeyword(equNode.name)) {
-              throw new ParserError(
-                ParserErrorCode.USED_RESERVED_NAME,
-                node.loc.start,
-                {
-                  name: equNode.name,
-                },
-              );
+              throw new ParserError(ParserErrorCode.USED_RESERVED_NAME, node.loc.start, {
+                name: equNode.name,
+              });
             }
 
             if (isRedefinedKeyword(equNode.name)) {
-              throw new ParserError(
-                ParserErrorCode.EQU_ALREADY_DEFINED,
-                node.loc.start,
-                {
-                  name: equNode.name,
-                },
-              );
+              throw new ParserError(ParserErrorCode.EQU_ALREADY_DEFINED, node.loc.start, {
+                name: equNode.name,
+              });
             }
 
             equ.set(equNode.name, blob);
@@ -328,13 +300,9 @@ export class X86Compiler {
             const labelName = (<ASTLabel>node).name;
 
             if (isReservedKeyword(labelName)) {
-              throw new ParserError(
-                ParserErrorCode.USED_RESERVED_NAME,
-                node.loc.start,
-                {
-                  name: labelName,
-                },
-              );
+              throw new ParserError(ParserErrorCode.USED_RESERVED_NAME, node.loc.start, {
+                name: labelName,
+              });
             }
 
             if (isRedefinedKeyword(labelName)) {
@@ -403,10 +371,7 @@ export class X86Compiler {
           astNode.labeledInstruction = true;
         }
 
-        if (
-          sectionStartOffset !== null &&
-          name === MAGIC_LABELS.SECTION_START
-        ) {
+        if (sectionStartOffset !== null && name === MAGIC_LABELS.SECTION_START) {
           return sectionStartOffset;
         }
 
@@ -419,17 +384,10 @@ export class X86Compiler {
         }
 
         if (isLocalLabel(name)) {
-          name = resolveLocalTokenAbsName(
-            tree,
-            name,
-            R.indexOf(astNode, tree.astNodes),
-          );
+          name = resolveLocalTokenAbsName(tree, name, R.indexOf(astNode, tree.astNodes));
         }
 
-        if (
-          config.externalLinkerAddrGenerator &&
-          isExternalLinkerSymbol(name)
-        ) {
+        if (config.externalLinkerAddrGenerator && isExternalLinkerSymbol(name)) {
           return config.externalLinkerAddrGenerator({
             name,
             instructionOffset,

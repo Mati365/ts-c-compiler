@@ -1,9 +1,5 @@
 import { UnionStruct, bits } from '@ts-c-compiler/core';
-import {
-  GRAPHICS_MEMORY_MAPS,
-  GraphicsWriteMode,
-  VGAIndexedReg,
-} from './VGAConstants';
+import { GRAPHICS_MEMORY_MAPS, GraphicsWriteMode, VGAIndexedReg } from './VGAConstants';
 
 /**
  * @see {@link http://www.osdever.net/FreeVGA/vga/graphreg.htm#06}

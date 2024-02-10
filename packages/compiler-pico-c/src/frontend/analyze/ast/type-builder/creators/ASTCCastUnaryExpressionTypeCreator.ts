@@ -32,10 +32,7 @@ export class ASTCCastUnaryExpressionTypeCreator extends ASTCTypeCreator<ASTCCast
           if (isArrayLikeType(type)) {
             type = type.getSourceType();
             // do not load pointer value type of function such like (*fn)(1, 2, 3)
-          } else if (
-            isPointerLikeType(type) &&
-            !isFuncDeclLikeType(type.baseType)
-          ) {
+          } else if (isPointerLikeType(type) && !isFuncDeclLikeType(type.baseType)) {
             type = type.baseType;
           }
           break;

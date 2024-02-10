@@ -3,11 +3,7 @@ import { replaceNthByte, extractNthByte } from '@ts-c-compiler/core';
 import { X86UuidAbstractDevice } from '../../parts/X86AbstractDevice';
 
 import { X86CPU } from '../../X86CPU';
-import {
-  CountdownTimer,
-  TimerControlByte,
-  TimerAccessMode,
-} from './CountdownTimer';
+import { CountdownTimer, TimerControlByte, TimerAccessMode } from './CountdownTimer';
 
 import { SpeakerTimer } from './SpeakerTimer';
 

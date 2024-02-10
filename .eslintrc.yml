@@ -12,6 +12,8 @@ ignorePatterns:
   - prettier.config.js
   - .eslintrc.js
   - .eslintrc.cjs
+  - rollup.config.mjs
+  - tailwind.config.mjs
 
 overrides:
   - files: ['*.test.ts', '*.test.tsx']
@@ -37,8 +39,7 @@ settings:
   react:
     version: detect
 
-  'import/parsers':
-    { '@typescript-eslint/parser': ['.ts', '.tsx', '.woff2', '.png'] }
+  'import/parsers': { '@typescript-eslint/parser': ['.ts', '.tsx', '.woff2', '.png'] }
 
 rules:
   max-len: ['error', 120]

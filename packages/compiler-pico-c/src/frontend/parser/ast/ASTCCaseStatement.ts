@@ -28,7 +28,10 @@ export class ASTCCaseStatement extends ASTCCompilerNode {
   fields: ['statement'],
 })
 export class ASTCDefaultCaseStatement extends ASTCCompilerNode {
-  constructor(loc: NodeLocation, readonly statement: ASTCCompilerNode) {
+  constructor(
+    loc: NodeLocation,
+    readonly statement: ASTCCompilerNode,
+  ) {
     super(ASTCCompilerKind.DefaultCaseStmt, loc);
   }
 }

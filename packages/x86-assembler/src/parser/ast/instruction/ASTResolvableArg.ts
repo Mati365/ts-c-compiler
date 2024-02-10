@@ -13,7 +13,10 @@ export type ASTLabelAddrResolver = (name: string) => number;
  * instructions it is not needed
  */
 export class ASTResolvableArg<T> {
-  constructor(protected value: T, protected resolved = true) {}
+  constructor(
+    protected value: T,
+    protected resolved = true,
+  ) {}
 
   get val() {
     return this.value;

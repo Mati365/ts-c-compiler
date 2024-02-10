@@ -51,9 +51,7 @@ function parseConstraint(constraint: string) {
   return flags;
 }
 
-export function asmOutputConstraint(
-  grammar: CGrammar,
-): ASTCAsmStmtOutputConstraint {
+export function asmOutputConstraint(grammar: CGrammar): ASTCAsmStmtOutputConstraint {
   const { g } = grammar;
   const constraint = g.match({
     type: TokenType.QUOTE,

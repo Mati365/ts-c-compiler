@@ -37,9 +37,7 @@ export class ASTCFunctionDefTypeCreator extends ASTCTypeCreator<ASTCFunctionDefi
       unwrapEitherOrThrow(scope.defineType(fnType));
 
       currentAnalyzed.fnType = fnType;
-      analyzeVisitor
-        .ofScopeVisitor(scope.appendScope(newScope))
-        .visit(fnType.definition);
+      analyzeVisitor.ofScopeVisitor(scope.appendScope(newScope)).visit(fnType.definition);
 
       currentAnalyzed.fnType = null;
 
@@ -50,9 +48,7 @@ export class ASTCFunctionDefTypeCreator extends ASTCTypeCreator<ASTCFunctionDefi
     return false;
   }
 
-  extractFuncTypeFromNode(
-    fnDefinition: ASTCFunctionDefinition,
-  ): CFunctionDeclType {
+  extractFuncTypeFromNode(fnDefinition: ASTCFunctionDefinition): CFunctionDeclType {
     const { context, arch } = this;
     const { fnExpression } = fnDefinition.declarator.directDeclarator;
 
@@ -94,8 +90,7 @@ export class ASTCFunctionDefTypeCreator extends ASTCTypeCreator<ASTCFunctionDefi
     );
 
     return new CFunctionDeclType({
-      definition:
-        fnDefinition.content ?? new ASTCBlockItemsList(fnDefinition.loc, []),
+      definition: fnDefinition.content ?? new ASTCBlockItemsList(fnDefinition.loc, []),
       callConvention: CFunctionCallConvention.STDCALL,
       name: returnTypeEntry.name,
       returnType: returnTypeEntry.type,

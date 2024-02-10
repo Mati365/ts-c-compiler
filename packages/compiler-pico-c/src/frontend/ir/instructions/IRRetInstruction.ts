@@ -38,8 +38,6 @@ export class IRRetInstruction extends IRInstruction {
   override getDisplayName(): string {
     const { value } = this;
 
-    return `${chalk.magentaBright.bold('ret')} ${
-      value?.getDisplayName() || ''
-    }`.trim();
+    return `${chalk.magentaBright.bold('ret')} ${value?.getDisplayName() || ''}`.trim();
   }
 }

@@ -90,10 +90,7 @@ export class X86Allocator {
   }
 
   genFnTopStackFrame() {
-    const asm = [
-      genInstruction('push', 'bp'),
-      genInstruction('mov', 'bp', 'sp'),
-    ];
+    const asm = [genInstruction('push', 'bp'), genInstruction('mov', 'bp', 'sp')];
 
     const allocBytes = this._stackFrame.getTotalAllocatedBytes();
 

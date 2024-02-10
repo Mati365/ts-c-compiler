@@ -73,11 +73,7 @@ export const TERMINAL_CHARACTERS: TokenTerminalCharactersMap = {
 /**
  * Analyze single token
  */
-function parseToken(
-  config: LexerConfig,
-  location: TokenLocation,
-  token: string,
-): Token {
+function parseToken(config: LexerConfig, location: TokenLocation, token: string): Token {
   if (!token || !token.length) {
     return null;
   }
@@ -114,7 +110,9 @@ function parseToken(
     return result;
   }
 
-  throw new LexerError(LexerErrorCode.UNKNOWN_TOKEN, null, { token });
+  throw new LexerError(LexerErrorCode.UNKNOWN_TOKEN, null, {
+    token,
+  });
 }
 
 /**
@@ -217,12 +215,7 @@ export const lexer = (config: LexerConfig) =>
       }
 
       yield* appendToken(
-        new Token(
-          type,
-          kind,
-          replaceEscapeSequences(tokenBuffer),
-          location.clone(),
-        ),
+        new Token(type, kind, replaceEscapeSequences(tokenBuffer), location.clone()),
       );
 
       tokenBuffer = '';
@@ -270,11 +263,7 @@ export const lexer = (config: LexerConfig) =>
         }
 
         offset++;
-        yield* appendTokenWithSpaces(
-          TokenType.QUOTE,
-          quote,
-          R.equals(character),
-        );
+        yield* appendTokenWithSpaces(TokenType.QUOTE, quote, R.equals(character));
         return;
       }
 
@@ -330,16 +319,10 @@ export const lexer = (config: LexerConfig) =>
 
         if (terminalCharacters[ternarySeparator]) {
           offset += 2;
-          yield* appendCharToken(
-            terminalCharacters[ternarySeparator],
-            ternarySeparator,
-          );
+          yield* appendCharToken(terminalCharacters[ternarySeparator], ternarySeparator);
         } else if (terminalCharacters[binarySeparator]) {
           offset++;
-          yield* appendCharToken(
-            terminalCharacters[binarySeparator],
-            binarySeparator,
-          );
+          yield* appendCharToken(terminalCharacters[binarySeparator], binarySeparator);
         } else {
           // handle single character terminals
           const separator = terminalCharacters[character];

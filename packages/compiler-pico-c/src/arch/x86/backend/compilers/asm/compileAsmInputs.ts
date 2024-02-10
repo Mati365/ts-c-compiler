@@ -47,10 +47,7 @@ export function compileAsmInputs({
 
       asm.push(
         ...resolvedVariable.asm.map(line =>
-          withInlineComment(
-            line,
-            `${chalk.greenBright('asm input')} - ${symbolicName}`,
-          ),
+          withInlineComment(line, `${chalk.greenBright('asm input')} - ${symbolicName}`),
         ),
       );
 

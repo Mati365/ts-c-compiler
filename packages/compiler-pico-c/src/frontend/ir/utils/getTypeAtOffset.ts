@@ -1,7 +1,4 @@
-import {
-  getBaseTypeIfPtr,
-  getSourceNonArrayType,
-} from 'frontend/analyze/types/utils';
+import { getBaseTypeIfPtr, getSourceNonArrayType } from 'frontend/analyze/types/utils';
 
 import { CType, isArrayLikeType, isStructLikeType } from 'frontend/analyze';
 

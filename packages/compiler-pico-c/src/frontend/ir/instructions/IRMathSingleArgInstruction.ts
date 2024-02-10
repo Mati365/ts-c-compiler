@@ -30,11 +30,7 @@ export class IRMathSingleArgInstruction extends IRInstruction {
   }: IRInstructionArgs) {
     const { operator } = this;
 
-    return new IRMathSingleArgInstruction(
-      operator,
-      <IRVariable>input[0],
-      output,
-    );
+    return new IRMathSingleArgInstruction(operator, <IRVariable>input[0], output);
   }
 
   override getArgs(): IRInstructionArgs {
@@ -47,8 +43,6 @@ export class IRMathSingleArgInstruction extends IRInstruction {
   override getDisplayName(): string {
     const { outputVar, leftVar, operator } = this;
 
-    return `${outputVar.getDisplayName()} = ${chalk.yellowBright(
-      operator.toLowerCase(),
-    )} ${leftVar.getDisplayName()}`;
+    return `${outputVar.getDisplayName()} = ${chalk.yellowBright(operator.toLowerCase())} ${leftVar.getDisplayName()}`;
   }
 }

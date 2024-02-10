@@ -1,14 +1,8 @@
 import { ASTCCompilerKind, ASTCCastExpression } from 'frontend/parser/ast';
 import { ASTCTypeCreator } from './ASTCTypeCreator';
-import {
-  CTypeCheckError,
-  CTypeCheckErrorCode,
-} from '../../../errors/CTypeCheckError';
+import { CTypeCheckError, CTypeCheckErrorCode } from '../../../errors/CTypeCheckError';
 
-import {
-  extractSpecifierType,
-  extractNamedEntryFromDeclarator,
-} from '../extractor';
+import { extractSpecifierType, extractNamedEntryFromDeclarator } from '../extractor';
 
 export class ASTCCastExpressionTypeCreator extends ASTCTypeCreator<ASTCCastExpression> {
   kind = ASTCCompilerKind.CastExpression;
@@ -43,10 +37,8 @@ export class ASTCCastExpressionTypeCreator extends ASTCTypeCreator<ASTCCastExpre
         CTypeCheckErrorCode.UNABLE_CAST_TO_SCALAR_TYPE,
         typeName.loc.start,
         {
-          sourceType:
-            expression.type?.getShortestDisplayName() ?? '<unknown-src-type>',
-          destinationType:
-            castedType?.getShortestDisplayName() ?? '<unknown-dest-type>',
+          sourceType: expression.type?.getShortestDisplayName() ?? '<unknown-src-type>',
+          destinationType: castedType?.getShortestDisplayName() ?? '<unknown-dest-type>',
         },
       );
     }

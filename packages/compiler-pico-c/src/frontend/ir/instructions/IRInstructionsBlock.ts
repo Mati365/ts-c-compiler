@@ -52,15 +52,10 @@ export class IRInstructionsBlock extends Identity<IRInstructionsBlockDescriptor>
   hasSatisfiedRelations(relations: IRBranchRelations<unknown>) {
     const { jmps } = this;
 
-    return (
-      !jmps.ifFalse === !relations.ifFalse &&
-      !!jmps.ifTrue === !relations.ifTrue
-    );
+    return !jmps.ifFalse === !relations.ifFalse && !!jmps.ifTrue === !relations.ifTrue;
   }
 
-  mapInstructions(
-    mapperFn: (instructions: IRInstruction[]) => IRInstruction[],
-  ) {
+  mapInstructions(mapperFn: (instructions: IRInstruction[]) => IRInstruction[]) {
     return this.map(value => ({
       ...value,
       instructions: mapperFn(value.instructions),

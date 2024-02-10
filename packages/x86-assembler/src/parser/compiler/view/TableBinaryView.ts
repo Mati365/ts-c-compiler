@@ -125,11 +125,7 @@ export class TableBinaryView extends BinaryView<JMPTableEntry[]> {
 
     const offsetsEntries = Array.from(serializedOffsets.entries());
     const jmpLinesEntries = Array.from(jmpLines.entries())
-      .map(([low, high]) => [
-        low,
-        high,
-        addNestLevel(new MemoryRegionRange(low, high)),
-      ])
+      .map(([low, high]) => [low, high, addNestLevel(new MemoryRegionRange(low, high))])
       .sort((a, b) => a[2] - b[2]);
 
     const getJmpLineStr = (
@@ -162,8 +158,7 @@ export class TableBinaryView extends BinaryView<JMPTableEntry[]> {
 
         const toUpper = jmpDest > jmpSrc;
         const inArrowBody =
-          offset >= Math.min(jmpSrc, jmpDest) &&
-          offset <= Math.max(jmpDest, jmpSrc);
+          offset >= Math.min(jmpSrc, jmpDest) && offset <= Math.max(jmpDest, jmpSrc);
 
         // detect top arrow jump overflow
         if (inArrowBody && !i && prevOffset === -Infinity) {
@@ -201,11 +196,7 @@ export class TableBinaryView extends BinaryView<JMPTableEntry[]> {
           for (let j = 0; j < str.length; ++j) {
             const c = str[j];
             if (c === ' ') {
-              str = setCharAt(
-                str,
-                j,
-                arrowInserted ? t.horizontal : t.arrows.left,
-              );
+              str = setCharAt(str, j, arrowInserted ? t.horizontal : t.arrows.left);
               arrowInserted = true;
             }
           }
@@ -298,8 +289,6 @@ export class TableBinaryView extends BinaryView<JMPTableEntry[]> {
     );
 
     // sum output
-    return Array.from(
-      this.applyJmpLinesToOutput(serializedLines, jmpLines).values(),
-    );
+    return Array.from(this.applyJmpLinesToOutput(serializedLines, jmpLines).values());
   }
 }

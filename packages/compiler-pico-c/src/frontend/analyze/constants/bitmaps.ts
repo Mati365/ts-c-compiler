@@ -42,13 +42,7 @@ export const CStorageSpecBitmap: Record<CStorageClassSpecifier, number> = {
 };
 
 export const CCOMPILER_INTEGRAL_SPEC_BITMAP: number =
-  CCOMPILER_INTEGRAL_SPECIFIERS.reduce(
-    (acc, item) => acc | CSpecBitmap[item],
-    0,
-  );
+  CCOMPILER_INTEGRAL_SPECIFIERS.reduce((acc, item) => acc | CSpecBitmap[item], 0);
 
 export const CCOMPILER_FLOATING_SPEC_BITMAP: number =
-  CCOMPILER_FLOATING_SPECIFIERS.reduce(
-    (acc, item) => acc | CSpecBitmap[item],
-    0,
-  );
+  CCOMPILER_FLOATING_SPECIFIERS.reduce((acc, item) => acc | CSpecBitmap[item], 0);

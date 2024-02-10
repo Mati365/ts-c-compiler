@@ -58,8 +58,7 @@ export class VGAGraphicsModeCanvasRenderer extends VGAPixBufCanvasRenderer {
           default:
         }
 
-        address |=
-          ((row * virtualSize.w + col) >>> addressShift) + startAddress;
+        address |= ((row * virtualSize.w + col) >>> addressShift) + startAddress;
       }
 
       let byte0 = planes[0][address];
@@ -117,8 +116,7 @@ export class VGAGraphicsModeCanvasRenderer extends VGAPixBufCanvasRenderer {
 
       if (pelWidth) {
         for (let i = 0, j = 0; i < 4; i++, pixelAddr++, j += 2) {
-          pixelBuffer[pixelAddr] =
-            (cachedShiftLoads[j] << 4) | cachedShiftLoads[j + 1];
+          pixelBuffer[pixelAddr] = (cachedShiftLoads[j] << 4) | cachedShiftLoads[j + 1];
         }
       } else {
         for (let i = 0; i < 8; i++, pixelAddr++) {
@@ -134,12 +132,7 @@ export class VGAGraphicsModeCanvasRenderer extends VGAPixBufCanvasRenderer {
   private transferToCanvasBuffer(buffer: Uint8ClampedArray): void {
     const { vga, dirty } = this;
     const {
-      attrRegs: {
-        attrModeControlReg,
-        colorSelectReg,
-        paletteRegs,
-        colorPlaneEnableReg,
-      },
+      attrRegs: { attrModeControlReg, colorSelectReg, paletteRegs, colorPlaneEnableReg },
     } = vga;
 
     const pixelBuffer = vga.getPixelBuffer();

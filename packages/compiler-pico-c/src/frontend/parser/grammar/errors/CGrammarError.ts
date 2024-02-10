@@ -23,10 +23,7 @@ export const C_GRAMMAR_ERROR_TRANSLATIONS: Record<CGrammarErrorCode, string> = {
 /**
  * Error thrown during AST generation phase
  */
-export class CGrammarError extends CompilerError<
-  CGrammarErrorCode,
-  TokenLocation
-> {
+export class CGrammarError extends CompilerError<CGrammarErrorCode, TokenLocation> {
   constructor(code: CGrammarErrorCode, loc?: TokenLocation, meta?: object) {
     super(C_GRAMMAR_ERROR_TRANSLATIONS, code, loc, meta);
   }

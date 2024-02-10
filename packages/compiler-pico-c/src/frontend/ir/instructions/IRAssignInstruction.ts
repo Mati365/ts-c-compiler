@@ -22,10 +22,7 @@ export function isIRAssignInstruction(
  * Instruction that assigns variable to tmp ir var.
  * Assign instruction used to set data to registers
  */
-export class IRAssignInstruction
-  extends IRInstruction
-  implements IsOutputInstruction
-{
+export class IRAssignInstruction extends IRInstruction implements IsOutputInstruction {
   constructor(
     readonly inputVar: IRInstructionTypedArg,
     readonly outputVar: IRVariable,
@@ -60,8 +57,6 @@ export class IRAssignInstruction
       suffix = chalk.whiteBright(':φ');
     }
 
-    return `${outputVar.getDisplayName()} = ${chalk.yellowBright(
-      'assign',
-    )}${suffix} ${inputVar.getDisplayName()}`;
+    return `${outputVar.getDisplayName()} = ${chalk.yellowBright('assign')}${suffix} ${inputVar.getDisplayName()}`;
   }
 }

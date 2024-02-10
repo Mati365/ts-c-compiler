@@ -17,18 +17,15 @@ export function isIRAllocInstruction(
 /**
  * Allocates nth bytes for variable
  */
-export class IRAllocInstruction
-  extends IRInstruction
-  implements IsOutputInstruction
-{
+export class IRAllocInstruction extends IRInstruction implements IsOutputInstruction {
   static ofDestPtrVariable(variable: IRVariable) {
-    return new IRAllocInstruction(
-      (<CPointerType>variable.type).baseType,
-      variable,
-    );
+    return new IRAllocInstruction((<CPointerType>variable.type).baseType, variable);
   }
 
-  constructor(readonly type: CType, readonly outputVar: IRVariable) {
+  constructor(
+    readonly type: CType,
+    readonly outputVar: IRVariable,
+  ) {
     super(IROpcode.ALLOC);
   }
 
@@ -46,8 +43,6 @@ export class IRAllocInstruction
   override getDisplayName(): string {
     const { type, outputVar } = this;
 
-    return `${outputVar.getDisplayName()} = ${chalk.magentaBright(
-      'alloca',
-    )} ${getIRTypeDisplayName(type, false)}`;
+    return `${outputVar.getDisplayName()} = ${chalk.magentaBright('alloca')} ${getIRTypeDisplayName(type, false)}`;
   }
 }

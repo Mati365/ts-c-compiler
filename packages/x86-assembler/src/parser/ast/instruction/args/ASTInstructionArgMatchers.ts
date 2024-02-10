@@ -126,18 +126,15 @@ export const ASTInstructionArgMatchers: ASTCMatchersMap = {
     immCanBeImplicitSignExtendedToByte(arg, 1, 2),
 
   /** LABEL - size of label will be matched in second phrase */
-  sl:
-    () => (arg: ASTInstructionArg, instruction: ASTInstruction, addr: number) =>
-      relLabel(instruction, arg, 1, addr),
+  sl: () => (arg: ASTInstructionArg, instruction: ASTInstruction, addr: number) =>
+    relLabel(instruction, arg, 1, addr),
 
-  ll:
-    () => (arg: ASTInstructionArg, instruction: ASTInstruction, addr: number) =>
-      relLabel(instruction, arg, 2, addr),
+  ll: () => (arg: ASTInstructionArg, instruction: ASTInstruction, addr: number) =>
+    relLabel(instruction, arg, 2, addr),
 
   /** NEAR POINTER */
-  np:
-    () => (arg: ASTInstructionArg, instruction: ASTInstruction, addr: number) =>
-      nearPointer(instruction, arg, 4, addr),
+  np: () => (arg: ASTInstructionArg, instruction: ASTInstruction, addr: number) =>
+    nearPointer(instruction, arg, 4, addr),
 
   /** ABSOLUTE FAR POINTERS */
   fptr: () => (arg: ASTInstructionArg) => farSegPointer(arg, 4),

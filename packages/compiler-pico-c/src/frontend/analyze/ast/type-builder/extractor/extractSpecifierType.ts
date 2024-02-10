@@ -4,10 +4,7 @@ import { pipe } from 'fp-ts/function';
 import { unwrapEitherOrThrow } from '@ts-c-compiler/core';
 
 import { CTypeQualifier } from '#constants';
-import {
-  CTypeCheckError,
-  CTypeCheckErrorCode,
-} from '../../../errors/CTypeCheckError';
+import { CTypeCheckError, CTypeCheckErrorCode } from '../../../errors/CTypeCheckError';
 
 import { CType, CPrimitiveType } from '../../../types';
 import { CTreeTypeBuilderVisitor } from '../builder/CTreeTypeBuilderVisitor';
@@ -207,10 +204,7 @@ export function extractNamedEntryFromDeclarator({
     .visit(declarator)
     .getBuiltEntry();
 
-  if (
-    (!canBeAnonymous && buildEntry.isAnonymous()) ||
-    !buildEntry.unwrap()?.type
-  ) {
+  if ((!canBeAnonymous && buildEntry.isAnonymous()) || !buildEntry.unwrap()?.type) {
     throw new CTypeCheckError(
       CTypeCheckErrorCode.UNKNOWN_DECLARATOR_ENTRY_IDENTIFIER,
       declarator.loc.start,

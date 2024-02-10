@@ -16,10 +16,7 @@ import {
 import type { TypeExtractorFns } from '../constants/types';
 import { evalConstantExpression } from '../../expression-eval';
 
-import {
-  CTypeCheckError,
-  CTypeCheckErrorCode,
-} from '../../../errors/CTypeCheckError';
+import { CTypeCheckError, CTypeCheckErrorCode } from '../../../errors/CTypeCheckError';
 
 import { CInnerTypeTreeVisitor } from '../CInnerTypeTreeVisitor';
 import { CNamedTypedEntry } from '../../../scope/variables/CNamedTypedEntry';
@@ -45,7 +42,10 @@ export type CTypeBuilderAttrs = TypeExtractorFns & {
 export class CTreeTypeBuilderVisitor extends CInnerTypeTreeVisitor {
   private name: string = null;
 
-  constructor(private type: CType, private readonly attrs: CTypeBuilderAttrs) {
+  constructor(
+    private type: CType,
+    private readonly attrs: CTypeBuilderAttrs,
+  ) {
     super({
       [ASTCCompilerKind.DirectAbstractDeclarator]: {
         enter: (node: ASTCDirectAbstractDeclarator) => {
@@ -72,8 +72,7 @@ export class CTreeTypeBuilderVisitor extends CInnerTypeTreeVisitor {
       },
 
       [ASTCCompilerKind.DirectDeclarator]: {
-        enter: (node: ASTCDirectDeclarator) =>
-          this.extractDirectDeclarator(node),
+        enter: (node: ASTCDirectDeclarator) => this.extractDirectDeclarator(node),
       },
 
       [ASTCCompilerKind.DirectDeclaratorFnExpression]: {
@@ -102,9 +101,7 @@ export class CTreeTypeBuilderVisitor extends CInnerTypeTreeVisitor {
     }
   }
 
-  private extractArrayExpression(
-    assignmentExpression: ASTCAssignmentExpression,
-  ) {
+  private extractArrayExpression(assignmentExpression: ASTCAssignmentExpression) {
     const { type: baseType } = this;
     const size =
       assignmentExpression &&
@@ -122,13 +119,9 @@ export class CTreeTypeBuilderVisitor extends CInnerTypeTreeVisitor {
 
     if (isArrayLikeType(baseType)) {
       if (R.isNil(baseType.size) && R.isNil(size)) {
-        throw new CTypeCheckError(
-          CTypeCheckErrorCode.INCOMPLETE_ARRAY_SIZE,
-          null,
-          {
-            typeName: baseType.getDisplayName(),
-          },
-        );
+        throw new CTypeCheckError(CTypeCheckErrorCode.INCOMPLETE_ARRAY_SIZE, null, {
+          typeName: baseType.getDisplayName(),
+        });
       }
 
       this.type = baseType.ofPrependedDimension(size);

@@ -1,8 +1,4 @@
-import {
-  CPrimitiveType,
-  CScopeTree,
-  CVariableInitializerTree,
-} from 'frontend/analyze';
+import { CPrimitiveType, CScopeTree, CVariableInitializerTree } from 'frontend/analyze';
 
 import { IRDefDataInstruction, type IRInstruction } from '../../instructions';
 import { checkIfVirtualGlobalArrayPtr } from '../../utils';

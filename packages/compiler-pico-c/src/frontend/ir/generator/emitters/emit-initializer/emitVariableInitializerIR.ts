@@ -59,14 +59,11 @@ export function emitVariableInitializerIR({
       });
 
       const rootIRVar = allocator.allocAsPointer(
-        IRVariable.ofScopeVariable(
-          variable.ofType(arrayPtrType),
-        ).ofVirtualArrayPtr(),
+        IRVariable.ofScopeVariable(variable.ofType(arrayPtrType)).ofVirtualArrayPtr(),
       );
 
       const constArrayVar = allocator.allocDataVariable(dataType);
-      const tmpLeaAddressVar =
-        allocator.allocPlainAddressVariable(arrayPtrType);
+      const tmpLeaAddressVar = allocator.allocPlainAddressVariable(arrayPtrType);
 
       data.push(
         new IRDefDataInstruction(initializer, constArrayVar, {

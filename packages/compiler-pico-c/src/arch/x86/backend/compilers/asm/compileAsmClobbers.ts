@@ -22,16 +22,16 @@ export function compileAsmClobbers({
   const { regs } = allocator;
   const { ownership } = regs;
 
-  const asm: AsmOutputsWrapperAsm = { pre: [], post: [] };
+  const asm: AsmOutputsWrapperAsm = {
+    pre: [],
+    post: [],
+  };
 
   clobberOperands.forEach(reg => {
     const regOwnership = ownership
       .getOwnershipByReg(reg as X86RegName, true)
       .filter(varName =>
-        ownership.lifetime.isVariableLaterUsed(
-          allocator.iterator.offset,
-          varName,
-        ),
+        ownership.lifetime.isVariableLaterUsed(allocator.iterator.offset, varName),
       );
 
     if (!regOwnership.length) {
@@ -63,9 +63,7 @@ export function compileAsmClobbers({
 
       for (const preservedReg of preservedRegs) {
         asm.pre.push(withClobberComment(genInstruction('push', preservedReg)));
-        asm.post.unshift(
-          withClobberComment(genInstruction('pop', preservedReg)),
-        );
+        asm.post.unshift(withClobberComment(genInstruction('pop', preservedReg)));
       }
     } else {
       const availableAltReg = regs.checkIfRegIsAvailable({
@@ -77,13 +75,13 @@ export function compileAsmClobbers({
           size: clobberedSpecifiedRegSize,
         });
 
-        asm.pre.push(
-          withClobberComment(genInstruction('mov', swappedReg.value, reg)),
-        );
+        asm.pre.push(withClobberComment(genInstruction('mov', swappedReg.value, reg)));
 
         regs.releaseRegs([reg as X86RegName]);
         regOwnership.forEach(varOwnership => {
-          ownership.setOwnership(varOwnership, { reg: swappedReg.value });
+          ownership.setOwnership(varOwnership, {
+            reg: swappedReg.value,
+          });
         });
       } else {
         asm.pre.push(withClobberComment(genInstruction('push', reg)));

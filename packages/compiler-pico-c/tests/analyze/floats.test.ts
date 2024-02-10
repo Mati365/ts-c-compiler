@@ -11,9 +11,7 @@ describe('Float typechecks', () => {
         float b = 4;
         float a = b ${operator} 3;
       }
-    `).toHaveCompilerError(
-        CTypeCheckErrorCode.MATH_EXPRESSION_MUST_BE_INTEGRAL_TYPE,
-      );
+    `).toHaveCompilerError(CTypeCheckErrorCode.MATH_EXPRESSION_MUST_BE_INTEGRAL_TYPE);
     },
   );
 
@@ -27,9 +25,7 @@ describe('Float typechecks', () => {
 
         a ${operator}= 3;
       }
-    `).toHaveCompilerError(
-        CTypeCheckErrorCode.MATH_EXPRESSION_MUST_BE_INTEGRAL_TYPE,
-      );
+    `).toHaveCompilerError(CTypeCheckErrorCode.MATH_EXPRESSION_MUST_BE_INTEGRAL_TYPE);
     },
   );
 });

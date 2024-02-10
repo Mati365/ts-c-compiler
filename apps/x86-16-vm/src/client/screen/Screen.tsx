@@ -20,9 +20,7 @@ export const Screen = ({ binary }: ScreenProps) => {
       .attach(VGARenderLoopDriver, {
         screenElement: screenRef.current,
         upscaleWidth: Number.parseInt(
-          getComputedStyle(document.body).getPropertyValue(
-            '--repl-output-width',
-          ),
+          getComputedStyle(document.body).getPropertyValue('--repl-output-width'),
           10,
         ),
       })

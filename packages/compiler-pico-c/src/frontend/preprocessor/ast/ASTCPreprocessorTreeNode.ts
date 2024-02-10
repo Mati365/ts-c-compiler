@@ -1,8 +1,5 @@
 import { TreeNode } from '@ts-c-compiler/grammar';
-import type {
-  CPreprocessorInterpretable,
-  CInterpreterContext,
-} from '../interpreter';
+import type { CPreprocessorInterpretable, CInterpreterContext } from '../interpreter';
 
 export type ASTCExecResult = number | string | boolean | void;
 
@@ -22,9 +19,7 @@ export enum ASTCPreprocessorKind {
   Value = 'Value',
 }
 
-export class ASTCPreprocessorTreeNode<
-    C extends TreeNode<ASTCPreprocessorKind> = any,
-  >
+export class ASTCPreprocessorTreeNode<C extends TreeNode<ASTCPreprocessorKind> = any>
   extends TreeNode<ASTCPreprocessorKind, C>
   implements CPreprocessorInterpretable
 {
@@ -34,8 +29,6 @@ export class ASTCPreprocessorTreeNode<
   }
 }
 
-export function isPreprocessorTreeNode(
-  node: any,
-): node is ASTCPreprocessorTreeNode {
+export function isPreprocessorTreeNode(node: any): node is ASTCPreprocessorTreeNode {
   return node instanceof ASTCPreprocessorTreeNode;
 }

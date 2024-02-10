@@ -1,5 +1,8 @@
 export class SegmentedAddress {
-  constructor(public offset: number, public segment: number) {}
+  constructor(
+    public offset: number,
+    public segment: number,
+  ) {}
 
   toString() {
     const { offset, segment } = this;
