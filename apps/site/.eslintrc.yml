@@ -1,1 +1,10 @@
 extends: ../../.eslintrc.yml
+rules:
+  '@typescript-eslint/consistent-type-imports': 'error'
+  import/order:
+    [
+      'error',
+      {
+        'groups': ['builtin', 'external', 'type', 'parent', 'sibling', 'index'],
+      },
+    ]
