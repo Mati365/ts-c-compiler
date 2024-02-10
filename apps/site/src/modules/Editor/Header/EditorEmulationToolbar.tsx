@@ -7,6 +7,7 @@ import { useEditorState } from '../EditorStateProvider';
 export const EditorEmulationToolbar = () => {
   const t = useI18n().pack.header;
   const { emulation } = useEditorState();
+  const { state } = emulation.info;
 
   return (
     <ol className="flex flex-row gap-2">
@@ -15,7 +16,7 @@ export const EditorEmulationToolbar = () => {
           color="success"
           size="xs"
           className="font-bold"
-          disabled={emulation.state !== 'stop' && emulation.state !== 'pause'}
+          disabled={state !== 'stop' && state !== 'pause'}
           onClick={emulation.run}
         >
           {t.run}
@@ -28,7 +29,7 @@ export const EditorEmulationToolbar = () => {
         <Button
           color="gray"
           size="xs"
-          disabled={emulation.state !== 'running'}
+          disabled={state !== 'running'}
           onClick={emulation.pause}
         >
           {t.pause}
@@ -41,7 +42,7 @@ export const EditorEmulationToolbar = () => {
         <Button
           color="failure"
           size="xs"
-          disabled={emulation.state !== 'running' && emulation.state !== 'pause'}
+          disabled={state !== 'running' && state !== 'pause'}
           onClick={emulation.stop}
         >
           {t.stop}

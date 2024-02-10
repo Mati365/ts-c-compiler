@@ -2,7 +2,7 @@ import * as E from 'fp-ts/Either';
 import { X86ArchBackend } from '../arch/x86';
 
 import { CCompilerArch, CCompilerConfig } from '../constants';
-import { IRResultView } from '../frontend/ir';
+// import { IRResultView } from '../frontend/ir';
 
 import { IRScopeGeneratorResult } from '../frontend/ir/generator';
 import { CAbstractArchBackend } from './abstract/CAbstractArchBackend';
@@ -24,7 +24,7 @@ export function genASMIRCode(
   try {
     const CompilerBackend = CCOMPILER_ARCH_BACKENDS[config.arch];
 
-    console.info(IRResultView.serializeToString(ir));
+    // console.info(IRResultView.serializeToString(ir));
 
     return E.right(new CompilerBackend(config).compileIR(ir));
   } catch (e) {
