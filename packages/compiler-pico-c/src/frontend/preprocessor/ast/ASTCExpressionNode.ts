@@ -13,7 +13,10 @@ import { CInterpreterContext } from '../interpreter';
  *  expr1 && expr2 && expr3 > expr2
  */
 export class ASTCExpressionNode extends ASTCPreprocessorTreeNode {
-  constructor(loc: NodeLocation, public expression: ASTCPreprocessorTreeNode) {
+  constructor(
+    loc: NodeLocation,
+    public expression: ASTCPreprocessorTreeNode,
+  ) {
     super(ASTCPreprocessorKind.Expression, loc);
   }
 

@@ -12,19 +12,13 @@ describe('Initializer typecheck', () => {
   });
 
   test('excess array in const char* array literal initializer', () => {
-    expect(
-      /* cpp */ `const char* dupa = { "XD", "XDD" };`,
-    ).toHaveCompilerError();
+    expect(/* cpp */ `const char* dupa = { "XD", "XDD" };`).toHaveCompilerError();
   });
 
   test('literal string multidimensional array', () => {
-    expect(
-      /* cpp */ `char abc[][4] = { "abcg", "defg" };`,
-    ).not.toHaveCompilerError();
+    expect(/* cpp */ `char abc[][4] = { "abcg", "defg" };`).not.toHaveCompilerError();
 
-    expect(
-      /* cpp */ `char abc[][4] = { "abcgg", "defg" };`,
-    ).not.toHaveCompilerError();
+    expect(/* cpp */ `char abc[][4] = { "abcgg", "defg" };`).not.toHaveCompilerError();
   });
 
   test('literal pointers array', () => {
@@ -33,17 +27,13 @@ describe('Initializer typecheck', () => {
   });
 
   test('literal pointers mixed with int scalars array', () => {
-    expect(
-      /* cpp */ `char* abc[] = {"ABC", "DEF", { 1, 2, 3 }};`,
-    ).toHaveCompilerError(
+    expect(/* cpp */ `char* abc[] = {"ABC", "DEF", { 1, 2, 3 }};`).toHaveCompilerError(
       CTypeCheckErrorCode.EXCESS_ELEMENTS_IN_ARRAY_INITIALIZER,
     );
   });
 
   test('literal pointers mixed with int scalars array', () => {
-    expect(
-      /* cpp */ `char* abc[] = {"ABC", "DEF", { 1 }};`,
-    ).not.toHaveCompilerError();
+    expect(/* cpp */ `char* abc[] = {"ABC", "DEF", { 1 }};`).not.toHaveCompilerError();
   });
 
   test('unable to assign initializer to scalar', () => {
@@ -54,9 +44,7 @@ describe('Initializer typecheck', () => {
 
   test('trailing commas are allowed in initializer', () => {
     expect(/* cpp */ `int array[3] = { 2, 3, };`).not.toHaveCompilerError();
-    expect(
-      /* cpp */ `int array[3][4] = { 2, 3, { 2 }, };`,
-    ).not.toHaveCompilerError();
+    expect(/* cpp */ `int array[3][4] = { 2, 3, { 2 }, };`).not.toHaveCompilerError();
   });
 
   test('allow to pass blank list of initializer list to array', () => {
@@ -64,9 +52,7 @@ describe('Initializer typecheck', () => {
   });
 
   test('allow to pass flatten list to multidimensional array', () => {
-    expect(
-      /* cpp */ `int array[2][3] = { 2, 3, 4 };`,
-    ).not.toHaveCompilerError();
+    expect(/* cpp */ `int array[2][3] = { 2, 3, 4 };`).not.toHaveCompilerError();
   });
 
   test('allow to pass nested list for flatten array', () => {
@@ -76,9 +62,7 @@ describe('Initializer typecheck', () => {
   });
 
   test('detects excess in passed initializer list', () => {
-    expect(
-      /* cpp */ `int array[2][2] = { 2, 3, 4, 5, 6 };`,
-    ).toHaveCompilerError(
+    expect(/* cpp */ `int array[2][2] = { 2, 3, 4, 5, 6 };`).toHaveCompilerError(
       CTypeCheckErrorCode.EXCESS_ELEMENTS_IN_ARRAY_INITIALIZER,
     );
   });
@@ -86,9 +70,7 @@ describe('Initializer typecheck', () => {
   test('detects excess in passed nested list in scalar type', () => {
     expect(
       /* cpp */ `int array[4] = { { 2, 5 }, { 3 }, { 4 }, { 5 } };`,
-    ).toHaveCompilerError(
-      CTypeCheckErrorCode.EXCESS_ELEMENTS_IN_SCALAR_INITIALIZER,
-    );
+    ).toHaveCompilerError(CTypeCheckErrorCode.EXCESS_ELEMENTS_IN_SCALAR_INITIALIZER);
   });
 
   test('throws error if used scalar initializer to array like type', () => {
@@ -126,9 +108,7 @@ describe('Initializer typecheck', () => {
   });
 
   test('throws error on string literal in char array', () => {
-    expect(
-      /* cpp */ `char abc3[] = { 'A', 'B', "SSSSS" };`,
-    ).toHaveCompilerError();
+    expect(/* cpp */ `char abc3[] = { 'A', 'B', "SSSSS" };`).toHaveCompilerError();
   });
 
   test('string const char* initialization', () => {
@@ -139,9 +119,7 @@ describe('Initializer typecheck', () => {
   });
 
   test('letters char array initialization', () => {
-    expect(
-      /* cpp */ `char s[] = { 'a', 'b', 'c', '\0' };`,
-    ).not.toHaveCompilerError();
+    expect(/* cpp */ `char s[] = { 'a', 'b', 'c', '\0' };`).not.toHaveCompilerError();
   });
 
   test('flatten array with designation', () => {
@@ -155,9 +133,7 @@ describe('Initializer typecheck', () => {
   test('single struct with wrong designation initialization', () => {
     expect(
       /* cpp */ `struct Vec2 { int x, y; } screen = { .x = 5, .y = 5.0 };`,
-    ).not.toHaveCompilerError(
-      CTypeCheckErrorCode.INCORRECT_CONSTANT_EXPR_IDENTIFIER,
-    );
+    ).not.toHaveCompilerError(CTypeCheckErrorCode.INCORRECT_CONSTANT_EXPR_IDENTIFIER);
   });
 
   test('single struct designation initialization', () => {
@@ -177,9 +153,7 @@ describe('Initializer typecheck', () => {
   });
 
   test('offset array designation initializer in struct type throws error', () => {
-    expect(
-      /* cpp */ `struct { int x, y; } foo = { [8] = 1 };`,
-    ).toHaveCompilerError(
+    expect(/* cpp */ `struct { int x, y; } foo = { [8] = 1 };`).toHaveCompilerError(
       CTypeCheckErrorCode.INCORRECT_INDEX_INITIALIZER_USAGE,
     );
   });
@@ -197,12 +171,8 @@ describe('Initializer typecheck', () => {
   });
 
   test('multi dimensional array index designation overflow', () => {
-    expect(
-      /* cpp */ `int foo[4][5] = { [2][3] = 1 };`,
-    ).not.toHaveCompilerError();
-    expect(
-      /* cpp */ `int foo[4][5] = { [2][4] = 1 };`,
-    ).not.toHaveCompilerError();
+    expect(/* cpp */ `int foo[4][5] = { [2][3] = 1 };`).not.toHaveCompilerError();
+    expect(/* cpp */ `int foo[4][5] = { [2][4] = 1 };`).not.toHaveCompilerError();
 
     expect(/* cpp */ `int foo[4][5] = { [2][6] = 1 };`).toHaveCompilerError(
       CTypeCheckErrorCode.INDEX_INITIALIZER_ARRAY_OVERFLOW,
@@ -222,15 +192,11 @@ describe('Initializer typecheck', () => {
           [1].a[1] = 3,
           [3].a[4] = 4,
         };
-      `).toHaveCompilerError(
-      CTypeCheckErrorCode.INDEX_INITIALIZER_ARRAY_OVERFLOW,
-    );
+      `).toHaveCompilerError(CTypeCheckErrorCode.INDEX_INITIALIZER_ARRAY_OVERFLOW);
   });
 
   test('unknown named structure field initializer', () => {
-    expect(
-      /* cpp */ `struct { int z, x; } a = { .test = 2 };`,
-    ).toHaveCompilerError(
+    expect(/* cpp */ `struct { int z, x; } a = { .test = 2 };`).toHaveCompilerError(
       CTypeCheckErrorCode.UNKNOWN_NAMED_STRUCTURE_INITIALIZER,
     );
   });

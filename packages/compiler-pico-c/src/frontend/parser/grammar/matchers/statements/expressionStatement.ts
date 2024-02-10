@@ -9,9 +9,7 @@ import { expression } from '../expressions/expression';
  *  : ';'
  *  | expression ';'
  */
-export function expressionStatement(
-  grammar: CGrammar,
-): ASTCExpressionStatement {
+export function expressionStatement(grammar: CGrammar): ASTCExpressionStatement {
   const { g } = grammar;
   const node = <ASTCCompilerNode>g.try(() => {
     const expressionNode = expression(grammar);

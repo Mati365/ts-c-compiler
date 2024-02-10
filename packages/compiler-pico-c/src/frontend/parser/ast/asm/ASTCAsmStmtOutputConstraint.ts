@@ -10,7 +10,10 @@ export type AsmOutputConstraintFlags = {
 };
 
 export class ASTCAsmStmtOutputConstraint extends ASTCCompilerNode {
-  constructor(loc: NodeLocation, readonly flags: AsmOutputConstraintFlags) {
+  constructor(
+    loc: NodeLocation,
+    readonly flags: AsmOutputConstraintFlags,
+  ) {
     super(ASTCCompilerKind.AsmStmtOutputConstraint, loc);
   }
 

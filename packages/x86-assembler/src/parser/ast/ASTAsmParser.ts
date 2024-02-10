@@ -32,9 +32,7 @@ export class ASTAsmParser extends TokensIterator {
     tokensIterator: TokensList,
   ) {
     super(
-      'length' in tokensIterator
-        ? <Token[]>tokensIterator
-        : Array.from(tokensIterator),
+      'length' in tokensIterator ? <Token[]>tokensIterator : Array.from(tokensIterator),
     );
   }
 

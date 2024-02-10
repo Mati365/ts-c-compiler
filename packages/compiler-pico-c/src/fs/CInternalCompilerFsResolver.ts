@@ -14,9 +14,7 @@ import type {
 import { KERNEL_HEADERS_FILES } from './kernel';
 import { STD_HEADERS_FILES } from './std';
 
-export class CInternalCompilerFsResolver
-  implements CInterpreterIncludeResolver
-{
+export class CInternalCompilerFsResolver implements CInterpreterIncludeResolver {
   read =
     () =>
     (
@@ -26,13 +24,9 @@ export class CInternalCompilerFsResolver
 
       if (!path.system || !vfsFile) {
         return E.left(
-          new CPreprocessorError(
-            CPreprocessorErrorCode.CANNOT_INCLUDE_FILE,
-            null,
-            {
-              name: path.filename,
-            },
-          ),
+          new CPreprocessorError(CPreprocessorErrorCode.CANNOT_INCLUDE_FILE, null, {
+            name: path.filename,
+          }),
         );
       }
 

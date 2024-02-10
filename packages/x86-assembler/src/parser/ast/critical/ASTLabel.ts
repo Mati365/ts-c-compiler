@@ -70,8 +70,7 @@ export class ASTLabel extends KindASTAsmNode(ASTNodeKind.LABEL) {
       return null;
     }
 
-    const sizeTokenDef =
-      nextToken.type === TokenType.KEYWORD && tokenDefSize(nextToken);
+    const sizeTokenDef = nextToken.type === TokenType.KEYWORD && tokenDefSize(nextToken);
     if (!sizeTokenDef && nextToken.type !== TokenType.COLON) {
       return null;
     }

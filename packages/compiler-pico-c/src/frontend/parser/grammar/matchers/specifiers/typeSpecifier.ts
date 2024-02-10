@@ -54,12 +54,7 @@ export function typeSpecifier(grammar: CGrammar): ASTCTypeSpecifier {
     enum() {
       const enumSpecifier = enumDeclarator(grammar);
 
-      return new ASTCTypeSpecifier(
-        enumSpecifier.loc,
-        null,
-        null,
-        enumSpecifier,
-      );
+      return new ASTCTypeSpecifier(enumSpecifier.loc, null, null, enumSpecifier);
     },
     typedef() {
       const nameToken = g.match({

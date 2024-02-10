@@ -16,8 +16,7 @@ import { getX86FnCaller } from '../call-conventions';
 import { compileBuiltinCallFn } from './builtin';
 import { X86CompileInstructionOutput } from './shared';
 
-type CallInstructionCompilerAttrs =
-  X86CompilerInstructionFnAttrs<IRCallInstruction>;
+type CallInstructionCompilerAttrs = X86CompilerInstructionFnAttrs<IRCallInstruction>;
 
 export function compileCallInstruction(attrs: CallInstructionCompilerAttrs) {
   const { instruction, context } = attrs;
@@ -39,9 +38,7 @@ export function compileCallInstruction(attrs: CallInstructionCompilerAttrs) {
         throw new CBackendError(CBackendErrorCode.CALL_ON_NON_CALLABLE_TYPE);
       }
 
-      const caller = getX86FnCaller(
-        labelResult.instruction.type.callConvention,
-      );
+      const caller = getX86FnCaller(labelResult.instruction.type.callConvention);
 
       output.appendGroup(
         caller.compileIRFnCall({
@@ -87,13 +84,8 @@ export function compileCallInstruction(attrs: CallInstructionCompilerAttrs) {
 
   // st0-st7 are cleared when function is called so force load it into mem every function call
   // todo: NOT NEEDED IF NEXT INSTRUCTION IS STORE
-  if (
-    isPrimitiveLikeType(outputVar?.type, true) &&
-    outputVar.type.isFloating()
-  ) {
-    const stackVar = stackFrame.allocSpillVariable(
-      outputVar.type.getByteSize(),
-    );
+  if (isPrimitiveLikeType(outputVar?.type, true) && outputVar.type.isFloating()) {
+    const stackVar = stackFrame.allocSpillVariable(outputVar.type.getByteSize());
 
     const memAddr = stackFrame.getLocalVarStackRelAddress(stackVar.name, {
       withSize: true,

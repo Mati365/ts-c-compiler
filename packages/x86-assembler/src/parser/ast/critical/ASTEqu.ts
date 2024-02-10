@@ -47,19 +47,11 @@ export class ASTEqu extends KindASTAsmNode(ASTNodeKind.EQU) {
 
     const args = fetchInstructionTokensArgsList(parser, false);
     if (args.length !== 1) {
-      throw new ParserError(
-        ParserErrorCode.INCORRECT_EQU_ARGS_COUNT,
-        token.loc,
-        {
-          count: args.length,
-        },
-      );
+      throw new ParserError(ParserErrorCode.INCORRECT_EQU_ARGS_COUNT, token.loc, {
+        count: args.length,
+      });
     }
 
-    return new ASTEqu(
-      token.text,
-      args[0].text,
-      NodeLocation.fromTokenLoc(token.loc),
-    );
+    return new ASTEqu(token.text, args[0].text, NodeLocation.fromTokenLoc(token.loc));
   }
 }

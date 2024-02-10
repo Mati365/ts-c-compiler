@@ -14,18 +14,15 @@ export function isIRPhiInstruction(
 /**
  * PHI instruction
  */
-export class IRPhiInstruction
-  extends IRInstruction
-  implements IsOutputInstruction
-{
-  constructor(readonly vars: IRVariable[], readonly outputVar: IRVariable) {
+export class IRPhiInstruction extends IRInstruction implements IsOutputInstruction {
+  constructor(
+    readonly vars: IRVariable[],
+    readonly outputVar: IRVariable,
+  ) {
     super(IROpcode.PHI);
   }
 
-  override ofArgs({
-    input = this.vars,
-    output = this.outputVar,
-  }: IRInstructionArgs) {
+  override ofArgs({ input = this.vars, output = this.outputVar }: IRInstructionArgs) {
     return new IRPhiInstruction(input as IRVariable[], output);
   }
 
@@ -42,8 +39,6 @@ export class IRPhiInstruction
     const { outputVar, vars } = this;
     const argsStr = vars.map(v => v.getDisplayName()).join(', ');
 
-    return `${outputVar.getDisplayName()} = ${chalk.greenBright(
-      'φ(',
-    )}${argsStr}${chalk.greenBright(')')}`;
+    return `${outputVar.getDisplayName()} = ${chalk.greenBright('φ(')}${argsStr}${chalk.greenBright(')')}`;
   }
 }

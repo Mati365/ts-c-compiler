@@ -8,11 +8,11 @@ import { NodeLocation } from '@ts-c-compiler/grammar';
 import { CTypeQualifier } from '#constants';
 import { ASTCCompilerKind, ASTCCompilerNode } from './ASTCCompilerNode';
 
-export class ASTCTypeQualifiersList
-  extends ASTCCompilerNode
-  implements IsEmpty
-{
-  constructor(loc: NodeLocation, readonly items: CTypeQualifier[]) {
+export class ASTCTypeQualifiersList extends ASTCCompilerNode implements IsEmpty {
+  constructor(
+    loc: NodeLocation,
+    readonly items: CTypeQualifier[],
+  ) {
     super(ASTCCompilerKind.TypeQualifiersList, loc);
   }
 

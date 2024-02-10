@@ -17,10 +17,7 @@ import {
   ASTPreprocessorSyntaxLine,
 } from '../nodes';
 import { ExpressionResultTreeVisitor } from './ExpressionResultTreeVisitor';
-import {
-  PreprocessorGrammarConfig,
-  createPreprocessorGrammar,
-} from '../grammar';
+import { PreprocessorGrammarConfig, createPreprocessorGrammar } from '../grammar';
 import { PreprocessorError, PreprocessorErrorCode } from '../PreprocessorError';
 
 import { fetchRuntimeCallArgsList } from './utils/fetchRuntimeCallArgsList';
@@ -193,8 +190,7 @@ export class PreprocessorInterpreter {
     // find duplicates
     const callables = this.getCallables(callable.name, caseSensitive);
     const duplicatedMacro =
-      callables &&
-      callables.some(item => item.argsCount === callable.argsCount);
+      callables && callables.some(item => item.argsCount === callable.argsCount);
 
     // do not redefine inline macro and macro
     if (duplicatedMacro || (callables?.length && !callable.argsCount)) {
@@ -203,13 +199,9 @@ export class PreprocessorInterpreter {
         this.undefRuntimeCallable(callable.name, caseSensitive);
       } else {
         // for inline macros allow redefine
-        throw new PreprocessorError(
-          PreprocessorErrorCode.MACRO_ALREADY_EXISTS,
-          null,
-          {
-            name: callable.name,
-          },
-        );
+        throw new PreprocessorError(PreprocessorErrorCode.MACRO_ALREADY_EXISTS, null, {
+          name: callable.name,
+        });
       }
     }
 
@@ -227,10 +219,7 @@ export class PreprocessorInterpreter {
   /**
    * Checks if symbol is callable
    */
-  getCallables(
-    name: string,
-    caseIntensive: boolean = true,
-  ): ASTPreprocessorCallable[] {
+  getCallables(name: string, caseIntensive: boolean = true): ASTPreprocessorCallable[] {
     const { sensitive, nonSensitive } = this.rootScope.callable;
     const sensitiveResult = sensitive.get(name);
     if (caseIntensive && sensitiveResult) {
@@ -248,10 +237,7 @@ export class PreprocessorInterpreter {
   /**
    * Iterates from current scope to rootScope, if not found returns null
    */
-  getVariable(
-    name: string,
-    currentScopeOnly: boolean = false,
-  ): InterpreterResult {
+  getVariable(name: string, currentScopeOnly: boolean = false): InterpreterResult {
     const { scopes } = this;
 
     for (let i = scopes.length - 1; i >= 0; --i) {
@@ -309,9 +295,7 @@ export class PreprocessorInterpreter {
       // handle DUPA%[asdasd]
       // just explode token here and reset offset
       const inlineMacroExpression =
-        text.length > 1 &&
-        R.endsWith(prefixChar, text) &&
-        nextToken?.text === '[';
+        text.length > 1 && R.endsWith(prefixChar, text) && nextToken?.text === '[';
       if (inlineMacroExpression) {
         newTokens[i] = new Token(TokenType.KEYWORD, null, R.init(text), loc);
         newTokens = R.insert(
@@ -351,10 +335,7 @@ export class PreprocessorInterpreter {
           newTokens[i] = new Token(
             TokenType.KEYWORD,
             null,
-            text.replace(
-              `${prefixChar}${prefixChar}`,
-              `${this.currentScope.id}_`,
-            ),
+            text.replace(`${prefixChar}${prefixChar}`, `${this.currentScope.id}_`),
             loc,
           );
         } else if (nextToken?.text[0] === '[') {
@@ -378,9 +359,7 @@ export class PreprocessorInterpreter {
               new Token(
                 TokenType.KEYWORD,
                 null,
-                `${tokens[i - 1]}${this.evalTokensExpression(
-                  content,
-                ).toString()}`,
+                `${tokens[i - 1]}${this.evalTokensExpression(content).toString()}`,
                 loc,
               ),
               ...newTokens.slice(newOffset),
@@ -414,8 +393,7 @@ export class PreprocessorInterpreter {
         // or have no args, example:
         // %define dupa mov
         // dupa ax, bx
-        const inline =
-          i > 0 || !callables.some(({ argsCount }) => argsCount > 0);
+        const inline = i > 0 || !callables.some(({ argsCount }) => argsCount > 0);
         const bracketCall = newTokens[i + 1]?.text === '('; // handle; abc(2, 3)
         const args =
           !inline || bracketCall
@@ -434,9 +412,7 @@ export class PreprocessorInterpreter {
           newTokens = [
             ...newTokens.slice(0, i),
             new Token(TokenType.KEYWORD, null, callResult, loc),
-            ...newTokens.slice(
-              it.getTokenIndex() + Math.max(0, +args.length - 1),
-            ),
+            ...newTokens.slice(it.getTokenIndex() + Math.max(0, +args.length - 1)),
           ];
         }
       }
@@ -449,22 +425,15 @@ export class PreprocessorInterpreter {
    * Evaluates inline
    */
   evalTokensExpression(tokens: Token[]): number {
-    const expression = joinTokensTexts(
-      '',
-      this.removeMacrosFromTokens(tokens)[1],
-    );
+    const expression = joinTokensTexts('', this.removeMacrosFromTokens(tokens)[1]);
     const value = rpn(expression, {
       keywordResolver: name => +this.getVariable(name),
     });
 
     if (Number.isNaN(value)) {
-      throw new PreprocessorError(
-        PreprocessorErrorCode.INCORRECT_MATH_EXPRESSION,
-        null,
-        {
-          expression,
-        },
-      );
+      throw new PreprocessorError(PreprocessorErrorCode.INCORRECT_MATH_EXPRESSION, null, {
+        expression,
+      });
     }
 
     return value;

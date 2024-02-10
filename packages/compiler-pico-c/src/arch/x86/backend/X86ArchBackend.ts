@@ -36,11 +36,7 @@ export class X86ArchBackend extends CAbstractArchBackend {
       segments.code,
     );
 
-    asm.push(
-      ...functionsOutput.asm,
-      ...functionsOutput.data,
-      ...dataOutput.output.asm,
-    );
+    asm.push(...functionsOutput.asm, ...functionsOutput.data, ...dataOutput.output.asm);
 
     return {
       asm: asm.join('\n'),

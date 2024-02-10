@@ -17,10 +17,7 @@ export function isIRFnDeclInstruction(
 /**
  * Declaration of function
  */
-export class IRFnDeclInstruction
-  extends IRInstruction
-  implements IsLabeledInstruction
-{
+export class IRFnDeclInstruction extends IRInstruction implements IsLabeledInstruction {
   constructor(
     readonly type: CFunctionDeclType,
     readonly name: string,
@@ -68,9 +65,7 @@ export class IRFnDeclInstruction
     const { name, args, returnType, rvoOutputVar } = this;
 
     const serializedArgs = args.map(arg => arg.getDisplayName());
-    const retStr = returnType
-      ? `: [ret${getIRTypeDisplayName(returnType)}]`
-      : ':';
+    const retStr = returnType ? `: [ret${getIRTypeDisplayName(returnType)}]` : ':';
 
     if (this.hasVaListArgs()) {
       serializedArgs.push('...');
@@ -80,8 +75,6 @@ export class IRFnDeclInstruction
       serializedArgs.push(`rvo: ${rvoOutputVar.getDisplayName()}`);
     }
 
-    return `${chalk.bold.yellow('def')} ${chalk.bold.white(
-      name,
-    )}(${serializedArgs.join(', ')})${retStr}`;
+    return `${chalk.bold.yellow('def')} ${chalk.bold.white(name)}(${serializedArgs.join(', ')})${retStr}`;
   }
 }

@@ -14,14 +14,9 @@ import type { X87OwnershipStackEntry } from '../reg-allocator/x87/X87RegOwnershi
 
 import { X86CompilerInstructionFnAttrs } from '../../constants/types';
 import { isLabelOwnership } from '../reg-allocator';
-import {
-  genInstruction,
-  genMemAddress,
-  withInlineComment,
-} from '../../asm-utils';
+import { genInstruction, genMemAddress, withInlineComment } from '../../asm-utils';
 
-type StoreInstructionCompilerAttrs =
-  X86CompilerInstructionFnAttrs<IRStoreInstruction>;
+type StoreInstructionCompilerAttrs = X86CompilerInstructionFnAttrs<IRStoreInstruction>;
 
 export function compileStoreInstruction({
   instruction,
@@ -39,8 +34,7 @@ export function compileStoreInstruction({
   const offsetOutputByteSize = offsetOutputType.getByteSize();
 
   const isFloatingOutput =
-    isPrimitiveLikeType(offsetOutputType, true) &&
-    offsetOutputType.isFloating();
+    isPrimitiveLikeType(offsetOutputType, true) && offsetOutputType.isFloating();
 
   const isFloatingInput =
     isPrimitiveLikeType(value.type, true) && value.type.isFloating();
@@ -108,8 +102,7 @@ export function compileStoreInstruction({
     if (
       getBaseTypeIfPtr(value.type).isStructOrUnion() &&
       getBaseTypeIfPtr(baseOutputType).isStructOrUnion() &&
-      (!value.isTemporary() ||
-        isLabelOwnership(memOwnership.getVarOwnership(value.name)))
+      (!value.isTemporary() || isLabelOwnership(memOwnership.getVarOwnership(value.name)))
     ) {
       // copy structure A to B
       output.appendGroup(
@@ -143,10 +136,7 @@ export function compileStoreInstruction({
         const storeResult = x87regs.storeStackRegAtAddress({
           reg: stackRegResult.reg,
           address: destAddr.value,
-          pop: !lifetime.isVariableLaterUsed(
-            allocator.iterator.offset,
-            value.name,
-          ),
+          pop: !lifetime.isVariableLaterUsed(allocator.iterator.offset, value.name),
         });
 
         output.appendGroups(storeResult.asm);
@@ -162,10 +152,7 @@ export function compileStoreInstruction({
               integral: true,
               reg: stackRegResult.reg,
               address: destAddr.value,
-              pop: !lifetime.isVariableLaterUsed(
-                allocator.iterator.offset,
-                value.name,
-              ),
+              pop: !lifetime.isVariableLaterUsed(allocator.iterator.offset, value.name),
             });
 
             output.appendGroups(storeResult.asm);
@@ -185,8 +172,7 @@ export function compileStoreInstruction({
           if (inputReg.size - destAddr.size === 1) {
             // case: *(%t{1}: char*2B) = store %t{2}: int2B
             // bigger value is loaded in smaller address
-            const part =
-              regs.ownership.getAvailableRegs().general.parts[inputReg.value];
+            const part = regs.ownership.getAvailableRegs().general.parts[inputReg.value];
 
             inputReg = {
               ...inputReg,

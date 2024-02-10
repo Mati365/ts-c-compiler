@@ -3,10 +3,7 @@ import { unwrapEitherOrThrow } from '@ts-c-compiler/core';
 
 import { ASTCEnumSpecifier } from 'frontend/parser';
 import { CEnumType, CPrimitiveType } from '../../../types';
-import {
-  CTypeCheckError,
-  CTypeCheckErrorCode,
-} from '../../../errors/CTypeCheckError';
+import { CTypeCheckError, CTypeCheckErrorCode } from '../../../errors/CTypeCheckError';
 
 import { TypeExtractorAttrs } from '../constants/types';
 

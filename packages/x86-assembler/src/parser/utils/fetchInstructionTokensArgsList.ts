@@ -63,10 +63,7 @@ export function fetchInstructionTokensArgsList(
       argsTokens.push(token);
 
       // if it was size operand - fetch next token which is prefixed
-    } else if (
-      allowSizeOverride &&
-      token.kind === TokenKind.BYTE_SIZE_OVERRIDE
-    ) {
+    } else if (allowSizeOverride && token.kind === TokenKind.BYTE_SIZE_OVERRIDE) {
       flushTokenBuffer();
       argsTokens.push(parser.fetchRelativeToken());
     }

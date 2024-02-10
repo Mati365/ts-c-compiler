@@ -9,11 +9,7 @@ export class ASTCForStmtTypeCreator extends ASTCTypeCreator<ASTCForStatement> {
     const { declaration, condition, expression, statement } = node;
 
     analyzeVisitor.enterScope(node, visitor => {
-      visitor
-        .visit(declaration)
-        .visit(condition)
-        .visit(expression)
-        .visit(statement);
+      visitor.visit(declaration).visit(condition).visit(expression).visit(statement);
     });
 
     return false;

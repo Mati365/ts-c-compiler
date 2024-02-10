@@ -9,13 +9,9 @@ import { castToPointerIfArray } from 'frontend/analyze/casts';
 import { X86CompileInstructionOutput } from './shared';
 import { X86CompilerInstructionFnAttrs } from '../../constants/types';
 import { genInstruction, withInlineComment } from '../../asm-utils';
-import {
-  IRArgDynamicResolverType,
-  isStackVarOwnership,
-} from '../reg-allocator';
+import { IRArgDynamicResolverType, isStackVarOwnership } from '../reg-allocator';
 
-type LoadInstructionCompilerAttrs =
-  X86CompilerInstructionFnAttrs<IRLoadInstruction>;
+type LoadInstructionCompilerAttrs = X86CompilerInstructionFnAttrs<IRLoadInstruction>;
 
 export function compileLoadInstruction({
   instruction,
@@ -52,10 +48,7 @@ export function compileLoadInstruction({
     output.appendInstructions(...addressOffsetReg.asm);
 
     // address pointer / offset is dynamic
-    if (
-      isPrimitiveLikeType(outputVar.type, true) &&
-      outputVar.type.isFloating()
-    ) {
+    if (isPrimitiveLikeType(outputVar.type, true) && outputVar.type.isFloating()) {
       // handle load %t{6}: float4B = load %t{5}: struct Vec2**2B
       // %t{0}: float4B = load a{0}: float*2B
       output.appendGroup(
@@ -67,15 +60,10 @@ export function compileLoadInstruction({
 
       const prefix = getByteSizeArgPrefixName(outputRegSize);
 
-      output.appendInstructions(
-        genInstruction('fld', `${prefix} ${srcPtrAddr}`),
-      );
+      output.appendInstructions(genInstruction('fld', `${prefix} ${srcPtrAddr}`));
     } else {
       // handle load %t{6}: char2B = load %t{5}: struct Vec2**2B
-      const regSize = Math.min(
-        outputRegSize,
-        inputVar.type.baseType.getByteSize(),
-      );
+      const regSize = Math.min(outputRegSize, inputVar.type.baseType.getByteSize());
 
       const outputReg = regs.requestReg({
         size: regSize,
@@ -87,23 +75,18 @@ export function compileLoadInstruction({
       // letter[0] must be truncated to 1 byte (compiler used to emit `mov ax, [bx]` like instruction)
       const zeroExtend = regSize - outputRegSize === 1;
 
-      regs.ownership.setOwnership(outputVar.name, { reg: outputReg.value });
+      regs.ownership.setOwnership(outputVar.name, {
+        reg: outputReg.value,
+      });
       output.appendInstructions(
         withInlineComment(
-          genInstruction(
-            zeroExtend ? 'movzx' : 'mov',
-            outputReg.value,
-            srcPtrAddr,
-          ),
+          genInstruction(zeroExtend ? 'movzx' : 'mov', outputReg.value, srcPtrAddr),
           instruction.getDisplayName(),
         ),
       );
     }
   } else {
-    if (
-      isPointerLikeType(inputVar.type) &&
-      isPointerLikeType(inputVar.type.baseType)
-    ) {
+    if (isPointerLikeType(inputVar.type) && isPointerLikeType(inputVar.type.baseType)) {
       // handle loading pointer to types, such as **k
       const reg = regs.requestReg({
         size: inputVar.type.getByteSize(),

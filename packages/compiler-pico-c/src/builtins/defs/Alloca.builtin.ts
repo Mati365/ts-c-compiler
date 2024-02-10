@@ -1,11 +1,7 @@
 import { withBuiltinPrefix } from 'builtins/utils';
 
 import { CVariable } from 'frontend/analyze/scope/variables/CVariable';
-import {
-  CPointerType,
-  CPrimitiveType,
-  CTypeDescriptor,
-} from 'frontend/analyze/types';
+import { CPointerType, CPrimitiveType, CTypeDescriptor } from 'frontend/analyze/types';
 
 import { CBuiltinFnDeclType } from 'builtins/CBuiltinFnDeclType';
 

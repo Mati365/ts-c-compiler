@@ -6,10 +6,7 @@ import { getCompilerArchDescriptor } from 'arch';
 import { IsPrintable } from '@ts-c-compiler/core';
 import { Identity } from '@ts-c-compiler/core';
 import { CCompilerArch, CTypeQualifier } from '#constants';
-import {
-  CTypeCheckError,
-  CTypeCheckErrorCode,
-} from '../errors/CTypeCheckError';
+import { CTypeCheckError, CTypeCheckErrorCode } from '../errors/CTypeCheckError';
 
 import { CQualBitmap } from '../constants';
 import { bitsetToKeywords, parseKeywordsToBitset, isNamedType } from '../utils';

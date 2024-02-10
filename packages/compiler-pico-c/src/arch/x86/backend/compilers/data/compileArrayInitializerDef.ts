@@ -1,23 +1,12 @@
 import * as R from 'ramda';
 
 import { CCompilerArch } from '#constants';
-import {
-  CPrimitiveType,
-  CType,
-  CVariableInitializerTree,
-} from 'frontend/analyze';
+import { CPrimitiveType, CType, CVariableInitializerTree } from 'frontend/analyze';
 
 import { X86CompileInstructionOutput } from '../shared';
-import {
-  genDefConst,
-  genLabel,
-  getDefConstSizeLabel,
-} from '../../../asm-utils';
+import { genDefConst, genLabel, getDefConstSizeLabel } from '../../../asm-utils';
 
-import {
-  getBaseTypeIfArray,
-  getBaseTypeIfPtr,
-} from 'frontend/analyze/types/utils';
+import { getBaseTypeIfArray, getBaseTypeIfPtr } from 'frontend/analyze/types/utils';
 
 type ArrayInitializerDefAsmAttrs = {
   asmLabel: string;
@@ -58,15 +47,16 @@ export function compileArrayInitializerDefAsm({
   ).groups;
 
   const genPtrLiteralLabel = (name: string) =>
-    `${getDefConstSizeLabel(
-      CPrimitiveType.address(arch).getByteSize(),
-    )} ${name}`;
+    `${getDefConstSizeLabel(CPrimitiveType.address(arch).getByteSize())} ${name}`;
 
   const genLiteralLabel = (index: number, offset: number) =>
     `${asmLabel}@str$${index}_${offset}`;
 
   //  [[1, 2], "as", [3]] -> 'db 1, 2' 'dw ptr "as"' 'db 3'
-  const asm = groupedDefs.reduce<{ pre: string[]; post: string[] }>(
+  const asm = groupedDefs.reduce<{
+    pre: string[];
+    post: string[];
+  }>(
     (acc, group, index) => {
       if (typeof group[0] === 'string') {
         for (let i = 0; i < group.length; ++i) {
@@ -84,7 +74,12 @@ export function compileArrayInitializerDefAsm({
               })}`,
             );
           } else {
-            acc.post.push(genDefConst({ size: 1, values: [group[i]] }));
+            acc.post.push(
+              genDefConst({
+                size: 1,
+                values: [group[i]],
+              }),
+            );
           }
         }
       } else {

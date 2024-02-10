@@ -77,8 +77,7 @@ export class CountdownTimer {
     if (
       rolledOver &&
       controlByte.channel === 0x0 &&
-      controlByte.operatingMode ===
-        TimerOperatingMode.INTERRUPT_ON_TERMINAL_COUNT
+      controlByte.operatingMode === TimerOperatingMode.INTERRUPT_ON_TERMINAL_COUNT
     ) {
       pit.raiseIRQ();
       this.rolledOver = false;

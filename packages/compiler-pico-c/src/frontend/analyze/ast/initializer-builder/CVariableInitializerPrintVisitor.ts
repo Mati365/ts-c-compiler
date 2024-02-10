@@ -19,9 +19,7 @@ export class CVariableInitializerPrintVisitor extends CVariableInitializerVisito
     return this._reduced;
   }
 
-  override enter(
-    maybePair: CVariableInitializePair | CVariableInitializerTree,
-  ) {
+  override enter(maybePair: CVariableInitializePair | CVariableInitializerTree) {
     if (this._reduced && this._reduced[this._reduced.length - 2] !== '{') {
       this._reduced += ', ';
     }
@@ -45,9 +43,7 @@ export class CVariableInitializerPrintVisitor extends CVariableInitializerVisito
     }
   }
 
-  override leave(
-    maybePair: CVariableInitializePair | CVariableInitializerTree,
-  ) {
+  override leave(maybePair: CVariableInitializePair | CVariableInitializerTree) {
     if (isTreeNode(maybePair)) {
       this._reduced += ' }';
     }

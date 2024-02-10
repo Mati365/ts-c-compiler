@@ -2,11 +2,7 @@ import { NodeLocation } from '@ts-c-compiler/grammar';
 
 import { CCompilerKeyword } from '#constants';
 import { CGrammar } from '../shared';
-import {
-  ASTCCompilerNode,
-  ASTCIfStatement,
-  ASTCSwitchStatement,
-} from '../../../ast';
+import { ASTCCompilerNode, ASTCIfStatement, ASTCSwitchStatement } from '../../../ast';
 
 import { expression } from '../expressions/expression';
 

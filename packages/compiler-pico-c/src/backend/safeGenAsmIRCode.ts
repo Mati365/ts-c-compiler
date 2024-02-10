@@ -13,10 +13,7 @@ type CAbstractBackendConstructor = {
   new (config: CCompilerConfig): CAbstractArchBackend;
 };
 
-const CCOMPILER_ARCH_BACKENDS: Record<
-  CCompilerArch,
-  CAbstractBackendConstructor
-> = {
+const CCOMPILER_ARCH_BACKENDS: Record<CCompilerArch, CAbstractBackendConstructor> = {
   [X86ArchBackend.arch]: X86ArchBackend,
 };
 

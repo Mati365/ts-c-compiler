@@ -1,11 +1,7 @@
 /**
  * Changes nth byte in number
  */
-export function replaceNthByte(
-  nth: number,
-  number: number,
-  byte: number,
-): number {
+export function replaceNthByte(nth: number, number: number, byte: number): number {
   const nthBit = nth << 3;
 
   return (number & ~(0xff << nthBit)) | (byte << nthBit);
@@ -29,10 +25,7 @@ export function extractNthByte(nth: number, num: number): number {
  * Extends digit to byteSize number of bytes
  * and emits array of bytes of data
  */
-export function extractMultipleNumberBytes(
-  byteSize: number,
-  num: number,
-): number[] {
+export function extractMultipleNumberBytes(byteSize: number, num: number): number[] {
   const buffer: number[] = [];
 
   for (let i = 0; i < byteSize; ++i) {

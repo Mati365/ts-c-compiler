@@ -4,7 +4,10 @@ import { NodeLocation } from '@ts-c-compiler/grammar';
 import { ASTCCompilerKind, ASTCCompilerNode } from '../ASTCCompilerNode';
 
 export class ASTCAsmClobberOperand extends ASTCCompilerNode {
-  constructor(loc: NodeLocation, readonly name: string) {
+  constructor(
+    loc: NodeLocation,
+    readonly name: string,
+  ) {
     super(ASTCCompilerKind.AsmStmtClobberOperand, loc);
   }
 

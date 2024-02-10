@@ -64,11 +64,7 @@ function relOpPrim(g: CPreprocessorGrammarDef): ASTCPreprocessorTreeNode {
   }
 
   g.consume();
-  return new ASTPreprocessorBinaryOpNode(
-    currentToken.type,
-    term(g),
-    relOpPrim(g),
-  );
+  return new ASTPreprocessorBinaryOpNode(currentToken.type, term(g), relOpPrim(g));
 }
 
 /**

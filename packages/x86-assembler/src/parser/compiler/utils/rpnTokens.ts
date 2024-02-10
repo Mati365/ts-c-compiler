@@ -11,10 +11,7 @@ import { ASTExpressionParserError } from '../../ast/critical/ASTExpression';
 /**
  * Concat all tokens text into one string
  */
-export function mergeTokensTexts(
-  tokens: Token[],
-  joinStr: string = '',
-): string {
+export function mergeTokensTexts(tokens: Token[], joinStr: string = ''): string {
   let acc = '';
 
   for (let i = 0; i < tokens.length; ++i) {

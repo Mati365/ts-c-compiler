@@ -7,11 +7,7 @@ import { CBackendError, CBackendErrorCode } from 'backend/errors/CBackendError';
 
 import { IRICmpInstruction, isIRBrInstruction } from 'frontend/ir/instructions';
 
-import {
-  genInstruction,
-  genLabelName,
-  withInlineComment,
-} from '../../asm-utils';
+import { genInstruction, genLabelName, withInlineComment } from '../../asm-utils';
 
 import { IRArgDynamicResolverType } from '../reg-allocator';
 import { X86CompilerInstructionFnAttrs } from '../../constants/types';
@@ -48,8 +44,7 @@ const INT_OPERATOR_JMP_INSTRUCTIONS: Record<
   },
 };
 
-type ICmpInstructionCompilerAttrs =
-  X86CompilerInstructionFnAttrs<IRICmpInstruction>;
+type ICmpInstructionCompilerAttrs = X86CompilerInstructionFnAttrs<IRICmpInstruction>;
 
 export function compileICmpInstruction({
   instruction,
@@ -75,15 +70,15 @@ export function compileICmpInstruction({
   ) {
     // compare float values
     // if (a: float > b: float)
-    const flagReg = regs.requestReg({ size: 2, allowedRegs: ['ax'] });
+    const flagReg = regs.requestReg({
+      size: 2,
+      allowedRegs: ['ax'],
+    });
 
     output.appendInstructions(...flagReg.asm);
 
     // some instructions use inverted stack order
-    if (
-      operator === TokenType.LESS_THAN ||
-      operator === TokenType.LESS_EQ_THAN
-    ) {
+    if (operator === TokenType.LESS_THAN || operator === TokenType.LESS_EQ_THAN) {
       const leftAllocResult = x87regs.tryResolveIRArgAsReg({
         arg: leftVar,
         castedType: leftVar.type,
@@ -96,9 +91,7 @@ export function compileICmpInstruction({
       });
 
       output.appendGroups(leftAllocResult.asm, rightAllocResult.asm);
-      output.appendInstructions(
-        genInstruction('fucom', leftAllocResult.entry.reg),
-      );
+      output.appendInstructions(genInstruction('fucom', leftAllocResult.entry.reg));
     } else {
       const rightAllocResult = x87regs.tryResolveIRArgAsReg({
         arg: rightVar,
@@ -112,9 +105,7 @@ export function compileICmpInstruction({
       });
 
       output.appendGroups(rightAllocResult.asm, leftAllocResult.asm);
-      output.appendInstructions(
-        genInstruction('fucom', rightAllocResult.entry.reg),
-      );
+      output.appendInstructions(genInstruction('fucom', rightAllocResult.entry.reg));
     }
 
     output.appendInstructions(genInstruction('fnstsw', flagReg.value));
@@ -168,10 +159,7 @@ export function compileICmpInstruction({
     if (brInstruction.ifTrue) {
       output.appendInstructions(
         withInlineComment(
-          genInstruction(
-            jmpInstruction.ifTrue,
-            genLabelName(brInstruction.ifTrue.name),
-          ),
+          genInstruction(jmpInstruction.ifTrue, genLabelName(brInstruction.ifTrue.name)),
           brInstruction.getDisplayName(),
         ),
       );
@@ -214,10 +202,7 @@ export function compileICmpInstruction({
       ),
     );
 
-    if (
-      leftAllocResult.type === IRArgDynamicResolverType.REG &&
-      isIRConstant(leftVar)
-    ) {
+    if (leftAllocResult.type === IRArgDynamicResolverType.REG && isIRConstant(leftVar)) {
       regs.releaseRegs([leftAllocResult.value]);
     }
 
@@ -232,17 +217,12 @@ export function compileICmpInstruction({
       isPrimitiveLikeType(leftVar.type, true) && leftVar.type.isUnsigned();
 
     const [ifTrueInstruction, ifFalseInstruction] =
-      INT_OPERATOR_JMP_INSTRUCTIONS[operator][
-        isUnsigned ? 'unsigned' : 'signed'
-      ];
+      INT_OPERATOR_JMP_INSTRUCTIONS[operator][isUnsigned ? 'unsigned' : 'signed'];
 
     if (brInstruction.ifTrue) {
       output.appendInstructions(
         withInlineComment(
-          genInstruction(
-            ifTrueInstruction,
-            genLabelName(brInstruction.ifTrue.name),
-          ),
+          genInstruction(ifTrueInstruction, genLabelName(brInstruction.ifTrue.name)),
           brInstruction.getDisplayName(),
         ),
       );
@@ -251,10 +231,7 @@ export function compileICmpInstruction({
     if (brInstruction.ifFalse) {
       output.appendInstructions(
         withInlineComment(
-          genInstruction(
-            ifFalseInstruction,
-            genLabelName(brInstruction.ifFalse.name),
-          ),
+          genInstruction(ifFalseInstruction, genLabelName(brInstruction.ifFalse.name)),
           brInstruction.getDisplayName(),
         ),
       );

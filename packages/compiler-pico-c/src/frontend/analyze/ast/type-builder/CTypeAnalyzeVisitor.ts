@@ -73,10 +73,7 @@ export class CTypeAnalyzeVisitor extends CInnerTypeTreeVisitor {
   /**
    * Creates new scope and executes fn
    */
-  enterScope(
-    node: ASTCCompilerNode,
-    fn: (newScope: CTypeAnalyzeVisitor) => void,
-  ) {
+  enterScope(node: ASTCCompilerNode, fn: (newScope: CTypeAnalyzeVisitor) => void) {
     const { scope, context } = this;
 
     const newScope = new CScopeTree(context.config, node);

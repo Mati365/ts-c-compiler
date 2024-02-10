@@ -85,11 +85,7 @@ export class UnionStruct {
         highBitNth,
       });
 
-      Reflect.defineMetadata(
-        unionStructMetaField,
-        existingBitFields,
-        target.constructor,
-      );
+      Reflect.defineMetadata(unionStructMetaField, existingBitFields, target.constructor);
       Object.defineProperty(target, propertyKey, {
         set(value: number) {
           this.number =

@@ -8,7 +8,10 @@ export type AsmInputConstraintFlags = {
 };
 
 export class ASTCAsmStmtInputConstraint extends ASTCCompilerNode {
-  constructor(loc: NodeLocation, readonly flags: AsmInputConstraintFlags) {
+  constructor(
+    loc: NodeLocation,
+    readonly flags: AsmInputConstraintFlags,
+  ) {
     super(ASTCCompilerKind.AsmStmtInputConstraint, loc);
   }
 

@@ -2,10 +2,7 @@ import { pipe } from 'fp-ts/function';
 import { unwrapEitherOrThrow } from '@ts-c-compiler/core';
 
 import { ASTCUnionSpecifier } from 'frontend/parser';
-import {
-  CTypeCheckError,
-  CTypeCheckErrorCode,
-} from '../../../errors/CTypeCheckError';
+import { CTypeCheckError, CTypeCheckErrorCode } from '../../../errors/CTypeCheckError';
 
 import { CUnionType } from '../../../types';
 import { TypeExtractorAttrs } from '../constants/types';
@@ -23,10 +20,7 @@ export function extractUnionTypeFromNode({
   extractSpecifierType,
   extractNamedEntryFromDeclarator,
 }: UnionTypeExtractorAttrs): CUnionType {
-  let unionType = CUnionType.ofBlank(
-    context.config.arch,
-    unionSpecifier.name?.text,
-  );
+  let unionType = CUnionType.ofBlank(context.config.arch, unionSpecifier.name?.text);
 
   // handle const int x, y;
   unionSpecifier.list?.children.forEach(declaration => {
@@ -36,9 +30,7 @@ export function extractUnionTypeFromNode({
     });
 
     if (!type) {
-      throw new CTypeCheckError(
-        CTypeCheckErrorCode.UNABLE_TO_EXTRACT_STRUCT_TYPE,
-      );
+      throw new CTypeCheckError(CTypeCheckErrorCode.UNABLE_TO_EXTRACT_STRUCT_TYPE);
     }
 
     // define x, y as separate fields and calculate offsets

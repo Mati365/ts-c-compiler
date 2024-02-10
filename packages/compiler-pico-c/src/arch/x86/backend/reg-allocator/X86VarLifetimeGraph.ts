@@ -39,10 +39,7 @@ export class X86VarLifetimeGraph {
       }
     };
 
-    const trackInstructionInputs = (
-      offset: number,
-      instruction: IRInstruction,
-    ) => {
+    const trackInstructionInputs = (offset: number, instruction: IRInstruction) => {
       for (const inputArg of instruction.getArgs().input) {
         if (!isIRVariable(inputArg)) {
           continue;

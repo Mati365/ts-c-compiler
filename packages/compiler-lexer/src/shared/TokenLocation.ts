@@ -9,11 +9,7 @@ export class TokenLocation {
   ) {}
 
   append(row: number, column: number = 0): TokenLocation {
-    return new TokenLocation(
-      this.row + row,
-      this.column + column,
-      this.pathname,
-    );
+    return new TokenLocation(this.row + row, this.column + column, this.pathname);
   }
 
   clone(): TokenLocation {

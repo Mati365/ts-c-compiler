@@ -80,11 +80,9 @@ function parseMemExpression(
       addressDescription.sreg = currentReg;
 
       if (!addressDescription?.sreg) {
-        throw new ParserError(
-          ParserErrorCode.REGISTER_IS_NOT_SEGMENT_REG,
-          null,
-          { reg: arg1.text },
-        );
+        throw new ParserError(ParserErrorCode.REGISTER_IS_NOT_SEGMENT_REG, null, {
+          reg: arg1.text,
+        });
       }
 
       tokens.splice(i, 2);
@@ -164,16 +162,9 @@ function parseMemExpression(
   }
 
   if (addressDescription.disp !== null) {
-    addressDescription.dispByteSize = numberByteSize(
-      Math.abs(addressDescription.disp),
-    );
-    addressDescription.signedByteSize = signedNumberByteSize(
-      addressDescription.disp,
-    );
-  } else if (
-    !addressDescription.reg2 &&
-    addressDescription.reg?.mnemonic === 'bp'
-  ) {
+    addressDescription.dispByteSize = numberByteSize(Math.abs(addressDescription.disp));
+    addressDescription.signedByteSize = signedNumberByteSize(addressDescription.disp);
+  } else if (!addressDescription.reg2 && addressDescription.reg?.mnemonic === 'bp') {
     // special case for BP instruction specified in addressing mode table
     addressDescription.disp = 0;
     addressDescription.dispByteSize = 1;
@@ -191,7 +182,10 @@ function parseMemExpression(
  * [ds:cx+4*si+disp]
  */
 export class ASTInstructionMemPtrArg extends ASTInstructionArg<MemAddressDescription> {
-  constructor(readonly phrase: string, byteSize: number) {
+  constructor(
+    readonly phrase: string,
+    byteSize: number,
+  ) {
     super(InstructionArgType.MEMORY, null, byteSize, null, false);
 
     this.phrase = phrase;
@@ -226,8 +220,7 @@ export class ASTInstructionMemPtrArg extends ASTInstructionArg<MemAddressDescrip
     const { byteSize, schema, phrase, value } = this;
     const parsedPhrase = phrase.replace(/\s/g, '');
     const sizePrefix: string =
-      InstructionArgSize[byteSize] ??
-      InstructionArgSize[roundToPowerOfTwo(byteSize)];
+      InstructionArgSize[byteSize] ?? InstructionArgSize[roundToPowerOfTwo(byteSize)];
 
     if (!schema) {
       return `[${parsedPhrase}]`;

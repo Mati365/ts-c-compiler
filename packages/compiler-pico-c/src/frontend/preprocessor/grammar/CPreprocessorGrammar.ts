@@ -4,11 +4,7 @@ import {
   C_PREPROCESSOR_IDENTIFIERS_MAP,
 } from './CPreprocessorIdentifiers';
 
-import {
-  ASTCPreprocessorKind,
-  ASTCPreprocessorTreeNode,
-  ASTCStmtNode,
-} from '../ast';
+import { ASTCPreprocessorKind, ASTCPreprocessorTreeNode, ASTCStmtNode } from '../ast';
 
 import {
   codeBlockMatcher,

@@ -9,10 +9,7 @@ type BuiltinVaArgCallAttrs = X86CompilerInstructionFnAttrs<IRCallInstruction>;
 /**
  * void va_arg ( va_list ap, int size );
  */
-export const compileBuiltinVaArg = ({
-  instruction,
-  context,
-}: BuiltinVaArgCallAttrs) => {
+export const compileBuiltinVaArg = ({ instruction, context }: BuiltinVaArgCallAttrs) => {
   const {
     allocator: { regs },
   } = context;
@@ -38,7 +35,9 @@ export const compileBuiltinVaArg = ({
     return X86CompileInstructionOutput.ofInstructions([]);
   }
 
-  const loadedValReg = regs.requestReg({ size: sizeArg.constant });
+  const loadedValReg = regs.requestReg({
+    size: sizeArg.constant,
+  });
 
   if (isIRVariable(vaListPtrArg)) {
     regs.ownership.dropOwnership(vaListPtrArg.name);
@@ -58,7 +57,9 @@ export const compileBuiltinVaArg = ({
     genInstruction(
       'mov',
       vaPtrReg.value,
-      genMemAddress({ expression: vaListPtr.value as string }),
+      genMemAddress({
+        expression: vaListPtr.value as string,
+      }),
     ),
     genInstruction('add', vaPtrReg.value, vaListPtrArg.type.getByteSize()),
     genInstruction(
@@ -70,12 +71,16 @@ export const compileBuiltinVaArg = ({
     ),
     genInstruction(
       'mov',
-      genMemAddress({ expression: destPtr.value as string }),
+      genMemAddress({
+        expression: destPtr.value as string,
+      }),
       loadedValReg.value,
     ),
     genInstruction(
       'mov',
-      genMemAddress({ expression: vaListPtr.value as string }),
+      genMemAddress({
+        expression: vaListPtr.value as string,
+      }),
       vaPtrReg.value,
     ),
     genComment('VA arg getter - end'),

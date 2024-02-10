@@ -148,10 +148,7 @@ export abstract class X86AbstractCPU {
   getMemAddress(sreg: X86RegName, reg: X86RegName | Number): number {
     return (
       (toUnsignedNumber(this.registers[<string>sreg], 0x2) << 4) +
-      toUnsignedNumber(
-        (<string>reg).length ? this.registers[<string>reg] : reg,
-        0x2,
-      )
+      toUnsignedNumber((<string>reg).length ? this.registers[<string>reg] : reg, 0x2)
     );
   }
 

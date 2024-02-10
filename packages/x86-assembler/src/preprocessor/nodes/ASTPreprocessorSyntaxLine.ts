@@ -16,7 +16,10 @@ import { ASTPreprocessorKind, ASTPreprocessorNode } from '../constants';
 export class ASTPreprocessorSyntaxLine extends ASTPreprocessorNode {
   private outputTokens: Token[];
 
-  constructor(loc: NodeLocation, readonly tokens: Token[]) {
+  constructor(
+    loc: NodeLocation,
+    readonly tokens: Token[],
+  ) {
     super(ASTPreprocessorKind.SyntaxStmt, loc);
   }
 

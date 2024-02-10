@@ -62,9 +62,7 @@ export class ASTPreprocessorCriticalEQU extends ASTPreprocessorNode {
 
     try {
       if (interpreter.getCallables(name)?.length) {
-        [, this.originalTokens] = interpreter.removeMacrosFromTokens(
-          this.originalTokens,
-        );
+        [, this.originalTokens] = interpreter.removeMacrosFromTokens(this.originalTokens);
         return;
       }
 

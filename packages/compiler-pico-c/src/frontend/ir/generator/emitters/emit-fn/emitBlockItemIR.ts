@@ -257,9 +257,7 @@ export function emitBlockItemIR({
         appendStmtResults(assignResult, result);
         appendStmtResults(castedAssignResult, result);
 
-        result.instructions.push(
-          new IRRetInstruction(castedAssignResult.output),
-        );
+        result.instructions.push(new IRRetInstruction(castedAssignResult.output));
 
         return false;
       },

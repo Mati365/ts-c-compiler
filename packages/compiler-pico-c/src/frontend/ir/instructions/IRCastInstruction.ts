@@ -11,10 +11,7 @@ export function isIRCastInstruction(
   return instruction?.opcode === IROpcode.CAST;
 }
 
-export class IRCastInstruction
-  extends IRInstruction
-  implements IsOutputInstruction
-{
+export class IRCastInstruction extends IRInstruction implements IsOutputInstruction {
   constructor(
     readonly inputVar: IRVariable,
     readonly outputVar: IRVariable,
@@ -43,8 +40,6 @@ export class IRCastInstruction
     const { outputVar, inputVar, offset } = this;
     const offsetSuffix = offset ? ` + ${offset}` : '';
 
-    return `${outputVar.getDisplayName()} = ${chalk.yellowBright(
-      'cast',
-    )} ${inputVar.getDisplayName()}${offsetSuffix}`;
+    return `${outputVar.getDisplayName()} = ${chalk.yellowBright('cast')} ${inputVar.getDisplayName()}${offsetSuffix}`;
   }
 }

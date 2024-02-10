@@ -15,16 +15,10 @@ import type {
   IRFlatCodeSegmentBuilderResult,
 } from '../segments/IRFlatCodeSegmentBuilder';
 
-import type {
-  IRDataSegmentBuilder,
-  IRDataSegmentBuilderResult,
-} from '../segments';
+import type { IRDataSegmentBuilder, IRDataSegmentBuilderResult } from '../segments';
 
 import type { emitAssignmentIR } from './emitAssignmentIR';
-import type {
-  emitExpressionIR,
-  LogicBinaryExpressionLabels,
-} from './emit-expr';
+import type { emitExpressionIR, LogicBinaryExpressionLabels } from './emit-expr';
 
 import type { emitIdentifierGetterIR } from './emitIdentifierGetterIR';
 import type { emitPointerAddressExpression } from './emitPointerAddressExpression';
@@ -128,10 +122,7 @@ export function createBlankExprResult(
 /**
  * Do not change instructions reference!
  */
-export function appendStmtResults(
-  src: IREmitterStmtResult,
-  target: IREmitterStmtResult,
-) {
+export function appendStmtResults(src: IREmitterStmtResult, target: IREmitterStmtResult) {
   if (!src) {
     return target;
   }

@@ -13,7 +13,10 @@ export function isASTCExpressionStmtNode(
   fields: ['expression'],
 })
 export class ASTCExpressionStatement extends ASTCCompilerNode {
-  constructor(loc: NodeLocation, readonly expression?: ASTCCompilerNode) {
+  constructor(
+    loc: NodeLocation,
+    readonly expression?: ASTCCompilerNode,
+  ) {
     super(ASTCCompilerKind.ExpressionStmt, loc);
   }
 }

@@ -1,8 +1,5 @@
 import type { Token } from '@ts-c-compiler/lexer';
-import type {
-  ASTCExecResult,
-  ASTCPreprocessorTreeNode,
-} from 'frontend/preprocessor/ast';
+import type { ASTCExecResult, ASTCPreprocessorTreeNode } from 'frontend/preprocessor/ast';
 
 import type { CPreprocessorMacro } from './CPreprocessorMacro';
 import type { CInterpreterSourcePath } from './CInterpreterIncludeResolver';

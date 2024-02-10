@@ -67,12 +67,9 @@ export class VirtualMemBlockDriver implements ByteMemRegionAccessor {
     };
 
     this.write = {
-      /** 8bit  */ 0x1: (value, address) =>
-        this.writeNumber(address, value, 0x1),
-      /** 16bit */ 0x2: (value, address) =>
-        this.writeNumber(address, value, 0x2),
-      /** 32bit */ 0x4: (value, address) =>
-        this.writeNumber(address, value, 0x4),
+      /** 8bit  */ 0x1: (value, address) => this.writeNumber(address, value, 0x1),
+      /** 16bit */ 0x2: (value, address) => this.writeNumber(address, value, 0x2),
+      /** 32bit */ 0x4: (value, address) => this.writeNumber(address, value, 0x4),
       /** 64bit */ 0x8: (value: number[], address: number) => {
         this.writeNumber(value[0], address, 0x4);
         this.writeNumber(value[1] >> 32, address + 0x4, 0x4);
@@ -85,15 +82,12 @@ export class VirtualMemBlockDriver implements ByteMemRegionAccessor {
       read: {
         single: address => fromIEEE754Single(this.readBytesLE(address, 0x4)),
         double: address => fromIEEE754Double(this.readBytesLE(address, 0x8)),
-        extended: address =>
-          fromIEEE754Extended(this.readBytesLE(address, 0xa)),
+        extended: address => fromIEEE754Extended(this.readBytesLE(address, 0xa)),
       },
 
       write: {
-        single: (value, address) =>
-          this.writeBytesLE(address, toIEEE754Single(value)),
-        double: (value, address) =>
-          this.writeBytesLE(address, toIEEE754Double(value)),
+        single: (value, address) => this.writeBytesLE(address, toIEEE754Single(value)),
+        double: (value, address) => this.writeBytesLE(address, toIEEE754Double(value)),
         extended: (value, address) =>
           this.writeBytesLE(address, toIEEE754Extended(value)),
       },

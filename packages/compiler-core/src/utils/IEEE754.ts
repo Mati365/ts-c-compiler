@@ -75,11 +75,7 @@ export function toIEEE754(v: number, ebits: number, fbits: number): number[] {
 /**
  * Converts digit from IEEE754
  */
-export function fromIEEE754(
-  bytes: number[],
-  ebits: number,
-  fbits: number,
-): number {
+export function fromIEEE754(bytes: number[], ebits: number, fbits: number): number {
   // Bytes to bits
   const extendedPrecision = ebits === 15 && fbits === 63;
   const bits = [];

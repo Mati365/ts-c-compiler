@@ -10,7 +10,10 @@ import { ASTCCompilerKind, ASTCCompilerNode } from './ASTCCompilerNode';
   fields: ['expression'],
 })
 export class ASTCConstantExpression extends ASTCCompilerNode {
-  constructor(loc: NodeLocation, readonly expression: ASTCCompilerNode) {
+  constructor(
+    loc: NodeLocation,
+    readonly expression: ASTCCompilerNode,
+  ) {
     super(ASTCCompilerKind.ConstantExpression, loc);
   }
 }

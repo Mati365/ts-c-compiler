@@ -17,10 +17,7 @@ export function isIRLoadInstruction(
  *  1. Fetch address (or reuse if exists in any register)
  *  2. Fetch data at specified address
  */
-export class IRLoadInstruction
-  extends IRInstruction
-  implements IsOutputInstruction
-{
+export class IRLoadInstruction extends IRInstruction implements IsOutputInstruction {
   constructor(
     readonly inputVar: IRVariable,
     readonly outputVar: IRVariable,
@@ -49,8 +46,6 @@ export class IRLoadInstruction
     const { outputVar, inputVar, offset } = this;
     const offsetSuffix = offset ? ` + ${offset}` : '';
 
-    return `${outputVar.getDisplayName()} = ${chalk.yellowBright(
-      'load',
-    )} ${inputVar.getDisplayName()}${offsetSuffix}`;
+    return `${outputVar.getDisplayName()} = ${chalk.yellowBright('load')} ${inputVar.getDisplayName()}${offsetSuffix}`;
   }
 }

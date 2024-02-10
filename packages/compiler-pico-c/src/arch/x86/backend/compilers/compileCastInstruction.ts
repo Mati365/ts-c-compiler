@@ -7,8 +7,7 @@ import { X86CompilerInstructionFnAttrs } from '../../constants/types';
 import { X86CompileInstructionOutput } from './shared';
 import { IRArgDynamicResolverType } from '../reg-allocator';
 
-type CastInstructionCompilerAttrs =
-  X86CompilerInstructionFnAttrs<IRCastInstruction>;
+type CastInstructionCompilerAttrs = X86CompilerInstructionFnAttrs<IRCastInstruction>;
 
 export function compileCastInstruction({
   instruction,
@@ -16,8 +15,7 @@ export function compileCastInstruction({
 }: CastInstructionCompilerAttrs) {
   const { allocator } = context;
   const { inputVar, outputVar } = instruction;
-  const { memOwnership, regs, x87regs, stackFrame, lifetime, iterator } =
-    allocator;
+  const { memOwnership, regs, x87regs, stackFrame, lifetime, iterator } = allocator;
 
   const output = new X86CompileInstructionOutput();
 
@@ -51,9 +49,7 @@ export function compileCastInstruction({
     });
   } else if (inputVar.type.isFloating() && outputVar.type.isIntegral()) {
     // int -> float
-    const spillVar = stackFrame.allocSpillVariable(
-      outputVar.type.getByteSize(),
-    );
+    const spillVar = stackFrame.allocSpillVariable(outputVar.type.getByteSize());
 
     const spillMemAddr = stackFrame.getLocalVarStackRelAddress(spillVar.name, {
       withSize: true,
@@ -73,17 +69,11 @@ export function compileCastInstruction({
         reg: pushResult.entry.reg,
         address: spillMemAddr,
         integral: true,
-        pop: !lifetime.isVariableLaterUsed(
-          allocator.iterator.offset,
-          spillVar.name,
-        ),
+        pop: !lifetime.isVariableLaterUsed(allocator.iterator.offset, spillVar.name),
       }).asm,
     );
 
-    output.appendInstructions(
-      ...reg.asm,
-      genInstruction('mov', reg.value, spillMemAddr),
-    );
+    output.appendInstructions(...reg.asm, genInstruction('mov', reg.value, spillMemAddr));
 
     output.appendGroup(pushResult.asm);
     regs.ownership.setOwnership(outputVar.name, {

@@ -3,10 +3,7 @@ import * as R from 'ramda';
 import { NodeLocation, SyntaxError } from '@ts-c-compiler/grammar';
 
 import { CGrammar } from '../shared';
-import {
-  ASTCCompoundExpressionStmt,
-  isASTCExpressionStmtNode,
-} from '../../../ast';
+import { ASTCCompoundExpressionStmt, isASTCExpressionStmtNode } from '../../../ast';
 
 import { blockItemList } from './compoundStatement';
 

@@ -6,7 +6,5 @@ export function getIRTypeDisplayName(type: CType, prefix: boolean = true) {
   }
 
   const byteSize = type.getByteSize();
-  return `${prefix ? ': ' : ''}${type.getShortestDisplayName()}${
-    byteSize ? `${byteSize}B` : ''
-  }`;
+  return `${prefix ? ': ' : ''}${type.getShortestDisplayName()}${byteSize ? `${byteSize}B` : ''}`;
 }

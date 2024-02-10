@@ -5,10 +5,7 @@ import { extractNthByte, roundToPowerOfTwo } from '@ts-c-compiler/core';
 import { RMByte, RMAddressingMode } from '../../../constants';
 
 import { ASTInstruction } from '../../ast/instruction/ASTInstruction';
-import {
-  ASTInstructionArg,
-  ASTInstructionMemPtrArg,
-} from '../../ast/instruction/args';
+import { ASTInstructionArg, ASTInstructionMemPtrArg } from '../../ast/instruction/args';
 
 import { RegisterSchema } from '../../../constants';
 import { InstructionArgSize } from '../../../types';
@@ -60,11 +57,7 @@ export class BinaryInstruction extends BinaryBlob<ASTInstruction> {
       );
 
     // sibByte is supported in modes > 16bits
-    if (
-      sibByte &&
-      sibByte.value !== 1 &&
-      compiler.mode <= InstructionArgSize.WORD
-    ) {
+    if (sibByte && sibByte.value !== 1 && compiler.mode <= InstructionArgSize.WORD) {
       throw new ParserError(
         ParserErrorCode.SCALE_INDEX_IS_UNSUPPORTED_IN_MODE,
         ast.loc.start,
@@ -74,8 +67,7 @@ export class BinaryInstruction extends BinaryBlob<ASTInstruction> {
     // output
     const binary: number[] = [];
     const binaryPrefixes: number[] = [...ast.prefixes];
-    const binaryOutputSize =
-      primarySchema.byteSize + binaryPrefixes.length + +!!sibByte;
+    const binaryOutputSize = primarySchema.byteSize + binaryPrefixes.length + +!!sibByte;
 
     // todo: check if it is only available in addressing mode
     if (memArg?.addressDescription) {
@@ -83,10 +75,7 @@ export class BinaryInstruction extends BinaryBlob<ASTInstruction> {
       const { sreg } = addressDescription;
 
       // check if excedding, only if RM byte present, moffset can be bigger
-      if (
-        !memArg.schema?.moffset &&
-        addressDescription.dispByteSize > compiler.mode
-      ) {
+      if (!memArg.schema?.moffset && addressDescription.dispByteSize > compiler.mode) {
         throw new ParserError(
           ParserErrorCode.DISPLACEMENT_EXCEEDING_BYTE_SIZE,
           ast.loc.start,
@@ -102,19 +91,12 @@ export class BinaryInstruction extends BinaryBlob<ASTInstruction> {
       if (sreg) {
         const sregPrefix = findMatchingSregPrefix(sreg);
         if (R.isNil(sregPrefix)) {
-          throw new ParserError(
-            ParserErrorCode.INCORRECT_SREG_OVERRIDE,
-            ast.loc.start,
-            {
-              sreg: sreg.mnemonic,
-            },
-          );
+          throw new ParserError(ParserErrorCode.INCORRECT_SREG_OVERRIDE, ast.loc.start, {
+            sreg: sreg.mnemonic,
+          });
         } else {
           if (containsSregPrefixes(binaryPrefixes)) {
-            throw new ParserError(
-              ParserErrorCode.CONFLICT_SREG_OVERRIDE,
-              ast.loc.start,
-            );
+            throw new ParserError(ParserErrorCode.CONFLICT_SREG_OVERRIDE, ast.loc.start);
           }
 
           binaryPrefixes.push(sregPrefix);
@@ -150,8 +132,7 @@ export class BinaryInstruction extends BinaryBlob<ASTInstruction> {
         case 'o3':
           if (schema[0] === 'r' || !segMemArg) {
             if (immArg) {
-              const relAddress =
-                immArg.val - absoluteAddress - binaryOutputSize;
+              const relAddress = immArg.val - absoluteAddress - binaryOutputSize;
 
               binary.push(
                 toUnsignedNumber(
@@ -198,10 +179,7 @@ export class BinaryInstruction extends BinaryBlob<ASTInstruction> {
                 return;
               }
 
-              throw new ParserError(
-                ParserErrorCode.MISSING_MEM_ARG_DEF,
-                ast.loc.start,
-              );
+              throw new ParserError(ParserErrorCode.MISSING_MEM_ARG_DEF, ast.loc.start);
             }
 
             const { addressDescription } = memArg;
@@ -224,12 +202,9 @@ export class BinaryInstruction extends BinaryBlob<ASTInstruction> {
               // use max for A0, A1 instructions
               if (
                 !memArg.schema.rm ||
-                byteOffset <
-                  Math.max(rmMaxByteSize, addressDescription.dispByteSize)
+                byteOffset < Math.max(rmMaxByteSize, addressDescription.dispByteSize)
               ) {
-                binary.push(
-                  extractNthByte(byteOffset, addressDescription.disp),
-                );
+                binary.push(extractNthByte(byteOffset, addressDescription.disp));
               }
             }
           }
@@ -252,11 +227,7 @@ export class BinaryInstruction extends BinaryBlob<ASTInstruction> {
             if (!rmByte) {
               // see CALL instruction, FF /2 d0 d1
               if (regArgs && regArgs.length && !rmArg && !memArg && !immArg) {
-                rmByte = BinaryInstruction.encodeRMByte(
-                  compiler.mode,
-                  null,
-                  regArgs[0],
-                );
+                rmByte = BinaryInstruction.encodeRMByte(compiler.mode, null, regArgs[0]);
               } else if (regArgs.length && immArg && !memArg) {
                 // handle special case where is register and immediate only
                 // example: imul ax, 0x2
@@ -266,10 +237,7 @@ export class BinaryInstruction extends BinaryBlob<ASTInstruction> {
                   0,
                 );
               } else {
-                throw new ParserError(
-                  ParserErrorCode.MISSING_RM_BYTE_DEF,
-                  ast.loc.start,
-                );
+                throw new ParserError(ParserErrorCode.MISSING_RM_BYTE_DEF, ast.loc.start);
               }
             }
 
@@ -298,15 +266,10 @@ export class BinaryInstruction extends BinaryBlob<ASTInstruction> {
               const stackIndex =
                 regArgs.length === 1
                   ? regArgs[0].val.index
-                  : R.reduce(
-                      (acc, reg) => Math.max(acc, reg.val.index),
-                      0,
-                      regArgs,
-                    );
+                  : R.reduce((acc, reg) => Math.max(acc, reg.val.index), 0, regArgs);
 
               binNumber =
-                Number.parseInt(schema.substr(0, stackRegStrIndex), 16) +
-                stackIndex;
+                Number.parseInt(schema.substr(0, stackRegStrIndex), 16) + stackIndex;
             }
           }
 

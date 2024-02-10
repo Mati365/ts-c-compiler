@@ -9,7 +9,11 @@ export enum RMAddressingMode {
  * Addressing mode byte
  */
 export class RMByte {
-  constructor(public mod: number, public reg: number, public rm: number) {}
+  constructor(
+    public mod: number,
+    public reg: number,
+    public rm: number,
+  ) {}
 
   getDisplacementByteSize(): number {
     switch (this.mod) {

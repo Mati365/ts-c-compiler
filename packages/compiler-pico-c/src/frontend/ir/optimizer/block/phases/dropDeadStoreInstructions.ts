@@ -35,10 +35,7 @@ export function dropDeadStoreInstructions(instructions: IRInstruction[]) {
 
     if (isIRBranchInstruction(instruction)) {
       flush();
-    } else if (
-      isIRLoadInstruction(instruction) &&
-      isIRVariable(instruction.inputVar)
-    ) {
+    } else if (isIRLoadInstruction(instruction) && isIRVariable(instruction.inputVar)) {
       const name = `${instruction.inputVar.name}-0`;
       const cachedInstructions = cachedStore[name];
 

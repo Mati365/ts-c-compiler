@@ -26,9 +26,5 @@ export function structSpecifier(grammar: CGrammar): ASTCStructSpecifier {
     g.terminal('}');
   }
 
-  return new ASTCStructSpecifier(
-    NodeLocation.fromTokenLoc(startToken.loc),
-    list,
-    name,
-  );
+  return new ASTCStructSpecifier(NodeLocation.fromTokenLoc(startToken.loc), list, name);
 }

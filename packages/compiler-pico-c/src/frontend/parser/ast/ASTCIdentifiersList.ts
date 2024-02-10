@@ -6,7 +6,10 @@ import { Token } from '@ts-c-compiler/lexer';
 import { ASTCCompilerKind, ASTCCompilerNode } from './ASTCCompilerNode';
 
 export class ASTCIdentifiersList extends ASTCCompilerNode {
-  constructor(loc: NodeLocation, readonly identifiers: Token[]) {
+  constructor(
+    loc: NodeLocation,
+    readonly identifiers: Token[],
+  ) {
     super(ASTCCompilerKind.IdentifiersList, loc);
   }
 

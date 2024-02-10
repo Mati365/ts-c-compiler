@@ -13,10 +13,7 @@ export type IRLabelDescriptor = {
   name: string;
 };
 
-export class IRLabel
-  extends Identity<IRLabelDescriptor>
-  implements IsPrintable
-{
+export class IRLabel extends Identity<IRLabelDescriptor> implements IsPrintable {
   static ofName(name: string) {
     return new IRLabel({
       name,

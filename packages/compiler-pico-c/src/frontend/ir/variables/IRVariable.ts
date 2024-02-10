@@ -24,10 +24,7 @@ export type IRVariableDescriptor = {
 /**
  * Single register variable
  */
-export class IRVariable
-  extends Identity<IRVariableDescriptor>
-  implements IsPrintable
-{
+export class IRVariable extends Identity<IRVariableDescriptor> implements IsPrintable {
   /**
    * Inits new variable based on scope tree variable
    */
@@ -147,9 +144,7 @@ export class IRVariable
     const { type } = this.value;
     const { name } = this;
 
-    return `${chalk.blueBright(name)}${
-      withType ? getIRTypeDisplayName(type) : ''
-    }`;
+    return `${chalk.blueBright(name)}${withType ? getIRTypeDisplayName(type) : ''}`;
   }
 
   isShallowEqual(variable: IRVariable) {

@@ -1,7 +1,4 @@
-import {
-  IRInstruction,
-  isIRFnEndDeclInstruction,
-} from 'frontend/ir/instructions';
+import { IRInstruction, isIRFnEndDeclInstruction } from 'frontend/ir/instructions';
 
 export class IRBlockIterator {
   private _offset: number = 0;

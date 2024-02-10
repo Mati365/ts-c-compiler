@@ -22,9 +22,7 @@ export type CContextCreatorConfig = {
   scope: CInterpreterScope;
   currentFilePath: string;
   fsIncludeResolver?: CInterpreterIncludeResolver;
-  interpretIncludedTokens: (
-    includedFilePath: string,
-  ) => (tokens: Token[]) => Token[];
+  interpretIncludedTokens: (includedFilePath: string) => (tokens: Token[]) => Token[];
 };
 
 export const createInterpreterContext = ({
@@ -59,7 +57,9 @@ export const createInterpreterContext = ({
                 throw new CPreprocessorError(
                   CPreprocessorErrorCode.CANNOT_INCLUDE_FILE,
                   null,
-                  { name: path.filename },
+                  {
+                    name: path.filename,
+                  },
                 );
               }
 
@@ -67,9 +67,7 @@ export const createInterpreterContext = ({
             }, E.right),
           ),
         ),
-        E.bindW('tokens', ({ resolverOutput }) =>
-          clexer({})(resolverOutput.content),
-        ),
+        E.bindW('tokens', ({ resolverOutput }) => clexer({})(resolverOutput.content)),
         E.map(({ tokens, resolverOutput }) =>
           interpretIncludedTokens(resolverOutput.absolutePath)(tokens),
         ),

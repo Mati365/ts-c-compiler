@@ -36,13 +36,9 @@ export function parseSegmentedMemExpression(
   );
 
   if (tokens?.length !== 3) {
-    throw new ParserError(
-      ParserErrorCode.INCORRECT_SEGMENTED_MEM_ARGS_COUNT,
-      null,
-      {
-        count: tokens?.length || 0,
-      },
-    );
+    throw new ParserError(ParserErrorCode.INCORRECT_SEGMENTED_MEM_ARGS_COUNT, null, {
+      count: tokens?.length || 0,
+    });
   }
 
   // assign labels if labelResolver is present
@@ -66,13 +62,9 @@ export function parseSegmentedMemExpression(
   const { byteSize: offsetByteSize } = offset.value;
 
   if (segByteSize > InstructionArgSize.WORD) {
-    throw new ParserError(
-      ParserErrorCode.INCORRECT_SEGMENT_MEM_ARG_SIZE,
-      null,
-      {
-        size: segByteSize,
-      },
-    );
+    throw new ParserError(ParserErrorCode.INCORRECT_SEGMENT_MEM_ARG_SIZE, null, {
+      size: segByteSize,
+    });
   }
 
   if (offsetByteSize > InstructionArgSize.DWORD) {
@@ -81,9 +73,7 @@ export function parseSegmentedMemExpression(
     });
   }
 
-  return E.right(
-    new ASTSegmentedAddressDescription(segment.value, offset.value),
-  );
+  return E.right(new ASTSegmentedAddressDescription(segment.value, offset.value));
 }
 
 /**
@@ -96,7 +86,10 @@ export function parseSegmentedMemExpression(
  *  Segment size is constant, 2 bytes
  */
 export class ASTInstructionMemSegmentedArg extends ASTInstructionArg<ASTSegmentedAddressDescription> {
-  constructor(readonly phrase: string, byteSize: number) {
+  constructor(
+    readonly phrase: string,
+    byteSize: number,
+  ) {
     super(InstructionArgType.SEGMENTED_MEMORY, null, byteSize, null, false);
 
     this.tryResolve();
@@ -137,14 +130,10 @@ export class ASTInstructionMemSegmentedArg extends ASTInstructionArg<ASTSegmente
       // example: jmp byte 0xFFFF:0xFF
       // so byte is offset
       if (offsetByteSize > this.byteSize) {
-        throw new ParserError(
-          ParserErrorCode.OFFSET_MEM_ARG_SIZE_EXCEEDING_SIZE,
-          null,
-          {
-            size: offsetByteSize,
-            maxSize: this.byteSize,
-          },
-        );
+        throw new ParserError(ParserErrorCode.OFFSET_MEM_ARG_SIZE_EXCEEDING_SIZE, null, {
+          size: offsetByteSize,
+          maxSize: this.byteSize,
+        });
       }
 
       parsedMem.offset.byteSize = this.offsetByteSize;

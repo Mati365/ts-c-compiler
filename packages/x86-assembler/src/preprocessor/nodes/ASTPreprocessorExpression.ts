@@ -12,7 +12,10 @@ import {
  *  expr1 && expr2 && expr3 > expr2
  */
 export class ASTPreprocessorExpression extends ASTPreprocessorNode {
-  constructor(loc: NodeLocation, public expression: ASTPreprocessorNode) {
+  constructor(
+    loc: NodeLocation,
+    public expression: ASTPreprocessorNode,
+  ) {
     super(ASTPreprocessorKind.LogicExpression, loc);
   }
 

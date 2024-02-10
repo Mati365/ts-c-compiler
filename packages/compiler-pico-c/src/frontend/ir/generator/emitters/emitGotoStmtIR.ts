@@ -17,7 +17,5 @@ export function emitGotoStmtIR({
 }: GotoStmtIREmitAttrs): IREmitterStmtResult {
   const label = context.factory.goto.prefixLabel(node.name.text);
 
-  return createBlankStmtResult([
-    new IRJmpInstruction(new IRLabelInstruction(label)),
-  ]);
+  return createBlankStmtResult([new IRJmpInstruction(new IRLabelInstruction(label))]);
 }

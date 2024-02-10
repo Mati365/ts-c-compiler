@@ -11,13 +11,7 @@ import { ASTCUnionSpecifier } from './ASTCUnionSpecifier';
 import { CGrammarTypedefEntry } from '../grammar/matchers';
 
 @walkOverFields({
-  fields: [
-    'specifier',
-    'typeName',
-    'enumSpecifier',
-    'structSpecifier',
-    'unionSpecifier',
-  ],
+  fields: ['specifier', 'typeName', 'enumSpecifier', 'structSpecifier', 'unionSpecifier'],
 })
 export class ASTCTypeSpecifier extends ASTCCompilerNode {
   constructor(

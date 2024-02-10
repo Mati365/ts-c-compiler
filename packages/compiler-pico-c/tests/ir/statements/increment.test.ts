@@ -3,8 +3,7 @@ import '../utils';
 describe('Increment stmt IR', () => {
   describe('post increment', () => {
     test('should generate i++ IR', () => {
-      expect(/* cpp */ `void main() { int a; a++; }`)
-        .toCompiledIRBeEqual(/* ruby */ `
+      expect(/* cpp */ `void main() { int a; a++; }`).toCompiledIRBeEqual(/* ruby */ `
         # --- Block main ---
         def main():
           a{0}: int*2B = alloca int2B
@@ -17,8 +16,7 @@ describe('Increment stmt IR', () => {
     });
 
     test('should generate *ptr++ IR', () => {
-      expect(/* cpp */ `void main() { int* a; *a++; }`)
-        .toCompiledIRBeEqual(/* ruby */ `
+      expect(/* cpp */ `void main() { int* a; *a++; }`).toCompiledIRBeEqual(/* ruby */ `
         # --- Block main ---
         def main():
           a{0}: int**2B = alloca int*2B
@@ -31,8 +29,7 @@ describe('Increment stmt IR', () => {
     });
 
     test('should generate *(ptr++) IR', () => {
-      expect(/* cpp */ `void main() { int* a; *(a++); }`)
-        .toCompiledIRBeEqual(/* ruby */ `
+      expect(/* cpp */ `void main() { int* a; *(a++); }`).toCompiledIRBeEqual(/* ruby */ `
         # --- Block main ---
         def main():
           a{0}: int**2B = alloca int*2B
@@ -45,8 +42,7 @@ describe('Increment stmt IR', () => {
     });
 
     test('should generate (*ptr)++ IR', () => {
-      expect(/* cpp */ `void main() { int* a; (*a)++; }`)
-        .toCompiledIRBeEqual(/* ruby */ `
+      expect(/* cpp */ `void main() { int* a; (*a)++; }`).toCompiledIRBeEqual(/* ruby */ `
         # --- Block main ---
         def main():
           a{0}: int**2B = alloca int*2B
@@ -62,8 +58,7 @@ describe('Increment stmt IR', () => {
 
   describe('pre increment', () => {
     test('should generate ++i IR', () => {
-      expect(/* cpp */ `void main() { int a; ++a; }`)
-        .toCompiledIRBeEqual(/* ruby */ `
+      expect(/* cpp */ `void main() { int a; ++a; }`).toCompiledIRBeEqual(/* ruby */ `
         # --- Block main ---
         def main():
           a{0}: int*2B = alloca int2B

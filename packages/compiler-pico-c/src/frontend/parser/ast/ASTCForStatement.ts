@@ -8,10 +8,7 @@ import { IsNewScopeASTNode } from '../../analyze/interfaces';
 @walkOverFields({
   fields: ['declaration', 'condition', 'expression', 'statement'],
 })
-export class ASTCForStatement
-  extends ASTCCompilerNode
-  implements IsNewScopeASTNode
-{
+export class ASTCForStatement extends ASTCCompilerNode implements IsNewScopeASTNode {
   scope?: CScopeTree;
 
   constructor(

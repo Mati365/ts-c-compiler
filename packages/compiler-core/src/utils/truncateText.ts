@@ -1,8 +1,4 @@
-export function truncateText(
-  suffix: string,
-  maxLen: number,
-  str: string,
-): string {
+export function truncateText(suffix: string, maxLen: number, str: string): string {
   if (str.length < maxLen) {
     return str;
   }

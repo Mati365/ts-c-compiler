@@ -15,10 +15,7 @@ import { X86AbstractCPU } from './X86AbstractCPU';
  * - mount ports
  * - mount interrupts
  */
-export abstract class X86AbstractDevice<
-  TCPU extends X86AbstractCPU,
-  TInitConfig = {},
-> {
+export abstract class X86AbstractDevice<TCPU extends X86AbstractCPU, TInitConfig = {}> {
   protected cpu: TCPU = null;
   protected memRegion: MemoryRegionRange = null;
   protected interrupts: X86InterruptsSet = {};
@@ -48,10 +45,7 @@ export abstract class X86AbstractDevice<
   /**
    * Allow to connect multiple ports to the same handler
    */
-  protected mountPortsHandler(
-    ports: number | number[],
-    handler: X86Port,
-  ): void {
+  protected mountPortsHandler(ports: number | number[], handler: X86Port): void {
     if (ports instanceof Array) {
       R.forEach(port => {
         this.ports[port] = handler;
@@ -64,10 +58,7 @@ export abstract class X86AbstractDevice<
   /**
    * Attaches and initializes device in provided cpu
    */
-  attach(
-    cpu: TCPU,
-    initConfig?: TInitConfig,
-  ): X86AbstractDevice<TCPU, TInitConfig> {
+  attach(cpu: TCPU, initConfig?: TInitConfig): X86AbstractDevice<TCPU, TInitConfig> {
     this.release();
 
     this.cpu = cpu;
@@ -99,9 +90,7 @@ export abstract class X86AbstractDevice<
           callback(this.regs);
         } else {
           this.cpu.halt(
-            `Unknown interrupt 0x${interruptCode.toString(
-              16,
-            )} function 0x${func.toString(16)}!`,
+            `Unknown interrupt 0x${interruptCode.toString(16)} function 0x${func.toString(16)}!`,
           );
         }
       },

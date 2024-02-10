@@ -1,25 +1,29 @@
-import { useControlStrict } from '@under-control/forms';
-import { trimLines } from '@ts-c-compiler/core';
+import { useEditorState } from './EditorStateProvider';
 
-import type { EditorStateValue } from './types';
-
-import { EditorInput } from './Input/EditorInput';
+import { EditorInput } from './Input';
+import { EditorHeader } from './Header';
+import { EditorSidebar } from './EditorSidebar';
 
 export const EditorContainer = () => {
-  const { bind, value } = useControlStrict<EditorStateValue>({
-    defaultValue: {
-      lang: 'c',
-      code: trimLines(`
-        int main() { return 0; }
-      `),
-    },
-  });
-
-  console.info(value);
+  const {
+    control: { bind, value },
+  } = useEditorState();
 
   return (
-    <div className="flex justify-center items-center">
-      <EditorInput lang={value.lang} {...bind.path('code')} />
+    <div className="flex h-screen flex-col">
+      <EditorHeader />
+
+      <div className="relative flex-1">
+        <div className="layer-absolute grid grid-cols-[1fr,40%]">
+          <EditorInput
+            {...bind.path('code')}
+            lang={value.lang}
+            className="border-r border-gray-100"
+          />
+
+          <EditorSidebar />
+        </div>
+      </div>
     </div>
   );
 };

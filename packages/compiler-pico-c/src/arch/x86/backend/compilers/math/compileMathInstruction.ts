@@ -5,16 +5,12 @@ import { IRMathInstruction } from 'frontend/ir/instructions';
 import { compileIntMathInstruction } from './int';
 import { compileX87MathInstruction } from './x87';
 
-type MathInstructionCompilerAttrs =
-  X86CompilerInstructionFnAttrs<IRMathInstruction>;
+type MathInstructionCompilerAttrs = X86CompilerInstructionFnAttrs<IRMathInstruction>;
 
 export function compileMathInstruction(attrs: MathInstructionCompilerAttrs) {
   const { outputVar } = attrs.instruction;
 
-  if (
-    isPrimitiveLikeType(outputVar.type, true) &&
-    outputVar.type.isFloating()
-  ) {
+  if (isPrimitiveLikeType(outputVar.type, true) && outputVar.type.isFloating()) {
     return compileX87MathInstruction(attrs);
   }
 

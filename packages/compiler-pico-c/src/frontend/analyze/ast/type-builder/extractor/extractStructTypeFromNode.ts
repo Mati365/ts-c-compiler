@@ -2,10 +2,7 @@ import { pipe } from 'fp-ts/function';
 import { unwrapEitherOrThrow } from '@ts-c-compiler/core';
 
 import { ASTCStructSpecifier } from 'frontend/parser';
-import {
-  CTypeCheckError,
-  CTypeCheckErrorCode,
-} from '../../../errors/CTypeCheckError';
+import { CTypeCheckError, CTypeCheckErrorCode } from '../../../errors/CTypeCheckError';
 import { CStructType } from '../../../types';
 import { TypeExtractorAttrs } from '../constants/types';
 
@@ -24,10 +21,7 @@ export function extractStructTypeFromNode({
   extractSpecifierType,
   extractNamedEntryFromDeclarator,
 }: StructTypeExtractorAttrs): CStructType {
-  let structType = CStructType.ofBlank(
-    context.config.arch,
-    structSpecifier.name?.text,
-  );
+  let structType = CStructType.ofBlank(context.config.arch, structSpecifier.name?.text);
 
   // handle const int x, y;
   structSpecifier.list?.children.forEach(declaration => {
@@ -37,9 +31,7 @@ export function extractStructTypeFromNode({
     });
 
     if (!type) {
-      throw new CTypeCheckError(
-        CTypeCheckErrorCode.UNABLE_TO_EXTRACT_STRUCT_TYPE,
-      );
+      throw new CTypeCheckError(CTypeCheckErrorCode.UNABLE_TO_EXTRACT_STRUCT_TYPE);
     }
 
     // define x, y as separate fields and calculate offsets
@@ -58,10 +50,7 @@ export function extractStructTypeFromNode({
         unwrapEitherOrThrow,
       );
 
-      structType = pipe(
-        structType.ofAppendedField(entry, bitset),
-        unwrapEitherOrThrow,
-      );
+      structType = pipe(structType.ofAppendedField(entry, bitset), unwrapEitherOrThrow);
     });
   });
 

@@ -33,7 +33,10 @@ export class Rectangle implements RectangleDimensions {
 }
 
 export class Vec2D {
-  constructor(public x: number, public y: number) {}
+  constructor(
+    public x: number,
+    public y: number,
+  ) {}
 }
 
 /**
@@ -42,11 +45,13 @@ export class Vec2D {
 export class RGBColor {
   readonly hex: string;
 
-  constructor(readonly r: number, readonly g: number, readonly b: number) {
+  constructor(
+    readonly r: number,
+    readonly g: number,
+    readonly b: number,
+  ) {
     // cache for canvas
-    this.hex = `#${[r, g, b]
-      .map(str => str.toString(16).padStart(2, '0'))
-      .join('')}`;
+    this.hex = `#${[r, g, b].map(str => str.toString(16).padStart(2, '0')).join('')}`;
   }
 
   toNumber(): number {
@@ -67,7 +72,10 @@ export class RGBColor {
  * Holds width and height of object
  */
 export class Size {
-  constructor(public w: number, public h: number) {}
+  constructor(
+    public w: number,
+    public h: number,
+  ) {}
 
   assign({ w, h }: Size): void {
     this.w = w;

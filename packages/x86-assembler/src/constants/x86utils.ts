@@ -77,8 +77,7 @@ export type X87StackRegName = (typeof X87_STACK_REGISTERS)[number];
 export const isX87RegName = (reg: string): reg is X87StackRegName =>
   X87_STACK_REGISTERS.includes(reg as any);
 
-export const getX87StackRegIndex = (name: X87StackRegName) =>
-  +name.replace('st', '');
+export const getX87StackRegIndex = (name: X87StackRegName) => +name.replace('st', '');
 
 export const createX87StackRegByIndex = (index: number) =>
   `st${index}` as X87StackRegName;

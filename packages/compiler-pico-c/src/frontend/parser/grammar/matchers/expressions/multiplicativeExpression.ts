@@ -11,11 +11,9 @@ function term({ g }: CGrammar) {
     type: TokenType.NUMBER,
   });
 
-  return new ASTCValueNode(
-    ASTCCompilerKind.Value,
-    NodeLocation.fromTokenLoc(token.loc),
-    [token],
-  );
+  return new ASTCValueNode(ASTCCompilerKind.Value, NodeLocation.fromTokenLoc(token.loc), [
+    token,
+  ]);
 }
 
 const multiplicativeOp = createLeftRecursiveOperatorMatcher({

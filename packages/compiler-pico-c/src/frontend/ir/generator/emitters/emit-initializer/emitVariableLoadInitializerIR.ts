@@ -55,8 +55,7 @@ export function emitVariableLoadInitializerIR({
       throw new IRError(IRErrorCode.INCORRECT_INITIALIZER_BLOCK);
     }
 
-    const itemOffsetType =
-      pair?.type ?? initializerTree.getIndexExpectedType(index);
+    const itemOffsetType = pair?.type ?? initializerTree.getIndexExpectedType(index);
 
     if (R.is(String, initializer)) {
       const attrs: StringPtrInitializerLocalIREmitAttrs = {
@@ -75,10 +74,7 @@ export function emitVariableLoadInitializerIR({
 
         offset += itemOffsetType.getByteSize();
       } else {
-        appendStmtResults(
-          emitStringLiteralBlobLocalInitializerIR(attrs),
-          result,
-        );
+        appendStmtResults(emitStringLiteralBlobLocalInitializerIR(attrs), result);
 
         offset += initializer.length;
       }

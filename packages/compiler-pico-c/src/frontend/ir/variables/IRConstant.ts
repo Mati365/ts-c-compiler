@@ -19,10 +19,7 @@ export type IRConstantDescriptor = {
 /**
  * Constant literal used in expressions generators
  */
-export class IRConstant
-  extends Identity<IRConstantDescriptor>
-  implements IsPrintable
-{
+export class IRConstant extends Identity<IRConstantDescriptor> implements IsPrintable {
   static ofConstant(type: CType, constant: number) {
     if (isPrimitiveLikeType(type, true) && !type.isFloating()) {
       constant = Math.trunc(constant);

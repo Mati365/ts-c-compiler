@@ -77,10 +77,7 @@ export class ASTDef extends KindASTAsmNode(ASTNodeKind.DEFINE) {
     const argsTokens = fetchInstructionTokensArgsList(parser, false);
 
     if (R.isEmpty(argsTokens)) {
-      throw new ParserError(
-        ParserErrorCode.EMPTY_DATA_DEFINITION_LIST,
-        token.loc,
-      );
+      throw new ParserError(ParserErrorCode.EMPTY_DATA_DEFINITION_LIST, token.loc);
     }
 
     // throw error if any number exceddes token def size
@@ -92,21 +89,13 @@ export class ASTDef extends KindASTAsmNode(ASTNodeKind.DEFINE) {
 
       const numberToken = <NumberToken>arg;
       if (numberToken.value.byteSize > tokenSize) {
-        throw new ParserError(
-          ParserErrorCode.DEFINED_DATA_EXCEEDES_BOUNDS,
-          token.loc,
-          {
-            data: numberToken.text,
-            maxSize: tokenSize,
-          },
-        );
+        throw new ParserError(ParserErrorCode.DEFINED_DATA_EXCEEDES_BOUNDS, token.loc, {
+          data: numberToken.text,
+          maxSize: tokenSize,
+        });
       }
     }, argsTokens);
 
-    return new ASTDef(
-      tokenSize,
-      argsTokens,
-      NodeLocation.fromTokenLoc(token.loc),
-    );
+    return new ASTDef(tokenSize, argsTokens, NodeLocation.fromTokenLoc(token.loc));
   }
 }

@@ -11,7 +11,10 @@ import { ASTPreprocessorKind, ASTPreprocessorNode } from '../constants';
  *  %undef DUPA
  */
 export class ASTPreprocessorUndef extends ASTPreprocessorNode {
-  constructor(loc: NodeLocation, readonly name: string) {
+  constructor(
+    loc: NodeLocation,
+    readonly name: string,
+  ) {
     super(ASTPreprocessorKind.UndefStmt, loc);
   }
 

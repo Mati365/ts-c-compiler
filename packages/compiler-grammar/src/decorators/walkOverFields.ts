@@ -3,7 +3,9 @@ import * as R from 'ramda';
 import { TreeNode } from '../tree/TreeNode';
 import { TreeVisitor } from '../tree/TreeVisitor';
 
-type TreeNodeLikeConstructor = { new (...args: any[]): any };
+type TreeNodeLikeConstructor = {
+  new (...args: any[]): any;
+};
 
 type WalkOverFieldsParams = {
   fields?: string[];

@@ -4,18 +4,11 @@ import { pipe } from 'fp-ts/function';
 
 import { getCompilerArchDescriptor } from 'arch';
 
-import {
-  concatNonEmptyStrings,
-  hasFlag,
-  numberByteSize,
-} from '@ts-c-compiler/core';
+import { concatNonEmptyStrings, hasFlag, numberByteSize } from '@ts-c-compiler/core';
 
 import { CCompilerArch, CTypeQualifier, CTypeSpecifier } from '#constants';
 
-import {
-  CTypeCheckError,
-  CTypeCheckErrorCode,
-} from '../errors/CTypeCheckError';
+import { CTypeCheckError, CTypeCheckErrorCode } from '../errors/CTypeCheckError';
 
 import { CType, CTypeDescriptor } from './CType';
 import {
@@ -174,9 +167,7 @@ export class CPrimitiveType extends CType<CPrimitiveTypeDescriptor> {
    *  unsigned void => it should throw error
    *  int => it is fine
    */
-  static validate(
-    type: CPrimitiveType,
-  ): E.Either<CTypeCheckError, CPrimitiveType> {
+  static validate(type: CPrimitiveType): E.Either<CTypeCheckError, CPrimitiveType> {
     const byteSize = type.getByteSize();
     if (!R.isNil(byteSize)) {
       return E.right(type);
@@ -184,17 +175,13 @@ export class CPrimitiveType extends CType<CPrimitiveTypeDescriptor> {
 
     if (type.isVoid()) {
       if (type.specifiers !== CSpecBitmap.void || type.qualifiers) {
-        return E.left(
-          new CTypeCheckError(CTypeCheckErrorCode.INCORRECT_VOID_SPECIFIERS),
-        );
+        return E.left(new CTypeCheckError(CTypeCheckErrorCode.INCORRECT_VOID_SPECIFIERS));
       }
 
       return E.right(type);
     }
 
-    return E.left(
-      new CTypeCheckError(CTypeCheckErrorCode.INCORRECT_TYPE_SPECIFIERS),
-    );
+    return E.left(new CTypeCheckError(CTypeCheckErrorCode.INCORRECT_TYPE_SPECIFIERS));
   }
 
   /**

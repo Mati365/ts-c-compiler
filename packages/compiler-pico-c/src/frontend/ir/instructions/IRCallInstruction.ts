@@ -14,10 +14,7 @@ export function isIRCallInstruction(
 /**
  * Instruction that performs jmp to function
  */
-export class IRCallInstruction
-  extends IRInstruction
-  implements IsOutputInstruction
-{
+export class IRCallInstruction extends IRInstruction implements IsOutputInstruction {
   constructor(
     readonly fnPtr: IRVariable | IRLabel,
     readonly args: IRInstructionTypedArg[],
@@ -52,9 +49,7 @@ export class IRCallInstruction
     const { fnPtr, args, outputVar } = this;
 
     const argsStr = args.map(arg => arg?.getDisplayName()).join(', ');
-    const str = `${chalk.magentaBright(
-      'call',
-    )} ${fnPtr.getDisplayName()} :: (${argsStr})`;
+    const str = `${chalk.magentaBright('call')} ${fnPtr.getDisplayName()} :: (${argsStr})`;
 
     if (outputVar) {
       return `${outputVar.getDisplayName()} = ${str}`;

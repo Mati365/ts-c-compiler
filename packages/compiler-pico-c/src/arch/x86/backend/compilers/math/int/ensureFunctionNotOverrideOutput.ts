@@ -44,10 +44,7 @@ export const ensureFunctionNotOverridesOutput = ({
 
     asm.push(
       ...reg.asm,
-      withInlineComment(
-        genInstruction('mov', reg.value, leftAllocResult.value),
-        'swap',
-      ),
+      withInlineComment(genInstruction('mov', reg.value, leftAllocResult.value), 'swap'),
     );
 
     regs.ownership.setOwnership(leftVar.name, {

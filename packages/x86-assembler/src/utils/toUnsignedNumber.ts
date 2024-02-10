@@ -4,10 +4,7 @@ import type { X86BitsMode } from '../constants';
 /**
  * Convert signed byte number to unsigned
  */
-export const toUnsignedNumber = (
-  num: number,
-  bits: X86BitsMode = 0x1,
-): number => {
+export const toUnsignedNumber = (num: number, bits: X86BitsMode = 0x1): number => {
   const up = BINARY_MASKS[bits];
   if (num > up) {
     return num - up - 0x1;

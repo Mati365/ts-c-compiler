@@ -1,9 +1,6 @@
 import { ASTCCompilerKind, ASTCReturnStatement } from 'frontend/parser/ast';
 import { CType, CPrimitiveType } from '../../../types';
-import {
-  CTypeCheckError,
-  CTypeCheckErrorCode,
-} from '../../../errors/CTypeCheckError';
+import { CTypeCheckError, CTypeCheckErrorCode } from '../../../errors/CTypeCheckError';
 import { ASTCTypeCreator } from './ASTCTypeCreator';
 
 import { checkLeftTypeOverlapping } from '../../../checker';
@@ -38,10 +35,8 @@ export class ASTCReturnStmtTypeCreator extends ASTCTypeCreator<ASTCReturnStateme
         node.loc.start,
         {
           expected:
-            fnType.returnType?.getShortestDisplayName() ??
-            '<unknown-fn-return-type>',
-          received:
-            returnType?.getShortestDisplayName() ?? '<unknown-expr-type>',
+            fnType.returnType?.getShortestDisplayName() ?? '<unknown-fn-return-type>',
+          received: returnType?.getShortestDisplayName() ?? '<unknown-expr-type>',
         },
       );
     }

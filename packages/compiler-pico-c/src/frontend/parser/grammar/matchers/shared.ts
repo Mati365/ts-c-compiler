@@ -26,9 +26,7 @@ export type CGrammarDef = Grammar<CCompilerIdentifier, ASTCCompilerKind>;
 
 export type CGrammar = {
   parentNode: {
-    loopStmt?: Array<
-      ASTCForStatement | ASTCWhileStatement | ASTCDoWhileStatement
-    >;
+    loopStmt?: Array<ASTCForStatement | ASTCWhileStatement | ASTCDoWhileStatement>;
     switchStmt?: Array<ASTCSwitchStatement>;
   };
 

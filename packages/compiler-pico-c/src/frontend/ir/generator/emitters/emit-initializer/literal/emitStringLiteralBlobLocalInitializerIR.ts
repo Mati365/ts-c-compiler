@@ -25,11 +25,7 @@ export function emitStringLiteralBlobLocalInitializerIR({
     const char = literal.charCodeAt(i);
 
     result.instructions.push(
-      new IRStoreInstruction(
-        IRConstant.ofConstant(charType, char),
-        destVar,
-        offset + i,
-      ),
+      new IRStoreInstruction(IRConstant.ofConstant(charType, char), destVar, offset + i),
     );
   }
 

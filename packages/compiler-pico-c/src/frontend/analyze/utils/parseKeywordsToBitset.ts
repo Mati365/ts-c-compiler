@@ -2,10 +2,7 @@ import * as R from 'ramda';
 import * as E from 'fp-ts/Either';
 
 import { tryReduceEithers } from '@ts-c-compiler/core';
-import {
-  CTypeCheckError,
-  CTypeCheckErrorCode,
-} from '../errors/CTypeCheckError';
+import { CTypeCheckError, CTypeCheckErrorCode } from '../errors/CTypeCheckError';
 
 type KeywordsParserAttrs = {
   bitmap: Record<string, number>;

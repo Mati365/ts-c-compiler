@@ -18,10 +18,7 @@ import {
 } from 'arch/x86/asm-utils';
 
 import { CBackendError, CBackendErrorCode } from 'backend/errors/CBackendError';
-import {
-  X87OwnershipStackEntry,
-  X87RegOwnershipTracker,
-} from './X87RegOwnershipTracker';
+import { X87OwnershipStackEntry, X87RegOwnershipTracker } from './X87RegOwnershipTracker';
 
 type X87StoreConstantAttrs = {
   value: IRConstant;
@@ -124,23 +121,27 @@ export class X87BasicRegAllocator {
       asm.appendData(
         genLabeledInstruction(
           constLabel,
-          genDefConst({ size, values: [arg.constant], float: true }),
+          genDefConst({
+            size,
+            values: [arg.constant],
+            float: true,
+          }),
         ),
       );
 
       return {
         asm,
-        address: genMemAddress({ size, expression: constLabel }),
+        address: genMemAddress({
+          size,
+          expression: constLabel,
+        }),
       };
     }
 
     if (isIRVariable(arg) && !arg.isTemporary()) {
-      const stackAddress = this.stackFrame.getLocalVarStackRelAddress(
-        arg.name,
-        {
-          withSize: true,
-        },
-      );
+      const stackAddress = this.stackFrame.getLocalVarStackRelAddress(arg.name, {
+        withSize: true,
+      });
 
       return {
         asm: X86CompileInstructionOutput.ofInstructions([]),
@@ -223,9 +224,7 @@ export class X87BasicRegAllocator {
         withSize: true,
       });
 
-      asm.appendInstructions(
-        genInstruction('mov', memAddr, regOwnership.value),
-      );
+      asm.appendInstructions(genInstruction('mov', memAddr, regOwnership.value));
     }
 
     const pushResult = this.pushVariableOnStack({
@@ -273,14 +272,21 @@ export class X87BasicRegAllocator {
           asm.appendInstructions(
             genInstruction(
               'fld',
-              genMemAddress({ size, expression: constLabel }),
+              genMemAddress({
+                size,
+                expression: constLabel,
+              }),
             ),
           );
 
           asm.appendData(
             genLabeledInstruction(
               constLabel,
-              genDefConst({ size, values: [arg.constant], float: true }),
+              genDefConst({
+                size,
+                values: [arg.constant],
+                float: true,
+              }),
             ),
           );
         }
@@ -303,19 +309,14 @@ export class X87BasicRegAllocator {
       if (arg.isTemporary()) {
         const memAddr = this.memOwnership.tryResolveIRArgAsAddr(arg);
         if (!memAddr) {
-          throw new CBackendError(
-            CBackendErrorCode.UNABLE_PUSH_ARG_ON_X87_STACK,
-          );
+          throw new CBackendError(CBackendErrorCode.UNABLE_PUSH_ARG_ON_X87_STACK);
         }
 
         asm.appendInstructions(genInstruction('fld', memAddr.value));
       } else {
-        const stackAddress = this.stackFrame.getLocalVarStackRelAddress(
-          arg.name,
-          {
-            withSize: true,
-          },
-        );
+        const stackAddress = this.stackFrame.getLocalVarStackRelAddress(arg.name, {
+          withSize: true,
+        });
 
         asm.appendInstructions(genInstruction('fld', stackAddress));
       }
@@ -329,12 +330,7 @@ export class X87BasicRegAllocator {
     throw new CBackendError(CBackendErrorCode.UNABLE_PUSH_ARG_ON_X87_STACK);
   }
 
-  storeStackRegAtAddress({
-    reg,
-    address,
-    pop,
-    integral,
-  }: X87StoreStackRegAttrs) {
+  storeStackRegAtAddress({ reg, address, pop, integral }: X87StoreStackRegAttrs) {
     const asm = new X86CompileInstructionOutput();
 
     if (reg !== 'st0') {
@@ -373,14 +369,24 @@ export class X87BasicRegAllocator {
 
     asm.appendGroup(pushResult.asm);
     asm.appendInstructions(
-      genInstruction('fld', genMemAddress({ size, expression: constLabel })),
+      genInstruction(
+        'fld',
+        genMemAddress({
+          size,
+          expression: constLabel,
+        }),
+      ),
       genInstruction('fstp', address),
     );
 
     asm.appendData(
       genLabeledInstruction(
         constLabel,
-        genDefConst({ size, values: [value.constant], float: true }),
+        genDefConst({
+          size,
+          values: [value.constant],
+          float: true,
+        }),
       ),
     );
 

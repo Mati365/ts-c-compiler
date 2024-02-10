@@ -14,10 +14,7 @@ export function isIRLabelInstruction(
 /**
  * Label instruction
  */
-export class IRLabelInstruction
-  extends IRInstruction
-  implements IsLabeledInstruction
-{
+export class IRLabelInstruction extends IRInstruction implements IsLabeledInstruction {
   constructor(
     readonly name: string,
     readonly phi?: IRPhiInstruction,

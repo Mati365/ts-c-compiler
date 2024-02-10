@@ -5,9 +5,7 @@ function isFloatingPointPartToken(token: Token) {
     return false;
   }
 
-  return (
-    token.type === TokenType.NUMBER || token.type === TokenType.FLOAT_NUMBER
-  );
+  return token.type === TokenType.NUMBER || token.type === TokenType.FLOAT_NUMBER;
 }
 
 /**

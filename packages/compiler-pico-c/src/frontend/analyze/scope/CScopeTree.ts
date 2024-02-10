@@ -9,10 +9,7 @@ import { CTypeCheckConfig } from '../constants';
 import { CType, CPrimitiveType, isEnumLikeType } from '../types';
 import { CFunctionDeclType } from '../types/function/CFunctionDeclType';
 import { CVariable } from './variables/CVariable';
-import {
-  CTypeCheckError,
-  CTypeCheckErrorCode,
-} from '../errors/CTypeCheckError';
+import { CTypeCheckError, CTypeCheckErrorCode } from '../errors/CTypeCheckError';
 
 import { ASTCCompilerNode } from '../../parser/ast/ASTCCompilerNode';
 import { CAbstractNamedType } from '../utils/isNamedType';
@@ -59,10 +56,7 @@ export class CScopeTree<C extends ASTCCompilerNode = ASTCCompilerNode>
   }
 
   getGlobalVariables(): Record<string, CVariable> {
-    return R.pickBy(
-      (variable: CVariable) => variable.isGlobal(),
-      this.variables,
-    );
+    return R.pickBy((variable: CVariable) => variable.isGlobal(), this.variables);
   }
 
   getVariables() {
@@ -70,9 +64,7 @@ export class CScopeTree<C extends ASTCCompilerNode = ASTCCompilerNode>
   }
 
   getFunctions() {
-    return <CFunctionDeclType[]>(
-      R.values(this.types).filter(type => type.isFunction())
-    );
+    return <CFunctionDeclType[]>R.values(this.types).filter(type => type.isFunction());
   }
 
   setParentScope(parentScope: CScopeTree): this {
@@ -118,13 +110,9 @@ export class CScopeTree<C extends ASTCCompilerNode = ASTCCompilerNode>
     const constant = this.findCompileTimeConstant(name);
     if (!R.isNil(constant)) {
       return E.left(
-        new CTypeCheckError(
-          CTypeCheckErrorCode.REDEFINITION_OF_COMPILE_CONSTANT,
-          null,
-          {
-            name,
-          },
-        ),
+        new CTypeCheckError(CTypeCheckErrorCode.REDEFINITION_OF_COMPILE_CONSTANT, null, {
+          name,
+        }),
       );
     }
 
@@ -153,13 +141,9 @@ export class CScopeTree<C extends ASTCCompilerNode = ASTCCompilerNode>
 
     if (this.findVariable(name, false)) {
       return E.left(
-        new CTypeCheckError(
-          CTypeCheckErrorCode.REDEFINITION_OF_VARIABLE,
-          null,
-          {
-            name,
-          },
-        ),
+        new CTypeCheckError(CTypeCheckErrorCode.REDEFINITION_OF_VARIABLE, null, {
+          name,
+        }),
       );
     }
 
@@ -172,9 +156,7 @@ export class CScopeTree<C extends ASTCCompilerNode = ASTCCompilerNode>
   /**
    * Defines pack of multiple variables
    */
-  defineVariables(
-    variables: CVariable[],
-  ): E.Either<CTypeCheckError, CVariable[]> {
+  defineVariables(variables: CVariable[]): E.Either<CTypeCheckError, CVariable[]> {
     return pipe(
       variables,
       A.map(variable => this.defineVariable(variable)),
@@ -226,10 +208,7 @@ export class CScopeTree<C extends ASTCCompilerNode = ASTCCompilerNode>
    * Perform search of type by name
    * if not found search in parent
    */
-  findType<R extends CType = CType>(
-    name: string,
-    attrs: TypeFindAttrs = {},
-  ): R {
+  findType<R extends CType = CType>(name: string, attrs: TypeFindAttrs = {}): R {
     const { types, typedefs, parentScope } = this;
     const {
       findInParent = true,

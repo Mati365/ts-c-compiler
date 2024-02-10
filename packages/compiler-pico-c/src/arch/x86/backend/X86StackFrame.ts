@@ -2,11 +2,7 @@ import { CCompilerArch, CCompilerConfig } from '#constants';
 import { isPointerLikeType } from 'frontend/analyze';
 import { assertUnreachable } from '@ts-c-compiler/core';
 
-import {
-  IRInstructionTypedArg,
-  IRVariable,
-  isIRVariable,
-} from 'frontend/ir/variables';
+import { IRInstructionTypedArg, IRVariable, isIRVariable } from 'frontend/ir/variables';
 
 import { CBackendError, CBackendErrorCode } from 'backend/errors/CBackendError';
 
@@ -21,7 +17,9 @@ export type X86StackVariable = {
 export class X86StackFrame {
   private allocated: number = 0;
   private spilled: number = 0;
-  private stackVars: { [id: string]: X86StackVariable } = {};
+  private stackVars: {
+    [id: string]: X86StackVariable;
+  } = {};
 
   constructor(readonly config: CCompilerConfig) {}
 
@@ -78,7 +76,13 @@ export class X86StackFrame {
 
   getLocalVarStackRelAddress(
     name: string,
-    { offset = 0, withSize }: { offset?: number; withSize?: boolean } = {},
+    {
+      offset = 0,
+      withSize,
+    }: {
+      offset?: number;
+      withSize?: boolean;
+    } = {},
   ) {
     const { arch } = this.config;
     const { offset: stackOffset, size } = this.getStackVar(name);

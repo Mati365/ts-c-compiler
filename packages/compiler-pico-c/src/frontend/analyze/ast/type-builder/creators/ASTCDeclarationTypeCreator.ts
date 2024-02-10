@@ -4,17 +4,11 @@ import { isFuncDeclLikeType } from 'frontend/analyze/types/function/CFunctionDec
 import { ASTCDeclaration, ASTCCompilerKind } from 'frontend/parser/ast';
 import { CFunctionScope } from 'frontend/analyze/scope/CFunctionScope';
 import { ASTCTypeCreator } from './ASTCTypeCreator';
-import {
-  CTypeCheckError,
-  CTypeCheckErrorCode,
-} from '../../../errors/CTypeCheckError';
+import { CTypeCheckError, CTypeCheckErrorCode } from '../../../errors/CTypeCheckError';
 
 import { CTypedef } from '../../../scope/CTypedef';
 import { isNamedType } from '../../../utils/isNamedType';
-import {
-  extractInitDeclaratorTypeVariables,
-  extractSpecifierType,
-} from '../extractor';
+import { extractInitDeclaratorTypeVariables, extractSpecifierType } from '../extractor';
 
 export class ASTCDeclarationTypeCreator extends ASTCTypeCreator<ASTCDeclaration> {
   kind = ASTCCompilerKind.Declaration;
@@ -68,11 +62,7 @@ export class ASTCDeclarationTypeCreator extends ASTCTypeCreator<ASTCDeclaration>
             // handle int sum(int, int) without definition as function declaration
             // on the other hand treat int (*sum2)(int x, int y); as normal variable
             const fnType = variable.type.ofName(variable.name);
-            const newScope = new CFunctionScope(
-              fnType,
-              context.config,
-              declaration,
-            );
+            const newScope = new CFunctionScope(fnType, context.config, declaration);
 
             scope.defineType(fnType);
             analyzeVisitor.ofScopeVisitor(scope.appendScope(newScope));

@@ -71,10 +71,7 @@ function directAbstractDeclaratorArrayExpression(
     star() {
       g.terminal('*');
 
-      return new ASTCDirectAbstractDeclaratorArrayExpression(
-        startTerminalLoc,
-        true,
-      );
+      return new ASTCDirectAbstractDeclaratorArrayExpression(startTerminalLoc, true);
     },
 
     qualifiersAndAssign() {
@@ -143,8 +140,7 @@ export function directAbstractDeclarator(
           },
 
           arrayExpression() {
-            const arrayExpression =
-              directAbstractDeclaratorArrayExpression(grammar);
+            const arrayExpression = directAbstractDeclaratorArrayExpression(grammar);
 
             return new ASTCDirectAbstractDeclarator(
               arrayExpression.loc,

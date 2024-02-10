@@ -4,9 +4,7 @@ import { readFileSync } from 'node:fs';
 import { pathsToModuleNameMapper } from 'ts-jest';
 
 export const createJestConfig = ({ rootDir }) => {
-  const { compilerOptions } = JSON.parse(
-    readFileSync(resolve(rootDir, 'tsconfig.json')),
-  );
+  const { compilerOptions } = JSON.parse(readFileSync(resolve(rootDir, 'tsconfig.json')));
 
   return {
     rootDir,

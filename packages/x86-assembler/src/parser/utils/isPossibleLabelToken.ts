@@ -6,7 +6,6 @@ import { TokenType, Token, TokenKind } from '@ts-c-compiler/lexer';
 export function isPossibleLabelToken(token: Token): boolean {
   return (
     (token.type === TokenType.KEYWORD && !token.kind) || // 2+2
-    (token.type === TokenType.BRACKET &&
-      token.kind === TokenKind.PARENTHES_BRACKET) // (2+2)
+    (token.type === TokenType.BRACKET && token.kind === TokenKind.PARENTHES_BRACKET) // (2+2)
   );
 }

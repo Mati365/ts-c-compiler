@@ -9,10 +9,7 @@ import { CCompilerArch, CStructAlign } from '#constants';
 import { CType } from '../CType';
 import { CNamedTypedEntry } from '../../scope/variables/CNamedTypedEntry';
 import { StructFieldAligner } from './align';
-import {
-  CTypeCheckError,
-  CTypeCheckErrorCode,
-} from '../../errors/CTypeCheckError';
+import { CTypeCheckError, CTypeCheckErrorCode } from '../../errors/CTypeCheckError';
 
 import { CStructTypeDescriptor, CStructEntry } from './constants/types';
 import { isArrayLikeType } from '../CArrayType';
@@ -69,13 +66,9 @@ export class CStructType extends CType<CStructTypeDescriptor> {
 
       if (this.getField(name)) {
         return E.left(
-          new CTypeCheckError(
-            CTypeCheckErrorCode.REDEFINITION_OF_STRUCT_ENTRY,
-            null,
-            {
-              name,
-            },
-          ),
+          new CTypeCheckError(CTypeCheckErrorCode.REDEFINITION_OF_STRUCT_ENTRY, null, {
+            name,
+          }),
         );
       }
 
@@ -159,9 +152,7 @@ export class CStructType extends CType<CStructTypeDescriptor> {
           offset,
         });
 
-        return `  ${fieldAttrs} ${dropNewLines(
-          type.getDisplayName(),
-        )} ${fieldName}${bitset ? `: ${bitset}` : ''};`;
+        return `  ${fieldAttrs} ${dropNewLines(type.getDisplayName())} ${fieldName}${bitset ? `: ${bitset}` : ''};`;
       })
       .join('\n');
 

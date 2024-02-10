@@ -12,10 +12,7 @@ import { PreprocessorError, PreprocessorErrorCode } from '../PreprocessorError';
 import { ASTPreprocessorNode, ASTPreprocessorKind } from '../constants';
 import { ASTPreprocessorValueNode } from '../nodes/ASTPreprocessorValueNode';
 import { ASTPreprocessorBinaryOpNode } from '../nodes/ASTPreprocessorBinaryOpNode';
-import {
-  PreprocessorInterpreter,
-  InterpreterResult,
-} from './PreprocessorInterpreter';
+import { PreprocessorInterpreter, InterpreterResult } from './PreprocessorInterpreter';
 
 /**
  * Iterates over tree and calcs expression

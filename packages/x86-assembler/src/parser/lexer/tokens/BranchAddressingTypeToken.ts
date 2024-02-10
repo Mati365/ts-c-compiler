@@ -1,11 +1,6 @@
 import * as R from 'ramda';
 
-import {
-  TokenLocation,
-  TokenType,
-  Token,
-  TokenKind,
-} from '@ts-c-compiler/lexer';
+import { TokenLocation, TokenType, Token, TokenKind } from '@ts-c-compiler/lexer';
 
 import { BranchAddressingType } from '../../../types';
 
@@ -26,8 +21,7 @@ export class BranchAddressingTypeToken extends Token<BranchAddressingType> {
   }
 
   static parse(token: string, loc: TokenLocation): BranchAddressingTypeToken {
-    const addressingType: BranchAddressingType =
-      BranchAddressingType[R.toUpper(token)];
+    const addressingType: BranchAddressingType = BranchAddressingType[R.toUpper(token)];
     if (addressingType) {
       return new BranchAddressingTypeToken(addressingType, loc);
     }

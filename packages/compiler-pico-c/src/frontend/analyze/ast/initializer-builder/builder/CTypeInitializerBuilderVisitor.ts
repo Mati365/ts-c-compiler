@@ -10,10 +10,7 @@ import {
 } from '../../../../parser/ast';
 
 import { CInnerTypeTreeVisitor } from '../../type-builder/CInnerTypeTreeVisitor';
-import {
-  CTypeCheckError,
-  CTypeCheckErrorCode,
-} from '../../../errors/CTypeCheckError';
+import { CTypeCheckError, CTypeCheckErrorCode } from '../../../errors/CTypeCheckError';
 
 import {
   CArrayType,
@@ -32,10 +29,7 @@ import {
   CVariableInitializePair,
 } from '../../../scope/variables';
 
-import {
-  ConstantOperationResult,
-  evalConstantExpression,
-} from '../../expression-eval';
+import { ConstantOperationResult, evalConstantExpression } from '../../expression-eval';
 
 import { checkLeftTypeOverlapping } from '../../../checker';
 
@@ -116,9 +110,7 @@ export class CTypeInitializerBuilderVisitor extends CInnerTypeTreeVisitor {
     if (arrayType) {
       const { itemScalarValuesCount: itemSize } = baseType;
 
-      this.tree.ensureSize(
-        Math.ceil(this.tree.fields.length / itemSize) * itemSize,
-      );
+      this.tree.ensureSize(Math.ceil(this.tree.fields.length / itemSize) * itemSize);
     }
   }
 
@@ -137,9 +129,7 @@ export class CTypeInitializerBuilderVisitor extends CInnerTypeTreeVisitor {
         let newOffset = this.currentOffset;
 
         if (initializer.hasDesignation()) {
-          const { type, offset } = this.extractDesignationType(
-            initializer.designation,
-          );
+          const { type, offset } = this.extractDesignationType(initializer.designation);
 
           if (type) {
             nestedBaseType = type;
@@ -163,19 +153,14 @@ export class CTypeInitializerBuilderVisitor extends CInnerTypeTreeVisitor {
    *
    * int a[][] = { { 1 }, { 2 } }
    */
-  private extractInitializerListValue(
-    node: ASTCInitializer,
-    arrayItem: boolean = true,
-  ) {
+  private extractInitializerListValue(node: ASTCInitializer, arrayItem: boolean = true) {
     const { context, baseType, tree } = this;
     const exprResult = evalConstantExpression({
       expression: node.assignmentExpression,
       context,
     });
 
-    let exprValue = E.isRight(exprResult)
-      ? exprResult.right
-      : node.assignmentExpression;
+    let exprValue = E.isRight(exprResult) ? exprResult.right : node.assignmentExpression;
 
     let expectedType: CType;
 
@@ -223,10 +208,7 @@ export class CTypeInitializerBuilderVisitor extends CInnerTypeTreeVisitor {
         }
       }
 
-      this.appendNextOffsetValue(
-        { type: expectedType, value: exprValue },
-        noSizeCheck,
-      );
+      this.appendNextOffsetValue({ type: expectedType, value: exprValue }, noSizeCheck);
     } else if (isCompilerTreeNode(exprValue)) {
       this.appendNextOffsetValue({
         type: expectedType,
@@ -302,10 +284,7 @@ export class CTypeInitializerBuilderVisitor extends CInnerTypeTreeVisitor {
           );
         }
 
-        if (
-          !baseType.isUnknownSize() &&
-          +constExprResult.right >= dimensions[0]
-        ) {
+        if (!baseType.isUnknownSize() && +constExprResult.right >= dimensions[0]) {
           throw new CTypeCheckError(
             CTypeCheckErrorCode.INDEX_INITIALIZER_ARRAY_OVERFLOW,
             designation.loc.start,
@@ -364,8 +343,7 @@ export class CTypeInitializerBuilderVisitor extends CInnerTypeTreeVisitor {
     evalResult: ConstantOperationResult,
   ): number {
     const { arch } = this;
-    const initializedType =
-      node.type ?? CPrimitiveType.typeofValue(arch, evalResult);
+    const initializedType = node.type ?? CPrimitiveType.typeofValue(arch, evalResult);
 
     if (!checkLeftTypeOverlapping(expectedType, initializedType)) {
       throw new CTypeCheckError(
@@ -391,10 +369,7 @@ export class CTypeInitializerBuilderVisitor extends CInnerTypeTreeVisitor {
     text: string,
   ) {
     // handle "Hello world" initializers
-    const initializedTextType = CArrayType.ofStringLiteral(
-      this.arch,
-      text.length,
-    );
+    const initializedTextType = CArrayType.ofStringLiteral(this.arch, text.length);
 
     if (
       !checkLeftTypeOverlapping(expectedType, initializedTextType, {
@@ -416,10 +391,7 @@ export class CTypeInitializerBuilderVisitor extends CInnerTypeTreeVisitor {
   /**
    * Appends whole tree of values into current tree
    */
-  private appendNextSubtree(
-    entryValue: CVariableInitializerTree,
-    noSizeCheck?: boolean,
-  ) {
+  private appendNextSubtree(entryValue: CVariableInitializerTree, noSizeCheck?: boolean) {
     [...entryValue.fields.values()].forEach(value => {
       this.appendNextOffsetValue(value, noSizeCheck);
     });
@@ -446,11 +418,7 @@ export class CTypeInitializerBuilderVisitor extends CInnerTypeTreeVisitor {
     } else if (isArrayLikeType(baseType) || isPointerLikeType(baseType)) {
       // increments offsets and append next value to list, used in arrays
       // used here: int abc[] = { 1, 2, 3 }
-      if (
-        !noSizeCheck &&
-        !R.isNil(this.maxSize) &&
-        this.currentOffset + 1 > maxSize
-      ) {
+      if (!noSizeCheck && !R.isNil(this.maxSize) && this.currentOffset + 1 > maxSize) {
         throw new CTypeCheckError(
           CTypeCheckErrorCode.EXCESS_ELEMENTS_IN_ARRAY_INITIALIZER,
           tree.parentAST.loc.start,

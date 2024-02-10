@@ -26,9 +26,7 @@ export function compileMemcpy({ context, inputVar, outputVar }: MemcpyConfig) {
   const inputByteSize = inputVar.type.baseType.getByteSize();
 
   const asm = [
-    genComment(
-      `memcpy ${inputVar.getDisplayName()} -> ${outputVar.getDisplayName()}`,
-    ),
+    genComment(`memcpy ${inputVar.getDisplayName()} -> ${outputVar.getDisplayName()}`),
   ];
 
   // alloc regs
@@ -93,11 +91,7 @@ export function compileMemcpy({ context, inputVar, outputVar }: MemcpyConfig) {
     asm.push(
       genComment(`offset [unpacked] = ${offset}B`),
       genInstruction('mov', dataReg.value, srcAddr),
-      genInstruction(
-        'mov',
-        destAddr,
-        availableRegs.general.parts[dataReg.value].low,
-      ),
+      genInstruction('mov', destAddr, availableRegs.general.parts[dataReg.value].low),
     );
   }
 

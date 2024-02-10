@@ -58,12 +58,7 @@ export class X86InstructionSet extends X86Unit {
   ) {
     const { memIO, registers } = cpu;
 
-    const operatorExecutor: SwitchOpcodeOperator = (
-      val,
-      mode,
-      byte,
-      register,
-    ) => {
+    const operatorExecutor: SwitchOpcodeOperator = (val, mode, byte, register) => {
       const operator = operators[byte.reg] || operators.default;
       if (operator) {
         return operator(val, mode, byte, register);
@@ -92,12 +87,7 @@ export class X86InstructionSet extends X86Unit {
         return;
       }
 
-      const result = operatorExecutor(
-        memIO.read[mode](address),
-        mode,
-        byte,
-        false,
-      );
+      const result = operatorExecutor(memIO.read[mode](address), mode, byte, false);
 
       if (result !== undefined) {
         memIO.write[mode](result, address);
@@ -144,10 +134,7 @@ export class X86InstructionSet extends X86Unit {
             registers[reg] = registers[X86_REGISTERS.sreg[modeReg]];
           },
           (address, _, byte) => {
-            memIO.write[0x2](
-              registers[<string>X86_REGISTERS.sreg[byte.reg]],
-              address,
-            );
+            memIO.write[0x2](registers[<string>X86_REGISTERS.sreg[byte.reg]], address);
           },
           0x2,
         );
@@ -158,8 +145,7 @@ export class X86InstructionSet extends X86Unit {
             registers[<string>X86_REGISTERS.sreg[modeReg]] = registers[reg];
           },
           (address, _, byte) => {
-            registers[<string>X86_REGISTERS.sreg[byte.reg]] =
-              memIO.read[0x2](address);
+            registers[<string>X86_REGISTERS.sreg[byte.reg]] = memIO.read[0x2](address);
           },
           0x2,
         );
@@ -214,9 +200,7 @@ export class X86InstructionSet extends X86Unit {
               stack.push(registers[reg]);
             } else {
               registers[reg] = alu.exec(
-                alu.operators.extra[
-                  mode.reg === 0x1 ? 'decrement' : 'increment'
-                ],
+                alu.operators.extra[mode.reg === 0x1 ? 'decrement' : 'increment'],
                 registers[reg],
                 null,
                 bits,
@@ -230,9 +214,7 @@ export class X86InstructionSet extends X86Unit {
             } else {
               memIO.write[bits](
                 alu.exec(
-                  alu.operators.extra[
-                    mode.reg === 0x1 ? 'decrement' : 'increment'
-                  ],
+                  alu.operators.extra[mode.reg === 0x1 ? 'decrement' : 'increment'],
                   memVal,
                   null,
                   bits,
@@ -339,9 +321,7 @@ export class X86InstructionSet extends X86Unit {
       /** PUSHA */ 0x60: () => {
         const temp = registers.sp;
         for (let i = 0; i <= 0x7; ++i) {
-          stack.push(
-            i === 0x4 ? temp : registers[<string>X86_REGISTERS[0x2][i]],
-          );
+          stack.push(i === 0x4 ? temp : registers[<string>X86_REGISTERS[0x2][i]]);
         }
       },
       /** POPA  */ 0x61: () => {
@@ -473,9 +453,7 @@ export class X86InstructionSet extends X86Unit {
 
       /** LDS r16, m16:16 */ 0xc5: (segment = 'ds') => {
         const { reg } = RMByte.ofByte(cpu.fetchOpcode());
-        const addr = SegmentedAddress.ofExtendedFlatAddress(
-          cpu.fetchOpcode(0x2, false),
-        );
+        const addr = SegmentedAddress.ofExtendedFlatAddress(cpu.fetchOpcode(0x2, false));
 
         registers[<string>X86_REGISTERS[0x2][reg]] = addr.offset;
         registers[segment] = addr.segment;
@@ -502,20 +480,16 @@ export class X86InstructionSet extends X86Unit {
         cpu.interrupt(X86Interrupt.raise.software(code));
       },
 
-      /** ROL/SHR/SHL   */ 0xd0: X86InstructionSet.switchRMOpcodeInstruction(
-        cpu,
-        0x1,
-        {
-          /** ROL */ 0x0: (val, bits) => cpu.rol(val, 0x1, bits),
-          /** ROR */ 0x1: (val, bits) => cpu.rol(val, -0x1, bits),
-          /** RCL */ 0x2: (val, bits) => cpu.rcl(val, 0x1, bits),
-          /** RCR */ 0x3: (val, bits) => cpu.rcl(val, -0x1, bits),
-          /** SHL */ 0x4: (val, bits) => cpu.shl(val, 0x1, bits),
-          /** SHR */ 0x5: (val, bits) => cpu.shr(val, 0x1, bits),
-          // /** SAL */ 0x6: (val, bits) => cpu.sal(val, 0x1, bits),
-          // /** SAR */ 0x7: (val, bits) => cpu.sar(val, 0x1, bits),
-        },
-      ),
+      /** ROL/SHR/SHL   */ 0xd0: X86InstructionSet.switchRMOpcodeInstruction(cpu, 0x1, {
+        /** ROL */ 0x0: (val, bits) => cpu.rol(val, 0x1, bits),
+        /** ROR */ 0x1: (val, bits) => cpu.rol(val, -0x1, bits),
+        /** RCL */ 0x2: (val, bits) => cpu.rcl(val, 0x1, bits),
+        /** RCR */ 0x3: (val, bits) => cpu.rcl(val, -0x1, bits),
+        /** SHL */ 0x4: (val, bits) => cpu.shl(val, 0x1, bits),
+        /** SHR */ 0x5: (val, bits) => cpu.shr(val, 0x1, bits),
+        // /** SAL */ 0x6: (val, bits) => cpu.sal(val, 0x1, bits),
+        // /** SAR */ 0x7: (val, bits) => cpu.sar(val, 0x1, bits),
+      }),
 
       /** ROL/SHR/SHL r/m8, 1 */ 0xd1: X86InstructionSet.switchRMOpcodeInstruction(
         cpu,
@@ -570,10 +544,8 @@ export class X86InstructionSet extends X86Unit {
           /** ROR */ 0x1: (val, bits) => cpu.rol(val, -cpu.fetchOpcode(), bits),
           /** RCL */ 0x2: (val, bits) => cpu.rcl(val, cpu.fetchOpcode(), bits),
           /** RCR */ 0x3: (val, bits) => cpu.rcl(val, -cpu.fetchOpcode(), bits),
-          /** SHL IMM8 */ 0x4: (val, bits) =>
-            cpu.shl(val, cpu.fetchOpcode(), bits),
-          /** SHR IMM8 */ 0x5: (val, bits) =>
-            cpu.shr(val, cpu.fetchOpcode(), bits),
+          /** SHL IMM8 */ 0x4: (val, bits) => cpu.shl(val, cpu.fetchOpcode(), bits),
+          /** SHR IMM8 */ 0x5: (val, bits) => cpu.shr(val, cpu.fetchOpcode(), bits),
           // /** SAL */ 0x6: (val, bits) => cpu.sal(val, cpu.fetchOpcode(), bits),
           // /** SAR */ 0x7: (val, bits) => cpu.sar(val, cpu.fetchOpcode(), bits),
         },
@@ -587,10 +559,8 @@ export class X86InstructionSet extends X86Unit {
           /** ROR */ 0x1: (val, bits) => cpu.rol(val, -cpu.fetchOpcode(), bits),
           /** RCL */ 0x2: (val, bits) => cpu.rcl(val, cpu.fetchOpcode(), bits),
           /** RCR */ 0x3: (val, bits) => cpu.rcl(val, -cpu.fetchOpcode(), bits),
-          /** SHL IMM8 */ 0x4: (val, bits) =>
-            cpu.shl(val, cpu.fetchOpcode(), bits),
-          /** SHR IMM8 */ 0x5: (val, bits) =>
-            cpu.shr(val, cpu.fetchOpcode(), bits),
+          /** SHL IMM8 */ 0x4: (val, bits) => cpu.shl(val, cpu.fetchOpcode(), bits),
+          /** SHR IMM8 */ 0x5: (val, bits) => cpu.shr(val, cpu.fetchOpcode(), bits),
           // /** SAL */ 0x6: (val, bits) => cpu.sal(val, cpu.fetchOpcode(), 0x2),
           // /** SAR */ 0x7: (val, bits) => cpu.sar(val, cpu.fetchOpcode(), 0x2),
         },
@@ -636,10 +606,10 @@ export class X86InstructionSet extends X86Unit {
           default:
             cpu.parseRmByte(
               (reg, reg2) => {
-                [
-                  registers[<string>X86_REGISTERS[0x2][reg2]],
-                  registers[<string>reg],
-                ] = [registers[reg], registers[X86_REGISTERS[0x2][reg2]]];
+                [registers[<string>X86_REGISTERS[0x2][reg2]], registers[<string>reg]] = [
+                  registers[reg],
+                  registers[X86_REGISTERS[0x2][reg2]],
+                ];
               },
               () => {
                 throw new Error('todo: xchg in mem address');
@@ -656,11 +626,7 @@ export class X86InstructionSet extends X86Unit {
     });
 
     /** General usage registers opcodes */
-    for (
-      let opcode = 0;
-      opcode < Object.keys(X86_REGISTERS[0x1]).length;
-      ++opcode
-    ) {
+    for (let opcode = 0; opcode < Object.keys(X86_REGISTERS[0x1]).length; ++opcode) {
       /** MOV register opcodes */
       (_opcode => {
         const r8: string = X86_REGISTERS[0x1][_opcode];
@@ -740,10 +706,7 @@ export class X86InstructionSet extends X86Unit {
       /** JLE */ 0x7e: f => f.zf || f.sf !== f.of,
     };
 
-    const jumpIf = (
-      flagCondition: X86FlagCondition,
-      bits: X86BitsMode = 0x1,
-    ) => {
+    const jumpIf = (flagCondition: X86FlagCondition, bits: X86BitsMode = 0x1) => {
       const relative = cpu.fetchOpcode(bits);
 
       if (flagCondition(registers.status)) {
@@ -767,8 +730,7 @@ export class X86InstructionSet extends X86Unit {
       /** MOVZX r16,r/m8 */ [0x0fb6]: (bits: X86BitsMode = 0x2) => {
         cpu.parseRmByte(
           (reg, modeReg) => {
-            registers[<string>X86_REGISTERS[bits][modeReg]] =
-              registers[reg] & 0xff;
+            registers[<string>X86_REGISTERS[bits][modeReg]] = registers[reg] & 0xff;
           },
           (address, reg: string) => {
             registers[reg] = memIO.read[bits - 0x1](address);
@@ -781,11 +743,8 @@ export class X86InstructionSet extends X86Unit {
         cpu.parseRmByte(
           (reg, modeReg) => {
             registers[<string>X86_REGISTERS[bits][modeReg]] =
-              signExtend(
-                registers[reg] as number,
-                (bits - 1) as X86BitsMode,
-                bits,
-              ) & 0xff;
+              signExtend(registers[reg] as number, (bits - 1) as X86BitsMode, bits) &
+              0xff;
           },
           (address, reg: string) => {
             registers[reg] = signExtend(

@@ -1,11 +1,7 @@
 /**
  * Sets nth bit in value to num(0, 1)
  */
-export function setBit(
-  nth: number,
-  value: number | boolean,
-  num: number,
-): number {
+export function setBit(nth: number, value: number | boolean, num: number): number {
   return value ? num | (1 << nth) : num & ~(1 << nth);
 }
 

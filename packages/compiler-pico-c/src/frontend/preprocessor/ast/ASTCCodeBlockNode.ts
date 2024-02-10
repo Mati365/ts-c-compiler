@@ -10,7 +10,10 @@ import {
 } from './ASTCPreprocessorTreeNode';
 
 export class ASTCCodeBlockNode extends ASTCPreprocessorTreeNode {
-  constructor(loc: NodeLocation, readonly content: Token[]) {
+  constructor(
+    loc: NodeLocation,
+    readonly content: Token[],
+  ) {
     super(ASTCPreprocessorKind.CodeBlock, loc);
   }
 

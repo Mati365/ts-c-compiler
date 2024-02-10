@@ -22,15 +22,12 @@ program
   .argument('<source>', 'Relative or absolute path to source file')
   .option('-b, --binary', 'Emits binary stdout')
   .addOption(
-    new Option(
-      '-o, --output <string>',
-      'Relative path to your output binary',
-    ).conflicts('binary'),
-  )
-  .addOption(
-    new Option('-d, --debug', 'Print AST tree and assembly output').conflicts(
+    new Option('-o, --output <string>', 'Relative path to your output binary').conflicts(
       'binary',
     ),
+  )
+  .addOption(
+    new Option('-d, --debug', 'Print AST tree and assembly output').conflicts('binary'),
   )
   .addOption(
     new Option('-ps, --print-assembly', 'Print assembly output').conflicts([
@@ -49,7 +46,10 @@ program
     'Generate 512B bootsector output. Remember to have main entrypoint.',
   )
   .action((source, options) => {
-    const srcFile = fs.readFileSync(source, { encoding: 'utf8', flag: 'r' });
+    const srcFile = fs.readFileSync(source, {
+      encoding: 'utf8',
+      flag: 'r',
+    });
     const cCompile = pipe(
       srcFile,
       ccompiler({

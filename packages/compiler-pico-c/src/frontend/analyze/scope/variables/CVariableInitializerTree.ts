@@ -41,9 +41,7 @@ export function isInitializerTreeValue(
   return R.is(Object, value) && R.has('_baseType', value);
 }
 
-export function isInitializerValuePair(
-  pair: any,
-): pair is CVariableInitializePair {
+export function isInitializerValuePair(pair: any): pair is CVariableInitializePair {
   return !!pair && 'type' in pair && 'value' in pair;
 }
 
@@ -57,9 +55,8 @@ type CVariableByteInitializerAttrs<C> = {
 /**
  * Recursive map structure of type initializer
  */
-export class CVariableInitializerTree<
-  C extends ASTCCompilerNode = ASTCCompilerNode,
-> implements IsWalkableNode
+export class CVariableInitializerTree<C extends ASTCCompilerNode = ASTCCompilerNode>
+  implements IsWalkableNode
 {
   constructor(
     protected readonly _baseType: CType,
@@ -103,9 +100,7 @@ export class CVariableInitializerTree<
   }
 
   hasOnlyConstantExpressions() {
-    return this._fields.every(item =>
-      isConstantVariableInitializer(item?.value),
-    );
+    return this._fields.every(item => isConstantVariableInitializer(item?.value));
   }
 
   getSingleItemByteSize() {

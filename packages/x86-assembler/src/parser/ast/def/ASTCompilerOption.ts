@@ -19,9 +19,7 @@ export enum CompilerOptions {
 /**
  * Used to define binary data variables
  */
-export class ASTCompilerOption extends KindASTAsmNode(
-  ASTNodeKind.COMPILER_OPTION,
-) {
+export class ASTCompilerOption extends KindASTAsmNode(ASTNodeKind.COMPILER_OPTION) {
   constructor(
     readonly option: string,
     readonly args: Token<any>[],
@@ -61,10 +59,6 @@ export class ASTCompilerOption extends KindASTAsmNode(
     }
 
     // create new option
-    return new ASTCompilerOption(
-      optionName,
-      args,
-      NodeLocation.fromTokenLoc(token.loc),
-    );
+    return new ASTCompilerOption(optionName, args, NodeLocation.fromTokenLoc(token.loc));
   }
 }

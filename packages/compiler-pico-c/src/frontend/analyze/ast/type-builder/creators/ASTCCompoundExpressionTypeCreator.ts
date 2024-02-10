@@ -1,7 +1,4 @@
-import {
-  ASTCCompilerKind,
-  ASTCCompoundExpressionStmt,
-} from 'frontend/parser/ast';
+import { ASTCCompilerKind, ASTCCompoundExpressionStmt } from 'frontend/parser/ast';
 
 import { ASTCTypeCreator } from './ASTCTypeCreator';
 

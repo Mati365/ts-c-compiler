@@ -18,7 +18,10 @@ export const DEFAULT_PREPROCESSOR_CONFIG: PreprocessorInterpreterConfig = {
 };
 
 export class PreprocessorResult {
-  constructor(readonly ast: ASTPreprocessorNode, readonly result: string) {}
+  constructor(
+    readonly ast: ASTPreprocessorNode,
+    readonly result: string,
+  ) {}
 
   dump() {
     const { result, ast } = this;

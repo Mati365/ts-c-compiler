@@ -7,9 +7,7 @@ import { Token } from '../Token';
  *
  * @see https://www.cs.uic.edu/~jbell/CourseNotes/C_Programming/DataTypesSummary.pdf
  */
-const matchFloatNumber = safeFirstMatch(
-  /^[+-]?(\d+([.]\d*)?(e[+-]?\d+)?)[FfLl]?$/i,
-);
+const matchFloatNumber = safeFirstMatch(/^[+-]?(\d+([.]\d*)?(e[+-]?\d+)?)[FfLl]?$/i);
 
 export type FloatNumberTokenValue = {
   number: number;

@@ -83,34 +83,10 @@ export class BIOS extends X86UuidAbstractDevice<X86CPU> {
     0x1: new VideoMode(0x1, 40, 25, VGA_TEXT_MODES_PRESET['40x25'], 0x8),
     0x2: new VideoMode(0x2, 80, 25, VGA_TEXT_MODES_PRESET['80x25'], 0x8),
     0x3: new VideoMode(0x3, 80, 25, VGA_TEXT_MODES_PRESET['80x25'], 0x8),
-    0x4: new VideoMode(
-      0x4,
-      320,
-      200,
-      VGA_GRAPHICS_MODES_PRESET['320x200x4'],
-      0x1,
-    ),
-    0x11: new VideoMode(
-      0x11,
-      640,
-      480,
-      VGA_GRAPHICS_MODES_PRESET['640x480x2'],
-      0x1,
-    ),
-    0x12: new VideoMode(
-      0x12,
-      640,
-      480,
-      VGA_GRAPHICS_MODES_PRESET['640x480x16'],
-      0x1,
-    ),
-    0x13: new VideoMode(
-      0x13,
-      320,
-      200,
-      VGA_GRAPHICS_MODES_PRESET['320x200x256'],
-      0x1,
-    ),
+    0x4: new VideoMode(0x4, 320, 200, VGA_GRAPHICS_MODES_PRESET['320x200x4'], 0x1),
+    0x11: new VideoMode(0x11, 640, 480, VGA_GRAPHICS_MODES_PRESET['640x480x2'], 0x1),
+    0x12: new VideoMode(0x12, 640, 480, VGA_GRAPHICS_MODES_PRESET['640x480x16'], 0x1),
+    0x13: new VideoMode(0x13, 320, 200, VGA_GRAPHICS_MODES_PRESET['320x200x256'], 0x1),
   };
 
   private blink: CursorBlinkState = {
@@ -244,8 +220,7 @@ export class BIOS extends X86UuidAbstractDevice<X86CPU> {
     /**
      * Returns false if user pressed shift
      */
-    const isCaseModifyKeycode = (code: number): boolean =>
-      code > 18 || code < 16;
+    const isCaseModifyKeycode = (code: number): boolean => code > 18 || code < 16;
 
     /**
      * Pause execution until press a button
@@ -281,10 +256,7 @@ export class BIOS extends X86UuidAbstractDevice<X86CPU> {
      * @todo
      *  Add better support for extened keyboards (see broken arrows)
      */
-    const readKeyState = (
-      keymapTable?: KeymapTable,
-      code: number = keymap.key,
-    ) => {
+    const readKeyState = (keymapTable?: KeymapTable, code: number = keymap.key) => {
       const { regs } = this;
 
       regs.ax = 0x0;
@@ -456,8 +428,7 @@ export class BIOS extends X86UuidAbstractDevice<X86CPU> {
       const background = (attr & 0x70) >> 4;
 
       for (let row = 0; row < graphicsModeCharSize.h; ++row) {
-        const charBitsetRow =
-          VGA_8X8_FONT.data[graphicsModeCharSize.w * char + row];
+        const charBitsetRow = VGA_8X8_FONT.data[graphicsModeCharSize.w * char + row];
 
         for (let col = 0; col < graphicsModeCharSize.w; ++col) {
           const bit = (charBitsetRow >> col) & 0x1;
@@ -509,9 +480,7 @@ export class BIOS extends X86UuidAbstractDevice<X86CPU> {
         /** Normal characters */
         default:
           color =
-            (color &&
-              (typeof attribute === 'undefined' ? regs.bl : attribute)) ||
-            0b111;
+            (color && (typeof attribute === 'undefined' ? regs.bl : attribute)) || 0b111;
 
           /** Direct write to memory */
           if (textMode) {
@@ -573,9 +542,7 @@ export class BIOS extends X86UuidAbstractDevice<X86CPU> {
 
         vga.crtcRegs.setTextCursorDisabled(getBit(5, ch));
         vga.crtcRegs.setTextCursorShape(
-          cx === 0x0607
-            ? VGA_CURSOR_SHAPES.UNDERLINE
-            : VGA_CURSOR_SHAPES.FULL_BLOCK,
+          cx === 0x0607 ? VGA_CURSOR_SHAPES.UNDERLINE : VGA_CURSOR_SHAPES.FULL_BLOCK,
         );
       },
 
@@ -711,9 +678,7 @@ export class BIOS extends X86UuidAbstractDevice<X86CPU> {
    */
   setVideoMode(code: number | VideoMode): void {
     const { screen, vga, cpu } = this;
-    const newMode = Number.isNaN(<number>code)
-      ? code
-      : BIOS.VideoMode[<number>code];
+    const newMode = Number.isNaN(<number>code) ? code : BIOS.VideoMode[<number>code];
 
     if (newMode) {
       screen.mode = newMode;

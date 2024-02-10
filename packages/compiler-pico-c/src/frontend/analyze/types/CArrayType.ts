@@ -28,10 +28,7 @@ export class CArrayType extends CType<CArrayTypeDescriptor> {
   /**
    * Creates char[str length] array
    */
-  static ofStringLiteral(
-    arch: CCompilerArch,
-    length: number = null,
-  ): CArrayType {
+  static ofStringLiteral(arch: CCompilerArch, length: number = null): CArrayType {
     return new CArrayType({
       baseType: CPrimitiveType.char(arch),
       size: length,

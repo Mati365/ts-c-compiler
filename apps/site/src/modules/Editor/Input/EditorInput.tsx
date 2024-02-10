@@ -1,13 +1,14 @@
-import './EditorInput.scss';
-
 import { clsx } from 'clsx';
 import 'codemirror/mode/clike/clike';
+import 'codemirror/lib/codemirror.css';
 
 import { Controlled as CodeMirror, type ICodeMirror } from 'react-codemirror2';
 import { controlled } from '@under-control/forms';
 
-import type { EditorLang } from '../types';
+import type { EditorLang } from '../EditorStateProvider/types';
+
 import { nasmSyntaxDefine } from './syntax';
+import CSS from './EditorInput.module.scss';
 
 type EditorInputPops = ICodeMirror & {
   lang: EditorLang;
@@ -43,7 +44,7 @@ export const EditorInput = controlled<string, EditorInputPops>(
     return (
       <CodeMirror
         {...langProps}
-        className={clsx(className, 'min-w-[50%]')}
+        className={clsx(className, CSS['editor-codemirror'], 'min-w-[50%]')}
         options={{
           ...langProps.options,
           lineNumbers: true,

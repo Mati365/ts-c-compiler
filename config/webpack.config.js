@@ -6,8 +6,7 @@ const ESLintPlugin = require('eslint-webpack-plugin');
 
 const PRODUCTION_MODE = process.env.NODE_ENV !== 'development';
 
-const rootResolve = pkgPath =>
-  path.resolve(process.cwd(), path.join('./', pkgPath));
+const rootResolve = pkgPath => path.resolve(process.cwd(), path.join('./', pkgPath));
 
 exports.createConfig = ({
   optimize,

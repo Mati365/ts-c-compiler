@@ -31,9 +31,7 @@ import { alignmentSpecifier } from './alignmentSpecifier';
  *  | alignment_specifier declaration_specifiers
  *  | alignment_specifier
  */
-export function declarationSpecifiers(
-  grammar: CGrammar,
-): ASTCDeclarationSpecifier {
+export function declarationSpecifiers(grammar: CGrammar): ASTCDeclarationSpecifier {
   const { g } = grammar;
 
   let loc: NodeLocation = null;

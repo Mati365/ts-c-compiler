@@ -9,9 +9,7 @@ import {
   isIRLeaInstruction,
 } from '../../../instructions';
 
-export function dropRedundantAddressInstructions(
-  instructions: IRInstruction[],
-) {
+export function dropRedundantAddressInstructions(instructions: IRInstruction[]) {
   let hasCache = false;
 
   let cachedInputs: { [inputVar: string]: IRVariable } = {};
@@ -24,8 +22,7 @@ export function dropRedundantAddressInstructions(
     if (isIRBranchInstruction(instruction)) {
       if (isIRCallInstruction(instruction)) {
         newInstructions[i] =
-          dropConstantInstructionArgs(replacedOutputs, instruction) ??
-          newInstructions[i];
+          dropConstantInstructionArgs(replacedOutputs, instruction) ?? newInstructions[i];
       }
 
       replacedOutputs = {};
@@ -73,9 +70,7 @@ export function dropRedundantAddressInstructions(
         // force preserve output type due to issues with unions
         newInstructions[i] = optimizedInstruction.ofArgs({
           input: optimizedArgs.input,
-          output: optimizedArgs.output.ofType(
-            instruction.getArgs().output.type,
-          ),
+          output: optimizedArgs.output.ofType(instruction.getArgs().output.type),
         });
       }
     }

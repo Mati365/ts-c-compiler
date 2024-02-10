@@ -12,9 +12,7 @@ import { constantExpression } from '../expressions/constantExpression';
  *  | struct_declarator_list ',' struct_declarator
  *  ;
  */
-export function structDeclaratorList(
-  grammar: CGrammar,
-): ASTCStructDeclaratorList {
+export function structDeclaratorList(grammar: CGrammar): ASTCStructDeclaratorList {
   const items = fetchSplittedProductionsList<ASTCStructDeclarator>({
     g: grammar.g,
     prodFn: () => structDeclarator(grammar),
@@ -48,11 +46,7 @@ export function structDeclarator(grammar: CGrammar): ASTCStructDeclarator {
         return constantExpression(grammar);
       });
 
-      return new ASTCStructDeclarator(
-        declaratorNode.loc,
-        declaratorNode,
-        expression,
-      );
+      return new ASTCStructDeclarator(declaratorNode.loc, declaratorNode, expression);
     },
   });
 }

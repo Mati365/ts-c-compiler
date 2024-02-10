@@ -46,9 +46,7 @@ export enum ASTPreprocessorKind {
 /**
  * Checks if node kind is statement
  */
-export function isStatementPreprocessorNode(
-  node: ASTPreprocessorNode,
-): boolean {
+export function isStatementPreprocessorNode(node: ASTPreprocessorNode): boolean {
   switch (node.kind) {
     case ASTPreprocessorKind.Stmt:
     case ASTPreprocessorKind.DefineStmt:

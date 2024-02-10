@@ -28,13 +28,9 @@ export enum CBackendErrorCode {
 }
 
 export const C_BACKEND_ERROR_TRANSLATIONS: Record<CBackendErrorCode, string> = {
-  [CBackendErrorCode.UNKNOWN_BACKEND_ERROR]: fixme(
-    'Unknown backend compiler error!',
-  ),
+  [CBackendErrorCode.UNKNOWN_BACKEND_ERROR]: fixme('Unknown backend compiler error!'),
   [CBackendErrorCode.STORE_VAR_ERROR]: fixme('Store var error!'),
-  [CBackendErrorCode.STORE_VAR_SHOULD_BE_PTR]: fixme(
-    'Store var should be ptr!',
-  ),
+  [CBackendErrorCode.STORE_VAR_SHOULD_BE_PTR]: fixme('Store var should be ptr!'),
   [CBackendErrorCode.REG_ALLOCATOR_ERROR]: fixme('Reg allocator error!'),
   [CBackendErrorCode.UNABLE_TO_SPILL_REG]: fixme('Unable to spill %{reg} reg!'),
   [CBackendErrorCode.MISSING_BR_INSTRUCTION]: fixme('Missing br instruction!'),
@@ -44,43 +40,27 @@ export const C_BACKEND_ERROR_TRANSLATIONS: Record<CBackendErrorCode, string> = {
   [CBackendErrorCode.INCORRECT_PHI_NODE]: fixme('Incorrect phi node!'),
   [CBackendErrorCode.OFFSET_OVERFLOW]:
     'Stack offset overflows variable "%{name}" size! Possible stack corruption!',
-  [CBackendErrorCode.INVALID_STORE_ASSIGNMENT]: fixme(
-    'Incorrect store assignment!',
-  ),
+  [CBackendErrorCode.INVALID_STORE_ASSIGNMENT]: fixme('Incorrect store assignment!'),
   [CBackendErrorCode.EXPECTED_IR_PTR_BUT_RECEIVE]: fixme(
     'Expected IR pointer but received: "%{type}"!',
   ),
   [CBackendErrorCode.INCORRECT_MEMCPY_ARGS]: fixme('Incorrect memcpy args!'),
-  [CBackendErrorCode.CALL_ON_NON_CALLABLE_TYPE]: fixme(
-    'Call on non callable type!',
-  ),
+  [CBackendErrorCode.CALL_ON_NON_CALLABLE_TYPE]: fixme('Call on non callable type!'),
   [CBackendErrorCode.UNKNOWN_MATH_OPERATOR]: 'Unknown math operator!',
-  [CBackendErrorCode.NON_CALLABLE_STRUCT_ARG]: fixme(
-    'Called non-callable struct arg!',
-  ),
-  [CBackendErrorCode.UNABLE_TO_COMPILE_MEMCPY]: fixme(
-    'Unable to compile memcpy!',
-  ),
+  [CBackendErrorCode.NON_CALLABLE_STRUCT_ARG]: fixme('Called non-callable struct arg!'),
+  [CBackendErrorCode.UNABLE_TO_COMPILE_MEMCPY]: fixme('Unable to compile memcpy!'),
   [CBackendErrorCode.UNKNOWN_BUILTIN_FUNCTION]: fixme(
     'Unknown built-in function "%{name}"!',
   ),
   [CBackendErrorCode.UNABLE_PUSH_ARG_ON_X87_STACK]: fixme(
     'Unable to push arg to x87 stack!',
   ),
-  [CBackendErrorCode.UNABLE_TO_RESOLVE_X87_ARG]: fixme(
-    'Unable to resolve x87 arg!',
-  ),
-  [CBackendErrorCode.CANNOT_OVERRIDE_X87_STACK]: fixme(
-    'Cannot override x87 stack!',
-  ),
-  [CBackendErrorCode.UNKNOWN_X87_OPERATOR]: fixme(
-    'Unknown x87 operator %{operator}!',
-  ),
+  [CBackendErrorCode.UNABLE_TO_RESOLVE_X87_ARG]: fixme('Unable to resolve x87 arg!'),
+  [CBackendErrorCode.CANNOT_OVERRIDE_X87_STACK]: fixme('Cannot override x87 stack!'),
+  [CBackendErrorCode.UNKNOWN_X87_OPERATOR]: fixme('Unknown x87 operator %{operator}!'),
   [CBackendErrorCode.CANNOT_CAST_X87_ARG]: fixme('Cannot cast x87 arg!'),
   [CBackendErrorCode.CANNOT_CAST_VARIABLES]: fixme('Cannot cast variables!'),
-  [CBackendErrorCode.VARIABLE_MUST_BE_FLOAT]: fixme(
-    'Variable must be floating type!',
-  ),
+  [CBackendErrorCode.VARIABLE_MUST_BE_FLOAT]: fixme('Variable must be floating type!'),
 };
 
 /**

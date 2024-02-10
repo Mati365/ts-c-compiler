@@ -8,9 +8,7 @@ import { CTypeCheckConfig } from '../constants';
 /**
  * Special type of C-Scope that also lookups over function args
  */
-export class CFunctionScope extends CScopeTree<
-  ASTCFunctionDefinition | ASTCDeclaration
-> {
+export class CFunctionScope extends CScopeTree<ASTCFunctionDefinition | ASTCDeclaration> {
   constructor(
     readonly fnType: CFunctionDeclType,
     checkerConfig: CTypeCheckConfig,

@@ -21,10 +21,7 @@ export type TypeResolverAttrs = {
   canBeAnonymous?: boolean;
 };
 
-export type DeclaratorExtractorAttrs = Omit<
-  TypeResolverAttrs,
-  'declaration'
-> & {
+export type DeclaratorExtractorAttrs = Omit<TypeResolverAttrs, 'declaration'> & {
   type: CType;
   declarator: ASTCDeclarator;
   bitset?: number;
@@ -33,10 +30,7 @@ export type DeclaratorExtractorAttrs = Omit<
 export type TypeExtractorFns = {
   extractSpecifierType(attrs: SpecifierResolverAttrs): CType;
   extractNamedEntryFromDeclaration(attrs: TypeResolverAttrs): CNamedTypedEntry;
-  extractNamedEntryFromDeclarator(
-    attrs: DeclaratorExtractorAttrs,
-  ): CNamedTypedEntry;
+  extractNamedEntryFromDeclarator(attrs: DeclaratorExtractorAttrs): CNamedTypedEntry;
 };
 
-export type TypeExtractorAttrs = Pick<TypeResolverAttrs, 'context'> &
-  TypeExtractorFns;
+export type TypeExtractorAttrs = Pick<TypeResolverAttrs, 'context'> & TypeExtractorFns;

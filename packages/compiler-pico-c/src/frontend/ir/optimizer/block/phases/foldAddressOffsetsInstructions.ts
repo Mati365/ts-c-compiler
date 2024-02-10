@@ -12,10 +12,7 @@ import {
 } from '../../../instructions';
 
 import { IRConstant, isIRVariable } from '../../../variables';
-import {
-  dropConstantInstructionArgs,
-  tryEvalConstArgsBinaryInstruction,
-} from '../utils';
+import { dropConstantInstructionArgs, tryEvalConstArgsBinaryInstruction } from '../utils';
 import { getBaseTypeIfPtr } from 'frontend/analyze/types/utils';
 
 /**
@@ -112,14 +109,12 @@ export function foldAddressOffsetsInstructions(instructions: IRInstruction[]) {
       // value based on offset so force use last operator type
       const isUnion = getBaseTypeIfPtr(leaInstruction.inputVar.type).isUnion();
 
-      newInstructions[i] = instruction
-        .ofOffset(instruction.offset + evalResult)
-        .ofArgs({
-          ...instruction.getArgs(),
-          output: isUnion
-            ? leaInstruction.inputVar.ofType(mathInstruction.outputVar.type)
-            : leaInstruction.inputVar,
-        });
+      newInstructions[i] = instruction.ofOffset(instruction.offset + evalResult).ofArgs({
+        ...instruction.getArgs(),
+        output: isUnion
+          ? leaInstruction.inputVar.ofType(mathInstruction.outputVar.type)
+          : leaInstruction.inputVar,
+      });
 
       const replacedOutputs = {
         [mathInstruction.outputVar.name]: leaInstruction.inputVar,

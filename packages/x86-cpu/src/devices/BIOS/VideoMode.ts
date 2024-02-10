@@ -48,12 +48,7 @@ export class VideoMode {
   /**
    * Read VRAM ad x, y
    */
-  read(
-    mem: X86RAM<X86AbstractCPU>,
-    x: number,
-    y: number,
-    page: number = 0x0,
-  ): number {
+  read(mem: X86RAM<X86AbstractCPU>, x: number, y: number, page: number = 0x0): number {
     const address = this.offset + this.pageSize * page + (y * this.w + x) * 0x2;
 
     return mem.read[0x2](address);

@@ -89,10 +89,7 @@ export function emitFnCallExpressionIR({
       result.instructions.push(
         new IRAllocInstruction(bufferType, output),
         new IRLeaInstruction(output, outputPtr),
-        new IRCallInstruction(fnPtrOutput, [
-          ...fnArgsExprResult.args,
-          outputPtr,
-        ]),
+        new IRCallInstruction(fnPtrOutput, [...fnArgsExprResult.args, outputPtr]),
       );
     } else if (returnType.canBeStoredInReg()) {
       result.instructions.push(
@@ -103,15 +100,11 @@ export function emitFnCallExpressionIR({
         ),
       );
     } else {
-      result.instructions.push(
-        new IRCallInstruction(fnPtrOutput, fnArgsExprResult.args),
-      );
+      result.instructions.push(new IRCallInstruction(fnPtrOutput, fnArgsExprResult.args));
     }
   } else if (returnType.isVoid()) {
     // do not emit output for void functions
-    result.instructions.push(
-      new IRCallInstruction(fnPtrOutput, fnArgsExprResult.args),
-    );
+    result.instructions.push(new IRCallInstruction(fnPtrOutput, fnArgsExprResult.args));
   } else if (returnType.canBeStoredInReg()) {
     // emit return into tmp function if can fit into register
     result.instructions.push(
@@ -150,10 +143,7 @@ export function emitFnCallExpressionIR({
       // non array or index = 0 initializer
       result.instructions.push(
         new IRLeaInstruction(output, outputPtr),
-        new IRCallInstruction(fnPtrOutput, [
-          ...fnArgsExprResult.args,
-          outputPtr,
-        ]),
+        new IRCallInstruction(fnPtrOutput, [...fnArgsExprResult.args, outputPtr]),
       );
     }
   } else {

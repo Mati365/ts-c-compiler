@@ -1,8 +1,5 @@
 import { Size } from '@ts-c-compiler/core';
-import {
-  MemoryRegionRange,
-  MemoryRegionsMap,
-} from '@ts-c-compiler/x86-assembler';
+import { MemoryRegionRange, MemoryRegionsMap } from '@ts-c-compiler/x86-assembler';
 
 export const VGA_BANK_SIZE = 0x10000;
 export const VGA_TOTAL_PLANES = 0x4;
@@ -76,7 +73,10 @@ export const GRAPHICS_RESERVED_MEM_MAP = Object.freeze(
  * Holds binary represenation of font
  */
 export class VGAFontPack {
-  constructor(readonly charSize: Size, readonly data: number[]) {}
+  constructor(
+    readonly charSize: Size,
+    readonly data: number[],
+  ) {}
 }
 
 /**
@@ -92,10 +92,7 @@ export abstract class VGAIndexedReg {
 /**
  * [scanline start, scanline end]
  */
-export const VGA_CURSOR_SHAPES: Record<
-  'FULL_BLOCK' | 'UNDERLINE',
-  [number, number]
-> = {
+export const VGA_CURSOR_SHAPES: Record<'FULL_BLOCK' | 'UNDERLINE', [number, number]> = {
   FULL_BLOCK: [0x0, 0xe],
   UNDERLINE: [0xd, 0xe],
 };

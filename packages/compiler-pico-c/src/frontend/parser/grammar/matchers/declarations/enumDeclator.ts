@@ -48,11 +48,7 @@ function enumEnumerations(grammar: CGrammar): ASTCEnumEnumeration[] {
     }
 
     enumerations.push(
-      new ASTCEnumEnumeration(
-        NodeLocation.fromTokenLoc(name.loc),
-        name,
-        expression,
-      ),
+      new ASTCEnumEnumeration(NodeLocation.fromTokenLoc(name.loc), name, expression),
     );
 
     if (g.currentToken.type === TokenType.COMMA) {

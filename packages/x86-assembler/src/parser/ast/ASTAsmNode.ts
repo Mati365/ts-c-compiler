@@ -9,11 +9,7 @@ import { ASTNodeKind } from './types';
  * Set of multiple tokens that crates tree
  */
 export class ASTAsmNode extends TreeNode<ASTNodeKind> {
-  constructor(
-    kind: ASTNodeKind,
-    loc: NodeLocation,
-    children: ASTAsmNode[] = null,
-  ) {
+  constructor(kind: ASTNodeKind, loc: NodeLocation, children: ASTAsmNode[] = null) {
     super(kind, loc, children);
   }
 
@@ -23,11 +19,7 @@ export class ASTAsmNode extends TreeNode<ASTNodeKind> {
   }
 
   /* eslint-disable @typescript-eslint/no-unused-vars */
-  static parse(
-    token: Token,
-    parser: ASTAsmParser,
-    tree: ASTAsmTree,
-  ): ASTAsmNode {
+  static parse(token: Token, parser: ASTAsmParser, tree: ASTAsmTree): ASTAsmNode {
     return null;
   }
   /* eslint-enable @typescript-eslint/no-unused-vars */

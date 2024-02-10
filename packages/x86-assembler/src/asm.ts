@@ -7,12 +7,7 @@ import { formatDate, formatTime } from '@ts-c-compiler/core';
 import { createAssemblerTimings } from './utils/createAssemblerTimings';
 import { safeResultPreprocessor, PreprocessorResult } from './preprocessor';
 import { PreprocessorInterpreterConfig } from './preprocessor/interpreter/PreprocessorInterpreter';
-import {
-  compile,
-  ast,
-  safeResultAsmLexer,
-  X86AsmCompilerConfig,
-} from './parser';
+import { compile, ast, safeResultAsmLexer, X86AsmCompilerConfig } from './parser';
 
 export type AssemblerConfig = {
   preprocessor?: boolean;
@@ -49,10 +44,7 @@ export const asm =
   (code: string) => {
     const timings = createAssemblerTimings();
 
-    let preprocessorResult: E.Either<
-      CompilerError[],
-      PreprocessorResult
-    > | null = null;
+    let preprocessorResult: E.Either<CompilerError[], PreprocessorResult> | null = null;
 
     if (preprocessor) {
       const preprocessorConfig: PreprocessorInterpreterConfig = {
@@ -64,10 +56,7 @@ export const asm =
 
       preprocessorResult = pipe(
         code,
-        timings.chainIO(
-          'preprocessor',
-          safeResultPreprocessor(preprocessorConfig),
-        ),
+        timings.chainIO('preprocessor', safeResultPreprocessor(preprocessorConfig)),
       );
     } else {
       preprocessorResult = E.right(new PreprocessorResult(null, code));
@@ -75,15 +64,9 @@ export const asm =
 
     return pipe(
       preprocessorResult,
-      E.chainW(
-        timings.chainIO('lexer', ({ result }) =>
-          safeResultAsmLexer({})(result),
-        ),
-      ),
+      E.chainW(timings.chainIO('lexer', ({ result }) => safeResultAsmLexer({})(result))),
       E.chainW(timings.chainIO('ast', ast)),
-      E.chainW(
-        timings.chainIO('compiler', tree => compile(tree, compilerConfig)),
-      ),
+      E.chainW(timings.chainIO('compiler', tree => compile(tree, compilerConfig))),
       E.map(result => ({
         ...result,
         timings: timings.unwrap(),

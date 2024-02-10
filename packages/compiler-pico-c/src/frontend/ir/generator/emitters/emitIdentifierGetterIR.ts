@@ -186,10 +186,7 @@ export function emitIdentifierGetterIR({
             lastIRVar = allocator.allocTmpVariable(irFunction.type);
 
             instructions.push(
-              new IRLabelOffsetInstruction(
-                IRLabel.ofName(irFunction.name),
-                lastIRVar,
-              ),
+              new IRLabelOffsetInstruction(IRLabel.ofName(irFunction.name), lastIRVar),
             );
           } else if (globalVariables.hasVariable(name)) {
             const srcGlobalVar = globalVariables.getVariable(name);
@@ -240,17 +237,13 @@ export function emitIdentifierGetterIR({
         instructions.push(
           new IRLoadInstruction(
             lastIRVar,
-            (lastIRVar = allocator.allocTmpVariable(
-              getBaseTypeIfPtr(lastIRVar.type),
-            )),
+            (lastIRVar = allocator.allocTmpVariable(getBaseTypeIfPtr(lastIRVar.type))),
           ),
         );
 
         if (isUnionLikeType(parentType.baseType)) {
           lastIRVar = lastIRVar.ofType(
-            CPointerType.ofType(
-              parentType.baseType.getField(expr.name.text).type,
-            ),
+            CPointerType.ofType(parentType.baseType.getField(expr.name.text).type),
           );
 
           return false;
@@ -361,12 +354,9 @@ export function emitIdentifierGetterIR({
         if (
           isPointerLikeType(lastIRVar.type) &&
           !isArrayLikeType(parentType) &&
-          (lastIRVar.type.baseType.isPointer() ||
-            lastIRVar.type.baseType.isArray())
+          (lastIRVar.type.baseType.isPointer() || lastIRVar.type.baseType.isArray())
         ) {
-          const newLastIRVar = allocator.allocTmpVariable(
-            lastIRVar.type.baseType,
-          );
+          const newLastIRVar = allocator.allocTmpVariable(lastIRVar.type.baseType);
 
           instructions.push(new IRLoadInstruction(lastIRVar, newLastIRVar));
           lastIRVar = newLastIRVar;
@@ -405,9 +395,7 @@ export function emitIdentifierGetterIR({
               entryByteSize,
             );
 
-            offsetAddressVar = allocator.allocTmpPointer(
-              getBaseType(lastIRVar.type),
-            );
+            offsetAddressVar = allocator.allocTmpPointer(getBaseType(lastIRVar.type));
 
             instructions.push(
               new IRMathInstruction(
@@ -431,9 +419,7 @@ export function emitIdentifierGetterIR({
               TokenType.PLUS,
               lastIRVar,
               offsetAddressVar,
-              (lastIRVar = allocator.allocTmpPointer(
-                getBaseType(lastIRVar.type),
-              )),
+              (lastIRVar = allocator.allocTmpPointer(getBaseType(lastIRVar.type))),
             ),
           );
         }

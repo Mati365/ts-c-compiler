@@ -28,10 +28,9 @@ function num(g: CPreprocessorGrammarDef): ASTCPreprocessorTreeNode {
 
   if (token.type === TokenType.NUMBER) {
     g.consume();
-    return new ASTCValueNode<NumberToken[]>(
-      NodeLocation.fromTokenLoc(token.loc),
-      [token],
-    );
+    return new ASTCValueNode<NumberToken[]>(NodeLocation.fromTokenLoc(token.loc), [
+      token,
+    ]);
   }
 
   if (token.type === TokenType.BRACKET && token.text === '(') {

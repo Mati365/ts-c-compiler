@@ -23,10 +23,7 @@ function normalizeAsmCode(str: string): string {
   return stripAnsi(trimLines(str));
 }
 
-function toCompiledAsmBeEqual(
-  source: string,
-  expectedIR: string,
-): MatcherResult {
+function toCompiledAsmBeEqual(source: string, expectedIR: string): MatcherResult {
   const result = pipe(
     source,
     ccompiler(),
@@ -37,9 +34,7 @@ function toCompiledAsmBeEqual(
     return {
       pass: false,
       message: () =>
-        `Compilation failed with ${
-          result.left?.[0]?.code || '<unknown>'
-        } error code!`,
+        `Compilation failed with ${result.left?.[0]?.code || '<unknown>'} error code!`,
     };
   }
 

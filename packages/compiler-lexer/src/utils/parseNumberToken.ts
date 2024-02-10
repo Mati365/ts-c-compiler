@@ -21,10 +21,7 @@ export const DIGIT_FORMATS_PARSERS: Record<string, (str: string) => number> = {
    *  - 0xc8
    *  - 0hc8
    */
-  HEX: safeNumberMatch(
-    /^(?=^(?:\$0?|0x|0h)(?:([\da-f_]+)h?$)|(?:(\d[\da-f_]+)h$))/i,
-    16,
-  ),
+  HEX: safeNumberMatch(/^(?=^(?:\$0?|0x|0h)(?:([\da-f_]+)h?$)|(?:(\d[\da-f_]+)h$))/i, 16),
 
   /**
    * Allowed DEC format:

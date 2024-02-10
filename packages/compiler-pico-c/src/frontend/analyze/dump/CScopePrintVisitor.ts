@@ -27,11 +27,7 @@ export class CScopePrintVisitor extends CScopeVisitor {
         innerScopeLines = [chalk.grey('<blank>')];
       }
 
-      return [
-        chalk.bold.white('Scope:'),
-        ...padLeftLines(1, innerScopeLines),
-        '\n',
-      ];
+      return [chalk.bold.white('Scope:'), ...padLeftLines(1, innerScopeLines), '\n'];
     })();
 
     const lines = padLeftLines(nesting * 2, [

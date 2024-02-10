@@ -9,8 +9,7 @@ export const tagFunction =
   (strings: TemplateStringsArray, ...values: any[]) => {
     const template = <string>(
       indexedReduce(
-        (prev, string, index) =>
-          `${prev}${string}${defaultToEmpty(values[index])}`,
+        (prev, string, index) => `${prev}${string}${defaultToEmpty(values[index])}`,
         '',
         strings,
       )

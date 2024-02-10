@@ -37,11 +37,7 @@ export function replaceQuotesWithNumbers(expression: string): string {
     if (isQuote(c)) {
       let quoteBuffer = '';
 
-      for (
-        let j = i + 1;
-        j < expression.length && !isQuote(expression[j]);
-        ++j
-      ) {
+      for (let j = i + 1; j < expression.length && !isQuote(expression[j]); ++j) {
         quoteBuffer += expression[j];
       }
 
@@ -134,8 +130,7 @@ export class MathExpression {
 
             // check priority
             if (
-              (!operator.rightHand &&
-                operator.priority <= stackOperator.priority) ||
+              (!operator.rightHand && operator.priority <= stackOperator.priority) ||
               (operator.rightHand && operator.priority < stackOperator.priority)
             ) {
               buffer.push(stack.pop());
@@ -153,10 +148,7 @@ export class MathExpression {
 
     while (stack.length) {
       const token = stack.pop();
-      if (
-        token === MathOperator.RIGHT_BRACKET ||
-        token === MathOperator.LEFT_BRACKET
-      ) {
+      if (token === MathOperator.RIGHT_BRACKET || token === MathOperator.LEFT_BRACKET) {
         throw new MathError(MathErrorCode.INCORRECT_BRACKETS);
       }
 

@@ -1,10 +1,7 @@
 import { BinaryOpNode } from '@ts-c-compiler/grammar';
 import { TokenType } from '@ts-c-compiler/lexer';
 
-import type {
-  CInterpreterContext,
-  CPreprocessorInterpretable,
-} from '../interpreter';
+import type { CInterpreterContext, CPreprocessorInterpretable } from '../interpreter';
 
 import {
   ASTCPreprocessorKind,

@@ -15,7 +15,10 @@ import { isFuncPtrDeclLikeType } from '../../analyze/types/function/CFunctionDec
   fields: ['expression'],
 })
 export class ASTCPostfixArrayExpression extends ASTCCompilerNode {
-  constructor(loc: NodeLocation, readonly expression: ASTCExpression) {
+  constructor(
+    loc: NodeLocation,
+    readonly expression: ASTCExpression,
+  ) {
     super(ASTCCompilerKind.PostfixArrayExpression, loc);
   }
 }
@@ -24,13 +27,19 @@ export class ASTCPostfixArrayExpression extends ASTCCompilerNode {
   fields: ['args'],
 })
 export class ASTCPostfixFnExpression extends ASTCCompilerNode {
-  constructor(loc: NodeLocation, readonly args: ASTCArgumentsExpressionList) {
+  constructor(
+    loc: NodeLocation,
+    readonly args: ASTCArgumentsExpressionList,
+  ) {
     super(ASTCCompilerKind.PostfixFnExpression, loc);
   }
 }
 
 export class ASTCPostfixDotExpression extends ASTCCompilerNode {
-  constructor(loc: NodeLocation, readonly name: Token<string>) {
+  constructor(
+    loc: NodeLocation,
+    readonly name: Token<string>,
+  ) {
     super(ASTCCompilerKind.PostfixDotExpression, loc);
   }
 
@@ -44,7 +53,10 @@ export class ASTCPostfixDotExpression extends ASTCCompilerNode {
 }
 
 export class ASTCPostfixPtrExpression extends ASTCCompilerNode {
-  constructor(loc: NodeLocation, readonly name: Token<string>) {
+  constructor(
+    loc: NodeLocation,
+    readonly name: Token<string>,
+  ) {
     super(ASTCCompilerKind.PostfixPtrExpression, loc);
   }
 
@@ -115,8 +127,7 @@ export class ASTCPostfixExpression extends ASTCCompilerNode {
 
   isFnPtrCallExpression() {
     return (
-      isFuncPtrDeclLikeType(this.postfixExpression?.type) &&
-      this.isPrimaryExpression()
+      isFuncPtrDeclLikeType(this.postfixExpression?.type) && this.isPrimaryExpression()
     );
   }
 

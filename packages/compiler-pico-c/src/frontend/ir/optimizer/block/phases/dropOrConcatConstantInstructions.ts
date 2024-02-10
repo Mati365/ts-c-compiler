@@ -23,9 +23,7 @@ import { tryEvalConstArgsBinaryInstruction } from '../utils/tryEvalConstArgsBina
  * - Folds temp constant variables in store instruction
  * - Evaluate math expressions
  */
-export function dropOrConcatConstantInstructions(
-  instructions: IRInstruction[],
-) {
+export function dropOrConcatConstantInstructions(instructions: IRInstruction[]) {
   const newInstructions = [...instructions];
   const constantArgs: Record<string, IRConstant> = {};
   let totalConstants = 0;
@@ -34,10 +32,7 @@ export function dropOrConcatConstantInstructions(
     const instruction = newInstructions[i];
 
     if (totalConstants) {
-      const optimizedInstruction = dropConstantInstructionArgs(
-        constantArgs,
-        instruction,
-      );
+      const optimizedInstruction = dropConstantInstructionArgs(constantArgs, instruction);
 
       if (optimizedInstruction) {
         if (
