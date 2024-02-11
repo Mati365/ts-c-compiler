@@ -6,9 +6,22 @@ import { X86TargetCPU } from '@ts-c-compiler/x86-assembler';
 import { createCCompilerTimings } from './frontend/utils/createCCompilerTimings';
 import { CCompilerConfig, CCompilerArch } from './constants/config';
 
-import { cIRCompiler } from './frontend';
+import { CPreprocessorError, cIRCompiler } from './frontend';
 import { genASMIRCode } from './backend';
+
 import { CCompilerOutput } from './output/CCompilerOutput';
+
+import type { CBackendError } from './backend/errors/CBackendError';
+import type { CTypeCheckError } from './frontend/analyze';
+import type { CGrammarError } from './frontend/parser/grammar/errors/CGrammarError';
+import type { IRError } from './frontend/ir/errors/IRError';
+
+export type CCompilerError =
+  | CBackendError
+  | CPreprocessorError
+  | CTypeCheckError
+  | CGrammarError
+  | IRError;
 
 /**
  * Main compiler entry, compiles code to binary
@@ -27,7 +40,7 @@ export const ccompiler =
       },
     },
   ) =>
-  (code: string) => {
+  (code: string): E.Either<CCompilerError[], CCompilerOutput> => {
     const timings = createCCompilerTimings();
 
     return pipe(

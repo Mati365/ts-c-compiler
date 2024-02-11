@@ -1,6 +1,6 @@
 import { Buffer } from 'buffer';
 import { pipe } from 'fp-ts/function';
-import { either as E } from 'fp-ts';
+import { either as E, array as A } from 'fp-ts';
 import { useState } from 'react';
 import { useControlStrict } from '@under-control/forms';
 import constate from 'constate';
@@ -11,9 +11,12 @@ import {
   ccompiler,
   getX86BootsectorPreloaderBinary,
   wrapWithX86BootsectorAsm,
+  type CCompilerError,
 } from '@ts-c-compiler/compiler';
 
+import type { CompilerError } from '@ts-c-compiler/core';
 import type {
+  EditorCompileResultError,
   EditorCompileResultValue,
   EditorEmulationValue,
   EditorStateValue,
@@ -43,13 +46,28 @@ const useEditorStateValue = () => {
   } = control;
 
   const run = () => {
+    const mapAssemblerErrors = A.map(
+      (error: CompilerError<any>): EditorCompileResultError => ({
+        loc: error.loc ?? null,
+        message: error.message ?? 'Unknown assembler error!',
+      }),
+    );
+
+    const mapCErrors = A.map(
+      (error: CCompilerError): EditorCompileResultError => ({
+        loc: error.loc ?? null,
+        message: error.getCompilerMessage() ?? 'Unknown c compiler error!',
+      }),
+    );
+
     const result = (() => {
       switch (lang) {
         case 'nasm':
           return pipe(
             code,
             asm(),
-            E.map(
+            E.bimap(
+              mapAssemblerErrors,
               ({ output }): EditorCompileResultValue => ({
                 asmPassOutput: output,
                 blob: Buffer.from(output.getBinary()),
@@ -66,7 +84,9 @@ const useEditorStateValue = () => {
                 enabled: true,
               },
             }),
-            E.map(compilerResult => wrapWithX86BootsectorAsm(compilerResult.codegen.asm)),
+            E.bimap(mapCErrors, compilerResult =>
+              wrapWithX86BootsectorAsm(compilerResult.codegen.asm),
+            ),
             E.chainW(asmRaw =>
               pipe(
                 asmRaw,
@@ -77,6 +97,7 @@ const useEditorStateValue = () => {
                     externalLinkerAddrGenerator: () => 0xff_ff,
                   },
                 }),
+                E.mapLeft(mapAssemblerErrors),
               ),
             ),
             E.map(

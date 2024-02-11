@@ -1,5 +1,6 @@
 import type { either as E } from 'fp-ts';
 import type { SecondPassResult } from '@ts-c-compiler/x86-assembler';
+import type { TokenLocation } from '@ts-c-compiler/lexer';
 
 export type EditorCompileLang = 'nasm' | 'c';
 
@@ -12,12 +13,17 @@ type AbstractEmulationState<S extends string, P = {}> = P & {
   state: S;
 };
 
+export type EditorCompileResultError = {
+  loc: TokenLocation | null;
+  message: string;
+};
+
 export type EditorCompileResultValue = {
   blob: Buffer;
   asmPassOutput: SecondPassResult;
 };
 
-type EditorCompileResult = E.Either<unknown, EditorCompileResultValue>;
+type EditorCompileResult = E.Either<EditorCompileResultError[], EditorCompileResultValue>;
 
 export type EditorEmulationValue =
   | AbstractEmulationState<'stop'>
