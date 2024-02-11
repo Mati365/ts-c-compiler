@@ -15,23 +15,59 @@ import {
 } from '@ts-c-compiler/compiler';
 
 import type { CompilerError } from '@ts-c-compiler/core';
-import type {
-  EditorCompileResultError,
-  EditorCompileResultValue,
-  EditorEmulationValue,
-  EditorStateValue,
+import {
+  hasEditorEmulationResult,
+  type EditorCompileResultError,
+  type EditorCompileResultValue,
+  type EditorEmulationValue,
+  type EditorStateValue,
 } from './types';
 
-const EXAMPLE_C_PROGRAM = /* c */ `#include <stdio.h>
+const EXAMPLE_C_PROGRAM = /* c */ `/*
+  +------------------------------------------------+
+  | Run 'asm("xchg bx, bx")' and open dev tools to |
+  | open CPU debugger breakpoint!'                 |
+  +------------------------------------------------+
+        \\
+         \\
+            ╱|、
+          (˚ˎ 。7
+           |、˜〵
+          じしˍ,)ノ
+*/
+#include <stdio.h>
+#include <kernel.h>
 
 int main() {
-  printf("Hello world!");
+  int rows = 8, coef = 1, space, i, j;
+
+  kernel_screen_clear();
+
+  for (i = 0; i < rows; i++) {
+    for (space = 1; space <= rows - i; space++)
+       printf("  ");
+
+    for (j = 0; j <= i; j++) {
+      if (j == 0 || i == 0) {
+        coef = 1;
+      } else {
+         coef = coef * (i - j + 1) / j;
+      }
+
+      printf("%4d", coef);
+    }
+
+    printf("\\n");
+  }
+
+  for (;;) {}
   return 0;
 }`;
 
 const useEditorStateValue = () => {
   const [emulation, setEmulation] = useState<EditorEmulationValue>({
     state: 'stop',
+    result: null,
   });
 
   const control = useControlStrict<EditorStateValue>({
@@ -131,14 +167,15 @@ const useEditorStateValue = () => {
         return { state: 'pause', result: oldState.result };
       }
 
-      return { state: 'stop' };
+      return { state: 'stop', result: null };
     });
   };
 
   const stop = () => {
-    setEmulation({
+    setEmulation(oldState => ({
       state: 'stop',
-    });
+      result: hasEditorEmulationResult(oldState) ? oldState.result : null,
+    }));
   };
 
   return {

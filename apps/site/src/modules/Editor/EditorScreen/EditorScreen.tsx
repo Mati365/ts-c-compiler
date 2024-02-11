@@ -1,56 +1,79 @@
 import { useRef, useEffect } from 'react';
 import { either as E } from 'fp-ts';
+import clsx from 'clsx';
 
+import { useConstRefCallback, useUpdateEffect } from '@under-control/forms';
 import { VGARenderLoopDriver, X86CPU } from '@ts-c-compiler/x86-cpu';
 
-import { useInstantUpdateEffect } from 'hooks';
 import { useEditorState } from '../EditorStateProvider';
 
 export const EditorScreen = () => {
   const { emulation } = useEditorState();
   const screenRef = useRef<HTMLDivElement>(null);
-  const cpuRef = useRef<X86CPU>();
+  const cpuRef = useRef<X86CPU | null>();
 
-  useEffect(() => {
+  const onHalt = useConstRefCallback(() => {
+    emulation.stop();
+  });
+
+  const shutdownCPU = () => {
+    cpuRef.current?.halt();
+  };
+
+  const destroyCPU = () => {
+    if (!cpuRef.current) {
+      return null;
+    }
+
+    cpuRef.current.release();
+    cpuRef.current = null;
+  };
+
+  const resetCPU = () => {
+    destroyCPU();
+
     if (!screenRef.current) {
       return;
     }
 
-    const cpu = new X86CPU();
+    const cpu = new X86CPU({
+      handle: {
+        onHalt,
+      },
+    });
+
     cpu.attach(VGARenderLoopDriver, {
       screenElement: screenRef.current,
     });
 
     cpuRef.current = cpu;
+    return cpu;
+  };
 
-    return () => {
-      cpu.release();
-    };
-  }, []);
+  useEffect(
+    () => () => {
+      destroyCPU();
+    },
+    [],
+  );
 
-  useInstantUpdateEffect(() => {
-    const cpu = cpuRef.current;
-
-    if (!cpu) {
-      return;
-    }
-
+  useUpdateEffect(() => {
     switch (emulation.info.state) {
       case 'stop':
-        cpu.halt();
+        shutdownCPU();
         break;
 
       case 'pause':
-        cpu.freeze();
+        cpuRef.current?.freeze();
         break;
 
       case 'running': {
         if (E.isLeft(emulation.info.result)) {
-          cpu.halt();
+          destroyCPU();
           return;
         }
 
-        cpu.boot(emulation.info.result.right.blob);
+        resetCPU()?.boot(emulation.info.result.right.blob);
         break;
       }
     }
@@ -59,8 +82,11 @@ export const EditorScreen = () => {
   return (
     <div
       ref={screenRef}
-      className="mx-auto block text-center"
       style={{ imageRendering: 'pixelated' }}
+      className={clsx(
+        'mx-auto block text-center',
+        emulation.info.state === 'stop' && 'opacity-30',
+      )}
     />
   );
 };

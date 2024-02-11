@@ -26,7 +26,7 @@ export type EditorCompileResultValue = {
 type EditorCompileResult = E.Either<EditorCompileResultError[], EditorCompileResultValue>;
 
 export type EditorEmulationValue =
-  | AbstractEmulationState<'stop'>
+  | AbstractEmulationState<'stop', { result: EditorCompileResult | null }>
   | AbstractEmulationState<'compiling'>
   | AbstractEmulationState<'pause', { result: EditorCompileResult }>
   | AbstractEmulationState<'running', { result: EditorCompileResult }>;
@@ -40,5 +40,9 @@ type ExtractEmulationValueByState<S extends EditorEmulationValueState> = Extract
 
 export const hasEditorEmulationResult = (
   value: EditorEmulationValue,
-): value is ExtractEmulationValueByState<'pause' | 'running'> =>
-  value.state === 'pause' || value.state === 'running';
+): value is
+  | ExtractEmulationValueByState<'pause' | 'running'>
+  | AbstractEmulationState<'stop', { result: EditorCompileResult }> =>
+  value.state === 'pause' ||
+  value.state === 'running' ||
+  (value.state === 'stop' && !!value.result);
