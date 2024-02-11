@@ -1,3 +1,5 @@
+import { useInstantBeforeMount } from 'hooks';
+
 import { useEditorState } from './EditorStateProvider';
 
 import { EditorInput } from './EditorInput';
@@ -8,7 +10,12 @@ import { EditorOutput } from './EditorOutput';
 export const EditorContainer = () => {
   const {
     control: { bind, value },
+    emulation,
   } = useEditorState();
+
+  useInstantBeforeMount(() => {
+    emulation.run();
+  });
 
   return (
     <div className="flex h-screen flex-col">
