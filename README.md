@@ -11,6 +11,8 @@
 [![Known Vulnerabilities](https://snyk.io/test/github/Mati365/i8086.js/badge.svg?targetFile=package.json&style=flat-square)](https://snyk.io/test/github/Mati365/i8086.js?targetFile=package.json)
 [![CI](https://github.com/Mati365/ts-c-compiler/actions/workflows/test.yml/badge.svg)](https://github.com/Mati365/ts-c-compiler/actions/workflows/test.yml)
 
+![REPL](/doc/repl.png)
+
 Multipass portable C lang compiler toolkit with IR code generator including backend, frontend, and optimizer phases. Designed to simple prototyping 16bit toy operating systems and games.
 
 Currently supported architectures:
