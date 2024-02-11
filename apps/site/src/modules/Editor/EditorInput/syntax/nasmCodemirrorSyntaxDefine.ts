@@ -1,4 +1,4 @@
-import type * as CodeMirror from 'codemirror';
+import type { StreamParser } from '@codemirror/language';
 
 function words(str: string) {
   return str.split(' ').reduce<Record<string, boolean>>((acc, current) => {
@@ -27,7 +27,7 @@ export const NASM_HIGHLIGHT = {
   ),
 };
 
-export function nasmSyntaxDefine(): CodeMirror.Mode<any> {
+export function nasmSyntaxDefine(): StreamParser<any> {
   const { conventionalInstructions, specialInstructions, sections, registers } =
     NASM_HIGHLIGHT;
 
@@ -133,6 +133,6 @@ export function nasmSyntaxDefine(): CodeMirror.Mode<any> {
       return null;
     },
 
-    lineComment: lineCommentStartSymbol,
+    // lineComment: lineCommentStartSymbol,
   };
 }

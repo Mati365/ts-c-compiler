@@ -105,7 +105,7 @@ program
       tapEither(
         ({ asmResult, asmRaw }) => {
           if (options.printJumpAssembly) {
-            console.info(TableBinaryView.serializeToString(E.right(asmResult)));
+            console.info(TableBinaryView.serializeToString(asmResult.output));
           }
 
           if (options.printAssembly) {

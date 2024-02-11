@@ -1,3 +1,6 @@
+import { pipe } from 'fp-ts/function';
+import { either as E } from 'fp-ts';
+
 import { asm, TableBinaryView } from '@ts-c-compiler/x86-assembler';
 import { timingsToString } from '@ts-c-compiler/core';
 
@@ -44,14 +47,17 @@ export class CCompilerOutput {
         codegen.asm,
         '\nAssembly:',
         '',
-        TableBinaryView.serializeToString(
+        pipe(
+          codegen.asm,
           asm({
             preprocessor: true,
             compilerConfig: {
               maxPasses: 7,
               externalLinkerAddrGenerator: () => 0xff_ff,
             },
-          })(codegen.asm),
+          }),
+          E.map(({ output }) => TableBinaryView.serializeToString(output)),
+          E.getOrElseW(error => JSON.stringify(error)),
         ),
         '',
       ].join('\n'),

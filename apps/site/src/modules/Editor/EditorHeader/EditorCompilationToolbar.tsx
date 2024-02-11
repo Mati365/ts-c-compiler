@@ -1,4 +1,4 @@
-import { useEditorState } from '..';
+import { useEditorState } from '../EditorStateProvider';
 import { EditorCompileLangDropdown } from './parts';
 
 export const EditorCompilationToolbar = () => {

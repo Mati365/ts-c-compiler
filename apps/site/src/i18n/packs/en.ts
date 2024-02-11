@@ -17,4 +17,18 @@ export const EN_18N_VALUE = {
       github: 'Github project link',
     },
   },
+  output: {
+    tabs: {
+      binary: {
+        title: 'Binary',
+        table: {
+          jumps: 'Jumps',
+          label: 'Label',
+          offset: 'Offset',
+          binary: 'Binary',
+          instruction: 'Instruction',
+        },
+      },
+    },
+  },
 };

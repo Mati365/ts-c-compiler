@@ -8,7 +8,7 @@ import { ASTInstruction } from '../../ast/instruction/ASTInstruction';
 import { CompilerError } from '@ts-c-compiler/core';
 import { BinaryView } from './BinaryView';
 import { BinaryBlob } from '../BinaryBlob';
-import { CompilerFinalResult, CompilerOutput } from '../compile';
+import { SecondPassResult } from '../BinaryPassResults';
 
 type BinaryPrintConfig = {
   template: {
@@ -48,7 +48,7 @@ type SerializedBlobsOffsets = Map<number, JMPTableEntry>;
  */
 export class TableBinaryView extends BinaryView<JMPTableEntry[]> {
   constructor(
-    compilerResult: CompilerFinalResult,
+    compilerResult: SecondPassResult,
     private printConfig: BinaryPrintConfig = {
       template: {
         horizontal: '─',
@@ -78,7 +78,7 @@ export class TableBinaryView extends BinaryView<JMPTableEntry[]> {
   /**
    * Compile whole instructions graph into string
    */
-  static serializeToString(result: CompilerFinalResult): string {
+  static serializeToString(result: SecondPassResult): string {
     return new TableBinaryView(result)
       .serialize()
       .map(({ jmpGraph, blob, offset }) => {
@@ -259,8 +259,8 @@ export class TableBinaryView extends BinaryView<JMPTableEntry[]> {
   /**
    * Serialize success tree
    */
-  success(compilerResult: CompilerOutput): JMPTableEntry[] {
-    const { blobs } = compilerResult.output;
+  success(compilerResult: SecondPassResult): JMPTableEntry[] {
+    const { blobs } = compilerResult;
 
     // reduce all blobs into lines map
     const jmpLines: JMPLines = new Map<number, number>();

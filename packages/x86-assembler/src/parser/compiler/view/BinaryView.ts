@@ -1,8 +1,4 @@
-import * as E from 'fp-ts/Either';
-import { pipe } from 'fp-ts/function';
-
-import { CompilerError } from '@ts-c-compiler/core';
-import { CompilerFinalResult, CompilerOutput } from '../compile';
+import { SecondPassResult } from '../BinaryPassResults';
 
 /**
  * Class used for binary representation of compiler binary tree
@@ -10,7 +6,7 @@ import { CompilerFinalResult, CompilerOutput } from '../compile';
  * graphical output
  */
 export class BinaryView<ResultType, SerializeArgs = never> {
-  constructor(private readonly _compilerResult: CompilerFinalResult) {}
+  constructor(private readonly _compilerResult: SecondPassResult) {}
 
   get compilerResult() {
     return this._compilerResult;
@@ -20,28 +16,16 @@ export class BinaryView<ResultType, SerializeArgs = never> {
   /**
    * Serialize success into result type
    */
-  success(output: CompilerOutput, args?: SerializeArgs): ResultType {
+  success(output: SecondPassResult, args?: SerializeArgs): ResultType {
     return null;
   }
 
-  /**
-   * Serialize errors and args into result type
-   */
-  error(errors: CompilerError[], args?: SerializeArgs): ResultType {
-    return null;
-  }
   /* eslint-enable @typescript-eslint/no-unused-vars, class-methods-use-this */
 
   /**
    * Serializes view into result type
    */
   serialize(args?: SerializeArgs): ResultType {
-    return pipe(
-      this.compilerResult,
-      E.match(
-        output => this.error(output, args),
-        output => this.success(output, args),
-      ),
-    );
+    return this.success(this.compilerResult, args);
   }
 }

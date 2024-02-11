@@ -14,7 +14,7 @@ export const toMultilineBinaryBlockString = R.compose(
  */
 export class BinaryBlob<T = any> {
   constructor(
-    protected ast: T = null,
+    readonly ast: T = null,
     protected binary: number[] = null,
     public slaveBlobs: BinaryBlob[] = null, // for some 0 bytes instructions
   ) {}
