@@ -29,6 +29,9 @@ export const EN_18N_VALUE = {
           instruction: 'Instruction',
         },
       },
+      errors: {
+        title: 'Errors',
+      },
     },
   },
 };
