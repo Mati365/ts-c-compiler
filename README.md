@@ -11,8 +11,6 @@
 [![Known Vulnerabilities](https://snyk.io/test/github/Mati365/i8086.js/badge.svg?targetFile=package.json&style=flat-square)](https://snyk.io/test/github/Mati365/i8086.js?targetFile=package.json)
 [![CI](https://github.com/Mati365/ts-c-compiler/actions/workflows/test.yml/badge.svg)](https://github.com/Mati365/ts-c-compiler/actions/workflows/test.yml)
 
-![REPL](/doc/repl.png)
-
 Multipass portable C lang compiler toolkit with IR code generator including backend, frontend, and optimizer phases. Designed to simple prototyping 16bit toy operating systems and games.
 
 Currently supported architectures:
@@ -20,6 +18,12 @@ Currently supported architectures:
 1. X86 16bit real mode code emitter with floating point X87 coprocessor support
 
 **🚧 Warn! The project is unstable so please do not use it on production!**
+
+## Online editor
+
+Available at: <https://mati365.github.io/ts-c-compiler/>
+
+![REPL](/doc/repl.png)
 
 ## Install
 
