@@ -6,10 +6,10 @@
   "private": true,
   "scripts": {
     "clean": "rm -rf ./dist",
-    "dev": "astro dev --host",
-    "start": "astro dev",
-    "build:production": "astro build",
-    "preview": "astro preview",
+    "dev": "npx astro dev --host --port 4321",
+    "build": "npx astro build",
+    "build:production": "NODE_ENV=production yarn run build",
+    "preview": "npx astro preview",
     "lint": "npx eslint src/",
     "check:types": "npx tsc --noEmit"
   },
@@ -17,20 +17,19 @@
     "@astrojs/check": "^0.5.2",
     "@astrojs/react": "^3.0.10",
     "@astrojs/tailwind": "^5.1.0",
-    "@types/codemirror": "^5",
+    "@codemirror/lang-cpp": "^6.0.2",
+    "@ts-c-compiler/compiler": "*",
     "@types/react": "^18.2.55",
     "@types/react-dom": "^18.2.19",
+    "@uiw/react-codemirror": "4.21.21",
     "@under-control/forms": "^2.0.0",
     "astro": "^4.3.5",
     "clsx": "^2.1.0",
-    "codemirror": "5",
     "constate": "^3.3.2",
     "flowbite": "^2.2.1",
     "flowbite-react": "^0.7.2",
-    "react-codemirror2": "^7.3.0",
     "react-icons": "^5.0.1",
     "sass": "^1.70.0",
-    "tailwindcss": "^3.4.1",
-    "@ts-c-compiler/compiler": "*"
+    "tailwindcss": "^3.4.1"
   }
 }

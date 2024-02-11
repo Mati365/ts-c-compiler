@@ -1,36 +1,31 @@
 import { clsx } from 'clsx';
-import 'codemirror/mode/clike/clike';
-import 'codemirror/lib/codemirror.css';
 
-import { Controlled as CodeMirror, type ICodeMirror } from 'react-codemirror2';
+import CodeMirror, { type ReactCodeMirrorProps } from '@uiw/react-codemirror';
+import { cpp } from '@codemirror/lang-cpp';
+import { StreamLanguage } from '@codemirror/language';
 import { controlled } from '@under-control/forms';
 
-import type { EditorLang } from '../EditorStateProvider/types';
+import type { EditorCompileLang } from '../EditorStateProvider/types';
 
-import { nasmSyntaxDefine } from './syntax';
 import CSS from './EditorInput.module.scss';
+import { nasmSyntaxDefine } from './syntax';
 
-type EditorInputPops = ICodeMirror & {
-  lang: EditorLang;
+type EditorInputPops = Partial<ReactCodeMirrorProps> & {
+  lang: EditorCompileLang;
 };
 
 export const EditorInput = controlled<string, EditorInputPops>(
   ({ lang, control: { value, setValue }, className, ...props }) => {
-    const langProps: Partial<ICodeMirror> = (() => {
+    const langProps: Partial<ReactCodeMirrorProps> = (() => {
       switch (lang) {
         case 'nasm':
           return {
-            defineMode: {
-              name: 'lang',
-              fn: nasmSyntaxDefine,
-            },
+            extensions: [StreamLanguage.define(nasmSyntaxDefine())],
           };
 
         case 'c':
           return {
-            options: {
-              mode: 'clike',
-            },
+            extensions: [cpp()],
           };
 
         default: {
@@ -45,12 +40,8 @@ export const EditorInput = controlled<string, EditorInputPops>(
       <CodeMirror
         {...langProps}
         className={clsx(className, CSS['editor-codemirror'], 'min-w-[50%]')}
-        options={{
-          ...langProps.options,
-          lineNumbers: true,
-        }}
         value={value}
-        onBeforeChange={(_, __, newValue) => {
+        onChange={newValue => {
           setValue({
             value: newValue,
           });

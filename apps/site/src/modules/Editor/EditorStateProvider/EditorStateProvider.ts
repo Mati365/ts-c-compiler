@@ -13,7 +13,18 @@ import {
   wrapWithX86BootsectorAsm,
 } from '@ts-c-compiler/compiler';
 
-import type { EditorEmulationValue, EditorStateValue } from './types';
+import type {
+  EditorCompileResultValue,
+  EditorEmulationValue,
+  EditorStateValue,
+} from './types';
+
+const EXAMPLE_C_PROGRAM = /* c */ `#include <stdio.h>
+
+int main() {
+  printf("Hello world!");
+  return 0;
+}`;
 
 const useEditorStateValue = () => {
   const [emulation, setEmulation] = useState<EditorEmulationValue>({
@@ -23,7 +34,7 @@ const useEditorStateValue = () => {
   const control = useControlStrict<EditorStateValue>({
     defaultValue: {
       lang: 'c',
-      code: '#include <stdio.h>\n\nint main() { printf("Hello World!"); return 0; }',
+      code: EXAMPLE_C_PROGRAM,
     },
   });
 
@@ -38,9 +49,12 @@ const useEditorStateValue = () => {
           return pipe(
             code,
             asm(),
-            E.map(({ output }) => ({
-              blob: Buffer.from(output.getBinary()),
-            })),
+            E.map(
+              ({ output }): EditorCompileResultValue => ({
+                asmPassOutput: output,
+                blob: Buffer.from(output.getBinary()),
+              }),
+            ),
           );
 
         case 'c':
@@ -65,11 +79,14 @@ const useEditorStateValue = () => {
                 }),
               ),
             ),
-            E.map(({ output }) => ({
-              blob: Buffer.from(
-                getX86BootsectorPreloaderBinary().concat(output.getBinary()),
-              ),
-            })),
+            E.map(
+              ({ output }): EditorCompileResultValue => ({
+                asmPassOutput: output,
+                blob: Buffer.from(
+                  getX86BootsectorPreloaderBinary().concat(output.getBinary()),
+                ),
+              }),
+            ),
           );
 
         default:
