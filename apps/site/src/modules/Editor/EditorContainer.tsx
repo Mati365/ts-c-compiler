@@ -1,4 +1,4 @@
-import { useInstantBeforeMount } from 'hooks';
+import { useEffect } from 'react';
 
 import { useEditorState } from './EditorStateProvider';
 
@@ -13,9 +13,9 @@ export const EditorContainer = () => {
     emulation,
   } = useEditorState();
 
-  useInstantBeforeMount(() => {
+  useEffect(() => {
     emulation.run();
-  });
+  }, []);
 
   return (
     <div className="flex h-screen flex-col">

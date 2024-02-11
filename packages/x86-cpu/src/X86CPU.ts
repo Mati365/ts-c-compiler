@@ -40,6 +40,10 @@ import { FAKE_BIOS } from './devices/BIOS/asm';
 type X86CPUConfig = {
   debugger?: boolean;
   silent?: boolean;
+  handle?: {
+    onHalt?: VoidFunction;
+    onBoot?: VoidFunction;
+  };
 };
 
 export type X86OpcodesList = ((...args: any[]) => void)[];
@@ -138,6 +142,7 @@ export class X86CPU extends X86AbstractCPU {
 
     R.forEachObjIndexed(cpuDevice => cpuDevice.boot(), this.devices);
 
+    this.config.handle?.onBoot?.();
     this.logger.info(
       'CPU: Intel 8086 compatible processor, jumping to 0xFFFF0 reset vector!',
     );
@@ -691,6 +696,7 @@ export class X86CPU extends X86AbstractCPU {
 
       /** Next instruction */
       this.logger.info(`Halt! Next instruction ${this.fetchOpcode(0x2).toString(16)}`);
+      this.config.handle?.onHalt?.();
     }
   }
 }

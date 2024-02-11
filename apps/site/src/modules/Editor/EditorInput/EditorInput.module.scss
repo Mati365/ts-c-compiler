@@ -1,5 +1,12 @@
 .editor-codemirror :global {
-  .CodeMirror {
-    height: 100%;
+  .cm {
+    &-editor,
+    &-wrap {
+      height: 100%;
+    }
+
+    &-scroller {
+      overflow: auto;
+    }
   }
 }
