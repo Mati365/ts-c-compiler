@@ -1,5 +1,41 @@
 # @ts-c-compiler/grammar
 
+## 1.6.0
+
+### Minor Changes
+
+- Fix changesets
+
+### Patch Changes
+
+- Updated dependencies
+  - @ts-c-compiler/lexer@1.6.0
+  - @ts-c-compiler/core@1.6.0
+
+## 1.5.0
+
+### Minor Changes
+
+- Improve C support
+
+### Patch Changes
+
+- Updated dependencies
+  - @ts-c-compiler/lexer@1.5.0
+  - @ts-c-compiler/core@1.5.0
+
+## 1.4.0
+
+### Minor Changes
+
+- Improve C support
+
+### Patch Changes
+
+- Updated dependencies
+  - @ts-c-compiler/core@1.4.0
+  - @ts-c-compiler/lexer@1.4.0
+
 ## 1.3.0
 
 ### Minor Changes

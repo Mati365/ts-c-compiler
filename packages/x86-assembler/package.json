@@ -1,6 +1,6 @@
 {
   "name": "@ts-c-compiler/x86-assembler",
-  "version": "1.3.0",
+  "version": "1.6.0",
   "type": "module",
   "private": false,
   "license": "MIT",
