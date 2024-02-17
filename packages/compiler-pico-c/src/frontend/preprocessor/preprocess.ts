@@ -1,7 +1,7 @@
 import * as E from 'fp-ts/Either';
 import { pipe } from 'fp-ts/function';
 
-import type { Token } from '@ts-c-compiler/lexer';
+import type { Token } from '@ts-cc/lexer';
 
 import { CPreprocessorError, CPreprocessorErrorCode } from './grammar';
 import { interpret, type CPreprocessorConfig } from './interpreter';

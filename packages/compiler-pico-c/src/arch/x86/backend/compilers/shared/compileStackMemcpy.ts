@@ -1,4 +1,4 @@
-import { getByteSizeArgPrefixName } from '@ts-c-compiler/x86-assembler';
+import { getByteSizeArgPrefixName } from '@ts-cc/x86-assembler';
 
 import type { IRVariable } from 'frontend/ir/variables';
 import type { CType } from 'frontend/analyze';

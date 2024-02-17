@@ -1,4 +1,10 @@
-# @ts-c-compiler/site
+# @ts-cc/site
+
+## 1.7.0
+
+### Minor Changes
+
+- Publish packages
 
 ## 1.6.0
 

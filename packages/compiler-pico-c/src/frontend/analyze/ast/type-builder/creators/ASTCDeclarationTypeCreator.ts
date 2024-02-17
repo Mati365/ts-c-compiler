@@ -1,4 +1,4 @@
-import { unwrapEitherOrThrow } from '@ts-c-compiler/core';
+import { unwrapEitherOrThrow } from '@ts-cc/core';
 
 import { isFuncDeclLikeType } from 'frontend/analyze/types/function/CFunctionDeclType';
 import { ASTCDeclaration, ASTCCompilerKind } from 'frontend/parser/ast';

@@ -1,5 +1,5 @@
 import { pipe } from 'fp-ts/function';
-import { unwrapEitherOrThrow } from '@ts-c-compiler/core';
+import { unwrapEitherOrThrow } from '@ts-cc/core';
 
 import { ASTCEnumSpecifier } from 'frontend/parser';
 import { CEnumType, CPrimitiveType } from '../../../types';

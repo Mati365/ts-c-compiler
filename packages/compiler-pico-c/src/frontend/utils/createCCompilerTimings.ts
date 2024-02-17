@@ -1,4 +1,4 @@
-import { createTiming } from '@ts-c-compiler/core';
+import { createTiming } from '@ts-cc/core';
 
 /**
  * Create pack that measures

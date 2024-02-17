@@ -2,8 +2,8 @@ import { useMemo, memo } from 'react';
 import { Table } from 'flowbite-react';
 import { clsx } from 'clsx';
 
-import { flipMap } from '@ts-c-compiler/core';
-import { TableBinaryView, type SecondPassResult } from '@ts-c-compiler/x86-assembler';
+import { flipMap } from '@ts-cc/core';
+import { TableBinaryView, type SecondPassResult } from '@ts-cc/x86-assembler';
 
 import { useI18n } from 'i18n';
 import { highlightInstructionHTML } from './utils';
@@ -76,10 +76,7 @@ pl-2 text-cyan-700"
                 />
 
                 {hasJumps && (
-                  <Table.Cell
-                    className="whitespace-pre-wrap p-0 pr-2 font-mono
-text-orange-600"
-                  >
+                  <Table.Cell className="whitespace-pre-wrap p-0 pr-2 font-mono text-orange-600">
                     {jmpGraph}
                   </Table.Cell>
                 )}

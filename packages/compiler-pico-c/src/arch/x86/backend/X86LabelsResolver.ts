@@ -1,4 +1,4 @@
-import { markLabelAsLinkerExternalSymbol } from '@ts-c-compiler/x86-assembler';
+import { markLabelAsLinkerExternalSymbol } from '@ts-cc/x86-assembler';
 
 import { CType } from 'frontend/analyze';
 import { IRInstruction } from 'frontend/ir/instructions';

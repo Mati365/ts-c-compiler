@@ -1,14 +1,14 @@
 import * as E from 'fp-ts/Either';
 import { pipe } from 'fp-ts/function';
 
-import { safeResultLexer } from '@ts-c-compiler/lexer';
-import { FloatNumberToken, NumberToken, TokenType } from '@ts-c-compiler/lexer';
+import { safeResultLexer } from '@ts-cc/lexer';
+import { FloatNumberToken, NumberToken, TokenType } from '@ts-cc/lexer';
 import {
   LexerConfig,
   TokenParsersMap,
   TokenTerminalCharactersMap,
   TERMINAL_CHARACTERS,
-} from '@ts-c-compiler/lexer';
+} from '@ts-cc/lexer';
 
 import { cComentParser, cMergeNumbersTokens } from './parsers';
 import { CCOMPILER_IDENTIFIERS_MAP } from '#constants';

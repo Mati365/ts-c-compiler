@@ -1,8 +1,8 @@
-import { rpn } from '@ts-c-compiler/rpn';
-import { joinTokensTexts } from '@ts-c-compiler/lexer';
+import { rpn } from '@ts-cc/rpn';
+import { joinTokensTexts } from '@ts-cc/lexer';
 
-import { Token, NumberToken } from '@ts-c-compiler/lexer';
-import { ValueNode } from '@ts-c-compiler/grammar';
+import { Token, NumberToken } from '@ts-cc/lexer';
+import { ValueNode } from '@ts-cc/grammar';
 import {
   InterpreterResult,
   PreprocessorInterpreter,

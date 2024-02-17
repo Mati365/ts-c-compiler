@@ -1,8 +1,8 @@
 import * as R from 'ramda';
 import { $enum } from 'ts-enum-util';
 
-import { IdentifiersMap } from '@ts-c-compiler/lexer';
-import { TokenType } from '@ts-c-compiler/lexer';
+import { IdentifiersMap } from '@ts-cc/lexer';
+import { TokenType } from '@ts-cc/lexer';
 
 export enum CStructAlign {
   PACKED = 'packed',

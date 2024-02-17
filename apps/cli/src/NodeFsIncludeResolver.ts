@@ -8,7 +8,7 @@ import {
   CInterpreterSourcePath,
   CPreprocessorError,
   CPreprocessorErrorCode,
-} from '@ts-c-compiler/compiler';
+} from '@ts-cc/compiler';
 
 export class NodeFsIncludeResolver implements CInterpreterIncludeResolver {
   read =

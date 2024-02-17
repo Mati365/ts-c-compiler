@@ -1,7 +1,7 @@
 import * as R from 'ramda';
 import { $enum } from 'ts-enum-util';
 
-import type { IdentifiersMap } from '@ts-c-compiler/lexer';
+import type { IdentifiersMap } from '@ts-cc/lexer';
 
 export enum CPreprocessorIdentifier {
   DEFINE = '#define',

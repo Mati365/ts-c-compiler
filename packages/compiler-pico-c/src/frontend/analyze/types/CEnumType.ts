@@ -1,7 +1,7 @@
 import * as R from 'ramda';
 import * as E from 'fp-ts/Either';
 
-import { dumpCompilerAttrs } from '@ts-c-compiler/core';
+import { dumpCompilerAttrs } from '@ts-cc/core';
 
 import { CCompilerArch } from '#constants';
 import { CTypeCheckError, CTypeCheckErrorCode } from '../errors/CTypeCheckError';

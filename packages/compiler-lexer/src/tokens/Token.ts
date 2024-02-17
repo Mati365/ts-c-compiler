@@ -1,5 +1,5 @@
 import * as R from 'ramda';
-import { revertEscapeSequences } from '@ts-c-compiler/core';
+import { revertEscapeSequences } from '@ts-cc/core';
 
 import { TokenType, TokenKind } from '../shared';
 import { TokenLocation } from '../shared/TokenLocation';

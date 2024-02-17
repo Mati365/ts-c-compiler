@@ -1,5 +1,5 @@
 import * as O from 'fp-ts/Option';
-import { evalMathOp, isMathOpToken } from '@ts-c-compiler/lexer';
+import { evalMathOp, isMathOpToken } from '@ts-cc/lexer';
 
 import { IRMathInstruction } from '../../../instructions';
 import { isIRConstant } from '../../../variables';

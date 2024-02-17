@@ -1,5 +1,5 @@
 import * as E from 'fp-ts/Either';
-import { Token } from '@ts-c-compiler/lexer';
+import { Token } from '@ts-cc/lexer';
 
 import { ASTCTreeNode } from '../ast';
 import { CGrammarError, CGrammarErrorCode } from './errors/CGrammarError';

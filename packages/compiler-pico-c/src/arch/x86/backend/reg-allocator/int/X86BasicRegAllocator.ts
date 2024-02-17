@@ -1,13 +1,13 @@
-import { BINARY_MASKS } from '@ts-c-compiler/core';
+import { BINARY_MASKS } from '@ts-cc/core';
 
-import { hasFlag } from '@ts-c-compiler/core';
+import { hasFlag } from '@ts-cc/core';
 import { CBackendError, CBackendErrorCode } from 'backend/errors/CBackendError';
 
 import { IRInstructionTypedArg, isIRConstant, isIRVariable } from 'frontend/ir/variables';
 
 import { isStructLikeType, isUnionLikeType } from 'frontend/analyze';
 
-import { getByteSizeArgPrefixName } from '@ts-c-compiler/x86-assembler';
+import { getByteSizeArgPrefixName } from '@ts-cc/x86-assembler';
 import { genInstruction, withInlineComment } from '../../../asm-utils';
 import {
   queryAndMarkX86RegsMap,
@@ -16,7 +16,7 @@ import {
   X86RegLookupQuery,
 } from '../../utils';
 
-import { X86RegName } from '@ts-c-compiler/x86-assembler';
+import { X86RegName } from '@ts-cc/x86-assembler';
 import { X86Allocator } from '../../X86Allocator';
 import { X86RegOwnershipTracker } from './X86RegOwnershipTracker';
 

@@ -1,8 +1,8 @@
 import { pipe } from 'fp-ts/function';
 import * as E from 'fp-ts/Either';
 
-import { unwrapEitherOrThrow } from '@ts-c-compiler/core';
-import { Token } from '@ts-c-compiler/lexer';
+import { unwrapEitherOrThrow } from '@ts-cc/core';
+import { Token } from '@ts-cc/lexer';
 import { CInterpreterContext, CInterpreterIncludeResolver } from './types';
 
 import type { CPreprocessorMacro } from './types/CPreprocessorMacro';

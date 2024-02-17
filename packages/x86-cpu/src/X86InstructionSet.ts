@@ -5,7 +5,7 @@ import {
   X86BitsMode,
   signExtend,
   toUnsignedNumber,
-} from '@ts-c-compiler/x86-assembler';
+} from '@ts-cc/x86-assembler';
 
 import { X86_REGISTERS } from './constants/x86';
 

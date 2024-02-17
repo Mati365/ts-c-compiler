@@ -1,4 +1,4 @@
-import { empty } from '@ts-c-compiler/grammar';
+import { empty } from '@ts-cc/grammar';
 
 import type { ASTCPreprocessorTreeNode } from 'frontend/preprocessor/ast';
 import type { CPreprocessorGrammar } from '../CPreprocessorGrammar';

@@ -4,7 +4,7 @@ import { isOutputInstruction } from 'frontend/ir/interfaces';
 import { isIRBranchInstruction } from 'frontend/ir/guards';
 import { isIRVariable } from 'frontend/ir/variables';
 
-import { Range } from '@ts-c-compiler/core';
+import { Range } from '@ts-cc/core';
 import { IRInstruction } from 'frontend/ir/instructions';
 
 type X86VarLifetimeOffset = Range;

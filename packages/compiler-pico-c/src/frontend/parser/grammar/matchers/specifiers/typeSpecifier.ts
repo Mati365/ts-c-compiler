@@ -1,8 +1,8 @@
 import { CCOMPILER_TYPE_SPECIFIERS, CTypeSpecifier } from '#constants';
 
-import { Token, TokenType } from '@ts-c-compiler/lexer';
-import { NodeLocation } from '@ts-c-compiler/grammar';
-import { SyntaxError } from '@ts-c-compiler/grammar';
+import { Token, TokenType } from '@ts-cc/lexer';
+import { NodeLocation } from '@ts-cc/grammar';
+import { SyntaxError } from '@ts-cc/grammar';
 
 import { ASTCTypeSpecifier } from 'frontend/parser/ast';
 import { CGrammar } from '../shared';

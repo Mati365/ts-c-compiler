@@ -1,7 +1,7 @@
-import { replaceEscapeSequences } from '@ts-c-compiler/core';
+import { replaceEscapeSequences } from '@ts-cc/core';
 
-import { NodeLocation } from '@ts-c-compiler/grammar';
-import { TokenKind, TokenType } from '@ts-c-compiler/lexer';
+import { NodeLocation } from '@ts-cc/grammar';
+import { TokenKind, TokenType } from '@ts-cc/lexer';
 import { ASTCPrimaryExpression } from 'frontend/parser/ast';
 import { expression } from './expression';
 import { CGrammar } from '../shared';

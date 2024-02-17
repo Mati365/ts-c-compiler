@@ -1,7 +1,7 @@
-import { findByName, dumpCompilerAttrs } from '@ts-c-compiler/core';
+import { findByName, dumpCompilerAttrs } from '@ts-cc/core';
 
 import { CFunctionCallConvention } from '#constants';
-import { Identity } from '@ts-c-compiler/core';
+import { Identity } from '@ts-cc/core';
 
 import { ASTCBlockItemsList } from 'frontend';
 import { hasBuiltinPrefix } from 'builtins/utils/builtinPrefix';

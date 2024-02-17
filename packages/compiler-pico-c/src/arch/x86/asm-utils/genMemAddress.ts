@@ -2,7 +2,7 @@ import {
   X86SegmentRegName,
   InstructionArgSizeName,
   getByteSizeArgPrefixName,
-} from '@ts-c-compiler/x86-assembler';
+} from '@ts-cc/x86-assembler';
 
 export type GenMemAddressConfig = {
   size?: InstructionArgSizeName | number;

@@ -7,13 +7,13 @@ import {
   toIEEE754Double,
   toIEEE754Single,
   toIEEE754Extended,
-} from '@ts-c-compiler/core';
+} from '@ts-cc/core';
 
 import {
   ByteMemRegionAccessor,
   X86BitsMode,
   getSignedNumber,
-} from '@ts-c-compiler/x86-assembler';
+} from '@ts-cc/x86-assembler';
 
 type MemReader = (offset: number) => number;
 type MemWriter = (value: number, offset: number) => number;

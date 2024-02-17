@@ -1,8 +1,8 @@
 import { pipe } from 'fp-ts/function';
 import { either as E } from 'fp-ts';
 
-import { asm, TableBinaryView } from '@ts-c-compiler/x86-assembler';
-import { timingsToString } from '@ts-c-compiler/core';
+import { asm, TableBinaryView } from '@ts-cc/x86-assembler';
+import { timingsToString } from '@ts-cc/core';
 
 import type { CCompilerTimings } from '../frontend/utils/createCCompilerTimings';
 import type { ASTCCompilerNode } from '../frontend/parser/ast';

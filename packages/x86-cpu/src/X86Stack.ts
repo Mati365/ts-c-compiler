@@ -1,5 +1,5 @@
 import * as R from 'ramda';
-import { toUnsignedNumber } from '@ts-c-compiler/x86-assembler';
+import { toUnsignedNumber } from '@ts-cc/x86-assembler';
 
 import { X86CPU } from './X86CPU';
 import { X86Unit } from './X86Unit';

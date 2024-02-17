@@ -1,6 +1,6 @@
 import * as R from 'ramda';
 
-import { NodeLocation } from '@ts-c-compiler/grammar';
+import { NodeLocation } from '@ts-cc/grammar';
 import { PreprocessorInterpreter } from '../interpreter/PreprocessorInterpreter';
 import { ASTPreprocessorKind, ASTPreprocessorNode } from '../constants';
 

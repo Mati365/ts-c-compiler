@@ -1,4 +1,4 @@
-import { TokenLocation } from '@ts-c-compiler/lexer';
+import { TokenLocation } from '@ts-cc/lexer';
 
 /**
  * Location of single node (begin, end)

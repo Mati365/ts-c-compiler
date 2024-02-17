@@ -1,5 +1,5 @@
-import { NodeLocation } from '@ts-c-compiler/grammar';
-import { TokenType } from '@ts-c-compiler/lexer';
+import { NodeLocation } from '@ts-cc/grammar';
+import { TokenType } from '@ts-cc/lexer';
 import { AsmInputConstraintFlags, ASTCAsmStmtInputConstraint } from 'frontend/parser/ast';
 
 import { CGrammar } from '../../shared';

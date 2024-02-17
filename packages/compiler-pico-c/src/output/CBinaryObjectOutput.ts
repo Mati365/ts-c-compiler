@@ -1,4 +1,4 @@
-import { Identity } from '@ts-c-compiler/core';
+import { Identity } from '@ts-cc/core';
 
 export type CBinaryLabel = {
   name: string;

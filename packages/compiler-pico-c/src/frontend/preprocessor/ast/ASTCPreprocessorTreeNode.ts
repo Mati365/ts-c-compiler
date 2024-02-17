@@ -1,4 +1,4 @@
-import { TreeNode } from '@ts-c-compiler/grammar';
+import { TreeNode } from '@ts-cc/grammar';
 import type { CPreprocessorInterpretable, CInterpreterContext } from '../interpreter';
 
 export type ASTCExecResult = number | string | boolean | void;

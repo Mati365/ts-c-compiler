@@ -1,7 +1,7 @@
 import * as R from 'ramda';
 
-import { Token, TokenKind } from '@ts-c-compiler/lexer';
-import { NodeLocation } from '@ts-c-compiler/grammar';
+import { Token, TokenKind } from '@ts-cc/lexer';
+import { NodeLocation } from '@ts-cc/grammar';
 import { KindASTAsmNode } from '../ASTAsmNode';
 import { ASTNodeKind } from '../types';
 import { ASTAsmParser } from '../ASTAsmParser';

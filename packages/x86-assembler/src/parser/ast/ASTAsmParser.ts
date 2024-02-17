@@ -1,10 +1,10 @@
 import * as E from 'fp-ts/Either';
 
-import { isWhitespace } from '@ts-c-compiler/lexer';
+import { isWhitespace } from '@ts-cc/lexer';
 
-import { TokensIterator } from '@ts-c-compiler/grammar';
-import { Token, TokenType } from '@ts-c-compiler/lexer';
-import { CompilerError } from '@ts-c-compiler/core';
+import { TokensIterator } from '@ts-cc/grammar';
+import { Token, TokenType } from '@ts-cc/lexer';
+import { CompilerError } from '@ts-cc/core';
 
 import { ParserError, ParserErrorCode } from '../../shared/ParserError';
 import { ASTAsmNode } from './ASTAsmNode';

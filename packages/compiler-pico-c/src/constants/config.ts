@@ -1,4 +1,4 @@
-import type { X86TargetCPU } from '@ts-c-compiler/x86-assembler';
+import type { X86TargetCPU } from '@ts-cc/x86-assembler';
 import type { CLexerConfig } from '../frontend/parser';
 import type { IRGeneratorConfig } from '../frontend/ir/constants';
 import type { CPreprocessorConfig } from '../frontend/preprocessor/interpreter';

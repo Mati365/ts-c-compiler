@@ -12,6 +12,7 @@ ignorePatterns:
   - prettier.config.js
   - .eslintrc.js
   - .eslintrc.cjs
+  - jest.config.mjs
   - rollup.config.mjs
   - tailwind.config.mjs
   - webpack.config.js

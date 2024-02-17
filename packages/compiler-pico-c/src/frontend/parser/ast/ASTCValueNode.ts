@@ -1,5 +1,5 @@
-import { ValueNode } from '@ts-c-compiler/grammar';
-import { Token } from '@ts-c-compiler/lexer';
+import { ValueNode } from '@ts-cc/grammar';
+import { Token } from '@ts-cc/lexer';
 import { ASTCCompilerKind } from './ASTCCompilerNode';
 
 /**

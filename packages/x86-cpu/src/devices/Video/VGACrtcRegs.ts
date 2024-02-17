@@ -1,4 +1,4 @@
-import { UnionStruct, bits } from '@ts-c-compiler/core';
+import { UnionStruct, bits } from '@ts-cc/core';
 import { VGAIndexedReg } from './VGAConstants';
 
 /**

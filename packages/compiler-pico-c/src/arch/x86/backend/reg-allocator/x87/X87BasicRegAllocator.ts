@@ -1,4 +1,4 @@
-import { X87StackRegName } from '@ts-c-compiler/x86-assembler';
+import { X87StackRegName } from '@ts-cc/x86-assembler';
 
 import { isPrimitiveLikeType, type CType } from 'frontend/analyze';
 import {

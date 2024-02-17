@@ -1,5 +1,5 @@
-import { CompilerError } from '@ts-c-compiler/core';
-import { TokenLocation } from '@ts-c-compiler/lexer';
+import { CompilerError } from '@ts-cc/core';
+import { TokenLocation } from '@ts-cc/lexer';
 
 export enum ParserErrorCode {
   SYNTAX_ERROR,

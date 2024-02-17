@@ -1,5 +1,5 @@
-import { walkOverFields } from '@ts-c-compiler/grammar';
-import { NodeLocation } from '@ts-c-compiler/grammar';
+import { walkOverFields } from '@ts-cc/grammar';
+import { NodeLocation } from '@ts-cc/grammar';
 import { ASTCCompilerKind, ASTCCompilerNode } from './ASTCCompilerNode';
 
 export function isASTCExpressionNode(node: ASTCCompilerNode): node is ASTCExpression {

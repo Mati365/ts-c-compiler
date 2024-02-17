@@ -1,4 +1,4 @@
-import { Token } from '@ts-c-compiler/lexer';
+import { Token } from '@ts-cc/lexer';
 import { ASTAsmParser } from './ASTAsmParser';
 
 import { ASTInstruction } from './instruction/ASTInstruction';

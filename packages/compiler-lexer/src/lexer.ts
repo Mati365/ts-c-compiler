@@ -1,5 +1,5 @@
 import * as R from 'ramda';
-import { replaceEscapeSequences } from '@ts-c-compiler/core';
+import { replaceEscapeSequences } from '@ts-cc/core';
 
 import {
   isComment,

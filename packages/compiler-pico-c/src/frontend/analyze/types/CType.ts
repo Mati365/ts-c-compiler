@@ -1,10 +1,10 @@
 import * as E from 'fp-ts/Either';
 
-import { hasFlag } from '@ts-c-compiler/core';
+import { hasFlag } from '@ts-cc/core';
 import { getCompilerArchDescriptor } from 'arch';
 
-import { IsPrintable } from '@ts-c-compiler/core';
-import { Identity } from '@ts-c-compiler/core';
+import { IsPrintable } from '@ts-cc/core';
+import { Identity } from '@ts-cc/core';
 import { CCompilerArch, CTypeQualifier } from '#constants';
 import { CTypeCheckError, CTypeCheckErrorCode } from '../errors/CTypeCheckError';
 

@@ -1,8 +1,8 @@
 import { pipe } from 'fp-ts/function';
-import { rpn } from '@ts-c-compiler/rpn';
+import { rpn } from '@ts-cc/rpn';
 
-import { Token, joinTokensWithSpaces } from '@ts-c-compiler/lexer';
-import { ValueNode, type NodeLocation } from '@ts-c-compiler/grammar';
+import { Token, joinTokensWithSpaces } from '@ts-cc/lexer';
+import { ValueNode, type NodeLocation } from '@ts-cc/grammar';
 
 import type { CInterpreterContext, CPreprocessorInterpretable } from '../interpreter';
 

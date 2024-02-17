@@ -1,5 +1,5 @@
 {
-  "name": "@ts-c-compiler/root",
+  "name": "@ts-cc/root",
   "private": true,
   "scripts": {
     "dev": "npx turbo run dev",

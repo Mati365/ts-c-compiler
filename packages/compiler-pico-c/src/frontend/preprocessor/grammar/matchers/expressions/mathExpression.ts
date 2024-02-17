@@ -1,7 +1,7 @@
 /* eslint-disable no-use-before-define, @typescript-eslint/no-use-before-define */
-import { TokenType, NumberToken, Token } from '@ts-c-compiler/lexer';
-import { NodeLocation } from '@ts-c-compiler/grammar';
-import { SyntaxError } from '@ts-c-compiler/grammar';
+import { TokenType, NumberToken, Token } from '@ts-cc/lexer';
+import { NodeLocation } from '@ts-cc/grammar';
+import { SyntaxError } from '@ts-cc/grammar';
 
 import type { CPreprocessorGrammarDef } from '../../CPreprocessorGrammar';
 import {

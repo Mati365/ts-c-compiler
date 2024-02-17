@@ -1,4 +1,4 @@
-import { Token, TokenType } from '@ts-c-compiler/lexer';
+import { Token, TokenType } from '@ts-cc/lexer';
 
 import type { CInterpreterScope } from './createInterpreterContext';
 import type { CPreprocessorMacroArgTokens } from './types';

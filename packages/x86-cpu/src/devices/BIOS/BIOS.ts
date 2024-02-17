@@ -1,7 +1,7 @@
 import { Buffer } from 'buffer';
 
-import { Vec2D, getBit } from '@ts-c-compiler/core';
-import { UnionStruct, bits } from '@ts-c-compiler/core';
+import { Vec2D, getBit } from '@ts-cc/core';
+import { UnionStruct, bits } from '@ts-cc/core';
 
 import { VGA_CURSOR_SHAPES } from '../Video/VGAConstants';
 import {

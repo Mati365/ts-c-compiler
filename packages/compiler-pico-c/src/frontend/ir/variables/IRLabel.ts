@@ -1,7 +1,7 @@
 import chalk from 'chalk';
 
-import { IsPrintable } from '@ts-c-compiler/core';
-import { Identity } from '@ts-c-compiler/core';
+import { IsPrintable } from '@ts-cc/core';
+import { Identity } from '@ts-cc/core';
 
 import { hasBuiltinPrefix } from 'builtins';
 

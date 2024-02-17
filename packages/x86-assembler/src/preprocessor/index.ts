@@ -1,8 +1,8 @@
 /* eslint-disable no-use-before-define, @typescript-eslint/no-use-before-define */
 import * as E from 'fp-ts/Either';
 
-import { CompilerError } from '@ts-c-compiler/core';
-import { TreePrintVisitor } from '@ts-c-compiler/grammar';
+import { CompilerError } from '@ts-cc/core';
+import { TreePrintVisitor } from '@ts-cc/grammar';
 
 import { ASTPreprocessorNode } from './constants';
 import { PreprocessorErrorCode } from './PreprocessorError';

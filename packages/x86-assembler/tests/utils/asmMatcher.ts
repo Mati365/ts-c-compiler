@@ -1,7 +1,7 @@
 import * as R from 'ramda';
 import * as E from 'fp-ts/Either';
 
-import { arrayToHexString } from '@ts-c-compiler/core';
+import { arrayToHexString } from '@ts-cc/core';
 import { asm, AssemblerConfig } from '../../src/asm';
 
 export type BinaryOutputObject = {

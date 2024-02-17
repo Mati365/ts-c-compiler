@@ -1,11 +1,11 @@
 import * as R from 'ramda';
 import * as E from 'fp-ts/Either';
 
-import { rpn } from '@ts-c-compiler/rpn';
-import { MathErrorCode } from '@ts-c-compiler/rpn';
+import { rpn } from '@ts-cc/rpn';
+import { MathErrorCode } from '@ts-cc/rpn';
 
-import { MathParserConfig } from '@ts-c-compiler/rpn';
-import { Token, TokenType, NumberToken } from '@ts-c-compiler/lexer';
+import { MathParserConfig } from '@ts-cc/rpn';
+import { Token, TokenType, NumberToken } from '@ts-cc/lexer';
 import { ASTExpressionParserError } from '../../ast/critical/ASTExpression';
 
 /**

@@ -1,8 +1,8 @@
 import * as O from 'fp-ts/Option';
 import { pipe } from 'fp-ts/function';
 
-import { fixme } from '@ts-c-compiler/core';
-import { TokenType } from '@ts-c-compiler/lexer';
+import { fixme } from '@ts-cc/core';
+import { TokenType } from '@ts-cc/lexer';
 
 import { isPrimitiveLikeType } from 'frontend/analyze';
 

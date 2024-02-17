@@ -1,6 +1,6 @@
-import { dumpAttributesToString } from '@ts-c-compiler/core';
-import { walkOverFields } from '@ts-c-compiler/grammar';
-import { NodeLocation } from '@ts-c-compiler/grammar';
+import { dumpAttributesToString } from '@ts-cc/core';
+import { walkOverFields } from '@ts-cc/grammar';
+import { NodeLocation } from '@ts-cc/grammar';
 
 import { ASTCAsmStmtInputOperand } from './ASTCAsmStmtInputOperand';
 import { ASTCAsmStmtOutputOperand } from './ASTCAsmStmtOutputOperand';

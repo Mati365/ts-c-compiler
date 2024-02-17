@@ -1,7 +1,7 @@
-import { isLineTerminatorToken } from '@ts-c-compiler/lexer';
+import { isLineTerminatorToken } from '@ts-cc/lexer';
 
-import { TokenKind, TokenType, Token } from '@ts-c-compiler/lexer';
-import { TokensIterator } from '@ts-c-compiler/grammar';
+import { TokenKind, TokenType, Token } from '@ts-cc/lexer';
+import { TokensIterator } from '@ts-cc/grammar';
 
 import { mergeTokensTexts } from '../compiler/utils';
 

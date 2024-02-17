@@ -1,6 +1,6 @@
 import * as R from 'ramda';
 
-import { NodeLocation, SyntaxError } from '@ts-c-compiler/grammar';
+import { NodeLocation, SyntaxError } from '@ts-cc/grammar';
 
 import { CGrammar } from '../shared';
 import { ASTCCompoundExpressionStmt, isASTCExpressionStmtNode } from '../../../ast';

@@ -1,5 +1,5 @@
-import { GroupTreeVisitor } from '@ts-c-compiler/grammar';
-import { TokenType } from '@ts-c-compiler/lexer';
+import { GroupTreeVisitor } from '@ts-cc/grammar';
+import { TokenType } from '@ts-cc/lexer';
 import {
   ASTCCompilerKind,
   type ASTCDefaultCaseStatement,

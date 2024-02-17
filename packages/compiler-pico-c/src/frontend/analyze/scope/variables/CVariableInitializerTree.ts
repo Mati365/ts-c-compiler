@@ -1,6 +1,6 @@
 import * as R from 'ramda';
 
-import { AbstractTreeVisitor, IsWalkableNode } from '@ts-c-compiler/grammar';
+import { AbstractTreeVisitor, IsWalkableNode } from '@ts-cc/grammar';
 
 import {
   isArrayLikeType,

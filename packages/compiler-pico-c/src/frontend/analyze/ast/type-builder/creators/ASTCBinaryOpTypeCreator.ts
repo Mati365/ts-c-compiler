@@ -1,5 +1,5 @@
 import { ASTCCompilerKind, ASTCBinaryOpNode } from 'frontend/parser/ast';
-import { TokenType, isFloatMathOpToken, isMathOpToken } from '@ts-c-compiler/lexer';
+import { TokenType, isFloatMathOpToken, isMathOpToken } from '@ts-cc/lexer';
 
 import { ASTCTypeCreator } from './ASTCTypeCreator';
 import { CTypeCheckError, CTypeCheckErrorCode } from '../../../errors/CTypeCheckError';

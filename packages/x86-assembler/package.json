@@ -1,6 +1,6 @@
 {
-  "name": "@ts-c-compiler/x86-assembler",
-  "version": "1.6.0",
+  "name": "@ts-cc/x86-assembler",
+  "version": "1.7.0",
   "type": "module",
   "private": false,
   "license": "MIT",
@@ -20,10 +20,10 @@
     }
   },
   "dependencies": {
-    "@ts-c-compiler/core": "*",
-    "@ts-c-compiler/grammar": "*",
-    "@ts-c-compiler/lexer": "*",
-    "@ts-c-compiler/rpn": "*"
+    "@ts-cc/core": "*",
+    "@ts-cc/grammar": "*",
+    "@ts-cc/lexer": "*",
+    "@ts-cc/rpn": "*"
   },
   "scripts": {
     "clean": "rm -rf ./dist",

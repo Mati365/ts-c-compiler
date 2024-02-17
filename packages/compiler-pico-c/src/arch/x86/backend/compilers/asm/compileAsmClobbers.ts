@@ -1,7 +1,7 @@
 import chalk from 'chalk';
 import * as R from 'ramda';
 
-import type { X86RegName } from '@ts-c-compiler/x86-assembler';
+import type { X86RegName } from '@ts-cc/x86-assembler';
 import type { IRAsmClobberOperand } from 'frontend/ir/instructions';
 
 import { genInstruction, withInlineComment } from '../../../asm-utils';

@@ -1,7 +1,7 @@
 import { pipe } from 'fp-ts/function';
 
-import { TokenType, joinTokensWithSpaces } from '@ts-c-compiler/lexer';
-import { NodeLocation, fetchTokensUntilTokenType } from '@ts-c-compiler/grammar';
+import { TokenType, joinTokensWithSpaces } from '@ts-cc/lexer';
+import { NodeLocation, fetchTokensUntilTokenType } from '@ts-cc/grammar';
 
 import type { CPreprocessorGrammar } from '../CPreprocessorGrammar';
 

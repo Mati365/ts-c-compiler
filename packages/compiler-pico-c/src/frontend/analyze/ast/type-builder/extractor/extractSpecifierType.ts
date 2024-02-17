@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/no-use-before-define */
 import * as R from 'ramda';
 import { pipe } from 'fp-ts/function';
-import { unwrapEitherOrThrow } from '@ts-c-compiler/core';
+import { unwrapEitherOrThrow } from '@ts-cc/core';
 
 import { CTypeQualifier } from '#constants';
 import { CTypeCheckError, CTypeCheckErrorCode } from '../../../errors/CTypeCheckError';

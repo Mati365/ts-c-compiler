@@ -1,4 +1,4 @@
-import { revertEscapeSequences } from '@ts-c-compiler/core';
+import { revertEscapeSequences } from '@ts-cc/core';
 
 export const DefConstType = {
   1: 'db',

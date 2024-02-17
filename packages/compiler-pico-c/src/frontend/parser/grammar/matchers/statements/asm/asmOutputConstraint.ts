@@ -1,6 +1,6 @@
-import { SyntaxError } from '@ts-c-compiler/grammar';
-import { NodeLocation } from '@ts-c-compiler/grammar';
-import { TokenType } from '@ts-c-compiler/lexer';
+import { SyntaxError } from '@ts-cc/grammar';
+import { NodeLocation } from '@ts-cc/grammar';
+import { TokenType } from '@ts-cc/lexer';
 import {
   AsmOutputConstraintFlags,
   ASTCAsmStmtOutputConstraint,

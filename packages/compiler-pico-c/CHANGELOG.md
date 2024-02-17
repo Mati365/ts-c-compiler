@@ -1,4 +1,18 @@
-# @ts-c-compiler/compiler
+# @ts-cc/compiler
+
+## 1.7.0
+
+### Minor Changes
+
+- Publish packages
+
+### Patch Changes
+
+- Updated dependencies
+  - @ts-cc/lexer@1.7.0
+  - @ts-cc/core@1.7.0
+  - @ts-cc/x86-assembler@1.7.0
+  - @ts-cc/rpn@1.7.0
 
 ## 1.6.0
 
@@ -9,10 +23,10 @@
 ### Patch Changes
 
 - Updated dependencies
-  - @ts-c-compiler/lexer@1.6.0
-  - @ts-c-compiler/core@1.6.0
-  - @ts-c-compiler/x86-assembler@1.6.0
-  - @ts-c-compiler/rpn@1.6.0
+  - @ts-cc/lexer@1.6.0
+  - @ts-cc/core@1.6.0
+  - @ts-cc/x86-assembler@1.6.0
+  - @ts-cc/rpn@1.6.0
 
 ## 1.5.0
 
@@ -23,10 +37,10 @@
 ### Patch Changes
 
 - Updated dependencies
-  - @ts-c-compiler/lexer@1.5.0
-  - @ts-c-compiler/core@1.5.0
-  - @ts-c-compiler/x86-assembler@1.5.0
-  - @ts-c-compiler/rpn@1.5.0
+  - @ts-cc/lexer@1.5.0
+  - @ts-cc/core@1.5.0
+  - @ts-cc/x86-assembler@1.5.0
+  - @ts-cc/rpn@1.5.0
 
 ## 1.4.0
 
@@ -37,10 +51,10 @@
 ### Patch Changes
 
 - Updated dependencies
-  - @ts-c-compiler/core@1.4.0
-  - @ts-c-compiler/lexer@1.4.0
-  - @ts-c-compiler/rpn@1.4.0
-  - @ts-c-compiler/x86-assembler@1.4.0
+  - @ts-cc/core@1.4.0
+  - @ts-cc/lexer@1.4.0
+  - @ts-cc/rpn@1.4.0
+  - @ts-cc/x86-assembler@1.4.0
 
 ## 1.3.0
 
@@ -51,10 +65,10 @@
 ### Patch Changes
 
 - Updated dependencies
-  - @ts-c-compiler/core@1.3.0
-  - @ts-c-compiler/lexer@1.3.0
-  - @ts-c-compiler/rpn@1.3.0
-  - @ts-c-compiler/x86-assembler@1.3.0
+  - @ts-cc/core@1.3.0
+  - @ts-cc/lexer@1.3.0
+  - @ts-cc/rpn@1.3.0
+  - @ts-cc/x86-assembler@1.3.0
 
 ## 1.2.0
 
@@ -65,10 +79,10 @@
 ### Patch Changes
 
 - Updated dependencies
-  - @ts-c-compiler/core@1.2.0
-  - @ts-c-compiler/lexer@1.2.0
-  - @ts-c-compiler/rpn@1.2.0
-  - @ts-c-compiler/x86-assembler@1.2.0
+  - @ts-cc/core@1.2.0
+  - @ts-cc/lexer@1.2.0
+  - @ts-cc/rpn@1.2.0
+  - @ts-cc/x86-assembler@1.2.0
 
 ## 1.1.0
 
@@ -79,10 +93,10 @@
 ### Patch Changes
 
 - Updated dependencies
-  - @ts-c-compiler/core@1.1.0
-  - @ts-c-compiler/lexer@1.1.0
-  - @ts-c-compiler/rpn@1.1.0
-  - @ts-c-compiler/x86-assembler@1.1.0
+  - @ts-cc/core@1.1.0
+  - @ts-cc/lexer@1.1.0
+  - @ts-cc/rpn@1.1.0
+  - @ts-cc/x86-assembler@1.1.0
 
 ## 1.0.1
 
@@ -90,10 +104,10 @@
 
 - Add bootsector output option
 - Updated dependencies
-  - @ts-c-compiler/core@1.0.1
-  - @ts-c-compiler/lexer@1.0.1
-  - @ts-c-compiler/rpn@1.0.1
-  - @ts-c-compiler/x86-assembler@1.0.1
+  - @ts-cc/core@1.0.1
+  - @ts-cc/lexer@1.0.1
+  - @ts-cc/rpn@1.0.1
+  - @ts-cc/x86-assembler@1.0.1
 
 ## 1.0.0
 
@@ -104,10 +118,10 @@
 ### Patch Changes
 
 - Updated dependencies
-  - @ts-c-compiler/lexer@1.0.0
-  - @ts-c-compiler/core@1.0.0
-  - @ts-c-compiler/x86-assembler@1.0.0
-  - @ts-c-compiler/rpn@1.0.0
+  - @ts-cc/lexer@1.0.0
+  - @ts-cc/core@1.0.0
+  - @ts-cc/x86-assembler@1.0.0
+  - @ts-cc/rpn@1.0.0
 
 ## 0.1.0
 
@@ -118,7 +132,7 @@
 ### Patch Changes
 
 - Updated dependencies
-  - @ts-c-compiler/core@0.1.0
-  - @ts-c-compiler/lexer@0.1.0
-  - @ts-c-compiler/rpn@0.1.0
-  - @ts-c-compiler/x86-assembler@0.1.0
+  - @ts-cc/core@0.1.0
+  - @ts-cc/lexer@0.1.0
+  - @ts-cc/rpn@0.1.0
+  - @ts-cc/x86-assembler@0.1.0

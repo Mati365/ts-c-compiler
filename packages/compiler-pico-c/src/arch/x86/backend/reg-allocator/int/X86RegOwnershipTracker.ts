@@ -1,6 +1,6 @@
 import * as R from 'ramda';
 
-import { X86RegName } from '@ts-c-compiler/x86-assembler';
+import { X86RegName } from '@ts-cc/x86-assembler';
 import { CBackendError, CBackendErrorCode } from 'backend/errors/CBackendError';
 
 import { createX86RegsMap, RegsMap } from '../../../constants/regs';

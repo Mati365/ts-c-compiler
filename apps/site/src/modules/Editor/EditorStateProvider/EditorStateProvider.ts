@@ -5,16 +5,16 @@ import { useState } from 'react';
 import { useControlStrict } from '@under-control/forms';
 import constate from 'constate';
 
-import { asm } from '@ts-c-compiler/x86-assembler';
+import { asm } from '@ts-cc/x86-assembler';
 import {
   CCompilerArch,
   ccompiler,
   getX86BootsectorPreloaderBinary,
   wrapWithX86BootsectorAsm,
   type CCompilerError,
-} from '@ts-c-compiler/compiler';
+} from '@ts-cc/compiler';
 
-import type { CompilerError } from '@ts-c-compiler/core';
+import type { CompilerError } from '@ts-cc/core';
 import {
   hasEditorEmulationResult,
   type EditorCompileResultError,

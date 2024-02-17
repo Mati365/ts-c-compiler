@@ -1,5 +1,5 @@
-import { NodeLocation } from '@ts-c-compiler/grammar';
-import { TokenType } from '@ts-c-compiler/lexer';
+import { NodeLocation } from '@ts-cc/grammar';
+import { TokenType } from '@ts-cc/lexer';
 import { ASTCParameterDeclaration } from '../../../ast/ASTCParameterDeclaration';
 import { ASTCParametersList } from '../../../ast/ASTCParametersList';
 import { CGrammar } from '../shared';

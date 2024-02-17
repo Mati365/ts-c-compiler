@@ -4,7 +4,7 @@ import { pipe } from 'fp-ts/function';
 
 import { getCompilerArchDescriptor } from 'arch';
 
-import { concatNonEmptyStrings, hasFlag, numberByteSize } from '@ts-c-compiler/core';
+import { concatNonEmptyStrings, hasFlag, numberByteSize } from '@ts-cc/core';
 
 import { CCompilerArch, CTypeQualifier, CTypeSpecifier } from '#constants';
 

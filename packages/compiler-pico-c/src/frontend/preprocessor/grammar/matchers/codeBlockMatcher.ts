@@ -1,8 +1,8 @@
 import { pipe } from 'fp-ts/function';
 import * as A from 'fp-ts/Array';
 
-import { Token, TokenType } from '@ts-c-compiler/lexer';
-import { NodeLocation, SyntaxError, fetchTokensUntil } from '@ts-c-compiler/grammar';
+import { Token, TokenType } from '@ts-cc/lexer';
+import { NodeLocation, SyntaxError, fetchTokensUntil } from '@ts-cc/grammar';
 
 import { ASTCCodeBlockNode } from 'frontend/preprocessor/ast/ASTCCodeBlockNode';
 import { isPreprocessorIdentifierLikeToken } from 'frontend/preprocessor/utils';

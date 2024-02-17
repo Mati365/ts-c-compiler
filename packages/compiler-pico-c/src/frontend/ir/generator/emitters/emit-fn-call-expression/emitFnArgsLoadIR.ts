@@ -1,4 +1,4 @@
-import { GroupTreeVisitor } from '@ts-c-compiler/grammar';
+import { GroupTreeVisitor } from '@ts-cc/grammar';
 
 import { CFunctionDeclType } from 'frontend/analyze';
 import {

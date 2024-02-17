@@ -1,4 +1,4 @@
-import { TokenType } from '@ts-c-compiler/lexer';
+import { TokenType } from '@ts-cc/lexer';
 
 import { structDeclaratorList } from './structDeclarator';
 import { staticAssertDeclaration } from './staticAssertDeclaration';

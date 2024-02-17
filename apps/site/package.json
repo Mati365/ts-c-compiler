@@ -1,7 +1,7 @@
 {
-  "name": "@ts-c-compiler/site",
+  "name": "@ts-cc/site",
   "type": "module",
-  "version": "1.6.0",
+  "version": "1.7.0",
   "license": "MIT",
   "private": true,
   "scripts": {
@@ -18,7 +18,7 @@
     "@astrojs/react": "^3.0.10",
     "@astrojs/tailwind": "^5.1.0",
     "@codemirror/lang-cpp": "^6.0.2",
-    "@ts-c-compiler/compiler": "*",
+    "@ts-cc/compiler": "*",
     "@types/react": "^18.2.55",
     "@types/react-dom": "^18.2.19",
     "@uiw/react-codemirror": "4.21.21",

@@ -8,9 +8,9 @@ import {
   toIEEE754Double,
   toIEEE754Extended,
   replaceEscapeSequences,
-} from '@ts-c-compiler/core';
+} from '@ts-cc/core';
 
-import { Token, TokenType, NumberToken, FloatNumberToken } from '@ts-c-compiler/lexer';
+import { Token, TokenType, NumberToken, FloatNumberToken } from '@ts-cc/lexer';
 
 import { safeKeywordResultRPN } from '../utils';
 

@@ -1,6 +1,6 @@
 import * as R from 'ramda';
 
-import { Size } from '@ts-c-compiler/core';
+import { Size } from '@ts-cc/core';
 import { VGA } from '../../VGA';
 
 /**

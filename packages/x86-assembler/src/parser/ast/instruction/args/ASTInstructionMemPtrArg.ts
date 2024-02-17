@@ -2,13 +2,9 @@ import * as R from 'ramda';
 import * as E from 'fp-ts/Either';
 
 import { RegisterToken } from '../../../../parser/lexer/tokens';
-import { TokenType, TokenKind, Token } from '@ts-c-compiler/lexer';
+import { TokenType, TokenKind, Token } from '@ts-cc/lexer';
 
-import {
-  numberByteSize,
-  roundToPowerOfTwo,
-  signedNumberByteSize,
-} from '@ts-c-compiler/core';
+import { numberByteSize, roundToPowerOfTwo, signedNumberByteSize } from '@ts-cc/core';
 
 import { assignLabelsToTokens } from '../../../utils';
 import { asmLexer } from '../../../lexer/asmLexer';

@@ -1,5 +1,5 @@
-import { BinaryOpNode } from '@ts-c-compiler/grammar';
-import { TokenType } from '@ts-c-compiler/lexer';
+import { BinaryOpNode } from '@ts-cc/grammar';
+import { TokenType } from '@ts-cc/lexer';
 
 import type { CInterpreterContext, CPreprocessorInterpretable } from '../interpreter';
 

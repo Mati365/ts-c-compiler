@@ -1,7 +1,7 @@
-import { Token } from '@ts-c-compiler/lexer';
-import { TreeNode } from '@ts-c-compiler/grammar';
+import { Token } from '@ts-cc/lexer';
+import { TreeNode } from '@ts-cc/grammar';
 
-import { NodeLocation } from '@ts-c-compiler/grammar';
+import { NodeLocation } from '@ts-cc/grammar';
 import { ASTAsmParser, ASTAsmTree } from './ASTAsmParser';
 import { ASTNodeKind } from './types';
 

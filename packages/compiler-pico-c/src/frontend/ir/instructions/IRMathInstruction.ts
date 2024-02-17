@@ -1,7 +1,7 @@
 import * as O from 'fp-ts/Option';
 
 import { CMathOperator } from '#constants';
-import { TokenType } from '@ts-c-compiler/lexer';
+import { TokenType } from '@ts-cc/lexer';
 
 import { IROpcode } from '../constants';
 import { IROpInstruction } from './IROpInstruction';

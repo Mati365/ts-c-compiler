@@ -1,7 +1,7 @@
 import * as R from 'ramda';
 
 import { X86_REGISTER_NAMES, X86_FLAGS_OFFSETS } from '../constants/x86';
-import { X86RegName } from '@ts-c-compiler/x86-assembler';
+import { X86RegName } from '@ts-cc/x86-assembler';
 
 export type X86RegsSet = { [index: number]: X86RegName };
 

@@ -1,4 +1,4 @@
-import { NodeLocation } from '@ts-c-compiler/grammar';
+import { NodeLocation } from '@ts-cc/grammar';
 import { ASTCAsmStmtInputOperand } from 'frontend/parser/ast';
 import { expression } from '../../expressions/expression';
 

@@ -2,7 +2,7 @@ import stripAnsi from 'strip-ansi';
 import * as E from 'fp-ts/Either';
 import * as R from 'ramda';
 
-import { stripNonPrintableCharacters, trimLines } from '@ts-c-compiler/core';
+import { stripNonPrintableCharacters, trimLines } from '@ts-cc/core';
 
 import { cIRCompiler } from '../../../src/frontend';
 import { IRResultView } from '../../../src/frontend/ir';

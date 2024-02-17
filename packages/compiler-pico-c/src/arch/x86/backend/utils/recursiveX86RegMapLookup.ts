@@ -1,4 +1,4 @@
-import { X86RegName } from '@ts-c-compiler/x86-assembler';
+import { X86RegName } from '@ts-cc/x86-assembler';
 import { X86IntRegTree } from '../../constants/regs';
 
 export type X86RegLookupQuery = {

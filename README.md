@@ -27,7 +27,7 @@ Available at: <https://mati365.github.io/ts-c-compiler/>
 ## Install
 
 ```bash
-yarn add @ts-c-compiler/cli @ts-c-compiler/x86-16-vm
+yarn add @ts-cc/cli @ts-cc/machine
 ```
 
 ```bash

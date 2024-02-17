@@ -1,7 +1,7 @@
 import * as E from 'fp-ts/Either';
 import { pipe } from 'fp-ts/function';
 
-import { CompilerError } from '@ts-c-compiler/core';
+import { CompilerError } from '@ts-cc/core';
 
 import { AssemblerTimings } from '../../utils/createAssemblerTimings';
 import { X86AsmCompilerConfig, X86Compiler } from './X86Compiler';

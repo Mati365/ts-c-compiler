@@ -1,6 +1,6 @@
 import * as R from 'ramda';
 
-import { TokenLocation, TokenType, Token, TokenKind } from '@ts-c-compiler/lexer';
+import { TokenLocation, TokenType, Token, TokenKind } from '@ts-cc/lexer';
 
 import { COMPILER_REGISTERS_SET, RegisterSchema } from '../../../constants';
 

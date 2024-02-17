@@ -1,6 +1,6 @@
 import * as R from 'ramda';
 
-import { X86RegName, X87StackRegName } from '@ts-c-compiler/x86-assembler';
+import { X86RegName, X87StackRegName } from '@ts-cc/x86-assembler';
 import { RegsMap, X86IntRegTree } from '../../constants/regs';
 
 import { recursiveX86RegMapLookup, X86RegLookupQuery } from './recursiveX86RegMapLookup';

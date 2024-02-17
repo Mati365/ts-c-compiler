@@ -1,6 +1,6 @@
 import { isCompilerTreeNode } from 'frontend/parser';
 
-import { AbstractTreeVisitor } from '@ts-c-compiler/grammar';
+import { AbstractTreeVisitor } from '@ts-cc/grammar';
 import { CVariableInitializePair, CVariableInitializerTree } from '../../scope/variables';
 
 export class CVariableInitializerVisitor extends AbstractTreeVisitor<

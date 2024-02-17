@@ -1,9 +1,9 @@
 import * as R from 'ramda';
 
-import { reduceTextToBitset } from '@ts-c-compiler/core';
-import { NodeLocation } from '@ts-c-compiler/grammar';
-import { TokensIterator } from '@ts-c-compiler/grammar';
-import { NumberToken, TokenType, TokenKind, Token } from '@ts-c-compiler/lexer';
+import { reduceTextToBitset } from '@ts-cc/core';
+import { NodeLocation } from '@ts-cc/grammar';
+import { TokensIterator } from '@ts-cc/grammar';
+import { NumberToken, TokenType, TokenKind, Token } from '@ts-cc/lexer';
 
 import { COMPILER_INSTRUCTIONS_SET } from '../../../constants/instructionSetSchema';
 

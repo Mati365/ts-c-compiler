@@ -1,7 +1,7 @@
 import * as R from 'ramda';
 
-import { BINARY_MASKS } from '@ts-c-compiler/core';
-import { roundedSignedNumberByteSize } from '@ts-c-compiler/core';
+import { BINARY_MASKS } from '@ts-cc/core';
+import { roundedSignedNumberByteSize } from '@ts-cc/core';
 
 import { X86BitsMode } from '../../../../../constants';
 import { InstructionArgType, BranchAddressingType } from '../../../../../types';

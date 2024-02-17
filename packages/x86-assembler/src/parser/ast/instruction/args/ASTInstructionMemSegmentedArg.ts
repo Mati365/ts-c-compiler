@@ -1,5 +1,5 @@
 import * as E from 'fp-ts/Either';
-import { Token, NumberToken, NumberTokenValue } from '@ts-c-compiler/lexer';
+import { Token, NumberToken, NumberTokenValue } from '@ts-cc/lexer';
 
 import { ParserError, ParserErrorCode } from '../../../../shared/ParserError';
 import {

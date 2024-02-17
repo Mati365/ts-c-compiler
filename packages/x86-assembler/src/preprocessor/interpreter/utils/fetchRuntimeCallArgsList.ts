@@ -1,7 +1,7 @@
-import { isLineTerminatorToken } from '@ts-c-compiler/lexer';
+import { isLineTerminatorToken } from '@ts-cc/lexer';
 
-import { Token, TokenType } from '@ts-c-compiler/lexer';
-import { TokensIterator } from '@ts-c-compiler/grammar';
+import { Token, TokenType } from '@ts-cc/lexer';
+import { TokensIterator } from '@ts-cc/grammar';
 
 import { PreprocessorError, PreprocessorErrorCode } from '../../PreprocessorError';
 

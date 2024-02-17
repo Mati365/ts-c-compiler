@@ -1,4 +1,4 @@
-import { CodeTranslatedError } from '@ts-c-compiler/core';
+import { CodeTranslatedError } from '@ts-cc/core';
 
 export enum X87ErrorCode {
   STACK_OVERFLOW_OR_UNDERFLOW,

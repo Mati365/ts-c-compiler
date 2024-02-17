@@ -1,10 +1,10 @@
 import * as R from 'ramda';
 import * as E from 'fp-ts/Either';
 
-import { dropNewLines, dumpCompilerAttrs } from '@ts-c-compiler/core';
-import { memoizeMethod } from '@ts-c-compiler/core';
+import { dropNewLines, dumpCompilerAttrs } from '@ts-cc/core';
+import { memoizeMethod } from '@ts-cc/core';
 
-import { Identity } from '@ts-c-compiler/core';
+import { Identity } from '@ts-cc/core';
 import { CCompilerArch, CStructAlign } from '#constants';
 import { CType } from '../CType';
 import { CNamedTypedEntry } from '../../scope/variables/CNamedTypedEntry';

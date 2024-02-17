@@ -1,4 +1,4 @@
-import { ReducePostfixOperatorsVisitor } from '@ts-c-compiler/grammar';
+import { ReducePostfixOperatorsVisitor } from '@ts-cc/grammar';
 import { ASTPreprocessorKind } from '../../constants';
 
 export class PreprocessorReducePostfixOperatorsVisitor extends ReducePostfixOperatorsVisitor {

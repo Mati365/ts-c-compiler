@@ -1,5 +1,5 @@
-import { TreeVisitor } from '@ts-c-compiler/grammar';
-import { NodeLocation } from '@ts-c-compiler/grammar';
+import { TreeVisitor } from '@ts-cc/grammar';
+import { NodeLocation } from '@ts-cc/grammar';
 
 import { ASTPreprocessorCallable } from './ASTPreprocessorDefine';
 import { ASTPreprocessorStmt } from './ASTPreprocessorStmt';

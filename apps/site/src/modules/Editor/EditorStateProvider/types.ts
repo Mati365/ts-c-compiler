@@ -1,6 +1,6 @@
 import type { either as E } from 'fp-ts';
-import type { SecondPassResult } from '@ts-c-compiler/x86-assembler';
-import type { TokenLocation } from '@ts-c-compiler/lexer';
+import type { SecondPassResult } from '@ts-cc/x86-assembler';
+import type { TokenLocation } from '@ts-cc/lexer';
 
 export type EditorCompileLang = 'nasm' | 'c';
 

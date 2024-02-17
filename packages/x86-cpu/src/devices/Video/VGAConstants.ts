@@ -1,5 +1,5 @@
-import { Size } from '@ts-c-compiler/core';
-import { MemoryRegionRange, MemoryRegionsMap } from '@ts-c-compiler/x86-assembler';
+import { Size } from '@ts-cc/core';
+import { MemoryRegionRange, MemoryRegionsMap } from '@ts-cc/x86-assembler';
 
 export const VGA_BANK_SIZE = 0x10000;
 export const VGA_TOTAL_PLANES = 0x4;

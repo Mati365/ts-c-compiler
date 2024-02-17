@@ -1,15 +1,15 @@
 import * as R from 'ramda';
 
-import { genUUID } from '@ts-c-compiler/core';
-import { appendToMapKeyArray } from '@ts-c-compiler/core';
-import { rpn } from '@ts-c-compiler/rpn';
-import { extractNestableTokensList } from '@ts-c-compiler/lexer';
-import { joinTokensTexts } from '@ts-c-compiler/lexer';
+import { genUUID } from '@ts-cc/core';
+import { appendToMapKeyArray } from '@ts-cc/core';
+import { rpn } from '@ts-cc/rpn';
+import { extractNestableTokensList } from '@ts-cc/lexer';
+import { joinTokensTexts } from '@ts-cc/lexer';
 
-import { TokensIterator } from '@ts-c-compiler/grammar';
-import { Token, TokenType, TokenKind } from '@ts-c-compiler/lexer';
+import { TokensIterator } from '@ts-cc/grammar';
+import { Token, TokenType, TokenKind } from '@ts-cc/lexer';
 
-import { TreeVisitor } from '@ts-c-compiler/grammar';
+import { TreeVisitor } from '@ts-cc/grammar';
 import { ASTPreprocessorNode, isStatementPreprocessorNode } from '../constants';
 import {
   ASTPreprocessorCallable,

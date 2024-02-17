@@ -1,4 +1,4 @@
-import type { Token } from '@ts-c-compiler/lexer';
+import type { Token } from '@ts-cc/lexer';
 import type { ASTCDefineArg } from '../../ast';
 
 export type CPreprocessorMacroArgTokens = Token[];

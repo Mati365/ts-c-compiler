@@ -31,7 +31,7 @@ import {
   X87StackRegName,
   getByteSizeArgPrefixName,
   isX87RegName,
-} from '@ts-c-compiler/x86-assembler';
+} from '@ts-cc/x86-assembler';
 
 export class X86StdcallFnCaller implements X86ConventionalFnCaller {
   protected readonly convention = CFunctionCallConvention.STDCALL;

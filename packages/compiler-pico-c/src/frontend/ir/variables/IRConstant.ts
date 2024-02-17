@@ -3,8 +3,8 @@ import chalk from 'chalk';
 
 import { getIRTypeDisplayName } from '../dump/getIRTypeDisplayName';
 
-import { IsPrintable } from '@ts-c-compiler/core';
-import { Identity } from '@ts-c-compiler/core';
+import { IsPrintable } from '@ts-cc/core';
+import { Identity } from '@ts-cc/core';
 import { CType, isPrimitiveLikeType } from '../../analyze/types';
 
 export function isIRConstant(obj: any): obj is IRConstant {

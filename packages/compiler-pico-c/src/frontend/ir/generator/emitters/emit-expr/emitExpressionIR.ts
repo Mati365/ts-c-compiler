@@ -1,11 +1,11 @@
 import * as R from 'ramda';
 
-import { isLogicOpToken, isRelationOpToken } from '@ts-c-compiler/lexer';
+import { isLogicOpToken, isRelationOpToken } from '@ts-cc/lexer';
 import { getBaseTypeIfPtr, isImplicitPtrType } from 'frontend/analyze/types/utils';
 
 import { charToInt, tryCastToPointer } from 'frontend/analyze/casts';
 
-import { TokenType } from '@ts-c-compiler/lexer';
+import { TokenType } from '@ts-cc/lexer';
 import { CMathOperator, CRelOperator, CUnaryCastOperator } from '#constants';
 import { hasBuiltinPrefix } from 'builtins/utils/builtinPrefix';
 
@@ -33,7 +33,7 @@ import {
   ASTCCompoundExpressionStmt,
 } from 'frontend/parser';
 
-import { GroupTreeVisitor } from '@ts-c-compiler/grammar';
+import { GroupTreeVisitor } from '@ts-cc/grammar';
 import { getBiggerIRArg } from '../../../utils';
 import {
   appendStmtResults,

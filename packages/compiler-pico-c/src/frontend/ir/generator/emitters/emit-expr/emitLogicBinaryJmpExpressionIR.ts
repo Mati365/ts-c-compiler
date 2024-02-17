@@ -1,4 +1,4 @@
-import { TokenType } from '@ts-c-compiler/lexer';
+import { TokenType } from '@ts-cc/lexer';
 import { ASTCBinaryOpNode } from 'frontend/parser';
 
 import { IRLabelInstruction } from '../../../instructions';

@@ -1,6 +1,6 @@
 {
-  "name": "@ts-c-compiler/x86-16-vm",
-  "version": "1.6.0",
+  "name": "@ts-cc/machine",
+  "version": "1.7.0",
   "private": false,
   "license": "MIT",
   "scripts": {
@@ -13,7 +13,7 @@
     "publish": "yarn build:production && npx changeset && npx changeset version && npx changeset publish"
   },
   "devDependencies": {
-    "@ts-c-compiler/compiler": "*",
+    "@ts-cc/compiler": "*",
     "express": "^4.18.2",
     "styled-components": "^6.1.8"
   },

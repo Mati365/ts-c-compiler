@@ -1,4 +1,15 @@
-# @ts-c-compiler/x86-cpu
+# @ts-cc/x86-cpu
+
+## 1.7.0
+
+### Minor Changes
+
+- Publish packages
+
+### Patch Changes
+
+- Updated dependencies
+  - @ts-cc/x86-assembler@1.7.0
 
 ## 1.6.0
 
@@ -9,7 +20,7 @@
 ### Patch Changes
 
 - Updated dependencies
-  - @ts-c-compiler/x86-assembler@1.6.0
+  - @ts-cc/x86-assembler@1.6.0
 
 ## 1.5.0
 
@@ -20,7 +31,7 @@
 ### Patch Changes
 
 - Updated dependencies
-  - @ts-c-compiler/x86-assembler@1.5.0
+  - @ts-cc/x86-assembler@1.5.0
 
 ## 1.4.0
 
@@ -31,7 +42,7 @@
 ### Patch Changes
 
 - Updated dependencies
-  - @ts-c-compiler/x86-assembler@1.4.0
+  - @ts-cc/x86-assembler@1.4.0
 
 ## 1.3.0
 
@@ -42,7 +53,7 @@
 ### Patch Changes
 
 - Updated dependencies
-  - @ts-c-compiler/x86-assembler@1.3.0
+  - @ts-cc/x86-assembler@1.3.0
 
 ## 1.2.0
 
@@ -53,7 +64,7 @@
 ### Patch Changes
 
 - Updated dependencies
-  - @ts-c-compiler/x86-assembler@1.2.0
+  - @ts-cc/x86-assembler@1.2.0
 
 ## 1.1.0
 
@@ -64,7 +75,7 @@
 ### Patch Changes
 
 - Updated dependencies
-  - @ts-c-compiler/x86-assembler@1.1.0
+  - @ts-cc/x86-assembler@1.1.0
 
 ## 1.0.1
 
@@ -72,7 +83,7 @@
 
 - Add bootsector output option
 - Updated dependencies
-  - @ts-c-compiler/x86-assembler@1.0.1
+  - @ts-cc/x86-assembler@1.0.1
 
 ## 1.0.0
 
@@ -83,7 +94,7 @@
 ### Patch Changes
 
 - Updated dependencies
-  - @ts-c-compiler/x86-assembler@1.0.0
+  - @ts-cc/x86-assembler@1.0.0
 
 ## 0.1.0
 
@@ -94,4 +105,4 @@
 ### Patch Changes
 
 - Updated dependencies
-  - @ts-c-compiler/x86-assembler@0.1.0
+  - @ts-cc/x86-assembler@0.1.0

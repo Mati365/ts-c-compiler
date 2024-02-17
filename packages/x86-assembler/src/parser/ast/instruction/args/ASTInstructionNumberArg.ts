@@ -2,7 +2,7 @@ import {
   roundToPowerOfTwo,
   numberByteSize,
   roundedSignedNumberByteSize,
-} from '@ts-c-compiler/core';
+} from '@ts-cc/core';
 
 import { InstructionArgType } from '../../../../types';
 import { toUnsignedNumber } from '../../../../utils';

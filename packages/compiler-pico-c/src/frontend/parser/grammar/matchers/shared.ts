@@ -1,4 +1,4 @@
-import type { Grammar } from '@ts-c-compiler/grammar';
+import type { Grammar } from '@ts-cc/grammar';
 import type { CCompilerIdentifier } from '#constants';
 import type {
   ASTCStmt,

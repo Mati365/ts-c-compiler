@@ -1,6 +1,6 @@
 import * as R from 'ramda';
 
-import { safeArray } from '@ts-c-compiler/core';
+import { safeArray } from '@ts-cc/core';
 import {
   lexer,
   IdentifiersMap,
@@ -9,7 +9,7 @@ import {
   NumberToken,
   FloatNumberToken,
   TokenKind,
-} from '@ts-c-compiler/lexer';
+} from '@ts-cc/lexer';
 
 import { TokensIterator } from './tree/TokensIterator';
 import { GrammarErrorCode, GrammarError } from './GrammarError';

@@ -1,7 +1,7 @@
-import { joinTokensWithSpaces } from '@ts-c-compiler/lexer';
+import { joinTokensWithSpaces } from '@ts-cc/lexer';
 
-import { Token } from '@ts-c-compiler/lexer';
-import { NodeLocation } from '@ts-c-compiler/grammar';
+import { Token } from '@ts-cc/lexer';
+import { NodeLocation } from '@ts-cc/grammar';
 
 import {
   PreprocessorInterpreter,

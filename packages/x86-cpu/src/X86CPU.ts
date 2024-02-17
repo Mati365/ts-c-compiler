@@ -1,7 +1,7 @@
 import * as R from 'ramda';
 import { Buffer } from 'buffer';
 
-import { getMSbit } from '@ts-c-compiler/core';
+import { getMSbit } from '@ts-cc/core';
 import {
   RMByte,
   X86BitsMode,
@@ -10,9 +10,9 @@ import {
   unsafeAsmBinary,
   X86RegName,
   SegmentedAddress,
-} from '@ts-c-compiler/x86-assembler';
+} from '@ts-cc/x86-assembler';
 
-import { BINARY_MASKS } from '@ts-c-compiler/core';
+import { BINARY_MASKS } from '@ts-cc/core';
 import {
   X86_REGISTERS,
   X86_PREFIXES,

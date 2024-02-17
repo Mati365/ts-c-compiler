@@ -6,17 +6,17 @@ import * as E from 'fp-ts/Either';
 import { pipe } from 'fp-ts/function';
 import { Option, program } from '@commander-js/extra-typings';
 
-import { TableBinaryView, asm } from '@ts-c-compiler/x86-assembler';
+import { TableBinaryView, asm } from '@ts-cc/x86-assembler';
 import {
   CCompilerArch,
   ccompiler,
   getX86BootsectorPreloaderBinary,
   serializeTypedTreeToString,
   wrapWithX86BootsectorAsm,
-} from '@ts-c-compiler/compiler';
+} from '@ts-cc/compiler';
 
 import { NodeFsIncludeResolver } from './NodeFsIncludeResolver';
-import { tapEither } from '@ts-c-compiler/core';
+import { tapEither } from '@ts-cc/core';
 
 program
   .argument('<source>', 'Relative or absolute path to source file')

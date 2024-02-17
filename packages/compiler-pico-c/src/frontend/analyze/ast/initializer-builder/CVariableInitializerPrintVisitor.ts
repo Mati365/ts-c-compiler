@@ -1,5 +1,5 @@
 import { isNil } from 'ramda';
-import { isTreeNode } from '@ts-c-compiler/grammar';
+import { isTreeNode } from '@ts-cc/grammar';
 
 import { CVariableInitializerVisitor } from './CVariableInitializerVisitor';
 import {

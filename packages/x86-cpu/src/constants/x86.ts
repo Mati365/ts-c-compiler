@@ -1,6 +1,6 @@
 import * as R from 'ramda';
 
-import { MemoryRegionRange } from '@ts-c-compiler/x86-assembler';
+import { MemoryRegionRange } from '@ts-cc/x86-assembler';
 import { X86Prefix, X86RegsSet } from '../parts/X86Regs';
 
 export const X86_MAPPED_VM_MEM = Object.freeze(new MemoryRegionRange(0xc8000, 0xeffff));

@@ -1,9 +1,9 @@
-import { BinaryOpNode } from '@ts-c-compiler/grammar';
-import { TokenType } from '@ts-c-compiler/lexer';
+import { BinaryOpNode } from '@ts-cc/grammar';
+import { TokenType } from '@ts-cc/lexer';
 import { CType } from '../../analyze/types/CType';
 import { ASTCCompilerKind, ASTCCompilerNode } from './ASTCCompilerNode';
 
-export { createBinOpIfBothSidesPresent } from '@ts-c-compiler/grammar';
+export { createBinOpIfBothSidesPresent } from '@ts-cc/grammar';
 
 export function isASTCBinaryOpNode(node: ASTCCompilerNode): node is ASTCBinaryOpNode {
   return node.kind === ASTCCompilerKind.BinaryOperator;

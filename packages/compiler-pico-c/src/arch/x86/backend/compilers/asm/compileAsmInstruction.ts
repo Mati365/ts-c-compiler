@@ -1,4 +1,4 @@
-import { trimLines } from '@ts-c-compiler/core';
+import { trimLines } from '@ts-cc/core';
 import { IRAsmInstruction } from 'frontend/ir/instructions';
 
 import { X86CompilerInstructionFnAttrs } from '../../../constants/types';

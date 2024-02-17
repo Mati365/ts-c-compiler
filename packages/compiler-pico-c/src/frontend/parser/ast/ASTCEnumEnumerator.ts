@@ -1,8 +1,8 @@
-import { walkOverFields } from '@ts-c-compiler/grammar';
-import { dumpAttributesToString } from '@ts-c-compiler/core';
+import { walkOverFields } from '@ts-cc/grammar';
+import { dumpAttributesToString } from '@ts-cc/core';
 
-import { NodeLocation } from '@ts-c-compiler/grammar';
-import { Token } from '@ts-c-compiler/lexer';
+import { NodeLocation } from '@ts-cc/grammar';
+import { Token } from '@ts-cc/lexer';
 import { ASTCCompilerKind, ASTCCompilerNode } from './ASTCCompilerNode';
 import { ASTCConstantExpression } from './ASTCConstantExpression';
 

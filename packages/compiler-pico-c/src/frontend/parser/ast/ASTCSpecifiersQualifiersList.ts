@@ -1,4 +1,4 @@
-import { NodeLocation } from '@ts-c-compiler/grammar';
+import { NodeLocation } from '@ts-cc/grammar';
 import { ASTCDeclarationSpecifier } from './ASTCDeclarationSpecifier';
 import { ASTCTypeQualifiersList } from './ASTCTypeQualifiersList';
 import { ASTCTypeSpecifiersList } from './ASTCTypeSpecifiersList';

@@ -1,6 +1,6 @@
 import * as R from 'ramda';
 
-import { Identity } from '@ts-c-compiler/core';
+import { Identity } from '@ts-cc/core';
 import { CType } from '../../types/CType';
 
 export type CNamedTypedEntryDescriptor = {

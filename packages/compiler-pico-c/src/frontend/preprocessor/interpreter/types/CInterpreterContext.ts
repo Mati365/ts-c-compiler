@@ -1,4 +1,4 @@
-import type { Token } from '@ts-c-compiler/lexer';
+import type { Token } from '@ts-cc/lexer';
 import type { ASTCExecResult, ASTCPreprocessorTreeNode } from 'frontend/preprocessor/ast';
 
 import type { CPreprocessorMacro } from './CPreprocessorMacro';

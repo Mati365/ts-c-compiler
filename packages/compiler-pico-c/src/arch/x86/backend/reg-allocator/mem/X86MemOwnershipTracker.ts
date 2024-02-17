@@ -1,4 +1,4 @@
-import { getByteSizeArgPrefixName } from '@ts-c-compiler/x86-assembler';
+import { getByteSizeArgPrefixName } from '@ts-cc/x86-assembler';
 
 import { GenMemAddressConfig, genMemAddress } from 'arch/x86/asm-utils';
 import { CBackendError, CBackendErrorCode } from 'backend/errors/CBackendError';

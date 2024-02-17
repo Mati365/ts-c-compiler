@@ -1,5 +1,5 @@
 import { ASTCCompilerNode, ASTCCompilerKind } from 'frontend/parser/ast';
-import { InlineTreeVisitor } from '@ts-c-compiler/grammar';
+import { InlineTreeVisitor } from '@ts-cc/grammar';
 
 import type { CTypeAnalyzeVisitor } from '../CTypeAnalyzeVisitor';
 

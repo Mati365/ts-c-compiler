@@ -1,13 +1,13 @@
 import * as R from 'ramda';
 
-import { wrapAround } from '@ts-c-compiler/core';
+import { wrapAround } from '@ts-cc/core';
 import {
   createX87StackRegByIndex,
   getX87StackRegIndex,
   X87_STACK_REGISTERS,
   X87_STACK_REGS_COUNT,
   type X87StackRegName,
-} from '@ts-c-compiler/x86-assembler';
+} from '@ts-cc/x86-assembler';
 
 import { X86CompileInstructionOutput } from '../../compilers/shared/X86CompileInstructionOutput';
 import { genInstruction } from 'arch/x86/asm-utils';

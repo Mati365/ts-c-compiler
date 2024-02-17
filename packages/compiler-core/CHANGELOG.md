@@ -1,4 +1,10 @@
-# @ts-c-compiler/core
+# @ts-cc/core
+
+## 1.7.0
+
+### Minor Changes
+
+- Publish packages
 
 ## 1.6.0
 

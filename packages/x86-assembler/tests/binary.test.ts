@@ -2,7 +2,7 @@
 
 import * as R from 'ramda';
 
-import { arrayToHexString } from '@ts-c-compiler/core';
+import { arrayToHexString } from '@ts-cc/core';
 import { unsafeAsm } from '../src/asm';
 
 import TIMES_TEST_LIST from './asm/times.asm';

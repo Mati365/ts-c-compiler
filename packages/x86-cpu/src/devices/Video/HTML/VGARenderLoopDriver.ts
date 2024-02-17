@@ -1,4 +1,4 @@
-import { asap } from '@ts-c-compiler/core';
+import { asap } from '@ts-cc/core';
 
 import { VGAPixBufCanvasRenderer } from '../Renderers';
 import { VGA } from '../VGA';

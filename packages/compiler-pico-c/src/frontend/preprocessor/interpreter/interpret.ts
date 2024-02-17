@@ -1,6 +1,6 @@
 import * as R from 'ramda';
 
-import { Token, TokenType } from '@ts-c-compiler/lexer';
+import { Token, TokenType } from '@ts-cc/lexer';
 import { createCPreprocessorGrammar } from '../grammar';
 
 import { ASTCPreprocessorTreeNode } from '../ast';

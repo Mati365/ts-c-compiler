@@ -1,5 +1,5 @@
-import { TreeNode } from '@ts-c-compiler/grammar';
-import { Grammar } from '@ts-c-compiler/grammar';
+import { TreeNode } from '@ts-cc/grammar';
+import { Grammar } from '@ts-cc/grammar';
 import {
   PreprocessorInterpretable,
   InterpreterResult,

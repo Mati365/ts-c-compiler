@@ -1,4 +1,4 @@
-import { NodeLocation } from '@ts-c-compiler/grammar';
+import { NodeLocation } from '@ts-cc/grammar';
 
 import type { CInterpreterContext } from '../interpreter';
 import type { ASTCStmtNode } from './ASTCStmtNode';

@@ -1,4 +1,4 @@
-import { isNewline } from '@ts-c-compiler/lexer';
+import { isNewline } from '@ts-cc/lexer';
 
 /**
  * Parses C style comments like // or \/* *\/

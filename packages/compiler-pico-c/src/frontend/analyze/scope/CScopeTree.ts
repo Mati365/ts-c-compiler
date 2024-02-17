@@ -3,7 +3,7 @@ import * as E from 'fp-ts/Either';
 import * as A from 'fp-ts/Array';
 import { pipe } from 'fp-ts/function';
 
-import { AbstractTreeVisitor, IsWalkableNode } from '@ts-c-compiler/grammar';
+import { AbstractTreeVisitor, IsWalkableNode } from '@ts-cc/grammar';
 
 import { CTypeCheckConfig } from '../constants';
 import { CType, CPrimitiveType, isEnumLikeType } from '../types';

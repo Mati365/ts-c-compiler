@@ -1,4 +1,4 @@
-import { GroupTreeVisitor } from '@ts-c-compiler/grammar';
+import { GroupTreeVisitor } from '@ts-cc/grammar';
 import { ASTCCompilerNode } from '../../../parser/ast/ASTCCompilerNode';
 import { CTypeAnalyzeContext } from './CTypeAnalyzeContext';
 import type { CTypeAnalyzeVisitor } from './CTypeAnalyzeVisitor';

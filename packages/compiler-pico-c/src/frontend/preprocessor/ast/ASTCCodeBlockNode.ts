@@ -1,7 +1,7 @@
 import { pipe } from 'fp-ts/function';
 
-import { Token } from '@ts-c-compiler/lexer';
-import { NodeLocation } from '@ts-c-compiler/grammar';
+import { Token } from '@ts-cc/lexer';
+import { NodeLocation } from '@ts-cc/grammar';
 
 import { CInterpreterContext } from '../interpreter';
 import {

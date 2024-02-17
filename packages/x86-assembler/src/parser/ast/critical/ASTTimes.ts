@@ -1,10 +1,10 @@
 import * as R from 'ramda';
 import * as E from 'fp-ts/Either';
 
-import { isLineTerminatorToken } from '@ts-c-compiler/lexer';
+import { isLineTerminatorToken } from '@ts-cc/lexer';
 
-import { Token } from '@ts-c-compiler/lexer';
-import { NodeLocation } from '@ts-c-compiler/grammar';
+import { Token } from '@ts-cc/lexer';
+import { NodeLocation } from '@ts-cc/grammar';
 
 import { ParserError, ParserErrorCode } from '../../../shared/ParserError';
 import { ASTAsmParser, ASTAsmTree } from '../ASTAsmParser';

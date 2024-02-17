@@ -1,8 +1,8 @@
 import * as E from 'fp-ts/Either';
 import { pipe } from 'fp-ts/function';
 
-import { CompilerError } from '@ts-c-compiler/core';
-import { formatDate, formatTime } from '@ts-c-compiler/core';
+import { CompilerError } from '@ts-cc/core';
+import { formatDate, formatTime } from '@ts-cc/core';
 
 import { createAssemblerTimings } from './utils/createAssemblerTimings';
 import { safeResultPreprocessor, PreprocessorResult } from './preprocessor';

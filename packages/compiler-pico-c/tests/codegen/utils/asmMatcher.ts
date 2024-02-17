@@ -2,7 +2,7 @@ import stripAnsi from 'strip-ansi';
 import { pipe } from 'fp-ts/function';
 import * as E from 'fp-ts/Either';
 
-import { stripNonPrintableCharacters, trimLines } from '@ts-c-compiler/core';
+import { stripNonPrintableCharacters, trimLines } from '@ts-cc/core';
 import { ccompiler } from '../../../src/ccompiler';
 
 export type MatcherResult = {

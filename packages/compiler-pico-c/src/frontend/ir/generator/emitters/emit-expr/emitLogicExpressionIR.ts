@@ -10,7 +10,7 @@ import {
   IRLabelInstruction,
 } from 'frontend/ir/instructions';
 
-import { TokenType } from '@ts-c-compiler/lexer';
+import { TokenType } from '@ts-cc/lexer';
 import { CPrimitiveType } from 'frontend/analyze';
 
 type LogicExpressionIREmitAttrs = IREmitterContextAttrs & {

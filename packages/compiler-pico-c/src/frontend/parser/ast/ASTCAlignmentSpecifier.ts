@@ -1,6 +1,6 @@
-import { walkOverFields } from '@ts-c-compiler/grammar';
+import { walkOverFields } from '@ts-cc/grammar';
 
-import { NodeLocation } from '@ts-c-compiler/grammar';
+import { NodeLocation } from '@ts-cc/grammar';
 import { ASTCCompilerKind, ASTCCompilerNode } from './ASTCCompilerNode';
 import { ASTCConstantExpression } from './ASTCConstantExpression';
 import { ASTCTypeName } from './ASTCTypeName';

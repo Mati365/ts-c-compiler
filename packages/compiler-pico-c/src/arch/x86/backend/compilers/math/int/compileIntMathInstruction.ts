@@ -1,4 +1,4 @@
-import { TokenType } from '@ts-c-compiler/lexer';
+import { TokenType } from '@ts-cc/lexer';
 import { IRMathInstruction } from 'frontend/ir/instructions';
 
 import { CBackendError, CBackendErrorCode } from 'backend/errors/CBackendError';

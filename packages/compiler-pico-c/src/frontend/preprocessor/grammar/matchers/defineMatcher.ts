@@ -1,5 +1,5 @@
-import { NodeLocation, fetchTokensUntilEOL } from '@ts-c-compiler/grammar';
-import { TokenType } from '@ts-c-compiler/lexer';
+import { NodeLocation, fetchTokensUntilEOL } from '@ts-cc/grammar';
+import { TokenType } from '@ts-cc/lexer';
 
 import type { CPreprocessorGrammar } from '../CPreprocessorGrammar';
 

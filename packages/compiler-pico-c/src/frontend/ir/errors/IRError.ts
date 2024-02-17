@@ -1,4 +1,4 @@
-import { CompilerError, fixme } from '@ts-c-compiler/core';
+import { CompilerError, fixme } from '@ts-cc/core';
 
 export enum IRErrorCode {
   GENERATOR_ERROR = 'GENERATOR_ERROR',

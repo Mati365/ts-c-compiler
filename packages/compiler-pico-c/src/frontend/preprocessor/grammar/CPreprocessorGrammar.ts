@@ -1,4 +1,4 @@
-import { Grammar, GrammarInitializer, empty } from '@ts-c-compiler/grammar';
+import { Grammar, GrammarInitializer, empty } from '@ts-cc/grammar';
 import {
   CPreprocessorIdentifier,
   C_PREPROCESSOR_IDENTIFIERS_MAP,

@@ -1,11 +1,11 @@
 import * as R from 'ramda';
 
-import { setCharAt, mapMapValues } from '@ts-c-compiler/core';
+import { setCharAt, mapMapValues } from '@ts-cc/core';
 
 import { MemoryRegionRange } from '../../../constants/MemoryRegion';
 import { ASTInstruction } from '../../ast/instruction/ASTInstruction';
 
-import { CompilerError } from '@ts-c-compiler/core';
+import { CompilerError } from '@ts-cc/core';
 import { BinaryView } from './BinaryView';
 import { BinaryBlob } from '../BinaryBlob';
 import { SecondPassResult } from '../BinaryPassResults';

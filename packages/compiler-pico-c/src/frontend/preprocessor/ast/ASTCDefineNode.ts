@@ -1,5 +1,5 @@
-import { NodeLocation } from '@ts-c-compiler/grammar';
-import type { Token } from '@ts-c-compiler/lexer';
+import { NodeLocation } from '@ts-cc/grammar';
+import type { Token } from '@ts-cc/lexer';
 
 import type { CInterpreterContext } from '../interpreter';
 import {

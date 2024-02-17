@@ -1,4 +1,4 @@
-import { isFloatMathOpToken, isMathOpToken } from '@ts-c-compiler/lexer';
+import { isFloatMathOpToken, isMathOpToken } from '@ts-cc/lexer';
 import { ASTCCompilerKind, ASTCAssignmentExpression } from 'frontend/parser/ast';
 
 import { checkLeftTypeOverlapping } from '../../../checker';

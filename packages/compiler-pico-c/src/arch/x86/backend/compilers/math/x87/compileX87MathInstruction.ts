@@ -1,4 +1,4 @@
-import { TokenType } from '@ts-c-compiler/lexer';
+import { TokenType } from '@ts-cc/lexer';
 
 import { genInstruction } from 'arch/x86/asm-utils';
 import { X86CompilerInstructionFnAttrs } from 'arch/x86/constants/types';

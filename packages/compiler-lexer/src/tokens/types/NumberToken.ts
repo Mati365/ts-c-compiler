@@ -1,4 +1,4 @@
-import { numberByteSize, roundToPowerOfTwo } from '@ts-c-compiler/core';
+import { numberByteSize, roundToPowerOfTwo } from '@ts-cc/core';
 import { parseNumberToken } from '../../utils';
 
 import { TokenType, TokenLocation } from '../../shared';

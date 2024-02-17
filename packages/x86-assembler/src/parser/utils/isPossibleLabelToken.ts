@@ -1,4 +1,4 @@
-import { TokenType, Token, TokenKind } from '@ts-c-compiler/lexer';
+import { TokenType, Token, TokenKind } from '@ts-cc/lexer';
 
 /**
  * Returns true if token might be label

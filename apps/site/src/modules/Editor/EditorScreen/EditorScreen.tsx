@@ -3,7 +3,7 @@ import { either as E } from 'fp-ts';
 import clsx from 'clsx';
 
 import { useConstRefCallback, useUpdateEffect } from '@under-control/forms';
-import { VGARenderLoopDriver, X86CPU } from '@ts-c-compiler/x86-cpu';
+import { VGARenderLoopDriver, X86CPU } from '@ts-cc/x86-cpu';
 
 import { useEditorState } from '../EditorStateProvider';
 

@@ -1,5 +1,5 @@
 /* eslint-disable no-loop-func */
-import { isNonIdentifierKeywordToken } from '@ts-c-compiler/lexer';
+import { isNonIdentifierKeywordToken } from '@ts-cc/lexer';
 
 import {
   ASTCPostfixArrayExpression,
@@ -10,9 +10,9 @@ import {
   ASTCPostfixDotExpression,
 } from 'frontend/parser/ast';
 
-import { TokenType } from '@ts-c-compiler/lexer';
-import { NodeLocation } from '@ts-c-compiler/grammar';
-import { SyntaxError } from '@ts-c-compiler/grammar';
+import { TokenType } from '@ts-cc/lexer';
+import { NodeLocation } from '@ts-cc/grammar';
+import { SyntaxError } from '@ts-cc/grammar';
 
 import { CGrammar } from '../shared';
 import { primaryExpression } from './primaryExpression';

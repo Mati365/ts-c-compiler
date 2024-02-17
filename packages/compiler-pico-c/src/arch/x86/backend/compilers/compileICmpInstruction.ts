@@ -2,7 +2,7 @@ import { getBiggerIRArg } from 'frontend/ir/utils';
 import { isPrimitiveLikeType } from 'frontend/analyze';
 
 import { CRelOperator } from '#constants';
-import { TokenType } from '@ts-c-compiler/lexer';
+import { TokenType } from '@ts-cc/lexer';
 import { CBackendError, CBackendErrorCode } from 'backend/errors/CBackendError';
 
 import { IRICmpInstruction, isIRBrInstruction } from 'frontend/ir/instructions';

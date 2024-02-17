@@ -1,4 +1,4 @@
-import { unsafeAsmBinary } from '@ts-c-compiler/x86-assembler';
+import { unsafeAsmBinary } from '@ts-cc/x86-assembler';
 
 export const getX86BootsectorPreloaderBinary = () =>
   unsafeAsmBinary()(/* asm */ `

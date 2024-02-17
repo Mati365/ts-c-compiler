@@ -1,4 +1,10 @@
-# @ts-c-compiler/cli
+# @ts-cc/cli
+
+## 1.7.0
+
+### Minor Changes
+
+- Publish packages
 
 ## 1.6.0
 
@@ -57,7 +63,7 @@
 ### Patch Changes
 
 - Updated dependencies
-  - @ts-c-compiler/compiler@0.1.0
+  - @ts-cc/compiler@0.1.0
 
 ## 0.0.2
 

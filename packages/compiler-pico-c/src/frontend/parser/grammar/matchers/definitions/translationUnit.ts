@@ -1,8 +1,8 @@
 import * as R from 'ramda';
 
-import { isEOFToken } from '@ts-c-compiler/lexer';
+import { isEOFToken } from '@ts-cc/lexer';
 
-import { SyntaxError } from '@ts-c-compiler/grammar';
+import { SyntaxError } from '@ts-cc/grammar';
 import { ASTCTranslationUnit, ASTCTreeNode } from '../../../ast';
 import { CGrammar } from '../shared';
 

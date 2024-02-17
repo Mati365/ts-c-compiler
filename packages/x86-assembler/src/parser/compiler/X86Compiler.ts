@@ -1,8 +1,8 @@
 import * as R from 'ramda';
 import * as E from 'fp-ts/Either';
 
-import { CompilerError } from '@ts-c-compiler/core';
-import { NumberToken, Token } from '@ts-c-compiler/lexer';
+import { CompilerError } from '@ts-cc/core';
+import { NumberToken, Token } from '@ts-cc/lexer';
 
 import { MIN_COMPILER_REG_LENGTH, MAX_COMPILER_REG_LENGTH } from '../../constants';
 
