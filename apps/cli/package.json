@@ -1,6 +1,6 @@
 {
   "name": "@ts-cc/cli",
-  "version": "1.7.0",
+  "version": "1.7.1",
   "private": false,
   "license": "MIT",
   "scripts": {
@@ -10,8 +10,7 @@
     "build:production": "NODE_ENV=production yarn run build",
     "test": "NODE_OPTIONS=--experimental-vm-modules npx jest --passWithNoTests --c ./jest.config.mjs",
     "lint": "npx eslint src/ -c ./.eslintrc.yml",
-    "check:types": "npx tsc --noEmit",
-    "publish": "yarn build:production && npx changeset && npx changeset version && npx changeset publish"
+    "check:types": "npx tsc --noEmit"
   },
   "devDependencies": {
     "@ts-cc/compiler": "*"

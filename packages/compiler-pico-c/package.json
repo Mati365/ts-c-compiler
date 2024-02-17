@@ -1,6 +1,6 @@
 {
   "name": "@ts-cc/compiler",
-  "version": "1.7.0",
+  "version": "1.7.1",
   "type": "module",
   "private": false,
   "license": "MIT",
@@ -19,7 +19,7 @@
       }
     }
   },
-  "dependencies": {
+  "devDependencies": {
     "@ts-cc/core": "*",
     "@ts-cc/lexer": "*",
     "@ts-cc/rpn": "*",

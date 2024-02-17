@@ -1,5 +1,16 @@
 # @ts-cc/x86-assembler
 
+## 1.7.1
+
+### Patch Changes
+
+- Force publish machine
+- Updated dependencies
+  - @ts-cc/core@1.7.1
+  - @ts-cc/grammar@1.7.1
+  - @ts-cc/lexer@1.7.1
+  - @ts-cc/rpn@1.7.1
+
 ## 1.7.0
 
 ### Minor Changes

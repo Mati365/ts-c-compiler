@@ -1,5 +1,13 @@
 # @ts-cc/x86-cpu
 
+## 1.7.1
+
+### Patch Changes
+
+- Force publish machine
+- Updated dependencies
+  - @ts-cc/x86-assembler@1.7.1
+
 ## 1.7.0
 
 ### Minor Changes

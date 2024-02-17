@@ -1,5 +1,11 @@
 # @ts-cc/vm
 
+## 1.7.1
+
+### Patch Changes
+
+- Force publish machine
+
 ## 1.7.0
 
 ### Minor Changes
