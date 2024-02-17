@@ -49,10 +49,44 @@ Options:
 
 ## Usage
 
+Example `main.c` file:
+
+```c
+#include <stdio.h>
+#include <kernel.h>
+
+int main() {
+  int rows = 8, coef = 1, space, i, j;
+
+  kernel_screen_clear();
+
+  for (i = 0; i < rows; i++) {
+    for (space = 1; space <= rows - i; space++) {
+      printf("  ");
+    }
+
+    for (j = 0; j <= i; j++) {
+      if (j == 0 || i == 0) {
+        coef = 1;
+      } else {
+        coef = coef * (i - j + 1) / j;
+      }
+
+      printf("%4d", coef);
+    }
+
+    printf("\n");
+  }
+
+  for (;;) {}
+  return 0;
+}
+```
+
 Compile `main.c` and boot-it in 16bit VM available in web-browser:
 
 ```bash
-npx ts-c ./apps/cli/.mock/main.c --bootsector --binary | APP_PORT=3002 npx run-x86_16-vm
+npx ts-c main.c --bootsector --binary | APP_PORT=3002 npx run-x86_16-vm
 ```
 
 Compile `main.c` to x86-16 binary:
