@@ -18,6 +18,45 @@ Currently supported architectures:
 
 **🚧 Warn! The project is unstable so please do not use it on production!**
 
+## What does it offer? ⭐
+
+1. Reasonable assembly code quality in NASM syntax
+2. Simple prototyping boot sector games
+3. Designed especially for old-school 16bit computers with Intel 80286 (and newer) CPU and produces only simple ASM instructions
+4. Backend / Frontend architecture that allows you to add new backends in TypeScript (especially useful for homebrew FPGA CPU)
+5. Peephole optimization of IR code, precompute of constant expressions during compile time and optimizer phase
+6. Slow compile times - feel the vibe of old computing
+
+### What works? 🔥
+
+- [x] Local / Global variables
+- [x] `float` / `double` operations using X87 stack-based registers
+- [x] Advanced types `struct`, `union`, `enum`
+- [x] Loops and if conditions `while`, `if`, `do while`, `for`, `break`, `continue`
+- [x] Basic preprocessor with `#ifdef`, `#define`, `#include`
+- [x] `goto` jumps
+- [x] VA lists `va_arg`, `va_end`, `va_start`
+- [x] In expression compound statements
+- [x] Ternary operators `a > 1 ? 1 : 2`
+- [x] Arithmetic operations `a + b`, `a * b`, `a / b`, etc.
+- [x] Binary operations `a | b`, `a & b` etc.
+- [x] Logic operations that are casted to numbers `a && 2 || 2 > 1`
+- [x] Assign operators `a += 1`, `a <<= b`, etc.
+- [x] Designated and C89 initializers
+- [x] Dynamic stack alloc using `alloca`
+- [x] Type aliasing `typedef`
+- [x] Variable and function pointers
+- [x] `RVO` optimization of larger structs
+- [x] Peephole optimization of expensive instruction like `a *= 2` -> `a <<= 1`
+- [x] Constant expressions eval optimizations `a = 2 * 4` -> `a = 8`
+- [x] Constant branch optimization for loops and ifs `for (;;) {}` -> `L1: jmp L1`
+
+### What does not work? 🚧
+
+- [ ] Bitfields
+- [ ] Multiple files support
+- [ ] Linker
+
 ## Online editor
 
 Available at: <https://mati365.github.io/ts-c-compiler/>
@@ -108,45 +147,6 @@ npx ts-c ./main.c -ps
 0x00000d                      5d                            pop bp
 0x00000e                      c3                            ret
 ```
-
-## What does it offer? ⭐
-
-1. Reasonable assembly code quality in NASM syntax
-2. Simple prototyping boot sector games
-3. Designed especially for old-school 16bit computers with Intel 80286 (and newer) CPU and produces only simple ASM instructions
-4. Backend / Frontend architecture that allows you to add new backends in TypeScript (especially useful for homebrew FPGA CPU)
-5. Peephole optimization of IR code, precompute of constant expressions during compile time and optimizer phase
-6. Slow compile times - feel the vibe of old computing
-
-### What works? 🔥
-
-- [x] Local / Global variables
-- [x] `float` / `double` operations using X87 stack-based registers
-- [x] Advanced types `struct`, `union`, `enum`
-- [x] Loops and if conditions `while`, `if`, `do while`, `for`, `break`, `continue`
-- [x] Basic preprocessor with `#ifdef`, `#define`, `#include`
-- [x] `goto` jumps
-- [x] VA lists `va_arg`, `va_end`, `va_start`
-- [x] In expression compound statements
-- [x] Ternary operators `a > 1 ? 1 : 2`
-- [x] Arithmetic operations `a + b`, `a * b`, `a / b`, etc.
-- [x] Binary operations `a | b`, `a & b` etc.
-- [x] Logic operations that are casted to numbers `a && 2 || 2 > 1`
-- [x] Assign operators `a += 1`, `a <<= b`, etc.
-- [x] Designated and C89 initializers
-- [x] Dynamic stack alloc using `alloca`
-- [x] Type aliasing `typedef`
-- [x] Variable and function pointers
-- [x] `RVO` optimization of larger structs
-- [x] Peephole optimization of expensive instruction like `a *= 2` -> `a <<= 1`
-- [x] Constant expressions eval optimizations `a = 2 * 4` -> `a = 8`
-- [x] Constant branch optimization for loops and ifs `for (;;) {}` -> `L1: jmp L1`
-
-### What does not work? 🚧
-
-- [ ] Bitfields
-- [ ] Multiple files support
-- [ ] Linker
 
 ## Examples
 
