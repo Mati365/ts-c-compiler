@@ -17,11 +17,10 @@ export const STD_IO_CONTENT_HEADER = /* c */ `
     Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
   */
 
-  #include <kernel.h>
+  #include <kernel/textmode.h>
   #include <stdarg.h>
+  #include <stdbool.h>
 
-  #define true 1
-  #define false 0
   #define NULL 0
 
   void putchar(const char c) {

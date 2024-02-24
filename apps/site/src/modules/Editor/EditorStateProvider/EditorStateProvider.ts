@@ -23,11 +23,14 @@ import {
   type EditorStateValue,
 } from './types';
 
+/* eslint-disable max-len */
 const EXAMPLE_C_PROGRAM = /* c */ `/*
-  +------------------------------------------------+
-  | Run 'asm("xchg bx, bx")' and open dev tools to |
-  | open CPU debugger breakpoint!'                 |
-  +------------------------------------------------+
+  +------------------------------------------------------------------------------------+
+  | Run 'asm("xchg bx, bx")' and open dev tools to open CPU debugger breakpoint!'      |                                                |
+  |                                                                                    |
+  | Check more header files at:                                                        |
+  | https://github.com/Mati365/ts-c-compiler/tree/main/packages/compiler-pico-c/src/fs |
+  +------------------------------------------------------------------------------------+
         \\
          \\
             ╱|、
@@ -35,35 +38,56 @@ const EXAMPLE_C_PROGRAM = /* c */ `/*
            |、˜〵
           じしˍ,)ノ
 */
-#include <stdio.h>
-#include <kernel.h>
+#include <stdbool.h>
+#include <kernel/graphics.h>
+
+#define CHESS_BOARD_SIZE 8
+
+#define CHESS_BOARD_WIDTH 160
+#define CHESS_BOARD_HEIGHT 160
+#define CHESS_BOARD_CELL_WIDTH (CHESS_BOARD_WIDTH / CHESS_BOARD_SIZE)
+
+void chess_board_draw_board() {
+  const int start_offset_x = GRAPH_SCREEN_WIDTH / 2 - CHESS_BOARD_WIDTH / 2;
+  const int start_offset_y = GRAPH_SCREEN_HEIGHT / 2 - CHESS_BOARD_HEIGHT / 2;
+
+  kernel_graph_draw_rect(
+    start_offset_x - 1,
+    start_offset_y - 1,
+    CHESS_BOARD_WIDTH + 2,
+    CHESS_BOARD_HEIGHT + 2,
+    GRAPH_WHITE_COLOR
+  );
+
+  bool flag = true;
+
+  for (int row = 0; row < CHESS_BOARD_SIZE; ++row) {
+    flag = !flag;
+
+    for (int col = 0; col < CHESS_BOARD_SIZE; ++col) {
+      const char color = flag ? GRAPH_WHITE_COLOR : GRAPH_BLACK_COLOR;
+
+      kernel_graph_fill_rect(
+        col * CHESS_BOARD_CELL_WIDTH + start_offset_x,
+        row * CHESS_BOARD_CELL_WIDTH + start_offset_y,
+        CHESS_BOARD_CELL_WIDTH,
+        CHESS_BOARD_CELL_WIDTH,
+        color
+      );
+
+      flag = !flag;
+    }
+  }
+}
 
 int main() {
-  int rows = 8, coef = 1, space, i, j;
-
-  kernel_screen_clear();
-
-  for (i = 0; i < rows; i++) {
-    for (space = 1; space <= rows - i; space++) {
-      printf("  ");
-    }
-
-    for (j = 0; j <= i; j++) {
-      if (j == 0 || i == 0) {
-        coef = 1;
-      } else {
-        coef = coef * (i - j + 1) / j;
-      }
-
-      printf("%4d", coef);
-    }
-
-    printf("\\n");
-  }
+  kernel_graph_init();
+  chess_board_draw_board();
 
   for (;;) {}
   return 0;
 }`;
+/* eslint-enable max-len */
 
 const useEditorStateValue = () => {
   const [emulation, setEmulation] = useState<EditorEmulationValue>({

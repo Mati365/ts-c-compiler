@@ -1,6 +1,6 @@
-export const KERNEL_HEADER = /* c */ `
-#ifndef KERNEL_H
-#define KERNEL_H
+export const TEXT_MODE_HEADER = /* c */ `
+#ifndef TEXT_MODE_H
+#define TEXT_MODE_H
 
   #include <string.h>
 

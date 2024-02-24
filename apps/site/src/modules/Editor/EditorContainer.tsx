@@ -22,7 +22,7 @@ export const EditorContainer = () => {
       <EditorHeader />
 
       <div className="relative flex-1">
-        <div className="layer-absolute grid grid-cols-[1fr,700px,min-content]">
+        <div className="layer-absolute grid grid-cols-[1fr,40%,min-content]">
           <EditorInput
             {...bind.path('code')}
             lang={value.lang}

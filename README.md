@@ -92,7 +92,7 @@ Example `main.c` file:
 
 ```c
 #include <stdio.h>
-#include <kernel.h>
+#include <kernel/textmode.h>
 
 int main() {
   int rows = 8, coef = 1, space, i, j;

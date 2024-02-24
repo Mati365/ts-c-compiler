@@ -562,15 +562,14 @@ export class X86ALU extends X86Unit {
         cpu.parseRmByte(
           (reg, modeReg) => {
             source1 = getSignedNumber(registers[<any>reg], 0x2);
-            source2 = getSignedNumber(cpu.fetchOpcode(), immBits);
+            source2 = getSignedNumber(cpu.fetchOpcode(immBits), immBits);
 
             result = toUnsignedNumber(source1 * source2, 0x2);
             registers[<string>X86_REGISTERS[0x2][modeReg]] = result;
           },
           (address, reg: string) => {
             source1 = getSignedNumber(memIO.read[0x2](address), 0x2);
-
-            source2 = getSignedNumber(cpu.fetchOpcode(), immBits);
+            source2 = getSignedNumber(cpu.fetchOpcode(immBits), immBits);
 
             result = toUnsignedNumber(source1 * source2, 0x2);
             registers[reg] = result;

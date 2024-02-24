@@ -15,9 +15,12 @@ export const defineMatcher = ({ g }: CPreprocessorGrammar): ASTCDefineNode => {
   const bracket = g.match({
     terminal: '(',
     optional: true,
+    consume: false,
   });
 
   if (bracket && name.loc.column + name.text.length === bracket.loc.column) {
+    g.consume();
+
     const isFullVA = g.match({
       type: TokenType.ELLIPSIS,
       optional: true,
