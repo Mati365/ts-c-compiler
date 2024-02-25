@@ -161,7 +161,6 @@ export class CTypeInitializerBuilderVisitor extends CInnerTypeTreeVisitor {
     });
 
     let exprValue = E.isRight(exprResult) ? exprResult.right : node.assignmentExpression;
-
     let expectedType: CType;
 
     if (!arrayItem) {

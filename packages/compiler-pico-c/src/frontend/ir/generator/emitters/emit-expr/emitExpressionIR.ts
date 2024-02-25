@@ -555,12 +555,12 @@ export function emitExpressionIR({
         ) {
           if (a.type.getByteSize() < b.type.getByteSize()) {
             if (!isIRConstant(a)) {
-              const castedA = allocNextVariable(b.type);
+              const castedA = allocator.allocTmpVariable(b.type);
               instructions.push(new IRCastInstruction(a, castedA));
               a = castedA;
             }
           } else if (!isIRConstant(b)) {
-            const castedB = allocNextVariable(a.type);
+            const castedB = allocator.allocTmpVariable(a.type);
             instructions.push(new IRCastInstruction(b, castedB));
             b = castedB;
           }

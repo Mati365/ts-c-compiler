@@ -1,6 +1,33 @@
 import '../utils';
 
 describe('Math', () => {
+  test('proper order of expressions with mul / div / plus', () => {
+    expect(/* cpp */ `
+      void main() {
+        int col = 5;
+        int dupa = 60;
+        int k = dupa + col * (160 / 8);
+      }
+    `).toCompiledAsmBeEqual(`
+      cpu 386
+      ; def main():
+      @@_fn_main:
+      push bp
+      mov bp, sp
+      sub sp, 6
+      mov word [bp - 2], 5      ; *(col{0}: int*2B) = store %5: int2B
+      mov word [bp - 4], 60     ; *(dupa{0}: int*2B) = store %60: int2B
+      mov ax, [bp - 2]
+      imul ax, 20               ; %t{4}: int2B = %t{1}: int2B mul %20: char1B
+      mov bx, [bp - 4]
+      add bx, ax                ; %t{5}: int2B = %t{0}: int2B plus %t{4}: int2B
+      mov word [bp - 6], bx     ; *(k{0}: int*2B) = store %t{5}: int2B
+      mov sp, bp
+      pop bp
+      ret
+    `);
+  });
+
   test('bit shifts', () => {
     expect(/* cpp */ `
       void main() {
