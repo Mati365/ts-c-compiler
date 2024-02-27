@@ -1,5 +1,16 @@
 # @ts-cc/x86-cpu
 
+## 1.8.0
+
+### Minor Changes
+
+- Better C support
+
+### Patch Changes
+
+- Updated dependencies
+  - @ts-cc/x86-assembler@1.8.0
+
 ## 1.7.1
 
 ### Patch Changes

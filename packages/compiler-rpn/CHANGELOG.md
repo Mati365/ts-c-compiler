@@ -1,5 +1,17 @@
 # @ts-cc/rpn
 
+## 1.8.0
+
+### Minor Changes
+
+- Better C support
+
+### Patch Changes
+
+- Updated dependencies
+  - @ts-cc/core@1.8.0
+  - @ts-cc/lexer@1.8.0
+
 ## 1.7.1
 
 ### Patch Changes

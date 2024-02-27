@@ -1,6 +1,6 @@
 {
   "name": "@ts-cc/cli",
-  "version": "1.7.1",
+  "version": "1.8.0",
   "private": false,
   "license": "MIT",
   "scripts": {

@@ -1,5 +1,11 @@
 # @ts-cc/core
 
+## 1.8.0
+
+### Minor Changes
+
+- Better C support
+
 ## 1.7.1
 
 ### Patch Changes
