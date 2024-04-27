@@ -29,6 +29,7 @@ Currently supported architectures:
 
 ### What works? 🔥
 
+- [x] Multi-pass branch optimisation (it uses `jmp rel8` instructions when offset is smaller than `rel16`)
 - [x] Local / Global variables
 - [x] `float` / `double` operations using X87 stack-based registers
 - [x] Advanced types `struct`, `union`, `enum`
