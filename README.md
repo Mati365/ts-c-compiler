@@ -18,16 +18,7 @@ Currently supported architectures:
 
 **🚧 Warn! The project is unstable so please do not use it on production!**
 
-## What does it offer? ⭐
-
-1. Reasonable assembly code quality in NASM syntax
-2. Simple prototyping boot sector games
-3. Designed especially for old-school 16bit computers with Intel 80286 (and newer) CPU and produces only simple ASM instructions
-4. Backend / Frontend architecture that allows you to add new backends in TypeScript (especially useful for homebrew FPGA CPU)
-5. Peephole optimization of IR code, precompute of constant expressions during compile time and optimizer phase
-6. Slow compile times - feel the vibe of old computing
-
-### What works? 🔥
+### What works?
 
 - [x] Multi-pass branch optimisation (it uses `jmp rel8` instructions when offset is smaller than `rel16`)
 - [x] Local / Global variables
@@ -52,11 +43,12 @@ Currently supported architectures:
 - [x] Constant expressions eval optimizations `a = 2 * 4` -> `a = 8`
 - [x] Constant branch optimization for loops and ifs `for (;;) {}` -> `L1: jmp L1`
 
-### What does not work? 🚧
+### What does not work?
 
 - [ ] Bitfields
 - [ ] Multiple files support
 - [ ] Linker
+- [ ] Many more things
 
 ## Online editor
 
